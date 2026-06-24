@@ -198,7 +198,7 @@ export default function ProductionCard({
       break;
     case 'READY_TO_LIST':
       labelText = 'Викласти';
-      subText = typeConfig ? String(effectiveRevenue) : '';
+      subText = typeConfig ? formatTime(typeConfig.sellDuration) : '';
       break;
     case 'SELLING':
       labelText = formatTime(timeRemaining);
