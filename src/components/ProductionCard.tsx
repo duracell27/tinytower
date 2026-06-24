@@ -302,7 +302,7 @@ export default function ProductionCard({
       {/* Action button */}
       <Pressable onPress={canAct ? handleAction : undefined} style={({ pressed }) => [
         styles.actionButton,
-        !canAct && styles.actionButtonDisabled,
+        !canAct && !isTimer && styles.actionButtonDisabled,
         pressed && canAct && styles.actionButtonPressed,
       ]}>
         <LinearGradient
