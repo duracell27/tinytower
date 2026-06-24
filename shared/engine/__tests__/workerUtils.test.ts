@@ -1,0 +1,82 @@
+import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getWorkerMood } from '../workerUtils';
+import type { Worker } from '../../types';
+
+function makeWorker(overrides?: Partial<Worker>): Worker {
+  return {
+    id: 'w1', name: 'Test', female: false, floorType: 'green',
+    dreamJob: 'bulky', level: 5, hairColor: '#5C3A22',
+    assignedFloorId: null, assignedSlotIdx: null,
+    ...overrides,
+  };
+}
+
+describe('getWorkerMood', () => {
+  it('returns bad for unemployed worker', () => {
+    expect(getWorkerMood(makeWorker(), null, null)).toBe('bad');
+  });
+
+  it('returns bad for worker on wrong floor type', () => {
+    const w = makeWorker({ floorType: 'green', assignedFloorId: 1, assignedSlotIdx: 0 });
+    expect(getWorkerMood(w, 'teal', 'wash')).toBe('bad');
+  });
+
+  it('returns mid for worker on matching floor type but wrong product', () => {
+    const w = makeWorker({ floorType: 'green', dreamJob: 'bulky', assignedFloorId: 1, assignedSlotIdx: 0 });
+    expect(getWorkerMood(w, 'green', 'cake')).toBe('mid');
+  });
+
+  it('returns good for worker on dream job', () => {
+    const w = makeWorker({ floorType: 'green', dreamJob: 'bulky', assignedFloorId: 1, assignedSlotIdx: 0 });
+    expect(getWorkerMood(w, 'green', 'bulky')).toBe('good');
+  });
+});
+
+describe('getRevenueMultiplier', () => {
+  it('returns 1.0 for wrong floor type', () => {
+    const w = makeWorker({ floorType: 'green' });
+    expect(getRevenueMultiplier(w, 'teal', 'wash')).toBe(1.0);
+  });
+
+  it('returns 1.3 for matching floor, wrong product', () => {
+    const w = makeWorker({ floorType: 'green', dreamJob: 'bulky' });
+    expect(getRevenueMultiplier(w, 'green', 'cake')).toBe(1.3);
+  });
+
+  it('returns 2.0 for dream job match', () => {
+    const w = makeWorker({ floorType: 'green', dreamJob: 'bulky' });
+    expect(getRevenueMultiplier(w, 'green', 'bulky')).toBe(2.0);
+  });
+});
+
+describe('getFloorDiscount', () => {
+  it('returns 0 for floor with no workers', () => {
+    expect(getFloorDiscount([], 1)).toBe(0);
+  });
+
+  it('sums levels of all workers on floor', () => {
+    const workers = [
+      makeWorker({ id: 'w1', level: 3, assignedFloorId: 1, assignedSlotIdx: 0 }),
+      makeWorker({ id: 'w2', level: 5, assignedFloorId: 1, assignedSlotIdx: 1 }),
+      makeWorker({ id: 'w3', level: 7, assignedFloorId: 1, assignedSlotIdx: 2 }),
+    ];
+    expect(getFloorDiscount(workers, 1)).toBeCloseTo(0.15);
+  });
+
+  it('ignores workers on other floors', () => {
+    const workers = [
+      makeWorker({ id: 'w1', level: 9, assignedFloorId: 2, assignedSlotIdx: 0 }),
+    ];
+    expect(getFloorDiscount(workers, 1)).toBe(0);
+  });
+});
+
+describe('getWorkerForSlot', () => {
+  it('finds worker assigned to specific slot', () => {
+    const w = makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 });
+    expect(getWorkerForSlot([w], 1, 0)).toBe(w);
+  });
+
+  it('returns undefined for empty slot', () => {
+    expect(getWorkerForSlot([], 1, 0)).toBeUndefined();
+  });
+});
