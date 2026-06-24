@@ -26,7 +26,13 @@ export function loadGameState(): PersistedGameState | null {
 
   try {
     const parsed = JSON.parse(raw);
-    const result = GameStateSchema.safeParse(parsed);
+    // Backward compat: old saves may lack workers/hotelCapacity
+    const withDefaults = {
+      ...parsed,
+      workers: parsed.workers ?? [],
+      hotelCapacity: parsed.hotelCapacity ?? 10,
+    };
+    const result = GameStateSchema.safeParse(withDefaults);
     if (result.success) {
       return {
         ...result.data,
@@ -47,6 +53,8 @@ export function saveGameState(state: PersistedGameState): void {
     balance: state.balance,
     floors: state.floors,
     commandQueue: state.commandQueue,
+    workers: state.workers ?? [],
+    hotelCapacity: state.hotelCapacity ?? 10,
     lastAckCursor: state.lastAckCursor ?? 0,
     stateVersion: state.stateVersion ?? 0,
   }));

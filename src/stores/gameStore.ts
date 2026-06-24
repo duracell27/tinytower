@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { clock } from '../services/clock';
-import type { GameState, Command, Floor } from '../../shared/types';
+import type { GameState, Command, Floor, Worker } from '../../shared/types';
 
 const COMMAND_QUEUE_CAP = 10_000;
 
@@ -27,6 +27,9 @@ interface GameActions {
   buy: (floorId: number, slotIdx: number, typeId: string) => void;
   list: (floorId: number, slotIdx: number) => void;
   collect: (floorId: number, slotIdx: number) => void;
+  assignWorker: (workerId: string, floorId: number, slotIdx: number) => void;
+  fireWorker: (workerId: string) => void;
+  evictWorker: (workerId: string) => void;
   liftVisitor: () => void;
   hydrate: (state: GameState & Partial<SyncState>) => void;
   reconcile: (state: GameState, stateVersion: number, ackCursor: number) => void;
@@ -40,8 +43,8 @@ function executeCommand(
   set: (partial: Partial<GameStore>) => void,
   command: Command,
 ) {
-  const { balance, floors, commandQueue } = get();
-  const result = processCommand({ balance, floors, commandQueue }, command, gameConfig, command.timestamp);
+  const { balance, floors, commandQueue, workers, hotelCapacity } = get();
+  const result = processCommand({ balance, floors, commandQueue, workers, hotelCapacity }, command, gameConfig, command.timestamp);
   if (!result.success) return;
 
   let newQueue = [...result.state.commandQueue, command];
@@ -52,6 +55,8 @@ function executeCommand(
   set({
     balance: result.state.balance,
     floors: result.state.floors,
+    workers: result.state.workers,
+    hotelCapacity: result.state.hotelCapacity,
     commandQueue: newQueue,
   });
 }
@@ -98,6 +103,35 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
+  assignWorker: (workerId, floorId, slotIdx) => {
+    executeCommand(get, set, {
+      id: crypto.randomUUID(),
+      type: 'assign_worker',
+      workerId,
+      floorId,
+      slotIdx,
+      timestamp: clock.now(),
+    });
+  },
+
+  fireWorker: (workerId) => {
+    executeCommand(get, set, {
+      id: crypto.randomUUID(),
+      type: 'fire_worker',
+      workerId,
+      timestamp: clock.now(),
+    });
+  },
+
+  evictWorker: (workerId) => {
+    executeCommand(get, set, {
+      id: crypto.randomUUID(),
+      type: 'evict_worker',
+      workerId,
+      timestamp: clock.now(),
+    });
+  },
+
   liftVisitor: () => {
     const { visitors, hotelOccupied, hotelTotal } = get();
     if (visitors <= 0) return;
@@ -111,6 +145,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     balance: state.balance,
     floors: state.floors,
     commandQueue: state.commandQueue,
+    workers: state.workers ?? [],
+    hotelCapacity: state.hotelCapacity ?? 10,
     lastAckCursor: state.lastAckCursor ?? 0,
     stateVersion: state.stateVersion ?? 0,
   }),
@@ -118,6 +154,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   reconcile: (serverState, newVersion, ackCursor) => set({
     balance: serverState.balance,
     floors: serverState.floors,
+    workers: serverState.workers,
+    hotelCapacity: serverState.hotelCapacity,
     stateVersion: newVersion,
     lastAckCursor: ackCursor,
     commandQueue: [],
