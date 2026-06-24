@@ -4,9 +4,11 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
+import { getRevenueMultiplier } from '../../shared/engine/workerUtils';
 import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
-import type { Production, EffectiveStage } from '../../shared/types';
+import WorkerAvatar from './WorkerAvatar';
+import type { Production, EffectiveStage, Worker } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
 
 // Button gradient and shadow configs per stage
@@ -105,6 +107,8 @@ interface ProductionCardProps {
   nameColor: string;
   productTitle: string;
   productImage: ImageSource;
+  worker?: Worker;
+  floorDiscount?: number;
 }
 
 export default function ProductionCard({
@@ -118,6 +122,8 @@ export default function ProductionCard({
   nameColor,
   productTitle,
   productImage,
+  worker,
+  floorDiscount,
 }: ProductionCardProps) {
   const typeConfig = production.typeId
     ? gameConfig.productionTypes[production.typeId] ?? null
@@ -127,6 +133,21 @@ export default function ProductionCard({
   const { effectiveStage, timeRemaining, canAct } = status;
 
   const btnConfig = BTN_COLORS[effectiveStage] || BTN_COLORS.IDLE;
+
+  // Compute discounted buy cost
+  const effectiveCost = typeConfig
+    ? Math.floor(typeConfig.buyCost * (1 - (floorDiscount ?? 0)))
+    : 0;
+  const hasDiscount = (floorDiscount ?? 0) > 0;
+  const discountPercent = hasDiscount ? Math.round((floorDiscount ?? 0) * 100) : 0;
+
+  // Compute revenue multiplier
+  const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
+  const multiplier = worker && floorConfig
+    ? getRevenueMultiplier(worker, floorConfig.floorType, production.typeId)
+    : 1;
+  const effectiveRevenue = typeConfig ? Math.floor(typeConfig.batchValue * multiplier) : 0;
+  const hasMultiplier = multiplier > 1;
 
   const handleAction = useCallback(() => {
     const store = useGameStore.getState();
@@ -155,18 +176,23 @@ export default function ProductionCard({
 
   const isHire = effectiveStage === 'EMPTY';
   const isTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING';
+  const isLocked = !worker;
 
   // Label text
   let labelText = '';
   let subText = '';
+  let discountBadge = '';
+  let multiplierBadge = '';
   switch (effectiveStage) {
     case 'EMPTY':
       labelText = 'Найняти';
-      subText = typeConfig ? String(typeConfig.buyCost) : '';
+      subText = typeConfig ? String(effectiveCost) : '';
+      if (hasDiscount) discountBadge = `−${discountPercent}%`;
       break;
     case 'IDLE':
       labelText = 'Закупити';
-      subText = typeConfig ? String(typeConfig.buyCost) : '';
+      subText = typeConfig ? String(effectiveCost) : '';
+      if (hasDiscount) discountBadge = `−${discountPercent}%`;
       break;
     case 'DELIVERING':
       labelText = formatTime(timeRemaining);
@@ -174,7 +200,8 @@ export default function ProductionCard({
       break;
     case 'READY_TO_LIST':
       labelText = 'Викласти';
-      subText = typeConfig ? String(typeConfig.batchValue) : '';
+      subText = typeConfig ? String(effectiveRevenue) : '';
+      if (hasMultiplier) multiplierBadge = `×${multiplier}`;
       break;
     case 'SELLING':
       labelText = formatTime(timeRemaining);
@@ -182,8 +209,48 @@ export default function ProductionCard({
       break;
     case 'READY_TO_COLLECT':
       labelText = 'Зібрати';
-      subText = typeConfig ? String(typeConfig.batchValue) : '';
+      subText = typeConfig ? String(effectiveRevenue) : '';
+      if (hasMultiplier) multiplierBadge = `×${multiplier}`;
       break;
+  }
+
+  // Locked state: no worker assigned
+  if (isLocked) {
+    return (
+      <View style={[styles.card, { backgroundColor: cardBg, opacity: 0.5 }]}>
+        {/* Title */}
+        <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
+          {productTitle}
+        </Text>
+
+        {/* Lock icon */}
+        <View style={styles.imageContainer}>
+          <View style={styles.lockedSlot}>
+            <Svg viewBox="0 0 24 24" width={26} height={26} fill="#9098A6">
+              <Path d="M17 10V8A5 5 0 0 0 7 8v2" />
+              <Rect x={5} y={10} width={14} height={11} rx={2} />
+              <Path d="M8 8a4 4 0 0 1 8 0v2H8V8z" />
+              <Circle cx={12} cy={16} r={1.5} fill="#fff" />
+            </Svg>
+          </View>
+          <Text style={styles.lockedText}>Потрібен працівник</Text>
+        </View>
+
+        {/* Disabled button placeholder */}
+        <View style={[styles.actionButton, styles.actionButtonDisabled]}>
+          <LinearGradient
+            colors={['#A0A8B4', '#8E96A2']}
+            style={styles.actionButtonGradient}
+          >
+            <Text style={styles.actionLabel}>---</Text>
+          </LinearGradient>
+          <View style={[styles.actionButtonShadow, { backgroundColor: '#6E7680' }]} />
+        </View>
+
+        {/* Empty sub-block */}
+        <View style={styles.subContainer} />
+      </View>
+    );
   }
 
   return (
@@ -214,6 +281,12 @@ export default function ProductionCard({
             contentFit="contain"
           />
         )}
+        {/* Worker mini-indicator */}
+        {worker && (
+          <View style={styles.workerBadge}>
+            <WorkerAvatar worker={worker} size={24} />
+          </View>
+        )}
       </View>
 
       {/* Action button */}
@@ -242,6 +315,12 @@ export default function ProductionCard({
           <View style={styles.pricePill}>
             <View style={styles.priceCoinIcon} />
             <Text style={styles.priceText}>{subText}</Text>
+            {discountBadge ? (
+              <Text style={styles.discountBadge}>{discountBadge}</Text>
+            ) : null}
+            {multiplierBadge ? (
+              <Text style={styles.multiplierBadge}>{multiplierBadge}</Text>
+            ) : null}
           </View>
         ) : null}
       </View>
@@ -394,5 +473,44 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 11.5,
     color: '#7C7256',
+  },
+  lockedSlot: {
+    width: 54,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lockedText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 10,
+    color: '#9098A6',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  workerBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#E7EBF1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#fff',
+    overflow: 'hidden',
+  },
+  discountBadge: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 9,
+    color: '#5BA63C',
+    marginLeft: 2,
+  },
+  multiplierBadge: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 9,
+    color: '#E89320',
+    marginLeft: 2,
   },
 });

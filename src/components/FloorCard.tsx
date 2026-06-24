@@ -2,8 +2,9 @@ import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import ProductionCard from './ProductionCard';
-import { useFloor } from '../stores/gameStore';
+import { useFloor, useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
+import { getWorkerForSlot, getFloorDiscount } from '../../shared/engine/workerUtils';
 import type { ImageSource } from 'expo-image';
 
 // Floor color schemes matching the design
@@ -97,10 +98,12 @@ interface FloorCardProps {
 
 function FloorCardInner({ floorId, balance, now }: FloorCardProps) {
   const floor = useFloor(floorId);
+  const workers = useGameStore((s) => s.workers);
   const scheme = FLOOR_SCHEMES[floorId] || FLOOR_SCHEMES[1];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
   const availableTypes = floorConfig?.availableTypes ?? [];
   const products = PRODUCT_IMAGES[floorId] || PRODUCT_IMAGES[1];
+  const discount = getFloorDiscount(workers, floorId);
 
   return (
     <View style={styles.floorContainer}>
@@ -120,21 +123,26 @@ function FloorCardInner({ floorId, balance, now }: FloorCardProps) {
 
       {/* Production cards */}
       <View style={[styles.cardsContainer, { backgroundColor: scheme.bodyColor }]}>
-        {floor.productions.map((production, idx) => (
-          <ProductionCard
-            key={idx}
-            production={production}
-            balance={balance}
-            now={now}
-            floorId={floorId}
-            slotIdx={idx}
-            floorAvailableTypes={availableTypes}
-            cardBg={scheme.cardBg}
-            nameColor={scheme.nameColor}
-            productTitle={products[idx]?.title ?? `Товар ${idx + 1}`}
-            productImage={products[idx]?.image ?? products[0].image}
-          />
-        ))}
+        {floor.productions.map((production, idx) => {
+          const slotWorker = getWorkerForSlot(workers, floorId, idx);
+          return (
+            <ProductionCard
+              key={idx}
+              production={production}
+              balance={balance}
+              now={now}
+              floorId={floorId}
+              slotIdx={idx}
+              floorAvailableTypes={availableTypes}
+              cardBg={scheme.cardBg}
+              nameColor={scheme.nameColor}
+              productTitle={products[idx]?.title ?? `Товар ${idx + 1}`}
+              productImage={products[idx]?.image ?? products[0].image}
+              worker={slotWorker}
+              floorDiscount={discount}
+            />
+          );
+        })}
       </View>
     </View>
   );
