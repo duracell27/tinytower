@@ -6,9 +6,9 @@ export default function Login() {
 
   return (
     <LoginScreen
-      onSubmit={() => router.push('/game')}
-      onGoogle={() => router.push('/game')}
-      onApple={() => router.push('/game')}
+      onSuccess={() => router.replace('/game')}
+      onGoogle={() => {}}
+      onApple={() => {}}
       onBack={() => router.back()}
     />
   );

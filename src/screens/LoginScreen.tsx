@@ -8,13 +8,15 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
+import { useAuthStore } from '../stores/authStore';
 
 interface LoginScreenProps {
-  onSubmit: () => void;
+  onSuccess: () => void;
   onGoogle: () => void;
   onApple: () => void;
   onBack: () => void;
@@ -43,9 +45,51 @@ function GoogleIcon() {
   );
 }
 
-export default function LoginScreen({ onSubmit, onGoogle, onApple, onBack }: LoginScreenProps) {
+export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: LoginScreenProps) {
   const [tab, setTab] = useState<'login' | 'register'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [playerName, setPlayerName] = useState('');
+  const [error, setError] = useState('');
+
   const isLogin = tab === 'login';
+  const isLoading = useAuthStore((s) => s.isLoading);
+
+  const handleSubmit = async () => {
+    setError('');
+
+    if (!email.trim() || !password.trim()) {
+      setError('Заповніть всі поля');
+      return;
+    }
+
+    if (!isLogin && !playerName.trim()) {
+      setError("Введіть ім'я гравця");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Пароль має бути не менше 6 символів');
+      return;
+    }
+
+    try {
+      if (isLogin) {
+        await useAuthStore.getState().login(email.trim(), password);
+      } else {
+        await useAuthStore.getState().register(email.trim(), password, playerName.trim());
+      }
+      onSuccess();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Щось пішло не так';
+      setError(msg);
+    }
+  };
+
+  const handleTabSwitch = (newTab: 'login' | 'register') => {
+    setTab(newTab);
+    setError('');
+  };
 
   return (
     <View style={styles.container}>
@@ -98,7 +142,7 @@ export default function LoginScreen({ onSubmit, onGoogle, onApple, onBack }: Log
             {/* Tabs */}
             <View style={styles.tabBar}>
               <Pressable
-                onPress={() => setTab('login')}
+                onPress={() => handleTabSwitch('login')}
                 style={[styles.tab, isLogin && styles.tabActive]}
               >
                 <Text style={[styles.tabText, isLogin && styles.tabTextActive]}>
@@ -106,7 +150,7 @@ export default function LoginScreen({ onSubmit, onGoogle, onApple, onBack }: Log
                 </Text>
               </Pressable>
               <Pressable
-                onPress={() => setTab('register')}
+                onPress={() => handleTabSwitch('register')}
                 style={[styles.tab, !isLogin && styles.tabActive]}
               >
                 <Text style={[styles.tabText, !isLogin && styles.tabTextActive]}>
@@ -114,6 +158,13 @@ export default function LoginScreen({ onSubmit, onGoogle, onApple, onBack }: Log
                 </Text>
               </Pressable>
             </View>
+
+            {/* Error message */}
+            {error ? (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
 
             {/* Player name (register only) */}
             {!isLogin && (
@@ -123,6 +174,10 @@ export default function LoginScreen({ onSubmit, onGoogle, onApple, onBack }: Log
                   style={styles.input}
                   placeholder="Як до вас звертатися?"
                   placeholderTextColor="#B7B3A2"
+                  value={playerName}
+                  onChangeText={setPlayerName}
+                  autoCapitalize="words"
+                  editable={!isLoading}
                 />
               </View>
             )}
@@ -136,6 +191,9 @@ export default function LoginScreen({ onSubmit, onGoogle, onApple, onBack }: Log
                 placeholderTextColor="#B7B3A2"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+                editable={!isLoading}
               />
             </View>
 
@@ -148,6 +206,9 @@ export default function LoginScreen({ onSubmit, onGoogle, onApple, onBack }: Log
                   placeholder="Мінімум 6 символів"
                   placeholderTextColor="#B7B3A2"
                   secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                  editable={!isLoading}
                 />
                 <View style={styles.eyeIcon}>
                   <View style={styles.eyeDot} />
@@ -177,14 +238,18 @@ export default function LoginScreen({ onSubmit, onGoogle, onApple, onBack }: Log
             )}
 
             {/* Submit button */}
-            <Pressable onPress={onSubmit} style={styles.submitButton}>
+            <Pressable onPress={handleSubmit} style={styles.submitButton} disabled={isLoading}>
               <LinearGradient
                 colors={['#62C84F', '#3FA535']}
                 style={styles.submitGradient}
               >
-                <Text style={styles.submitText}>
-                  {isLogin ? 'Увійти' : 'Створити акаунт'}
-                </Text>
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.submitText}>
+                    {isLogin ? 'Увійти' : 'Створити акаунт'}
+                  </Text>
+                )}
               </LinearGradient>
             </Pressable>
 
@@ -202,7 +267,7 @@ export default function LoginScreen({ onSubmit, onGoogle, onApple, onBack }: Log
                 <Text style={styles.socialLabel}>Google</Text>
               </Pressable>
               <Pressable onPress={onApple} style={styles.appleButton}>
-                <Text style={styles.appleIcon}>{''}</Text>
+                <Text style={styles.appleIcon}>{''}</Text>
                 <Text style={styles.appleLabelText}>Apple</Text>
               </Pressable>
             </View>
@@ -317,6 +382,22 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: '#2C4A2A',
+  },
+
+  /* Error */
+  errorBox: {
+    backgroundColor: '#FFF0F0',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+    padding: 12,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: '#C62828',
+    textAlign: 'center',
   },
 
   /* Form fields */

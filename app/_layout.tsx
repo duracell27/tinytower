@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
 import {
   Fredoka_400Regular,
@@ -15,8 +15,12 @@ import {
   Nunito_800ExtraBold,
 } from '@expo-google-fonts/nunito';
 import { setupPersistence } from '../src/services/persistence';
+import { useAuthStore } from '../src/stores/authStore';
+import { setAuthFailureCallback } from '../src/services/api';
 
 export default function RootLayout() {
+  const router = useRouter();
+
   const [fontsLoaded] = useFonts({
     Fredoka_400Regular,
     Fredoka_500Medium,
@@ -30,7 +34,12 @@ export default function RootLayout() {
 
   useEffect(() => {
     setupPersistence();
-  }, []);
+    useAuthStore.getState().loadTokens();
+    setAuthFailureCallback(() => {
+      useAuthStore.getState().logout();
+      router.replace('/');
+    });
+  }, [router]);
 
   if (!fontsLoaded) {
     return (
