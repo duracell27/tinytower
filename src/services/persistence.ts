@@ -15,14 +15,25 @@ function getStorage() {
 const GAME_STATE_KEY = 'gameState';
 const SAVE_DEBOUNCE_MS = 3000;
 
-export function loadGameState(): GameState | null {
+interface PersistedGameState extends GameState {
+  lastAckCursor?: number;
+  stateVersion?: number;
+}
+
+export function loadGameState(): PersistedGameState | null {
   const raw = getStorage().getString(GAME_STATE_KEY);
   if (!raw) return null;
 
   try {
     const parsed = JSON.parse(raw);
     const result = GameStateSchema.safeParse(parsed);
-    if (result.success) return result.data;
+    if (result.success) {
+      return {
+        ...result.data,
+        lastAckCursor: typeof parsed.lastAckCursor === 'number' ? parsed.lastAckCursor : 0,
+        stateVersion: typeof parsed.stateVersion === 'number' ? parsed.stateVersion : 0,
+      };
+    }
     console.warn('Invalid game state in MMKV, starting fresh');
     return null;
   } catch {
@@ -31,11 +42,13 @@ export function loadGameState(): GameState | null {
   }
 }
 
-export function saveGameState(state: GameState): void {
+export function saveGameState(state: PersistedGameState): void {
   getStorage().set(GAME_STATE_KEY, JSON.stringify({
     balance: state.balance,
     floors: state.floors,
     commandQueue: state.commandQueue,
+    lastAckCursor: state.lastAckCursor ?? 0,
+    stateVersion: state.stateVersion ?? 0,
   }));
 }
 

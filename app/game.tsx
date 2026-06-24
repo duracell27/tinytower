@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import TopBar from '../src/components/TopBar';
@@ -8,6 +8,7 @@ import { HotelFloor, LobbyFloor } from '../src/components/TechnicalFloor';
 import { useGameStore, useBalance } from '../src/stores/gameStore';
 import { useGameClock } from '../src/hooks/useGameClock';
 import { gameConfig } from '../shared/config/gameConfig';
+import { syncService } from '../src/services/sync';
 
 type FloorItem =
   | { type: 'production'; id: number }
@@ -44,6 +45,11 @@ export default function GameScreen() {
   const hotelTotal = useGameStore((s) => s.hotelTotal);
   const visitors = useGameStore((s) => s.visitors);
   const liftVisitor = useGameStore((s) => s.liftVisitor);
+
+  useEffect(() => {
+    syncService.start();
+    return () => syncService.stop();
+  }, []);
 
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
     if (item.type === 'hotel') {

@@ -12,15 +12,22 @@ interface BuildingState {
   visitors: number;
 }
 
+interface SyncState {
+  lastAckCursor: number;
+  stateVersion: number;
+}
+
 interface GameActions {
   buy: (floorId: number, slotIdx: number, typeId: string) => void;
   list: (floorId: number, slotIdx: number) => void;
   collect: (floorId: number, slotIdx: number) => void;
   liftVisitor: () => void;
-  hydrate: (state: GameState) => void;
+  hydrate: (state: GameState & Partial<SyncState>) => void;
+  reconcile: (state: GameState, stateVersion: number, ackCursor: number) => void;
+  clearAckedCommands: (ackCursor: number) => void;
 }
 
-type GameStore = GameState & BuildingState & GameActions;
+type GameStore = GameState & BuildingState & SyncState & GameActions;
 
 function executeCommand(
   get: () => GameStore,
@@ -48,6 +55,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   hotelOccupied: 20,
   hotelTotal: 32,
   visitors: 3,
+  lastAckCursor: 0,
+  stateVersion: 0,
 
   buy: (floorId, slotIdx, typeId) => {
     executeCommand(get, set, {
@@ -93,7 +102,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
     balance: state.balance,
     floors: state.floors,
     commandQueue: state.commandQueue,
+    lastAckCursor: state.lastAckCursor ?? 0,
+    stateVersion: state.stateVersion ?? 0,
   }),
+
+  reconcile: (serverState, newVersion, ackCursor) => set({
+    balance: serverState.balance,
+    floors: serverState.floors,
+    stateVersion: newVersion,
+    lastAckCursor: ackCursor,
+    commandQueue: [],
+  }),
+
+  clearAckedCommands: (ackCursor) => set((state) => ({
+    lastAckCursor: ackCursor,
+    commandQueue: state.commandQueue,
+  })),
 }));
 
 export function useBalance(): number {

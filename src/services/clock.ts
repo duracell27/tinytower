@@ -2,10 +2,16 @@ export interface GameClock {
   now(): number;
 }
 
-export class DeviceClock implements GameClock {
+class ServerClock implements GameClock {
+  private offset: number = 0;
+
+  updateOffset(serverTime: number): void {
+    this.offset = serverTime - Date.now();
+  }
+
   now(): number {
-    return Date.now();
+    return Date.now() + this.offset;
   }
 }
 
-export const clock: GameClock = new DeviceClock();
+export const clock: GameClock & { updateOffset: (serverTime: number) => void } = new ServerClock();
