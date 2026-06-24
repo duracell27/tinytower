@@ -177,7 +177,7 @@ export default function ProductionCard({
   }, [effectiveStage, floorId, slotIdx, floorAvailableTypes, production.typeId]);
 
   const isHire = effectiveStage === 'EMPTY';
-  const isTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING';
+  const isTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING' || effectiveStage === 'READY_TO_LIST';
   const isLocked = !worker;
 
   // Label text
@@ -198,7 +198,7 @@ export default function ProductionCard({
       break;
     case 'READY_TO_LIST':
       labelText = 'Викласти';
-      subText = typeConfig ? formatTime(typeConfig.sellDuration) : '';
+      subText = typeConfig ? `Продаж ${formatTime(typeConfig.sellDuration)}` : '';
       break;
     case 'SELLING':
       labelText = formatTime(timeRemaining);
