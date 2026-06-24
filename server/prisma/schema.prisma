@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  playerName    String
+  balance       Int       @default(100)
+  stateVersion  Int       @default(0)
+  lastSeenAt    DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  floors        Floor[]
+}
+
+model Floor {
+  id          Int          @id @default(autoincrement())
+  playerId    String
+  floorId     Int
+  player      Player       @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  productions Production[]
+
+  @@unique([playerId, floorId])
+}
+
+model Production {
+  id             Int     @id @default(autoincrement())
+  floorDbId      Int
+  slotIdx        Int
+  typeId         String?
+  stage          String  @default("IDLE")
+  stageStartedAt BigInt  @default(0)
+  floor          Floor   @relation(fields: [floorDbId], references: [id], onDelete: Cascade)
+
+  @@unique([floorDbId, slotIdx])
+}
+
+model CommandLog {
+  id          String   @id
+  playerId    String
+  type        String
+  floorId     Int
+  slotIdx     Int
+  typeId      String?
+  timestamp   BigInt
+  serverTime  BigInt
+  cursor      Int      @default(autoincrement())
+  processedAt DateTime @default(now())
+
+  @@index([playerId, cursor])
+}
