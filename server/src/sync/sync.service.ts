@@ -83,7 +83,8 @@ export class SyncService {
         }
       }
 
-      const result = processCommand(gameState, cmd, gameConfig, serverNow);
+      const cmdNow = Math.min(cmd.timestamp, serverNow);
+      const result = processCommand(gameState, cmd, gameConfig, cmdNow);
       if (result.success) {
         gameState = result.state;
         acceptedCommands.push(cmd);
