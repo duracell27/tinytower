@@ -31,6 +31,16 @@ function formatTime(ms: number): string {
   return `${String(sec).padStart(2, '0')}`;
 }
 
+function formatDuration(ms: number): string {
+  const totalSec = Math.round(ms / 1000);
+  if (totalSec < 60) return `${totalSec} с.`;
+  const min = Math.floor(totalSec / 60);
+  if (min < 60) return `${min} хв.`;
+  const hours = Math.floor(min / 60);
+  if (hours < 24) return `${hours} г.`;
+  return `${Math.floor(hours / 24)} дн.`;
+}
+
 function StageIcon({ stage }: { stage: EffectiveStage }) {
   switch (stage) {
     case 'IDLE':
@@ -198,7 +208,7 @@ export default function ProductionCard({
       break;
     case 'READY_TO_LIST':
       labelText = 'Викласти';
-      subText = typeConfig ? `Продаж ${formatTime(typeConfig.sellDuration)}` : '';
+      subText = typeConfig ? formatDuration(typeConfig.sellDuration) : '';
       break;
     case 'SELLING':
       labelText = formatTime(timeRemaining);
@@ -317,7 +327,16 @@ export default function ProductionCard({
 
       {/* Sub-block: price or status */}
       <View style={styles.subContainer}>
-        {isTimer ? (
+        {effectiveStage === 'READY_TO_LIST' && subText ? (
+          <View style={styles.statusPill}>
+            <Svg viewBox="0 0 24 24" width={10} height={10} fill="none" stroke="#8A8475" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <Path d="M3 4h2.2l2.4 10.5h9.1l1.9-7H6.3" />
+              <Circle cx={9} cy={19} r={1.2} fill="#8A8475" stroke="none" />
+              <Circle cx={17} cy={19} r={1.2} fill="#8A8475" stroke="none" />
+            </Svg>
+            <Text style={styles.statusText}>{subText}</Text>
+          </View>
+        ) : isTimer ? (
           <View style={styles.statusPill}>
             <Text style={styles.statusText}>{subText}</Text>
           </View>
@@ -432,6 +451,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingVertical: 2,
     paddingHorizontal: 11,
     borderRadius: 10,
