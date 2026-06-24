@@ -1,0 +1,267 @@
+import React from 'react';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+
+interface HotelFloorProps {
+  hotelOccupied: number;
+  hotelTotal: number;
+}
+
+export function HotelFloor({ hotelOccupied, hotelTotal }: HotelFloorProps) {
+  const hasVacancy = hotelOccupied < hotelTotal;
+
+  return (
+    <View style={styles.container}>
+      <LinearGradient colors={['#8090A6', '#5F6E84']} style={styles.header}>
+        <View style={styles.numberBadge}>
+          <Text style={styles.numberText}>1</Text>
+        </View>
+        <Text style={styles.floorName}>ГОТЕЛЬ</Text>
+        <View style={styles.techTag}>
+          <Text style={styles.techTagText}>ТЕХНІЧНИЙ</Text>
+        </View>
+      </LinearGradient>
+
+      <View style={styles.body}>
+        <View style={styles.techContent}>
+          <Image
+            source={require('../../assets/img/hotel.png')}
+            style={styles.techImage}
+            contentFit="contain"
+          />
+          <View style={styles.techInfo}>
+            <View style={[styles.statusPill, hasVacancy ? styles.statusGreen : styles.statusRed]}>
+              <View style={[styles.statusDot, { backgroundColor: hasVacancy ? '#5BA63C' : '#D14343' }]} />
+              <Text style={[styles.statusText, { color: hasVacancy ? '#3C7A2A' : '#A13030' }]}>
+                {hasVacancy ? 'Є вільні місця' : 'Немає вільних місць'}
+              </Text>
+            </View>
+            <Text style={styles.occupancyText}>
+              {hotelOccupied} / {hotelTotal}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+interface LobbyFloorProps {
+  visitors: number;
+  onLift: () => void;
+}
+
+export function LobbyFloor({ visitors, onLift }: LobbyFloorProps) {
+  return (
+    <View style={styles.container}>
+      <LinearGradient colors={['#8090A6', '#5F6E84']} style={styles.header}>
+        <View style={styles.numberBadge}>
+          <Text style={styles.numberText}>0</Text>
+        </View>
+        <Text style={styles.floorName}>ВЕСТИБЮЛЬ</Text>
+        <View style={styles.techTag}>
+          <Text style={styles.techTagText}>ТЕХНІЧНИЙ</Text>
+        </View>
+      </LinearGradient>
+
+      <View style={styles.body}>
+        <View style={styles.techContent}>
+          <Image
+            source={require('../../assets/img/lobby.png')}
+            style={styles.techImage}
+            contentFit="contain"
+          />
+          <View style={styles.techInfo}>
+            <View style={styles.visitorRow}>
+              <Text style={styles.visitorLabel}>Новий відвідувач</Text>
+              <View style={styles.visitorBadge}>
+                <Text style={styles.visitorBadgeText}>{visitors}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+        {visitors > 0 && (
+          <Pressable onPress={onLift} style={({ pressed }) => [
+            styles.liftButton,
+            pressed && styles.liftButtonPressed,
+          ]}>
+            <LinearGradient
+              colors={['#62C84F', '#3FA535']}
+              style={styles.liftButtonGradient}
+            >
+              <Text style={styles.liftButtonText}>Підняти на ліфті</Text>
+            </LinearGradient>
+            <View style={styles.liftButtonShadow} />
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: 'rgba(60,80,45,1)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 31,
+    paddingHorizontal: 12,
+  },
+  numberBadge: {
+    width: 21,
+    height: 21,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.26)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 9,
+  },
+  numberText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 12,
+    color: '#fff',
+  },
+  floorName: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 15,
+    color: '#fff',
+    letterSpacing: 0.6,
+    textShadowColor: 'rgba(40,50,60,0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  techTag: {
+    marginLeft: 'auto',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  techTagText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 9,
+    color: 'rgba(255,255,255,0.85)',
+    letterSpacing: 0.5,
+  },
+  body: {
+    backgroundColor: '#D9DEE7',
+    padding: 12,
+    gap: 10,
+  },
+  techContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  techImage: {
+    width: 98,
+    height: 66,
+    borderRadius: 12,
+  },
+  techInfo: {
+    flex: 1,
+    gap: 8,
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+  statusGreen: {
+    backgroundColor: 'rgba(91,166,60,0.12)',
+  },
+  statusRed: {
+    backgroundColor: 'rgba(209,67,67,0.12)',
+  },
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+  },
+  statusText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 12,
+  },
+  occupancyText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 22,
+    color: '#3A4250',
+  },
+  visitorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  visitorLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: '#3A4250',
+  },
+  visitorBadge: {
+    backgroundColor: '#5BA63C',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    shadowColor: 'rgba(40,90,25,1)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  visitorBadgeText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 13,
+    color: '#fff',
+  },
+  liftButton: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  liftButtonPressed: {
+    opacity: 0.85,
+  },
+  liftButtonGradient: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    zIndex: 1,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.5)',
+    borderRadius: 14,
+  },
+  liftButtonText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: '#fff',
+    textShadowColor: 'rgba(20,70,15,0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  liftButtonShadow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: '#2E8A24',
+    borderBottomLeftRadius: 14,
+    borderBottomRightRadius: 14,
+  },
+});

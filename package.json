@@ -54,7 +54,12 @@
     ],
     "moduleNameMapper": {
       "^@shared/(.*)$": "<rootDir>/shared/$1"
-    }
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/server/",
+      "/dist/"
+    ]
   },
   "private": true
 }

@@ -2,12 +2,14 @@
   "expo": {
     "name": "tinytower-init",
     "slug": "tinytower-init",
+    "scheme": "tinytower",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.duracell27.tinytower-init"
     },
     "android": {
       "adaptiveIcon": {
