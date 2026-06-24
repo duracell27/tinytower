@@ -2,17 +2,31 @@ import { GameConfigSchema } from '../schemas/gameConfig';
 import type { GameConfig, GameState, Floor } from '../types';
 
 const rawConfig = {
+  floorTypes: {
+    green:  { category: 'Кондитерська', shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['bulky', 'cupcake', 'cake'] },
+    teal:   { category: 'Пральня',     shirtColor: '#36AE9C', accent: '#1F8979', dreamJobs: ['wash', 'dry', 'bleach'] },
+    amber:  { category: "Кав'ярня",    shirtColor: '#E7A21E', accent: '#B07F12', dreamJobs: ['coffee', 'pancake', 'dessert'] },
+    purple: { category: 'Парфумерія',  shirtColor: '#9A6FD0', accent: '#7B52BC', dreamJobs: ['aroma', 'soap', 'candle'] },
+    blue:   { category: 'Морозиво',    shirtColor: '#4C9BDD', accent: '#2E78B5', dreamJobs: ['icecream', 'shake', 'sorbet'] },
+  },
   floors: [
-    { id: 2, name: 'Floor 2', slots: 3, availableTypes: ['coffee_shop'] },
-    { id: 3, name: 'Floor 3', slots: 3, availableTypes: ['coffee_shop', 'bookstore'] },
-    { id: 4, name: 'Floor 4', slots: 3, availableTypes: ['bookstore'] },
+    { id: 2, name: 'Кондитерська', slots: 3, floorType: 'green', availableTypes: ['bulky', 'cupcake', 'cake'] },
+    { id: 3, name: 'Пральня',     slots: 3, floorType: 'teal',  availableTypes: ['wash', 'dry', 'bleach'] },
+    { id: 4, name: "Кав'ярня",    slots: 3, floorType: 'amber', availableTypes: ['coffee', 'pancake', 'dessert'] },
   ],
   productionTypes: {
-    coffee_shop: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 },
-    bookstore: { buyCost: 50, deliveryDuration: 15000, sellDuration: 30000, batchValue: 120 },
-    electronics: { buyCost: 200, deliveryDuration: 60000, sellDuration: 90000, batchValue: 500 },
+    bulky:    { buyCost: 10,  deliveryDuration: 5000,  sellDuration: 10000, batchValue: 25,  displayName: 'Булки' },
+    cupcake:  { buyCost: 15,  deliveryDuration: 8000,  sellDuration: 12000, batchValue: 35,  displayName: 'Пирожені' },
+    cake:     { buyCost: 25,  deliveryDuration: 12000, sellDuration: 15000, batchValue: 60,  displayName: 'Торти' },
+    wash:     { buyCost: 30,  deliveryDuration: 10000, sellDuration: 15000, batchValue: 70,  displayName: 'Прання' },
+    dry:      { buyCost: 40,  deliveryDuration: 15000, sellDuration: 20000, batchValue: 90,  displayName: 'Сушка' },
+    bleach:   { buyCost: 50,  deliveryDuration: 20000, sellDuration: 25000, batchValue: 120, displayName: 'Відбілювання' },
+    coffee:   { buyCost: 20,  deliveryDuration: 8000,  sellDuration: 12000, batchValue: 50,  displayName: 'Кава' },
+    pancake:  { buyCost: 35,  deliveryDuration: 12000, sellDuration: 18000, batchValue: 80,  displayName: 'Млинці' },
+    dessert:  { buyCost: 45,  deliveryDuration: 18000, sellDuration: 22000, batchValue: 110, displayName: 'Десерти' },
   },
   startingBalance: 1000,
+  hotelCapacity: 10,
 } satisfies GameConfig;
 
 export const gameConfig: GameConfig = GameConfigSchema.parse(rawConfig);
@@ -23,12 +37,14 @@ export function createInitialState(config: GameConfig): GameState {
     floors: config.floors.map((floorConfig): Floor => ({
       id: floorConfig.id,
       name: floorConfig.name,
-      productions: Array.from({ length: floorConfig.slots }, () => ({
-        typeId: null,
+      productions: floorConfig.availableTypes.map((typeId) => ({
+        typeId,
         stage: 'IDLE' as const,
         stageStartedAt: 0,
       })),
     })),
     commandQueue: [],
+    workers: [],
+    hotelCapacity: config.hotelCapacity,
   };
 }

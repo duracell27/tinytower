@@ -12,6 +12,10 @@ export function processCommand(
   config: GameConfig,
   now: number,
 ): ProcessResult {
+  if (command.type === 'assign_worker' || command.type === 'fire_worker' || command.type === 'evict_worker') {
+    return { success: false, state, error: 'Worker commands not yet implemented' };
+  }
+
   const floorIdx = state.floors.findIndex(f => f.id === command.floorId);
   if (floorIdx === -1) {
     return { success: false, state, error: 'Floor not found' };
