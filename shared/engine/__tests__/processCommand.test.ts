@@ -1,8 +1,11 @@
 import { processCommand } from '../processCommand';
 import { createInitialState } from '../../config/gameConfig';
-import type { GameState, GameConfig, Command } from '../../types';
+import type { GameState, GameConfig, Command, Worker } from '../../types';
 
 const testConfig: GameConfig = {
+  floorTypes: {
+    green: { category: 'Test', shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee_shop', 'bookstore'] },
+  },
   floors: [
     { id: 1, name: 'Floor 1', slots: 2, floorType: 'green', availableTypes: ['coffee_shop', 'bookstore'] },
   ],
@@ -10,15 +13,27 @@ const testConfig: GameConfig = {
     coffee_shop: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25, displayName: 'Coffee' },
     bookstore: { buyCost: 50, deliveryDuration: 15000, sellDuration: 30000, batchValue: 120, displayName: 'Books' },
   },
-  floorTypes: {
-    green: { category: 'Test', shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee_shop', 'bookstore'] },
-  },
   startingBalance: 100,
   hotelCapacity: 10,
 };
 
+function makeWorker(overrides?: Partial<Worker>): Worker {
+  return {
+    id: 'w1', name: 'Test', female: false, floorType: 'green',
+    dreamJob: 'coffee_shop', level: 5, hairColor: '#5C3A22',
+    assignedFloorId: null, assignedSlotIdx: null,
+    ...overrides,
+  };
+}
+
 function makeState(overrides?: Partial<GameState>): GameState {
   return { ...createInitialState(testConfig), ...overrides };
+}
+
+function stateWithWorker(slotIdx = 0): GameState {
+  return makeState({
+    workers: [makeWorker({ assignedFloorId: 1, assignedSlotIdx: slotIdx })],
+  });
 }
 
 function buyCmd(overrides?: Partial<Extract<Command, { type: 'buy' }>>): Command {
@@ -33,27 +48,41 @@ function collectCmd(overrides?: Partial<Extract<Command, { type: 'collect' }>>):
   return { id: 'cmd-3', type: 'collect', floorId: 1, slotIdx: 0, timestamp: 18000, ...overrides };
 }
 
+function assignCmd(overrides?: Record<string, unknown>): Command {
+  return { id: 'cmd-a', type: 'assign_worker', workerId: 'w1', floorId: 1, slotIdx: 0, timestamp: 1000, ...overrides } as Command;
+}
+
+function fireCmd(overrides?: Record<string, unknown>): Command {
+  return { id: 'cmd-f', type: 'fire_worker', workerId: 'w1', timestamp: 1000, ...overrides } as Command;
+}
+
+function evictCmd(overrides?: Record<string, unknown>): Command {
+  return { id: 'cmd-e', type: 'evict_worker', workerId: 'w1', timestamp: 1000, ...overrides } as Command;
+}
+
 describe('processCommand', () => {
   describe('buy command', () => {
     it('succeeds on IDLE slot with sufficient balance', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       const result = processCommand(state, buyCmd(), testConfig, 1000);
       expect(result.success).toBe(true);
-      expect(result.state.balance).toBe(90);
+      // buyCost=10, worker level=5, discount=5%, effective=floor(10*0.95)=9
+      expect(result.state.balance).toBe(91);
       expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
       expect(result.state.floors[0].productions[0].typeId).toBe('coffee_shop');
       expect(result.state.floors[0].productions[0].stageStartedAt).toBe(1000);
     });
 
     it('fails with insufficient balance', () => {
-      const state = makeState({ balance: 5 });
+      const state = stateWithWorker();
+      state.balance = 5;
       const result = processCommand(state, buyCmd(), testConfig, 1000);
       expect(result.success).toBe(false);
       expect(result.state.balance).toBe(5);
     });
 
     it('fails when slot is not IDLE', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 500 };
       const result = processCommand(state, buyCmd(), testConfig, 1000);
       expect(result.success).toBe(false);
@@ -61,7 +90,7 @@ describe('processCommand', () => {
 
     it('fails when typeId is not available on the floor', () => {
       const result = processCommand(
-        makeState(),
+        stateWithWorker(),
         buyCmd({ typeId: 'electronics' }),
         testConfig,
         1000,
@@ -71,7 +100,7 @@ describe('processCommand', () => {
 
     it('fails when typeId does not exist in config', () => {
       const result = processCommand(
-        makeState(),
+        stateWithWorker(),
         buyCmd({ typeId: 'nonexistent' }),
         testConfig,
         1000,
@@ -80,40 +109,40 @@ describe('processCommand', () => {
     });
 
     it('rejects type change on slot with permanent typeId', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 };
       const result = processCommand(state, buyCmd({ typeId: 'bookstore' }), testConfig, 1000);
       expect(result.success).toBe(false);
     });
 
     it('accepts repeat buy with same typeId after collect', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 };
       const result = processCommand(state, buyCmd({ typeId: 'coffee_shop' }), testConfig, 1000);
       expect(result.success).toBe(true);
     });
 
     it('does not mutate the original state', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       const originalBalance = state.balance;
       processCommand(state, buyCmd(), testConfig, 1000);
       expect(state.balance).toBe(originalBalance);
     });
 
     it('fails for nonexistent floor', () => {
-      const result = processCommand(makeState(), buyCmd({ floorId: 99 }), testConfig, 1000);
+      const result = processCommand(stateWithWorker(), buyCmd({ floorId: 99 }), testConfig, 1000);
       expect(result.success).toBe(false);
     });
 
     it('fails for nonexistent slot index', () => {
-      const result = processCommand(makeState(), buyCmd({ slotIdx: 99 }), testConfig, 1000);
+      const result = processCommand(stateWithWorker(), buyCmd({ slotIdx: 99 }), testConfig, 1000);
       expect(result.success).toBe(false);
     });
   });
 
   describe('list command', () => {
     it('succeeds when delivery timer elapsed', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 1000 };
       const result = processCommand(state, listCmd({ timestamp: 7000 }), testConfig, 7000);
       expect(result.success).toBe(true);
@@ -122,28 +151,28 @@ describe('processCommand', () => {
     });
 
     it('succeeds when delivery timer exactly elapsed', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 1000 };
       const result = processCommand(state, listCmd({ timestamp: 6000 }), testConfig, 6000);
       expect(result.success).toBe(true);
     });
 
     it('fails when delivery timer not elapsed', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 1000 };
       const result = processCommand(state, listCmd({ timestamp: 3000 }), testConfig, 3000);
       expect(result.success).toBe(false);
     });
 
     it('fails when stage is not DELIVERING', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 };
       const result = processCommand(state, listCmd(), testConfig, 7000);
       expect(result.success).toBe(false);
     });
 
     it('does not change balance', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 1000 };
       const result = processCommand(state, listCmd({ timestamp: 7000 }), testConfig, 7000);
       expect(result.state.balance).toBe(state.balance);
@@ -152,24 +181,24 @@ describe('processCommand', () => {
 
   describe('collect command', () => {
     it('succeeds when sell timer elapsed', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 7000 };
       const result = processCommand(state, collectCmd({ timestamp: 18000 }), testConfig, 18000);
       expect(result.success).toBe(true);
-      expect(result.state.balance).toBe(125);
+      expect(result.state.balance).toBe(150);
       expect(result.state.floors[0].productions[0].stage).toBe('IDLE');
       expect(result.state.floors[0].productions[0].typeId).toBe('coffee_shop');
     });
 
     it('fails when sell timer not elapsed', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 7000 };
       const result = processCommand(state, collectCmd({ timestamp: 10000 }), testConfig, 10000);
       expect(result.success).toBe(false);
     });
 
     it('fails when stage is not SELLING', () => {
-      const state = makeState();
+      const state = stateWithWorker();
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 1000 };
       const result = processCommand(state, collectCmd(), testConfig, 18000);
       expect(result.success).toBe(false);
@@ -177,12 +206,13 @@ describe('processCommand', () => {
   });
 
   describe('full cycle', () => {
-    it('completes IDLE → buy → list → collect → IDLE', () => {
-      let state = makeState();
+    it('completes IDLE -> buy -> list -> collect -> IDLE', () => {
+      let state = stateWithWorker();
 
+      // Buy: buyCost=10, level=5, discount=5%, effective=floor(10*0.95)=9, balance=100-9=91
       const r1 = processCommand(state, buyCmd({ timestamp: 1000 }), testConfig, 1000);
       expect(r1.success).toBe(true);
-      expect(r1.state.balance).toBe(90);
+      expect(r1.state.balance).toBe(91);
       expect(r1.state.floors[0].productions[0].stage).toBe('DELIVERING');
       state = r1.state;
 
@@ -191,11 +221,170 @@ describe('processCommand', () => {
       expect(r2.state.floors[0].productions[0].stage).toBe('SELLING');
       state = r2.state;
 
+      // Collect: dream job match (green+coffee_shop), 2x multiplier, revenue=25*2=50, balance=91+50=141
       const r3 = processCommand(state, collectCmd({ timestamp: 18000 }), testConfig, 18000);
       expect(r3.success).toBe(true);
-      expect(r3.state.balance).toBe(115);
+      expect(r3.state.balance).toBe(141);
       expect(r3.state.floors[0].productions[0].stage).toBe('IDLE');
       expect(r3.state.floors[0].productions[0].typeId).toBe('coffee_shop');
+    });
+  });
+
+  describe('assign_worker command', () => {
+    it('assigns unemployed worker to empty slot', () => {
+      const state = makeState({ workers: [makeWorker()] });
+      const result = processCommand(state, assignCmd(), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.workers[0].assignedFloorId).toBe(1);
+      expect(result.state.workers[0].assignedSlotIdx).toBe(0);
+    });
+
+    it('fails if worker is already assigned', () => {
+      const state = makeState({
+        workers: [makeWorker({ assignedFloorId: 1, assignedSlotIdx: 1 })],
+      });
+      const result = processCommand(state, assignCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+    });
+
+    it('fails if slot already has a worker', () => {
+      const state = makeState({
+        workers: [
+          makeWorker({ id: 'w1' }),
+          makeWorker({ id: 'w2', assignedFloorId: 1, assignedSlotIdx: 0 }),
+        ],
+      });
+      const result = processCommand(state, assignCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+    });
+
+    it('fails if worker does not exist', () => {
+      const state = makeState({ workers: [] });
+      const result = processCommand(state, assignCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('fire_worker command', () => {
+    it('returns assigned worker to hotel when slot is IDLE', () => {
+      const state = makeState({
+        workers: [makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 })],
+      });
+      const result = processCommand(state, fireCmd(), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.workers[0].assignedFloorId).toBeNull();
+      expect(result.state.workers[0].assignedSlotIdx).toBeNull();
+    });
+
+    it('fails if slot is DELIVERING', () => {
+      const state = makeState({
+        workers: [makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 })],
+      });
+      state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 500 };
+      const result = processCommand(state, fireCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+    });
+
+    it('fails if slot is SELLING', () => {
+      const state = makeState({
+        workers: [makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 })],
+      });
+      state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 500 };
+      const result = processCommand(state, fireCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+    });
+
+    it('fails if worker is not assigned', () => {
+      const state = makeState({ workers: [makeWorker()] });
+      const result = processCommand(state, fireCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('evict_worker command', () => {
+    it('removes unemployed worker from state', () => {
+      const state = makeState({ workers: [makeWorker()] });
+      const result = processCommand(state, evictCmd(), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.workers).toHaveLength(0);
+    });
+
+    it('fails if worker is assigned', () => {
+      const state = makeState({
+        workers: [makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 })],
+      });
+      const result = processCommand(state, evictCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('buy with worker checks', () => {
+    it('fails if no worker on slot', () => {
+      const state = makeState({ workers: [] });
+      const result = processCommand(state, buyCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('No worker assigned to slot');
+    });
+
+    it('applies floor discount from worker levels', () => {
+      const state = makeState({
+        workers: [
+          makeWorker({ id: 'w1', level: 5, assignedFloorId: 1, assignedSlotIdx: 0 }),
+          makeWorker({ id: 'w2', level: 5, assignedFloorId: 1, assignedSlotIdx: 1 }),
+        ],
+      });
+      // buyCost=10, discount=(5+5)*1%=10%, effective=9
+      const result = processCommand(state, buyCmd(), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.balance).toBe(91); // 100 - 9
+    });
+  });
+
+  describe('collect with worker multiplier', () => {
+    it('applies 2x multiplier for dream job match', () => {
+      const state = makeState({
+        workers: [makeWorker({ floorType: 'green', dreamJob: 'coffee_shop', assignedFloorId: 1, assignedSlotIdx: 0 })],
+      });
+      state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 1000 };
+      const result = processCommand(state, collectCmd({ timestamp: 12000 }), testConfig, 12000);
+      expect(result.success).toBe(true);
+      expect(result.state.balance).toBe(150); // 100 + 25*2
+    });
+
+    it('applies 1.3x multiplier for matching floor type', () => {
+      const state = makeState({
+        workers: [makeWorker({ floorType: 'green', dreamJob: 'bookstore', assignedFloorId: 1, assignedSlotIdx: 0 })],
+      });
+      state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 1000 };
+      const result = processCommand(state, collectCmd({ timestamp: 12000 }), testConfig, 12000);
+      expect(result.success).toBe(true);
+      expect(result.state.balance).toBe(132); // 100 + floor(25*1.3) = 100 + 32
+    });
+
+    it('applies 1x multiplier for wrong floor type', () => {
+      const state = makeState({
+        workers: [makeWorker({ floorType: 'teal', assignedFloorId: 1, assignedSlotIdx: 0 })],
+      });
+      state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 1000 };
+      const result = processCommand(state, collectCmd({ timestamp: 12000 }), testConfig, 12000);
+      expect(result.success).toBe(true);
+      expect(result.state.balance).toBe(125); // 100 + 25*1
+    });
+
+    it('fails if no worker on slot', () => {
+      const state = makeState({ workers: [] });
+      state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 1000 };
+      const result = processCommand(state, collectCmd({ timestamp: 12000 }), testConfig, 12000);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('list with worker checks', () => {
+    it('fails if no worker on slot', () => {
+      const state = makeState({ workers: [] });
+      state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 1000 };
+      const result = processCommand(state, listCmd({ timestamp: 7000 }), testConfig, 7000);
+      expect(result.success).toBe(false);
     });
   });
 });
