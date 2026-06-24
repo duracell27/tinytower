@@ -4,6 +4,13 @@ import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { clock } from '../services/clock';
 import type { GameState, Command, Floor, Worker } from '../../shared/types';
 
+function uuid(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 const COMMAND_QUEUE_CAP = 10_000;
 
 interface PlayerStats {
@@ -74,7 +81,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   buy: (floorId, slotIdx, typeId) => {
     executeCommand(get, set, {
-      id: crypto.randomUUID(),
+      id: uuid(),
       type: 'buy',
       floorId,
       slotIdx,
@@ -85,7 +92,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   list: (floorId, slotIdx) => {
     executeCommand(get, set, {
-      id: crypto.randomUUID(),
+      id: uuid(),
       type: 'list',
       floorId,
       slotIdx,
@@ -95,7 +102,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   collect: (floorId, slotIdx) => {
     executeCommand(get, set, {
-      id: crypto.randomUUID(),
+      id: uuid(),
       type: 'collect',
       floorId,
       slotIdx,
@@ -105,7 +112,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   assignWorker: (workerId, floorId, slotIdx) => {
     executeCommand(get, set, {
-      id: crypto.randomUUID(),
+      id: uuid(),
       type: 'assign_worker',
       workerId,
       floorId,
@@ -116,7 +123,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   fireWorker: (workerId) => {
     executeCommand(get, set, {
-      id: crypto.randomUUID(),
+      id: uuid(),
       type: 'fire_worker',
       workerId,
       timestamp: clock.now(),
@@ -125,7 +132,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   evictWorker: (workerId) => {
     executeCommand(get, set, {
-      id: crypto.randomUUID(),
+      id: uuid(),
       type: 'evict_worker',
       workerId,
       timestamp: clock.now(),

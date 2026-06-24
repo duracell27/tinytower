@@ -183,18 +183,14 @@ export default function ProductionCard({
   // Label text
   let labelText = '';
   let subText = '';
-  let discountBadge = '';
-  let multiplierBadge = '';
   switch (effectiveStage) {
     case 'EMPTY':
       labelText = 'Найняти';
       subText = typeConfig ? String(effectiveCost) : '';
-      if (hasDiscount) discountBadge = `−${discountPercent}%`;
       break;
     case 'IDLE':
       labelText = 'Закупити';
       subText = typeConfig ? String(effectiveCost) : '';
-      if (hasDiscount) discountBadge = `−${discountPercent}%`;
       break;
     case 'DELIVERING':
       labelText = formatTime(timeRemaining);
@@ -203,7 +199,6 @@ export default function ProductionCard({
     case 'READY_TO_LIST':
       labelText = 'Викласти';
       subText = typeConfig ? String(effectiveRevenue) : '';
-      if (hasMultiplier) multiplierBadge = `×${multiplier}`;
       break;
     case 'SELLING':
       labelText = formatTime(timeRemaining);
@@ -212,7 +207,6 @@ export default function ProductionCard({
     case 'READY_TO_COLLECT':
       labelText = 'Зібрати';
       subText = typeConfig ? String(effectiveRevenue) : '';
-      if (hasMultiplier) multiplierBadge = `×${multiplier}`;
       break;
   }
 
@@ -285,10 +279,22 @@ export default function ProductionCard({
             contentFit="contain"
           />
         )}
-        {/* Worker mini-indicator */}
+        {/* Worker mini-indicator + bonus badges */}
         {worker && (
-          <View style={styles.workerBadge}>
-            <WorkerAvatar worker={worker} size={24} />
+          <View style={styles.workerBadgeColumn}>
+            <View style={styles.workerBadge}>
+              <WorkerAvatar worker={worker} size={24} />
+            </View>
+            {hasDiscount && (
+              <View style={styles.bonusBubbleGreen}>
+                <Text style={styles.bonusBubbleText}>−{discountPercent}%</Text>
+              </View>
+            )}
+            {hasMultiplier && (
+              <View style={styles.bonusBubbleAmber}>
+                <Text style={styles.bonusBubbleText}>×{multiplier}</Text>
+              </View>
+            )}
           </View>
         )}
       </View>
@@ -319,12 +325,6 @@ export default function ProductionCard({
           <View style={styles.pricePill}>
             <View style={styles.priceCoinIcon} />
             <Text style={styles.priceText}>{subText}</Text>
-            {discountBadge ? (
-              <Text style={styles.discountBadge}>{discountBadge}</Text>
-            ) : null}
-            {multiplierBadge ? (
-              <Text style={styles.multiplierBadge}>{multiplierBadge}</Text>
-            ) : null}
           </View>
         ) : null}
       </View>
@@ -478,10 +478,14 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: '#7C7256',
   },
-  workerBadge: {
+  workerBadgeColumn: {
     position: 'absolute',
     top: -4,
     right: -4,
+    alignItems: 'center',
+    gap: 2,
+  },
+  workerBadge: {
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -492,16 +496,25 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     overflow: 'hidden',
   },
-  discountBadge: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 9,
-    color: '#5BA63C',
-    marginLeft: 2,
+  bonusBubbleGreen: {
+    backgroundColor: '#5BA63C',
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#fff',
   },
-  multiplierBadge: {
+  bonusBubbleAmber: {
+    backgroundColor: '#E89320',
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  bonusBubbleText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 9,
-    color: '#E89320',
-    marginLeft: 2,
+    fontSize: 8,
+    color: '#fff',
   },
 });

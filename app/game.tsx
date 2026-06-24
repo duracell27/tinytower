@@ -50,8 +50,9 @@ export default function GameScreen() {
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
-  const hotelOccupied = useGameStore((s) => s.hotelOccupied);
-  const hotelTotal = useGameStore((s) => s.hotelTotal);
+  const hotelCapacity = useGameStore((s) => s.hotelCapacity);
+  const hotelOccupied = useGameStore((s) => s.workers.filter(w => w.assignedFloorId === null).length);
+  const hotelTotal = hotelCapacity;
   const visitors = useGameStore((s) => s.visitors);
   const liftVisitor = useGameStore((s) => s.liftVisitor);
   const player = useAuthStore((s) => s.player);
@@ -119,9 +120,9 @@ export default function GameScreen() {
         />
 
         <BottomNav />
-
-        <HotelPanel visible={hotelOpen} onClose={() => setHotelOpen(false)} />
       </ImageBackground>
+
+      <HotelPanel visible={hotelOpen} onClose={() => setHotelOpen(false)} />
     </View>
   );
 }

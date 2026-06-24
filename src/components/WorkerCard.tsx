@@ -127,18 +127,20 @@ export default function WorkerCard({
           </View>
         </View>
 
-        {/* Level block */}
+        {/* Level + chevron */}
         <View style={styles.levelBlock}>
-          <Text style={styles.levelLabel}>РІВЕНЬ</Text>
-          <Text style={[styles.levelNumber, { color: accent }]}>
-            {worker.level}
-          </Text>
+          <View style={styles.levelInner}>
+            <Text style={styles.levelLabel}>РІВЕНЬ</Text>
+            <Text style={[styles.levelNumber, { color: accent }]}>
+              {worker.level}
+            </Text>
+          </View>
           <Animated.View style={chevronStyle}>
-            <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+            <Svg width={9} height={14} viewBox="0 0 9 14" fill="none">
               <Path
-                d="M9 18l6-6-6-6"
-                stroke="#A6ACB8"
-                strokeWidth={2.5}
+                d="M2 2l5 5-5 5"
+                stroke="#C2C8D2"
+                strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
@@ -282,6 +284,11 @@ const styles = StyleSheet.create({
     color: '#9098A6',
   },
   levelBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  levelInner: {
     alignItems: 'center',
     gap: 1,
   },

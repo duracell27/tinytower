@@ -5,24 +5,29 @@ import {
   Pressable,
   FlatList,
   Alert,
+  Modal,
   StyleSheet,
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Rect, Circle } from 'react-native-svg';
+import Svg, { Path, Rect } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  Easing,
+  withSpring,
   runOnJS,
+  Easing,
 } from 'react-native-reanimated';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useGameStore } from '../stores/gameStore';
 import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
 import type { Worker } from '../../shared/types';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
+const DISMISS_THRESHOLD = 120;
 const SHEET_TIMING = { duration: 420, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const SCRIM_TIMING = { duration: 400, easing: Easing.linear };
 
@@ -32,12 +37,11 @@ interface HotelPanelProps {
 }
 
 export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
-  const [mounted, setMounted] = useState(visible);
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
 
   const scrimOpacity = useSharedValue(0);
-  const sheetTranslateY = useSharedValue(102);
+  const translateY = useSharedValue(SHEET_HEIGHT);
 
   const workers = useGameStore((s) => s.workers);
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
@@ -45,7 +49,8 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const unemployedWorkers = workers.filter(
     (w: Worker) => w.assignedFloorId === null,
   );
-  const freeSeats = hotelCapacity - workers.length;
+  const occupiedSeats = unemployedWorkers.length;
+  const freeSeats = hotelCapacity - occupiedSeats;
 
   useEffect(() => {
     setExpandedWorkerId(null);
@@ -53,23 +58,38 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
 
   useEffect(() => {
     if (visible) {
-      setMounted(true);
+      translateY.value = withTiming(0, SHEET_TIMING);
       scrimOpacity.value = withTiming(1, SCRIM_TIMING);
-      sheetTranslateY.value = withTiming(0, SHEET_TIMING);
     } else {
+      translateY.value = withTiming(SHEET_HEIGHT, SHEET_TIMING);
       scrimOpacity.value = withTiming(0, SCRIM_TIMING);
-      sheetTranslateY.value = withTiming(102, SHEET_TIMING, () => {
-        runOnJS(setMounted)(false);
-      });
     }
   }, [visible]);
+
+  const panGesture = Gesture.Pan()
+    .onUpdate((e) => {
+      if (e.translationY > 0) {
+        translateY.value = e.translationY;
+        scrimOpacity.value = 1 - (e.translationY / SHEET_HEIGHT);
+      }
+    })
+    .onEnd((e) => {
+      if (e.translationY > DISMISS_THRESHOLD || e.velocityY > 500) {
+        translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 });
+        scrimOpacity.value = withTiming(0, { duration: 300 });
+        runOnJS(onClose)();
+      } else {
+        translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
+        scrimOpacity.value = withTiming(1, { duration: 200 });
+      }
+    });
 
   const scrimStyle = useAnimatedStyle(() => ({
     opacity: scrimOpacity.value,
   }));
 
   const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: (sheetTranslateY.value / 100) * SCREEN_HEIGHT }],
+    transform: [{ translateY: translateY.value }],
   }));
 
   const handleEvict = useCallback(
@@ -113,134 +133,103 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
 
   const keyExtractor = useCallback((item: Worker) => item.id, []);
 
-  if (!mounted) return null;
-
   return (
-    <View style={styles.overlay} pointerEvents="box-none">
-      {/* Scrim */}
-      <Animated.View style={[styles.scrim, scrimStyle]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-      </Animated.View>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <GestureHandlerRootView style={styles.overlay}>
+        {/* Scrim */}
+        <Animated.View style={[styles.scrim, scrimStyle]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        </Animated.View>
 
-      {/* Sheet */}
-      <Animated.View style={[styles.sheet, sheetStyle]}>
-        {/* Header */}
-        <LinearGradient colors={['#6C7C92', '#56657C']} style={styles.header}>
-          {/* Drag handle */}
-          <View style={styles.handleRow}>
-            <View style={styles.handle} />
-          </View>
+        {/* Sheet */}
+        <Animated.View style={[styles.sheet, sheetStyle]}>
+          {/* Header with pan gesture for swipe-to-dismiss */}
+          <GestureDetector gesture={panGesture}>
+            <Animated.View>
+              <LinearGradient colors={['#6C7C92', '#56657C']} style={styles.header}>
+                {/* Drag handle */}
+                <View style={styles.handleRow}>
+                  <View style={styles.handle} />
+                </View>
 
-          {/* Title row */}
-          <View style={styles.titleRow}>
-            <View style={styles.titleLeft}>
-              <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-                <Path
-                  d="M3 21V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14"
-                  stroke="#fff"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <Rect
-                  x={7}
-                  y={9}
-                  width={4}
-                  height={4}
-                  rx={0.5}
-                  stroke="#fff"
-                  strokeWidth={1.5}
-                />
-                <Rect
-                  x={13}
-                  y={9}
-                  width={4}
-                  height={4}
-                  rx={0.5}
-                  stroke="#fff"
-                  strokeWidth={1.5}
-                />
-                <Rect
-                  x={7}
-                  y={15}
-                  width={4}
-                  height={4}
-                  rx={0.5}
-                  stroke="#fff"
-                  strokeWidth={1.5}
-                />
-                <Rect
-                  x={13}
-                  y={15}
-                  width={4}
-                  height={4}
-                  rx={0.5}
-                  stroke="#fff"
-                  strokeWidth={1.5}
-                />
-              </Svg>
-              <View>
-                <Text style={styles.titleText}>ГОТЕЛЬ</Text>
-                <Text style={styles.subtitleText}>
-                  Мешканці · пошук роботи
-                </Text>
-              </View>
-            </View>
+                {/* Title row */}
+                <View style={styles.titleRow}>
+                  <View style={styles.titleLeft}>
+                    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+                      <Path
+                        d="M3 21V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14"
+                        stroke="#fff"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <Rect x={7} y={9} width={4} height={4} rx={0.5} stroke="#fff" strokeWidth={1.5} />
+                      <Rect x={13} y={9} width={4} height={4} rx={0.5} stroke="#fff" strokeWidth={1.5} />
+                      <Rect x={7} y={15} width={4} height={4} rx={0.5} stroke="#fff" strokeWidth={1.5} />
+                      <Rect x={13} y={15} width={4} height={4} rx={0.5} stroke="#fff" strokeWidth={1.5} />
+                    </Svg>
+                    <View>
+                      <Text style={styles.titleText}>ГОТЕЛЬ</Text>
+                      <Text style={styles.subtitleText}>Мешканці · пошук роботи</Text>
+                    </View>
+                  </View>
 
-            {/* Close button */}
-            <Pressable onPress={onClose} style={styles.closeButton}>
-              <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-                <Path
-                  d="M18 6L6 18M6 6l12 12"
-                  stroke="#fff"
-                  strokeWidth={2.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </Svg>
-            </Pressable>
-          </View>
+                  {/* Close button */}
+                  <Pressable onPress={onClose} style={styles.closeButton}>
+                    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                      <Path
+                        d="M18 6L6 18M6 6l12 12"
+                        stroke="#fff"
+                        strokeWidth={2.5}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </Svg>
+                  </Pressable>
+                </View>
 
-          {/* Stats row */}
-          <View style={styles.statsRow}>
-            <View style={styles.statPill}>
-              <Text style={styles.statLabel}>Місць</Text>
-              <Text style={styles.statValue}>{hotelCapacity}</Text>
-            </View>
-            <View style={styles.statPill}>
-              <Text style={styles.statLabel}>Вільно</Text>
-              <Text style={styles.statValue}>
-                {freeSeats > 0 ? freeSeats : 0}
-              </Text>
-            </View>
-          </View>
-        </LinearGradient>
+                {/* Stats row */}
+                <View style={styles.statsRow}>
+                  <View style={styles.statPill}>
+                    <Text style={styles.statLabel}>Місць</Text>
+                    <Text style={styles.statValue}>{hotelCapacity}</Text>
+                  </View>
+                  <View style={styles.statPill}>
+                    <Text style={styles.statLabel}>Вільно</Text>
+                    <Text style={styles.statValue}>
+                      {freeSeats > 0 ? freeSeats : 0}
+                    </Text>
+                  </View>
+                </View>
+              </LinearGradient>
+            </Animated.View>
+          </GestureDetector>
 
-        {/* Worker list */}
-        <FlatList
-          data={unemployedWorkers}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          style={styles.list}
-        />
+          {/* Worker list */}
+          <FlatList
+            data={unemployedWorkers}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            style={styles.list}
+          />
 
-        {/* Job picker overlay */}
-        <JobPickerSheet
-          visible={!!pickerWorker}
-          worker={pickerWorker}
-          onClose={() => setPickerWorker(null)}
-        />
-      </Animated.View>
-    </View>
+          {/* Job picker */}
+          <JobPickerSheet
+            visible={!!pickerWorker}
+            worker={pickerWorker}
+            onClose={() => setPickerWorker(null)}
+          />
+        </Animated.View>
+      </GestureHandlerRootView>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 100,
+    flex: 1,
   },
   scrim: {
     ...StyleSheet.absoluteFillObject,
@@ -251,7 +240,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    maxHeight: '85%',
+    top: 56,
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     backgroundColor: '#EAEDF2',

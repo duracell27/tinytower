@@ -4,6 +4,7 @@ import {
   Text,
   Pressable,
   SectionList,
+  Modal,
   StyleSheet,
   Dimensions,
 } from 'react-native';
@@ -14,7 +15,6 @@ import Animated, {
   useSharedValue,
   withTiming,
   Easing,
-  runOnJS,
 } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
@@ -70,8 +70,6 @@ export default function JobPickerSheet({
   worker,
   onClose,
 }: JobPickerSheetProps) {
-  const [mounted, setMounted] = useState(visible);
-
   const scrimOpacity = useSharedValue(0);
   const sheetTranslateY = useSharedValue(102);
 
@@ -79,14 +77,11 @@ export default function JobPickerSheet({
 
   useEffect(() => {
     if (visible) {
-      setMounted(true);
       scrimOpacity.value = withTiming(1, SCRIM_TIMING);
       sheetTranslateY.value = withTiming(0, SHEET_TIMING);
     } else {
       scrimOpacity.value = withTiming(0, SCRIM_TIMING);
-      sheetTranslateY.value = withTiming(102, SHEET_TIMING, () => {
-        runOnJS(setMounted)(false);
-      });
+      sheetTranslateY.value = withTiming(102, SHEET_TIMING);
     }
   }, [visible]);
 
@@ -155,8 +150,6 @@ export default function JobPickerSheet({
     onClose();
   };
 
-  if (!mounted) return null;
-
   const ft = worker ? gameConfig.floorTypes[worker.floorType] : null;
   const accent = ft?.accent ?? '#888';
   const category = ft?.category ?? worker?.floorType ?? '';
@@ -164,14 +157,15 @@ export default function JobPickerSheet({
   const isEmpty = sections.length === 0;
 
   return (
-    <View style={styles.overlay} pointerEvents="box-none">
-      {/* Scrim */}
-      <Animated.View style={[styles.scrim, scrimStyle]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-      </Animated.View>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        {/* Scrim */}
+        <Animated.View style={[styles.scrim, scrimStyle]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        </Animated.View>
 
-      {/* Sheet */}
-      <Animated.View style={[styles.sheet, sheetStyle]}>
+        {/* Sheet */}
+        <Animated.View style={[styles.sheet, sheetStyle]}>
         {/* Header */}
         <LinearGradient colors={['#6C7C92', '#56657C']} style={styles.header}>
           {/* Drag handle */}
@@ -234,7 +228,8 @@ export default function JobPickerSheet({
           />
         )}
       </Animated.View>
-    </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -300,8 +295,7 @@ function SlotRow({
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 110,
+    flex: 1,
   },
   scrim: {
     ...StyleSheet.absoluteFillObject,
@@ -312,7 +306,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    maxHeight: '80%',
+    top: 56,
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     backgroundColor: '#EAEDF2',

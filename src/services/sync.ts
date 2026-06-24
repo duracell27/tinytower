@@ -33,7 +33,10 @@ async function doSync(): Promise<void> {
     clock.updateOffset(response.serverTime);
 
     const store = useGameStore.getState();
-    if (response.stateVersion !== store.stateVersion && response.stateVersion > 0) {
+    const needsReconcile =
+      (response.stateVersion !== store.stateVersion && response.stateVersion > 0) ||
+      (store.workers.length === 0 && response.state.workers.length > 0);
+    if (needsReconcile) {
       store.reconcile(response.state, response.stateVersion, response.ackCursor);
     } else {
       store.clearAckedCommands(response.ackCursor);
