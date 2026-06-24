@@ -83,7 +83,7 @@ export default function GameScreen() {
     }
     return (
       <View style={styles.floorWrapper}>
-        <FloorCard floorId={item.id} balance={balance} now={now} />
+        <FloorCard floorId={item.id} balance={balance} now={now} onHireSlot={() => setHotelOpen(true)} />
       </View>
     );
   }, [balance, now, hotelOccupied, hotelTotal, visitors, liftVisitor]);

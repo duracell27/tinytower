@@ -94,9 +94,10 @@ interface FloorCardProps {
   floorId: number;
   balance: number;
   now: number;
+  onHireSlot?: (floorId: number, slotIdx: number) => void;
 }
 
-function FloorCardInner({ floorId, balance, now }: FloorCardProps) {
+function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const floor = useFloor(floorId);
   const workers = useGameStore((s) => s.workers);
   const scheme = FLOOR_SCHEMES[floorId] || FLOOR_SCHEMES[1];
@@ -140,6 +141,7 @@ function FloorCardInner({ floorId, balance, now }: FloorCardProps) {
               productImage={products[idx]?.image ?? products[0].image}
               worker={slotWorker}
               floorDiscount={discount}
+              onHire={onHireSlot}
             />
           );
         })}

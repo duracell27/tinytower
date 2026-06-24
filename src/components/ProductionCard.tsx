@@ -109,6 +109,7 @@ interface ProductionCardProps {
   productImage: ImageSource;
   worker?: Worker;
   floorDiscount?: number;
+  onHire?: (floorId: number, slotIdx: number) => void;
 }
 
 export default function ProductionCard({
@@ -124,6 +125,7 @@ export default function ProductionCard({
   productImage,
   worker,
   floorDiscount,
+  onHire,
 }: ProductionCardProps) {
   const typeConfig = production.typeId
     ? gameConfig.productionTypes[production.typeId] ?? null
@@ -214,40 +216,42 @@ export default function ProductionCard({
       break;
   }
 
-  // Locked state: no worker assigned
+  // No worker: show hire design
   if (isLocked) {
     return (
-      <View style={[styles.card, { backgroundColor: cardBg, opacity: 0.5 }]}>
-        {/* Title */}
+      <View style={[styles.card, { backgroundColor: cardBg }]}>
         <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
           {productTitle}
         </Text>
 
-        {/* Lock icon */}
         <View style={styles.imageContainer}>
-          <View style={styles.lockedSlot}>
-            <Svg viewBox="0 0 24 24" width={26} height={26} fill="#9098A6">
-              <Path d="M17 10V8A5 5 0 0 0 7 8v2" />
-              <Rect x={5} y={10} width={14} height={11} rx={2} />
-              <Path d="M8 8a4 4 0 0 1 8 0v2H8V8z" />
-              <Circle cx={12} cy={16} r={1.5} fill="#fff" />
+          <View style={styles.hireSlot}>
+            <Svg viewBox="0 0 24 24" width={30} height={30} fill="#C2BEB2">
+              <Circle cx={12} cy={8} r={4.2} />
+              <Path d="M4.5 21c0-4.2 3.4-6.8 7.5-6.8s7.5 2.6 7.5 6.8z" />
             </Svg>
+            <View style={styles.hirePlusBadge}>
+              <Svg viewBox="0 0 24 24" width={9} height={9}>
+                <Path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth={3.6} strokeLinecap="round" />
+              </Svg>
+            </View>
           </View>
-          <Text style={styles.lockedText}>Потрібен працівник</Text>
         </View>
 
-        {/* Disabled button placeholder */}
-        <View style={[styles.actionButton, styles.actionButtonDisabled]}>
+        <Pressable onPress={() => onHire?.(floorId, slotIdx)} style={({ pressed }) => [
+          styles.actionButton,
+          pressed && styles.actionButtonPressed,
+        ]}>
           <LinearGradient
-            colors={['#A0A8B4', '#8E96A2']}
+            colors={BTN_COLORS.EMPTY.colors}
             style={styles.actionButtonGradient}
           >
-            <Text style={styles.actionLabel}>---</Text>
+            <StageIcon stage={'EMPTY'} />
+            <Text style={styles.actionLabel}>Найняти</Text>
           </LinearGradient>
-          <View style={[styles.actionButtonShadow, { backgroundColor: '#6E7680' }]} />
-        </View>
+          <View style={[styles.actionButtonShadow, { backgroundColor: BTN_COLORS.EMPTY.shadowColor }]} />
+        </Pressable>
 
-        {/* Empty sub-block */}
         <View style={styles.subContainer} />
       </View>
     );
@@ -473,19 +477,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 11.5,
     color: '#7C7256',
-  },
-  lockedSlot: {
-    width: 54,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  lockedText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 10,
-    color: '#9098A6',
-    textAlign: 'center',
-    marginTop: 2,
   },
   workerBadge: {
     position: 'absolute',
