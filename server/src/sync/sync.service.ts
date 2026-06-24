@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { processCommand } from '@shared/engine/processCommand';
 import { gameConfig } from '@shared/config/gameConfig';
-import type { GameState, Command, Floor, Production } from '@shared/types';
+import type { GameState, Command, Floor, Production, Worker } from '@shared/types';
 
 export interface SyncResult {
   state: GameState;
@@ -31,6 +31,7 @@ export class SyncService {
           include: { productions: { orderBy: { slotIdx: 'asc' } } },
           orderBy: { floorId: 'asc' },
         },
+        workers: true,
       },
     });
 
@@ -129,6 +130,37 @@ export class SyncService {
           }
         }
 
+        // Persist worker state
+        for (const w of gameState.workers) {
+          await tx.worker.upsert({
+            where: { id: w.id },
+            update: {
+              assignedFloorId: w.assignedFloorId,
+              assignedSlotIdx: w.assignedSlotIdx,
+            },
+            create: {
+              id: w.id,
+              playerId,
+              name: w.name,
+              female: w.female,
+              floorType: w.floorType,
+              dreamJob: w.dreamJob,
+              level: w.level,
+              hairColor: w.hairColor,
+              assignedFloorId: w.assignedFloorId,
+              assignedSlotIdx: w.assignedSlotIdx,
+            },
+          });
+        }
+
+        // Delete evicted workers
+        const currentWorkerIds = gameState.workers.map((w) => w.id);
+        const dbWorkerIds = (player.workers as any[]).map((w) => w.id);
+        const evictedIds = dbWorkerIds.filter((id: string) => !currentWorkerIds.includes(id));
+        if (evictedIds.length > 0) {
+          await tx.worker.deleteMany({ where: { id: { in: evictedIds } } });
+        }
+
         // Log accepted commands and update ackCursor
         if (acceptedCommands.length > 0) {
           for (const cmd of acceptedCommands) {
@@ -137,9 +169,10 @@ export class SyncService {
                 id: cmd.id,
                 playerId,
                 type: cmd.type,
-                floorId: cmd.floorId,
-                slotIdx: cmd.slotIdx,
+                floorId: 'floorId' in cmd ? cmd.floorId : null,
+                slotIdx: 'slotIdx' in cmd ? cmd.slotIdx : null,
                 typeId: cmd.type === 'buy' ? (cmd as any).typeId : null,
+                workerId: 'workerId' in cmd ? (cmd as any).workerId : null,
                 timestamp: BigInt(cmd.timestamp),
                 serverTime: BigInt(serverNow),
               },
@@ -177,10 +210,24 @@ export class SyncService {
       ),
     }));
 
+    const workers: Worker[] = (player.workers || []).map((w: any): Worker => ({
+      id: w.id,
+      name: w.name,
+      female: w.female,
+      floorType: w.floorType,
+      dreamJob: w.dreamJob,
+      level: w.level,
+      hairColor: w.hairColor,
+      assignedFloorId: w.assignedFloorId,
+      assignedSlotIdx: w.assignedSlotIdx,
+    }));
+
     return {
       balance: player.balance,
       floors,
       commandQueue: [],
+      workers,
+      hotelCapacity: gameConfig.hotelCapacity,
     };
   }
 }

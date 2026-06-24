@@ -17,6 +17,7 @@ model Player {
   lastSeenAt    DateTime  @default(now())
   createdAt     DateTime  @default(now())
   floors        Floor[]
+  workers       Worker[]
 }
 
 model Floor {
@@ -41,13 +42,30 @@ model Production {
   @@unique([floorDbId, slotIdx])
 }
 
+model Worker {
+  id              String  @id
+  playerId        String
+  name            String
+  female          Boolean
+  floorType       String
+  dreamJob        String
+  level           Int
+  hairColor       String
+  assignedFloorId Int?
+  assignedSlotIdx Int?
+  player          Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+}
+
 model CommandLog {
   id          String   @id
   playerId    String
   type        String
-  floorId     Int
-  slotIdx     Int
+  floorId     Int?
+  slotIdx     Int?
   typeId      String?
+  workerId    String?
   timestamp   BigInt
   serverTime  BigInt
   cursor      Int      @default(autoincrement())
