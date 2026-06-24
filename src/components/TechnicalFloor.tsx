@@ -6,13 +6,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 interface HotelFloorProps {
   hotelOccupied: number;
   hotelTotal: number;
+  onPress?: () => void;
 }
 
-export function HotelFloor({ hotelOccupied, hotelTotal }: HotelFloorProps) {
+export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorProps) {
   const hasVacancy = hotelOccupied < hotelTotal;
 
   return (
-    <View style={styles.container}>
+    <Pressable onPress={onPress} style={styles.container}>
       <LinearGradient colors={['#8090A6', '#5F6E84']} style={styles.header}>
         <View style={styles.numberBadge}>
           <Text style={styles.numberText}>1</Text>
@@ -43,7 +44,7 @@ export function HotelFloor({ hotelOccupied, hotelTotal }: HotelFloorProps) {
           </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

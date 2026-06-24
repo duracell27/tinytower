@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import TopBar from '../src/components/TopBar';
 import BottomNav from '../src/components/BottomNav';
 import FloorCard from '../src/components/FloorCard';
 import { HotelFloor, LobbyFloor } from '../src/components/TechnicalFloor';
+import HotelPanel from '../src/components/HotelPanel';
 import { useGameStore, useBalance } from '../src/stores/gameStore';
 import { useAuthStore } from '../src/stores/authStore';
 import { useGameClock } from '../src/hooks/useGameClock';
@@ -57,6 +58,9 @@ export default function GameScreen() {
   const playerName = player?.playerName ?? 'Гравець';
   const initial = playerName.charAt(0).toUpperCase();
 
+  const [hotelOpen, setHotelOpen] = useState(false);
+  const listRef = useRef<FlashList<FloorItem>>(null);
+
   useEffect(() => {
     syncService.start();
     return () => syncService.stop();
@@ -66,7 +70,7 @@ export default function GameScreen() {
     if (item.type === 'hotel') {
       return (
         <View style={styles.floorWrapper}>
-          <HotelFloor hotelOccupied={hotelOccupied} hotelTotal={hotelTotal} />
+          <HotelFloor hotelOccupied={hotelOccupied} hotelTotal={hotelTotal} onPress={() => setHotelOpen(true)} />
         </View>
       );
     }
@@ -93,12 +97,14 @@ export default function GameScreen() {
       >
         <View style={styles.listContainer}>
           <FlashList
+            ref={listRef}
             data={FLOOR_LIST}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             estimatedItemSize={150}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            initialScrollIndex={FLOOR_LIST.length - 1}
           />
         </View>
 
@@ -113,6 +119,8 @@ export default function GameScreen() {
         />
 
         <BottomNav />
+
+        <HotelPanel visible={hotelOpen} onClose={() => setHotelOpen(false)} />
       </ImageBackground>
     </View>
   );
