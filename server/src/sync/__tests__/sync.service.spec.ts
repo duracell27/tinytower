@@ -1,0 +1,269 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
+import { SyncService } from '../sync.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import type { Command } from '@shared/types';
+
+describe('SyncService', () => {
+  let syncService: SyncService;
+  let prisma: Record<string, any>;
+
+  const mockFloors = [
+    {
+      id: 1,
+      playerId: 'player-uuid',
+      floorId: 2,
+      productions: [
+        { id: 1, floorDbId: 1, slotIdx: 0, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+        { id: 2, floorDbId: 1, slotIdx: 1, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+        { id: 3, floorDbId: 1, slotIdx: 2, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+      ],
+    },
+    {
+      id: 2,
+      playerId: 'player-uuid',
+      floorId: 3,
+      productions: [
+        { id: 4, floorDbId: 2, slotIdx: 0, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+        { id: 5, floorDbId: 2, slotIdx: 1, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+        { id: 6, floorDbId: 2, slotIdx: 2, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+      ],
+    },
+    {
+      id: 3,
+      playerId: 'player-uuid',
+      floorId: 4,
+      productions: [
+        { id: 7, floorDbId: 3, slotIdx: 0, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+        { id: 8, floorDbId: 3, slotIdx: 1, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+        { id: 9, floorDbId: 3, slotIdx: 2, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+      ],
+    },
+    {
+      id: 4,
+      playerId: 'player-uuid',
+      floorId: 5,
+      productions: [
+        { id: 10, floorDbId: 4, slotIdx: 0, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+        { id: 11, floorDbId: 4, slotIdx: 1, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+        { id: 12, floorDbId: 4, slotIdx: 2, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+      ],
+    },
+    {
+      id: 5,
+      playerId: 'player-uuid',
+      floorId: 6,
+      productions: [
+        { id: 13, floorDbId: 5, slotIdx: 0, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+        { id: 14, floorDbId: 5, slotIdx: 1, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+        { id: 15, floorDbId: 5, slotIdx: 2, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+      ],
+    },
+  ];
+
+  const mockPlayer = {
+    id: 'player-uuid',
+    email: 'test@test.com',
+    passwordHash: 'hashed',
+    playerName: 'TestPlayer',
+    balance: 100,
+    stateVersion: 0,
+    lastSeenAt: new Date(Date.now() - 60000), // 60s ago
+    createdAt: new Date(),
+    floors: mockFloors,
+  };
+
+  let txMock: Record<string, any>;
+
+  beforeEach(async () => {
+    txMock = {
+      player: { update: jest.fn().mockResolvedValue({}) },
+      production: { update: jest.fn().mockResolvedValue({}) },
+      commandLog: { create: jest.fn().mockResolvedValue({ cursor: 1 }) },
+    };
+
+    prisma = {
+      player: {
+        findUnique: jest.fn(),
+      },
+      commandLog: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      $transaction: jest.fn(async (fn: (tx: any) => Promise<void>) => {
+        await fn(txMock);
+      }),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        SyncService,
+        {
+          provide: PrismaService,
+          useValue: prisma,
+        },
+      ],
+    }).compile();
+
+    syncService = module.get<SyncService>(SyncService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('processSync', () => {
+    it('should return current state for empty command list', async () => {
+      prisma.player.findUnique
+        .mockResolvedValueOnce(mockPlayer)  // initial load
+        .mockResolvedValueOnce({ ...mockPlayer }); // post-transaction load
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.state.balance).toBe(100);
+      expect(result.state.floors).toHaveLength(5);
+      expect(result.stateVersion).toBe(0);
+      expect(result.ackCursor).toBe(0);
+      expect(result.serverTime).toBeGreaterThan(0);
+    });
+
+    it('should throw NotFoundException for unknown player', async () => {
+      prisma.player.findUnique.mockResolvedValue(null);
+
+      await expect(
+        syncService.processSync('nonexistent', [], 0),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should process a buy command and update state', async () => {
+      prisma.player.findUnique
+        .mockResolvedValueOnce(mockPlayer)
+        .mockResolvedValueOnce({ ...mockPlayer, stateVersion: 1 });
+
+      const buyCmd: Command = {
+        id: 'cmd-1',
+        type: 'buy',
+        floorId: 2,
+        slotIdx: 0,
+        typeId: 'coffee_shop',
+        timestamp: Date.now(),
+      };
+
+      const result = await syncService.processSync('player-uuid', [buyCmd], 0);
+
+      expect(result.state.balance).toBe(90); // 100 - 10 (coffee_shop buyCost)
+      expect(result.state.floors[0].productions[0].typeId).toBe('coffee_shop');
+      expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
+      expect(result.stateVersion).toBe(1);
+      expect(txMock.player.update).toHaveBeenCalled();
+      expect(txMock.commandLog.create).toHaveBeenCalled();
+    });
+
+    it('should deduplicate already-processed commands', async () => {
+      prisma.player.findUnique
+        .mockResolvedValueOnce(mockPlayer)
+        .mockResolvedValueOnce({ ...mockPlayer });
+      prisma.commandLog.findMany.mockResolvedValue([{ id: 'cmd-1' }]);
+
+      const buyCmd: Command = {
+        id: 'cmd-1',
+        type: 'buy',
+        floorId: 2,
+        slotIdx: 0,
+        typeId: 'coffee_shop',
+        timestamp: Date.now(),
+      };
+
+      const result = await syncService.processSync('player-uuid', [buyCmd], 0);
+
+      // Command was filtered out, balance unchanged
+      expect(result.state.balance).toBe(100);
+    });
+
+    it('should reject commands that fail engine validation', async () => {
+      prisma.player.findUnique
+        .mockResolvedValueOnce(mockPlayer)
+        .mockResolvedValueOnce({ ...mockPlayer });
+
+      // Try to buy on a non-existent floor
+      const badCmd: Command = {
+        id: 'cmd-bad',
+        type: 'buy',
+        floorId: 999,
+        slotIdx: 0,
+        typeId: 'coffee_shop',
+        timestamp: Date.now(),
+      };
+
+      const result = await syncService.processSync('player-uuid', [badCmd], 0);
+
+      // No commands accepted, but state is still returned
+      expect(result.state.balance).toBe(100);
+    });
+
+    it('should process multiple commands in sequence', async () => {
+      // Set up cursor incrementing
+      let cursorCounter = 0;
+      txMock.commandLog.create.mockImplementation(() => {
+        cursorCounter++;
+        return Promise.resolve({ cursor: cursorCounter });
+      });
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(mockPlayer)
+        .mockResolvedValueOnce({ ...mockPlayer, stateVersion: 1 });
+
+      const cmds: Command[] = [
+        {
+          id: 'cmd-1',
+          type: 'buy',
+          floorId: 2,
+          slotIdx: 0,
+          typeId: 'coffee_shop',
+          timestamp: Date.now(),
+        },
+        {
+          id: 'cmd-2',
+          type: 'buy',
+          floorId: 2,
+          slotIdx: 1,
+          typeId: 'coffee_shop',
+          timestamp: Date.now(),
+        },
+      ];
+
+      const result = await syncService.processSync('player-uuid', cmds, 0);
+
+      expect(result.state.balance).toBe(80); // 100 - 10 - 10
+      expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
+      expect(result.state.floors[0].productions[1].stage).toBe('DELIVERING');
+      expect(result.ackCursor).toBe(2);
+    });
+
+    it('should convert BigInt fields correctly from DB', async () => {
+      const playerWithBigIntProd = {
+        ...mockPlayer,
+        floors: [
+          {
+            ...mockFloors[0],
+            productions: [
+              { id: 1, floorDbId: 1, slotIdx: 0, typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: BigInt(1700000000000) },
+              { id: 2, floorDbId: 1, slotIdx: 1, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+              { id: 3, floorDbId: 1, slotIdx: 2, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
+            ],
+          },
+          ...mockFloors.slice(1),
+        ],
+      };
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithBigIntProd)
+        .mockResolvedValueOnce({ ...mockPlayer });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      // stageStartedAt should be a regular number, not BigInt
+      expect(typeof result.state.floors[0].productions[0].stageStartedAt).toBe('number');
+      expect(result.state.floors[0].productions[0].stageStartedAt).toBe(1700000000000);
+    });
+  });
+});
