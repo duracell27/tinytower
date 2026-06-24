@@ -36,6 +36,7 @@ async function doSync(): Promise<void> {
     const needsReconcile =
       (response.stateVersion !== store.stateVersion && response.stateVersion > 0) ||
       (store.workers.length === 0 && response.state.workers.length > 0);
+
     if (needsReconcile) {
       store.reconcile(response.state, response.stateVersion, response.ackCursor);
     } else {
