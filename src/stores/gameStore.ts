@@ -1,19 +1,26 @@
 import { create } from 'zustand';
-import { processCommand } from '../engine/processCommand';
-import { gameConfig, createInitialState } from '../config/gameConfig';
+import { processCommand } from '../../shared/engine/processCommand';
+import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { clock } from '../services/clock';
-import type { GameState, Command, Floor } from '../types';
+import type { GameState, Command, Floor } from '../../shared/types';
 
 const COMMAND_QUEUE_CAP = 10_000;
+
+interface BuildingState {
+  hotelOccupied: number;
+  hotelTotal: number;
+  visitors: number;
+}
 
 interface GameActions {
   buy: (floorId: number, slotIdx: number, typeId: string) => void;
   list: (floorId: number, slotIdx: number) => void;
   collect: (floorId: number, slotIdx: number) => void;
+  liftVisitor: () => void;
   hydrate: (state: GameState) => void;
 }
 
-type GameStore = GameState & GameActions;
+type GameStore = GameState & BuildingState & GameActions;
 
 function executeCommand(
   get: () => GameStore,
@@ -38,6 +45,9 @@ function executeCommand(
 
 export const useGameStore = create<GameStore>((set, get) => ({
   ...createInitialState(gameConfig),
+  hotelOccupied: 20,
+  hotelTotal: 32,
+  visitors: 3,
 
   buy: (floorId, slotIdx, typeId) => {
     executeCommand(get, set, {
@@ -67,6 +77,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
       floorId,
       slotIdx,
       timestamp: clock.now(),
+    });
+  },
+
+  liftVisitor: () => {
+    const { visitors, hotelOccupied, hotelTotal } = get();
+    if (visitors <= 0) return;
+    set({
+      visitors: visitors - 1,
+      hotelOccupied: Math.min(hotelOccupied + 1, hotelTotal),
     });
   },
 

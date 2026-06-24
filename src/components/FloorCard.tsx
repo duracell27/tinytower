@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import ProductionCard from './ProductionCard';
 import { useFloor } from '../stores/gameStore';
-import { gameConfig } from '../config/gameConfig';
+import { gameConfig } from '../../shared/config/gameConfig';
 import type { ImageSource } from 'expo-image';
 
 // Floor color schemes matching the design
@@ -18,7 +18,7 @@ export interface FloorColorScheme {
 }
 
 export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
-  1: {
+  2: {
     headerColors: ['#74C44F', '#5DA83C'],
     headerShadowColor: 'rgba(40,70,25,0.4)',
     bodyColor: '#D2EAB4',
@@ -27,7 +27,7 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     displayName: 'КОНДИТЕРСЬКА',
     stars: 4,
   },
-  2: {
+  3: {
     headerColors: ['#43BCAA', '#2E9E8E'],
     headerShadowColor: 'rgba(20,70,60,0.4)',
     bodyColor: '#BEE6DD',
@@ -36,7 +36,7 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     displayName: 'ПРАЛЬНЯ',
     stars: 4,
   },
-  3: {
+  4: {
     headerColors: ['#F2B838', '#E09E10'],
     headerShadowColor: 'rgba(120,80,0,0.4)',
     bodyColor: '#F7E4AC',
@@ -45,7 +45,7 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     displayName: "КАВ'ЯРНЯ",
     stars: 4,
   },
-  4: {
+  5: {
     headerColors: ['#E87C5E', '#D4603D'],
     headerShadowColor: 'rgba(120,40,20,0.4)',
     bodyColor: '#F5D0C0',
@@ -54,7 +54,7 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     displayName: 'ЕЛЕКТРОНІКА',
     stars: 3,
   },
-  5: {
+  6: {
     headerColors: ['#7C6CD6', '#6350C2'],
     headerShadowColor: 'rgba(60,30,120,0.4)',
     bodyColor: '#D4CCF0',
@@ -67,27 +67,27 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
 
 // Product names and images for each floor's 3 slots
 const PRODUCT_IMAGES: Record<number, { title: string; image: ImageSource }[]> = {
-  1: [
+  2: [
     { title: 'Булки', image: require('../../assets/products/bulky.png') },
     { title: 'Пирожені', image: require('../../assets/products/cupcake.png') },
     { title: 'Торти', image: require('../../assets/products/cake.png') },
   ],
-  2: [
+  3: [
     { title: 'Прання', image: require('../../assets/products/wash.png') },
     { title: 'Сушка', image: require('../../assets/products/dry.png') },
     { title: 'Відбілювання', image: require('../../assets/products/bleach.png') },
   ],
-  3: [
+  4: [
     { title: 'Кава', image: require('../../assets/products/coffee.png') },
     { title: 'Млинці', image: require('../../assets/products/pancake.png') },
     { title: 'Десерти', image: require('../../assets/products/dessert.png') },
   ],
-  4: [
+  5: [
     { title: 'Планшети', image: require('../../assets/products/bulky.png') },
     { title: 'Навушники', image: require('../../assets/products/cupcake.png') },
     { title: 'Кабелі', image: require('../../assets/products/cake.png') },
   ],
-  5: [
+  6: [
     { title: 'Смартфони', image: require('../../assets/products/coffee.png') },
     { title: 'Чохли', image: require('../../assets/products/pancake.png') },
     { title: 'Зарядки', image: require('../../assets/products/dessert.png') },

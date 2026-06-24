@@ -1,15 +1,22 @@
-import { MMKV } from 'react-native-mmkv';
+import { createMMKV } from 'react-native-mmkv';
 import { AppState } from 'react-native';
-import { GameStateSchema } from '../schemas/gameState';
+import { GameStateSchema } from '../../shared/schemas/gameState';
 import { useGameStore } from '../stores/gameStore';
-import type { GameState } from '../types';
+import type { GameState } from '../../shared/types';
 
-const storage = new MMKV();
+let storage: ReturnType<typeof createMMKV> | null = null;
+
+function getStorage() {
+  if (!storage) {
+    storage = createMMKV({ id: 'game-state' });
+  }
+  return storage;
+}
 const GAME_STATE_KEY = 'gameState';
 const SAVE_DEBOUNCE_MS = 3000;
 
 export function loadGameState(): GameState | null {
-  const raw = storage.getString(GAME_STATE_KEY);
+  const raw = getStorage().getString(GAME_STATE_KEY);
   if (!raw) return null;
 
   try {
@@ -25,7 +32,7 @@ export function loadGameState(): GameState | null {
 }
 
 export function saveGameState(state: GameState): void {
-  storage.set(GAME_STATE_KEY, JSON.stringify({
+  getStorage().set(GAME_STATE_KEY, JSON.stringify({
     balance: state.balance,
     floors: state.floors,
     commandQueue: state.commandQueue,

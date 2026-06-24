@@ -1,6 +1,6 @@
-import { processCommand } from '../../engine/processCommand';
-import { createInitialState } from '../../config/gameConfig';
-import type { GameState, GameConfig } from '../../types';
+import { processCommand } from '../../../shared/engine/processCommand';
+import { createInitialState } from '../../../shared/config/gameConfig';
+import type { GameState, GameConfig } from '../../../shared/types';
 
 const testConfig: GameConfig = {
   floors: [

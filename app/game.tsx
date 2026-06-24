@@ -1,15 +1,24 @@
-import React, { useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import TopBar from '../src/components/TopBar';
 import BottomNav from '../src/components/BottomNav';
 import FloorCard from '../src/components/FloorCard';
+import { HotelFloor, LobbyFloor } from '../src/components/TechnicalFloor';
 import { useGameStore, useBalance } from '../src/stores/gameStore';
 import { useGameClock } from '../src/hooks/useGameClock';
-import { gameConfig } from '../src/config/gameConfig';
+import { gameConfig } from '../shared/config/gameConfig';
 
-// Floor IDs in reverse order (highest floor at top)
-const FLOOR_IDS = gameConfig.floors.map((f) => f.id).reverse();
+type FloorItem =
+  | { type: 'production'; id: number }
+  | { type: 'hotel' }
+  | { type: 'lobby' };
+
+const FLOOR_LIST: FloorItem[] = [
+  ...gameConfig.floors.map((f) => ({ type: 'production' as const, id: f.id })).reverse(),
+  { type: 'hotel' },
+  { type: 'lobby' },
+];
 
 function formatCoins(n: number): string {
   if (n >= 1000) {
@@ -23,17 +32,40 @@ function formatCoins(n: number): string {
   return String(n);
 }
 
+function keyExtractor(item: FloorItem): string {
+  if (item.type === 'production') return `prod-${item.id}`;
+  return item.type;
+}
+
 export default function GameScreen() {
   const balance = useBalance();
   const now = useGameClock(1000);
+  const hotelOccupied = useGameStore((s) => s.hotelOccupied);
+  const hotelTotal = useGameStore((s) => s.hotelTotal);
+  const visitors = useGameStore((s) => s.visitors);
+  const liftVisitor = useGameStore((s) => s.liftVisitor);
 
-  const renderItem = useMemo(() => {
-    return ({ item }: { item: number }) => (
+  const renderItem = useCallback(({ item }: { item: FloorItem }) => {
+    if (item.type === 'hotel') {
+      return (
+        <View style={styles.floorWrapper}>
+          <HotelFloor hotelOccupied={hotelOccupied} hotelTotal={hotelTotal} />
+        </View>
+      );
+    }
+    if (item.type === 'lobby') {
+      return (
+        <View style={styles.floorWrapper}>
+          <LobbyFloor visitors={visitors} onLift={liftVisitor} />
+        </View>
+      );
+    }
+    return (
       <View style={styles.floorWrapper}>
-        <FloorCard floorId={item} balance={balance} now={now} />
+        <FloorCard floorId={item.id} balance={balance} now={now} />
       </View>
     );
-  }, [balance, now]);
+  }, [balance, now, hotelOccupied, hotelTotal, visitors, liftVisitor]);
 
   return (
     <View style={styles.container}>
@@ -42,18 +74,17 @@ export default function GameScreen() {
         style={styles.background}
         resizeMode="cover"
       >
-        {/* Floor list */}
         <View style={styles.listContainer}>
           <FlashList
-            data={FLOOR_IDS}
+            data={FLOOR_LIST}
             renderItem={renderItem}
-            keyExtractor={(item) => String(item)}
+            keyExtractor={keyExtractor}
+            estimatedItemSize={150}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
           />
         </View>
 
-        {/* Top bar overlay */}
         <TopBar
           name="Duracell"
           level={7}
@@ -63,7 +94,6 @@ export default function GameScreen() {
           gems="143"
         />
 
-        {/* Bottom nav overlay */}
         <BottomNav />
       </ImageBackground>
     </View>

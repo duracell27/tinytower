@@ -3,10 +3,10 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
-import { getProductionStatus } from '../engine/productionStatus';
+import { getProductionStatus } from '../../shared/engine/productionStatus';
 import { useGameStore } from '../stores/gameStore';
-import { gameConfig } from '../config/gameConfig';
-import type { Production, EffectiveStage } from '../types';
+import { gameConfig } from '../../shared/config/gameConfig';
+import type { Production, EffectiveStage } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
 
 // Button gradient and shadow configs per stage

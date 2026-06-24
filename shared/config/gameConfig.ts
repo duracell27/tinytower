@@ -3,11 +3,11 @@ import type { GameConfig, GameState, Floor } from '../types';
 
 const rawConfig = {
   floors: [
-    { id: 1, name: 'Ground Floor', slots: 3, availableTypes: ['coffee_shop'] },
-    { id: 2, name: 'Floor 2', slots: 3, availableTypes: ['coffee_shop', 'bookstore'] },
-    { id: 3, name: 'Floor 3', slots: 3, availableTypes: ['bookstore'] },
-    { id: 4, name: 'Floor 4', slots: 3, availableTypes: ['bookstore', 'electronics'] },
-    { id: 5, name: 'Floor 5', slots: 3, availableTypes: ['electronics'] },
+    { id: 2, name: 'Floor 2', slots: 3, availableTypes: ['coffee_shop'] },
+    { id: 3, name: 'Floor 3', slots: 3, availableTypes: ['coffee_shop', 'bookstore'] },
+    { id: 4, name: 'Floor 4', slots: 3, availableTypes: ['bookstore'] },
+    { id: 5, name: 'Floor 5', slots: 3, availableTypes: ['bookstore', 'electronics'] },
+    { id: 6, name: 'Floor 6', slots: 3, availableTypes: ['electronics'] },
   ],
   productionTypes: {
     coffee_shop: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 },
