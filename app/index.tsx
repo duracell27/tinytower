@@ -1,14 +1,14 @@
-import { View, Text } from 'react-native';
-import { createInitialState } from '../src/config/gameConfig';
-import { gameConfig } from '../src/config/gameConfig';
+import { useRouter } from 'expo-router';
+import WelcomeScreen from '../src/screens/WelcomeScreen';
 
-export default function HomeScreen() {
-  const initialState = createInitialState(gameConfig);
+export default function Index() {
+  const router = useRouter();
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Welcome to Skyscraper Tycoon</Text>
-      <Text>Balance: {initialState.balance}</Text>
-    </View>
+    <WelcomeScreen
+      onPlay={() => router.push('/game')}
+      onLogin={() => router.push('/login')}
+      onRegister={() => router.push('/login')}
+    />
   );
 }
