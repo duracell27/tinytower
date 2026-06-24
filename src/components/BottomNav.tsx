@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 
 interface NavItemProps {
   active?: boolean;
@@ -91,7 +92,7 @@ export default function BottomNav() {
           <NavItem label="Магазин">
             <ShopIcon />
           </NavItem>
-          <NavItem label="Профіль">
+          <NavItem label="Профіль" onPress={() => router.push('/profile')}>
             <ProfileIcon />
           </NavItem>
         </View>

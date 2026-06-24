@@ -25,7 +25,7 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     cardBg: '#F2F8E9',
     nameColor: '#5B963A',
     displayName: 'КОНДИТЕРСЬКА',
-    stars: 4,
+    stars: 0,
   },
   3: {
     headerColors: ['#43BCAA', '#2E9E8E'],
@@ -34,7 +34,7 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     cardBg: '#EBF7F3',
     nameColor: '#2E9384',
     displayName: 'ПРАЛЬНЯ',
-    stars: 4,
+    stars: 0,
   },
   4: {
     headerColors: ['#F2B838', '#E09E10'],
@@ -43,25 +43,7 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     cardBg: '#FDF8E9',
     nameColor: '#B5871E',
     displayName: "КАВ'ЯРНЯ",
-    stars: 4,
-  },
-  5: {
-    headerColors: ['#E87C5E', '#D4603D'],
-    headerShadowColor: 'rgba(120,40,20,0.4)',
-    bodyColor: '#F5D0C0',
-    cardBg: '#FDF0EA',
-    nameColor: '#C25A3A',
-    displayName: 'ЕЛЕКТРОНІКА',
-    stars: 3,
-  },
-  6: {
-    headerColors: ['#7C6CD6', '#6350C2'],
-    headerShadowColor: 'rgba(60,30,120,0.4)',
-    bodyColor: '#D4CCF0',
-    cardBg: '#EDE9F8',
-    nameColor: '#6B52B5',
-    displayName: 'ГАДЖЕТИ',
-    stars: 3,
+    stars: 0,
   },
 };
 
@@ -81,16 +63,6 @@ const PRODUCT_IMAGES: Record<number, { title: string; image: ImageSource }[]> = 
     { title: 'Кава', image: require('../../assets/products/coffee.png') },
     { title: 'Млинці', image: require('../../assets/products/pancake.png') },
     { title: 'Десерти', image: require('../../assets/products/dessert.png') },
-  ],
-  5: [
-    { title: 'Планшети', image: require('../../assets/products/bulky.png') },
-    { title: 'Навушники', image: require('../../assets/products/cupcake.png') },
-    { title: 'Кабелі', image: require('../../assets/products/cake.png') },
-  ],
-  6: [
-    { title: 'Смартфони', image: require('../../assets/products/coffee.png') },
-    { title: 'Чохли', image: require('../../assets/products/pancake.png') },
-    { title: 'Зарядки', image: require('../../assets/products/dessert.png') },
   ],
 };
 

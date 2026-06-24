@@ -1,8 +1,8 @@
 import { gameConfig, createInitialState } from '../gameConfig';
 
 describe('gameConfig', () => {
-  it('has 5 floors', () => {
-    expect(gameConfig.floors).toHaveLength(5);
+  it('has 3 floors', () => {
+    expect(gameConfig.floors).toHaveLength(3);
   });
 
   it('has 3 production types', () => {
@@ -21,20 +21,20 @@ describe('gameConfig', () => {
     }
   });
 
-  it('starting balance is 100', () => {
-    expect(gameConfig.startingBalance).toBe(100);
+  it('starting balance is 1000', () => {
+    expect(gameConfig.startingBalance).toBe(1000);
   });
 });
 
 describe('createInitialState', () => {
   it('sets balance to startingBalance', () => {
     const state = createInitialState(gameConfig);
-    expect(state.balance).toBe(100);
+    expect(state.balance).toBe(1000);
   });
 
   it('creates correct number of floors', () => {
     const state = createInitialState(gameConfig);
-    expect(state.floors).toHaveLength(5);
+    expect(state.floors).toHaveLength(3);
   });
 
   it('creates correct number of production slots per floor', () => {

@@ -6,15 +6,13 @@ const rawConfig = {
     { id: 2, name: 'Floor 2', slots: 3, availableTypes: ['coffee_shop'] },
     { id: 3, name: 'Floor 3', slots: 3, availableTypes: ['coffee_shop', 'bookstore'] },
     { id: 4, name: 'Floor 4', slots: 3, availableTypes: ['bookstore'] },
-    { id: 5, name: 'Floor 5', slots: 3, availableTypes: ['bookstore', 'electronics'] },
-    { id: 6, name: 'Floor 6', slots: 3, availableTypes: ['electronics'] },
   ],
   productionTypes: {
     coffee_shop: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 },
     bookstore: { buyCost: 50, deliveryDuration: 15000, sellDuration: 30000, batchValue: 120 },
     electronics: { buyCost: 200, deliveryDuration: 60000, sellDuration: 90000, batchValue: 500 },
   },
-  startingBalance: 100,
+  startingBalance: 1000,
 } satisfies GameConfig;
 
 export const gameConfig: GameConfig = GameConfigSchema.parse(rawConfig);

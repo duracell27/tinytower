@@ -1,29 +1,64 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle } from 'react-native-svg';
 
 interface TopBarProps {
   name: string;
   level: number;
-  xp: string;
+  xp: number;
+  xpForNextLevel: number;
   initial: string;
   coins: string;
   gems: string;
 }
 
-export default function TopBar({ name, level, xp, initial, coins, gems }: TopBarProps) {
+function ProgressRing({ progress, size = 50 }: { progress: number; size?: number }) {
+  const strokeWidth = 3.5;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - Math.min(progress, 1));
+
+  return (
+    <Svg width={size} height={size} style={styles.progressRing}>
+      <Circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        stroke="rgba(60,120,40,0.14)"
+        strokeWidth={strokeWidth}
+        fill="none"
+      />
+      <Circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        stroke="#3FA535"
+        strokeWidth={strokeWidth}
+        fill="none"
+        strokeDasharray={`${circumference}`}
+        strokeDashoffset={strokeDashoffset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </Svg>
+  );
+}
+
+export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins, gems }: TopBarProps) {
+  const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
+
   return (
     <View style={styles.container}>
       <View style={styles.glassPanel}>
-        {/* Sheen overlay */}
         <LinearGradient
           colors={['rgba(255,255,255,0.45)', 'transparent']}
           style={styles.sheen}
         />
         <View style={styles.content}>
-          {/* Avatar + level */}
           <View style={styles.avatarSection}>
-            <View style={styles.avatarRing}>
+            <View style={styles.avatarWrapper}>
+              <ProgressRing progress={progress} size={50} />
               <LinearGradient
                 colors={['#74D3C4', '#3FA9A0']}
                 start={{ x: 0.2, y: 0 }}
@@ -36,15 +71,9 @@ export default function TopBar({ name, level, xp, initial, coins, gems }: TopBar
                 <Text style={styles.levelText}>{level}</Text>
               </View>
             </View>
-            <View style={styles.nameSection}>
-              <Text style={styles.nameText}>{name}</Text>
-              <Text style={styles.xpText}>
-                Level {level} · {xp} XP
-              </Text>
-            </View>
+            <Text style={styles.nameText}>{name}</Text>
           </View>
 
-          {/* Currencies */}
           <View style={styles.currencySection}>
             <View style={styles.coinBadge}>
               <View style={styles.coinIcon} />
@@ -102,20 +131,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 11,
   },
-  avatarRing: {
+  avatarWrapper: {
     width: 50,
     height: 50,
-    borderRadius: 25,
-    borderWidth: 3.5,
-    borderColor: '#5FC24E',
-    padding: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: 'rgba(70,140,50,1)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
+  },
+  progressRing: {
+    position: 'absolute',
   },
   avatarInner: {
     width: 39,
@@ -153,20 +176,11 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: '#fff',
   },
-  nameSection: {
-    flexDirection: 'column',
-    gap: 3,
-  },
   nameText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 17,
     color: '#27331F',
     lineHeight: 17,
-  },
-  xpText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 11,
-    color: '#7C8A6E',
   },
   currencySection: {
     flexDirection: 'column',

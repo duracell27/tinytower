@@ -6,6 +6,12 @@ import type { GameState, Command, Floor } from '../../shared/types';
 
 const COMMAND_QUEUE_CAP = 10_000;
 
+interface PlayerStats {
+  playerLevel: number;
+  playerXp: number;
+  gems: number;
+}
+
 interface BuildingState {
   hotelOccupied: number;
   hotelTotal: number;
@@ -27,7 +33,7 @@ interface GameActions {
   clearAckedCommands: (ackCursor: number) => void;
 }
 
-type GameStore = GameState & BuildingState & SyncState & GameActions;
+type GameStore = GameState & PlayerStats & BuildingState & SyncState & GameActions;
 
 function executeCommand(
   get: () => GameStore,
@@ -52,9 +58,12 @@ function executeCommand(
 
 export const useGameStore = create<GameStore>((set, get) => ({
   ...createInitialState(gameConfig),
-  hotelOccupied: 20,
+  playerLevel: 1,
+  playerXp: 0,
+  gems: 20,
+  hotelOccupied: 0,
   hotelTotal: 32,
-  visitors: 3,
+  visitors: 0,
   lastAckCursor: 0,
   stateVersion: 0,
 

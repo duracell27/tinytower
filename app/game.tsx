@@ -6,9 +6,14 @@ import BottomNav from '../src/components/BottomNav';
 import FloorCard from '../src/components/FloorCard';
 import { HotelFloor, LobbyFloor } from '../src/components/TechnicalFloor';
 import { useGameStore, useBalance } from '../src/stores/gameStore';
+import { useAuthStore } from '../src/stores/authStore';
 import { useGameClock } from '../src/hooks/useGameClock';
 import { gameConfig } from '../shared/config/gameConfig';
 import { syncService } from '../src/services/sync';
+
+function xpForLevel(level: number): number {
+  return level * 100;
+}
 
 type FloorItem =
   | { type: 'production'; id: number }
@@ -41,10 +46,16 @@ function keyExtractor(item: FloorItem): string {
 export default function GameScreen() {
   const balance = useBalance();
   const now = useGameClock(1000);
+  const playerLevel = useGameStore((s) => s.playerLevel);
+  const playerXp = useGameStore((s) => s.playerXp);
+  const gems = useGameStore((s) => s.gems);
   const hotelOccupied = useGameStore((s) => s.hotelOccupied);
   const hotelTotal = useGameStore((s) => s.hotelTotal);
   const visitors = useGameStore((s) => s.visitors);
   const liftVisitor = useGameStore((s) => s.liftVisitor);
+  const player = useAuthStore((s) => s.player);
+  const playerName = player?.playerName ?? 'Гравець';
+  const initial = playerName.charAt(0).toUpperCase();
 
   useEffect(() => {
     syncService.start();
@@ -92,12 +103,13 @@ export default function GameScreen() {
         </View>
 
         <TopBar
-          name="Duracell"
-          level={7}
-          xp="640/1000"
-          initial="D"
+          name={playerName}
+          level={playerLevel}
+          xp={playerXp}
+          xpForNextLevel={xpForLevel(playerLevel)}
+          initial={initial}
           coins={formatCoins(balance)}
-          gems="143"
+          gems={String(gems)}
         />
 
         <BottomNav />
