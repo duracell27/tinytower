@@ -19,6 +19,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
 import WorkerCard from './WorkerCard';
+import JobPickerSheet from './JobPickerSheet';
 import type { Worker } from '../../shared/types';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -33,6 +34,7 @@ interface HotelPanelProps {
 export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const [mounted, setMounted] = useState(visible);
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
+  const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
 
   const scrimOpacity = useSharedValue(0);
   const sheetTranslateY = useSharedValue(102);
@@ -90,8 +92,8 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
     [],
   );
 
-  const handleFindJob = useCallback(() => {
-    // No-op for now — Task 7 wires this up
+  const handleFindJob = useCallback((worker: Worker) => {
+    setPickerWorker(worker);
   }, []);
 
   const renderItem = useCallback(
@@ -102,7 +104,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
         onToggle={() =>
           setExpandedWorkerId((prev) => (prev === item.id ? null : item.id))
         }
-        onFindJob={handleFindJob}
+        onFindJob={() => handleFindJob(item)}
         onEvict={() => handleEvict(item.id, item.name)}
       />
     ),
@@ -222,6 +224,13 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           style={styles.list}
+        />
+
+        {/* Job picker overlay */}
+        <JobPickerSheet
+          visible={!!pickerWorker}
+          worker={pickerWorker}
+          onClose={() => setPickerWorker(null)}
         />
       </Animated.View>
     </View>
