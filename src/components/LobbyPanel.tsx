@@ -299,7 +299,7 @@ function ElevatorShaft({
         <View style={shaftStyles.railRight} />
         {/* Cabin */}
         <Animated.View style={[shaftStyles.cabin, cabinStyle]}>
-          <LinearGradient colors={['#EFF1F5', '#C9CFD9']} style={shaftStyles.cabinInner}>
+          <LinearGradient colors={['#5ECFCF', '#3AABAB']} style={shaftStyles.cabinInner}>
             <View style={shaftStyles.doorLeft} />
             <View style={shaftStyles.doorRight} />
           </LinearGradient>
@@ -337,7 +337,7 @@ const shaftStyles = StyleSheet.create({
     top: 6,
     bottom: 6,
     width: 1.5,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.14)',
   },
   railRight: {
     position: 'absolute',
@@ -345,7 +345,7 @@ const shaftStyles = StyleSheet.create({
     top: 6,
     bottom: 6,
     width: 1.5,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.14)',
   },
   cabin: {
     position: 'absolute',
@@ -367,13 +367,13 @@ const shaftStyles = StyleSheet.create({
     width: 8,
     height: 24,
     borderRadius: 2,
-    backgroundColor: 'rgba(60,70,88,0.15)',
+    backgroundColor: 'rgba(0,60,60,0.22)',
   },
   doorRight: {
     width: 8,
     height: 24,
     borderRadius: 2,
-    backgroundColor: 'rgba(60,70,88,0.15)',
+    backgroundColor: 'rgba(0,60,60,0.22)',
   },
   cabinBadge: {
     position: 'absolute',
