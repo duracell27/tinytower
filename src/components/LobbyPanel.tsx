@@ -651,40 +651,29 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
                     <View style={styles.visitorShaftRow}>
                       {/* Left column */}
                       <View style={styles.visitorColumn}>
-                        {/* Avatar */}
-                        <View style={styles.avatarTile}>
-                          <VisitorAvatar
-                            role={activeVisitor.role}
-                            hairColor={activeVisitor.hairColor}
-                            female={activeVisitor.female}
-                          />
-                        </View>
-
-                        {/* Speech bubble */}
-                        <View style={styles.speechBubble}>
-                          {arrived ? (
-                            <Text style={styles.speechArrivedText}>Дякую! 🎉</Text>
-                          ) : (
-                            <Text style={styles.speechText}>
-                              <Text style={[styles.speechRoleLabel, { color: ROLE_COLORS[activeVisitor.role] }]}>
-                                {ROLE_LABELS[activeVisitor.role]}
-                              </Text>
-                              {' · '}{activeVisitor.targetFloor} поверх
+                        {/* Top row: avatar circle + info */}
+                        <View style={styles.visitorInfoRow}>
+                          <View style={[styles.avatarCircle, { backgroundColor: ROLE_COLORS[activeVisitor.role] }]}>
+                            <PersonIcon size={22} color="#fff" />
+                          </View>
+                          <View style={styles.visitorTextCol}>
+                            <Text style={styles.visitorNameText}>
+                              {arrived
+                                ? 'Дякую! 🎉'
+                                : `${ROLE_LABELS[activeVisitor.role]} · ${activeVisitor.targetFloor} поверх`}
                             </Text>
-                          )}
-                        </View>
-
-                        {/* Status chip */}
-                        <View style={styles.statusChip}>
-                          <View style={[
-                            styles.statusDot,
-                            { backgroundColor: arrived ? '#52B847' : '#F0B92A' },
-                          ]} />
-                          <Text style={styles.statusChipText}>
-                            {arrived
-                              ? `Поверх ${activeVisitor.targetFloor} · прибули`
-                              : `Ліфт на поверсі ${elevatorFloor}`}
-                          </Text>
+                            <View style={styles.statusChip}>
+                              <View style={[
+                                styles.statusDot,
+                                { backgroundColor: arrived ? '#52B847' : '#F0B92A' },
+                              ]} />
+                              <Text style={styles.statusChipText}>
+                                {arrived
+                                  ? `Поверх ${activeVisitor.targetFloor} · прибули`
+                                  : `Ліфт на поверсі ${elevatorFloor}`}
+                              </Text>
+                            </View>
+                          </View>
                         </View>
 
                         {/* Action button */}
@@ -1124,34 +1113,27 @@ const styles = StyleSheet.create({
   },
   visitorColumn: {
     flex: 1,
-    gap: 10,
+    gap: 12,
   },
-  avatarTile: {
-    width: 58,
-    height: 58,
-    borderRadius: 15,
-    backgroundColor: '#EEF0F5',
+  visitorInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+  },
+  avatarCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  speechBubble: {
-    backgroundColor: '#F1F3F7',
-    borderRadius: 13,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  visitorTextCol: {
+    flex: 1,
+    gap: 6,
   },
-  speechText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 13.5,
-    color: '#2A3344',
-  },
-  speechRoleLabel: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 13.5,
-  },
-  speechArrivedText: {
+  visitorNameText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 14,
+    fontSize: 15,
     color: '#2A3344',
   },
   statusChip: {
