@@ -1,5 +1,12 @@
 import type { GameConfig, Worker } from '../types';
 
+function uuidv4(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 export const WORKER_NAMES = {
   male: [
     'Коля Некрасов', 'Дима Громов', 'Миша Шевчук', 'Андрій Семенов',
@@ -37,7 +44,7 @@ export function generateRandomWorkers(count: number, config: GameConfig): Worker
     const dreamJob = ftConfig.dreamJobs[Math.floor(Math.random() * ftConfig.dreamJobs.length)];
 
     workers.push({
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       name,
       female,
       floorType,
