@@ -651,17 +651,28 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
                     <View style={styles.visitorShaftRow}>
                       {/* Left column */}
                       <View style={styles.visitorColumn}>
-                        {/* Top row: avatar circle + info */}
+                        {/* Top row: avatar + speech bubble + status chip */}
                         <View style={styles.visitorInfoRow}>
-                          <View style={[styles.avatarCircle, { backgroundColor: ROLE_COLORS[activeVisitor.role] }]}>
-                            <PersonIcon size={22} color="#fff" />
+                          <View style={styles.avatarTile}>
+                            <VisitorAvatar
+                              role={activeVisitor.role}
+                              hairColor={activeVisitor.hairColor}
+                              female={activeVisitor.female}
+                            />
                           </View>
                           <View style={styles.visitorTextCol}>
-                            <Text style={styles.visitorNameText}>
-                              {arrived
-                                ? 'Дякую! 🎉'
-                                : `${ROLE_LABELS[activeVisitor.role]} · ${activeVisitor.targetFloor} поверх`}
-                            </Text>
+                            <View style={styles.speechBubble}>
+                              {arrived ? (
+                                <Text style={styles.speechArrivedText}>Дякую! 🎉</Text>
+                              ) : (
+                                <Text style={styles.speechText}>
+                                  <Text style={[styles.speechRoleLabel, { color: ROLE_COLORS[activeVisitor.role] }]}>
+                                    {ROLE_LABELS[activeVisitor.role]}
+                                  </Text>
+                                  {' · '}{activeVisitor.targetFloor} поверх
+                                </Text>
+                              )}
+                            </View>
                             <View style={styles.statusChip}>
                               <View style={[
                                 styles.statusDot,
@@ -1117,23 +1128,39 @@ const styles = StyleSheet.create({
   },
   visitorInfoRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 11,
   },
-  avatarCircle: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+  avatarTile: {
+    width: 58,
+    height: 58,
+    borderRadius: 15,
+    backgroundColor: '#EEF0F5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   visitorTextCol: {
     flex: 1,
-    gap: 6,
+    gap: 8,
   },
-  visitorNameText: {
+  speechBubble: {
+    backgroundColor: '#F1F3F7',
+    borderRadius: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  speechText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 13.5,
+    color: '#2A3344',
+  },
+  speechRoleLabel: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 13.5,
+  },
+  speechArrivedText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 15,
+    fontSize: 14,
     color: '#2A3344',
   },
   statusChip: {
