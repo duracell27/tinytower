@@ -101,6 +101,7 @@ export default function GameScreen() {
         <View style={styles.floorWrapper}>
           <LobbyFloor
             visitorCount={lobbyVisitors.length}
+            lobbyCapacity={lobbyCapacity}
             nextVisitorAt={nextVisitorAt}
             now={now}
             onPress={() => setLobbyOpen(true)}

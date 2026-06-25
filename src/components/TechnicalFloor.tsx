@@ -50,12 +50,13 @@ export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorPro
 
 interface LobbyFloorProps {
   visitorCount: number;
+  lobbyCapacity: number;
   nextVisitorAt: number;
   now: number;
   onPress: () => void;
 }
 
-export function LobbyFloor({ visitorCount, nextVisitorAt, now, onPress }: LobbyFloorProps) {
+export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, onPress }: LobbyFloorProps) {
   const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
@@ -84,7 +85,7 @@ export function LobbyFloor({ visitorCount, nextVisitorAt, now, onPress }: LobbyF
             <View style={styles.visitorRow}>
               <Text style={styles.visitorLabel}>Очікують</Text>
               <View style={styles.visitorBadge}>
-                <Text style={styles.visitorBadgeText}>{visitorCount}</Text>
+                <Text style={styles.visitorBadgeText}>{visitorCount} / {lobbyCapacity}</Text>
               </View>
             </View>
             <View style={styles.visitorRow}>
