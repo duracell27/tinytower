@@ -566,7 +566,7 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
     if (activeVisitor.role === 'businessman' && dailyGemsCollected < dailyGemLimit) {
       return {
         label: 'Отримати',
-        amount: null as string | null,
+        amount: '+1' as string | null,
         colors: ['#52A6E2', '#3B8BCB'] as [string, string],
         shadowColor: '#2E72A8',
         textColor: '#fff',
@@ -821,6 +821,15 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
                       <Text style={styles.claimedText}>План виконано · винагороду отримано</Text>
                     </View>
                   )}
+                </View>
+
+                {/* Daily gems card */}
+                <View style={styles.dailyGemsCard}>
+                  <GemIcon size={14} />
+                  <Text style={styles.dailyGemsLabel}>Діаманти сьогодні</Text>
+                  <Text style={styles.dailyGemsValue}>
+                    {dailyGemsCollected} / {dailyGemLimit}
+                  </Text>
                 </View>
 
                 {/* Upgrade elevator entry button */}
@@ -1289,6 +1298,32 @@ const styles = StyleSheet.create({
   },
 
   /* Daily Tips */
+  dailyGemsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 15,
+    paddingVertical: 11,
+    shadowColor: 'rgba(40,60,90,1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  dailyGemsLabel: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 14,
+    color: '#5A6478',
+    flex: 1,
+  },
+  dailyGemsValue: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 14,
+    color: '#2592AB',
+  },
+
   dailyTipsCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
