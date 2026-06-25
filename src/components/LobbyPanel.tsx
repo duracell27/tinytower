@@ -582,7 +582,7 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
       amount: `+${tip}` as string | null,
       colors: ['#F6C642', '#E5A41C'] as [string, string],
       shadowColor: '#BC820F',
-      textColor: '#5A3D06',
+      textColor: '#fff',
       icon: 'coin' as const,
       onPress: handleCollectTip,
     };
