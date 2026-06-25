@@ -146,6 +146,15 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
           );
         })}
       </View>
+
+      {/* Floor info bar */}
+      {discount > 0 && (
+        <View style={[styles.floorInfoBar, { backgroundColor: scheme.bodyColor }]}>
+          <View style={styles.discountBadge}>
+            <Text style={styles.discountBadgeText}>−{Math.round(discount * 100)}%</Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -191,6 +200,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#fff',
     letterSpacing: 0.6,
+    textTransform: 'capitalize',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
   },
@@ -207,5 +217,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 7,
     padding: 9,
+  },
+  floorInfoBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 9,
+    paddingTop: 0,
+    paddingBottom: 7,
+  },
+  discountBadge: {
+    backgroundColor: '#5BA63C',
+    borderRadius: 8,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  discountBadgeText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 9,
+    color: '#fff',
   },
 });

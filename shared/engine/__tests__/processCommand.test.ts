@@ -15,6 +15,20 @@ const testConfig: GameConfig = {
   },
   startingBalance: 100,
   hotelCapacity: 10,
+  lobbyConfig: {
+    visitorSpawnInterval: 120_000,
+    dailyTipsTarget: 10_000,
+    dailyTipsReward: 5,
+    dailyGemLimitBase: 15,
+    guestTipBase: 10,
+    businessmanFallbackBase: 100,
+    deliverySpeedBonus: 0.05,
+    sellSpeedBonus: 0.05,
+    elevatorUpgradeBaseCost: 3,
+    lobbyUpgradeBaseCost: 5,
+    lobbyUpgradeSeats: 3,
+    defaultLobbyCapacity: 10,
+  },
 };
 
 function makeWorker(overrides?: Partial<Worker>): Worker {

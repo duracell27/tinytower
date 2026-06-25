@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#fff',
     letterSpacing: 0.6,
+    textTransform: 'capitalize',
     textShadowColor: 'rgba(40,50,60,0.4)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
@@ -159,6 +160,8 @@ const styles = StyleSheet.create({
   body: {
     backgroundColor: '#D9DEE7',
     padding: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
     gap: 10,
   },
   techContent: {
@@ -167,9 +170,9 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   techImage: {
-    width: 98,
-    height: 66,
-    borderRadius: 12,
+    width: 100,
+    height: 50,
+    borderRadius: 10,
   },
   techInfo: {
     flex: 1,

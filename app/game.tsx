@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { FlashList } from '@shopify/flash-list';
 import TopBar from '../src/components/TopBar';
 import BottomNav from '../src/components/BottomNav';
 import FloorCard from '../src/components/FloorCard';
 import { HotelFloor, LobbyFloor } from '../src/components/TechnicalFloor';
 import HotelPanel from '../src/components/HotelPanel';
+import LevelUpModal from '../src/components/LevelUpModal';
 import { useGameStore, useBalance } from '../src/stores/gameStore';
 import { useAuthStore } from '../src/stores/authStore';
 import { useGameClock } from '../src/hooks/useGameClock';
@@ -13,7 +15,7 @@ import { gameConfig } from '../shared/config/gameConfig';
 import { syncService } from '../src/services/sync';
 
 function xpForLevel(level: number): number {
-  return level * 100;
+  return Math.floor(100 * Math.pow(1.5, level - 1));
 }
 
 type FloorItem =
@@ -96,6 +98,7 @@ export default function GameScreen() {
         style={styles.background}
         resizeMode="cover"
       >
+        <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
         <View style={styles.listContainer}>
           <FlashList
             ref={listRef}
@@ -123,6 +126,7 @@ export default function GameScreen() {
       </ImageBackground>
 
       <HotelPanel visible={hotelOpen} onClose={() => setHotelOpen(false)} />
+      <LevelUpModal />
     </View>
   );
 }

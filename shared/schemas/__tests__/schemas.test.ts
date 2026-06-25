@@ -1,8 +1,9 @@
 import { ProductionStageSchema, ProductionSchema } from '../production';
-import { CommandSchema } from '../command';
+import { CommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema } from '../command';
 import { GameConfigSchema } from '../gameConfig';
 import { GameStateSchema } from '../gameState';
 import { WorkerSchema } from '../worker';
+import { VisitorSchema, VisitorRoleSchema } from '../visitor';
 
 describe('ProductionStageSchema', () => {
   it('accepts valid stages', () => {
@@ -140,6 +141,21 @@ describe('CommandSchema', () => {
 });
 
 describe('GameConfigSchema', () => {
+  const baseLobbyConfig = {
+    visitorSpawnInterval: 120_000,
+    dailyTipsTarget: 10_000,
+    dailyTipsReward: 5,
+    dailyGemLimitBase: 15,
+    guestTipBase: 10,
+    businessmanFallbackBase: 100,
+    deliverySpeedBonus: 0.05,
+    sellSpeedBonus: 0.05,
+    elevatorUpgradeBaseCost: 3,
+    lobbyUpgradeBaseCost: 5,
+    lobbyUpgradeSeats: 3,
+    defaultLobbyCapacity: 10,
+  };
+
   it('accepts valid config', () => {
     const result = GameConfigSchema.parse({
       floors: [{ id: 1, name: 'Floor 1', slots: 2, floorType: 'green', availableTypes: ['coffee_shop'] }],
@@ -151,6 +167,7 @@ describe('GameConfigSchema', () => {
       },
       startingBalance: 100,
       hotelCapacity: 10,
+      lobbyConfig: baseLobbyConfig,
     });
     expect(result.floors).toHaveLength(1);
   });
@@ -162,6 +179,7 @@ describe('GameConfigSchema', () => {
       floorTypes: { green: { category: 'Test', shirtColor: '#000', accent: '#000', dreamJobs: ['x'] } },
       startingBalance: 100,
       hotelCapacity: 10,
+      lobbyConfig: baseLobbyConfig,
     }).success).toBe(false);
   });
 
@@ -172,6 +190,7 @@ describe('GameConfigSchema', () => {
       floorTypes: { green: { category: 'Test', shirtColor: '#000', accent: '#000', dreamJobs: ['x'] } },
       startingBalance: 100,
       hotelCapacity: 10,
+      lobbyConfig: baseLobbyConfig,
     }).success).toBe(false);
   });
 
@@ -181,6 +200,7 @@ describe('GameConfigSchema', () => {
       productionTypes: { x: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25, displayName: 'X' } },
       startingBalance: 100,
       hotelCapacity: 10,
+      lobbyConfig: baseLobbyConfig,
     }).success).toBe(false);
   });
 
@@ -190,6 +210,7 @@ describe('GameConfigSchema', () => {
       productionTypes: { x: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25, displayName: 'X' } },
       floorTypes: { green: { category: 'Test', shirtColor: '#000', accent: '#000', dreamJobs: ['x'] } },
       startingBalance: 100,
+      lobbyConfig: baseLobbyConfig,
     }).success).toBe(false);
   });
 });
@@ -260,6 +281,7 @@ describe('GameStateSchema', () => {
   it('accepts a valid game state', () => {
     const result = GameStateSchema.parse({
       balance: 100,
+      gems: 20,
       floors: [{
         id: 1,
         name: 'Floor 1',
@@ -268,6 +290,15 @@ describe('GameStateSchema', () => {
       commandQueue: [],
       workers: [],
       hotelCapacity: 10,
+      lobbyVisitors: [],
+      lobbyCapacity: 10,
+      elevatorLevel: 1,
+      elevatorFloor: 0,
+      dailyTips: 0,
+      dailyGemsCollected: 0,
+      dailyTipsRewardClaimed: false,
+      lastDailyReset: 0,
+      nextVisitorAt: 0,
     });
     expect(result.balance).toBe(100);
   });
@@ -275,6 +306,7 @@ describe('GameStateSchema', () => {
   it('accepts game state with workers', () => {
     const result = GameStateSchema.parse({
       balance: 100,
+      gems: 20,
       floors: [{
         id: 1,
         name: 'Floor 1',
@@ -293,6 +325,15 @@ describe('GameStateSchema', () => {
         assignedSlotIdx: null,
       }],
       hotelCapacity: 10,
+      lobbyVisitors: [],
+      lobbyCapacity: 10,
+      elevatorLevel: 1,
+      elevatorFloor: 0,
+      dailyTips: 0,
+      dailyGemsCollected: 0,
+      dailyTipsRewardClaimed: false,
+      lastDailyReset: 0,
+      nextVisitorAt: 0,
     });
     expect(result.workers).toHaveLength(1);
   });
@@ -300,28 +341,106 @@ describe('GameStateSchema', () => {
   it('rejects negative balance', () => {
     expect(GameStateSchema.safeParse({
       balance: -1,
+      gems: 20,
       floors: [{ id: 1, name: 'F', productions: [{ typeId: null, stage: 'IDLE', stageStartedAt: 0 }] }],
       commandQueue: [],
       workers: [],
       hotelCapacity: 10,
+      lobbyVisitors: [],
+      lobbyCapacity: 10,
+      elevatorLevel: 1,
+      elevatorFloor: 0,
+      dailyTips: 0,
+      dailyGemsCollected: 0,
+      dailyTipsRewardClaimed: false,
+      lastDailyReset: 0,
+      nextVisitorAt: 0,
     }).success).toBe(false);
   });
 
   it('rejects game state without workers array', () => {
     expect(GameStateSchema.safeParse({
       balance: 100,
+      gems: 20,
       floors: [{ id: 1, name: 'F', productions: [{ typeId: null, stage: 'IDLE', stageStartedAt: 0 }] }],
       commandQueue: [],
       hotelCapacity: 10,
+      lobbyVisitors: [],
+      lobbyCapacity: 10,
+      elevatorLevel: 1,
+      elevatorFloor: 0,
+      dailyTips: 0,
+      dailyGemsCollected: 0,
+      dailyTipsRewardClaimed: false,
+      lastDailyReset: 0,
+      nextVisitorAt: 0,
     }).success).toBe(false);
   });
 
   it('rejects game state without hotelCapacity', () => {
     expect(GameStateSchema.safeParse({
       balance: 100,
+      gems: 20,
       floors: [{ id: 1, name: 'F', productions: [{ typeId: null, stage: 'IDLE', stageStartedAt: 0 }] }],
       commandQueue: [],
       workers: [],
+      lobbyVisitors: [],
+      lobbyCapacity: 10,
+      elevatorLevel: 1,
+      elevatorFloor: 0,
+      dailyTips: 0,
+      dailyGemsCollected: 0,
+      dailyTipsRewardClaimed: false,
+      lastDailyReset: 0,
+      nextVisitorAt: 0,
     }).success).toBe(false);
+  });
+});
+
+describe('VisitorSchema', () => {
+  it('validates a valid visitor', () => {
+    const visitor = { id: 'v1', role: 'guest', targetFloor: 3, hairColor: '#5C3A22', female: false };
+    expect(VisitorSchema.parse(visitor)).toEqual(visitor);
+  });
+
+  it('rejects invalid role', () => {
+    expect(() => VisitorSchema.parse({ id: 'v1', role: 'vip', targetFloor: 3, hairColor: '#000', female: true })).toThrow();
+  });
+});
+
+describe('Lobby command schemas', () => {
+  it('validates spawn_visitor command', () => {
+    const cmd = { id: 'c1', type: 'spawn_visitor', timestamp: 1000, visitorId: 'v1', role: 'guest', targetFloor: 3, hairColor: '#5C3A22', female: false };
+    expect(CommandSchema.parse(cmd).type).toBe('spawn_visitor');
+  });
+
+  it('validates lift_visitor command', () => {
+    const cmd = { id: 'c1', type: 'lift_visitor', timestamp: 1000 };
+    expect(CommandSchema.parse(cmd).type).toBe('lift_visitor');
+  });
+
+  it('validates collect_tip command', () => {
+    const cmd = { id: 'c1', type: 'collect_tip', timestamp: 1000 };
+    expect(CommandSchema.parse(cmd).type).toBe('collect_tip');
+  });
+
+  it('validates deliver_all command', () => {
+    const cmd = { id: 'c1', type: 'deliver_all', timestamp: 1000 };
+    expect(CommandSchema.parse(cmd).type).toBe('deliver_all');
+  });
+
+  it('validates upgrade_elevator command', () => {
+    const cmd = { id: 'c1', type: 'upgrade_elevator', timestamp: 1000 };
+    expect(CommandSchema.parse(cmd).type).toBe('upgrade_elevator');
+  });
+
+  it('validates upgrade_lobby command', () => {
+    const cmd = { id: 'c1', type: 'upgrade_lobby', timestamp: 1000 };
+    expect(CommandSchema.parse(cmd).type).toBe('upgrade_lobby');
+  });
+
+  it('validates claim_daily_reward command', () => {
+    const cmd = { id: 'c1', type: 'claim_daily_reward', timestamp: 1000 };
+    expect(CommandSchema.parse(cmd).type).toBe('claim_daily_reward');
   });
 });

@@ -348,6 +348,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#fff',
+    textTransform: 'capitalize',
   },
   typePill: {
     alignSelf: 'flex-start',
@@ -422,6 +423,7 @@ const sectionStyles = StyleSheet.create({
     fontSize: 15,
     color: '#fff',
     letterSpacing: 0.6,
+    textTransform: 'capitalize',
     textShadowColor: 'rgba(0,0,0,0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
@@ -445,6 +447,7 @@ const slotStyles = StyleSheet.create({
     color: '#2A3344',
     flex: 1,
     minWidth: 0,
+    textTransform: 'capitalize',
   },
   badge: {
     paddingHorizontal: 8,

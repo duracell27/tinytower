@@ -24,6 +24,15 @@ export function processCommand(
     case 'list':
     case 'collect':
       return processProductionCommand(state, command, config, now);
+    case 'spawn_visitor':
+    case 'lift_visitor':
+    case 'collect_tip':
+    case 'deliver_all':
+    case 'upgrade_elevator':
+    case 'upgrade_lobby':
+    case 'claim_daily_reward':
+      // Lobby feature commands - not yet implemented
+      return { success: true, state };
   }
 }
 

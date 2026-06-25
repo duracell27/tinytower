@@ -10,6 +10,7 @@ interface PlayerInfo {
 
 interface AuthState {
   player: PlayerInfo | null;
+  lastPlayer: PlayerInfo | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -17,6 +18,7 @@ interface AuthState {
 interface AuthActions {
   register: (email: string, password: string, playerName: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
+  quickLogin: (password: string) => Promise<void>;
   logout: () => void;
   loadTokens: () => void;
 }
@@ -29,8 +31,19 @@ function getStorage() {
   return storage;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+function saveLastPlayer(player: PlayerInfo) {
+  getStorage().set('lastPlayer', JSON.stringify(player));
+}
+
+function loadLastPlayer(): PlayerInfo | null {
+  const str = getStorage().getString('lastPlayer');
+  if (!str) return null;
+  try { return JSON.parse(str) as PlayerInfo; } catch { return null; }
+}
+
+export const useAuthStore = create<AuthStore>((set, get) => ({
   player: null,
+  lastPlayer: null,
   isAuthenticated: false,
   isLoading: false,
 
@@ -45,7 +58,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       api.setTokens(data.accessToken, data.refreshToken);
       getStorage().set('player', JSON.stringify(data.player));
-      set({ player: data.player, isAuthenticated: true, isLoading: false });
+      saveLastPlayer(data.player);
+      set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
     } catch (e) {
       set({ isLoading: false });
       throw e;
@@ -63,30 +77,40 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       api.setTokens(data.accessToken, data.refreshToken);
       getStorage().set('player', JSON.stringify(data.player));
-      set({ player: data.player, isAuthenticated: true, isLoading: false });
+      saveLastPlayer(data.player);
+      set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
     } catch (e) {
       set({ isLoading: false });
       throw e;
     }
   },
 
+  quickLogin: async (password) => {
+    const last = get().lastPlayer;
+    if (!last) throw new Error('No saved account');
+    await get().login(last.email, password);
+  },
+
   logout: () => {
     api.post('/auth/logout').catch(() => {});
     api.clearTokens();
-    getStorage().delete('player');
+    getStorage().remove('player');
     set({ player: null, isAuthenticated: false });
   },
 
   loadTokens: () => {
+    const lastPlayer = loadLastPlayer();
     const token = api.getAccessToken();
     const playerStr = getStorage().getString('player');
     if (token && playerStr) {
       try {
         const player = JSON.parse(playerStr) as PlayerInfo;
-        set({ player, isAuthenticated: true });
+        set({ player, lastPlayer: lastPlayer ?? player, isAuthenticated: true });
       } catch {
-        set({ player: null, isAuthenticated: false });
+        set({ player: null, lastPlayer, isAuthenticated: false });
       }
+    } else {
+      set({ lastPlayer });
     }
   },
 }));

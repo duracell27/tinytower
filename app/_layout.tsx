@@ -50,10 +50,13 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="login" />
-      <Stack.Screen name="game" />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" options={{ animation: 'none' }} />
+      <Stack.Screen name="login" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="game" options={{ animation: 'none' }} />
+      <Stack.Screen name="profile" options={{ animation: 'none' }} />
+      <Stack.Screen name="city" options={{ animation: 'none' }} />
+      <Stack.Screen name="shop" options={{ animation: 'none' }} />
     </Stack>
   );
 }

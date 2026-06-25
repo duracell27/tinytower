@@ -134,32 +134,9 @@ label and the level number.
 | green     | Кондитерська       | `#62B23F`   | `#4E9A2E`     | Торти, Булки, Пирожені |
 | teal      | Пральня            | `#36AE9C`   | `#1F8979`     | Прання, Сушка, Відбілювання |
 | amber     | Кав'ярня           | `#E7A21E`   | `#B07F12`     | Кава, Млинці, Десерти |
-| purple    | Парфумерія         | `#9A6FD0`   | `#7B52BC`     | Аромати, Мило, Свічки |
-| blue      | Морозиво           | `#4C9BDD`   | `#2E78B5`     | Пломбір, Шейки, Сорбет |
 
 Skin tone (all avatars): `#F0C49C`. Hair color is per-resident (browns/blondes,
 e.g. `#5C3A22`, `#E0A93C`, `#C9923A`, `#D8A24A`, `#B5763A`).
-
-### Floor-row style tokens (TowerScene)
-Each production floor in the tower is a card: a 31px header bar (color gradient + floor
-number chip + name + 5-star rating) over a tinted body that holds three product cards.
-The four constants per floor type are: **header gradient**, **body tint** (strip behind
-the product cards), **product card bg**, and **name/accent color** (product title text).
-Star fill is `#FFD23E` for all colored floors.
-
-| Floor key | Header gradient (180°)   | Body tint  | Card bg    | Name/accent |
-|-----------|--------------------------|------------|------------|-------------|
-| green     | `#74C44F → #5DA83C`      | `#D2EAB4`  | `#F2F8E9`  | `#5B963A`   |
-| teal      | `#43BCAA → #2E9E8E`      | `#BEE6DD`  | `#EBF7F3`  | `#2E9384`   |
-| amber     | `#F2B838 → #E09E10`      | `#F7E4AC`  | `#FDF8E9`  | `#B5871E`   |
-| **purple**| `#A87BE0 → #8B5CC9`      | `#DECFF2`  | `#F4EEFB`  | `#7B52BC`   |
-| **blue**  | `#52A6E2 → #3B8BCB`      | `#C7E2F4`  | `#EAF3FB`  | `#2E78B5`   |
-
-New floor #5 **ПАРФУМЕРІЯ** (purple): products Аромати (buy), Мило (delivery), Свічки (layout).
-New floor #6 **МОРОЗИВО** (blue): products Пломбір (buy), Шейки (sell), Сорбет (collect).
-The blue floor reuses the same blue family as the delivery button (`#52A6E2 → #3B8BCB`),
-and the purple floor reuses the sell-button purple family (`#9A72D6 → #8455C2`) — keep the
-header slightly lighter than the buttons so foreground controls stay readable.
 
 ## Sample data (9 residents)
 | Name | Gender | Floor | Dream job | Mood | Level |

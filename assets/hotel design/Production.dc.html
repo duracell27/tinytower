@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script src="./image-slot.js"></script>
+</helmet>
+
+<div style="display:flex;flex-direction:column;gap:6px;background:{{ cardBg }};border-radius:13px;padding:8px 7px 7px;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.04),0 1px 2px rgba(60,70,45,0.07);box-sizing:border-box;height:100%;font-family:Fredoka,sans-serif">
+
+  <div style="text-align:center;font-weight:600;font-size:11.5px;line-height:1.1;color:{{ nameColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ title }}</div>
+
+  <div style="position:relative;width:100%;height:56px;display:flex;align-items:center;justify-content:center">
+    <sc-if value="{{ isHire }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative;width:54px;height:54px;border-radius:13px;border:2px dashed rgba(60,70,45,0.22);background:rgba(0,0,0,0.02);display:flex;align-items:center;justify-content:center">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="#C2BEB2"><circle cx="12" cy="8" r="4.2"></circle><path d="M4.5 21c0-4.2 3.4-6.8 7.5-6.8s7.5 2.6 7.5 6.8z"></path></svg>
+        <span style="position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;background:#5BA63C;box-shadow:0 1px 2px rgba(40,90,25,0.45);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="9" height="9"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="3.6" stroke-linecap="round"></path></svg></span>
+      </div>
+    </sc-if>
+    <sc-if value="{{ showSlot }}" hint-placeholder-val="{{ true }}">
+      <image-slot id="{{ slotId }}" src="{{ imgSrc }}" style="width:56px;height:56px" shape="rounded" radius="11" fit="contain" placeholder="{{ title }}"></image-slot>
+    </sc-if>
+  </div>
+
+  <!-- BUY -->
+  <sc-if value="{{ isBuy }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 7px;border-radius:9px;background:linear-gradient(180deg,#72C24F,#5BA63C);color:#fff;font-weight:600;font-size:11.5px;text-shadow:0 1px 1px rgba(0,0,0,0.2);box-shadow:0 2px 0 #4A8A2E,inset 0 1px 0 rgba(255,255,255,0.4);cursor:pointer">
+      <svg viewBox="0 0 24 24" width="13" height="13" style="flex:none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="3.2" stroke-linecap="round"></path></svg>
+      <span>{{ label }}</span>
+    </div>
+  </sc-if>
+
+  <!-- DELIVERY (timer) -->
+  <sc-if value="{{ isDelivery }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 7px;border-radius:9px;background:linear-gradient(180deg,#52A6E2,#3B8BCB);color:#fff;font-weight:600;font-size:11.5px;text-shadow:0 1px 1px rgba(0,0,0,0.2);box-shadow:0 2px 0 #2C73AC,inset 0 1px 0 rgba(255,255,255,0.4);cursor:pointer">
+      <svg viewBox="0 0 24 24" width="16" height="14" style="flex:none" fill="#fff"><path d="M2 6.5h11.5v8.5H2z"></path><path d="M13.5 9h3.6L21 12.4V15h-7.5z"></path><circle cx="6" cy="16.6" r="2" stroke="#3B8BCB" stroke-width="1.4"></circle><circle cx="17.2" cy="16.6" r="2" stroke="#3B8BCB" stroke-width="1.4"></circle></svg>
+      <span>{{ label }}</span>
+    </div>
+  </sc-if>
+
+  <!-- LAYOUT (put on shelf) -->
+  <sc-if value="{{ isLayout }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 7px;border-radius:9px;background:linear-gradient(180deg,#F2AC40,#E89320);color:#fff;font-weight:600;font-size:11.5px;text-shadow:0 1px 1px rgba(0,0,0,0.2);box-shadow:0 2px 0 #C9760F,inset 0 1px 0 rgba(255,255,255,0.4);cursor:pointer">
+      <svg viewBox="0 0 24 24" width="14" height="14" style="flex:none"><rect x="4" y="6" width="16" height="13" rx="1.6" fill="#fff"></rect><rect x="4" y="6" width="16" height="4" rx="1.6" fill="rgba(0,0,0,0.16)"></rect><rect x="11" y="6" width="2" height="13" fill="rgba(0,0,0,0.13)"></rect></svg>
+      <span>{{ label }}</span>
+    </div>
+  </sc-if>
+
+  <!-- SELL (timer) -->
+  <sc-if value="{{ isSell }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 7px;border-radius:9px;background:linear-gradient(180deg,#9A72D6,#8455C2);color:#fff;font-weight:600;font-size:11.5px;text-shadow:0 1px 1px rgba(0,0,0,0.2);box-shadow:0 2px 0 #6B41A8,inset 0 1px 0 rgba(255,255,255,0.4);cursor:pointer">
+      <svg viewBox="0 0 24 24" width="15" height="15" style="flex:none" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.4 10.5h9.1l1.9-7H6.3"></path><circle cx="9" cy="19" r="1.5" fill="#fff" stroke="none"></circle><circle cx="17" cy="19" r="1.5" fill="#fff" stroke="none"></circle></svg>
+      <span>{{ label }}</span>
+    </div>
+  </sc-if>
+
+  <!-- COLLECT -->
+  <sc-if value="{{ isCollect }}" hint-placeholder-val="{{ false }}">    <div style="display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 7px;border-radius:9px;background:linear-gradient(180deg,#72C24F,#5BA63C);color:#fff;font-weight:600;font-size:11.5px;text-shadow:0 1px 1px rgba(0,0,0,0.2);box-shadow:0 2px 0 #4A8A2E,inset 0 1px 0 rgba(255,255,255,0.4);cursor:pointer">
+      <span style="width:14px;height:14px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,#FFE69B,#F2B330);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,0.6),0 1px 1px rgba(120,80,0,0.25)"></span>
+      <span>{{ label }}</span>
+    </div>
+  </sc-if>
+
+  <!-- HIRE -->
+  <sc-if value="{{ isHire }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 7px;border-radius:9px;background:linear-gradient(180deg,#72C24F,#5BA63C);color:#fff;font-weight:600;font-size:11.5px;text-shadow:0 1px 1px rgba(0,0,0,0.2);box-shadow:0 2px 0 #4A8A2E,inset 0 1px 0 rgba(255,255,255,0.4);cursor:pointer">
+      <svg viewBox="0 0 24 24" width="16" height="14" style="flex:none" fill="#fff"><circle cx="9" cy="8" r="3.4"></circle><path d="M3 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4z"></path><path d="M19 7.5v6M16 10.5h6" stroke="#fff" stroke-width="2.2" stroke-linecap="round"></path></svg>
+      <span>{{ label }}</span>
+    </div>
+  </sc-if>
+
+  <!-- SUB-BLOCK (price or status) — uniform height keeps buttons aligned -->
+  <div style="height:20px;display:flex;align-items:center;justify-content:center">
+    <sc-if value="{{ isPrice }}" hint-placeholder-val="{{ true }}">
+      <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px 2px 4px;border-radius:10px;background:#FFFFFF;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.04),0 1px 1px rgba(120,90,30,0.12)">
+        <span style="width:13px;height:13px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,#FFE69B,#F2B330);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,0.55),0 1px 1px rgba(180,130,30,0.3)"></span>
+        <span style="font-weight:600;font-size:11.5px;color:#7C7256">{{ sub }}</span>
+      </span>
+    </sc-if>
+    <sc-if value="{{ isStatus }}" hint-placeholder-val="{{ false }}">
+      <span style="display:inline-flex;align-items:center;padding:2px 11px;border-radius:10px;background:rgba(255,255,255,0.85);box-shadow:inset 0 0 0 1px rgba(0,0,0,0.04);font-weight:600;font-size:10.5px;color:#8A8475">{{ sub }}</span>
+    </sc-if>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:112,&quot;height&quot;:140},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Булки&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;buy&quot;,&quot;delivery&quot;,&quot;layout&quot;,&quot;sell&quot;,&quot;collect&quot;,&quot;hire&quot;],&quot;default&quot;:&quot;buy&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;label&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Закупити&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;sub&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;1 250&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;slotId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;prod-1&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;imgSrc&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;nameColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#3A4232&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;cardBg&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#F6F1E2&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.state || 'buy';
+    const timer = s === 'delivery' || s === 'sell';
+    const isHire = s === 'hire';
+    return {
+      title: this.props.title || '',
+      slotId: this.props.slotId || ('slot-' + (this.props.title || 'x')),
+      nameColor: this.props.nameColor || '#3A4232',
+      cardBg: this.props.cardBg || '#F6F1E2',
+      imgSrc: this.props.imgSrc || '',
+      label: this.props.label || '',
+      sub: this.props.sub || '',
+      isBuy: s === 'buy',
+      isDelivery: s === 'delivery',
+      isLayout: s === 'layout',
+      isSell: s === 'sell',
+      isCollect: s === 'collect',
+      isHire: isHire,
+      showSlot: !isHire,
+      isPrice: !timer,
+      isStatus: timer,
+    };
+  }
+}
+</script>
+</body>
+</html>

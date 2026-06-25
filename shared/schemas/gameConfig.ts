@@ -23,10 +23,26 @@ export const FloorConfigSchema = z.object({
   availableTypes: z.array(z.string()).min(1),
 });
 
+export const LobbyConfigSchema = z.object({
+  visitorSpawnInterval: z.number().positive(),
+  dailyTipsTarget: z.number().positive(),
+  dailyTipsReward: z.number().int().positive(),
+  dailyGemLimitBase: z.number().int().positive(),
+  guestTipBase: z.number().positive(),
+  businessmanFallbackBase: z.number().positive(),
+  deliverySpeedBonus: z.number().min(0).max(1),
+  sellSpeedBonus: z.number().min(0).max(1),
+  elevatorUpgradeBaseCost: z.number().int().positive(),
+  lobbyUpgradeBaseCost: z.number().int().positive(),
+  lobbyUpgradeSeats: z.number().int().positive(),
+  defaultLobbyCapacity: z.number().int().positive(),
+});
+
 export const GameConfigSchema = z.object({
   floors: z.array(FloorConfigSchema).min(1),
   productionTypes: z.record(z.string(), ProductionTypeConfigSchema),
   floorTypes: z.record(z.string(), FloorTypeConfigSchema),
   startingBalance: z.number().nonnegative(),
   hotelCapacity: z.number().int().positive(),
+  lobbyConfig: LobbyConfigSchema,
 });

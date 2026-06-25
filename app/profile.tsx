@@ -1,15 +1,24 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
 import { useAuthStore } from '../src/stores/authStore';
 import { useGameStore } from '../src/stores/gameStore';
+import BottomNav from '../src/components/BottomNav';
+
+function xpForLevel(level: number): number {
+  return Math.floor(100 * Math.pow(1.5, level - 1));
+}
 
 export default function ProfileScreen() {
   const player = useAuthStore((s) => s.player);
   const logout = useAuthStore((s) => s.logout);
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
+  const gems = useGameStore((s) => s.gems);
+  const balance = useGameStore((s) => s.balance);
+  const xpNeeded = xpForLevel(playerLevel);
 
   const handleLogout = () => {
     logout();
@@ -19,13 +28,14 @@ export default function ProfileScreen() {
   const initial = (player?.playerName ?? 'G').charAt(0).toUpperCase();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ImageBackground
+      source={require('../assets/welcome-bg.png')}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backText}>{'←'}</Text>
-        </Pressable>
         <Text style={styles.title}>Профіль</Text>
-        <View style={styles.backButton} />
       </View>
 
       <View style={styles.card}>
@@ -44,9 +54,24 @@ export default function ProfileScreen() {
             <Text style={styles.statLabel}>Рівень</Text>
           </View>
           <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{playerXp}</Text>
+          <View style={styles.statItemXp}>
+            <Text style={styles.statValue}>{playerXp}/{xpNeeded}</Text>
             <Text style={styles.statLabel}>Досвід</Text>
+          </View>
+        </View>
+
+        <View style={styles.xpBarContainer}>
+          <View style={[styles.xpBarFill, { width: `${Math.min((playerXp / xpNeeded) * 100, 100)}%` }]} />
+        </View>
+
+        <View style={styles.currencyRow}>
+          <View style={styles.currencyItem}>
+            <View style={styles.coinIcon} />
+            <Text style={styles.currencyValue}>{balance}</Text>
+          </View>
+          <View style={styles.currencyItem}>
+            <View style={styles.gemIcon} />
+            <Text style={styles.currencyValueGem}>{gems}</Text>
           </View>
         </View>
       </View>
@@ -57,31 +82,20 @@ export default function ProfileScreen() {
       ]}>
         <Text style={styles.logoutText}>Вийти з акаунту</Text>
       </Pressable>
-    </SafeAreaView>
+
+      <BottomNav />
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FBFAF5',
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backText: {
-    fontSize: 24,
-    color: '#27331F',
   },
   title: {
     fontFamily: 'Fredoka_600SemiBold',
@@ -142,6 +156,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
+  statItemXp: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
   statValue: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 24,
@@ -156,6 +175,56 @@ const styles = StyleSheet.create({
     width: 1,
     height: 36,
     backgroundColor: '#E4E1D3',
+  },
+  xpBarContainer: {
+    width: '100%',
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(60,120,40,0.12)',
+    marginTop: 18,
+    overflow: 'hidden',
+  },
+  xpBarFill: {
+    height: '100%',
+    borderRadius: 4,
+    backgroundColor: '#3FA535',
+  },
+  currencyRow: {
+    flexDirection: 'row',
+    gap: 20,
+    marginTop: 18,
+  },
+  currencyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  coinIcon: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#F2B330',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.55)',
+  },
+  currencyValue: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: '#C28A22',
+  },
+  gemIcon: {
+    width: 14,
+    height: 14,
+    backgroundColor: '#3FB8D6',
+    borderRadius: 3,
+    transform: [{ rotate: '45deg' }],
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.6)',
+  },
+  currencyValueGem: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: '#2592AB',
   },
   logoutButton: {
     marginHorizontal: 20,

@@ -23,12 +23,16 @@ const BTN_COLORS: Record<string, { colors: [string, string]; shadowColor: string
 
 function formatTime(ms: number): string {
   const totalSec = Math.ceil(ms / 1000);
-  const min = Math.floor(totalSec / 60);
+  if (totalSec < 60) return `${totalSec} с.`;
+  const totalMin = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
-  if (min > 0) {
-    return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-  }
-  return `${String(sec).padStart(2, '0')}`;
+  if (totalMin < 60) return `${totalMin} хв. ${sec} с.`;
+  const hours = Math.floor(totalMin / 60);
+  const min = totalMin % 60;
+  if (hours < 24) return `${hours} г. ${min} хв.`;
+  const days = Math.floor(hours / 24);
+  const h = hours % 24;
+  return `${days} дн. ${h} г.`;
 }
 
 function formatDuration(ms: number): string {
@@ -289,17 +293,12 @@ export default function ProductionCard({
             contentFit="contain"
           />
         )}
-        {/* Worker mini-indicator + bonus badges */}
+        {/* Worker mini-indicator */}
         {worker && (
           <View style={styles.workerBadgeColumn}>
             <View style={styles.workerBadge}>
               <WorkerAvatar worker={worker} size={24} />
             </View>
-            {hasDiscount && (
-              <View style={styles.bonusBubbleGreen}>
-                <Text style={styles.bonusBubbleText}>−{discountPercent}%</Text>
-              </View>
-            )}
             {hasMultiplier && (
               <View style={styles.bonusBubbleAmber}>
                 <Text style={styles.bonusBubbleText}>×{multiplier}</Text>
@@ -347,6 +346,7 @@ export default function ProductionCard({
           </View>
         ) : null}
       </View>
+
     </View>
   );
 }
@@ -371,6 +371,7 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     lineHeight: 13,
     textAlign: 'center',
+    textTransform: 'capitalize',
   },
   imageContainer: {
     width: '100%',
@@ -517,14 +518,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#fff',
     overflow: 'hidden',
-  },
-  bonusBubbleGreen: {
-    backgroundColor: '#5BA63C',
-    borderRadius: 8,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderWidth: 1,
-    borderColor: '#fff',
   },
   bonusBubbleAmber: {
     backgroundColor: '#E89320',

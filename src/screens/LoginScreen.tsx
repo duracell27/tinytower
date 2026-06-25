@@ -51,6 +51,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
   const [password, setPassword] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const isLogin = tab === 'login';
   const isLoading = useAuthStore((s) => s.isLoading);
@@ -205,14 +206,19 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                   style={[styles.input, { paddingRight: 48 }]}
                   placeholder="Мінімум 6 символів"
                   placeholderTextColor="#B7B3A2"
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
                   editable={!isLoading}
                 />
-                <View style={styles.eyeIcon}>
-                  <View style={styles.eyeDot} />
-                </View>
+                <Pressable
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeButton}
+                >
+                  <View style={[styles.eyeShape, showPassword && styles.eyeShapeActive]}>
+                    <View style={styles.eyeDot} />
+                  </View>
+                </Pressable>
               </View>
             </View>
 
@@ -427,15 +433,27 @@ const styles = StyleSheet.create({
   passwordWrap: {
     position: 'relative',
   },
-  eyeIcon: {
+  eyeButton: {
     position: 'absolute',
-    right: 16,
+    right: 8,
     top: 0,
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    width: 22,
+    width: 36,
     height: '100%',
+  },
+  eyeShape: {
+    width: 22,
+    height: 15,
+    borderRadius: 11,
+    borderWidth: 2.5,
+    borderColor: '#B7B3A2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eyeShapeActive: {
+    borderColor: '#3C9A34',
   },
   eyeDot: {
     width: 5,

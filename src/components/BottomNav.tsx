@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 
 interface NavItemProps {
   active?: boolean;
@@ -44,37 +44,46 @@ function TowerIcon({ active }: { active: boolean }) {
 }
 
 // City icon: three vertical bars of different heights
-function CityIcon() {
+function CityIcon({ active }: { active: boolean }) {
+  const color = active ? '#3C9A34' : '#3A4232';
   return (
     <View style={styles.cityIcon}>
-      <View style={[styles.cityBar, { width: 6, height: 13 }]} />
-      <View style={[styles.cityBar, { width: 6, height: 20 }]} />
-      <View style={[styles.cityBar, { width: 6, height: 10 }]} />
+      <View style={[styles.cityBar, { width: 6, height: 13, backgroundColor: color }]} />
+      <View style={[styles.cityBar, { width: 6, height: 20, backgroundColor: color }]} />
+      <View style={[styles.cityBar, { width: 6, height: 10, backgroundColor: color }]} />
     </View>
   );
 }
 
 // Shop icon: bag shape
-function ShopIcon() {
+function ShopIcon({ active }: { active: boolean }) {
+  const color = active ? '#3C9A34' : '#3A4232';
   return (
     <View style={styles.shopIcon}>
-      <View style={styles.shopBody} />
-      <View style={styles.shopHandle} />
+      <View style={[styles.shopBody, { backgroundColor: color }]} />
+      <View style={[styles.shopHandle, { borderColor: color }]} />
     </View>
   );
 }
 
 // Profile icon: head + shoulders
-function ProfileIcon() {
+function ProfileIcon({ active }: { active: boolean }) {
+  const color = active ? '#3C9A34' : '#3A4232';
   return (
     <View style={styles.profileIcon}>
-      <View style={styles.profileHead} />
-      <View style={styles.profileBody} />
+      <View style={[styles.profileHead, { backgroundColor: color }]} />
+      <View style={[styles.profileBody, { backgroundColor: color }]} />
     </View>
   );
 }
 
 export default function BottomNav() {
+  const pathname = usePathname();
+  const isGame = pathname === '/game';
+  const isCity = pathname === '/city';
+  const isShop = pathname === '/shop';
+  const isProfile = pathname === '/profile';
+
   return (
     <View style={styles.container}>
       <View style={styles.glassPanel}>
@@ -83,17 +92,17 @@ export default function BottomNav() {
           style={styles.sheen}
         />
         <View style={styles.content}>
-          <NavItem active label="Вежа">
-            <TowerIcon active />
+          <NavItem active={isGame} label="Вежа" onPress={() => { if (!isGame) router.replace('/game'); }}>
+            <TowerIcon active={isGame} />
           </NavItem>
-          <NavItem label="Місто">
-            <CityIcon />
+          <NavItem active={isCity} label="Місто" onPress={() => { if (!isCity) router.replace('/city'); }}>
+            <CityIcon active={isCity} />
           </NavItem>
-          <NavItem label="Магазин">
-            <ShopIcon />
+          <NavItem active={isShop} label="Магазин" onPress={() => { if (!isShop) router.replace('/shop'); }}>
+            <ShopIcon active={isShop} />
           </NavItem>
-          <NavItem label="Профіль" onPress={() => router.push('/profile')}>
-            <ProfileIcon />
+          <NavItem active={isProfile} label="Профіль" onPress={() => { if (!isProfile) router.replace('/profile'); }}>
+            <ProfileIcon active={isProfile} />
           </NavItem>
         </View>
       </View>

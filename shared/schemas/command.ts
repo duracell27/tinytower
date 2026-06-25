@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { VisitorRoleSchema } from './visitor';
 
 const ProductionBaseSchema = z.object({
   id: z.string(),
@@ -43,6 +44,44 @@ export const EvictWorkerCommandSchema = z.object({
   timestamp: z.number(),
 });
 
+const TimestampedBaseSchema = z.object({
+  id: z.string(),
+  timestamp: z.number(),
+});
+
+export const SpawnVisitorCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('spawn_visitor'),
+  visitorId: z.string(),
+  role: VisitorRoleSchema,
+  targetFloor: z.number().int().positive(),
+  hairColor: z.string(),
+  female: z.boolean(),
+});
+
+export const LiftVisitorCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('lift_visitor'),
+});
+
+export const CollectTipCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('collect_tip'),
+});
+
+export const DeliverAllCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('deliver_all'),
+});
+
+export const UpgradeElevatorCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('upgrade_elevator'),
+});
+
+export const UpgradeLobbyCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('upgrade_lobby'),
+});
+
+export const ClaimDailyRewardCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('claim_daily_reward'),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -50,4 +89,11 @@ export const CommandSchema = z.discriminatedUnion('type', [
   AssignWorkerCommandSchema,
   FireWorkerCommandSchema,
   EvictWorkerCommandSchema,
+  SpawnVisitorCommandSchema,
+  LiftVisitorCommandSchema,
+  CollectTipCommandSchema,
+  DeliverAllCommandSchema,
+  UpgradeElevatorCommandSchema,
+  UpgradeLobbyCommandSchema,
+  ClaimDailyRewardCommandSchema,
 ]);

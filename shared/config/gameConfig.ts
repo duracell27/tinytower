@@ -27,6 +27,20 @@ const rawConfig = {
   },
   startingBalance: 1000,
   hotelCapacity: 10,
+  lobbyConfig: {
+    visitorSpawnInterval: 120_000,
+    dailyTipsTarget: 10_000,
+    dailyTipsReward: 5,
+    dailyGemLimitBase: 15,
+    guestTipBase: 10,
+    businessmanFallbackBase: 100,
+    deliverySpeedBonus: 0.05,
+    sellSpeedBonus: 0.05,
+    elevatorUpgradeBaseCost: 3,
+    lobbyUpgradeBaseCost: 5,
+    lobbyUpgradeSeats: 3,
+    defaultLobbyCapacity: 10,
+  },
 } satisfies GameConfig;
 
 export const gameConfig: GameConfig = GameConfigSchema.parse(rawConfig);
@@ -34,6 +48,7 @@ export const gameConfig: GameConfig = GameConfigSchema.parse(rawConfig);
 export function createInitialState(config: GameConfig): GameState {
   return {
     balance: config.startingBalance,
+    gems: 20,
     floors: config.floors.map((floorConfig): Floor => ({
       id: floorConfig.id,
       name: floorConfig.name,
@@ -46,5 +61,14 @@ export function createInitialState(config: GameConfig): GameState {
     commandQueue: [],
     workers: [],
     hotelCapacity: config.hotelCapacity,
+    lobbyVisitors: [],
+    lobbyCapacity: config.lobbyConfig.defaultLobbyCapacity,
+    elevatorLevel: 1,
+    elevatorFloor: 0,
+    dailyTips: 0,
+    dailyGemsCollected: 0,
+    dailyTipsRewardClaimed: false,
+    lastDailyReset: 0,
+    nextVisitorAt: 0,
   };
 }

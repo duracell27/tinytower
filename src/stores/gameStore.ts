@@ -13,10 +13,17 @@ function uuid(): string {
 
 const COMMAND_QUEUE_CAP = 10_000;
 
+export interface LevelUpEvent {
+  newLevel: number;
+  coinReward: number;
+  gemReward: number;
+}
+
 interface PlayerStats {
   playerLevel: number;
   playerXp: number;
   gems: number;
+  levelUpQueue: LevelUpEvent[];
 }
 
 interface BuildingState {
@@ -38,6 +45,7 @@ interface GameActions {
   fireWorker: (workerId: string) => void;
   evictWorker: (workerId: string) => void;
   liftVisitor: () => void;
+  dismissLevelUp: () => void;
   hydrate: (state: GameState & Partial<SyncState>) => void;
   reconcile: (state: GameState, stateVersion: number, ackCursor: number) => void;
   clearAckedCommands: (ackCursor: number) => void;
@@ -45,12 +53,17 @@ interface GameActions {
 
 type GameStore = GameState & PlayerStats & BuildingState & SyncState & GameActions;
 
+function xpForLevel(level: number): number {
+  return Math.floor(100 * Math.pow(1.5, level - 1));
+}
+
 function executeCommand(
   get: () => GameStore,
   set: (partial: Partial<GameStore>) => void,
   command: Command,
 ) {
-  const { balance, floors, commandQueue, workers, hotelCapacity } = get();
+  const store = get();
+  const { balance, floors, commandQueue, workers, hotelCapacity } = store;
   const result = processCommand({ balance, floors, commandQueue, workers, hotelCapacity }, command, gameConfig, command.timestamp);
   if (!result.success) return;
 
@@ -59,12 +72,33 @@ function executeCommand(
     newQueue = newQueue.slice(newQueue.length - COMMAND_QUEUE_CAP);
   }
 
+  const coinDelta = Math.abs(result.state.balance - balance);
+  const listBonus = command.type === 'list' ? 10 : 0;
+  let { playerXp, playerLevel } = store;
+  let newBalance = result.state.balance;
+  let { gems } = store;
+  const levelUps: LevelUpEvent[] = [];
+  playerXp += coinDelta + listBonus;
+  while (playerXp >= xpForLevel(playerLevel)) {
+    playerXp -= xpForLevel(playerLevel);
+    playerLevel++;
+    const coinReward = playerLevel * 100;
+    const gemReward = playerLevel * 3;
+    newBalance += coinReward;
+    gems += gemReward;
+    levelUps.push({ newLevel: playerLevel, coinReward, gemReward });
+  }
+
   set({
-    balance: result.state.balance,
+    balance: newBalance,
     floors: result.state.floors,
     workers: result.state.workers,
     hotelCapacity: result.state.hotelCapacity,
     commandQueue: newQueue,
+    playerXp,
+    playerLevel,
+    gems,
+    levelUpQueue: [...store.levelUpQueue, ...levelUps],
   });
 }
 
@@ -73,6 +107,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   playerLevel: 1,
   playerXp: 0,
   gems: 20,
+  levelUpQueue: [],
   hotelOccupied: 0,
   hotelTotal: 32,
   visitors: 0,
@@ -137,6 +172,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       workerId,
       timestamp: clock.now(),
     });
+  },
+
+  dismissLevelUp: () => {
+    set((state) => ({ levelUpQueue: state.levelUpQueue.slice(1) }));
   },
 
   liftVisitor: () => {

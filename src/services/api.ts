@@ -24,9 +24,9 @@ function setTokens(access: string, refresh: string): void {
 }
 
 function clearTokens(): void {
-  getStorage().delete('accessToken');
-  getStorage().delete('refreshToken');
-  getStorage().delete('player');
+  getStorage().remove('accessToken');
+  getStorage().remove('refreshToken');
+  getStorage().remove('player');
 }
 
 let onAuthFailure: (() => void) | null = null;
@@ -61,9 +61,10 @@ async function request<T>(
   body?: unknown,
   retry = true,
 ): Promise<T> {
+  const isAuthEndpoint = path === '/auth/login' || path === '/auth/register';
   const token = getAccessToken();
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (token && !isAuthEndpoint) headers['Authorization'] = `Bearer ${token}`;
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method,
@@ -71,7 +72,7 @@ async function request<T>(
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  if (res.status === 401 && retry) {
+  if (res.status === 401 && retry && !isAuthEndpoint) {
     const refreshed = await refreshTokens();
     if (refreshed) return request<T>(method, path, body, false);
     clearTokens();

@@ -117,4 +117,22 @@ describe('createInitialState', () => {
     const state = createInitialState(gameConfig);
     expect(state.hotelCapacity).toBe(gameConfig.hotelCapacity);
   });
+
+  it('gems initialized to 20', () => {
+    const state = createInitialState(gameConfig);
+    expect(state.gems).toBe(20);
+  });
+
+  it('lobby fields initialized', () => {
+    const state = createInitialState(gameConfig);
+    expect(state.lobbyVisitors).toEqual([]);
+    expect(state.lobbyCapacity).toBe(gameConfig.lobbyConfig.defaultLobbyCapacity);
+    expect(state.elevatorLevel).toBe(1);
+    expect(state.elevatorFloor).toBe(0);
+    expect(state.dailyTips).toBe(0);
+    expect(state.dailyGemsCollected).toBe(0);
+    expect(state.dailyTipsRewardClaimed).toBe(false);
+    expect(state.lastDailyReset).toBe(0);
+    expect(state.nextVisitorAt).toBe(0);
+  });
 });

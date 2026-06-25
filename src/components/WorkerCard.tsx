@@ -254,6 +254,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#2A3344',
+    textTransform: 'capitalize',
   },
   moodDotOuter: {
     width: 15,
@@ -277,6 +278,7 @@ const styles = StyleSheet.create({
   dreamJobText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 12.5,
+    textTransform: 'capitalize',
   },
   statusText: {
     fontFamily: 'Fredoka_500Medium',
@@ -330,6 +332,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 13,
     color: '#3A4250',
+    textTransform: 'capitalize',
   },
   actionButton: {
     borderRadius: 14,
