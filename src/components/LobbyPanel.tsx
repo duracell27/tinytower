@@ -625,7 +625,7 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
                   <View style={styles.statTile}>
                     <PersonIcon size={14} />
                     <Text style={styles.statLabel}>Очікують</Text>
-                    <Text style={styles.statValue}>{lobbyVisitors.length}</Text>
+                    <Text style={styles.statValue}>{lobbyVisitors.length} / {lobbyCapacity}</Text>
                   </View>
                   <View style={styles.statTile}>
                     <ClockIcon size={14} />
