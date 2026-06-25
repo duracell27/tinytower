@@ -7,6 +7,7 @@ import {
   Modal,
   StyleSheet,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Circle, Polygon } from 'react-native-svg';
@@ -497,6 +498,16 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
     transform: [{ translateY: translateY.value }],
   }));
 
+  // Handle collect tip with new worker notification
+  const handleCollectTip = useCallback(() => {
+    const workersBefore = useGameStore.getState().workers.length;
+    collectTip();
+    const workersAfter = useGameStore.getState().workers.length;
+    if (workersAfter > workersBefore) {
+      Alert.alert('Новий працівник!', 'У вас з\'явився новий працівник, він шукає роботу!');
+    }
+  }, [collectTip]);
+
   // Determine action button for active visitor
   const getActionButton = useCallback(() => {
     if (!activeVisitor) return null;
@@ -521,7 +532,7 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
         shadowColor: '#BC820F',
         textColor: '#5A3D06',
         icon: 'coin' as const,
-        onPress: collectTip,
+        onPress: handleCollectTip,
       };
     }
 
@@ -532,7 +543,7 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
         shadowColor: '#2E72A8',
         textColor: '#fff',
         icon: null,
-        onPress: collectTip,
+        onPress: handleCollectTip,
       };
     }
 
@@ -543,9 +554,9 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
       shadowColor: '#BC820F',
       textColor: '#5A3D06',
       icon: 'coin' as const,
-      onPress: collectTip,
+      onPress: handleCollectTip,
     };
-  }, [activeVisitor, arrived, elevatorLevel, dailyGemsCollected, dailyGemLimit, liftVisitor, collectTip]);
+  }, [activeVisitor, arrived, elevatorLevel, dailyGemsCollected, dailyGemLimit, liftVisitor, handleCollectTip]);
 
   const actionButton = getActionButton();
 

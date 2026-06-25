@@ -73,6 +73,14 @@ export default function GameScreen() {
     return () => syncService.stop();
   }, []);
 
+  // Initialize nextVisitorAt on game start if it's 0
+  useEffect(() => {
+    const { nextVisitorAt: currentNextVisitorAt } = useGameStore.getState();
+    if (currentNextVisitorAt === 0) {
+      spawnVisitor();
+    }
+  }, [spawnVisitor]);
+
   // Spawn visitors on timer
   useEffect(() => {
     if (nextVisitorAt > 0 && now >= nextVisitorAt && lobbyVisitors.length < lobbyCapacity) {
