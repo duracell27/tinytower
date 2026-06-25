@@ -49,13 +49,20 @@ export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorPro
 }
 
 interface LobbyFloorProps {
-  visitors: number;
-  onLift: () => void;
+  visitorCount: number;
+  nextVisitorAt: number;
+  now: number;
+  onPress: () => void;
 }
 
-export function LobbyFloor({ visitors, onLift }: LobbyFloorProps) {
+export function LobbyFloor({ visitorCount, nextVisitorAt, now, onPress }: LobbyFloorProps) {
+  const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = secondsLeft % 60;
+  const timerText = `${minutes}:${String(seconds).padStart(2, '0')}`;
+
   return (
-    <View style={styles.container}>
+    <Pressable onPress={onPress} style={styles.container}>
       <LinearGradient colors={['#8090A6', '#5F6E84']} style={styles.header}>
         <View style={styles.numberBadge}>
           <Text style={styles.numberText}>0</Text>
@@ -75,29 +82,19 @@ export function LobbyFloor({ visitors, onLift }: LobbyFloorProps) {
           />
           <View style={styles.techInfo}>
             <View style={styles.visitorRow}>
-              <Text style={styles.visitorLabel}>Новий відвідувач</Text>
+              <Text style={styles.visitorLabel}>Очікують</Text>
               <View style={styles.visitorBadge}>
-                <Text style={styles.visitorBadgeText}>{visitors}</Text>
+                <Text style={styles.visitorBadgeText}>{visitorCount}</Text>
               </View>
+            </View>
+            <View style={styles.visitorRow}>
+              <Text style={styles.visitorLabel}>Новий гість</Text>
+              <Text style={styles.timerText}>{timerText}</Text>
             </View>
           </View>
         </View>
-        {visitors > 0 && (
-          <Pressable onPress={onLift} style={({ pressed }) => [
-            styles.liftButton,
-            pressed && styles.liftButtonPressed,
-          ]}>
-            <LinearGradient
-              colors={['#62C84F', '#3FA535']}
-              style={styles.liftButtonGradient}
-            >
-              <Text style={styles.liftButtonText}>Підняти на ліфті</Text>
-            </LinearGradient>
-            <View style={styles.liftButtonShadow} />
-          </Pressable>
-        )}
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -233,39 +230,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#fff',
   },
-  liftButton: {
-    borderRadius: 14,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  liftButtonPressed: {
-    opacity: 0.85,
-  },
-  liftButtonGradient: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    zIndex: 1,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.5)',
-    borderRadius: 14,
-  },
-  liftButtonText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 16,
-    color: '#fff',
-    textShadowColor: 'rgba(20,70,15,0.45)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  liftButtonShadow: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#2E8A24',
-    borderBottomLeftRadius: 14,
-    borderBottomRightRadius: 14,
+  timerText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 14,
+    color: '#5A6478',
+    fontVariant: ['tabular-nums'] as any,
   },
 });

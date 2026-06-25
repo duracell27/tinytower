@@ -7,6 +7,7 @@ import BottomNav from '../src/components/BottomNav';
 import FloorCard from '../src/components/FloorCard';
 import { HotelFloor, LobbyFloor } from '../src/components/TechnicalFloor';
 import HotelPanel from '../src/components/HotelPanel';
+import LobbyPanel from '../src/components/LobbyPanel';
 import LevelUpModal from '../src/components/LevelUpModal';
 import { useGameStore, useBalance } from '../src/stores/gameStore';
 import { useAuthStore } from '../src/stores/authStore';
@@ -55,19 +56,29 @@ export default function GameScreen() {
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
   const hotelOccupied = useGameStore((s) => s.workers.filter(w => w.assignedFloorId === null).length);
   const hotelTotal = hotelCapacity;
-  const visitors = useGameStore((s) => s.visitors);
-  const liftVisitor = useGameStore((s) => s.liftVisitor);
+  const lobbyVisitors = useGameStore((s) => s.lobbyVisitors);
+  const nextVisitorAt = useGameStore((s) => s.nextVisitorAt);
+  const lobbyCapacity = useGameStore((s) => s.lobbyCapacity);
+  const spawnVisitor = useGameStore((s) => s.spawnVisitor);
   const player = useAuthStore((s) => s.player);
   const playerName = player?.playerName ?? 'Гравець';
   const initial = playerName.charAt(0).toUpperCase();
 
   const [hotelOpen, setHotelOpen] = useState(false);
+  const [lobbyOpen, setLobbyOpen] = useState(false);
   const listRef = useRef<FlashList<FloorItem>>(null);
 
   useEffect(() => {
     syncService.start();
     return () => syncService.stop();
   }, []);
+
+  // Spawn visitors on timer
+  useEffect(() => {
+    if (nextVisitorAt > 0 && now >= nextVisitorAt && lobbyVisitors.length < lobbyCapacity) {
+      spawnVisitor();
+    }
+  }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor]);
 
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
     if (item.type === 'hotel') {
@@ -80,7 +91,12 @@ export default function GameScreen() {
     if (item.type === 'lobby') {
       return (
         <View style={styles.floorWrapper}>
-          <LobbyFloor visitors={visitors} onLift={liftVisitor} />
+          <LobbyFloor
+            visitorCount={lobbyVisitors.length}
+            nextVisitorAt={nextVisitorAt}
+            now={now}
+            onPress={() => setLobbyOpen(true)}
+          />
         </View>
       );
     }
@@ -89,7 +105,7 @@ export default function GameScreen() {
         <FloorCard floorId={item.id} balance={balance} now={now} onHireSlot={() => setHotelOpen(true)} />
       </View>
     );
-  }, [balance, now, hotelOccupied, hotelTotal, visitors, liftVisitor]);
+  }, [balance, now, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt]);
 
   return (
     <View style={styles.container}>
@@ -126,6 +142,7 @@ export default function GameScreen() {
       </ImageBackground>
 
       <HotelPanel visible={hotelOpen} onClose={() => setHotelOpen(false)} />
+      <LobbyPanel visible={lobbyOpen} onClose={() => setLobbyOpen(false)} />
       <LevelUpModal />
     </View>
   );
