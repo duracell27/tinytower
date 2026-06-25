@@ -102,13 +102,13 @@ function formatCoins(n: number): string {
 
 /* ---------- Inline SVG Icons ---------- */
 
-function ElevatorIcon({ size = 22 }: { size?: number }) {
+function ElevatorIcon({ size = 22, color = '#fff' }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Rect x={3} y={2} width={18} height={20} rx={2} stroke="#fff" strokeWidth={2} />
-      <Path d="M12 2v20" stroke="#fff" strokeWidth={1.5} />
-      <Path d="M8 8l-2 3h4L8 8z" fill="#fff" />
-      <Path d="M16 16l2-3h-4l2 3z" fill="#fff" />
+      <Rect x={3} y={2} width={18} height={20} rx={2} stroke={color} strokeWidth={2} />
+      <Path d="M12 2v20" stroke={color} strokeWidth={1.5} />
+      <Path d="M8 8l-2 3h4L8 8z" fill={color} />
+      <Path d="M16 16l2-3h-4l2 3z" fill={color} />
     </Svg>
   );
 }
@@ -151,11 +151,19 @@ function PeopleGroupIcon({ size = 20, color = '#5A6478' }: { size?: number; colo
 }
 
 function GemIcon({ size = 14 }: { size?: number }) {
+  const inner = Math.round(size * 0.72);
   return (
-    <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
-      <Path d="M10 2l7 6-7 10L3 8l7-6z" fill="#8FE6F2" />
-      <Path d="M10 2l7 6-7 10V2z" fill="#3FB8D6" />
-    </Svg>
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{
+        width: inner,
+        height: inner,
+        backgroundColor: '#3FB8D6',
+        borderRadius: Math.round(inner * 0.22),
+        transform: [{ rotate: '45deg' }],
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.65)',
+      }} />
+    </View>
   );
 }
 
@@ -845,8 +853,8 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
                   </View>
 
                   <View style={styles.upgradeDescRow}>
-                    <View style={styles.upgradeIconTile}>
-                      <ElevatorIcon size={22} />
+                    <View style={[styles.upgradeIconTile, { backgroundColor: 'rgba(91,166,60,0.15)' }]}>
+                      <ElevatorIcon size={22} color="#5BA63C" />
                     </View>
                     <Text style={styles.upgradeDesc}>
                       Кожне покращення ліфта прискорює підйом і збільшує чайові гостей
@@ -1459,7 +1467,6 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 14,
-    backgroundColor: 'rgba(91,166,60,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -73,18 +73,18 @@ export default function GameScreen() {
     return () => syncService.stop();
   }, []);
 
-  // Initialize nextVisitorAt on game start if it's 0
+  // Spawn visitors: handles initial spawn, offline catch-up, and regular timer
   useEffect(() => {
-    const { nextVisitorAt: currentNextVisitorAt } = useGameStore.getState();
-    if (currentNextVisitorAt === 0) {
+    if (now <= 0) return;
+    let s = useGameStore.getState();
+    while (
+      (s.nextVisitorAt === 0 || now >= s.nextVisitorAt) &&
+      s.lobbyVisitors.length < s.lobbyCapacity
+    ) {
+      const prevNextAt = s.nextVisitorAt;
       spawnVisitor();
-    }
-  }, [spawnVisitor]);
-
-  // Spawn visitors on timer
-  useEffect(() => {
-    if (nextVisitorAt > 0 && now >= nextVisitorAt && lobbyVisitors.length < lobbyCapacity) {
-      spawnVisitor();
+      s = useGameStore.getState();
+      if (s.nextVisitorAt === prevNextAt) break; // spawn rejected, stop
     }
   }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor]);
 
@@ -130,6 +130,7 @@ export default function GameScreen() {
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             estimatedItemSize={150}
+            extraData={now}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             initialScrollIndex={FLOOR_LIST.length - 1}
