@@ -53,36 +53,13 @@ export class SyncService {
         : new Set<string>();
 
     const newCommands = commands.filter((c) => !existingIds.has(c.id));
+    if (newCommands.length > 0) {
+      this.logger.log(`Processing ${newCommands.length} new commands: ${newCommands.map(c => c.type).join(', ')}`);
+    }
 
-    // Wall-clock cap: total timer durations cannot exceed real elapsed time + 5s tolerance
-    const wallBudget = serverNow - player.lastSeenAt.getTime();
-    let timerConsumed = 0;
     const acceptedCommands: Command[] = [];
 
     for (const cmd of newCommands) {
-      if (cmd.type === 'list' || cmd.type === 'collect') {
-        const floor = gameState.floors.find((f) => f.id === cmd.floorId);
-        const prod = floor?.productions[cmd.slotIdx];
-        if (prod && prod.stageStartedAt > 0) {
-          const typeConfig = prod.typeId
-            ? gameConfig.productionTypes[prod.typeId]
-            : null;
-          if (typeConfig) {
-            const duration =
-              cmd.type === 'list'
-                ? typeConfig.deliveryDuration
-                : typeConfig.sellDuration;
-            timerConsumed += duration;
-            if (timerConsumed > wallBudget + 5000) {
-              this.logger.warn(
-                `Wall-clock cap exceeded for player ${playerId}, rejecting remaining commands`,
-              );
-              break;
-            }
-          }
-        }
-      }
-
       const cmdNow = Math.min(cmd.timestamp, serverNow);
       const result = processCommand(gameState, cmd, gameConfig, cmdNow);
       if (result.success) {
