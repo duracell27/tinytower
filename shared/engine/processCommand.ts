@@ -1,5 +1,6 @@
 import type { GameState, Command, GameConfig, Worker } from '../types';
 import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier } from './workerUtils';
+import { processLobbyCommand } from './lobbyCommands';
 
 export interface ProcessResult {
   success: boolean;
@@ -12,6 +13,7 @@ export function processCommand(
   command: Command,
   config: GameConfig,
   now: number,
+  playerLevel: number = 1,
 ): ProcessResult {
   switch (command.type) {
     case 'assign_worker':
@@ -31,8 +33,7 @@ export function processCommand(
     case 'upgrade_elevator':
     case 'upgrade_lobby':
     case 'claim_daily_reward':
-      // Lobby feature commands - not yet implemented
-      return { success: true, state };
+      return processLobbyCommand(state, command, config, playerLevel);
   }
 }
 
