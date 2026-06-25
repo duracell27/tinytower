@@ -29,9 +29,9 @@ export function processLobbyCommand(
     case 'lift_visitor':
       return handleLiftVisitor(state);
     case 'collect_tip':
-      return handleCollectTip(state, config, playerLevel);
+      return handleCollectTip(state, config, playerLevel, command.timestamp);
     case 'deliver_all':
-      return handleDeliverAll(state, config, playerLevel);
+      return handleDeliverAll(state, config, playerLevel, command.timestamp);
     case 'upgrade_elevator':
       return handleUpgradeElevator(state, config);
     case 'upgrade_lobby':
@@ -164,6 +164,7 @@ function handleCollectTip(
   state: GameState,
   config: GameConfig,
   playerLevel: number,
+  now: number,
 ): ProcessResult {
   if (state.lobbyVisitors.length === 0) {
     return { success: false, state, error: 'No visitors' };
@@ -173,10 +174,15 @@ function handleCollectTip(
     return { success: false, state, error: 'Elevator not at target floor' };
   }
   let newState = applyVisitorEffect(state, active, config, playerLevel);
+  // If the spawn timer expired while the lobby was full, restart it from now
+  const nextVisitorAt = state.nextVisitorAt > 0 && state.nextVisitorAt <= now
+    ? now + config.lobbyConfig.visitorSpawnInterval
+    : state.nextVisitorAt;
   newState = {
     ...newState,
     lobbyVisitors: newState.lobbyVisitors.slice(1),
     elevatorFloor: 0,
+    nextVisitorAt,
   };
   return { success: true, state: newState };
 }
@@ -185,6 +191,7 @@ function handleDeliverAll(
   state: GameState,
   config: GameConfig,
   playerLevel: number,
+  now: number,
 ): ProcessResult {
   if (state.gems < 1) {
     return { success: false, state, error: 'Not enough gems' };
@@ -196,7 +203,11 @@ function handleDeliverAll(
   for (const visitor of state.lobbyVisitors) {
     newState = applyVisitorEffect(newState, visitor, config, playerLevel);
   }
-  newState = { ...newState, lobbyVisitors: [], elevatorFloor: 0 };
+  // Restart spawn timer from now (was blocked while lobby was full)
+  const nextVisitorAt = state.nextVisitorAt > 0 && state.nextVisitorAt <= now
+    ? now + config.lobbyConfig.visitorSpawnInterval
+    : state.nextVisitorAt;
+  newState = { ...newState, lobbyVisitors: [], elevatorFloor: 0, nextVisitorAt };
   return { success: true, state: newState };
 }
 
