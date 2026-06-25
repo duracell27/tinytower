@@ -460,10 +460,11 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
   const arrived = activeVisitor ? elevatorFloor >= activeVisitor.targetFloor : false;
 
   // Timer
+  const isFull = lobbyVisitors.length >= lobbyCapacity;
   const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
-  const timerText = `${minutes}:${String(seconds).padStart(2, '0')}`;
+  const timerText = isFull ? 'Повний' : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
   // Daily tips
   const dailyTipsTarget = gameConfig.lobbyConfig.dailyTipsTarget;

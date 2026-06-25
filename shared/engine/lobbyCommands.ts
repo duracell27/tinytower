@@ -56,12 +56,15 @@ function handleSpawnVisitor(
     hairColor: command.hairColor,
     female: command.female,
   };
+  const newVisitors = [...state.lobbyVisitors, visitor];
+  const willBeFull = newVisitors.length >= state.lobbyCapacity;
   return {
     success: true,
     state: {
       ...state,
-      lobbyVisitors: [...state.lobbyVisitors, visitor],
-      nextVisitorAt: command.timestamp + config.lobbyConfig.visitorSpawnInterval,
+      lobbyVisitors: newVisitors,
+      // Stop the timer when lobby becomes full (0 = no pending spawn)
+      nextVisitorAt: willBeFull ? 0 : command.timestamp + config.lobbyConfig.visitorSpawnInterval,
     },
   };
 }
@@ -174,8 +177,8 @@ function handleCollectTip(
     return { success: false, state, error: 'Elevator not at target floor' };
   }
   let newState = applyVisitorEffect(state, active, config, playerLevel);
-  // If the spawn timer expired while the lobby was full, restart it from now
-  const nextVisitorAt = state.nextVisitorAt > 0 && state.nextVisitorAt <= now
+  // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
+  const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
     ? now + config.lobbyConfig.visitorSpawnInterval
     : state.nextVisitorAt;
   newState = {
@@ -203,8 +206,8 @@ function handleDeliverAll(
   for (const visitor of state.lobbyVisitors) {
     newState = applyVisitorEffect(newState, visitor, config, playerLevel);
   }
-  // Restart spawn timer from now (was blocked while lobby was full)
-  const nextVisitorAt = state.nextVisitorAt > 0 && state.nextVisitorAt <= now
+  // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
+  const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
     ? now + config.lobbyConfig.visitorSpawnInterval
     : state.nextVisitorAt;
   newState = { ...newState, lobbyVisitors: [], elevatorFloor: 0, nextVisitorAt };

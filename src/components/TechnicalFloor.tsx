@@ -57,10 +57,11 @@ interface LobbyFloorProps {
 }
 
 export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, onPress }: LobbyFloorProps) {
+  const isFull = visitorCount >= lobbyCapacity;
   const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
-  const timerText = `${minutes}:${String(seconds).padStart(2, '0')}`;
+  const timerText = isFull ? 'Повний' : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
