@@ -7,7 +7,6 @@ import {
   Modal,
   StyleSheet,
   Dimensions,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Circle, Polygon } from 'react-native-svg';
@@ -24,8 +23,9 @@ import { useGameStore, useLobbyState, useBalance } from '../stores/gameStore';
 import { useGameClock } from '../hooks/useGameClock';
 import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity } from '../../shared/engine/lobbyUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
-import type { Visitor, VisitorRole } from '../../shared/types';
+import type { Visitor, VisitorRole, Worker } from '../../shared/types';
 import DeliverAllModal, { type DeliverAllSummary } from './DeliverAllModal';
+import WorkerAvatar from './WorkerAvatar';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
@@ -424,11 +424,13 @@ const shaftStyles = StyleSheet.create({
 interface LobbyPanelProps {
   visible: boolean;
   onClose: () => void;
+  onOpenHotel?: () => void;
 }
 
-export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
+export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanelProps) {
   const [view, setView] = useState<'operate' | 'upgrade'>('operate');
   const [deliverSummary, setDeliverSummary] = useState<DeliverAllSummary | null>(null);
+  const [newWorkerPopup, setNewWorkerPopup] = useState<Worker | null>(null);
 
   const {
     lobbyVisitors,
@@ -527,11 +529,12 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
 
   // Handle collect tip with new worker notification
   const handleCollectTip = useCallback(() => {
-    const workersBefore = useGameStore.getState().workers.length;
+    const workersBefore = useGameStore.getState().workers;
     collectTip();
-    const workersAfter = useGameStore.getState().workers.length;
-    if (workersAfter > workersBefore) {
-      Alert.alert('Новий працівник!', 'У вас з\'явився новий працівник, він шукає роботу!');
+    const workersAfter = useGameStore.getState().workers;
+    if (workersAfter.length > workersBefore.length) {
+      const newWorker = workersAfter.find((w) => !workersBefore.some((b) => b.id === w.id));
+      if (newWorker) setNewWorkerPopup(newWorker);
     }
   }, [collectTip]);
 
@@ -992,9 +995,129 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
         summary={deliverSummary}
         onDismiss={() => setDeliverSummary(null)}
       />
+
+      {/* New worker popup */}
+      {newWorkerPopup && (
+        <Modal transparent animationType="fade" visible onRequestClose={() => setNewWorkerPopup(null)}>
+          <Pressable style={popupStyles.scrim} onPress={() => setNewWorkerPopup(null)}>
+            <Pressable style={popupStyles.card} onPress={() => {}}>
+              <View style={popupStyles.avatarWrap}>
+                <WorkerAvatar worker={newWorkerPopup} size={56} />
+              </View>
+              <View style={popupStyles.info}>
+                <Text style={popupStyles.title}>Новий працівник!</Text>
+                <Text style={popupStyles.name}>{newWorkerPopup.name}</Text>
+                <Text style={popupStyles.meta}>
+                  {'Рівень ' + newWorkerPopup.level + ' · ' +
+                    (gameConfig.productionTypes[newWorkerPopup.dreamJob]?.displayName ?? newWorkerPopup.dreamJob)}
+                </Text>
+                <Text style={popupStyles.subtitle}>Очікує у готелі</Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  setNewWorkerPopup(null);
+                  onClose();
+                  onOpenHotel?.();
+                }}
+                style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
+              >
+                <LinearGradient colors={['#72C24F', '#5BA63C']} style={popupStyles.findJobGradient}>
+                  <Text style={popupStyles.findJobText}>Знайти роботу зараз</Text>
+                </LinearGradient>
+              </Pressable>
+              <Pressable onPress={() => setNewWorkerPopup(null)} style={popupStyles.dismissBtn}>
+                <Text style={popupStyles.dismissText}>Пізніше</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        </Modal>
+      )}
     </Modal>
   );
 }
+
+/* ---------- New Worker Popup Styles ---------- */
+
+const popupStyles = StyleSheet.create({
+  scrim: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  card: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 22,
+    padding: 20,
+    alignItems: 'center',
+    gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  avatarWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#EEF1F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  info: {
+    alignItems: 'center',
+    gap: 3,
+  },
+  title: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 18,
+    color: '#2A3344',
+  },
+  name: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: '#3B8BCB',
+  },
+  meta: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 14,
+    color: '#5A6478',
+  },
+  subtitle: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 13,
+    color: '#9BA3B0',
+    marginTop: 2,
+  },
+  findJobBtn: {
+    width: '100%',
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginTop: 12,
+  },
+  findJobGradient: {
+    paddingVertical: 13,
+    alignItems: 'center',
+    borderRadius: 14,
+  },
+  findJobText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 16,
+    color: '#fff',
+  },
+  dismissBtn: {
+    paddingVertical: 8,
+  },
+  dismissText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 14,
+    color: '#9BA3B0',
+  },
+});
 
 /* ---------- Styles ---------- */
 

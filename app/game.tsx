@@ -152,7 +152,11 @@ export default function GameScreen() {
       </ImageBackground>
 
       <HotelPanel visible={hotelOpen} onClose={() => setHotelOpen(false)} />
-      <LobbyPanel visible={lobbyOpen} onClose={() => setLobbyOpen(false)} />
+      <LobbyPanel
+        visible={lobbyOpen}
+        onClose={() => setLobbyOpen(false)}
+        onOpenHotel={() => { setLobbyOpen(false); setHotelOpen(true); }}
+      />
       <LevelUpModal />
     </View>
   );
