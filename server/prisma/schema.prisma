@@ -13,6 +13,7 @@ model Player {
   passwordHash  String
   playerName    String
   balance       Int       @default(100)
+  lobbyState    Json?
   stateVersion  Int       @default(0)
   lastSeenAt    DateTime  @default(now())
   createdAt     DateTime  @default(now())

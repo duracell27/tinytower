@@ -76,11 +76,23 @@ export class SyncService {
 
     if (acceptedCommands.length > 0 || newCommands.length === 0) {
       await this.prisma.$transaction(async (tx) => {
-        // Update player balance and version
+        // Update player balance, lobby state and version
         await tx.player.update({
           where: { id: playerId },
           data: {
             balance: gameState.balance,
+            lobbyState: {
+              gems: gameState.gems,
+              lobbyVisitors: gameState.lobbyVisitors,
+              lobbyCapacity: gameState.lobbyCapacity,
+              elevatorLevel: gameState.elevatorLevel,
+              elevatorFloor: gameState.elevatorFloor,
+              dailyTips: gameState.dailyTips,
+              dailyGemsCollected: gameState.dailyGemsCollected,
+              dailyTipsRewardClaimed: gameState.dailyTipsRewardClaimed,
+              lastDailyReset: gameState.lastDailyReset,
+              nextVisitorAt: gameState.nextVisitorAt,
+            },
             stateVersion: {
               increment: acceptedCommands.length > 0 ? 1 : 0,
             },
@@ -200,12 +212,24 @@ export class SyncService {
       assignedSlotIdx: w.assignedSlotIdx,
     }));
 
+    const ls = (player.lobbyState as any) ?? {};
+
     return {
       balance: player.balance,
+      gems: ls.gems ?? 20,
       floors,
       commandQueue: [],
       workers,
       hotelCapacity: gameConfig.hotelCapacity,
+      lobbyVisitors: ls.lobbyVisitors ?? [],
+      lobbyCapacity: ls.lobbyCapacity ?? gameConfig.lobbyConfig.defaultLobbyCapacity,
+      elevatorLevel: ls.elevatorLevel ?? 1,
+      elevatorFloor: ls.elevatorFloor ?? 0,
+      dailyTips: ls.dailyTips ?? 0,
+      dailyGemsCollected: ls.dailyGemsCollected ?? 0,
+      dailyTipsRewardClaimed: ls.dailyTipsRewardClaimed ?? false,
+      lastDailyReset: ls.lastDailyReset ?? 0,
+      nextVisitorAt: ls.nextVisitorAt ?? 0,
     };
   }
 }
