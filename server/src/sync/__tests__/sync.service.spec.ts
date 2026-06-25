@@ -61,16 +61,45 @@ describe('SyncService', () => {
     },
   ];
 
+  const mockWorkers = [
+    {
+      id: 'worker-1',
+      playerId: 'player-uuid',
+      name: 'Alice',
+      female: true,
+      floorType: 'green',
+      dreamJob: 'baker',
+      level: 1,
+      hairColor: '#000',
+      assignedFloorId: 2,
+      assignedSlotIdx: 0,
+    },
+    {
+      id: 'worker-2',
+      playerId: 'player-uuid',
+      name: 'Bob',
+      female: false,
+      floorType: 'green',
+      dreamJob: 'baker',
+      level: 1,
+      hairColor: '#333',
+      assignedFloorId: 2,
+      assignedSlotIdx: 1,
+    },
+  ];
+
   const mockPlayer = {
     id: 'player-uuid',
     email: 'test@test.com',
     passwordHash: 'hashed',
     playerName: 'TestPlayer',
     balance: 100,
+    lobbyState: null,
     stateVersion: 0,
     lastSeenAt: new Date(Date.now() - 60000), // 60s ago
     createdAt: new Date(),
     floors: mockFloors,
+    workers: mockWorkers,
   };
 
   let txMock: Record<string, any>;
@@ -79,6 +108,7 @@ describe('SyncService', () => {
     txMock = {
       player: { update: jest.fn().mockResolvedValue({}) },
       production: { update: jest.fn().mockResolvedValue({}) },
+      worker: { upsert: jest.fn().mockResolvedValue({}), deleteMany: jest.fn().mockResolvedValue({}) },
       commandLog: { create: jest.fn().mockResolvedValue({ cursor: 1 }) },
     };
 
@@ -144,14 +174,14 @@ describe('SyncService', () => {
         type: 'buy',
         floorId: 2,
         slotIdx: 0,
-        typeId: 'coffee_shop',
+        typeId: 'bulky',
         timestamp: Date.now(),
       };
 
       const result = await syncService.processSync('player-uuid', [buyCmd], 0);
 
-      expect(result.state.balance).toBe(90); // 100 - 10 (coffee_shop buyCost)
-      expect(result.state.floors[0].productions[0].typeId).toBe('coffee_shop');
+      expect(result.state.balance).toBe(91); // 100 - 9 (bulky buyCost 10 with 1% level-1 worker discount)
+      expect(result.state.floors[0].productions[0].typeId).toBe('bulky');
       expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
       expect(result.stateVersion).toBe(1);
       expect(txMock.player.update).toHaveBeenCalled();
@@ -169,7 +199,7 @@ describe('SyncService', () => {
         type: 'buy',
         floorId: 2,
         slotIdx: 0,
-        typeId: 'coffee_shop',
+        typeId: 'bulky',
         timestamp: Date.now(),
       };
 
@@ -190,7 +220,7 @@ describe('SyncService', () => {
         type: 'buy',
         floorId: 999,
         slotIdx: 0,
-        typeId: 'coffee_shop',
+        typeId: 'bulky',
         timestamp: Date.now(),
       };
 
@@ -218,7 +248,7 @@ describe('SyncService', () => {
           type: 'buy',
           floorId: 2,
           slotIdx: 0,
-          typeId: 'coffee_shop',
+          typeId: 'bulky',
           timestamp: Date.now(),
         },
         {
@@ -226,14 +256,14 @@ describe('SyncService', () => {
           type: 'buy',
           floorId: 2,
           slotIdx: 1,
-          typeId: 'coffee_shop',
+          typeId: 'bulky',
           timestamp: Date.now(),
         },
       ];
 
       const result = await syncService.processSync('player-uuid', cmds, 0);
 
-      expect(result.state.balance).toBe(80); // 100 - 10 - 10
+      expect(result.state.balance).toBe(82); // 100 - 9 - 9 (bulky buyCost 10 with 2% discount from 2 level-1 workers)
       expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
       expect(result.state.floors[0].productions[1].stage).toBe('DELIVERING');
       expect(result.ackCursor).toBe(2);
@@ -246,7 +276,7 @@ describe('SyncService', () => {
           {
             ...mockFloors[0],
             productions: [
-              { id: 1, floorDbId: 1, slotIdx: 0, typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: BigInt(1700000000000) },
+              { id: 1, floorDbId: 1, slotIdx: 0, typeId: 'bulky', stage: 'DELIVERING', stageStartedAt: BigInt(1700000000000) },
               { id: 2, floorDbId: 1, slotIdx: 1, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
               { id: 3, floorDbId: 1, slotIdx: 2, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
             ],

@@ -22,6 +22,7 @@ describe('AuthService', () => {
     passwordHash: 'hashed-password',
     playerName: 'TestPlayer',
     balance: 100,
+    lobbyState: null,
     stateVersion: 0,
     lastSeenAt: new Date(),
     createdAt: new Date(),
