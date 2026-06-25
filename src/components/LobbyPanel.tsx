@@ -18,7 +18,7 @@ import Animated, {
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useGameStore, useLobbyState, useBalance } from '../stores/gameStore';
 import { useGameClock } from '../hooks/useGameClock';
 import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity } from '../../shared/engine/lobbyUtils';
@@ -502,6 +502,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   }, [visible]);
 
   const panGesture = Gesture.Pan()
+    .enabled(visible)
     .onUpdate((e) => {
       if (e.translationY > 0) {
         translateY.value = e.translationY;
@@ -595,7 +596,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <GestureHandlerRootView style={styles.overlay}>
         {/* Scrim */}
         <Animated.View style={[styles.scrim, scrimStyle]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
@@ -988,7 +989,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             )}
           </ScrollView>
         </Animated.View>
-      </View>
+      </GestureHandlerRootView>
 
       <DeliverAllModal
         visible={deliverSummary !== null}
