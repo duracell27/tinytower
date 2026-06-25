@@ -19,7 +19,7 @@ import Animated, {
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useGameStore } from '../stores/gameStore';
 import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
@@ -135,7 +135,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <GestureHandlerRootView style={styles.overlay}>
+      <View style={styles.overlay}>
         {/* Scrim */}
         <Animated.View style={[styles.scrim, scrimStyle]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
@@ -222,7 +222,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
             onClose={() => setPickerWorker(null)}
           />
         </Animated.View>
-      </GestureHandlerRootView>
+      </View>
     </Modal>
   );
 }
