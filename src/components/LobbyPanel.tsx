@@ -202,6 +202,17 @@ function GiftIcon({ size = 16, color = '#fff' }: { size?: number; color?: string
   );
 }
 
+function HotelIcon({ size = 18, color = '#5A3D06' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x={2} y={7} width={20} height={15} rx={2} stroke={color} strokeWidth={2} />
+      <Path d="M16 22V12H8v10" stroke={color} strokeWidth={2} />
+      <Path d="M2 11L12 3l10 8" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Rect x={10} y={14} width={4} height={4} rx={1} fill={color} />
+    </Svg>
+  );
+}
+
 function EmptyElevatorIcon() {
   return (
     <Svg width={40} height={40} viewBox="0 0 24 24" fill="none">
@@ -273,8 +284,9 @@ function ElevatorShaft({
   targetFloor: number;
   currentFloor: number;
 }) {
+  // bottom range 6..102 → leaves 6px gap at top of shaft (shaft 148 - cabin 40 - top_pad 6)
   const cabinBottomTarget = currentFloor > 0 && targetFloor > 0
-    ? 6 + (currentFloor / targetFloor) * 102
+    ? 6 + (currentFloor / targetFloor) * 96
     : 6;
 
   const cabinBottom = useSharedValue(cabinBottomTarget);
@@ -299,12 +311,14 @@ function ElevatorShaft({
         <View style={shaftStyles.railRight} />
         {/* Cabin */}
         <Animated.View style={[shaftStyles.cabin, cabinStyle]}>
-          <LinearGradient colors={['#5ECFCF', '#3AABAB']} style={shaftStyles.cabinInner}>
+          <LinearGradient colors={['#EFF1F5', '#C9CFD9']} style={shaftStyles.cabinInner}>
             <View style={shaftStyles.doorLeft} />
             <View style={shaftStyles.doorRight} />
           </LinearGradient>
-          <View style={shaftStyles.cabinBadge}>
-            <Text style={shaftStyles.cabinBadgeText}>{currentFloor}</Text>
+          <View style={shaftStyles.cabinBadgeWrapper}>
+            <View style={shaftStyles.cabinBadge}>
+              <Text style={shaftStyles.cabinBadgeText}>{currentFloor}</Text>
+            </View>
           </View>
         </Animated.View>
       </LinearGradient>
@@ -367,18 +381,22 @@ const shaftStyles = StyleSheet.create({
     width: 8,
     height: 24,
     borderRadius: 2,
-    backgroundColor: 'rgba(0,60,60,0.22)',
+    backgroundColor: 'rgba(60,70,88,0.15)',
   },
   doorRight: {
     width: 8,
     height: 24,
     borderRadius: 2,
-    backgroundColor: 'rgba(0,60,60,0.22)',
+    backgroundColor: 'rgba(60,70,88,0.15)',
   },
-  cabinBadge: {
+  cabinBadgeWrapper: {
     position: 'absolute',
     top: -8,
-    right: -4,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  cabinBadge: {
     width: 18,
     height: 18,
     borderRadius: 9,
@@ -535,29 +553,32 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
     // Arrived
     if (activeVisitor.role === 'guest' && activeVisitor.targetFloor === 1) {
       return {
-        label: 'Прийняти працівника',
+        label: 'Прийняти до готелю',
+        amount: null as string | null,
         colors: ['#F6C642', '#E5A41C'] as [string, string],
         shadowColor: '#BC820F',
         textColor: '#5A3D06',
-        icon: 'coin' as const,
+        icon: 'hotel' as const,
         onPress: handleCollectTip,
       };
     }
 
     if (activeVisitor.role === 'businessman' && dailyGemsCollected < dailyGemLimit) {
       return {
-        label: 'Отримати 💎1',
+        label: 'Отримати',
+        amount: null as string | null,
         colors: ['#52A6E2', '#3B8BCB'] as [string, string],
         shadowColor: '#2E72A8',
         textColor: '#fff',
-        icon: null,
+        icon: 'gem' as const,
         onPress: handleCollectTip,
       };
     }
 
     const tip = calculateTip(activeVisitor.role, activeVisitor.targetFloor, elevatorLevel, gameConfig);
     return {
-      label: `Отримати чайові +${tip}`,
+      label: 'Отримати чайові',
+      amount: `+${tip}` as string | null,
       colors: ['#F6C642', '#E5A41C'] as [string, string],
       shadowColor: '#BC820F',
       textColor: '#5A3D06',
@@ -700,15 +721,18 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
                               colors={actionButton.colors}
                               style={styles.actionButtonGradient}
                             >
-                              {actionButton.icon === 'up-arrow' && (
-                                <UpArrowIcon />
-                              )}
-                              {actionButton.icon === 'coin' && (
-                                <CoinDot size={14} />
-                              )}
+                              {actionButton.icon === 'up-arrow' && <UpArrowIcon />}
+                              {actionButton.icon === 'hotel' && <HotelIcon size={18} color={actionButton.textColor} />}
                               <Text style={[styles.actionButtonText, { color: actionButton.textColor }]}>
                                 {actionButton.label}
                               </Text>
+                              {actionButton.icon === 'coin' && <CoinDot size={14} />}
+                              {actionButton.icon === 'gem' && <GemIcon size={14} />}
+                              {actionButton.amount != null && (
+                                <Text style={[styles.actionButtonText, { color: actionButton.textColor }]}>
+                                  {actionButton.amount}
+                                </Text>
+                              )}
                             </LinearGradient>
                             <View style={[styles.actionButtonShadow, { backgroundColor: actionButton.shadowColor }]} />
                           </Pressable>
