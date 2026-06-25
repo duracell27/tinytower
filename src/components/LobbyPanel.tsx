@@ -24,6 +24,7 @@ import { useGameClock } from '../hooks/useGameClock';
 import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity } from '../../shared/engine/lobbyUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
 import type { Visitor, VisitorRole } from '../../shared/types';
+import DeliverAllModal, { type DeliverAllSummary } from './DeliverAllModal';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
@@ -44,6 +45,47 @@ const ROLE_LABELS: Record<string, string> = {
   deliverer: 'Доставщик',
   seller: 'Продавець',
 };
+
+function computeDeliverAllSummary(
+  visitors: Visitor[],
+  elevatorLevel: number,
+  dailyGemsCollected: number,
+  playerLevel: number,
+): DeliverAllSummary {
+  let guestCount = 0, businessmanCount = 0, delivererCount = 0, sellerCount = 0;
+  let totalCoins = 0, totalGems = 0, newWorkers = 0;
+  let gemsCollected = dailyGemsCollected;
+  const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
+
+  for (const v of visitors) {
+    switch (v.role) {
+      case 'guest':
+        guestCount++;
+        totalCoins += calculateTip('guest', v.targetFloor, elevatorLevel, gameConfig);
+        if (v.targetFloor === 1) newWorkers++;
+        break;
+      case 'businessman':
+        businessmanCount++;
+        if (gemsCollected < gemLimit) {
+          totalGems++;
+          gemsCollected++;
+        } else {
+          totalCoins += calculateTip('businessman', v.targetFloor, elevatorLevel, gameConfig);
+        }
+        break;
+      case 'deliverer':
+        delivererCount++;
+        totalCoins += calculateTip('deliverer', v.targetFloor, elevatorLevel, gameConfig);
+        break;
+      case 'seller':
+        sellerCount++;
+        totalCoins += calculateTip('seller', v.targetFloor, elevatorLevel, gameConfig);
+        break;
+    }
+  }
+
+  return { guestCount, businessmanCount, delivererCount, sellerCount, totalCoins, totalGems, newWorkers };
+}
 
 function formatCoins(n: number): string {
   if (n >= 1000) {
@@ -359,6 +401,7 @@ interface LobbyPanelProps {
 
 export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
   const [view, setView] = useState<'operate' | 'upgrade'>('operate');
+  const [deliverSummary, setDeliverSummary] = useState<DeliverAllSummary | null>(null);
 
   const {
     lobbyVisitors,
@@ -672,7 +715,11 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
                 {/* Deliver all button */}
                 {lobbyVisitors.length > 0 && (
                   <Pressable
-                    onPress={deliverAll}
+                    onPress={() => {
+                      const summary = computeDeliverAllSummary(lobbyVisitors, elevatorLevel, dailyGemsCollected, playerLevel);
+                      deliverAll();
+                      setDeliverSummary(summary);
+                    }}
                     style={({ pressed }) => [styles.deliverAllCard, pressed && { opacity: 0.8 }]}
                   >
                     <PeopleGroupIcon size={20} color="#5A6478" />
@@ -885,6 +932,12 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
           </ScrollView>
         </Animated.View>
       </GestureHandlerRootView>
+
+      <DeliverAllModal
+        visible={deliverSummary !== null}
+        summary={deliverSummary}
+        onDismiss={() => setDeliverSummary(null)}
+      />
     </Modal>
   );
 }
