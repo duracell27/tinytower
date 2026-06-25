@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { generateRandomVisitor } from '../../shared/engine/lobbyUtils';
@@ -319,7 +320,7 @@ export function useVisitors() {
 }
 
 export function useLobbyState() {
-  return useGameStore((state) => ({
+  return useGameStore(useShallow((state) => ({
     lobbyVisitors: state.lobbyVisitors,
     lobbyCapacity: state.lobbyCapacity,
     elevatorLevel: state.elevatorLevel,
@@ -329,5 +330,5 @@ export function useLobbyState() {
     dailyTipsRewardClaimed: state.dailyTipsRewardClaimed,
     nextVisitorAt: state.nextVisitorAt,
     gems: state.gems,
-  }));
+  })));
 }

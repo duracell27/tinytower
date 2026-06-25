@@ -727,6 +727,7 @@ export default function LobbyPanel({ visible, onClose }: LobbyPanelProps) {
                 {lobbyVisitors.length > 0 && (
                   <Pressable
                     onPress={() => {
+                      if (gems < 1) return;
                       const summary = computeDeliverAllSummary(lobbyVisitors, elevatorLevel, dailyGemsCollected, playerLevel);
                       deliverAll();
                       setDeliverSummary(summary);
