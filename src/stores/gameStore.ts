@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
+import { generateRandomVisitor } from '../../shared/engine/lobbyUtils';
 import { clock } from '../services/clock';
 import type { GameState, Command, Floor, Worker } from '../../shared/types';
 
@@ -22,14 +23,7 @@ export interface LevelUpEvent {
 interface PlayerStats {
   playerLevel: number;
   playerXp: number;
-  gems: number;
   levelUpQueue: LevelUpEvent[];
-}
-
-interface BuildingState {
-  hotelOccupied: number;
-  hotelTotal: number;
-  visitors: number;
 }
 
 interface SyncState {
@@ -44,14 +38,20 @@ interface GameActions {
   assignWorker: (workerId: string, floorId: number, slotIdx: number) => void;
   fireWorker: (workerId: string) => void;
   evictWorker: (workerId: string) => void;
+  spawnVisitor: () => void;
   liftVisitor: () => void;
+  collectTip: () => void;
+  deliverAll: () => void;
+  upgradeElevator: () => void;
+  upgradeLobby: () => void;
+  claimDailyReward: () => void;
   dismissLevelUp: () => void;
   hydrate: (state: GameState & Partial<SyncState>) => void;
   reconcile: (state: GameState, stateVersion: number, ackCursor: number) => void;
   clearAckedCommands: (ackCursor: number) => void;
 }
 
-type GameStore = GameState & PlayerStats & BuildingState & SyncState & GameActions;
+type GameStore = GameState & PlayerStats & SyncState & GameActions;
 
 function xpForLevel(level: number): number {
   return Math.floor(100 * Math.pow(1.5, level - 1));
@@ -63,8 +63,16 @@ function executeCommand(
   command: Command,
 ) {
   const store = get();
-  const { balance, floors, commandQueue, workers, hotelCapacity } = store;
-  const result = processCommand({ balance, floors, commandQueue, workers, hotelCapacity }, command, gameConfig, command.timestamp);
+  const { balance, gems, floors, commandQueue, workers, hotelCapacity,
+    lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
+    dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
+  } = store;
+  const gameState: GameState = {
+    balance, gems, floors, commandQueue, workers, hotelCapacity,
+    lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
+    dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
+  };
+  const result = processCommand(gameState, command, gameConfig, command.timestamp, store.playerLevel);
   if (!result.success) return;
 
   let newQueue = [...result.state.commandQueue, command];
@@ -76,7 +84,7 @@ function executeCommand(
   const listBonus = command.type === 'list' ? 10 : 0;
   let { playerXp, playerLevel } = store;
   let newBalance = result.state.balance;
-  let { gems } = store;
+  let newGems = result.state.gems;
   const levelUps: LevelUpEvent[] = [];
   playerXp += coinDelta + listBonus;
   while (playerXp >= xpForLevel(playerLevel)) {
@@ -85,19 +93,28 @@ function executeCommand(
     const coinReward = playerLevel * 100;
     const gemReward = playerLevel * 3;
     newBalance += coinReward;
-    gems += gemReward;
+    newGems += gemReward;
     levelUps.push({ newLevel: playerLevel, coinReward, gemReward });
   }
 
   set({
     balance: newBalance,
+    gems: newGems,
     floors: result.state.floors,
     workers: result.state.workers,
     hotelCapacity: result.state.hotelCapacity,
     commandQueue: newQueue,
+    lobbyVisitors: result.state.lobbyVisitors,
+    lobbyCapacity: result.state.lobbyCapacity,
+    elevatorLevel: result.state.elevatorLevel,
+    elevatorFloor: result.state.elevatorFloor,
+    dailyTips: result.state.dailyTips,
+    dailyGemsCollected: result.state.dailyGemsCollected,
+    dailyTipsRewardClaimed: result.state.dailyTipsRewardClaimed,
+    lastDailyReset: result.state.lastDailyReset,
+    nextVisitorAt: result.state.nextVisitorAt,
     playerXp,
     playerLevel,
-    gems,
     levelUpQueue: [...store.levelUpQueue, ...levelUps],
   });
 }
@@ -106,11 +123,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   ...createInitialState(gameConfig),
   playerLevel: 1,
   playerXp: 0,
-  gems: 20,
   levelUpQueue: [],
-  hotelOccupied: 0,
-  hotelTotal: 32,
-  visitors: 0,
   lastAckCursor: 0,
   stateVersion: 0,
 
@@ -174,34 +187,111 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
+  spawnVisitor: () => {
+    const state = get();
+    const visitor = generateRandomVisitor(
+      { ...state },
+      gameConfig,
+    );
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'spawn_visitor',
+      visitorId: visitor.id,
+      role: visitor.role,
+      targetFloor: visitor.targetFloor,
+      hairColor: visitor.hairColor,
+      female: visitor.female,
+      timestamp: clock.now(),
+    });
+  },
+
+  liftVisitor: () => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'lift_visitor',
+      timestamp: clock.now(),
+    });
+  },
+
+  collectTip: () => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'collect_tip',
+      timestamp: clock.now(),
+    });
+  },
+
+  deliverAll: () => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'deliver_all',
+      timestamp: clock.now(),
+    });
+  },
+
+  upgradeElevator: () => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'upgrade_elevator',
+      timestamp: clock.now(),
+    });
+  },
+
+  upgradeLobby: () => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'upgrade_lobby',
+      timestamp: clock.now(),
+    });
+  },
+
+  claimDailyReward: () => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'claim_daily_reward',
+      timestamp: clock.now(),
+    });
+  },
+
   dismissLevelUp: () => {
     set((state) => ({ levelUpQueue: state.levelUpQueue.slice(1) }));
   },
 
-  liftVisitor: () => {
-    const { visitors, hotelOccupied, hotelTotal } = get();
-    if (visitors <= 0) return;
-    set({
-      visitors: visitors - 1,
-      hotelOccupied: Math.min(hotelOccupied + 1, hotelTotal),
-    });
-  },
-
   hydrate: (state) => set({
     balance: state.balance,
+    gems: state.gems ?? 20,
     floors: state.floors,
     commandQueue: state.commandQueue,
     workers: state.workers ?? [],
     hotelCapacity: state.hotelCapacity ?? 10,
+    lobbyVisitors: state.lobbyVisitors ?? [],
+    lobbyCapacity: state.lobbyCapacity ?? 10,
+    elevatorLevel: state.elevatorLevel ?? 1,
+    elevatorFloor: state.elevatorFloor ?? 0,
+    dailyTips: state.dailyTips ?? 0,
+    dailyGemsCollected: state.dailyGemsCollected ?? 0,
+    dailyTipsRewardClaimed: state.dailyTipsRewardClaimed ?? false,
+    lastDailyReset: state.lastDailyReset ?? 0,
+    nextVisitorAt: state.nextVisitorAt ?? 0,
     lastAckCursor: state.lastAckCursor ?? 0,
     stateVersion: state.stateVersion ?? 0,
   }),
 
   reconcile: (serverState, newVersion, ackCursor) => set({
     balance: serverState.balance,
+    gems: serverState.gems,
     floors: serverState.floors,
     workers: serverState.workers,
     hotelCapacity: serverState.hotelCapacity,
+    lobbyVisitors: serverState.lobbyVisitors,
+    lobbyCapacity: serverState.lobbyCapacity,
+    elevatorLevel: serverState.elevatorLevel,
+    elevatorFloor: serverState.elevatorFloor,
+    dailyTips: serverState.dailyTips,
+    dailyGemsCollected: serverState.dailyGemsCollected,
+    dailyTipsRewardClaimed: serverState.dailyTipsRewardClaimed,
+    lastDailyReset: serverState.lastDailyReset,
+    nextVisitorAt: serverState.nextVisitorAt,
     stateVersion: newVersion,
     lastAckCursor: ackCursor,
     commandQueue: [],
@@ -222,4 +312,22 @@ export function useFloor(floorId: number): Floor {
     (state) => state.floors.find(f => f.id === floorId)!,
     (a, b) => a.id === b.id && a.productions === b.productions,
   );
+}
+
+export function useVisitors() {
+  return useGameStore((state) => state.lobbyVisitors);
+}
+
+export function useLobbyState() {
+  return useGameStore((state) => ({
+    lobbyVisitors: state.lobbyVisitors,
+    lobbyCapacity: state.lobbyCapacity,
+    elevatorLevel: state.elevatorLevel,
+    elevatorFloor: state.elevatorFloor,
+    dailyTips: state.dailyTips,
+    dailyGemsCollected: state.dailyGemsCollected,
+    dailyTipsRewardClaimed: state.dailyTipsRewardClaimed,
+    nextVisitorAt: state.nextVisitorAt,
+    gems: state.gems,
+  }));
 }
