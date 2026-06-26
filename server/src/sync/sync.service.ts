@@ -70,7 +70,7 @@ export class SyncService {
 
     for (const command of newCommands) {
       const prevBalance = gameState.balance;
-      const result = processCommand(gameState, command, gameConfig, serverNow, player.playerLevel);
+      const result = processCommand(gameState, command, gameConfig, command.timestamp, player.playerLevel);
       if (result.success) {
         totalXpGained += xpForCommand(command.type, prevBalance, result.state.balance);
         gameState = result.state;
