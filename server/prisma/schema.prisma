@@ -15,6 +15,8 @@ model Player {
   balance       Int       @default(100)
   lobbyState    Json?
   stateVersion  Int       @default(0)
+  playerLevel   Int       @default(1)
+  playerXp      Int       @default(0)
   lastSeenAt    DateTime  @default(now())
   createdAt     DateTime  @default(now())
   floors        Floor[]
