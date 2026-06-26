@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { generateRandomVisitorRole, generateVisitorAppearance } from '../../shared/engine/lobbyUtils';
+import { xpForLevel, applyXpGain, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
 import type { GameState, Command, Floor, Worker } from '../../shared/types';
 
@@ -14,12 +15,6 @@ function uuid(): string {
 }
 
 const COMMAND_QUEUE_CAP = 10_000;
-
-export interface LevelUpEvent {
-  newLevel: number;
-  coinReward: number;
-  gemReward: number;
-}
 
 interface PlayerStats {
   playerLevel: number;
@@ -54,10 +49,6 @@ interface GameActions {
 
 type GameStore = GameState & PlayerStats & SyncState & GameActions;
 
-function xpForLevel(level: number): number {
-  return Math.floor(100 * Math.pow(1.5, level - 1));
-}
-
 function executeCommand(
   get: () => GameStore,
   set: (partial: Partial<GameStore>) => void,
@@ -81,22 +72,11 @@ function executeCommand(
     newQueue = newQueue.slice(newQueue.length - COMMAND_QUEUE_CAP);
   }
 
-  const coinDelta = Math.abs(result.state.balance - balance);
-  const listBonus = command.type === 'list' ? 10 : 0;
-  let { playerXp, playerLevel } = store;
-  let newBalance = result.state.balance;
-  let newGems = result.state.gems;
-  const levelUps: LevelUpEvent[] = [];
-  playerXp += coinDelta + listBonus;
-  while (playerXp >= xpForLevel(playerLevel)) {
-    playerXp -= xpForLevel(playerLevel);
-    playerLevel++;
-    const coinReward = playerLevel * 100;
-    const gemReward = playerLevel * 3;
-    newBalance += coinReward;
-    newGems += gemReward;
-    levelUps.push({ newLevel: playerLevel, coinReward, gemReward });
-  }
+  const xpGained = Math.abs(result.state.balance - balance) + (command.type === 'list' ? 10 : 0);
+  const xpResult = applyXpGain(store.playerLevel, store.playerXp, xpGained);
+  let newBalance = result.state.balance + xpResult.bonusCoins;
+  let newGems = result.state.gems + xpResult.bonusGems;
+  const levelUps: LevelUpEvent[] = xpResult.levelUpEvents;
 
   set({
     balance: newBalance,
@@ -114,8 +94,8 @@ function executeCommand(
     dailyTipsRewardClaimed: result.state.dailyTipsRewardClaimed,
     lastDailyReset: result.state.lastDailyReset,
     nextVisitorAt: result.state.nextVisitorAt,
-    playerXp,
-    playerLevel,
+    playerXp: xpResult.playerXp,
+    playerLevel: xpResult.playerLevel,
     levelUpQueue: [...store.levelUpQueue, ...levelUps],
   });
 }

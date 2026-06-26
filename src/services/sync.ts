@@ -23,15 +23,13 @@ async function doSync(): Promise<void> {
   if (isSyncing) return;
   if (!useAuthStore.getState().isAuthenticated) return;
 
-  const { commandQueue, lastAckCursor, playerLevel, playerXp } = useGameStore.getState();
+  const { commandQueue, lastAckCursor } = useGameStore.getState();
 
   isSyncing = true;
   try {
     const response = await api.post<SyncResponse>('/sync', {
       commands: commandQueue,
       lastAckCursor,
-      playerLevel,
-      playerXp,
     });
 
     clock.updateOffset(response.serverTime);
