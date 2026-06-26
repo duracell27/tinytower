@@ -45,6 +45,7 @@ export default function LevelUpModal({ suppressWhileOpen = false }: { suppressWh
     rewardsY.value = withDelay(300, withTiming(0, { duration: 300, easing: Easing.out(Easing.back(1.3)) }));
   }, []);
 
+
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));

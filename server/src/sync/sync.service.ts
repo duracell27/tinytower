@@ -4,11 +4,19 @@ import { processCommand } from '@shared/engine/processCommand';
 import { gameConfig } from '@shared/config/gameConfig';
 import type { GameState, Command, Floor, Production, Worker } from '@shared/types';
 
+interface LobbyStateJson {
+  playerLevel?: number;
+  playerXp?: number;
+  [key: string]: unknown;
+}
+
 export interface SyncResult {
   state: GameState;
   stateVersion: number;
   ackCursor: number;
   serverTime: number;
+  playerLevel: number;
+  playerXp: number;
 }
 
 @Injectable()
@@ -21,6 +29,8 @@ export class SyncService {
     playerId: string,
     commands: Command[],
     lastAckCursor: number,
+    playerLevel?: number,
+    playerXp?: number,
   ): Promise<SyncResult> {
     const serverNow = Date.now();
 
@@ -77,6 +87,7 @@ export class SyncService {
     if (acceptedCommands.length > 0 || newCommands.length === 0) {
       await this.prisma.$transaction(async (tx) => {
         // Update player balance, lobby state and version
+        const existingLs = (player.lobbyState as LobbyStateJson) ?? {};
         await tx.player.update({
           where: { id: playerId },
           data: {
@@ -92,6 +103,8 @@ export class SyncService {
               dailyTipsRewardClaimed: gameState.dailyTipsRewardClaimed,
               lastDailyReset: gameState.lastDailyReset,
               nextVisitorAt: gameState.nextVisitorAt,
+              playerLevel: playerLevel ?? existingLs.playerLevel ?? 1,
+              playerXp: playerXp ?? existingLs.playerXp ?? 0,
             },
             stateVersion: {
               increment: acceptedCommands.length > 0 ? 1 : 0,
@@ -177,11 +190,14 @@ export class SyncService {
       where: { id: playerId },
     });
 
+    const savedLs = (updatedPlayer?.lobbyState as LobbyStateJson) ?? {};
     return {
       state: gameState,
       stateVersion: updatedPlayer?.stateVersion ?? player.stateVersion,
       ackCursor,
       serverTime: serverNow,
+      playerLevel: playerLevel ?? savedLs.playerLevel ?? 1,
+      playerXp: playerXp ?? savedLs.playerXp ?? 0,
     };
   }
 
@@ -232,4 +248,5 @@ export class SyncService {
       nextVisitorAt: ls.nextVisitorAt ?? 0,
     };
   }
+
 }

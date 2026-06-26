@@ -47,9 +47,9 @@ interface GameActions {
   upgradeLobby: () => void;
   claimDailyReward: () => void;
   dismissLevelUp: () => void;
-  hydrate: (state: GameState & Partial<SyncState>) => void;
-  reconcile: (state: GameState, stateVersion: number, ackCursor: number) => void;
-  clearAckedCommands: (ackCursor: number) => void;
+  hydrate: (state: GameState & Partial<SyncState> & { playerLevel?: number; playerXp?: number }) => void;
+  reconcile: (state: GameState, stateVersion: number, ackCursor: number, playerLevel?: number, playerXp?: number) => void;
+  clearAckedCommands: (ackCursor: number, playerLevel?: number, playerXp?: number) => void;
 }
 
 type GameStore = GameState & PlayerStats & SyncState & GameActions;
@@ -308,9 +308,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     nextVisitorAt: state.nextVisitorAt ?? 0,
     lastAckCursor: state.lastAckCursor ?? 0,
     stateVersion: state.stateVersion ?? 0,
+    playerLevel: state.playerLevel ?? 1,
+    playerXp: state.playerXp ?? 0,
   }),
 
-  reconcile: (serverState, newVersion, ackCursor) => set({
+  reconcile: (serverState, newVersion, ackCursor, playerLevel, playerXp) => set((cur) => ({
     balance: serverState.balance,
     gems: serverState.gems,
     floors: serverState.floors,
@@ -328,11 +330,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     stateVersion: newVersion,
     lastAckCursor: ackCursor,
     commandQueue: [],
-  }),
+    playerLevel: playerLevel ?? cur.playerLevel,
+    playerXp: playerXp ?? cur.playerXp,
+  })),
 
-  clearAckedCommands: (ackCursor) => set((state) => ({
+  clearAckedCommands: (ackCursor, playerLevel, playerXp) => set((cur) => ({
     lastAckCursor: ackCursor,
-    commandQueue: state.commandQueue,
+    playerLevel: playerLevel ?? cur.playerLevel,
+    playerXp: playerXp ?? cur.playerXp,
   })),
 }));
 

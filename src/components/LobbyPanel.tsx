@@ -496,6 +496,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
   useEffect(() => {
     setView('operate');
+    if (!visible) {
+      setHotelFullNotice(false);
+      setNewWorkerPopup(null);
+    }
   }, [visible]);
 
   useEffect(() => {
@@ -549,7 +553,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
     if (isHotelFull) {
       setHotelFullNotice(true);
-      setTimeout(() => setHotelFullNotice(false), 3000);
     } else if (workersAfter.length > workersBefore.length) {
       const newWorker = workersAfter.find((w) => !workersBefore.some((b) => b.id === w.id));
       if (newWorker) setNewWorkerPopup(newWorker);
@@ -615,6 +618,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const actionButton = getActionButton();
 
   return (
+    <>
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <GestureHandlerRootView style={styles.overlay}>
         {/* Scrim */}
@@ -857,16 +861,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   </Text>
                 </View>
 
-                {/* Hotel navigation button */}
-                <Pressable
-                  onPress={() => { onClose(); onOpenHotel?.(); }}
-                  style={({ pressed }) => [styles.hotelNavButton, pressed && { opacity: 0.85 }]}
-                >
-                  <HotelIcon size={16} color="#A8475F" />
-                  <Text style={styles.hotelNavText}>Перейти до готелю</Text>
-                  <Text style={styles.hotelNavArrow}>›</Text>
-                </Pressable>
-
                 {/* Upgrade elevator entry button */}
                 <Pressable
                   onPress={() => setView('upgrade')}
@@ -1020,57 +1014,84 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
           </ScrollView>
         </Animated.View>
       </GestureHandlerRootView>
+    </Modal>
 
-      <DeliverAllModal
-        visible={deliverSummary !== null}
-        summary={deliverSummary}
-        onDismiss={() => setDeliverSummary(null)}
-      />
+    <DeliverAllModal
+      visible={deliverSummary !== null}
+      summary={deliverSummary}
+      onDismiss={() => setDeliverSummary(null)}
+    />
 
-      {/* Hotel full notice */}
-      {hotelFullNotice && (
-        <View style={popupStyles.hotelFullBanner} pointerEvents="none">
-          <Text style={popupStyles.hotelFullText}>🏨 Готель заповнений — він пішов</Text>
-        </View>
-      )}
-
-      {/* New worker popup */}
-      {newWorkerPopup && (
-        <Modal transparent animationType="fade" visible onRequestClose={() => setNewWorkerPopup(null)}>
-          <Pressable style={popupStyles.scrim} onPress={() => setNewWorkerPopup(null)}>
-            <Pressable style={popupStyles.card} onPress={() => {}}>
-              <View style={popupStyles.avatarWrap}>
-                <WorkerAvatar worker={newWorkerPopup} size={56} />
-              </View>
-              <View style={popupStyles.info}>
-                <Text style={popupStyles.title}>Новий працівник!</Text>
-                <Text style={popupStyles.name}>{newWorkerPopup.name}</Text>
-                <Text style={popupStyles.meta}>
-                  {'Рівень ' + newWorkerPopup.level + ' · ' +
-                    (gameConfig.productionTypes[newWorkerPopup.dreamJob]?.displayName ?? newWorkerPopup.dreamJob)}
-                </Text>
-                <Text style={popupStyles.subtitle}>Очікує у готелі</Text>
-              </View>
-              <Pressable
-                onPress={() => {
-                  setNewWorkerPopup(null);
-                  onClose();
-                  onOpenHotel?.();
-                }}
-                style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
-              >
-                <LinearGradient colors={['#72C24F', '#5BA63C']} style={popupStyles.findJobGradient}>
-                  <Text style={popupStyles.findJobText}>Знайти роботу зараз</Text>
-                </LinearGradient>
-              </Pressable>
-              <Pressable onPress={() => setNewWorkerPopup(null)} style={popupStyles.dismissBtn}>
-                <Text style={popupStyles.dismissText}>Пізніше</Text>
-              </Pressable>
+    {/* Hotel full notice — outside outer Modal to prevent modal-stack freeze */}
+    {hotelFullNotice && (
+      <Modal transparent animationType="fade" visible onRequestClose={() => setHotelFullNotice(false)}>
+        <Pressable style={popupStyles.scrim} onPress={() => setHotelFullNotice(false)}>
+          <Pressable style={popupStyles.card} onPress={() => {}}>
+            <View style={popupStyles.avatarWrap}>
+              <HotelIcon size={32} color="#A8475F" />
+            </View>
+            <View style={popupStyles.info}>
+              <Text style={popupStyles.title}>Готель заповнений</Text>
+              <Text style={popupStyles.subtitle}>Немає місця для нового гостя — він пішов</Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                setHotelFullNotice(false);
+                onClose();
+                onOpenHotel?.();
+              }}
+              style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
+            >
+              <LinearGradient colors={['#C9637E', '#A8475F']} style={popupStyles.findJobGradient}>
+                <HotelIcon size={16} color="#fff" />
+                <Text style={popupStyles.findJobText}>Перейти до готелю</Text>
+              </LinearGradient>
+            </Pressable>
+            <Pressable onPress={() => setHotelFullNotice(false)} style={popupStyles.dismissBtn}>
+              <Text style={popupStyles.dismissText}>Закрити</Text>
             </Pressable>
           </Pressable>
-        </Modal>
-      )}
-    </Modal>
+        </Pressable>
+      </Modal>
+    )}
+
+    {/* New worker popup — outside outer Modal to prevent modal-stack freeze */}
+    {newWorkerPopup && (
+      <Modal transparent animationType="fade" visible onRequestClose={() => setNewWorkerPopup(null)}>
+        <Pressable style={popupStyles.scrim} onPress={() => setNewWorkerPopup(null)}>
+          <Pressable style={popupStyles.card} onPress={() => {}}>
+            <View style={popupStyles.avatarWrap}>
+              <WorkerAvatar worker={newWorkerPopup} size={56} />
+            </View>
+            <View style={popupStyles.info}>
+              <Text style={popupStyles.title}>Новий працівник!</Text>
+              <Text style={popupStyles.name}>{newWorkerPopup.name}</Text>
+              <Text style={popupStyles.meta}>
+                {'Рівень ' + newWorkerPopup.level + ' · ' +
+                  (gameConfig.productionTypes[newWorkerPopup.dreamJob]?.displayName ?? newWorkerPopup.dreamJob)}
+              </Text>
+              <Text style={popupStyles.subtitle}>Очікує у готелі</Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                setNewWorkerPopup(null);
+                onClose();
+                onOpenHotel?.();
+              }}
+              style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
+            >
+              <LinearGradient colors={['#72C24F', '#5BA63C']} style={popupStyles.findJobGradient}>
+                <Text style={popupStyles.findJobText}>Знайти роботу зараз</Text>
+              </LinearGradient>
+            </Pressable>
+            <Pressable onPress={() => setNewWorkerPopup(null)} style={popupStyles.dismissBtn}>
+              <Text style={popupStyles.dismissText}>Пізніше</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    )}
+    </>
   );
 }
 
@@ -1139,7 +1160,10 @@ const popupStyles = StyleSheet.create({
   },
   findJobGradient: {
     paddingVertical: 13,
+    flexDirection: 'row',
+    gap: 8,
     alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 14,
   },
   findJobText: {
@@ -1154,23 +1178,6 @@ const popupStyles = StyleSheet.create({
     fontFamily: 'Fredoka_500Medium',
     fontSize: 14,
     color: '#9BA3B0',
-  },
-  hotelFullBanner: {
-    position: 'absolute',
-    bottom: 40,
-    left: 24,
-    right: 24,
-    backgroundColor: 'rgba(50,30,35,0.88)',
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    alignItems: 'center',
-  },
-  hotelFullText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 15,
-    color: '#fff',
-    textAlign: 'center',
   },
 });
 
@@ -1643,29 +1650,6 @@ const styles = StyleSheet.create({
     color: '#9098A6',
     textAlign: 'center',
     marginTop: -4,
-  },
-
-  hotelNavButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F4ECEF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E4C9D2',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 8,
-  },
-  hotelNavText: {
-    flex: 1,
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 14,
-    color: '#A8475F',
-  },
-  hotelNavArrow: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 18,
-    color: '#C9637E',
   },
 
   /* Back button */

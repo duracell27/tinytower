@@ -10,6 +10,8 @@ interface SyncResponse {
   stateVersion: number;
   ackCursor: number;
   serverTime: number;
+  playerLevel: number;
+  playerXp: number;
 }
 
 const SYNC_INTERVAL_MS = 5000;
@@ -21,13 +23,15 @@ async function doSync(): Promise<void> {
   if (isSyncing) return;
   if (!useAuthStore.getState().isAuthenticated) return;
 
-  const { commandQueue, lastAckCursor } = useGameStore.getState();
+  const { commandQueue, lastAckCursor, playerLevel, playerXp } = useGameStore.getState();
 
   isSyncing = true;
   try {
     const response = await api.post<SyncResponse>('/sync', {
       commands: commandQueue,
       lastAckCursor,
+      playerLevel,
+      playerXp,
     });
 
     clock.updateOffset(response.serverTime);
@@ -38,9 +42,9 @@ async function doSync(): Promise<void> {
       (store.workers.length === 0 && response.state.workers.length > 0);
 
     if (needsReconcile) {
-      store.reconcile(response.state, response.stateVersion, response.ackCursor);
+      store.reconcile(response.state, response.stateVersion, response.ackCursor, response.playerLevel, response.playerXp);
     } else {
-      store.clearAckedCommands(response.ackCursor);
+      store.clearAckedCommands(response.ackCursor, response.playerLevel, response.playerXp);
     }
   } catch {
     // Network error — retry next cycle
