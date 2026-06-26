@@ -12,6 +12,7 @@ interface AuthState {
   player: PlayerInfo | null;
   lastPlayer: PlayerInfo | null;
   isAuthenticated: boolean;
+  isGuest: boolean;
   isLoading: boolean;
 }
 
@@ -21,6 +22,7 @@ interface AuthActions {
   quickLogin: (password: string) => Promise<void>;
   logout: () => void;
   loadTokens: () => void;
+  enterAsGuest: () => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -45,6 +47,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   player: null,
   lastPlayer: null,
   isAuthenticated: false,
+  isGuest: false,
   isLoading: false,
 
   register: async (email, password, playerName) => {
@@ -95,7 +98,20 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     api.post('/auth/logout').catch(() => {});
     api.clearTokens();
     getStorage().remove('player');
-    set({ player: null, isAuthenticated: false });
+    set({ player: null, isAuthenticated: false, isGuest: false });
+  },
+
+  enterAsGuest: () => {
+    const adjectives = ['Сміливий', 'Веселий', 'Швидкий', 'Мудрий', 'Вдалий'];
+    const nouns = ['Будівник', 'Архітектор', 'Власник', 'Майстер', 'Творець'];
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const guestPlayer: PlayerInfo = {
+      id: `guest_${Date.now()}`,
+      email: '',
+      playerName: `${adj} ${noun}`,
+    };
+    set({ player: guestPlayer, isAuthenticated: false, isGuest: true });
   },
 
   loadTokens: () => {

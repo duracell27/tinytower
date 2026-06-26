@@ -12,11 +12,13 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
 
 interface WelcomeScreenProps {
   onPlay: () => void;
+  onGuest: () => void;
   onLogin: () => void;
   onRegister: () => void;
 }
@@ -33,7 +35,19 @@ function formatNumber(n: number): string {
   return String(n);
 }
 
-export default function WelcomeScreen({ onPlay, onLogin, onRegister }: WelcomeScreenProps) {
+function PlayerAvatar({ name, size = 36 }: { name: string; size?: number }) {
+  const initial = name.charAt(0).toUpperCase();
+  return (
+    <LinearGradient
+      colors={['#74D3C4', '#3FA9A0']}
+      style={[styles.avatarCircle, { width: size, height: size, borderRadius: size / 2 }]}
+    >
+      <Text style={[styles.avatarInitial, { fontSize: size * 0.45 }]}>{initial}</Text>
+    </LinearGradient>
+  );
+}
+
+export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: WelcomeScreenProps) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const lastPlayer = useAuthStore((s) => s.lastPlayer);
   const quickLogin = useAuthStore((s) => s.quickLogin);
@@ -41,29 +55,37 @@ export default function WelcomeScreen({ onPlay, onLogin, onRegister }: WelcomeSc
   const balance = useGameStore((s) => s.balance);
   const gems = useGameStore((s) => s.gems);
   const floorCount = useGameStore((s) => s.floors.length);
+  const player = useAuthStore((s) => s.player);
 
+  // Case 1: active session
+  // Case 2: logged out but has saved account
+  // Case 3: first time / no account
   const hasLastAccount = !isAuthenticated && lastPlayer !== null;
+  const isFirstTime = !isAuthenticated && lastPlayer === null;
   const showChips = isAuthenticated || hasLastAccount;
+
+  const activePlayerName = isAuthenticated
+    ? (player?.playerName ?? lastPlayer?.playerName ?? '')
+    : (lastPlayer?.playerName ?? '');
 
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleContinue = () => {
+  const handleMainAction = () => {
     if (isAuthenticated) {
       onPlay();
-    } else {
+    } else if (hasLastAccount) {
       setShowPasswordPrompt(true);
       setPassword('');
       setError('');
+    } else {
+      onGuest();
     }
   };
 
   const handlePasswordSubmit = async () => {
-    if (!password.trim()) {
-      setError('Введіть пароль');
-      return;
-    }
+    if (!password.trim()) { setError('Введіть пароль'); return; }
     try {
       await quickLogin(password);
       setShowPasswordPrompt(false);
@@ -112,7 +134,7 @@ export default function WelcomeScreen({ onPlay, onLogin, onRegister }: WelcomeSc
         </View>
       </View>
 
-      {/* Stat chips */}
+      {/* Stat chips — only when there's a known account */}
       {showChips && (
         <View style={styles.chipsContainer}>
           <View style={styles.chip}>
@@ -127,7 +149,7 @@ export default function WelcomeScreen({ onPlay, onLogin, onRegister }: WelcomeSc
           </View>
           <View style={styles.chip}>
             <View style={styles.floorsIconWrap}>
-              {['#6FBF46', '#8FD86A', '#6FBF46'].map((c, i) => (
+              {(['#6FBF46', '#8FD86A', '#6FBF46'] as const).map((c, i) => (
                 <View key={i} style={[styles.floorBar, { backgroundColor: c }]} />
               ))}
             </View>
@@ -139,7 +161,7 @@ export default function WelcomeScreen({ onPlay, onLogin, onRegister }: WelcomeSc
         </View>
       )}
 
-      {/* Password prompt modal */}
+      {/* Password popup */}
       <Modal
         visible={showPasswordPrompt}
         transparent
@@ -150,14 +172,10 @@ export default function WelcomeScreen({ onPlay, onLogin, onRegister }: WelcomeSc
           style={styles.promptOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <Pressable
-            style={styles.promptBackdrop}
-            onPress={() => setShowPasswordPrompt(false)}
-          />
+          <Pressable style={styles.promptBackdrop} onPress={() => setShowPasswordPrompt(false)} />
           <View style={styles.promptCard}>
-            <Text style={styles.promptTitle}>
-              {lastPlayer?.playerName ?? 'Гравець'}
-            </Text>
+            <PlayerAvatar name={lastPlayer?.playerName ?? '?'} size={52} />
+            <Text style={styles.promptTitle}>{lastPlayer?.playerName}</Text>
             <Text style={styles.promptEmail}>{lastPlayer?.email}</Text>
 
             <TextInput
@@ -175,11 +193,10 @@ export default function WelcomeScreen({ onPlay, onLogin, onRegister }: WelcomeSc
 
             <Pressable onPress={handlePasswordSubmit} disabled={isLoading} style={styles.promptSubmitWrap}>
               <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.promptSubmit}>
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <Text style={styles.promptSubmitText}>Увійти</Text>
-                )}
+                {isLoading
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : <Text style={styles.promptSubmitText}>Увійти</Text>
+                }
               </LinearGradient>
             </Pressable>
 
@@ -190,17 +207,50 @@ export default function WelcomeScreen({ onPlay, onLogin, onRegister }: WelcomeSc
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Action buttons */}
+      {/* Actions */}
       <View style={styles.actionsContainer}>
-        {/* Play / Continue button */}
-        <Pressable onPress={handleContinue} style={styles.playButton}>
-          <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.playButtonGradient}>
-            <View style={styles.playTriangle} />
-            <Text style={styles.playButtonText}>
-              {hasLastAccount ? 'Продовжити гру' : 'Почати будувати'}
-            </Text>
-          </LinearGradient>
-        </Pressable>
+
+        {/* ── Case 1 & 2: known player ── */}
+        {(isAuthenticated || hasLastAccount) && (
+          <Pressable
+            onPress={handleMainAction}
+            style={({ pressed }) => [styles.continueButton, pressed && { opacity: 0.88 }]}
+          >
+            <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.continueGradient}>
+              <PlayerAvatar name={activePlayerName} size={36} />
+              <View style={styles.continueMeta}>
+                <Text style={styles.continueName}>{activePlayerName}</Text>
+                <Text style={styles.continueLabel}>
+                  {isAuthenticated ? 'Продовжити' : 'Продовжити гру'}
+                </Text>
+              </View>
+              {hasLastAccount && (
+                <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                  <Rect x={5} y={11} width={14} height={10} rx={2} />
+                  <Path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </Svg>
+              )}
+              {isAuthenticated && (
+                <Svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                  <Path d="M5 12h14M13 6l6 6-6 6" />
+                </Svg>
+              )}
+            </LinearGradient>
+          </Pressable>
+        )}
+
+        {/* ── Case 3: first time → guest ── */}
+        {isFirstTime && (
+          <Pressable
+            onPress={handleMainAction}
+            style={({ pressed }) => [styles.playButton, pressed && { opacity: 0.88 }]}
+          >
+            <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.playButtonGradient}>
+              <View style={styles.playTriangle} />
+              <Text style={styles.playButtonText}>Почати будувати!</Text>
+            </LinearGradient>
+          </Pressable>
+        )}
 
         <View style={styles.orContainer}>
           <Text style={styles.orText}>або</Text>
@@ -208,17 +258,25 @@ export default function WelcomeScreen({ onPlay, onLogin, onRegister }: WelcomeSc
 
         <View style={styles.secondaryRow}>
           <Pressable onPress={onLogin} style={styles.secondaryButton}>
-            <Text style={styles.secondaryEmoji}>👤</Text>
+            <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="#2C4A2A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <Circle cx={12} cy={8} r={4} />
+              <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </Svg>
             <Text style={styles.secondaryLabel}>Увійти</Text>
           </Pressable>
           <Pressable onPress={onRegister} style={styles.secondaryButton}>
-            <View style={styles.plusIconWrap}>
-              <View style={styles.plusH} />
-              <View style={styles.plusV} />
-            </View>
+            <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="#2C4A2A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <Path d="M12 5v14M5 12h14" />
+            </Svg>
             <Text style={styles.secondaryLabel}>Реєстрація</Text>
           </Pressable>
         </View>
+
+        {isFirstTime && (
+          <Text style={styles.guestNote}>
+            Прогрес збережеться після реєстрації
+          </Text>
+        )}
 
         <Text style={styles.termsText}>
           {'Продовжуючи, ви приймаєте наші '}
@@ -393,6 +451,94 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
 
+  /* Avatar */
+  avatarCircle: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.5)',
+  },
+  avatarInitial: {
+    fontFamily: 'Fredoka_700Bold',
+    color: '#fff',
+  },
+
+  /* Continue button (case 1 & 2) */
+  continueButton: {
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.55)',
+    shadowColor: 'rgba(46,130,40,1)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 22,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  continueGradient: {
+    height: 66,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  continueMeta: {
+    flex: 1,
+  },
+  continueName: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 18,
+    color: '#fff',
+    textShadowColor: 'rgba(20,70,15,0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  continueLabel: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.82)',
+  },
+
+  /* Play button (case 3) */
+  playButton: {
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.55)',
+    shadowColor: 'rgba(46,130,40,1)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 22,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  playButtonGradient: {
+    height: 62,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 11,
+  },
+  playTriangle: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 15,
+    borderLeftColor: '#fff',
+    borderTopWidth: 10,
+    borderTopColor: 'transparent',
+    borderBottomWidth: 10,
+    borderBottomColor: 'transparent',
+  },
+  playButtonText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 21,
+    color: '#fff',
+    letterSpacing: 0.3,
+    textShadowColor: 'rgba(20,70,15,0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+
   /* Password prompt */
   promptOverlay: {
     flex: 1,
@@ -420,6 +566,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 22,
     color: '#27331F',
+    marginTop: 12,
     marginBottom: 4,
   },
   promptEmail: {
@@ -473,7 +620,7 @@ const styles = StyleSheet.create({
     color: '#7C8A6E',
   },
 
-  /* Actions */
+  /* Secondary row */
   actionsContainer: {
     position: 'absolute',
     left: 22,
@@ -481,44 +628,6 @@ const styles = StyleSheet.create({
     bottom: 38,
     zIndex: 2,
     gap: 12,
-  },
-  playButton: {
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.55)',
-    shadowColor: 'rgba(46,130,40,1)',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 22,
-    elevation: 8,
-    overflow: 'hidden',
-  },
-  playButtonGradient: {
-    height: 62,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 11,
-  },
-  playTriangle: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 15,
-    borderLeftColor: '#fff',
-    borderTopWidth: 10,
-    borderTopColor: 'transparent',
-    borderBottomWidth: 10,
-    borderBottomColor: 'transparent',
-  },
-  playButtonText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 21,
-    color: '#fff',
-    letterSpacing: 0.3,
-    textShadowColor: 'rgba(20,70,15,0.45)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   orContainer: {
     alignItems: 'center',
@@ -554,34 +663,19 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 6,
   },
-  secondaryEmoji: {
-    fontSize: 18,
-    lineHeight: 22,
-  },
   secondaryLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 17,
     color: '#2C4A2A',
   },
-  plusIconWrap: {
-    width: 17,
-    height: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  plusH: {
-    position: 'absolute',
-    width: 15,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: '#3C7A35',
-  },
-  plusV: {
-    position: 'absolute',
-    width: 3,
-    height: 15,
-    borderRadius: 2,
-    backgroundColor: '#3C7A35',
+  guestNote: {
+    textAlign: 'center',
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.75)',
+    textShadowColor: 'rgba(15,35,25,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   termsText: {
     textAlign: 'center',

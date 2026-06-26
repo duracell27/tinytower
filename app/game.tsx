@@ -65,10 +65,13 @@ export default function GameScreen() {
   const [lobbyOpen, setLobbyOpen] = useState(false);
   const listRef = useRef<FlashList<FloorItem>>(null);
 
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
   useEffect(() => {
+    if (!isAuthenticated) return;
     syncService.start();
     return () => syncService.stop();
-  }, []);
+  }, [isAuthenticated]);
 
   // Spawn visitors: handles initial spawn, offline catch-up, and regular timer
   useEffect(() => {
@@ -121,18 +124,22 @@ export default function GameScreen() {
         resizeMode="cover"
       >
         <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
-        <View style={styles.listContainer}>
-          <FlashList
-            ref={listRef}
-            data={FLOOR_LIST}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            estimatedItemSize={150}
-            extraData={now}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            initialScrollIndex={FLOOR_LIST.length - 1}
-          />
+        <View style={styles.gameArea}>
+          <View style={styles.sideLeft} />
+          <View style={styles.towerColumn}>
+            <FlashList
+              ref={listRef}
+              data={FLOOR_LIST}
+              renderItem={renderItem}
+              keyExtractor={keyExtractor}
+              estimatedItemSize={150}
+              extraData={now}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+              initialScrollIndex={FLOOR_LIST.length - 1}
+            />
+          </View>
+          <View style={styles.sideRight} />
         </View>
 
         <TopBar
@@ -167,13 +174,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#DCEFF6',
   },
-  listContainer: {
+  gameArea: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  sideLeft: {
+    width: 0,
+  },
+  towerColumn: {
     flex: 1,
   },
+  sideRight: {
+    width: 60,
+  },
   listContent: {
-    paddingTop: 130,
+    paddingTop: 150,
     paddingBottom: 120,
-    paddingHorizontal: 14,
+    paddingHorizontal: 8,
   },
   floorWrapper: {
     marginBottom: 13,

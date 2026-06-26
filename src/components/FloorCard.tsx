@@ -119,7 +119,14 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
         <Text style={[styles.floorName, { textShadowColor: scheme.headerShadowColor }]}>
           {scheme.displayName}
         </Text>
-        <Stars count={scheme.stars} />
+        <View style={styles.headerRight}>
+          {discount > 0 && (
+            <View style={styles.discountBadge}>
+              <Text style={styles.discountBadgeText}>−{Math.round(discount * 100)}%</Text>
+            </View>
+          )}
+          <Stars count={scheme.stars} />
+        </View>
       </LinearGradient>
 
       {/* Production cards */}
@@ -147,14 +154,6 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
         })}
       </View>
 
-      {/* Floor info bar */}
-      {discount > 0 && (
-        <View style={[styles.floorInfoBar, { backgroundColor: scheme.bodyColor }]}>
-          <View style={styles.discountBadge}>
-            <Text style={styles.discountBadgeText}>−{Math.round(discount * 100)}%</Text>
-          </View>
-        </View>
-      )}
     </View>
   );
 }
@@ -204,10 +203,15 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginLeft: 'auto',
+  },
   starsContainer: {
     flexDirection: 'row',
     gap: 1,
-    marginLeft: 'auto',
   },
   star: {
     fontSize: 13,
@@ -218,22 +222,15 @@ const styles = StyleSheet.create({
     gap: 7,
     padding: 9,
   },
-  floorInfoBar: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 9,
-    paddingTop: 0,
-    paddingBottom: 7,
-  },
   discountBadge: {
-    backgroundColor: '#5BA63C',
-    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.28)',
+    borderRadius: 7,
     paddingHorizontal: 5,
     paddingVertical: 1,
   },
   discountBadgeText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 9,
+    fontSize: 10,
     color: '#fff',
   },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import GlassView from 'glass-view';
 import { router, usePathname } from 'expo-router';
 
 interface NavItemProps {
@@ -14,13 +15,15 @@ function NavItem({ active = false, label, children, onPress }: NavItemProps) {
   return (
     <Pressable onPress={onPress} style={styles.navItemPressable}>
       {active ? (
-        <LinearGradient
-          colors={['#E4F4D8', '#D3EBBF']}
-          style={[styles.navItem, styles.navItemActive]}
-        >
+        <View style={[styles.navItem, styles.navItemActive]}>
+          <View style={styles.navItemActiveFill} />
+          <LinearGradient
+            colors={['rgba(255,255,255,0.7)', 'rgba(255,255,255,0)']}
+            style={styles.navItemActiveSheen}
+          />
           {children}
           <Text style={[styles.navLabel, styles.navLabelActive]}>{label}</Text>
-        </LinearGradient>
+        </View>
       ) : (
         <View style={styles.navItem}>
           {children}
@@ -77,7 +80,11 @@ function ProfileIcon({ active }: { active: boolean }) {
   );
 }
 
-export default function BottomNav() {
+interface BottomNavProps {
+  onTowerPress?: () => void;
+}
+
+export default function BottomNav({ onTowerPress }: BottomNavProps = {}) {
   const pathname = usePathname();
   const isGame = pathname === '/game';
   const isCity = pathname === '/city';
@@ -86,13 +93,14 @@ export default function BottomNav() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.glassPanel}>
+      <GlassView cornerRadius={30} style={styles.glassPanel}>
+        {/* top specular highlight */}
         <LinearGradient
-          colors={['rgba(255,255,255,0.45)', 'transparent']}
+          colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
           style={styles.sheen}
         />
         <View style={styles.content}>
-          <NavItem active={isGame} label="Вежа" onPress={() => { if (!isGame) router.replace('/game'); }}>
+          <NavItem active={isGame} label="Вежа" onPress={() => { if (!isGame) router.replace('/game'); else onTowerPress?.(); }}>
             <TowerIcon active={isGame} />
           </NavItem>
           <NavItem active={isCity} label="Місто" onPress={() => { if (!isCity) router.replace('/city'); }}>
@@ -105,7 +113,7 @@ export default function BottomNav() {
             <ProfileIcon active={isProfile} />
           </NavItem>
         </View>
-      </View>
+      </GlassView>
     </View>
   );
 }
@@ -120,14 +128,13 @@ const styles = StyleSheet.create({
   },
   glassPanel: {
     borderRadius: 30,
-    backgroundColor: 'rgba(255,255,255,0.83)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.9)',
     overflow: 'hidden',
-    shadowColor: 'rgba(60,90,50,1)',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.2,
-    shadowRadius: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.7)',
+    shadowColor: 'rgba(40,70,35,1)',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 28,
     elevation: 10,
   },
   sheen: {
@@ -135,7 +142,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: '50%',
+    height: '45%',
     zIndex: 1,
   },
   content: {
@@ -161,11 +168,25 @@ const styles = StyleSheet.create({
   navItemActive: {
     paddingHorizontal: 18,
     gap: 5,
-    shadowColor: 'rgba(90,160,60,1)',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.18,
-    shadowRadius: 4,
-    elevation: 2,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.75)',
+    shadowColor: 'rgba(70,140,45,1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.22,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  navItemActiveFill: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(210,240,190,0.55)',
+  },
+  navItemActiveSheen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '55%',
   },
   navLabel: {
     fontFamily: 'Fredoka_500Medium',

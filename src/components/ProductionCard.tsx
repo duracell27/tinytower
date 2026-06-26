@@ -13,7 +13,7 @@ import type { ImageSource } from 'expo-image';
 
 // Button gradient and shadow configs per stage
 const BTN_COLORS: Record<string, { colors: [string, string]; shadowColor: string }> = {
-  IDLE: { colors: ['#72C24F', '#5BA63C'], shadowColor: '#4A8A2E' },
+  IDLE: { colors: ['#F0895E', '#D96840'], shadowColor: '#B5512A' },
   READY_TO_COLLECT: { colors: ['#72C24F', '#5BA63C'], shadowColor: '#4A8A2E' },
   EMPTY: { colors: ['#72C24F', '#5BA63C'], shadowColor: '#4A8A2E' },
   DELIVERING: { colors: ['#52A6E2', '#3B8BCB'], shadowColor: '#2C73AC' },

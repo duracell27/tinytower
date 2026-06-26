@@ -6,16 +6,18 @@ export default function Index() {
   const router = useRouter();
 
   const handlePlay = () => {
-    if (useAuthStore.getState().isAuthenticated) {
-      router.replace('/game');
-    } else {
-      router.push('/login');
-    }
+    router.replace('/game');
+  };
+
+  const handleGuest = () => {
+    useAuthStore.getState().enterAsGuest();
+    router.replace('/game');
   };
 
   return (
     <WelcomeScreen
       onPlay={handlePlay}
+      onGuest={handleGuest}
       onLogin={() => router.push('/login')}
       onRegister={() => router.push('/login')}
     />

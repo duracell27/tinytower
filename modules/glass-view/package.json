@@ -1,0 +1,6 @@
+{
+  "name": "glass-view",
+  "version": "1.0.0",
+  "description": "Native iOS 26 Liquid Glass view",
+  "main": "index.ts"
+}
