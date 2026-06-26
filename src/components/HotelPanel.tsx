@@ -147,7 +147,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           {/* Header with pan gesture for swipe-to-dismiss */}
           <GestureDetector gesture={panGesture}>
             <Animated.View>
-              <LinearGradient colors={['#6C7C92', '#56657C']} style={styles.header}>
+              <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.header}>
                 {/* Drag handle */}
                 <View style={styles.handleRow}>
                   <View style={styles.handle} />
@@ -170,7 +170,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                       <Rect x={13} y={15} width={4} height={4} rx={0.5} stroke="#fff" strokeWidth={1.5} />
                     </Svg>
                     <View>
-                      <Text style={styles.titleText}>ГОТЕЛЬ</Text>
+                      <Text style={styles.titleText}>Готель</Text>
                       <Text style={styles.subtitleText}>Мешканці · пошук роботи</Text>
                     </View>
                   </View>
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     top: 56,
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
-    backgroundColor: '#EAEDF2',
+    backgroundColor: '#F4ECEF',
     overflow: 'hidden',
   },
   header: {

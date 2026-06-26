@@ -157,7 +157,7 @@ export default function GameScreen() {
         onClose={() => setLobbyOpen(false)}
         onOpenHotel={() => { setLobbyOpen(false); setHotelOpen(true); }}
       />
-      <LevelUpModal />
+      <LevelUpModal suppressWhileOpen={lobbyOpen || hotelOpen} />
     </View>
   );
 }

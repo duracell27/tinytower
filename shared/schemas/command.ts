@@ -60,6 +60,8 @@ export const SpawnVisitorCommandSchema = TimestampedBaseSchema.extend({
 
 export const LiftVisitorCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('lift_visitor'),
+  role: VisitorRoleSchema,
+  targetFloor: z.number().int().positive(),
 });
 
 export const CollectTipCommandSchema = TimestampedBaseSchema.extend({

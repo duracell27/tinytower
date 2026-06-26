@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
-import { generateRandomVisitor } from '../../shared/engine/lobbyUtils';
+import { generateRandomVisitorRole, generateVisitorAppearance } from '../../shared/engine/lobbyUtils';
 import { clock } from '../services/clock';
 import type { GameState, Command, Floor, Worker } from '../../shared/types';
 
@@ -190,26 +190,58 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   spawnVisitor: () => {
     const state = get();
-    const visitor = generateRandomVisitor(
-      { ...state },
-      gameConfig,
-    );
+    const now = clock.now();
+    const { role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now);
+    const { id, hairColor, female } = generateVisitorAppearance();
     executeCommand(get, set, {
       id: uuid(),
       type: 'spawn_visitor',
-      visitorId: visitor.id,
-      role: visitor.role,
-      targetFloor: visitor.targetFloor,
-      hairColor: visitor.hairColor,
-      female: visitor.female,
-      timestamp: clock.now(),
+      visitorId: id,
+      role,
+      targetFloor,
+      hairColor,
+      female,
+      timestamp: now,
     });
   },
 
   liftVisitor: () => {
+    const state = get();
+    const active = state.lobbyVisitors[0];
+    if (!active) return;
+
+    const now = clock.now();
+    let role = active.role;
+    let targetFloor = active.targetFloor;
+
+    const isStillSelling = (floorId: number) => {
+      const floor = state.floors.find((f) => f.id === floorId);
+      return floor?.productions.some(
+        (p) => p.stage === 'SELLING' && p.typeId != null &&
+          now - p.stageStartedAt < (gameConfig.productionTypes[p.typeId]?.sellDuration ?? 0),
+      );
+    };
+    const isStillDelivering = (floorId: number) => {
+      const floor = state.floors.find((f) => f.id === floorId);
+      return floor?.productions.some(
+        (p) => p.stage === 'DELIVERING' && p.typeId != null &&
+          now - p.stageStartedAt < (gameConfig.productionTypes[p.typeId]?.deliveryDuration ?? 0),
+      );
+    };
+
+    if (role == null || targetFloor == null) {
+      ({ role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now));
+    } else if (role === 'seller' && !isStillSelling(targetFloor)) {
+      ({ role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now));
+    } else if (role === 'deliverer' && !isStillDelivering(targetFloor)) {
+      ({ role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now));
+    }
+
     executeCommand(get, set, {
       id: uuid(),
       type: 'lift_visitor',
+      role,
+      targetFloor,
       timestamp: clock.now(),
     });
   },

@@ -415,7 +415,7 @@ describe('Lobby command schemas', () => {
   });
 
   it('validates lift_visitor command', () => {
-    const cmd = { id: 'c1', type: 'lift_visitor', timestamp: 1000 };
+    const cmd = { id: 'c1', type: 'lift_visitor', timestamp: 1000, role: 'guest', targetFloor: 3 };
     expect(CommandSchema.parse(cmd).type).toBe('lift_visitor');
   });
 

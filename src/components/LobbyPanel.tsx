@@ -59,11 +59,14 @@ function computeDeliverAllSummary(
   const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
 
   for (const v of visitors) {
-    switch (v.role) {
+    // role/targetFloor are undefined for unlifted visitors — treat as guest for summary
+    const role = v.role ?? 'guest';
+    const targetFloor = v.targetFloor ?? 1;
+    switch (role) {
       case 'guest':
         guestCount++;
-        totalCoins += calculateTip('guest', v.targetFloor, elevatorLevel, gameConfig);
-        if (v.targetFloor === 1) newWorkers++;
+        totalCoins += calculateTip('guest', targetFloor, elevatorLevel, gameConfig);
+        if (targetFloor === 1) newWorkers++;
         break;
       case 'businessman':
         businessmanCount++;
@@ -71,16 +74,16 @@ function computeDeliverAllSummary(
           totalGems++;
           gemsCollected++;
         } else {
-          totalCoins += calculateTip('businessman', v.targetFloor, elevatorLevel, gameConfig);
+          totalCoins += calculateTip('businessman', targetFloor, elevatorLevel, gameConfig);
         }
         break;
       case 'deliverer':
         delivererCount++;
-        totalCoins += calculateTip('deliverer', v.targetFloor, elevatorLevel, gameConfig);
+        totalCoins += calculateTip('deliverer', targetFloor, elevatorLevel, gameConfig);
         break;
       case 'seller':
         sellerCount++;
-        totalCoins += calculateTip('seller', v.targetFloor, elevatorLevel, gameConfig);
+        totalCoins += calculateTip('seller', targetFloor, elevatorLevel, gameConfig);
         break;
     }
   }
@@ -431,6 +434,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const [view, setView] = useState<'operate' | 'upgrade'>('operate');
   const [deliverSummary, setDeliverSummary] = useState<DeliverAllSummary | null>(null);
   const [newWorkerPopup, setNewWorkerPopup] = useState<Worker | null>(null);
+  const [hotelFullNotice, setHotelFullNotice] = useState(false);
 
   const {
     lobbyVisitors,
@@ -459,7 +463,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const translateY = useSharedValue(SHEET_HEIGHT);
 
   const activeVisitor = lobbyVisitors.length > 0 ? lobbyVisitors[0] : null;
-  const arrived = activeVisitor ? elevatorFloor >= activeVisitor.targetFloor : false;
+  // targetFloor is only set after first lift command; before that, visitor is not yet "on the way"
+  const arrived = activeVisitor?.targetFloor != null
+    ? elevatorFloor >= activeVisitor.targetFloor
+    : false;
 
   // Timer
   const isFull = lobbyVisitors.length >= lobbyCapacity;
@@ -530,10 +537,20 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
   // Handle collect tip with new worker notification
   const handleCollectTip = useCallback(() => {
-    const workersBefore = useGameStore.getState().workers;
+    const state = useGameStore.getState();
+    const active = state.lobbyVisitors[0];
+    const isHotelGuest = (active?.role ?? 'guest') === 'guest' && (active?.targetFloor ?? 1) === 1;
+    const hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
+    const isHotelFull = isHotelGuest && hotelOccupied >= state.hotelCapacity;
+
+    const workersBefore = state.workers;
     collectTip();
     const workersAfter = useGameStore.getState().workers;
-    if (workersAfter.length > workersBefore.length) {
+
+    if (isHotelFull) {
+      setHotelFullNotice(true);
+      setTimeout(() => setHotelFullNotice(false), 3000);
+    } else if (workersAfter.length > workersBefore.length) {
       const newWorker = workersAfter.find((w) => !workersBefore.some((b) => b.id === w.id));
       if (newWorker) setNewWorkerPopup(newWorker);
     }
@@ -544,9 +561,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     if (!activeVisitor) return null;
 
     if (!arrived) {
-      // Riding
+      // Show the next intermediate floor the elevator will reach on this press
+      const nextFloor = activeVisitor.targetFloor != null
+        ? Math.min(elevatorFloor + elevatorLevel, activeVisitor.targetFloor)
+        : elevatorFloor + elevatorLevel;
       return {
-        label: `Підняти на ${activeVisitor.targetFloor} поверх`,
+        label: `Підняти на ${nextFloor} поверх`,
         colors: ['#72C24F', '#5BA63C'] as [string, string],
         shadowColor: '#4A8A2E',
         textColor: '#fff',
@@ -555,7 +575,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       };
     }
 
-    // Arrived
+    // Arrived — role/targetFloor are always set here (assigned on first lift)
     if (activeVisitor.role === 'guest' && activeVisitor.targetFloor === 1) {
       return {
         label: 'Прийняти до готелю',
@@ -580,7 +600,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       };
     }
 
-    const tip = calculateTip(activeVisitor.role, activeVisitor.targetFloor, elevatorLevel, gameConfig);
+    const tip = calculateTip(activeVisitor.role ?? 'guest', activeVisitor.targetFloor ?? 1, elevatorLevel, gameConfig);
     return {
       label: 'Отримати чайові',
       amount: `+${tip}` as string | null,
@@ -607,7 +627,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
           {/* Header with pan gesture */}
           <GestureDetector gesture={panGesture}>
             <Animated.View>
-              <LinearGradient colors={['#6C7C92', '#56657C']} style={styles.header}>
+              <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.header}>
                 {/* Drag handle */}
                 <View style={styles.handleRow}>
                   <View style={styles.handle} />
@@ -620,7 +640,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <ElevatorIcon size={20} />
                     </View>
                     <View>
-                      <Text style={styles.titleText}>ВЕСТИБЮЛЬ</Text>
+                      <Text style={styles.titleText}>Вестибюль</Text>
                       <Text style={styles.subtitleText}>Ліфт · доставка гостей</Text>
                     </View>
                   </View>
@@ -681,7 +701,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         <View style={styles.visitorInfoRow}>
                           <View style={styles.avatarTile}>
                             <VisitorAvatar
-                              role={activeVisitor.role}
+                              role={activeVisitor.role ?? 'guest'}
                               hairColor={activeVisitor.hairColor}
                               female={activeVisitor.female}
                             />
@@ -692,10 +712,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                 <Text style={styles.speechArrivedText}>Дякую! 🎉</Text>
                               ) : (
                                 <Text style={styles.speechText}>
-                                  <Text style={[styles.speechRoleLabel, { color: ROLE_COLORS[activeVisitor.role] }]}>
-                                    {ROLE_LABELS[activeVisitor.role]}
+                                  <Text style={[styles.speechRoleLabel, { color: ROLE_COLORS[activeVisitor.role ?? 'guest'] }]}>
+                                    {ROLE_LABELS[activeVisitor.role ?? 'guest']}
                                   </Text>
-                                  {' · '}{activeVisitor.targetFloor} поверх
+                                  {` · ${activeVisitor.targetFloor ?? '?'} поверх`}
                                 </Text>
                               )}
                             </View>
@@ -837,6 +857,16 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   </Text>
                 </View>
 
+                {/* Hotel navigation button */}
+                <Pressable
+                  onPress={() => { onClose(); onOpenHotel?.(); }}
+                  style={({ pressed }) => [styles.hotelNavButton, pressed && { opacity: 0.85 }]}
+                >
+                  <HotelIcon size={16} color="#A8475F" />
+                  <Text style={styles.hotelNavText}>Перейти до готелю</Text>
+                  <Text style={styles.hotelNavArrow}>›</Text>
+                </Pressable>
+
                 {/* Upgrade elevator entry button */}
                 <Pressable
                   onPress={() => setView('upgrade')}
@@ -846,7 +876,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   ]}
                 >
                   <LinearGradient
-                    colors={['#6C7C92', '#56657C']}
+                    colors={['#C9637E', '#A8475F']}
                     style={styles.upgradeEntryGradient}
                   >
                     <UploadIcon />
@@ -997,6 +1027,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         onDismiss={() => setDeliverSummary(null)}
       />
 
+      {/* Hotel full notice */}
+      {hotelFullNotice && (
+        <View style={popupStyles.hotelFullBanner} pointerEvents="none">
+          <Text style={popupStyles.hotelFullText}>🏨 Готель заповнений — він пішов</Text>
+        </View>
+      )}
+
       {/* New worker popup */}
       {newWorkerPopup && (
         <Modal transparent animationType="fade" visible onRequestClose={() => setNewWorkerPopup(null)}>
@@ -1118,6 +1155,23 @@ const popupStyles = StyleSheet.create({
     fontSize: 14,
     color: '#9BA3B0',
   },
+  hotelFullBanner: {
+    position: 'absolute',
+    bottom: 40,
+    left: 24,
+    right: 24,
+    backgroundColor: 'rgba(50,30,35,0.88)',
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+  },
+  hotelFullText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 15,
+    color: '#fff',
+    textAlign: 'center',
+  },
 });
 
 /* ---------- Styles ---------- */
@@ -1138,7 +1192,7 @@ const styles = StyleSheet.create({
     top: 56,
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
-    backgroundColor: '#EAEDF2',
+    backgroundColor: '#F4ECEF',
     overflow: 'hidden',
     shadowColor: 'rgba(20,30,50,1)',
     shadowOffset: { width: 0, height: -10 },
@@ -1579,7 +1633,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#45526A',
+    backgroundColor: '#8A3A50',
     borderBottomLeftRadius: 14,
     borderBottomRightRadius: 14,
   },
@@ -1589,6 +1643,29 @@ const styles = StyleSheet.create({
     color: '#9098A6',
     textAlign: 'center',
     marginTop: -4,
+  },
+
+  hotelNavButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F4ECEF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E4C9D2',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  hotelNavText: {
+    flex: 1,
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 14,
+    color: '#A8475F',
+  },
+  hotelNavArrow: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 18,
+    color: '#C9637E',
   },
 
   /* Back button */

@@ -2,6 +2,29 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle, Path } from 'react-native-svg';
+
+const HEADER_COLORS: [string, string] = ['#C9637E', '#A8475F'];
+
+function StarIcon() {
+  return (
+    <Svg width={11} height={11} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 2l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 15.9 6.8 18l1-5.8L3.6 8.1l5.8-.8z"
+        fill="#fff"
+      />
+    </Svg>
+  );
+}
+
+function PersonMiniIcon() {
+  return (
+    <Svg width={11} height={11} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={8} r={3.6} fill="#fff" />
+      <Path d="M5 20c0-3.6 3-5.8 7-5.8s7 2.2 7 5.8z" fill="#fff" />
+    </Svg>
+  );
+}
 
 interface HotelFloorProps {
   hotelOccupied: number;
@@ -14,13 +37,14 @@ export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorPro
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
-      <LinearGradient colors={['#8090A6', '#5F6E84']} style={styles.header}>
+      <LinearGradient colors={HEADER_COLORS} style={styles.header}>
         <View style={styles.numberBadge}>
           <Text style={styles.numberText}>1</Text>
         </View>
-        <Text style={styles.floorName}>ГОТЕЛЬ</Text>
+        <Text style={styles.floorName} numberOfLines={1}>Готель</Text>
         <View style={styles.techTag}>
-          <Text style={styles.techTagText}>ТЕХНІЧНИЙ</Text>
+          <StarIcon />
+          <Text style={styles.techTagText}>СЕРВІС</Text>
         </View>
       </LinearGradient>
 
@@ -32,15 +56,23 @@ export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorPro
             contentFit="contain"
           />
           <View style={styles.techInfo}>
-            <View style={[styles.statusPill, hasVacancy ? styles.statusGreen : styles.statusRed]}>
-              <View style={[styles.statusDot, { backgroundColor: hasVacancy ? '#5BA63C' : '#D14343' }]} />
-              <Text style={[styles.statusText, { color: hasVacancy ? '#3C7A2A' : '#A13030' }]}>
-                {hasVacancy ? 'Є вільні місця' : 'Немає вільних місць'}
-              </Text>
+            <View style={styles.infoRow}>
+              {/* Left: vacancy pill */}
+              <View style={[styles.statusPill, hasVacancy ? styles.statusGreen : styles.statusRed]}>
+                <View style={[styles.statusDot, { backgroundColor: hasVacancy ? '#5BA63C' : '#D14343' }]} />
+                <Text style={[styles.statusText, { color: hasVacancy ? '#3C7A2A' : '#A13030' }]}>
+                  {hasVacancy ? 'Є вільні місця' : 'Немає вільних'}
+                </Text>
+              </View>
+              {/* Right: occupancy count */}
+              <View style={styles.occupancyRight}>
+                <Text style={styles.occupancyLabel}>ЗАЙНЯТО</Text>
+                <Text style={styles.occupancyCount}>
+                  <Text style={styles.occupancyNum}>{hotelOccupied}</Text>
+                  <Text style={styles.occupancyTotal}>/{hotelTotal}</Text>
+                </Text>
+              </View>
             </View>
-            <Text style={styles.occupancyText}>
-              {hotelOccupied} / {hotelTotal}
-            </Text>
           </View>
         </View>
       </View>
@@ -65,13 +97,14 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, on
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
-      <LinearGradient colors={['#8090A6', '#5F6E84']} style={styles.header}>
+      <LinearGradient colors={HEADER_COLORS} style={styles.header}>
         <View style={styles.numberBadge}>
           <Text style={styles.numberText}>0</Text>
         </View>
-        <Text style={styles.floorName}>ВЕСТИБЮЛЬ</Text>
+        <Text style={styles.floorName} numberOfLines={1}>Вестибюль</Text>
         <View style={styles.techTag}>
-          <Text style={styles.techTagText}>ТЕХНІЧНИЙ</Text>
+          <StarIcon />
+          <Text style={styles.techTagText}>СЕРВІС</Text>
         </View>
       </LinearGradient>
 
@@ -83,13 +116,17 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, on
             contentFit="contain"
           />
           <View style={styles.techInfo}>
-            <View style={styles.visitorRow}>
+            <View style={styles.infoRow}>
               <Text style={styles.visitorLabel}>Очікують</Text>
-              <View style={styles.visitorBadge}>
-                <Text style={styles.visitorBadgeText}>{visitorCount} / {lobbyCapacity}</Text>
+              {/* Visitor count pill */}
+              <View style={styles.visitorPill}>
+                <View style={styles.visitorAvatarCircle}>
+                  <PersonMiniIcon />
+                </View>
+                <Text style={styles.visitorPillText}>{visitorCount} / {lobbyCapacity}</Text>
               </View>
             </View>
-            <View style={styles.visitorRow}>
+            <View style={styles.infoRow}>
               <Text style={styles.visitorLabel}>Новий гість</Text>
               <Text style={styles.timerText}>{timerText}</Text>
             </View>
@@ -104,7 +141,7 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: 'rgba(60,80,45,1)',
+    shadowColor: 'rgba(140,50,75,1)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.18,
     shadowRadius: 12,
@@ -134,34 +171,36 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   floorName: {
+    flex: 1,
     fontFamily: 'Fredoka_700Bold',
     fontSize: 15,
     color: '#fff',
     letterSpacing: 0.6,
-    textTransform: 'capitalize',
-    textShadowColor: 'rgba(40,50,60,0.4)',
+    textShadowColor: 'rgba(100,30,50,0.4)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
   },
   techTag: {
     marginLeft: 'auto',
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.26)',
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingVertical: 3,
+    borderRadius: 9,
   },
   techTagText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 9,
-    color: 'rgba(255,255,255,0.85)',
-    letterSpacing: 0.5,
+    color: '#fff',
+    letterSpacing: 0.4,
   },
   body: {
-    backgroundColor: '#D9DEE7',
+    backgroundColor: '#FBEAEF',
     padding: 12,
     paddingTop: 10,
     paddingBottom: 10,
-    gap: 10,
   },
   techContent: {
     flexDirection: 'row',
@@ -177,11 +216,15 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 8,
   },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    alignSelf: 'flex-start',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 10,
@@ -199,43 +242,69 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 12,
+    fontSize: 11.5,
   },
-  occupancyText: {
+  occupancyRight: {
+    alignItems: 'flex-end',
+    gap: 1,
+  },
+  occupancyLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 10,
+    letterSpacing: 0.4,
+    color: '#A65068',
+  },
+  occupancyCount: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 22,
-    color: '#3A4250',
+    fontSize: 19,
+    lineHeight: 22,
   },
-  visitorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  occupancyNum: {
+    color: '#AE415C',
+  },
+  occupancyTotal: {
+    color: '#D69FB0',
+    fontSize: 16,
   },
   visitorLabel: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 14,
-    color: '#3A4250',
+    fontSize: 13,
+    color: '#8A4D5E',
   },
-  visitorBadge: {
-    backgroundColor: '#5BA63C',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    shadowColor: 'rgba(40,90,25,1)',
+  visitorPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fff',
+    paddingVertical: 3,
+    paddingLeft: 4,
+    paddingRight: 11,
+    borderRadius: 11,
+    shadowColor: 'rgba(140,50,75,1)',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: 'rgba(140,50,75,0.12)',
   },
-  visitorBadgeText: {
+  visitorAvatarCircle: {
+    width: 19,
+    height: 19,
+    borderRadius: 10,
+    backgroundColor: '#A8475F',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  visitorPillText: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 13,
-    color: '#fff',
+    color: '#A8475F',
   },
   timerText: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 14,
-    color: '#5A6478',
+    fontSize: 13,
+    color: '#8A4D5E',
     fontVariant: ['tabular-nums'] as any,
   },
 });

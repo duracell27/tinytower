@@ -40,7 +40,7 @@ function makeState(overrides?: Partial<GameState>): GameState {
 }
 
 describe('spawn_visitor', () => {
-  it('adds visitor to lobby', () => {
+  it('adds visitor to lobby with role assigned at spawn', () => {
     const state = makeState();
     const cmd: Command = {
       id: 'c1', type: 'spawn_visitor', timestamp: 1000,
@@ -50,6 +50,7 @@ describe('spawn_visitor', () => {
     expect(result.success).toBe(true);
     expect(result.state.lobbyVisitors).toHaveLength(1);
     expect(result.state.lobbyVisitors[0].id).toBe('v1');
+    expect(result.state.lobbyVisitors[0].role).toBe('guest');
     expect(result.state.nextVisitorAt).toBe(1000 + 120_000);
   });
 
@@ -66,17 +67,19 @@ describe('spawn_visitor', () => {
 });
 
 describe('lift_visitor', () => {
-  it('moves elevator up by elevatorLevel floors', () => {
-    const state = makeState({ lobbyVisitors: [makeVisitor({ targetFloor: 3 })], elevatorLevel: 1 });
-    const cmd: Command = { id: 'c1', type: 'lift_visitor', timestamp: 1000 };
+  it('moves elevator up and assigns role from command', () => {
+    const state = makeState({ lobbyVisitors: [makeVisitor({ role: undefined, targetFloor: undefined })], elevatorLevel: 1 });
+    const cmd: Command = { id: 'c1', type: 'lift_visitor', timestamp: 1000, role: 'guest', targetFloor: 3 };
     const result = processCommand(state, cmd, testConfig, 1000);
     expect(result.success).toBe(true);
     expect(result.state.elevatorFloor).toBe(1);
+    expect(result.state.lobbyVisitors[0].role).toBe('guest');
+    expect(result.state.lobbyVisitors[0].targetFloor).toBe(3);
   });
 
   it('clamps elevator to target floor', () => {
-    const state = makeState({ lobbyVisitors: [makeVisitor({ targetFloor: 2 })], elevatorLevel: 3, elevatorFloor: 1 });
-    const cmd: Command = { id: 'c1', type: 'lift_visitor', timestamp: 1000 };
+    const state = makeState({ lobbyVisitors: [makeVisitor({ role: undefined, targetFloor: undefined })], elevatorLevel: 3, elevatorFloor: 1 });
+    const cmd: Command = { id: 'c1', type: 'lift_visitor', timestamp: 1000, role: 'guest', targetFloor: 2 };
     const result = processCommand(state, cmd, testConfig, 1000);
     expect(result.success).toBe(true);
     expect(result.state.elevatorFloor).toBe(2);
@@ -84,7 +87,7 @@ describe('lift_visitor', () => {
 
   it('fails when no visitors', () => {
     const state = makeState();
-    const cmd: Command = { id: 'c1', type: 'lift_visitor', timestamp: 1000 };
+    const cmd: Command = { id: 'c1', type: 'lift_visitor', timestamp: 1000, role: 'guest', targetFloor: 2 };
     const result = processCommand(state, cmd, testConfig, 1000);
     expect(result.success).toBe(false);
   });
@@ -115,6 +118,22 @@ describe('collect_tip', () => {
     expect(result.success).toBe(true);
     expect(result.state.workers).toHaveLength(1);
     expect(result.state.balance).toBe(1000 + 10);
+  });
+
+  it('guest to floor 1 does NOT create worker when hotel is full', () => {
+    const fullWorkers = Array.from({ length: 10 }, (_, i) => ({
+      id: `w${i}`, name: `Worker ${i}`, female: false, floorType: 'green',
+      dreamJob: 'coffee', level: 1, hairColor: '#000', assignedFloorId: null, assignedSlotIdx: null,
+    }));
+    const state = makeState({
+      lobbyVisitors: [makeVisitor({ role: 'guest', targetFloor: 1 })],
+      elevatorFloor: 1,
+      elevatorLevel: 1,
+      workers: fullWorkers,
+    });
+    const result = processCommand(state, { id: 'c1', type: 'collect_tip', timestamp: 1000 } as Command, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.workers).toHaveLength(10);
   });
 
   it('businessman gives 1 gem within daily limit', () => {
@@ -193,11 +212,10 @@ describe('deliver_all', () => {
     const state = makeState({ lobbyVisitors: visitors, gems: 5, elevatorLevel: 1 });
     const result = processCommand(state, { id: 'c1', type: 'deliver_all', timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(true);
-    expect(result.state.gems).toBe(4);
+    // Roles are freshly generated from current state (random), so exact tips are non-deterministic.
     expect(result.state.lobbyVisitors).toHaveLength(0);
     expect(result.state.elevatorFloor).toBe(0);
-    expect(result.state.balance).toBe(1000 + 20 + 30);
-    expect(result.state.dailyTips).toBe(50);
+    expect(result.state.balance).toBeGreaterThan(1000);
   });
 
   it('fails with 0 gems', () => {

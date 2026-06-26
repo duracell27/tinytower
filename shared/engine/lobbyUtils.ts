@@ -62,15 +62,26 @@ export function checkDailyReset(state: GameState, commandTimestamp: number): Gam
   return state;
 }
 
-export function generateRandomVisitor(state: GameState, config: GameConfig): Visitor {
+export function generateRandomVisitorRole(
+  state: GameState,
+  config: GameConfig,
+  now: number,
+): { role: VisitorRole; targetFloor: number } {
   const totalFloors = config.floors.length + 1;
 
-  const hasDelivering = state.floors.some((f) =>
-    f.productions.some((p) => p.stage === 'DELIVERING'),
-  );
-  const hasSelling = state.floors.some((f) =>
-    f.productions.some((p) => p.stage === 'SELLING'),
-  );
+  // Check if stage is still actively running (not yet expired by wall clock)
+  const isActiveDelivering = (p: { stage: string; typeId: string | null; stageStartedAt: number }) =>
+    p.stage === 'DELIVERING' &&
+    p.typeId != null &&
+    now - p.stageStartedAt < (config.productionTypes[p.typeId]?.deliveryDuration ?? 0);
+
+  const isActiveSelling = (p: { stage: string; typeId: string | null; stageStartedAt: number }) =>
+    p.stage === 'SELLING' &&
+    p.typeId != null &&
+    now - p.stageStartedAt < (config.productionTypes[p.typeId]?.sellDuration ?? 0);
+
+  const hasDelivering = state.floors.some((f) => f.productions.some(isActiveDelivering));
+  const hasSelling = state.floors.some((f) => f.productions.some(isActiveSelling));
 
   let role: VisitorRole;
   const businessmanRoll = Math.random();
@@ -98,14 +109,14 @@ export function generateRandomVisitor(state: GameState, config: GameConfig): Vis
   } else if (role === 'deliverer') {
     const deliveringFloors = config.floors.filter((fc) => {
       const floor = state.floors.find((f) => f.id === fc.id);
-      return floor?.productions.some((p) => p.stage === 'DELIVERING');
+      return floor?.productions.some(isActiveDelivering);
     });
     const picked = deliveringFloors[Math.floor(Math.random() * deliveringFloors.length)];
     targetFloor = picked.id;
   } else if (role === 'seller') {
     const sellingFloors = config.floors.filter((fc) => {
       const floor = state.floors.find((f) => f.id === fc.id);
-      return floor?.productions.some((p) => p.stage === 'SELLING');
+      return floor?.productions.some(isActiveSelling);
     });
     const picked = sellingFloors[Math.floor(Math.random() * sellingFloors.length)];
     targetFloor = picked.id;
@@ -113,11 +124,23 @@ export function generateRandomVisitor(state: GameState, config: GameConfig): Vis
     targetFloor = 1 + Math.floor(Math.random() * totalFloors);
   }
 
+  return { role, targetFloor };
+}
+
+export function generateVisitorAppearance(): { id: string; hairColor: string; female: boolean } {
   return {
     id: uuid(),
-    role,
-    targetFloor,
     hairColor: HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)],
     female: Math.random() < 0.5,
+  };
+}
+
+/** @deprecated use generateRandomVisitorRole + generateVisitorAppearance separately */
+export function generateRandomVisitor(state: GameState, config: GameConfig, now = Date.now()): Visitor {
+  const { role, targetFloor } = generateRandomVisitorRole(state, config, now);
+  return {
+    ...generateVisitorAppearance(),
+    role,
+    targetFloor,
   };
 }

@@ -4,8 +4,8 @@ export const VisitorRoleSchema = z.enum(['guest', 'businessman', 'deliverer', 's
 
 export const VisitorSchema = z.object({
   id: z.string(),
-  role: VisitorRoleSchema,
-  targetFloor: z.number().int().positive(),
+  role: VisitorRoleSchema.optional(),
+  targetFloor: z.number().int().positive().optional(),
   hairColor: z.string(),
   female: z.boolean(),
 });

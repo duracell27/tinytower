@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -24,105 +25,92 @@ function formatNumber(n: number): string {
   return String(n);
 }
 
-export default function LevelUpModal() {
+export default function LevelUpModal({ suppressWhileOpen = false }: { suppressWhileOpen?: boolean }) {
   const event = useGameStore((s) => s.levelUpQueue[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissLevelUp);
 
-  if (!event) return null;
-  return <LevelUpContent event={event} onDismiss={dismiss} />;
-}
-
-function LevelUpContent({ event, onDismiss }: { event: LevelUpEvent; onDismiss: () => void }) {
   const scale = useSharedValue(0.5);
-  const opacity = useSharedValue(0);
   const starScale = useSharedValue(0);
   const rewardsY = useSharedValue(20);
   const rewardsOpacity = useSharedValue(0);
 
-  useEffect(() => {
-    opacity.value = withTiming(1, { duration: 200 });
+  const triggerAnimations = useCallback(() => {
+    scale.value = 0.5;
+    starScale.value = 0;
+    rewardsY.value = 20;
+    rewardsOpacity.value = 0;
     scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
     starScale.value = withDelay(150, withTiming(1, { duration: 300, easing: Easing.out(Easing.back(1.3)) }));
     rewardsOpacity.value = withDelay(300, withTiming(1, { duration: 250 }));
     rewardsY.value = withDelay(300, withTiming(0, { duration: 300, easing: Easing.out(Easing.back(1.3)) }));
   }, []);
 
-  const scrimStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: opacity.value,
   }));
-
   const starStyle = useAnimatedStyle(() => ({
     transform: [{ scale: starScale.value }],
   }));
-
   const rewardsStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: rewardsY.value }],
     opacity: rewardsOpacity.value,
   }));
 
   return (
-    <Modal transparent animationType="none" onRequestClose={onDismiss}>
-      <Animated.View style={[styles.scrim, scrimStyle]}>
-        <Pressable style={styles.scrimPress} onPress={onDismiss} />
+    <Modal
+      visible={!!event && !suppressWhileOpen}
+      transparent
+      animationType="fade"
+      onRequestClose={dismiss}
+      onShow={triggerAnimations}
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View style={styles.scrim}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
 
-        <Animated.View style={[styles.card, cardStyle]}>
-          <LinearGradient
-            colors={['#FFF9E6', '#FFF3CC']}
-            style={styles.cardGradient}
-          >
-            {/* Stars decoration */}
-            <Animated.View style={[styles.starsRow, starStyle]}>
-              <Text style={[styles.starText, styles.starSmall]}>★</Text>
-              <Text style={[styles.starText, styles.starLarge]}>★</Text>
-              <Text style={[styles.starText, styles.starSmall]}>★</Text>
-            </Animated.View>
+          {event && (
+            <Animated.View style={[styles.card, cardStyle]}>
+              <LinearGradient colors={['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
+                <Animated.View style={[styles.starsRow, starStyle]}>
+                  <Text style={[styles.starText, styles.starSmall]}>★</Text>
+                  <Text style={[styles.starText, styles.starLarge]}>★</Text>
+                  <Text style={[styles.starText, styles.starSmall]}>★</Text>
+                </Animated.View>
 
-            {/* Level badge */}
-            <View style={styles.levelCircle}>
-              <LinearGradient
-                colors={['#74D44F', '#3FA535']}
-                style={styles.levelCircleGradient}
-              >
-                <Text style={styles.levelNumber}>{event.newLevel}</Text>
+                <View style={styles.levelCircle}>
+                  <LinearGradient colors={['#74D44F', '#3FA535']} style={styles.levelCircleGradient}>
+                    <Text style={styles.levelNumber}>{event.newLevel}</Text>
+                  </LinearGradient>
+                </View>
+
+                <Text style={styles.title}>Новий рівень!</Text>
+                <Text style={styles.subtitle}>Рівень {event.newLevel}</Text>
+
+                <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
+                  <View style={styles.rewardRow}>
+                    <View style={styles.coinIcon} />
+                    <Text style={styles.rewardText}>+{formatNumber(event.coinReward)}</Text>
+                  </View>
+                  <View style={styles.rewardRow}>
+                    <View style={styles.gemIcon} />
+                    <Text style={styles.rewardTextGem}>+{event.gemReward}</Text>
+                  </View>
+                </Animated.View>
+
+                <Pressable
+                  onPress={dismiss}
+                  style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+                >
+                  <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.buttonGradient}>
+                    <Text style={styles.buttonText}>Отримати</Text>
+                  </LinearGradient>
+                  <View style={styles.buttonShadow} />
+                </Pressable>
               </LinearGradient>
-            </View>
-
-            <Text style={styles.title}>Новий рівень!</Text>
-            <Text style={styles.subtitle}>Рівень {event.newLevel}</Text>
-
-            {/* Rewards */}
-            <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
-              <View style={styles.rewardRow}>
-                <View style={styles.coinIcon} />
-                <Text style={styles.rewardText}>+{formatNumber(event.coinReward)}</Text>
-              </View>
-              <View style={styles.rewardRow}>
-                <View style={styles.gemIcon} />
-                <Text style={styles.rewardTextGem}>+{event.gemReward}</Text>
-              </View>
             </Animated.View>
-
-            {/* Collect button */}
-            <Pressable onPress={onDismiss} style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed,
-            ]}>
-              <LinearGradient
-                colors={['#74D44F', '#5BA63C']}
-                style={styles.buttonGradient}
-              >
-                <Text style={styles.buttonText}>Отримати</Text>
-              </LinearGradient>
-              <View style={styles.buttonShadow} />
-            </Pressable>
-          </LinearGradient>
-        </Animated.View>
-      </Animated.View>
+          )}
+        </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
@@ -133,9 +121,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  scrimPress: {
-    ...StyleSheet.absoluteFillObject,
   },
   card: {
     width: SCREEN_W * 0.78,
@@ -165,12 +150,8 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  starSmall: {
-    fontSize: 22,
-  },
-  starLarge: {
-    fontSize: 34,
-  },
+  starSmall: { fontSize: 22 },
+  starLarge: { fontSize: 34 },
   levelCircle: {
     width: 72,
     height: 72,
@@ -237,10 +218,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2B330',
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.6)',
-    shadowColor: 'rgba(180,130,30,1)',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
   },
   rewardText: {
     fontFamily: 'Fredoka_700Bold',
@@ -266,9 +243,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden',
   },
-  buttonPressed: {
-    opacity: 0.85,
-  },
+  buttonPressed: { opacity: 0.85 },
   buttonGradient: {
     alignItems: 'center',
     justifyContent: 'center',

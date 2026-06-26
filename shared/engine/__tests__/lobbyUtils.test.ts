@@ -142,9 +142,11 @@ describe('checkDailyReset', () => {
 });
 
 describe('generateRandomVisitor', () => {
+  const NOW = 100_000;
+
   it('generates a visitor with valid fields', () => {
     const state = makeState();
-    const visitor = generateRandomVisitor(state, testConfig);
+    const visitor = generateRandomVisitor(state, testConfig, NOW);
     expect(visitor.id).toBeDefined();
     expect(['guest', 'businessman', 'deliverer', 'seller']).toContain(visitor.role);
     expect(visitor.targetFloor).toBeGreaterThanOrEqual(1);
@@ -157,28 +159,43 @@ describe('generateRandomVisitor', () => {
     const state = makeState();
     const roles = new Set<string>();
     for (let i = 0; i < 200; i++) {
-      roles.add(generateRandomVisitor(state, testConfig).role);
+      roles.add(generateRandomVisitor(state, testConfig, NOW).role ?? '');
     }
     expect(roles.has('deliverer')).toBe(false);
     expect(roles.has('seller')).toBe(false);
   });
 
-  it('can produce deliverer when a slot is DELIVERING', () => {
+  it('can produce deliverer when a slot is DELIVERING with time remaining', () => {
     const state = makeState();
+    // deliveryDuration = 5000ms; started 1000ms ago → 4000ms remaining
     state.floors[0].productions[0].stage = 'DELIVERING';
-    state.floors[0].productions[0].stageStartedAt = 1000;
+    state.floors[0].productions[0].typeId = 'coffee';
+    state.floors[0].productions[0].stageStartedAt = NOW - 1000;
     const roles = new Set<string>();
     for (let i = 0; i < 500; i++) {
-      roles.add(generateRandomVisitor(state, testConfig).role);
+      roles.add(generateRandomVisitor(state, testConfig, NOW).role ?? '');
     }
     expect(roles.has('deliverer')).toBe(true);
     expect(roles.has('seller')).toBe(false);
   });
 
+  it('does NOT produce deliverer when delivery time has expired', () => {
+    const state = makeState();
+    // deliveryDuration = 5000ms; started 10000ms ago → expired
+    state.floors[0].productions[0].stage = 'DELIVERING';
+    state.floors[0].productions[0].typeId = 'coffee';
+    state.floors[0].productions[0].stageStartedAt = NOW - 10_000;
+    const roles = new Set<string>();
+    for (let i = 0; i < 200; i++) {
+      roles.add(generateRandomVisitor(state, testConfig, NOW).role ?? '');
+    }
+    expect(roles.has('deliverer')).toBe(false);
+  });
+
   it('businessman never targets floor 1', () => {
     const state = makeState();
     for (let i = 0; i < 500; i++) {
-      const v = generateRandomVisitor(state, testConfig);
+      const v = generateRandomVisitor(state, testConfig, NOW);
       if (v.role === 'businessman') {
         expect(v.targetFloor).toBeGreaterThanOrEqual(2);
       }

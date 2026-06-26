@@ -7,8 +7,10 @@ import {
   getMaxElevatorLevel,
   getMaxLobbyCapacity,
   checkDailyReset,
+  generateRandomVisitorRole,
 } from './lobbyUtils';
 import { generateRandomWorkers } from '../config/workerNames';
+import type { VisitorRole } from '../types';
 
 type LobbyCommand = Extract<Command, { type:
   'spawn_visitor' | 'lift_visitor' | 'collect_tip' |
@@ -27,7 +29,7 @@ export function processLobbyCommand(
     case 'spawn_visitor':
       return handleSpawnVisitor(state, command, config);
     case 'lift_visitor':
-      return handleLiftVisitor(state);
+      return handleLiftVisitor(state, command);
     case 'collect_tip':
       return handleCollectTip(state, config, playerLevel, command.timestamp);
     case 'deliver_all':
@@ -63,24 +65,34 @@ function handleSpawnVisitor(
     state: {
       ...state,
       lobbyVisitors: newVisitors,
-      // Stop the timer when lobby becomes full (0 = no pending spawn)
       nextVisitorAt: willBeFull ? 0 : command.timestamp + config.lobbyConfig.visitorSpawnInterval,
     },
   };
 }
 
-function handleLiftVisitor(state: GameState): ProcessResult {
+function handleLiftVisitor(
+  state: GameState,
+  command: Extract<Command, { type: 'lift_visitor' }>,
+): ProcessResult {
   if (state.lobbyVisitors.length === 0) {
     return { success: false, state, error: 'No visitors in lobby' };
   }
-  const active = state.lobbyVisitors[0];
+  const base = state.lobbyVisitors[0];
+  // Apply role/targetFloor from command only on the first lift (when not yet assigned).
+  // Subsequent lifts pass the same stored values so the visitor never changes mid-trip.
+  const active = {
+    ...base,
+    role: base.role ?? command.role,
+    targetFloor: base.targetFloor ?? command.targetFloor,
+  } satisfies Visitor;
+  const updatedVisitors = [active, ...state.lobbyVisitors.slice(1)];
   const move = Math.min(state.elevatorLevel, active.targetFloor - state.elevatorFloor);
   if (move <= 0) {
     return { success: false, state, error: 'Already at target floor' };
   }
   return {
     success: true,
-    state: { ...state, elevatorFloor: state.elevatorFloor + move },
+    state: { ...state, elevatorFloor: state.elevatorFloor + move, lobbyVisitors: updatedVisitors },
   };
 }
 
@@ -90,10 +102,12 @@ function applyVisitorEffect(
   config: GameConfig,
   playerLevel: number,
 ): GameState {
-  const tip = calculateTip(visitor.role, visitor.targetFloor, state.elevatorLevel, config);
+  const role = visitor.role ?? 'guest';
+  const targetFloor = visitor.targetFloor ?? 1;
+  const tip = calculateTip(role, targetFloor, state.elevatorLevel, config);
   let { balance, gems, dailyTips, dailyGemsCollected, workers, floors } = state;
 
-  if (visitor.role === 'businessman') {
+  if (role === 'businessman') {
     const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel;
     if (dailyGemsCollected < gemLimit) {
       gems += 1;
@@ -107,13 +121,17 @@ function applyVisitorEffect(
     dailyTips += tip;
   }
 
-  if (visitor.role === 'guest' && visitor.targetFloor === 1) {
-    const [newWorker] = generateRandomWorkers(1, config);
-    workers = [...workers, newWorker];
+  if (role === 'guest' && targetFloor === 1) {
+    const hotelOccupied = workers.filter((w) => w.assignedFloorId === null).length;
+    if (hotelOccupied < state.hotelCapacity) {
+      const [newWorker] = generateRandomWorkers(1, config);
+      workers = [...workers, newWorker];
+    }
+    // Hotel full → worker leaves, no effect beyond the tip
   }
 
-  if (visitor.role === 'deliverer') {
-    const floorIdx = floors.findIndex((f) => f.id === visitor.targetFloor);
+  if (role === 'deliverer') {
+    const floorIdx = floors.findIndex((f) => f.id === targetFloor);
     if (floorIdx !== -1) {
       const slotIdx = floors[floorIdx].productions.findIndex((p) => p.stage === 'DELIVERING');
       if (slotIdx !== -1) {
@@ -136,8 +154,8 @@ function applyVisitorEffect(
     }
   }
 
-  if (visitor.role === 'seller') {
-    const floorIdx = floors.findIndex((f) => f.id === visitor.targetFloor);
+  if (role === 'seller') {
+    const floorIdx = floors.findIndex((f) => f.id === targetFloor);
     if (floorIdx !== -1) {
       const slotIdx = floors[floorIdx].productions.findIndex((p) => p.stage === 'SELLING');
       if (slotIdx !== -1) {
@@ -202,8 +220,17 @@ function handleDeliverAll(
   if (state.lobbyVisitors.length === 0) {
     return { success: false, state, error: 'No visitors to deliver' };
   }
+  const count = state.lobbyVisitors.length;
   let newState = { ...state, gems: state.gems - 1 };
-  for (const visitor of state.lobbyVisitors) {
+  for (let i = 0; i < count; i++) {
+    const { role, targetFloor } = generateRandomVisitorRole(newState, config, now);
+    const visitor: Visitor = {
+      id: `deliver-${i}`,
+      role,
+      targetFloor,
+      hairColor: '#000',
+      female: false,
+    };
     newState = applyVisitorEffect(newState, visitor, config, playerLevel);
   }
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
