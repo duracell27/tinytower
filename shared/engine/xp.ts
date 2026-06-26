@@ -1,5 +1,3 @@
-import type { Command, GameState } from '../types';
-
 export interface LevelUpEvent {
   newLevel: number;
   coinReward: number;
