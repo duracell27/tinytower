@@ -14,8 +14,6 @@ import { CommandSchema } from '@shared/schemas/command';
 const SyncRequestSchema = z.object({
   commands: z.array(CommandSchema),
   lastAckCursor: z.number().int().nonnegative(),
-  playerLevel: z.number().int().positive().optional(),
-  playerXp: z.number().int().nonnegative().optional(),
 });
 
 @Controller('sync')
@@ -35,8 +33,6 @@ export class SyncController {
       req.user.playerId,
       result.data.commands,
       result.data.lastAckCursor,
-      result.data.playerLevel,
-      result.data.playerXp,
     );
   }
 }

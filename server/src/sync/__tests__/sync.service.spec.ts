@@ -96,6 +96,8 @@ describe('SyncService', () => {
     balance: 100,
     lobbyState: null,
     stateVersion: 0,
+    playerLevel: 1,
+    playerXp: 0,
     lastSeenAt: new Date(Date.now() - 60000), // 60s ago
     createdAt: new Date(),
     floors: mockFloors,
@@ -294,6 +296,69 @@ describe('SyncService', () => {
       // stageStartedAt should be a regular number, not BigInt
       expect(typeof result.state.floors[0].productions[0].stageStartedAt).toBe('number');
       expect(result.state.floors[0].productions[0].stageStartedAt).toBe(1700000000000);
+    });
+
+    it('should return playerLevel and playerXp from DB', async () => {
+      const playerWithLevel = { ...mockPlayer, playerLevel: 3, playerXp: 50 };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithLevel)
+        .mockResolvedValueOnce({ ...playerWithLevel });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.playerLevel).toBe(3);
+      expect(result.playerXp).toBe(50);
+    });
+
+    it('should accumulate XP from accepted commands and return updated level', async () => {
+      // balance 100 → collect command earns 25 coins → XP = 25
+      // starting at level 1 with 80 XP: 80 + 25 = 105 >= xpForLevel(1)=100 → level up to 2
+      const playerNearLevelUp = { ...mockPlayer, playerLevel: 1, playerXp: 80, balance: 100 };
+      const playerAfterTx = {
+        ...playerNearLevelUp,
+        playerLevel: 2,
+        playerXp: 5,       // 80 + 25 - 100 = 5
+        balance: 325,      // 100 (original) + 25 (collect) + 200 (level-up coin reward for level 2)
+        stateVersion: 1,
+      };
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerNearLevelUp)
+        .mockResolvedValueOnce(playerAfterTx);
+
+      // A collect command on floor 2, slot 0 (worker-1 is assigned there)
+      // Production must be in SELLING stage — mock a player whose production is SELLING
+      const sellingPlayer = {
+        ...playerNearLevelUp,
+        floors: [
+          {
+            ...mockFloors[0],
+            productions: [
+              { id: 1, floorDbId: 1, slotIdx: 0, typeId: 'bulky', stage: 'SELLING', stageStartedAt: BigInt(0) },
+              mockFloors[0].productions[1],
+              mockFloors[0].productions[2],
+            ],
+          },
+          ...mockFloors.slice(1),
+        ],
+      };
+      prisma.player.findUnique
+        .mockReset()
+        .mockResolvedValueOnce(sellingPlayer)
+        .mockResolvedValueOnce(playerAfterTx);
+
+      const collectCmd: Command = {
+        id: 'cmd-collect',
+        type: 'collect',
+        floorId: 2,
+        slotIdx: 0,
+        timestamp: Date.now() + 999_999,
+      };
+
+      const result = await syncService.processSync('player-uuid', [collectCmd], 0);
+
+      expect(result.playerLevel).toBe(2);
+      expect(result.playerXp).toBe(5);
     });
   });
 });

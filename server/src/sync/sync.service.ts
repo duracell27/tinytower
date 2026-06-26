@@ -1,12 +1,11 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { processCommand } from '@shared/engine/processCommand';
+import { xpForCommand, applyXpGain } from '@shared/engine/xp';
 import { gameConfig } from '@shared/config/gameConfig';
 import type { GameState, Command, Floor, Production, Worker } from '@shared/types';
 
 interface LobbyStateJson {
-  playerLevel?: number;
-  playerXp?: number;
   [key: string]: unknown;
 }
 
@@ -29,8 +28,6 @@ export class SyncService {
     playerId: string,
     commands: Command[],
     lastAckCursor: number,
-    playerLevel?: number,
-    playerXp?: number,
   ): Promise<SyncResult> {
     const serverNow = Date.now();
 
@@ -47,52 +44,62 @@ export class SyncService {
 
     if (!player) throw new NotFoundException('Player not found');
 
-    let gameState = this.dbToGameState(player);
-
-    // Idempotency: filter out already-processed commands
     const existingIds =
       commands.length > 0
         ? new Set(
             (
               await this.prisma.commandLog.findMany({
-                where: { id: { in: commands.map((c) => c.id) } },
+                where: { playerId, id: { in: commands.map((c) => c.id) } },
                 select: { id: true },
               })
-            ).map((c) => c.id),
+            ).map((r) => r.id),
           )
         : new Set<string>();
 
-    const newCommands = commands.filter((c) => !existingIds.has(c.id));
+    const newCommands = commands.filter(
+      (c) => !existingIds.has(c.id) && c.timestamp > lastAckCursor,
+    );
+
     if (newCommands.length > 0) {
-      this.logger.log(`Processing ${newCommands.length} new commands: ${newCommands.map(c => c.type).join(', ')}`);
+      this.logger.log(`Processing ${newCommands.length} new commands: ${newCommands.map((c) => c.type).join(', ')}`);
     }
 
+    let gameState = this.dbToGameState(player);
     const acceptedCommands: Command[] = [];
+    let totalXpGained = 0;
 
-    for (const cmd of newCommands) {
-      const cmdNow = Math.min(cmd.timestamp, serverNow);
-      const result = processCommand(gameState, cmd, gameConfig, cmdNow);
+    for (const command of newCommands) {
+      const prevBalance = gameState.balance;
+      const result = processCommand(gameState, command, gameConfig, serverNow, player.playerLevel);
       if (result.success) {
+        totalXpGained += xpForCommand(command.type, prevBalance, result.state.balance);
         gameState = result.state;
-        acceptedCommands.push(cmd);
+        acceptedCommands.push(command);
       } else {
-        this.logger.warn(
-          `Command ${cmd.id} (${cmd.type}) failed: ${result.error}`,
-        );
+        this.logger.warn(`Command ${command.id} (${command.type}) failed: ${result.error}`);
       }
     }
+
+    const xpResult = applyXpGain(player.playerLevel, player.playerXp, totalXpGained);
+    gameState = {
+      ...gameState,
+      balance: gameState.balance + xpResult.bonusCoins,
+      gems: gameState.gems + xpResult.bonusGems,
+    };
 
     let ackCursor = lastAckCursor;
 
     if (acceptedCommands.length > 0 || newCommands.length === 0) {
       await this.prisma.$transaction(async (tx) => {
-        // Update player balance, lobby state and version
         const existingLs = (player.lobbyState as LobbyStateJson) ?? {};
         await tx.player.update({
           where: { id: playerId },
           data: {
             balance: gameState.balance,
+            playerLevel: xpResult.playerLevel,
+            playerXp: xpResult.playerXp,
             lobbyState: {
+              ...existingLs,
               gems: gameState.gems,
               lobbyVisitors: gameState.lobbyVisitors,
               lobbyCapacity: gameState.lobbyCapacity,
@@ -103,8 +110,6 @@ export class SyncService {
               dailyTipsRewardClaimed: gameState.dailyTipsRewardClaimed,
               lastDailyReset: gameState.lastDailyReset,
               nextVisitorAt: gameState.nextVisitorAt,
-              playerLevel: playerLevel ?? existingLs.playerLevel ?? 1,
-              playerXp: playerXp ?? existingLs.playerXp ?? 0,
             },
             stateVersion: {
               increment: acceptedCommands.length > 0 ? 1 : 0,
@@ -113,7 +118,6 @@ export class SyncService {
           },
         });
 
-        // Persist production state for all floors
         for (const floor of gameState.floors) {
           const dbFloor = player.floors.find((f) => f.floorId === floor.id);
           if (!dbFloor) continue;
@@ -133,7 +137,6 @@ export class SyncService {
           }
         }
 
-        // Persist worker state
         for (const w of gameState.workers) {
           await tx.worker.upsert({
             where: { id: w.id },
@@ -156,7 +159,6 @@ export class SyncService {
           });
         }
 
-        // Delete evicted workers
         const currentWorkerIds = gameState.workers.map((w) => w.id);
         const dbWorkerIds = (player.workers as any[]).map((w) => w.id);
         const evictedIds = dbWorkerIds.filter((id: string) => !currentWorkerIds.includes(id));
@@ -164,7 +166,6 @@ export class SyncService {
           await tx.worker.deleteMany({ where: { id: { in: evictedIds } } });
         }
 
-        // Log accepted commands and update ackCursor
         if (acceptedCommands.length > 0) {
           for (const cmd of acceptedCommands) {
             const logEntry = await tx.commandLog.create({
@@ -190,14 +191,13 @@ export class SyncService {
       where: { id: playerId },
     });
 
-    const savedLs = (updatedPlayer?.lobbyState as LobbyStateJson) ?? {};
     return {
       state: gameState,
       stateVersion: updatedPlayer?.stateVersion ?? player.stateVersion,
       ackCursor,
       serverTime: serverNow,
-      playerLevel: playerLevel ?? savedLs.playerLevel ?? 1,
-      playerXp: playerXp ?? savedLs.playerXp ?? 0,
+      playerLevel: updatedPlayer?.playerLevel ?? xpResult.playerLevel,
+      playerXp: updatedPlayer?.playerXp ?? xpResult.playerXp,
     };
   }
 
@@ -224,29 +224,28 @@ export class SyncService {
       dreamJob: w.dreamJob,
       level: w.level,
       hairColor: w.hairColor,
-      assignedFloorId: w.assignedFloorId,
-      assignedSlotIdx: w.assignedSlotIdx,
+      assignedFloorId: w.assignedFloorId ?? null,
+      assignedSlotIdx: w.assignedSlotIdx ?? null,
     }));
 
-    const ls = (player.lobbyState as any) ?? {};
+    const ls = (player.lobbyState as LobbyStateJson) ?? {};
 
     return {
       balance: player.balance,
-      gems: ls.gems ?? 20,
+      gems: (ls.gems as number) ?? 20,
       floors,
       commandQueue: [],
       workers,
       hotelCapacity: gameConfig.hotelCapacity,
-      lobbyVisitors: ls.lobbyVisitors ?? [],
-      lobbyCapacity: ls.lobbyCapacity ?? gameConfig.lobbyConfig.defaultLobbyCapacity,
-      elevatorLevel: ls.elevatorLevel ?? 1,
-      elevatorFloor: ls.elevatorFloor ?? 0,
-      dailyTips: ls.dailyTips ?? 0,
-      dailyGemsCollected: ls.dailyGemsCollected ?? 0,
-      dailyTipsRewardClaimed: ls.dailyTipsRewardClaimed ?? false,
-      lastDailyReset: ls.lastDailyReset ?? 0,
-      nextVisitorAt: ls.nextVisitorAt ?? 0,
+      lobbyVisitors: (ls.lobbyVisitors as any[]) ?? [],
+      lobbyCapacity: (ls.lobbyCapacity as number) ?? gameConfig.lobbyConfig.defaultLobbyCapacity,
+      elevatorLevel: (ls.elevatorLevel as number) ?? 1,
+      elevatorFloor: (ls.elevatorFloor as number) ?? 0,
+      dailyTips: (ls.dailyTips as number) ?? 0,
+      dailyGemsCollected: (ls.dailyGemsCollected as number) ?? 0,
+      dailyTipsRewardClaimed: (ls.dailyTipsRewardClaimed as boolean) ?? false,
+      lastDailyReset: (ls.lastDailyReset as number) ?? 0,
+      nextVisitorAt: (ls.nextVisitorAt as number) ?? 0,
     };
   }
-
 }
