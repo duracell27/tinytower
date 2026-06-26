@@ -13,7 +13,7 @@ export interface XpResult {
 }
 
 export function xpForLevel(level: number): number {
-  return Math.floor(100 * Math.pow(1.5, level - 1));
+  return Math.floor(120 * Math.pow(1.6, level - 1));
 }
 
 export function xpForCommand(

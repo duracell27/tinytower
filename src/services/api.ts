@@ -1,8 +1,8 @@
 import { createMMKV } from 'react-native-mmkv';
 
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:3000'
-  : 'https://api.tinytower.com';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? (
+  __DEV__ ? 'http://localhost:3000' : 'https://api.tinytower.com'
+);
 
 let storage: ReturnType<typeof createMMKV> | null = null;
 function getStorage() {
