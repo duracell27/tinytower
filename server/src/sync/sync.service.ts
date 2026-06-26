@@ -80,18 +80,36 @@ export class SyncService {
       }
     }
 
-    const xpResult = applyXpGain(player.playerLevel, player.playerXp, totalXpGained);
+    // Capture balances after commands but before XP level-up rewards
+    const baseBalance = gameState.balance;
+    const baseGems = gameState.gems;
+
+    let xpResult = applyXpGain(player.playerLevel, player.playerXp, totalXpGained);
     gameState = {
       ...gameState,
-      balance: gameState.balance + xpResult.bonusCoins,
-      gems: gameState.gems + xpResult.bonusGems,
+      balance: baseBalance + xpResult.bonusCoins,
+      gems: baseGems + xpResult.bonusGems,
     };
 
     let ackCursor = lastAckCursor;
 
     if (acceptedCommands.length > 0 || newCommands.length === 0) {
       await this.prisma.$transaction(async (tx) => {
-        const existingLs = (player.lobbyState as LobbyStateJson) ?? {};
+        // Re-read playerLevel/playerXp under a row lock to prevent concurrent-sync races.
+        // If another request committed a level change between our initial read and now,
+        // recompute XP from the locked values so both requests' rewards are applied correctly.
+        const [locked] = await tx.$queryRaw<{ playerLevel: number; playerXp: number }[]>`
+          SELECT "playerLevel", "playerXp" FROM "Player" WHERE id = ${playerId} FOR UPDATE
+        `;
+        if (locked && (locked.playerLevel !== player.playerLevel || locked.playerXp !== player.playerXp)) {
+          xpResult = applyXpGain(locked.playerLevel, locked.playerXp, totalXpGained);
+          gameState = {
+            ...gameState,
+            balance: baseBalance + xpResult.bonusCoins,
+            gems: baseGems + xpResult.bonusGems,
+          };
+        }
+        const { playerLevel: _pl, playerXp: _px, ...existingLs } = (player.lobbyState as LobbyStateJson) ?? {};
         await tx.player.update({
           where: { id: playerId },
           data: {

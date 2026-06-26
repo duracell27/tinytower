@@ -112,6 +112,8 @@ describe('SyncService', () => {
       production: { update: jest.fn().mockResolvedValue({}) },
       worker: { upsert: jest.fn().mockResolvedValue({}), deleteMany: jest.fn().mockResolvedValue({}) },
       commandLog: { create: jest.fn().mockResolvedValue({ cursor: 1 }) },
+      // Returns empty array so locked values match player.playerLevel/playerXp (no recompute branch)
+      $queryRaw: jest.fn().mockResolvedValue([]),
     };
 
     prisma = {
