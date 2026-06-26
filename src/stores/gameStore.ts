@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { generateRandomVisitorRole, generateVisitorAppearance } from '../../shared/engine/lobbyUtils';
-import { xpForLevel, applyXpGain, type LevelUpEvent } from '../../shared/engine/xp';
+import { applyXpGain, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
 import type { GameState, Command, Floor, Worker } from '../../shared/types';
 

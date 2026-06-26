@@ -9,7 +9,8 @@ import Animated, {
   withDelay,
   Easing,
 } from 'react-native-reanimated';
-import { useGameStore, type LevelUpEvent } from '../stores/gameStore';
+import { useGameStore } from '../stores/gameStore';
+import { type LevelUpEvent } from '../../shared/engine/xp';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
