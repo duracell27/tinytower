@@ -1,7 +1,7 @@
 FROM node:22-alpine AS builder
 WORKDIR /app/server
 COPY server/package*.json ./
-RUN npm ci
+RUN npm ci && ln -s /app/server/node_modules /app/node_modules
 COPY server/ ./
 COPY shared/ /app/shared/
 RUN npm run build

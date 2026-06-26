@@ -14,10 +14,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { useGameClock } from '../src/hooks/useGameClock';
 import { gameConfig } from '../shared/config/gameConfig';
 import { syncService } from '../src/services/sync';
-
-function xpForLevel(level: number): number {
-  return Math.floor(100 * Math.pow(1.5, level - 1));
-}
+import { xpForLevel } from '../shared/engine/xp';
 
 type FloorItem =
   | { type: 'production'; id: number }

@@ -25,12 +25,13 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const existing = await this.playerService.findByEmail(dto.email);
+    const email = dto.email.toLowerCase().trim();
+    const existing = await this.playerService.findByEmail(email);
     if (existing) throw new ConflictException('Email already registered');
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const player = await this.playerService.createWithInitialState(
-      dto.email, passwordHash, dto.playerName,
+      email, passwordHash, dto.playerName,
     );
 
     const tokens = await this.generateTokens(player.id, player.email);
@@ -41,7 +42,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const player = await this.playerService.findByEmail(dto.email);
+    const player = await this.playerService.findByEmail(dto.email.toLowerCase().trim());
     if (!player) throw new UnauthorizedException('Invalid credentials');
 
     const valid = await bcrypt.compare(dto.password, player.passwordHash);

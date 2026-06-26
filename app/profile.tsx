@@ -6,10 +6,7 @@ import { router } from 'expo-router';
 import { useAuthStore } from '../src/stores/authStore';
 import { useGameStore } from '../src/stores/gameStore';
 import BottomNav from '../src/components/BottomNav';
-
-function xpForLevel(level: number): number {
-  return Math.floor(100 * Math.pow(1.5, level - 1));
-}
+import { xpForLevel } from '../shared/engine/xp';
 
 export default function ProfileScreen() {
   const player = useAuthStore((s) => s.player);
