@@ -53,10 +53,7 @@ export default function RootLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ animation: 'none' }} />
       <Stack.Screen name="login" options={{ animation: 'slide_from_right' }} />
-      <Stack.Screen name="game" options={{ animation: 'none' }} />
-      <Stack.Screen name="profile" options={{ animation: 'none' }} />
-      <Stack.Screen name="city" options={{ animation: 'none' }} />
-      <Stack.Screen name="shop" options={{ animation: 'none' }} />
+      <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
     </Stack>
   );
 }

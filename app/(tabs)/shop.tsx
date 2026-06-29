@@ -1,10 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
-import TopBar from '../src/components/TopBar';
-import BottomNav from '../src/components/BottomNav';
-import { useGameStore, useBalance } from '../src/stores/gameStore';
-import { useAuthStore } from '../src/stores/authStore';
+import TopBar from '../../src/components/TopBar';
+import { useGameStore, useBalance } from '../../src/stores/gameStore';
+import { useAuthStore } from '../../src/stores/authStore';
 
 function xpForLevel(level: number): number {
   return Math.floor(100 * Math.pow(1.5, level - 1));
@@ -22,7 +21,7 @@ function formatCoins(n: number): string {
   return String(n);
 }
 
-export default function CityScreen() {
+export default function ShopScreen() {
   const balance = useBalance();
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
@@ -34,14 +33,14 @@ export default function CityScreen() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require('../assets/welcome-bg.png')}
+        source={require('../../assets/welcome-bg.png')}
         style={styles.background}
         resizeMode="cover"
       >
         <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
         <View style={styles.content}>
-          <Text style={styles.emoji}>🏙️</Text>
-          <Text style={styles.title}>Місто</Text>
+          <Text style={styles.emoji}>🛍️</Text>
+          <Text style={styles.title}>Магазин</Text>
           <Text style={styles.subtitle}>Тут поки немає функціоналу</Text>
         </View>
 
@@ -54,8 +53,6 @@ export default function CityScreen() {
           coins={formatCoins(balance)}
           gems={String(gems)}
         />
-
-        <BottomNav />
       </ImageBackground>
     </View>
   );

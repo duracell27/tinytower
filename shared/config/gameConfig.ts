@@ -31,7 +31,7 @@ const rawConfig = {
     visitorSpawnInterval: 120_000,
     dailyTipsTarget: 10_000,
     dailyTipsReward: 5,
-    dailyGemLimitBase: 15,
+    dailyGemLimitBase: 10,
     guestTipBase: 10,
     businessmanFallbackBase: 100,
     deliverySpeedBonus: 0.05,

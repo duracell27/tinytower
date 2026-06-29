@@ -11,13 +11,19 @@ class GlassView: ExpoView {
       effectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
     }
     super.init(appContext: appContext)
+    backgroundColor = .clear
     effectView.frame = bounds
     effectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     insertSubview(effectView, at: 0)
-    clipsToBounds = true
   }
 
   @objc var cornerRadius: Double = 0 {
-    didSet { layer.cornerRadius = cornerRadius }
+    didSet {
+      layer.cornerRadius = cornerRadius
+      layer.cornerCurve = .continuous
+      effectView.layer.cornerRadius = cornerRadius
+      effectView.layer.cornerCurve = .continuous
+      effectView.clipsToBounds = true
+    }
   }
 }

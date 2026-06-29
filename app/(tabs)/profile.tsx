@@ -1,12 +1,11 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
-import { useAuthStore } from '../src/stores/authStore';
-import { useGameStore } from '../src/stores/gameStore';
-import BottomNav from '../src/components/BottomNav';
-import { xpForLevel } from '../shared/engine/xp';
+import { useAuthStore } from '../../src/stores/authStore';
+import { useGameStore } from '../../src/stores/gameStore';
+import { xpForLevel } from '../../shared/engine/xp';
 
 export default function ProfileScreen() {
   const player = useAuthStore((s) => s.player);
@@ -26,61 +25,61 @@ export default function ProfileScreen() {
 
   return (
     <ImageBackground
-      source={require('../assets/welcome-bg.png')}
+      source={require('../../assets/welcome-bg.png')}
       style={styles.container}
       resizeMode="cover"
     >
       <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
-      <View style={styles.header}>
-        <Text style={styles.title}>Профіль</Text>
-      </View>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Профіль</Text>
+        </View>
 
-      <View style={styles.card}>
-        <LinearGradient
-          colors={['#74D3C4', '#3FA9A0']}
-          style={styles.avatar}
-        >
-          <Text style={styles.avatarText}>{initial}</Text>
-        </LinearGradient>
-        <Text style={styles.name}>{player?.playerName ?? 'Гравець'}</Text>
-        <Text style={styles.email}>{player?.email ?? ''}</Text>
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['#74D3C4', '#3FA9A0']}
+            style={styles.avatar}
+          >
+            <Text style={styles.avatarText}>{initial}</Text>
+          </LinearGradient>
+          <Text style={styles.name}>{player?.playerName ?? 'Гравець'}</Text>
+          <Text style={styles.email}>{player?.email ?? ''}</Text>
 
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{playerLevel}</Text>
-            <Text style={styles.statLabel}>Рівень</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{playerLevel}</Text>
+              <Text style={styles.statLabel}>Рівень</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItemXp}>
+              <Text style={styles.statValue}>{playerXp}/{xpNeeded}</Text>
+              <Text style={styles.statLabel}>Досвід</Text>
+            </View>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItemXp}>
-            <Text style={styles.statValue}>{playerXp}/{xpNeeded}</Text>
-            <Text style={styles.statLabel}>Досвід</Text>
+
+          <View style={styles.xpBarContainer}>
+            <View style={[styles.xpBarFill, { width: `${Math.min((playerXp / xpNeeded) * 100, 100)}%` }]} />
+          </View>
+
+          <View style={styles.currencyRow}>
+            <View style={styles.currencyItem}>
+              <View style={styles.coinIcon} />
+              <Text style={styles.currencyValue}>{balance}</Text>
+            </View>
+            <View style={styles.currencyItem}>
+              <View style={styles.gemIcon} />
+              <Text style={styles.currencyValueGem}>{gems}</Text>
+            </View>
           </View>
         </View>
 
-        <View style={styles.xpBarContainer}>
-          <View style={[styles.xpBarFill, { width: `${Math.min((playerXp / xpNeeded) * 100, 100)}%` }]} />
-        </View>
-
-        <View style={styles.currencyRow}>
-          <View style={styles.currencyItem}>
-            <View style={styles.coinIcon} />
-            <Text style={styles.currencyValue}>{balance}</Text>
-          </View>
-          <View style={styles.currencyItem}>
-            <View style={styles.gemIcon} />
-            <Text style={styles.currencyValueGem}>{gems}</Text>
-          </View>
-        </View>
-      </View>
-
-      <Pressable onPress={handleLogout} style={({ pressed }) => [
-        styles.logoutButton,
-        pressed && styles.logoutPressed,
-      ]}>
-        <Text style={styles.logoutText}>Вийти з акаунту</Text>
-      </Pressable>
-
-      <BottomNav />
+        <Pressable onPress={handleLogout} style={({ pressed }) => [
+          styles.logoutButton,
+          pressed && styles.logoutPressed,
+        ]}>
+          <Text style={styles.logoutText}>Вийти з акаунту</Text>
+        </Pressable>
+      </ScrollView>
     </ImageBackground>
   );
 }
@@ -89,10 +88,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scroll: {
+    paddingBottom: 150,
+  },
   header: {
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 60,
+    paddingBottom: 12,
   },
   title: {
     fontFamily: 'Fredoka_600SemiBold',

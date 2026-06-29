@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import GlassView from 'glass-view';
+import { GlassView } from 'expo-glass-effect';
 import { router, usePathname } from 'expo-router';
 
 interface NavItemProps {
@@ -93,7 +93,7 @@ export default function BottomNav({ onTowerPress }: BottomNavProps = {}) {
 
   return (
     <View style={styles.container}>
-      <GlassView cornerRadius={30} style={styles.glassPanel}>
+      <GlassView glassEffectStyle="regular" style={styles.glassPanel}>
         {/* top specular highlight */}
         <LinearGradient
           colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
@@ -128,7 +128,6 @@ const styles = StyleSheet.create({
   },
   glassPanel: {
     borderRadius: 30,
-    overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.7)',
     shadowColor: 'rgba(40,70,35,1)',
@@ -144,6 +143,8 @@ const styles = StyleSheet.create({
     right: 0,
     height: '45%',
     zIndex: 1,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
   },
   content: {
     flexDirection: 'row',

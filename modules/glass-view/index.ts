@@ -6,9 +6,15 @@ export interface GlassViewProps extends ViewProps {
   cornerRadius?: number;
 }
 
-const GlassView: React.ComponentType<GlassViewProps> =
-  Platform.OS === 'ios'
-    ? require('expo').requireNativeView('GlassView')
-    : View;
+function getNativeView(): React.ComponentType<GlassViewProps> {
+  if (Platform.OS !== 'ios') return View;
+  try {
+    return require('expo').requireNativeView('GlassView');
+  } catch {
+    return View;
+  }
+}
+
+const GlassView = getNativeView();
 
 export default GlassView;

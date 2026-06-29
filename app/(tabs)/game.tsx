@@ -2,19 +2,18 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { FlashList } from '@shopify/flash-list';
-import TopBar from '../src/components/TopBar';
-import BottomNav from '../src/components/BottomNav';
-import FloorCard from '../src/components/FloorCard';
-import { HotelFloor, LobbyFloor } from '../src/components/TechnicalFloor';
-import HotelPanel from '../src/components/HotelPanel';
-import LobbyPanel from '../src/components/LobbyPanel';
-import LevelUpModal from '../src/components/LevelUpModal';
-import { useGameStore, useBalance } from '../src/stores/gameStore';
-import { useAuthStore } from '../src/stores/authStore';
-import { useGameClock } from '../src/hooks/useGameClock';
-import { gameConfig } from '../shared/config/gameConfig';
-import { syncService } from '../src/services/sync';
-import { xpForLevel } from '../shared/engine/xp';
+import TopBar from '../../src/components/TopBar';
+import FloorCard from '../../src/components/FloorCard';
+import { HotelFloor, LobbyFloor } from '../../src/components/TechnicalFloor';
+import HotelPanel from '../../src/components/HotelPanel';
+import LobbyPanel from '../../src/components/LobbyPanel';
+import LevelUpModal from '../../src/components/LevelUpModal';
+import { useGameStore, useBalance } from '../../src/stores/gameStore';
+import { useAuthStore } from '../../src/stores/authStore';
+import { useGameClock } from '../../src/hooks/useGameClock';
+import { gameConfig } from '../../shared/config/gameConfig';
+import { syncService } from '../../src/services/sync';
+import { xpForLevel } from '../../shared/engine/xp';
 
 type FloorItem =
   | { type: 'production'; id: number }
@@ -73,7 +72,6 @@ export default function GameScreen() {
     return () => syncService.stop();
   }, [isAuthenticated]);
 
-  // Spawn visitors: handles initial spawn, offline catch-up, and regular timer
   useEffect(() => {
     if (now <= 0) return;
     let s = useGameStore.getState();
@@ -84,7 +82,7 @@ export default function GameScreen() {
       const prevNextAt = s.nextVisitorAt;
       spawnVisitor();
       s = useGameStore.getState();
-      if (s.nextVisitorAt === prevNextAt) break; // spawn rejected, stop
+      if (s.nextVisitorAt === prevNextAt) break;
     }
   }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor]);
 
@@ -119,7 +117,7 @@ export default function GameScreen() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require('../assets/welcome-bg.png')}
+        source={require('../../assets/welcome-bg.png')}
         style={styles.background}
         resizeMode="cover"
       >
@@ -151,8 +149,6 @@ export default function GameScreen() {
           coins={formatCoins(balance)}
           gems={String(gems)}
         />
-
-        <BottomNav />
       </ImageBackground>
 
       <HotelPanel visible={hotelOpen} onClose={() => setHotelOpen(false)} />
@@ -185,11 +181,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sideRight: {
-    width: 60,
+    width: 0,
   },
   listContent: {
     paddingTop: 150,
-    paddingBottom: 120,
+    paddingBottom: 85,
     paddingHorizontal: 8,
   },
   floorWrapper: {

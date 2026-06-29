@@ -1068,7 +1068,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
               </View>
               <View style={popupStyles.info}>
                 <Text style={popupStyles.title}>Новий працівник!</Text>
-                <Text style={popupStyles.name}>{newWorkerPopup.name}</Text>
+                <Text style={[popupStyles.name, { color: gameConfig.floorTypes[newWorkerPopup.floorType]?.shirtColor ?? '#3B8BCB' }]}>{newWorkerPopup.name}</Text>
                 <Text style={popupStyles.meta}>
                   {'Рівень ' + newWorkerPopup.level + ' · ' +
                     (gameConfig.productionTypes[newWorkerPopup.dreamJob]?.displayName ?? newWorkerPopup.dreamJob)}

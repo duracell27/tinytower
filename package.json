@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
-    "glass-view": "file:./modules/glass-view",
+    "expo-glass-effect": "~56.0.4",
     "@expo-google-fonts/fredoka": "^0.4.1",
     "@expo-google-fonts/nunito": "^0.4.2",
     "@shopify/flash-list": "2.0.2",

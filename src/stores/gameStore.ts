@@ -171,7 +171,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   spawnVisitor: () => {
     const state = get();
     const now = clock.now();
-    const { role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now);
+    // When catching up after offline time, use the scheduled spawn time as the
+    // command timestamp so nextVisitorAt advances by interval from the *scheduled*
+    // time, not from now — otherwise the catch-up loop exits after one spawn.
+    const timestamp = (state.nextVisitorAt > 0 && state.nextVisitorAt < now)
+      ? state.nextVisitorAt
+      : now;
+    const { role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, timestamp);
     const { id, hairColor, female } = generateVisitorAppearance();
     executeCommand(get, set, {
       id: uuid(),
@@ -181,7 +187,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       targetFloor,
       hairColor,
       female,
-      timestamp: now,
+      timestamp,
     });
   },
 

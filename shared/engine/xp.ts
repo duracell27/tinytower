@@ -41,7 +41,7 @@ export function applyXpGain(
     xp -= xpForLevel(level);
     level++;
     const coinReward = level * 100;
-    const gemReward = level * 3;
+    const gemReward = level * 1;
     bonusCoins += coinReward;
     bonusGems += gemReward;
     levelUpEvents.push({ newLevel: level, coinReward, gemReward });
