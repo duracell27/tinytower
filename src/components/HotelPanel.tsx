@@ -20,6 +20,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
@@ -37,6 +38,7 @@ interface HotelPanelProps {
 }
 
 export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
+  const { t } = useTranslation('hotel');
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
 
@@ -96,12 +98,12 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const handleEvict = useCallback(
     (workerId: string, workerName: string) => {
       Alert.alert(
-        'Виселити працівника?',
-        `${workerName} буде виселений з готелю`,
+        t('hotelPanel.evictConfirm.title'),
+        t('hotelPanel.evictConfirm.message', { name: workerName }),
         [
-          { text: 'Скасувати', style: 'cancel' },
+          { text: t('hotelPanel.evictConfirm.cancel'), style: 'cancel' },
           {
-            text: 'Виселити',
+            text: t('hotelPanel.evictConfirm.confirm'),
             style: 'destructive',
             onPress: () => {
               useGameStore.getState().evictWorker(workerId);
@@ -110,7 +112,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
         ],
       );
     },
-    [],
+    [t],
   );
 
   const handleFindJob = useCallback((worker: Worker) => {
@@ -170,8 +172,8 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                       <Rect x={13} y={15} width={4} height={4} rx={0.5} stroke="#fff" strokeWidth={1.5} />
                     </Svg>
                     <View>
-                      <Text style={styles.titleText}>Готель</Text>
-                      <Text style={styles.subtitleText}>Мешканці · пошук роботи</Text>
+                      <Text style={styles.titleText}>{t('hotelPanel.title')}</Text>
+                      <Text style={styles.subtitleText}>{t('hotelPanel.subtitle')}</Text>
                     </View>
                   </View>
 
@@ -192,11 +194,11 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                 {/* Stats row */}
                 <View style={styles.statsRow}>
                   <View style={styles.statPill}>
-                    <Text style={styles.statLabel}>Місць</Text>
+                    <Text style={styles.statLabel}>{t('hotelPanel.seats')}</Text>
                     <Text style={styles.statValue}>{hotelCapacity}</Text>
                   </View>
                   <View style={styles.statPill}>
-                    <Text style={styles.statLabel}>Вільно</Text>
+                    <Text style={styles.statLabel}>{t('hotelPanel.free')}</Text>
                     <Text style={styles.statValue}>
                       {freeSeats > 0 ? freeSeats : 0}
                     </Text>

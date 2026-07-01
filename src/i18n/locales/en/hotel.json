@@ -48,5 +48,17 @@
       "delivering": "Delivering",
       "selling": "Selling"
     }
+  },
+  "hotelPanel": {
+    "title": "Hotel",
+    "subtitle": "Residents · job search",
+    "seats": "Seats",
+    "free": "Free",
+    "evictConfirm": {
+      "title": "Evict worker?",
+      "message": "{{name}} will be evicted from the hotel",
+      "cancel": "Cancel",
+      "confirm": "Evict"
+    }
   }
 }
