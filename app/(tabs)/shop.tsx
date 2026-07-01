@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { useTranslation } from 'react-i18next';
 import TopBar from '../../src/components/TopBar';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -22,12 +23,13 @@ function formatCoins(n: number): string {
 }
 
 export default function ShopScreen() {
+  const { t } = useTranslation('tabs');
   const balance = useBalance();
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
   const player = useAuthStore((s) => s.player);
-  const playerName = player?.playerName ?? 'Гравець';
+  const playerName = player?.playerName ?? t('profile.guestFallbackName');
   const initial = playerName.charAt(0).toUpperCase();
 
   return (
@@ -40,8 +42,8 @@ export default function ShopScreen() {
         <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
         <View style={styles.content}>
           <Text style={styles.emoji}>🛍️</Text>
-          <Text style={styles.title}>Магазин</Text>
-          <Text style={styles.subtitle}>Тут поки немає функціоналу</Text>
+          <Text style={styles.title}>{t('shop.title')}</Text>
+          <Text style={styles.subtitle}>{t('shop.comingSoon')}</Text>
         </View>
 
         <TopBar

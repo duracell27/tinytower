@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView } from 'expo-glass-effect';
 import { router, usePathname } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 interface NavItemProps {
   active?: boolean;
@@ -85,6 +86,7 @@ interface BottomNavProps {
 }
 
 export default function BottomNav({ onTowerPress }: BottomNavProps = {}) {
+  const { t } = useTranslation('tabs');
   const pathname = usePathname();
   const isGame = pathname === '/game';
   const isCity = pathname === '/city';
@@ -100,16 +102,16 @@ export default function BottomNav({ onTowerPress }: BottomNavProps = {}) {
           style={styles.sheen}
         />
         <View style={styles.content}>
-          <NavItem active={isGame} label="Вежа" onPress={() => { if (!isGame) router.replace('/game'); else onTowerPress?.(); }}>
+          <NavItem active={isGame} label={t('labels.tower')} onPress={() => { if (!isGame) router.replace('/game'); else onTowerPress?.(); }}>
             <TowerIcon active={isGame} />
           </NavItem>
-          <NavItem active={isCity} label="Місто" onPress={() => { if (!isCity) router.replace('/city'); }}>
+          <NavItem active={isCity} label={t('labels.city')} onPress={() => { if (!isCity) router.replace('/city'); }}>
             <CityIcon active={isCity} />
           </NavItem>
-          <NavItem active={isShop} label="Магазин" onPress={() => { if (!isShop) router.replace('/shop'); }}>
+          <NavItem active={isShop} label={t('labels.shop')} onPress={() => { if (!isShop) router.replace('/shop'); }}>
             <ShopIcon active={isShop} />
           </NavItem>
-          <NavItem active={isProfile} label="Профіль" onPress={() => { if (!isProfile) router.replace('/profile'); }}>
+          <NavItem active={isProfile} label={t('labels.profile')} onPress={() => { if (!isProfile) router.replace('/profile'); }}>
             <ProfileIcon active={isProfile} />
           </NavItem>
         </View>
