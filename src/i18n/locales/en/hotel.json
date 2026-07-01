@@ -1,5 +1,22 @@
 {
   "floorCard": {
     "productFallback": "Product {{index}}"
+  },
+  "workerCard": {
+    "unemployedFemale": "Unemployed",
+    "unemployedMale": "Unemployed",
+    "level": "LEVEL",
+    "info": {
+      "skill": "Skill",
+      "dreamJob": "Dream Job",
+      "worksAt": "Works At",
+      "livesAt": "Lives At",
+      "hotel": "Hotel"
+    },
+    "actions": {
+      "findJob": "Find Job",
+      "evict": "Evict"
+    },
+    "hint": "The higher a worker's skill, the bigger the purchase discount they give"
   }
 }

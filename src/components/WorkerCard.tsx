@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { gameConfig } from '../../shared/config/gameConfig';
 import type { Worker } from '../../shared/types';
 import WorkerAvatar from './WorkerAvatar';
@@ -29,12 +30,13 @@ export default function WorkerCard({
   onFindJob,
   onEvict,
 }: WorkerCardProps) {
+  const { t } = useTranslation('hotel');
+  const { t: tContent } = useTranslation('gameContent');
   const ft = gameConfig.floorTypes[worker.floorType];
   const accent = ft?.accent ?? '#888';
   const shirtColor = ft?.shirtColor ?? '#999';
-  const category = ft?.category ?? worker.floorType;
-  const dreamJobName =
-    gameConfig.productionTypes[worker.dreamJob]?.displayName ?? worker.dreamJob;
+  const category = tContent(`floorTypes.${worker.floorType}.category`, { defaultValue: worker.floorType });
+  const dreamJobName = tContent(`productionTypes.${worker.dreamJob}.displayName`, { defaultValue: worker.dreamJob });
 
   const expandAnim = useSharedValue(expanded ? 1 : 0);
   const chevronAnim = useSharedValue(expanded ? 1 : 0);
@@ -54,7 +56,7 @@ export default function WorkerCard({
   }));
 
   const isUnemployed = worker.assignedFloorId === null;
-  const statusText = worker.female ? 'Безробітна' : 'Безробітний';
+  const statusText = worker.female ? t('workerCard.unemployedFemale') : t('workerCard.unemployedMale');
 
   return (
     <View
@@ -130,7 +132,7 @@ export default function WorkerCard({
         {/* Level + chevron */}
         <View style={styles.levelBlock}>
           <View style={styles.levelInner}>
-            <Text style={styles.levelLabel}>РІВЕНЬ</Text>
+            <Text style={styles.levelLabel}>{t('workerCard.level')}</Text>
             <Text style={[styles.levelNumber, { color: accent }]}>
               {worker.level}
             </Text>
@@ -154,13 +156,13 @@ export default function WorkerCard({
         <View style={styles.expandedContent}>
           {/* Info rows */}
           <View style={styles.infoRows}>
-            <InfoRow label="Навичка" value={`${category} · рівень ${worker.level}`} />
-            <InfoRow label="Робота мрії" value={dreamJobName} />
+            <InfoRow label={t('workerCard.info.skill')} value={`${category} · ${worker.level}`} />
+            <InfoRow label={t('workerCard.info.dreamJob')} value={dreamJobName} />
             <InfoRow
-              label="Працює"
-              value={worker.female ? 'Безробітна' : 'Безробітний'}
+              label={t('workerCard.info.worksAt')}
+              value={worker.female ? t('workerCard.unemployedFemale') : t('workerCard.unemployedMale')}
             />
-            <InfoRow label="Проживає" value="Готель" />
+            <InfoRow label={t('workerCard.info.livesAt')} value={t('workerCard.info.hotel')} />
           </View>
 
           {/* Find job button */}
@@ -175,7 +177,7 @@ export default function WorkerCard({
               colors={['#72C24F', '#5BA63C']}
               style={styles.actionButtonGradient}
             >
-              <Text style={styles.actionButtonText}>Знайти роботу</Text>
+              <Text style={styles.actionButtonText}>{t('workerCard.actions.findJob')}</Text>
             </LinearGradient>
             <View
               style={[
@@ -197,7 +199,7 @@ export default function WorkerCard({
               colors={['#E2685A', '#CC4A3C']}
               style={styles.actionButtonGradient}
             >
-              <Text style={styles.actionButtonText}>Виселити</Text>
+              <Text style={styles.actionButtonText}>{t('workerCard.actions.evict')}</Text>
             </LinearGradient>
             <View
               style={[
@@ -209,7 +211,7 @@ export default function WorkerCard({
 
           {/* Hint */}
           <Text style={styles.hintText}>
-            Чим вищий навик працівника, тим більшу знижку на закупівлю він дає
+            {t('workerCard.hint')}
           </Text>
         </View>
       </Animated.View>
