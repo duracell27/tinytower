@@ -16,6 +16,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerForSlot } from '../../shared/engine/workerUtils';
@@ -42,27 +43,14 @@ interface SlotItem {
 
 interface FloorSection {
   floorId: number;
-  floorName: string;
   floorType: string;
   data: SlotItem[];
 }
 
-const MATCH_BADGES = {
-  dream: {
-    label: 'Робота мрії · 2x',
-    bg: 'rgba(82,184,71,0.15)',
-    text: '#4E9A2E',
-  },
-  match: {
-    label: 'Підходящий тип · 1.3x',
-    bg: 'rgba(240,185,42,0.15)',
-    text: '#B07F12',
-  },
-  other: {
-    label: 'Інший тип · 1x',
-    bg: 'rgba(0,0,0,0.05)',
-    text: '#9098A6',
-  },
+const MATCH_BADGE_STYLES = {
+  dream: { bg: 'rgba(82,184,71,0.15)', text: '#4E9A2E' },
+  match: { bg: 'rgba(240,185,42,0.15)', text: '#B07F12' },
+  other: { bg: 'rgba(0,0,0,0.05)', text: '#9098A6' },
 } as const;
 
 export default function JobPickerSheet({
@@ -128,7 +116,6 @@ export default function JobPickerSheet({
 
       result.push({
         floorId: floorConfig.id,
-        floorName: floorConfig.name,
         floorType: floorConfig.floorType,
         data: slots,
       });
@@ -150,9 +137,13 @@ export default function JobPickerSheet({
     onClose();
   };
 
+  const { t } = useTranslation('hotel');
+  const { t: tContent } = useTranslation('gameContent');
   const ft = worker ? gameConfig.floorTypes[worker.floorType] : null;
   const accent = ft?.accent ?? '#888';
-  const category = ft?.category ?? worker?.floorType ?? '';
+  const category = tContent(`floorTypes.${worker?.floorType ?? ''}.category`, {
+    defaultValue: worker?.floorType ?? '',
+  });
 
   const isEmpty = sections.length === 0;
 
@@ -207,7 +198,7 @@ export default function JobPickerSheet({
         {/* Body */}
         {isEmpty ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Всі місця зайняті</Text>
+            <Text style={styles.emptyText}>{t('jobPicker.empty')}</Text>
           </View>
         ) : (
           <SectionList
@@ -234,8 +225,12 @@ export default function JobPickerSheet({
 }
 
 function SectionHeader({ section }: { section: FloorSection }) {
+  const { t: tContent } = useTranslation('gameContent');
   const scheme = FLOOR_SCHEMES[section.floorId];
   const headerColors = scheme?.headerColors ?? ['#888', '#777'];
+  const floorName = tContent(`floors.${section.floorId}.name`, {
+    defaultValue: `Floor ${section.floorId}`,
+  });
 
   return (
     <View style={sectionStyles.container}>
@@ -246,7 +241,7 @@ function SectionHeader({ section }: { section: FloorSection }) {
         <View style={sectionStyles.numberBadge}>
           <Text style={sectionStyles.numberText}>{section.floorId}</Text>
         </View>
-        <Text style={sectionStyles.floorName}>{section.floorName}</Text>
+        <Text style={sectionStyles.floorName}>{floorName}</Text>
       </LinearGradient>
     </View>
   );
@@ -259,9 +254,13 @@ function SlotRow({
   item: SlotItem;
   onAssign: (floorId: number, slotIdx: number) => void;
 }) {
-  const productConfig = gameConfig.productionTypes[item.typeId];
-  const productName = productConfig?.displayName ?? item.typeId;
-  const badge = MATCH_BADGES[item.matchLevel];
+  const { t } = useTranslation('hotel');
+  const { t: tContent } = useTranslation('gameContent');
+  const productName = tContent(`productionTypes.${item.typeId}.displayName`, {
+    defaultValue: item.typeId,
+  });
+  const badgeStyle = MATCH_BADGE_STYLES[item.matchLevel];
+  const badgeLabel = t(`jobPicker.matchBadges.${item.matchLevel}`);
 
   return (
     <View style={slotStyles.row}>
@@ -269,9 +268,9 @@ function SlotRow({
         {productName}
       </Text>
 
-      <View style={[slotStyles.badge, { backgroundColor: badge.bg }]}>
-        <Text style={[slotStyles.badgeText, { color: badge.text }]}>
-          {badge.label}
+      <View style={[slotStyles.badge, { backgroundColor: badgeStyle.bg }]}>
+        <Text style={[slotStyles.badgeText, { color: badgeStyle.text }]}>
+          {badgeLabel}
         </Text>
       </View>
 
@@ -286,7 +285,7 @@ function SlotRow({
           colors={['#72C24F', '#5BA63C']}
           style={slotStyles.assignButtonGradient}
         >
-          <Text style={slotStyles.assignButtonText}>Призначити</Text>
+          <Text style={slotStyles.assignButtonText}>{t('jobPicker.assign')}</Text>
         </LinearGradient>
       </Pressable>
     </View>

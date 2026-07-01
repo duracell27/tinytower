@@ -18,5 +18,14 @@
       "evict": "Evict"
     },
     "hint": "The higher a worker's skill, the bigger the purchase discount they give"
+  },
+  "jobPicker": {
+    "matchBadges": {
+      "dream": "Dream Job · 2x",
+      "match": "Matching Type · 1.3x",
+      "other": "Other Type · 1x"
+    },
+    "empty": "All slots are taken",
+    "assign": "Assign"
   }
 }
