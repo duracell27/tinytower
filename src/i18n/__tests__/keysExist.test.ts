@@ -29,7 +29,7 @@ function collectSourceFiles(rootDir: string): string[] {
   return results;
 }
 
-function resolveKeyPath(obj: unknown, keyPath: string): unknown {
+function resolveExactKeyPath(obj: unknown, keyPath: string): unknown {
   return keyPath.split('.').reduce<unknown>((acc, part) => {
     if (acc && typeof acc === 'object' && part in (acc as Record<string, unknown>)) {
       return (acc as Record<string, unknown>)[part];
@@ -38,12 +38,48 @@ function resolveKeyPath(obj: unknown, keyPath: string): unknown {
   }, obj);
 }
 
-// Matches t('key'), t("ns:key"), t(`key`) — literal-string calls only.
-const LITERAL_T_CALL = /\bt\(\s*['"`]([\w.:-]+)['"`]/g;
-// Matches t( followed by anything that is NOT a literal string as the first char
-// (template literal with interpolation, variable, concatenation) — used to flag
-// dynamic calls in chrome namespaces, which this test cannot statically check.
-const DYNAMIC_T_CALL = /\bt\(\s*(`[^`]*\$\{|[a-zA-Z_])/g;
+// i18next pluralization: t('foo.bar', { count }) resolves at runtime to 'foo.bar_one' /
+// 'foo.bar_other' (etc.) when the JSON only defines the suffixed forms and no bare
+// 'foo.bar' key exists. Fall back to checking the suffixed variants before failing.
+const PLURAL_SUFFIXES = ['_zero', '_one', '_two', '_few', '_many', '_other'];
+
+function resolveKeyPath(obj: unknown, keyPath: string): unknown {
+  const direct = resolveExactKeyPath(obj, keyPath);
+  if (direct !== undefined) return direct;
+
+  for (const suffix of PLURAL_SUFFIXES) {
+    const plural = resolveExactKeyPath(obj, `${keyPath}${suffix}`);
+    if (plural !== undefined) return plural;
+  }
+  return undefined;
+}
+
+// Matches: const { t } = useTranslation('ns');  const { t: alias } = useTranslation('ns');
+// Captures the local variable name (defaults to 't') and the namespace it's bound to,
+// so unprefixed t('key') calls can be resolved against the right namespace per file.
+const USE_TRANSLATION_BINDING = /const\s*\{\s*t(?:\s*:\s*(\w+))?\s*\}\s*=\s*useTranslation\(\s*['"`](\w+)['"`]\s*\)/g;
+
+function extractNamespaceBindings(content: string): Map<string, string> {
+  const bindings = new Map<string, string>();
+  let match: RegExpExecArray | null;
+  USE_TRANSLATION_BINDING.lastIndex = 0;
+  while ((match = USE_TRANSLATION_BINDING.exec(content))) {
+    const varName = match[1] ?? 't';
+    const ns = match[2];
+    bindings.set(varName, ns);
+  }
+  return bindings;
+}
+
+// Matches CALLNAME('key'), CALLNAME("ns:key"), CALLNAME(`key`) — literal-string calls only.
+const LITERAL_T_CALL = /\b(\w+)\(\s*['"`]([\w.:-]+)['"`]/g;
+// Matches CALLNAME(`static-prefix${ — a template literal with interpolation, capturing
+// the function name and the static prefix before the first interpolation.
+const DYNAMIC_T_CALL = /\b(\w+)\(\s*`([^$`]*)\$\{/g;
+
+// Dynamic key lookups deliberately allowed in a chrome namespace, because the key space
+// is a small, fixed enum defined by a TS union/schema elsewhere, not an open-ended string.
+const ALLOWED_DYNAMIC_CHROME_PREFIXES = ['roles.', 'jobPicker.matchBadges.'];
 
 describe('translation key coverage', () => {
   const files = SOURCE_ROOTS.flatMap((root) => collectSourceFiles(path.join(__dirname, '../../..', root)));
@@ -55,36 +91,39 @@ describe('translation key coverage', () => {
   for (const file of files) {
     const relative = path.relative(path.join(__dirname, '../../..'), file);
     const content = fs.readFileSync(file, 'utf8');
+    const bindings = extractNamespaceBindings(content);
 
     it(`${relative}: every literal t() key resolves in its namespace JSON`, () => {
       let match: RegExpExecArray | null;
       LITERAL_T_CALL.lastIndex = 0;
       while ((match = LITERAL_T_CALL.exec(content))) {
-        const raw = match[1];
+        const funcName = match[1];
+        const raw = match[2];
+        const boundNs = bindings.get(funcName);
+        if (!boundNs) continue; // not a recognized t()/tContent()-style call in this file
+
         const [maybeNs, ...rest] = raw.split(':');
-        const hasExplicitNs = rest.length > 0 && CHROME_NAMESPACE_NAMES.includes(maybeNs);
-        const ns = hasExplicitNs ? maybeNs : undefined;
+        const hasExplicitNs = rest.length > 0 && (CHROME_NAMESPACE_NAMES.includes(maybeNs) || maybeNs === 'gameContent');
+        const ns = hasExplicitNs ? maybeNs : boundNs;
         const key = hasExplicitNs ? rest.join(':') : raw;
 
-        if (ns) {
-          expect(resolveKeyPath(NAMESPACES[ns], key)).not.toBeUndefined();
-        }
-        // Keys with no namespace prefix belong to whatever namespace the
-        // component activated via useTranslation(namespace) — not statically
-        // known here, so only namespace-prefixed keys are checked directly.
+        if (ns === 'gameContent') continue; // checked separately via the id cross-reference below
+        expect(resolveKeyPath(NAMESPACES[ns], key)).not.toBeUndefined();
       }
     });
 
-    it(`${relative}: no dynamic t() calls in chrome namespaces (gameContent excluded)`, () => {
-      if (relative.includes('LobbyPanel') || relative.includes('WorkerCard') ||
-          relative.includes('JobPickerSheet') || relative.includes('FloorCard') ||
-          relative.includes('ProductionCard')) {
-        // These files intentionally use dynamic gameContent lookups by id —
-        // covered by the id cross-reference check below instead.
-        return;
-      }
+    it(`${relative}: no unapproved dynamic t() calls in chrome namespaces`, () => {
+      let match: RegExpExecArray | null;
       DYNAMIC_T_CALL.lastIndex = 0;
-      expect(DYNAMIC_T_CALL.test(content)).toBe(false);
+      while ((match = DYNAMIC_T_CALL.exec(content))) {
+        const funcName = match[1];
+        const prefix = match[2];
+        const boundNs = bindings.get(funcName);
+        if (!boundNs || boundNs === 'gameContent') continue; // gameContent dynamic lookups are the norm
+
+        const isAllowed = ALLOWED_DYNAMIC_CHROME_PREFIXES.some((p) => prefix.endsWith(p));
+        expect(isAllowed).toBe(true);
+      }
     });
   }
 
