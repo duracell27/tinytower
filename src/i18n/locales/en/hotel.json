@@ -60,5 +60,21 @@
       "cancel": "Cancel",
       "confirm": "Evict"
     }
+  },
+  "technicalFloor": {
+    "hotel": {
+      "name": "Hotel",
+      "tag": "SERVICE",
+      "hasVacancy": "Vacancies available",
+      "full": "No vacancies",
+      "occupied": "OCCUPIED"
+    },
+    "lobby": {
+      "name": "Lobby",
+      "tag": "SERVICE",
+      "waiting": "Waiting",
+      "newGuest": "New guest",
+      "full": "Full"
+    }
   }
 }

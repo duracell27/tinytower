@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 
 const HEADER_COLORS: [string, string] = ['#C9637E', '#A8475F'];
 
@@ -33,6 +34,7 @@ interface HotelFloorProps {
 }
 
 export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorProps) {
+  const { t } = useTranslation('hotel');
   const hasVacancy = hotelOccupied < hotelTotal;
 
   return (
@@ -41,10 +43,10 @@ export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorPro
         <View style={styles.numberBadge}>
           <Text style={styles.numberText}>1</Text>
         </View>
-        <Text style={styles.floorName} numberOfLines={1}>Готель</Text>
+        <Text style={styles.floorName} numberOfLines={1}>{t('technicalFloor.hotel.name')}</Text>
         <View style={styles.techTag}>
           <StarIcon />
-          <Text style={styles.techTagText}>СЕРВІС</Text>
+          <Text style={styles.techTagText}>{t('technicalFloor.hotel.tag')}</Text>
         </View>
       </LinearGradient>
 
@@ -61,12 +63,12 @@ export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorPro
               <View style={[styles.statusPill, hasVacancy ? styles.statusGreen : styles.statusRed]}>
                 <View style={[styles.statusDot, { backgroundColor: hasVacancy ? '#5BA63C' : '#D14343' }]} />
                 <Text style={[styles.statusText, { color: hasVacancy ? '#3C7A2A' : '#A13030' }]}>
-                  {hasVacancy ? 'Є вільні місця' : 'Немає вільних'}
+                  {hasVacancy ? t('technicalFloor.hotel.hasVacancy') : t('technicalFloor.hotel.full')}
                 </Text>
               </View>
               {/* Right: occupancy count */}
               <View style={styles.occupancyRight}>
-                <Text style={styles.occupancyLabel}>ЗАЙНЯТО</Text>
+                <Text style={styles.occupancyLabel}>{t('technicalFloor.hotel.occupied')}</Text>
                 <Text style={styles.occupancyCount}>
                   <Text style={styles.occupancyNum}>{hotelOccupied}</Text>
                   <Text style={styles.occupancyTotal}>/{hotelTotal}</Text>
@@ -89,11 +91,12 @@ interface LobbyFloorProps {
 }
 
 export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, onPress }: LobbyFloorProps) {
+  const { t } = useTranslation('hotel');
   const isFull = visitorCount >= lobbyCapacity;
   const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
-  const timerText = isFull ? 'Повний' : `${minutes}:${String(seconds).padStart(2, '0')}`;
+  const timerText = isFull ? t('technicalFloor.lobby.full') : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
@@ -101,10 +104,10 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, on
         <View style={styles.numberBadge}>
           <Text style={styles.numberText}>0</Text>
         </View>
-        <Text style={styles.floorName} numberOfLines={1}>Вестибюль</Text>
+        <Text style={styles.floorName} numberOfLines={1}>{t('technicalFloor.lobby.name')}</Text>
         <View style={styles.techTag}>
           <StarIcon />
-          <Text style={styles.techTagText}>СЕРВІС</Text>
+          <Text style={styles.techTagText}>{t('technicalFloor.lobby.tag')}</Text>
         </View>
       </LinearGradient>
 
@@ -117,7 +120,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, on
           />
           <View style={styles.techInfo}>
             <View style={styles.infoRow}>
-              <Text style={styles.visitorLabel}>Очікують</Text>
+              <Text style={styles.visitorLabel}>{t('technicalFloor.lobby.waiting')}</Text>
               {/* Visitor count pill */}
               <View style={styles.visitorPill}>
                 <View style={styles.visitorAvatarCircle}>
@@ -127,7 +130,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, on
               </View>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.visitorLabel}>Новий гість</Text>
+              <Text style={styles.visitorLabel}>{t('technicalFloor.lobby.newGuest')}</Text>
               <Text style={styles.timerText}>{timerText}</Text>
             </View>
           </View>
