@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -44,6 +45,7 @@ export default function DeliverAllModal({ visible, summary, onDismiss }: Deliver
 }
 
 function DeliverAllContent({ summary, onDismiss }: { summary: DeliverAllSummary; onDismiss: () => void }) {
+  const { t } = useTranslation('hotel');
   const scale = useSharedValue(0.5);
   const opacity = useSharedValue(0);
 
@@ -64,31 +66,31 @@ function DeliverAllContent({ summary, onDismiss }: { summary: DeliverAllSummary;
         <Pressable style={styles.scrimPress} onPress={onDismiss} />
         <Animated.View style={[styles.card, cardStyle]}>
           <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={styles.cardGradient}>
-            <Text style={styles.title}>Усіх розвезено!</Text>
+            <Text style={styles.title}>{t('deliverAll.title')}</Text>
 
             {summary.guestCount > 0 && (
               <View style={styles.row}>
-                <Text style={styles.rowLabel}>👤 Гостей: {summary.guestCount}</Text>
+                <Text style={styles.rowLabel}>{t('deliverAll.rows.guests', { count: summary.guestCount })}</Text>
               </View>
             )}
             {summary.businessmanCount > 0 && (
               <View style={styles.row}>
-                <Text style={styles.rowLabel}>💼 Бізнесменів: {summary.businessmanCount}</Text>
+                <Text style={styles.rowLabel}>{t('deliverAll.rows.businessmen', { count: summary.businessmanCount })}</Text>
               </View>
             )}
             {summary.delivererCount > 0 && (
               <View style={styles.row}>
-                <Text style={styles.rowLabel}>📦 Доставщиків: {summary.delivererCount}</Text>
+                <Text style={styles.rowLabel}>{t('deliverAll.rows.deliverers', { count: summary.delivererCount })}</Text>
               </View>
             )}
             {summary.sellerCount > 0 && (
               <View style={styles.row}>
-                <Text style={styles.rowLabel}>🛒 Продавців: {summary.sellerCount}</Text>
+                <Text style={styles.rowLabel}>{t('deliverAll.rows.sellers', { count: summary.sellerCount })}</Text>
               </View>
             )}
             {summary.newWorkers > 0 && (
               <View style={styles.row}>
-                <Text style={styles.rowLabel}>🏨 Нових працівників: {summary.newWorkers}</Text>
+                <Text style={styles.rowLabel}>{t('deliverAll.rows.newWorkers', { count: summary.newWorkers })}</Text>
               </View>
             )}
 
@@ -111,7 +113,7 @@ function DeliverAllContent({ summary, onDismiss }: { summary: DeliverAllSummary;
 
             <Pressable onPress={onDismiss} style={({ pressed }) => [styles.button, pressed && { opacity: 0.85 }]}>
               <LinearGradient colors={['#6C7C92', '#56657C']} style={styles.buttonGradient}>
-                <Text style={styles.buttonText}>Готово</Text>
+                <Text style={styles.buttonText}>{t('deliverAll.done')}</Text>
               </LinearGradient>
               <View style={styles.buttonShadow} />
             </Pressable>

@@ -76,5 +76,21 @@
       "newGuest": "New guest",
       "full": "Full"
     }
+  },
+  "levelUp": {
+    "title": "New Level!",
+    "subtitle": "Level {{level}}",
+    "claim": "Claim"
+  },
+  "deliverAll": {
+    "title": "Everyone Delivered!",
+    "rows": {
+      "guests": "👤 Guests: {{count}}",
+      "businessmen": "💼 Businessmen: {{count}}",
+      "deliverers": "📦 Deliverers: {{count}}",
+      "sellers": "🛒 Sellers: {{count}}",
+      "newWorkers": "🏨 New Workers: {{count}}"
+    },
+    "done": "Done"
   }
 }

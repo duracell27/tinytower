@@ -9,6 +9,7 @@ import Animated, {
   withDelay,
   Easing,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { type LevelUpEvent } from '../../shared/engine/xp';
 
@@ -27,6 +28,7 @@ function formatNumber(n: number): string {
 }
 
 export default function LevelUpModal({ suppressWhileOpen = false }: { suppressWhileOpen?: boolean }) {
+  const { t } = useTranslation('hotel');
   const event = useGameStore((s) => s.levelUpQueue[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissLevelUp);
 
@@ -85,8 +87,8 @@ export default function LevelUpModal({ suppressWhileOpen = false }: { suppressWh
                   </LinearGradient>
                 </View>
 
-                <Text style={styles.title}>Новий рівень!</Text>
-                <Text style={styles.subtitle}>Рівень {event.newLevel}</Text>
+                <Text style={styles.title}>{t('levelUp.title')}</Text>
+                <Text style={styles.subtitle}>{t('levelUp.subtitle', { level: event.newLevel })}</Text>
 
                 <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
                   <View style={styles.rewardRow}>
@@ -104,7 +106,7 @@ export default function LevelUpModal({ suppressWhileOpen = false }: { suppressWh
                   style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
                 >
                   <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.buttonGradient}>
-                    <Text style={styles.buttonText}>Отримати</Text>
+                    <Text style={styles.buttonText}>{t('levelUp.claim')}</Text>
                   </LinearGradient>
                   <View style={styles.buttonShadow} />
                 </Pressable>
