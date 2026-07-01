@@ -1,0 +1,15 @@
+{
+  "actions": {
+    "login": "Log In",
+    "register": "Register",
+    "cancel": "Cancel",
+    "or": "or"
+  },
+  "relativeTime": {
+    "never": "never",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
+  }
+}

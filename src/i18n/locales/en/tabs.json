@@ -1,0 +1,31 @@
+{
+  "labels": {
+    "tower": "Tower",
+    "city": "City",
+    "shop": "Shop",
+    "profile": "Profile"
+  },
+  "city": {
+    "title": "City",
+    "comingSoon": "Nothing here yet"
+  },
+  "shop": {
+    "title": "Shop",
+    "comingSoon": "Nothing here yet"
+  },
+  "profile": {
+    "title": "Profile",
+    "guestFallbackName": "Player",
+    "stats": {
+      "level": "Level",
+      "xp": "XP"
+    },
+    "sync": {
+      "online": "You're online",
+      "pending_one": "{{count}} command not synced",
+      "pending_other": "{{count}} commands not synced",
+      "critical": "{{count}} commands not synced · possible data loss"
+    },
+    "logout": "Log Out"
+  }
+}
