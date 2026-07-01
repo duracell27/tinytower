@@ -1,1 +1,25 @@
-{}
+{
+  "floorTypes": {
+    "green": { "category": "Bakery" },
+    "teal": { "category": "Laundry" },
+    "amber": { "category": "Coffee Shop" },
+    "purple": { "category": "Perfumery" },
+    "blue": { "category": "Ice Cream Parlor" }
+  },
+  "floors": {
+    "2": { "name": "Bakery" },
+    "3": { "name": "Laundry" },
+    "4": { "name": "Coffee Shop" }
+  },
+  "productionTypes": {
+    "bulky": { "displayName": "Buns" },
+    "cupcake": { "displayName": "Cupcakes" },
+    "cake": { "displayName": "Cakes" },
+    "wash": { "displayName": "Wash" },
+    "dry": { "displayName": "Dry" },
+    "bleach": { "displayName": "Bleach" },
+    "coffee": { "displayName": "Coffee" },
+    "pancake": { "displayName": "Pancakes" },
+    "dessert": { "displayName": "Desserts" }
+  }
+}
