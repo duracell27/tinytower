@@ -3,6 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
 import { getRevenueMultiplier } from '../../shared/engine/workerUtils';
 import { useGameStore } from '../stores/gameStore';
@@ -23,26 +25,26 @@ const BTN_COLORS: Record<string, { colors: [string, string]; shadowColor: string
 
 function formatTime(ms: number): string {
   const totalSec = Math.ceil(ms / 1000);
-  if (totalSec < 60) return `${totalSec} с.`;
+  if (totalSec < 60) return i18n.t('hotel:productionCard.time.seconds', { count: totalSec });
   const totalMin = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
-  if (totalMin < 60) return `${totalMin} хв. ${sec} с.`;
+  if (totalMin < 60) return i18n.t('hotel:productionCard.time.minutesSeconds', { minutes: totalMin, seconds: sec });
   const hours = Math.floor(totalMin / 60);
   const min = totalMin % 60;
-  if (hours < 24) return `${hours} г. ${min} хв.`;
+  if (hours < 24) return i18n.t('hotel:productionCard.time.hoursMinutes', { hours, minutes: min });
   const days = Math.floor(hours / 24);
   const h = hours % 24;
-  return `${days} дн. ${h} г.`;
+  return i18n.t('hotel:productionCard.time.daysHours', { days, hours: h });
 }
 
 function formatDuration(ms: number): string {
   const totalSec = Math.round(ms / 1000);
-  if (totalSec < 60) return `${totalSec} с.`;
+  if (totalSec < 60) return i18n.t('hotel:productionCard.time.seconds', { count: totalSec });
   const min = Math.floor(totalSec / 60);
-  if (min < 60) return `${min} хв.`;
+  if (min < 60) return i18n.t('hotel:productionCard.time.minutes', { count: min });
   const hours = Math.floor(min / 60);
-  if (hours < 24) return `${hours} г.`;
-  return `${Math.floor(hours / 24)} дн.`;
+  if (hours < 24) return i18n.t('hotel:productionCard.time.hours', { count: hours });
+  return i18n.t('hotel:productionCard.time.days', { count: Math.floor(hours / 24) });
 }
 
 function StageIcon({ stage }: { stage: EffectiveStage }) {
@@ -190,6 +192,7 @@ export default function ProductionCard({
     }
   }, [effectiveStage, floorId, slotIdx, floorAvailableTypes, production.typeId]);
 
+  const { t } = useTranslation('hotel');
   const isHire = effectiveStage === 'EMPTY';
   const isTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING' || effectiveStage === 'READY_TO_LIST';
   const isLocked = !worker;
@@ -199,27 +202,27 @@ export default function ProductionCard({
   let subText = '';
   switch (effectiveStage) {
     case 'EMPTY':
-      labelText = 'Найняти';
+      labelText = t('productionCard.actions.hire');
       subText = typeConfig ? String(effectiveCost) : '';
       break;
     case 'IDLE':
-      labelText = 'Закупити';
+      labelText = t('productionCard.actions.buy');
       subText = typeConfig ? String(effectiveCost) : '';
       break;
     case 'DELIVERING':
       labelText = formatTime(timeRemaining);
-      subText = 'Доставка';
+      subText = t('productionCard.status.delivering');
       break;
     case 'READY_TO_LIST':
-      labelText = 'Викласти';
+      labelText = t('productionCard.actions.list');
       subText = typeConfig ? formatDuration(typeConfig.sellDuration) : '';
       break;
     case 'SELLING':
       labelText = formatTime(timeRemaining);
-      subText = 'Продаж';
+      subText = t('productionCard.status.selling');
       break;
     case 'READY_TO_COLLECT':
-      labelText = 'Зібрати';
+      labelText = t('productionCard.actions.collect');
       subText = typeConfig ? String(effectiveRevenue) : '';
       break;
   }
@@ -255,7 +258,7 @@ export default function ProductionCard({
             style={styles.actionButtonGradient}
           >
             <StageIcon stage={'EMPTY'} />
-            <Text style={styles.actionLabel}>Найняти</Text>
+            <Text style={styles.actionLabel}>{t('productionCard.actions.hire')}</Text>
           </LinearGradient>
           <View style={[styles.actionButtonShadow, { backgroundColor: BTN_COLORS.EMPTY.shadowColor }]} />
         </Pressable>

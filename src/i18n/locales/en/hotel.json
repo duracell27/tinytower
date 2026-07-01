@@ -27,5 +27,26 @@
     },
     "empty": "All slots are taken",
     "assign": "Assign"
+  },
+  "productionCard": {
+    "time": {
+      "seconds": "{{count}}s",
+      "minutesSeconds": "{{minutes}}m {{seconds}}s",
+      "hoursMinutes": "{{hours}}h {{minutes}}m",
+      "daysHours": "{{days}}d {{hours}}h",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h",
+      "days": "{{count}}d"
+    },
+    "actions": {
+      "hire": "Hire",
+      "buy": "Buy",
+      "list": "List",
+      "collect": "Collect"
+    },
+    "status": {
+      "delivering": "Delivering",
+      "selling": "Selling"
+    }
   }
 }
