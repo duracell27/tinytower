@@ -5,11 +5,9 @@ export const ProductionTypeConfigSchema = z.object({
   deliveryDuration: z.number().positive(),
   sellDuration: z.number().positive(),
   batchValue: z.number().positive(),
-  displayName: z.string(),
 });
 
 export const FloorTypeConfigSchema = z.object({
-  category: z.string(),
   shirtColor: z.string(),
   accent: z.string(),
   dreamJobs: z.array(z.string()).min(1),
@@ -17,7 +15,6 @@ export const FloorTypeConfigSchema = z.object({
 
 export const FloorConfigSchema = z.object({
   id: z.number().int(),
-  name: z.string(),
   slots: z.number().int().min(1).max(3),
   floorType: z.string(),
   availableTypes: z.array(z.string()).min(1),

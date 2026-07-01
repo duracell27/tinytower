@@ -4,14 +4,14 @@ import type { GameState, GameConfig, Command, Visitor } from '../../types';
 
 const testConfig: GameConfig = {
   floorTypes: {
-    green: { category: 'Test', shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee'] },
+    green: { shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee'] },
   },
   floors: [
-    { id: 2, name: 'Floor 2', slots: 3, floorType: 'green', availableTypes: ['coffee'] },
-    { id: 3, name: 'Floor 3', slots: 3, floorType: 'green', availableTypes: ['coffee'] },
+    { id: 2, slots: 3, floorType: 'green', availableTypes: ['coffee'] },
+    { id: 3, slots: 3, floorType: 'green', availableTypes: ['coffee'] },
   ],
   productionTypes: {
-    coffee: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25, displayName: 'Coffee' },
+    coffee: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 },
   },
   startingBalance: 1000,
   hotelCapacity: 10,

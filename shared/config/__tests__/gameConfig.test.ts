@@ -43,13 +43,6 @@ describe('gameConfig', () => {
     }
   });
 
-  it('every production type has a displayName', () => {
-    for (const [, typeConfig] of Object.entries(gameConfig.productionTypes)) {
-      expect(typeof typeConfig.displayName).toBe('string');
-      expect(typeConfig.displayName.length).toBeGreaterThan(0);
-    }
-  });
-
   it('starting balance is 1000', () => {
     expect(gameConfig.startingBalance).toBe(1000);
   });

@@ -34,7 +34,6 @@ export type VisitorRole = z.infer<typeof VisitorRoleSchema>;
 
 export interface Floor {
   id: number;
-  name: string;
   productions: Production[];
 }
 

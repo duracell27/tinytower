@@ -6,7 +6,6 @@ const coffeeConfig: ProductionTypeConfig = {
   deliveryDuration: 5000,
   sellDuration: 10000,
   batchValue: 25,
-  displayName: 'Coffee',
 };
 
 describe('getProductionStatus', () => {

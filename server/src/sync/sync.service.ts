@@ -222,9 +222,6 @@ export class SyncService {
   private dbToGameState(player: any): GameState {
     const floors: Floor[] = player.floors.map((f: any) => ({
       id: f.floorId,
-      name:
-        gameConfig.floors.find((gc) => gc.id === f.floorId)?.name ??
-        `Floor ${f.floorId}`,
       productions: f.productions.map(
         (p: any): Production => ({
           typeId: p.typeId,

@@ -6,7 +6,6 @@ import { VisitorSchema } from './visitor';
 
 export const FloorStateSchema = z.object({
   id: z.number().int(),
-  name: z.string(),
   productions: z.array(ProductionSchema).min(1).max(3),
 });
 

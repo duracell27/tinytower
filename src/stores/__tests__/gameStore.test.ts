@@ -4,13 +4,13 @@ import type { GameState, GameConfig } from '../../../shared/types';
 
 const testConfig: GameConfig = {
   floors: [
-    { id: 1, name: 'Floor 1', slots: 1, floorType: 'green', availableTypes: ['coffee_shop'] },
+    { id: 1, slots: 1, floorType: 'green', availableTypes: ['coffee_shop'] },
   ],
   productionTypes: {
-    coffee_shop: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25, displayName: 'Coffee Shop' },
+    coffee_shop: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 },
   },
   floorTypes: {
-    green: { category: 'Test', shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee_shop'] },
+    green: { shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee_shop'] },
   },
   startingBalance: 100,
   hotelCapacity: 10,
