@@ -7,32 +7,48 @@ function uuidv4(): string {
   });
 }
 
-export const WORKER_NAMES = {
-  male: [
-    'Коля Некрасов', 'Дима Громов', 'Миша Шевчук', 'Андрій Семенов',
-    'Ваня Вайнер', 'Олег Кравченко', 'Тарас Мельник', 'Богдан Ткаченко',
-    'Роман Бондаренко', 'Ігор Шевченко',
-  ],
-  female: [
-    'Надя Бєлкіна', 'Саша Яшина', 'Маша Громова', 'Ірина Коваль',
-    'Оля Петренко', 'Юля Сидоренко', 'Аня Лисенко', 'Катя Бойко',
-    'Даша Коваленко', 'Віка Мороз',
-  ],
+export type SupportedWorkerLocale = 'en';
+
+interface WorkerNamePool {
+  male: string[];
+  female: string[];
+}
+
+export const WORKER_NAME_POOLS: Record<SupportedWorkerLocale, WorkerNamePool> = {
+  en: {
+    male: [
+      'Cole Nichols', 'Dean Grover', 'Mike Shevchuk', 'Andrew Simmons',
+      'Van Weiner', 'Oliver Craig', 'Terry Miller', 'Bo Tucker',
+      'Roman Bond', 'Gregory Ivens',
+    ],
+    female: [
+      'Nadia Belkin', 'Sasha Yashin', 'Mary Grover', 'Irene Cole',
+      'Olive Peters', 'Julia Sidon', 'Anna Foxley', 'Kate Boyko',
+      'Dasha Cole', 'Vicky Frost',
+    ],
+  },
 };
+
+const DEFAULT_WORKER_LOCALE: SupportedWorkerLocale = 'en';
 
 export const HAIR_COLORS = [
   '#5C3A22', '#E0A93C', '#C9923A', '#4A3322',
   '#6B4A2E', '#7A5430', '#D8A24A', '#B5763A',
 ];
 
-export function generateRandomWorkers(count: number, config: GameConfig): Worker[] {
+export function generateRandomWorkers(
+  count: number,
+  config: GameConfig,
+  locale: SupportedWorkerLocale = DEFAULT_WORKER_LOCALE,
+): Worker[] {
   const floorTypeKeys = Object.keys(config.floorTypes);
   const workers: Worker[] = [];
   const usedNames = new Set<string>();
+  const pool = WORKER_NAME_POOLS[locale];
 
   for (let i = 0; i < count; i++) {
     const female = Math.random() < 0.5;
-    const namePool = female ? WORKER_NAMES.female : WORKER_NAMES.male;
+    const namePool = female ? pool.female : pool.male;
     let name: string;
     do {
       name = namePool[Math.floor(Math.random() * namePool.length)];

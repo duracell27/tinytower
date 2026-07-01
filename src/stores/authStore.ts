@@ -1,6 +1,24 @@
 import { create } from 'zustand';
 import { createMMKV } from 'react-native-mmkv';
+import i18n from '../i18n';
 import { api } from '../services/api';
+
+type GuestNameLocale = 'en';
+
+const GUEST_NAME_POOLS: Record<GuestNameLocale, { adjectives: string[]; nouns: string[] }> = {
+  en: {
+    adjectives: ['Bold', 'Cheerful', 'Swift', 'Wise', 'Lucky'],
+    nouns: ['Builder', 'Architect', 'Owner', 'Foreman', 'Creator'],
+  },
+};
+
+function currentGuestNameLocale(): GuestNameLocale {
+  return 'en';
+  // Widen this once a second language is supported: return the app's
+  // current i18n language if it's a supported GuestNameLocale, else 'en'.
+}
+
+void i18n; // referenced above for the future per-language lookup
 
 interface PlayerInfo {
   id: string;
@@ -102,10 +120,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   enterAsGuest: () => {
-    const adjectives = ['Сміливий', 'Веселий', 'Швидкий', 'Мудрий', 'Вдалий'];
-    const nouns = ['Будівник', 'Архітектор', 'Власник', 'Майстер', 'Творець'];
-    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const pool = GUEST_NAME_POOLS[currentGuestNameLocale()];
+    const adj = pool.adjectives[Math.floor(Math.random() * pool.adjectives.length)];
+    const noun = pool.nouns[Math.floor(Math.random() * pool.nouns.length)];
     const guestPlayer: PlayerInfo = {
       id: `guest_${Date.now()}`,
       email: '',
