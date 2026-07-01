@@ -13,6 +13,7 @@ import {
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 
 interface LoginScreenProps {
@@ -46,6 +47,7 @@ function GoogleIcon() {
 }
 
 export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: LoginScreenProps) {
+  const { t } = useTranslation('auth');
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -60,17 +62,17 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
     setError('');
 
     if (!email.trim() || !password.trim()) {
-      setError('Заповніть всі поля');
+      setError(t('login.errors.fillAllFields'));
       return;
     }
 
     if (!isLogin && !playerName.trim()) {
-      setError("Введіть ім'я гравця");
+      setError(t('login.errors.enterPlayerName'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Пароль має бути не менше 6 символів');
+      setError(t('login.errors.passwordTooShort'));
       return;
     }
 
@@ -82,7 +84,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
       }
       onSuccess();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Щось пішло не так';
+      const msg = e instanceof Error ? e.message : t('login.errors.somethingWentWrong');
       setError(msg);
     }
   };
@@ -132,12 +134,12 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
           <View style={styles.card}>
             {/* Title */}
             <Text style={styles.cardTitle}>
-              {isLogin ? 'З поверненням!' : 'Створіть акаунт'}
+              {isLogin ? t('login.welcomeBack.title') : t('login.createAccount.title')}
             </Text>
             <Text style={styles.cardSubtitle}>
               {isLogin
-                ? 'Увійдіть, щоб продовжити будувати свою вежу'
-                : 'Збережіть прогрес і грайте на всіх пристроях'}
+                ? t('login.welcomeBack.subtitle')
+                : t('login.createAccount.subtitle')}
             </Text>
 
             {/* Tabs */}
@@ -147,7 +149,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                 style={[styles.tab, isLogin && styles.tabActive]}
               >
                 <Text style={[styles.tabText, isLogin && styles.tabTextActive]}>
-                  Вхід
+                  {t('login.tabs.login')}
                 </Text>
               </Pressable>
               <Pressable
@@ -155,7 +157,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                 style={[styles.tab, !isLogin && styles.tabActive]}
               >
                 <Text style={[styles.tabText, !isLogin && styles.tabTextActive]}>
-                  Реєстрація
+                  {t('login.tabs.register')}
                 </Text>
               </Pressable>
             </View>
@@ -170,10 +172,10 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
             {/* Player name (register only) */}
             {!isLogin && (
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>{"Ім'я гравця"}</Text>
+                <Text style={styles.label}>{t('login.labels.playerName')}</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Як до вас звертатися?"
+                  placeholder={t('login.placeholders.playerName')}
                   placeholderTextColor="#B7B3A2"
                   value={playerName}
                   onChangeText={setPlayerName}
@@ -185,7 +187,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
             {/* Email */}
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Ел. пошта</Text>
+              <Text style={styles.label}>{t('login.labels.email')}</Text>
               <TextInput
                 style={styles.input}
                 placeholder="you@example.com"
@@ -200,11 +202,11 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
             {/* Password */}
             <View style={[styles.fieldGroup, { marginBottom: 10 }]}>
-              <Text style={styles.label}>Пароль</Text>
+              <Text style={styles.label}>{t('login.labels.password')}</Text>
               <View style={styles.passwordWrap}>
                 <TextInput
                   style={[styles.input, { paddingRight: 48 }]}
-                  placeholder="Мінімум 6 символів"
+                  placeholder={t('login.placeholders.password')}
                   placeholderTextColor="#B7B3A2"
                   secureTextEntry={!showPassword}
                   value={password}
@@ -226,7 +228,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
             {isLogin ? (
               <View style={styles.forgotWrap}>
                 <Pressable>
-                  <Text style={styles.forgotText}>Забули пароль?</Text>
+                  <Text style={styles.forgotText}>{t('login.forgotPassword')}</Text>
                 </Pressable>
               </View>
             ) : (
@@ -235,10 +237,10 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                   <View style={styles.checkmark} />
                 </View>
                 <Text style={styles.checkboxText}>
-                  {'Я приймаю '}
-                  <Text style={styles.checkboxLink}>Умови використання</Text>
-                  {' та '}
-                  <Text style={styles.checkboxLink}>Політику конфіденційності</Text>
+                  {t('login.terms.accept')}
+                  <Text style={styles.checkboxLink}>{t('login.terms.termsOfUse')}</Text>
+                  {t('login.terms.and')}
+                  <Text style={styles.checkboxLink}>{t('login.terms.privacyPolicy')}</Text>
                 </Text>
               </View>
             )}
@@ -253,7 +255,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                   <ActivityIndicator color="#fff" size="small" />
                 ) : (
                   <Text style={styles.submitText}>
-                    {isLogin ? 'Увійти' : 'Створити акаунт'}
+                    {isLogin ? t('login.submit.login') : t('login.submit.createAccount')}
                   </Text>
                 )}
               </LinearGradient>
@@ -262,7 +264,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
             {/* Divider */}
             <View style={styles.dividerRow}>
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>або</Text>
+              <Text style={styles.dividerText}>{t('common:actions.or')}</Text>
               <View style={styles.dividerLine} />
             </View>
 

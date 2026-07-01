@@ -13,6 +13,7 @@ import {
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
 
@@ -48,6 +49,7 @@ function PlayerAvatar({ name, size = 36 }: { name: string; size?: number }) {
 }
 
 export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: WelcomeScreenProps) {
+  const { t } = useTranslation('auth');
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const lastPlayer = useAuthStore((s) => s.lastPlayer);
   const quickLogin = useAuthStore((s) => s.quickLogin);
@@ -85,13 +87,13 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
   };
 
   const handlePasswordSubmit = async () => {
-    if (!password.trim()) { setError('Введіть пароль'); return; }
+    if (!password.trim()) { setError(t('welcome.errors.enterPassword')); return; }
     try {
       await quickLogin(password);
       setShowPasswordPrompt(false);
       onPlay();
     } catch {
-      setError('Невірний пароль');
+      setError(t('welcome.errors.wrongPassword'));
     }
   };
 
@@ -127,7 +129,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       <View style={styles.bubbleWrapper}>
         <View style={styles.bubble}>
           <Text style={styles.bubbleText}>
-            {'Будуй вище,\nзаробляй більше  '}
+            {t('welcome.bubble')}
             <View style={styles.bubbleCoinInline} />
           </Text>
           <View style={styles.bubbleTail} />
@@ -155,7 +157,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
             </View>
             <View>
               <Text style={styles.chipValue}>{floorCount}</Text>
-              <Text style={styles.floorsLabel}>поверхи</Text>
+              <Text style={styles.floorsLabel}>{t('welcome.chips.floorsLabel')}</Text>
             </View>
           </View>
         </View>
@@ -180,7 +182,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
 
             <TextInput
               style={styles.promptInput}
-              placeholder="Пароль"
+              placeholder={t('welcome.passwordPrompt.placeholder')}
               placeholderTextColor="#B7B3A2"
               secureTextEntry
               value={password}
@@ -195,13 +197,13 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
               <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.promptSubmit}>
                 {isLoading
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.promptSubmitText}>Увійти</Text>
+                  : <Text style={styles.promptSubmitText}>{t('common:actions.login')}</Text>
                 }
               </LinearGradient>
             </Pressable>
 
             <Pressable onPress={() => setShowPasswordPrompt(false)} style={styles.promptCancel}>
-              <Text style={styles.promptCancelText}>Скасувати</Text>
+              <Text style={styles.promptCancelText}>{t('common:actions.cancel')}</Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -221,7 +223,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
               <View style={styles.continueMeta}>
                 <Text style={styles.continueName}>{activePlayerName}</Text>
                 <Text style={styles.continueLabel}>
-                  {isAuthenticated ? 'Продовжити' : 'Продовжити гру'}
+                  {isAuthenticated ? t('welcome.continueLabel.authenticated') : t('welcome.continueLabel.hasAccount')}
                 </Text>
               </View>
               {hasLastAccount && (
@@ -247,13 +249,13 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
           >
             <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.playButtonGradient}>
               <View style={styles.playTriangle} />
-              <Text style={styles.playButtonText}>Почати будувати!</Text>
+              <Text style={styles.playButtonText}>{t('welcome.playButton')}</Text>
             </LinearGradient>
           </Pressable>
         )}
 
         <View style={styles.orContainer}>
-          <Text style={styles.orText}>або</Text>
+          <Text style={styles.orText}>{t('common:actions.or')}</Text>
         </View>
 
         <View style={styles.secondaryRow}>
@@ -262,27 +264,27 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
               <Circle cx={12} cy={8} r={4} />
               <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </Svg>
-            <Text style={styles.secondaryLabel}>Увійти</Text>
+            <Text style={styles.secondaryLabel}>{t('common:actions.login')}</Text>
           </Pressable>
           <Pressable onPress={onRegister} style={styles.secondaryButton}>
             <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="#2C4A2A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <Path d="M12 5v14M5 12h14" />
             </Svg>
-            <Text style={styles.secondaryLabel}>Реєстрація</Text>
+            <Text style={styles.secondaryLabel}>{t('common:actions.register')}</Text>
           </Pressable>
         </View>
 
         {isFirstTime && (
           <Text style={styles.guestNote}>
-            Прогрес збережеться після реєстрації
+            {t('welcome.guestNote')}
           </Text>
         )}
 
         <Text style={styles.termsText}>
-          {'Продовжуючи, ви приймаєте наші '}
-          <Text style={styles.termsUnderline}>Умови</Text>
-          {' та '}
-          <Text style={styles.termsUnderline}>Політику</Text>
+          {t('welcome.terms.continuingText')}
+          <Text style={styles.termsUnderline}>{t('welcome.terms.terms')}</Text>
+          {t('welcome.terms.and')}
+          <Text style={styles.termsUnderline}>{t('welcome.terms.policy')}</Text>
         </Text>
       </View>
     </View>
