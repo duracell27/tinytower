@@ -1,1 +1,5 @@
-{}
+{
+  "floorCard": {
+    "productFallback": "Product {{index}}"
+  }
+}

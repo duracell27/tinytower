@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
@@ -14,7 +15,6 @@ export interface FloorColorScheme {
   bodyColor: string;
   cardBg: string;
   nameColor: string;
-  displayName: string;
   stars: number;
 }
 
@@ -25,7 +25,6 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     bodyColor: '#D2EAB4',
     cardBg: '#F2F8E9',
     nameColor: '#5B963A',
-    displayName: 'КОНДИТЕРСЬКА',
     stars: 0,
   },
   3: {
@@ -34,7 +33,6 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     bodyColor: '#BEE6DD',
     cardBg: '#EBF7F3',
     nameColor: '#2E9384',
-    displayName: 'ПРАЛЬНЯ',
     stars: 0,
   },
   4: {
@@ -43,27 +41,26 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     bodyColor: '#F7E4AC',
     cardBg: '#FDF8E9',
     nameColor: '#B5871E',
-    displayName: "КАВ'ЯРНЯ",
     stars: 0,
   },
 };
 
-// Product names and images for each floor's 3 slots
-const PRODUCT_IMAGES: Record<number, { title: string; image: ImageSource }[]> = {
+// Product images for each floor's 3 slots (display names come from the gameContent i18n namespace)
+const PRODUCT_IMAGES: Record<number, { image: ImageSource }[]> = {
   2: [
-    { title: 'Булки', image: require('../../assets/products/bulky.png') },
-    { title: 'Пирожені', image: require('../../assets/products/cupcake.png') },
-    { title: 'Торти', image: require('../../assets/products/cake.png') },
+    { image: require('../../assets/products/bulky.png') },
+    { image: require('../../assets/products/cupcake.png') },
+    { image: require('../../assets/products/cake.png') },
   ],
   3: [
-    { title: 'Прання', image: require('../../assets/products/wash.png') },
-    { title: 'Сушка', image: require('../../assets/products/dry.png') },
-    { title: 'Відбілювання', image: require('../../assets/products/bleach.png') },
+    { image: require('../../assets/products/wash.png') },
+    { image: require('../../assets/products/dry.png') },
+    { image: require('../../assets/products/bleach.png') },
   ],
   4: [
-    { title: 'Кава', image: require('../../assets/products/coffee.png') },
-    { title: 'Млинці', image: require('../../assets/products/pancake.png') },
-    { title: 'Десерти', image: require('../../assets/products/dessert.png') },
+    { image: require('../../assets/products/coffee.png') },
+    { image: require('../../assets/products/pancake.png') },
+    { image: require('../../assets/products/dessert.png') },
   ],
 };
 
@@ -98,6 +95,8 @@ interface FloorCardProps {
 }
 
 function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
+  const { t } = useTranslation('hotel');
+  const { t: tContent } = useTranslation('gameContent');
   const floor = useFloor(floorId);
   const workers = useGameStore((s) => s.workers);
   const scheme = FLOOR_SCHEMES[floorId] || FLOOR_SCHEMES[1];
@@ -105,6 +104,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const availableTypes = floorConfig?.availableTypes ?? [];
   const products = PRODUCT_IMAGES[floorId] || PRODUCT_IMAGES[1];
   const discount = getFloorDiscount(workers, floorId);
+  const floorName = tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
 
   return (
     <View style={styles.floorContainer}>
@@ -117,7 +117,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
           <Text style={styles.floorNumberText}>{floorId}</Text>
         </View>
         <Text style={[styles.floorName, { textShadowColor: scheme.headerShadowColor }]}>
-          {scheme.displayName}
+          {floorName}
         </Text>
         <View style={styles.headerRight}>
           {discount > 0 && (
@@ -144,7 +144,9 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
               floorAvailableTypes={availableTypes}
               cardBg={scheme.cardBg}
               nameColor={scheme.nameColor}
-              productTitle={products[idx]?.title ?? `Товар ${idx + 1}`}
+              productTitle={tContent(`productionTypes.${availableTypes[idx]}.displayName`, {
+                defaultValue: availableTypes[idx] ?? t('floorCard.productFallback', { index: idx + 1 }),
+              })}
               productImage={products[idx]?.image ?? products[0].image}
               worker={slotWorker}
               floorDiscount={discount}
