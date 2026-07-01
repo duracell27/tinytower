@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
 import TopBar from '../../src/components/TopBar';
 import FloorCard from '../../src/components/FloorCard';
@@ -44,6 +45,7 @@ function keyExtractor(item: FloorItem): string {
 }
 
 export default function GameScreen() {
+  const { t } = useTranslation('tabs');
   const balance = useBalance();
   const now = useGameClock(1000);
   const playerLevel = useGameStore((s) => s.playerLevel);
@@ -57,7 +59,7 @@ export default function GameScreen() {
   const lobbyCapacity = useGameStore((s) => s.lobbyCapacity);
   const spawnVisitor = useGameStore((s) => s.spawnVisitor);
   const player = useAuthStore((s) => s.player);
-  const playerName = player?.playerName ?? 'Гравець';
+  const playerName = player?.playerName ?? t('profile.guestFallbackName');
   const initial = playerName.charAt(0).toUpperCase();
 
   const [hotelOpen, setHotelOpen] = useState(false);
