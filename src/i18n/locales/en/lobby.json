@@ -1,1 +1,72 @@
-{}
+{
+  "header": {
+    "title": "Lobby",
+    "subtitle": "Elevator · guest delivery"
+  },
+  "stats": {
+    "waiting": "Waiting",
+    "newGuest": "New guest",
+    "full": "Full"
+  },
+  "roles": {
+    "guest": "Guest",
+    "businessman": "Businessman",
+    "deliverer": "Deliverer",
+    "seller": "Seller"
+  },
+  "visitor": {
+    "thankYou": "Thank you! 🎉",
+    "floorSuffix": " · floor {{floor}}",
+    "arrivedStatus": "Floor {{floor}} · arrived",
+    "elevatorStatus": "Elevator on floor {{floor}}"
+  },
+  "empty": {
+    "title": "Lobby is empty",
+    "subtitle": "New visitors will arrive soon"
+  },
+  "actions": {
+    "raiseToFloor": "Raise to floor {{floor}}",
+    "checkIntoHotel": "Check into hotel",
+    "collect": "Collect",
+    "collectTip": "Collect Tip",
+    "deliverAll": "Deliver All For"
+  },
+  "dailyTips": {
+    "label": "Tips collected today",
+    "claimReward": "Claim Plan Reward",
+    "claimed": "Plan completed · reward claimed"
+  },
+  "dailyGems": {
+    "label": "Gems today"
+  },
+  "elevator": {
+    "upgradeEntry": "Upgrade Elevator",
+    "upgradeCaption": "Upgrading the elevator speeds up trips and increases tips",
+    "backToElevator": "Back to Elevator",
+    "cardTitle": "Elevator: ",
+    "capacityPerTrip": "{{level}} fl. / trip",
+    "description": "Each elevator upgrade speeds up trips and increases guest tips",
+    "upgradeFor": "Upgrade For",
+    "maxLevel": "Max Level!"
+  },
+  "lobbyUpgrade": {
+    "cardTitle": "Lobby",
+    "seats": "{{count}} seats",
+    "description": "A bigger lobby holds more visitors waiting for the elevator",
+    "upgradeForSeats": "+{{count}} seats for",
+    "maxLevel": "Max Level!"
+  },
+  "hotelFullPopup": {
+    "title": "Hotel is full",
+    "subtitle": "No room for the new guest — they left",
+    "goToHotel": "Go to Hotel",
+    "dismiss": "Dismiss"
+  },
+  "newWorkerPopup": {
+    "title": "New Worker!",
+    "meta": "Level {{level}} · {{job}}",
+    "waitingInHotel": "Waiting in the hotel",
+    "findJobNow": "Find a Job Now",
+    "later": "Later"
+  }
+}

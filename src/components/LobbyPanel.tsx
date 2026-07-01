@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   Text,
@@ -38,13 +39,6 @@ const ROLE_COLORS: Record<string, string> = {
   businessman: '#C28A22',
   deliverer: '#2E78B5',
   seller: '#4E9A2E',
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  guest: 'Гість',
-  businessman: 'Бізнесмен',
-  deliverer: 'Доставщик',
-  seller: 'Продавець',
 };
 
 function computeDeliverAllSummary(
@@ -431,6 +425,8 @@ interface LobbyPanelProps {
 }
 
 export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanelProps) {
+  const { t } = useTranslation('lobby');
+  const { t: tContent } = useTranslation('gameContent');
   const [view, setView] = useState<'operate' | 'upgrade'>('operate');
   const [deliverSummary, setDeliverSummary] = useState<DeliverAllSummary | null>(null);
   const [newWorkerPopup, setNewWorkerPopup] = useState<Worker | null>(null);
@@ -473,7 +469,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
-  const timerText = isFull ? 'Повний' : `${minutes}:${String(seconds).padStart(2, '0')}`;
+  const timerText = isFull ? t('stats.full') : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
   // Daily tips
   const dailyTipsTarget = gameConfig.lobbyConfig.dailyTipsTarget;
@@ -580,7 +576,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         ? Math.min(elevatorFloor + elevatorLevel, activeVisitor.targetFloor)
         : elevatorFloor + elevatorLevel;
       return {
-        label: `Підняти на ${nextFloor} поверх`,
+        label: t('actions.raiseToFloor', { floor: nextFloor }),
         colors: ['#72C24F', '#5BA63C'] as [string, string],
         shadowColor: '#4A8A2E',
         textColor: '#fff',
@@ -592,7 +588,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     // Arrived — role/targetFloor are always set here (assigned on first lift)
     if (activeVisitor.role === 'guest' && activeVisitor.targetFloor === 1) {
       return {
-        label: 'Прийняти до готелю',
+        label: t('actions.checkIntoHotel'),
         amount: null as string | null,
         colors: ['#F6C642', '#E5A41C'] as [string, string],
         shadowColor: '#BC820F',
@@ -604,7 +600,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
     if (activeVisitor.role === 'businessman' && dailyGemsCollected < dailyGemLimit) {
       return {
-        label: 'Отримати',
+        label: t('actions.collect'),
         amount: '+1' as string | null,
         colors: ['#52A6E2', '#3B8BCB'] as [string, string],
         shadowColor: '#2E72A8',
@@ -616,7 +612,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
     const tip = calculateTip(activeVisitor.role ?? 'guest', activeVisitor.targetFloor ?? 1, elevatorLevel, gameConfig);
     return {
-      label: 'Отримати чайові',
+      label: t('actions.collectTip'),
       amount: `+${tip}` as string | null,
       colors: ['#F6C642', '#E5A41C'] as [string, string],
       shadowColor: '#BC820F',
@@ -656,8 +652,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <ElevatorIcon size={20} />
                     </View>
                     <View>
-                      <Text style={styles.titleText}>Вестибюль</Text>
-                      <Text style={styles.subtitleText}>Ліфт · доставка гостей</Text>
+                      <Text style={styles.titleText}>{t('header.title')}</Text>
+                      <Text style={styles.subtitleText}>{t('header.subtitle')}</Text>
                     </View>
                   </View>
 
@@ -686,12 +682,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <View style={styles.statsRow}>
                   <View style={styles.statTile}>
                     <PersonIcon size={14} />
-                    <Text style={styles.statLabel}>Очікують</Text>
+                    <Text style={styles.statLabel}>{t('stats.waiting')}</Text>
                     <Text style={styles.statValue}>{lobbyVisitors.length} / {lobbyCapacity}</Text>
                   </View>
                   <View style={styles.statTile}>
                     <ClockIcon size={14} />
-                    <Text style={styles.statLabel}>Новий гість</Text>
+                    <Text style={styles.statLabel}>{t('stats.newGuest')}</Text>
                     <Text style={[styles.statValue, { fontVariant: ['tabular-nums'] as any }]}>{timerText}</Text>
                   </View>
                 </View>
@@ -725,13 +721,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                           <View style={styles.visitorTextCol}>
                             <View style={styles.speechBubble}>
                               {arrived ? (
-                                <Text style={styles.speechArrivedText}>Дякую! 🎉</Text>
+                                <Text style={styles.speechArrivedText}>{t('visitor.thankYou')}</Text>
                               ) : (
                                 <Text style={styles.speechText}>
                                   <Text style={[styles.speechRoleLabel, { color: ROLE_COLORS[activeVisitor.role ?? 'guest'] }]}>
-                                    {ROLE_LABELS[activeVisitor.role ?? 'guest']}
+                                    {t(`roles.${activeVisitor.role ?? 'guest'}`)}
                                   </Text>
-                                  {` · ${activeVisitor.targetFloor ?? '?'} поверх`}
+                                  {t('visitor.floorSuffix', { floor: activeVisitor.targetFloor ?? '?' })}
                                 </Text>
                               )}
                             </View>
@@ -742,8 +738,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                               ]} />
                               <Text style={styles.statusChipText}>
                                 {arrived
-                                  ? `Поверх ${activeVisitor.targetFloor} · прибули`
-                                  : `Ліфт на поверсі ${elevatorFloor}`}
+                                  ? t('visitor.arrivedStatus', { floor: activeVisitor.targetFloor })
+                                  : t('visitor.elevatorStatus', { floor: elevatorFloor })}
                               </Text>
                             </View>
                           </View>
@@ -790,8 +786,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     /* Empty state */
                     <View style={styles.emptyState}>
                       <EmptyElevatorIcon />
-                      <Text style={styles.emptyTitle}>Вестибюль порожній</Text>
-                      <Text style={styles.emptySubtitle}>Нові відвідувачі скоро прийдуть</Text>
+                      <Text style={styles.emptyTitle}>{t('empty.title')}</Text>
+                      <Text style={styles.emptySubtitle}>{t('empty.subtitle')}</Text>
                     </View>
                   )}
                 </View>
@@ -810,7 +806,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     style={({ pressed }) => [styles.deliverAllCard, pressed && { opacity: 0.8 }]}
                   >
                     <PeopleGroupIcon size={20} color="#5A6478" />
-                    <Text style={styles.deliverAllText}>Розвезти всіх за</Text>
+                    <Text style={styles.deliverAllText}>{t('actions.deliverAll')}</Text>
                     <GemIcon size={14} />
                     <Text style={styles.deliverAllGemText}>1</Text>
                   </Pressable>
@@ -819,7 +815,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 {/* Daily tips card */}
                 <View style={styles.dailyTipsCard}>
                   <View style={styles.dailyTipsHeader}>
-                    <Text style={styles.dailyTipsLabel}>Сьогодні отримано чайових</Text>
+                    <Text style={styles.dailyTipsLabel}>{t('dailyTips.label')}</Text>
                     <View style={styles.dailyTipsValue}>
                       <CoinDot size={12} />
                       <Text style={styles.dailyTipsAmount}>{formatCoins(dailyTips)}</Text>
@@ -850,7 +846,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         style={styles.rewardButtonGradient}
                       >
                         <GiftIcon size={16} color="#fff" />
-                        <Text style={styles.rewardButtonText}>Отримати винагороду за план</Text>
+                        <Text style={styles.rewardButtonText}>{t('dailyTips.claimReward')}</Text>
                         <GemIcon size={14} />
                         <Text style={styles.rewardGemCount}>{dailyTipsReward}</Text>
                       </LinearGradient>
@@ -861,7 +857,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   {dailyTipsRewardClaimed && (
                     <View style={styles.claimedStrip}>
                       <CheckIcon size={14} color="#2592AB" />
-                      <Text style={styles.claimedText}>План виконано · винагороду отримано</Text>
+                      <Text style={styles.claimedText}>{t('dailyTips.claimed')}</Text>
                     </View>
                   )}
                 </View>
@@ -869,7 +865,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 {/* Daily gems card */}
                 <View style={styles.dailyGemsCard}>
                   <GemIcon size={14} />
-                  <Text style={styles.dailyGemsLabel}>Діаманти сьогодні</Text>
+                  <Text style={styles.dailyGemsLabel}>{t('dailyGems.label')}</Text>
                   <Text style={styles.dailyGemsValue}>
                     {dailyGemsCollected} / {dailyGemLimit}
                   </Text>
@@ -888,12 +884,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     style={styles.upgradeEntryGradient}
                   >
                     <UploadIcon />
-                    <Text style={styles.upgradeEntryText}>Покращити ліфт</Text>
+                    <Text style={styles.upgradeEntryText}>{t('elevator.upgradeEntry')}</Text>
                   </LinearGradient>
                   <View style={styles.upgradeEntryShadow} />
                 </Pressable>
                 <Text style={styles.upgradeCaption}>
-                  Покращення ліфта прискорює підйом і збільшує чайові
+                  {t('elevator.upgradeCaption')}
                 </Text>
               </>
             ) : (
@@ -902,17 +898,17 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 {/* Back button */}
                 <Pressable onPress={() => setView('operate')} style={styles.backButton}>
                   <ChevronLeftIcon />
-                  <Text style={styles.backButtonText}>Назад до ліфта</Text>
+                  <Text style={styles.backButtonText}>{t('elevator.backToElevator')}</Text>
                 </Pressable>
 
                 {/* Elevator upgrade card */}
                 <View style={styles.card}>
                   <View style={styles.upgradeCardHeader}>
                     <View style={styles.upgradeCardTitleRow}>
-                      <Text style={styles.upgradeCardTitle}>Ліфт: </Text>
+                      <Text style={styles.upgradeCardTitle}>{t('elevator.cardTitle')}</Text>
                       <Text style={styles.upgradeCardLevel}>L-{elevatorLevel}</Text>
                     </View>
-                    <Text style={styles.upgradeCardCapacity}>{elevatorLevel} пов. / підйом</Text>
+                    <Text style={styles.upgradeCardCapacity}>{t('elevator.capacityPerTrip', { level: elevatorLevel })}</Text>
                   </View>
 
                   {/* Progress */}
@@ -933,7 +929,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <ElevatorIcon size={22} color="#5BA63C" />
                     </View>
                     <Text style={styles.upgradeDesc}>
-                      Кожне покращення ліфта прискорює підйом і збільшує чайові гостей
+                      {t('elevator.description')}
                     </Text>
                   </View>
 
@@ -949,7 +945,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         colors={gems >= elevatorUpgradeCost ? ['#72C24F', '#5BA63C'] : ['#B7BDC8', '#A2A9B6']}
                         style={styles.upgradeButtonGradient}
                       >
-                        <Text style={styles.upgradeButtonText}>Покращити за</Text>
+                        <Text style={styles.upgradeButtonText}>{t('elevator.upgradeFor')}</Text>
                         <GemIcon size={14} />
                         <Text style={styles.upgradeButtonText}>{elevatorUpgradeCost}</Text>
                       </LinearGradient>
@@ -961,7 +957,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   ) : (
                     <View style={styles.maxLevelStrip}>
                       <CheckIcon size={14} color="#5BA63C" />
-                      <Text style={[styles.claimedText, { color: '#5BA63C' }]}>Максимальний рівень!</Text>
+                      <Text style={[styles.claimedText, { color: '#5BA63C' }]}>{t('elevator.maxLevel')}</Text>
                     </View>
                   )}
                 </View>
@@ -969,8 +965,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 {/* Lobby upgrade card */}
                 <View style={styles.card}>
                   <View style={styles.upgradeCardHeader}>
-                    <Text style={styles.upgradeCardTitle}>Вестибюль</Text>
-                    <Text style={[styles.upgradeCardCapacity, { color: '#2592AB' }]}>{lobbyCapacity} місць</Text>
+                    <Text style={styles.upgradeCardTitle}>{t('lobbyUpgrade.cardTitle')}</Text>
+                    <Text style={[styles.upgradeCardCapacity, { color: '#2592AB' }]}>{t('lobbyUpgrade.seats', { count: lobbyCapacity })}</Text>
                   </View>
 
                   {/* Progress */}
@@ -991,7 +987,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <PersonIcon size={22} color="#3B8BCB" />
                     </View>
                     <Text style={styles.upgradeDesc}>
-                      Більший вестибюль вміщує більше відвідувачів, що чекають на підйом
+                      {t('lobbyUpgrade.description')}
                     </Text>
                   </View>
 
@@ -1007,7 +1003,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         colors={gems >= lobbyUpgradeCost ? ['#52A6E2', '#3B8BCB'] : ['#B7BDC8', '#A2A9B6']}
                         style={styles.upgradeButtonGradient}
                       >
-                        <Text style={styles.upgradeButtonText}>+{lobbyUpgradeSeats} місць за</Text>
+                        <Text style={styles.upgradeButtonText}>{t('lobbyUpgrade.upgradeForSeats', { count: lobbyUpgradeSeats })}</Text>
                         <GemIcon size={14} />
                         <Text style={styles.upgradeButtonText}>{lobbyUpgradeCost}</Text>
                       </LinearGradient>
@@ -1019,7 +1015,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   ) : (
                     <View style={styles.maxLevelStrip}>
                       <CheckIcon size={14} color="#2592AB" />
-                      <Text style={[styles.claimedText, { color: '#2592AB' }]}>Максимальний рівень!</Text>
+                      <Text style={[styles.claimedText, { color: '#2592AB' }]}>{t('lobbyUpgrade.maxLevel')}</Text>
                     </View>
                   )}
                 </View>
@@ -1036,8 +1032,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <HotelIcon size={32} color="#A8475F" />
               </View>
               <View style={popupStyles.info}>
-                <Text style={popupStyles.title}>Готель заповнений</Text>
-                <Text style={popupStyles.subtitle}>Немає місця для нового гостя — він пішов</Text>
+                <Text style={popupStyles.title}>{t('hotelFullPopup.title')}</Text>
+                <Text style={popupStyles.subtitle}>{t('hotelFullPopup.subtitle')}</Text>
               </View>
               <Pressable
                 onPress={() => {
@@ -1049,11 +1045,11 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
               >
                 <LinearGradient colors={['#C9637E', '#A8475F']} style={popupStyles.findJobGradient}>
                   <HotelIcon size={16} color="#fff" />
-                  <Text style={popupStyles.findJobText}>Перейти до готелю</Text>
+                  <Text style={popupStyles.findJobText}>{t('hotelFullPopup.goToHotel')}</Text>
                 </LinearGradient>
               </Pressable>
               <Pressable onPress={() => setHotelFullNotice(false)} style={popupStyles.dismissBtn}>
-                <Text style={popupStyles.dismissText}>Закрити</Text>
+                <Text style={popupStyles.dismissText}>{t('hotelFullPopup.dismiss')}</Text>
               </Pressable>
             </Pressable>
           </Pressable>
@@ -1067,13 +1063,15 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <WorkerAvatar worker={newWorkerPopup} size={56} />
               </View>
               <View style={popupStyles.info}>
-                <Text style={popupStyles.title}>Новий працівник!</Text>
+                <Text style={popupStyles.title}>{t('newWorkerPopup.title')}</Text>
                 <Text style={[popupStyles.name, { color: gameConfig.floorTypes[newWorkerPopup.floorType]?.shirtColor ?? '#3B8BCB' }]}>{newWorkerPopup.name}</Text>
                 <Text style={popupStyles.meta}>
-                  {'Рівень ' + newWorkerPopup.level + ' · ' +
-                    (gameConfig.productionTypes[newWorkerPopup.dreamJob]?.displayName ?? newWorkerPopup.dreamJob)}
+                  {t('newWorkerPopup.meta', {
+                    level: newWorkerPopup.level,
+                    job: tContent(`productionTypes.${newWorkerPopup.dreamJob}.displayName`, { defaultValue: newWorkerPopup.dreamJob }),
+                  })}
                 </Text>
-                <Text style={popupStyles.subtitle}>Очікує у готелі</Text>
+                <Text style={popupStyles.subtitle}>{t('newWorkerPopup.waitingInHotel')}</Text>
               </View>
               <Pressable
                 onPress={() => {
@@ -1084,11 +1082,11 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
               >
                 <LinearGradient colors={['#72C24F', '#5BA63C']} style={popupStyles.findJobGradient}>
-                  <Text style={popupStyles.findJobText}>Знайти роботу зараз</Text>
+                  <Text style={popupStyles.findJobText}>{t('newWorkerPopup.findJobNow')}</Text>
                 </LinearGradient>
               </Pressable>
               <Pressable onPress={() => setNewWorkerPopup(null)} style={popupStyles.dismissBtn}>
-                <Text style={popupStyles.dismissText}>Пізніше</Text>
+                <Text style={popupStyles.dismissText}>{t('newWorkerPopup.later')}</Text>
               </Pressable>
             </Pressable>
           </Pressable>
