@@ -21,6 +21,7 @@ model Player {
   createdAt     DateTime  @default(now())
   floors        Floor[]
   workers       Worker[]
+  tools         PlayerTools?
 }
 
 model Floor {
@@ -59,6 +60,16 @@ model Worker {
   player          Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([playerId])
+}
+
+model PlayerTools {
+  id       Int    @id @default(autoincrement())
+  playerId String @unique
+  briks    Int    @default(1)
+  glass    Int    @default(1)
+  nails    Int    @default(1)
+  screw    Int    @default(1)
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }
 
 model CommandLog {

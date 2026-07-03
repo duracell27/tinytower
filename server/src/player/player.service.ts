@@ -64,6 +64,8 @@ export class PlayerService {
         });
       }
 
+      await tx.playerTools.create({ data: { playerId: player.id } });
+
       return player;
     });
   }
