@@ -6,7 +6,6 @@ import { FlashList } from '@shopify/flash-list';
 import TopBar from '../../src/components/TopBar';
 import FloorCard from '../../src/components/FloorCard';
 import BuyFloorBanner from '../../src/components/BuyFloorBanner';
-import WarehouseSidebar from '../../src/components/WarehouseSidebar';
 import { HotelFloor, LobbyFloor } from '../../src/components/TechnicalFloor';
 import HotelPanel from '../../src/components/HotelPanel';
 import LobbyPanel from '../../src/components/LobbyPanel';
@@ -156,9 +155,7 @@ export default function GameScreen() {
               initialScrollIndex={FLOOR_LIST.length - 1}
             />
           </View>
-          <View style={styles.sideRight}>
-            <WarehouseSidebar />
-          </View>
+          <View style={styles.sideRight} />
         </View>
 
         <TopBar
@@ -202,7 +199,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sideRight: {
-    width: 50,
+    width: 0,
   },
   listContent: {
     paddingTop: 150,

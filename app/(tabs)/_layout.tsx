@@ -7,13 +7,18 @@ export default function TabsLayout() {
   return (
     <NativeTabs tintColor="#3FA535">
       <NativeTabs.Trigger name="game">
-        <NativeTabs.Trigger.Icon sf="building.columns.fill" />
+        <NativeTabs.Trigger.Icon sf="building.fill" />
         <NativeTabs.Trigger.Label>{t('labels.tower')}</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="city">
         <NativeTabs.Trigger.Icon sf="map.fill" />
         <NativeTabs.Trigger.Label>{t('labels.city')}</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="menu">
+        <NativeTabs.Trigger.Icon sf="square.grid.2x2.fill" />
+        <NativeTabs.Trigger.Label>{t('labels.menu')}</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="shop">
