@@ -10,6 +10,7 @@ import { getRevenueMultiplier } from '../../shared/engine/workerUtils';
 import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import WorkerAvatar from './WorkerAvatar';
+import { shadeColor } from '../utils/color';
 import type { Production, EffectiveStage, Worker } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
 
@@ -125,6 +126,7 @@ interface ProductionCardProps {
   productImage: ImageSource;
   worker?: Worker;
   floorDiscount?: number;
+  accentColor: string;
   onHire?: (floorId: number, slotIdx: number) => void;
 }
 
@@ -141,6 +143,7 @@ export default function ProductionCard({
   productImage,
   worker,
   floorDiscount,
+  accentColor,
   onHire,
 }: ProductionCardProps) {
   const typeConfig = production.typeId
@@ -151,6 +154,17 @@ export default function ProductionCard({
   const { effectiveStage, timeRemaining, canAct } = status;
 
   const btnConfig = BTN_COLORS[effectiveStage] || BTN_COLORS.IDLE;
+
+  // Primary (clickable) states use the floor's accent color; in-progress
+  // timer states (DELIVERING/SELLING) keep their fixed BTN_COLORS above so
+  // "processing" stays visually distinct from "your turn to tap".
+  const PRIMARY_STAGES = new Set(['EMPTY', 'IDLE', 'READY_TO_LIST', 'READY_TO_COLLECT']);
+  const isPrimaryStage = PRIMARY_STAGES.has(effectiveStage);
+  const accentBtnConfig = {
+    colors: [shadeColor(accentColor, 20), shadeColor(accentColor, -8)] as [string, string],
+    shadowColor: shadeColor(accentColor, -28),
+  };
+  const resolvedBtnConfig = isPrimaryStage ? accentBtnConfig : btnConfig;
 
   // Compute discounted buy cost
   const effectiveCost = typeConfig
@@ -230,7 +244,12 @@ export default function ProductionCard({
   // No worker: show hire design
   if (isLocked) {
     return (
-      <View style={[styles.card, { backgroundColor: cardBg }]}>
+      <LinearGradient
+        colors={[shadeColor(cardBg, 5), shadeColor(cardBg, -6)]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.card}
+      >
         <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
           {productTitle}
         </Text>
@@ -241,7 +260,7 @@ export default function ProductionCard({
               <Circle cx={12} cy={8} r={4.2} />
               <Path d="M4.5 21c0-4.2 3.4-6.8 7.5-6.8s7.5 2.6 7.5 6.8z" />
             </Svg>
-            <View style={styles.hirePlusBadge}>
+            <View style={[styles.hirePlusBadge, { backgroundColor: accentColor }]}>
               <Svg viewBox="0 0 24 24" width={9} height={9}>
                 <Path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth={3.6} strokeLinecap="round" />
               </Svg>
@@ -254,22 +273,27 @@ export default function ProductionCard({
           pressed && styles.actionButtonPressed,
         ]}>
           <LinearGradient
-            colors={BTN_COLORS.EMPTY.colors}
+            colors={[shadeColor(accentColor, 20), shadeColor(accentColor, -8)]}
             style={styles.actionButtonGradient}
           >
             <StageIcon stage={'EMPTY'} />
             <Text style={styles.actionLabel}>{t('productionCard.actions.hire')}</Text>
           </LinearGradient>
-          <View style={[styles.actionButtonShadow, { backgroundColor: BTN_COLORS.EMPTY.shadowColor }]} />
+          <View style={[styles.actionButtonShadow, { backgroundColor: shadeColor(accentColor, -28) }]} />
         </Pressable>
 
         <View style={styles.subContainer} />
-      </View>
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: cardBg }]}>
+    <LinearGradient
+      colors={[shadeColor(cardBg, 5), shadeColor(cardBg, -6)]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.card}
+    >
       {/* Title */}
       <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
         {productTitle}
@@ -283,7 +307,7 @@ export default function ProductionCard({
               <Circle cx={12} cy={8} r={4.2} />
               <Path d="M4.5 21c0-4.2 3.4-6.8 7.5-6.8s7.5 2.6 7.5 6.8z" />
             </Svg>
-            <View style={styles.hirePlusBadge}>
+            <View style={[styles.hirePlusBadge, { backgroundColor: accentColor }]}>
               <Svg viewBox="0 0 24 24" width={9} height={9}>
                 <Path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth={3.6} strokeLinecap="round" />
               </Svg>
@@ -303,7 +327,7 @@ export default function ProductionCard({
               <WorkerAvatar worker={worker} size={24} />
             </View>
             {hasMultiplier && (
-              <View style={styles.bonusBubbleAmber}>
+              <View style={[styles.bonusBubble, { backgroundColor: accentColor }]}>
                 <Text style={styles.bonusBubbleText}>×{multiplier}</Text>
               </View>
             )}
@@ -318,13 +342,13 @@ export default function ProductionCard({
         pressed && canAct && styles.actionButtonPressed,
       ]}>
         <LinearGradient
-          colors={btnConfig.colors}
+          colors={resolvedBtnConfig.colors}
           style={styles.actionButtonGradient}
         >
           <StageIcon stage={effectiveStage} />
           <Text style={styles.actionLabel}>{labelText}</Text>
         </LinearGradient>
-        <View style={[styles.actionButtonShadow, { backgroundColor: btnConfig.shadowColor }]} />
+        <View style={[styles.actionButtonShadow, { backgroundColor: resolvedBtnConfig.shadowColor }]} />
       </Pressable>
 
       {/* Sub-block: price or status */}
@@ -350,7 +374,7 @@ export default function ProductionCard({
         ) : null}
       </View>
 
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -359,15 +383,19 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     gap: 6,
-    borderRadius: 13,
+    borderRadius: 18,
     paddingTop: 8,
     paddingHorizontal: 7,
     paddingBottom: 7,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.55)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.07)',
     shadowColor: 'rgba(60,70,45,1)',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   title: {
     fontFamily: 'Fredoka_600SemiBold',
@@ -385,7 +413,7 @@ const styles = StyleSheet.create({
   hireSlot: {
     width: 54,
     height: 54,
-    borderRadius: 13,
+    borderRadius: 16,
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: 'rgba(60,70,45,0.22)',
@@ -400,7 +428,6 @@ const styles = StyleSheet.create({
     width: 17,
     height: 17,
     borderRadius: 9,
-    backgroundColor: '#5BA63C',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: 'rgba(40,90,25,1)',
@@ -412,10 +439,15 @@ const styles = StyleSheet.create({
   productImage: {
     width: 56,
     height: 56,
-    borderRadius: 11,
+    borderRadius: 14,
+    shadowColor: 'rgba(60,70,45,1)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.28,
+    shadowRadius: 3,
+    elevation: 3,
   },
   actionButton: {
-    borderRadius: 9,
+    borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
   },
@@ -522,8 +554,7 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     overflow: 'hidden',
   },
-  bonusBubbleAmber: {
-    backgroundColor: '#E89320',
+  bonusBubble: {
     borderRadius: 8,
     paddingHorizontal: 4,
     paddingVertical: 1,
