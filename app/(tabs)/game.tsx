@@ -10,6 +10,7 @@ import { HotelFloor, LobbyFloor } from '../../src/components/TechnicalFloor';
 import HotelPanel from '../../src/components/HotelPanel';
 import LobbyPanel from '../../src/components/LobbyPanel';
 import LevelUpModal from '../../src/components/LevelUpModal';
+import InsufficientResourcesModal from '../../src/components/InsufficientResourcesModal';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useGameClock } from '../../src/hooks/useGameClock';
@@ -24,6 +25,8 @@ type FloorItem =
   | { type: 'buyFloor' };
 
 const NEXT_FLOOR_NUMBER = gameConfig.floors[gameConfig.floors.length - 1].id + 1;
+const FLOOR_BUY_PRICE = 250;
+const FLOOR_BUY_CURRENCY: 'coins' | 'gems' = 'gems';
 
 const FLOOR_LIST: FloorItem[] = [
   { type: 'buyFloor' },
@@ -56,6 +59,7 @@ export default function GameScreen() {
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
+  const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
   const hotelOccupied = useGameStore((s) => s.workers.filter(w => w.assignedFloorId === null).length);
   const hotelTotal = hotelCapacity;
@@ -99,8 +103,20 @@ export default function GameScreen() {
         <View style={styles.floorWrapper}>
           <BuyFloorBanner
             nextFloorNumber={NEXT_FLOOR_NUMBER}
-            price={250}
-            currency="gems"
+            price={FLOOR_BUY_PRICE}
+            currency={FLOOR_BUY_CURRENCY}
+            onPress={() => {
+              const currentAmount = FLOOR_BUY_CURRENCY === 'gems' ? gems : balance;
+              if (currentAmount < FLOOR_BUY_PRICE) {
+                showInsufficientResources({
+                  currency: FLOOR_BUY_CURRENCY,
+                  need: FLOOR_BUY_PRICE,
+                  have: currentAmount,
+                });
+                return;
+              }
+              // TODO: actual floor purchase logic
+            }}
           />
         </View>
       );
@@ -176,6 +192,7 @@ export default function GameScreen() {
         onOpenHotel={() => { setLobbyOpen(false); setHotelOpen(true); }}
       />
       <LevelUpModal suppressWhileOpen={lobbyOpen || hotelOpen} />
+      <InsufficientResourcesModal />
     </View>
   );
 }
