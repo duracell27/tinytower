@@ -1,4 +1,4 @@
-import type { GameState, GameConfig, Command, Visitor } from '../types';
+import type { GameState, GameConfig, Command, Visitor, Worker } from '../types';
 import type { ProcessResult } from './processCommand';
 import {
   calculateTip,
@@ -31,7 +31,7 @@ export function processLobbyCommand(
     case 'lift_visitor':
       return handleLiftVisitor(state, command);
     case 'collect_tip':
-      return handleCollectTip(state, config, playerLevel, command.timestamp);
+      return handleCollectTip(state, config, playerLevel, command.timestamp, command);
     case 'deliver_all':
       return handleDeliverAll(state, config, playerLevel, command.timestamp);
     case 'upgrade_elevator':
@@ -101,6 +101,7 @@ function applyVisitorEffect(
   visitor: Visitor,
   config: GameConfig,
   playerLevel: number,
+  preGeneratedWorker?: { id: string; name: string; female: boolean; floorType: string; dreamJob: string; level: number; hairColor: string },
 ): GameState {
   const role = visitor.role ?? 'guest';
   const targetFloor = visitor.targetFloor ?? 1;
@@ -124,7 +125,8 @@ function applyVisitorEffect(
   if (role === 'guest' && targetFloor === 1) {
     const hotelOccupied = workers.filter((w) => w.assignedFloorId === null).length;
     if (hotelOccupied < state.hotelCapacity) {
-      const [newWorker] = generateRandomWorkers(1, config);
+      const workerData = preGeneratedWorker ?? generateRandomWorkers(1, config)[0];
+      const newWorker: Worker = { ...workerData, assignedFloorId: null, assignedSlotIdx: null };
       workers = [...workers, newWorker];
     }
     // Hotel full → worker leaves, no effect beyond the tip
@@ -186,6 +188,7 @@ function handleCollectTip(
   config: GameConfig,
   playerLevel: number,
   now: number,
+  command: Extract<Command, { type: 'collect_tip' }>,
 ): ProcessResult {
   if (state.lobbyVisitors.length === 0) {
     return { success: false, state, error: 'No visitors' };
@@ -194,7 +197,7 @@ function handleCollectTip(
   if (state.elevatorFloor !== active.targetFloor) {
     return { success: false, state, error: 'Elevator not at target floor' };
   }
-  let newState = applyVisitorEffect(state, active, config, playerLevel);
+  let newState = applyVisitorEffect(state, active, config, playerLevel, command.newWorker);
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
   const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
     ? now + config.lobbyConfig.visitorSpawnInterval

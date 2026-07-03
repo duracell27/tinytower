@@ -66,6 +66,15 @@ export const LiftVisitorCommandSchema = TimestampedBaseSchema.extend({
 
 export const CollectTipCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('collect_tip'),
+  newWorker: z.object({
+    id: z.string(),
+    name: z.string(),
+    female: z.boolean(),
+    floorType: z.string(),
+    dreamJob: z.string(),
+    level: z.number().int().min(1).max(9),
+    hairColor: z.string(),
+  }).optional(),
 });
 
 export const DeliverAllCommandSchema = TimestampedBaseSchema.extend({
