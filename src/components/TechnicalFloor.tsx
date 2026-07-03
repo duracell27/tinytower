@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
+import { shadeColor } from '../utils/color';
 
 const HEADER_COLORS: [string, string] = ['#C9637E', '#A8475F'];
+const HEADER_EDGE_COLOR = shadeColor(HEADER_COLORS[1], -22);
+const BODY_BG = '#FBEAEF';
 
 function StarIcon() {
   return (
@@ -39,7 +41,8 @@ export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorPro
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
-      <LinearGradient colors={HEADER_COLORS} style={styles.header}>
+      <View style={[styles.header, { backgroundColor: HEADER_COLORS[0] }]}>
+        <View style={styles.headerEdge} />
         <View style={styles.numberBadge}>
           <Text style={styles.numberText}>1</Text>
         </View>
@@ -48,9 +51,9 @@ export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorPro
           <StarIcon />
           <Text style={styles.techTagText}>{t('technicalFloor.hotel.tag')}</Text>
         </View>
-      </LinearGradient>
+      </View>
 
-      <View style={styles.body}>
+      <View style={[styles.body, { backgroundColor: BODY_BG }]}>
         <View style={styles.techContent}>
           <Image
             source={require('../../assets/img/hotel.png')}
@@ -100,7 +103,8 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, on
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
-      <LinearGradient colors={HEADER_COLORS} style={styles.header}>
+      <View style={[styles.header, { backgroundColor: HEADER_COLORS[0] }]}>
+        <View style={styles.headerEdge} />
         <View style={styles.numberBadge}>
           <Text style={styles.numberText}>0</Text>
         </View>
@@ -109,12 +113,12 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, on
           <StarIcon />
           <Text style={styles.techTagText}>{t('technicalFloor.lobby.tag')}</Text>
         </View>
-      </LinearGradient>
+      </View>
 
-      <View style={styles.body}>
+      <View style={[styles.body, { backgroundColor: BODY_BG }]}>
         <View style={styles.techContent}>
           <Image
-            source={require('../../assets/img/lobby.png')}
+            source={require('../../assets/img/reception.png')}
             style={styles.techImage}
             contentFit="contain"
           />
@@ -145,10 +149,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: 'rgba(140,50,75,1)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+    elevation: 6,
     backgroundColor: '#fff',
   },
   header: {
@@ -156,6 +160,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 31,
     paddingHorizontal: 12,
+    zIndex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  headerEdge: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: HEADER_EDGE_COLOR,
+    opacity: 0.55,
   },
   numberBadge: {
     width: 21,
@@ -200,7 +219,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   body: {
-    backgroundColor: '#FBEAEF',
     padding: 12,
     paddingTop: 10,
     paddingBottom: 10,
@@ -211,9 +229,14 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   techImage: {
-    width: 100,
-    height: 50,
+    width: 70,
+    height: 70,
     borderRadius: 10,
+    shadowColor: 'rgba(140,50,75,1)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 4,
+    elevation: 3,
   },
   techInfo: {
     flex: 1,
