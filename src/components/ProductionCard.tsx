@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -14,14 +13,14 @@ import { shadeColor } from '../utils/color';
 import type { Production, EffectiveStage, Worker } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
 
-// Button gradient and shadow configs per stage
-const BTN_COLORS: Record<string, { colors: [string, string]; shadowColor: string }> = {
-  IDLE: { colors: ['#F0895E', '#D96840'], shadowColor: '#B5512A' },
-  READY_TO_COLLECT: { colors: ['#72C24F', '#5BA63C'], shadowColor: '#4A8A2E' },
-  EMPTY: { colors: ['#72C24F', '#5BA63C'], shadowColor: '#4A8A2E' },
-  DELIVERING: { colors: ['#52A6E2', '#3B8BCB'], shadowColor: '#2C73AC' },
-  READY_TO_LIST: { colors: ['#F2AC40', '#E89320'], shadowColor: '#C9760F' },
-  SELLING: { colors: ['#9A72D6', '#8455C2'], shadowColor: '#6B41A8' },
+// Button color and shadow configs per stage
+const BTN_COLORS: Record<string, { color: string; shadowColor: string }> = {
+  IDLE: { color: '#F0895E', shadowColor: '#B5512A' },
+  READY_TO_COLLECT: { color: '#72C24F', shadowColor: '#4A8A2E' },
+  EMPTY: { color: '#72C24F', shadowColor: '#4A8A2E' },
+  DELIVERING: { color: '#52A6E2', shadowColor: '#2C73AC' },
+  READY_TO_LIST: { color: '#F2AC40', shadowColor: '#C9760F' },
+  SELLING: { color: '#9A72D6', shadowColor: '#6B41A8' },
 };
 
 function formatTime(ms: number): string {
@@ -161,7 +160,7 @@ export default function ProductionCard({
   const PRIMARY_STAGES = new Set(['EMPTY', 'IDLE', 'READY_TO_LIST', 'READY_TO_COLLECT']);
   const isPrimaryStage = PRIMARY_STAGES.has(effectiveStage);
   const accentBtnConfig = {
-    colors: [shadeColor(accentColor, 20), shadeColor(accentColor, -8)] as [string, string],
+    color: accentColor,
     shadowColor: shadeColor(accentColor, -28),
   };
   const resolvedBtnConfig = isPrimaryStage ? accentBtnConfig : btnConfig;
@@ -185,15 +184,26 @@ export default function ProductionCard({
     const store = useGameStore.getState();
     switch (effectiveStage) {
       case 'EMPTY': {
-        // Auto-select the first available type
         const typeId = floorAvailableTypes[0];
         if (typeId) {
+          const firstConfig = gameConfig.productionTypes[typeId];
+          const firstCost = firstConfig
+            ? Math.floor(firstConfig.buyCost * (1 - (floorDiscount ?? 0)))
+            : 0;
+          if (store.balance < firstCost) {
+            store.showInsufficientResources({ currency: 'coins', need: firstCost, have: store.balance });
+            return;
+          }
           store.buy(floorId, slotIdx, typeId);
         }
         break;
       }
       case 'IDLE':
         if (production.typeId) {
+          if (store.balance < effectiveCost) {
+            store.showInsufficientResources({ currency: 'coins', need: effectiveCost, have: store.balance });
+            return;
+          }
           store.buy(floorId, slotIdx, production.typeId);
         }
         break;
@@ -204,7 +214,7 @@ export default function ProductionCard({
         store.collect(floorId, slotIdx);
         break;
     }
-  }, [effectiveStage, floorId, slotIdx, floorAvailableTypes, production.typeId]);
+  }, [effectiveStage, floorId, slotIdx, floorAvailableTypes, production.typeId, effectiveCost, floorDiscount]);
 
   const { t } = useTranslation('hotel');
   const isHire = effectiveStage === 'EMPTY';
@@ -244,12 +254,7 @@ export default function ProductionCard({
   // No worker: show hire design
   if (isLocked) {
     return (
-      <LinearGradient
-        colors={[shadeColor(cardBg, 5), shadeColor(cardBg, -6)]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={styles.card}
-      >
+      <View style={[styles.card, { backgroundColor: cardBg }]}>
         <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
           {productTitle}
         </Text>
@@ -268,32 +273,25 @@ export default function ProductionCard({
           </View>
         </View>
 
-        <Pressable onPress={() => onHire?.(floorId, slotIdx)} style={({ pressed }) => [
-          styles.actionButton,
-          pressed && styles.actionButtonPressed,
-        ]}>
-          <LinearGradient
-            colors={[shadeColor(accentColor, 20), shadeColor(accentColor, -8)]}
-            style={styles.actionButtonGradient}
-          >
-            <StageIcon stage={'EMPTY'} />
-            <Text style={styles.actionLabel}>{t('productionCard.actions.hire')}</Text>
-          </LinearGradient>
-          <View style={[styles.actionButtonShadow, { backgroundColor: shadeColor(accentColor, -28) }]} />
+        <Pressable
+          onPress={() => onHire?.(floorId, slotIdx)}
+          style={({ pressed }) => [
+            styles.actionButton,
+            { backgroundColor: accentColor, shadowColor: shadeColor(accentColor, -40) },
+            pressed && styles.actionButtonPressed,
+          ]}
+        >
+          <StageIcon stage={'EMPTY'} />
+          <Text style={styles.actionLabel}>{t('productionCard.actions.hire')}</Text>
         </Pressable>
 
         <View style={styles.subContainer} />
-      </LinearGradient>
+      </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={[shadeColor(cardBg, 5), shadeColor(cardBg, -6)]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.card}
-    >
+    <View style={[styles.card, { backgroundColor: cardBg }]}>
       {/* Title */}
       <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
         {productTitle}
@@ -336,19 +334,17 @@ export default function ProductionCard({
       </View>
 
       {/* Action button */}
-      <Pressable onPress={canAct ? handleAction : undefined} style={({ pressed }) => [
-        styles.actionButton,
-        !canAct && !isTimer && styles.actionButtonDisabled,
-        pressed && canAct && styles.actionButtonPressed,
-      ]}>
-        <LinearGradient
-          colors={resolvedBtnConfig.colors}
-          style={styles.actionButtonGradient}
-        >
-          <StageIcon stage={effectiveStage} />
-          <Text style={styles.actionLabel}>{labelText}</Text>
-        </LinearGradient>
-        <View style={[styles.actionButtonShadow, { backgroundColor: resolvedBtnConfig.shadowColor }]} />
+      <Pressable
+        onPress={canAct ? handleAction : undefined}
+        style={({ pressed }) => [
+          styles.actionButton,
+          { backgroundColor: resolvedBtnConfig.color, shadowColor: resolvedBtnConfig.shadowColor },
+          !canAct && !isTimer && styles.actionButtonDisabled,
+          pressed && canAct && styles.actionButtonPressed,
+        ]}
+      >
+        <StageIcon stage={effectiveStage} />
+        <Text style={styles.actionLabel}>{labelText}</Text>
       </Pressable>
 
       {/* Sub-block: price or status */}
@@ -374,7 +370,7 @@ export default function ProductionCard({
         ) : null}
       </View>
 
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -447,31 +443,25 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   actionButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  actionButtonDisabled: {
-    opacity: 0.5,
-  },
-  actionButtonPressed: {
-    opacity: 0.85,
-  },
-  actionButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
     paddingVertical: 6,
     paddingHorizontal: 7,
-    zIndex: 1,
+    borderRadius: 12,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
   },
-  actionButtonShadow: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
+  actionButtonDisabled: {
+    opacity: 0.5,
+  },
+  actionButtonPressed: {
+    opacity: 0.9,
+    shadowOpacity: 0.1,
+    elevation: 1,
   },
   actionLabel: {
     fontFamily: 'Fredoka_600SemiBold',
