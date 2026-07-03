@@ -6,6 +6,7 @@ import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerForSlot, getFloorDiscount } from '../../shared/engine/workerUtils';
+import { shadeColor } from '../utils/color';
 import type { ImageSource } from 'expo-image';
 
 // Floor color schemes matching the design
@@ -15,32 +16,36 @@ export interface FloorColorScheme {
   bodyColor: string;
   cardBg: string;
   nameColor: string;
+  accent: string;
   stars: number;
 }
 
 export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
   2: {
-    headerColors: ['#74C44F', '#5DA83C'],
-    headerShadowColor: 'rgba(40,70,25,0.4)',
-    bodyColor: '#D2EAB4',
-    cardBg: '#F2F8E9',
-    nameColor: '#5B963A',
+    headerColors: ['#72D361', '#349523'],
+    headerShadowColor: 'rgba(0,83,0,0.4)',
+    bodyColor: '#D0EBCB',
+    cardBg: '#E8F5E5',
+    nameColor: '#117200',
+    accent: '#20810F',
     stars: 0,
   },
   3: {
-    headerColors: ['#43BCAA', '#2E9E8E'],
-    headerShadowColor: 'rgba(20,70,60,0.4)',
-    bodyColor: '#BEE6DD',
-    cardBg: '#EBF7F3',
-    nameColor: '#2E9384',
+    headerColors: ['#5C9FFF', '#1E61D0'],
+    headerShadowColor: 'rgba(0,31,142,0.4)',
+    bodyColor: '#CADDFC',
+    cardBg: '#E5EEFD',
+    nameColor: '#003EAD',
+    accent: '#0A4DBC',
     stars: 0,
   },
   4: {
-    headerColors: ['#F2B838', '#E09E10'],
-    headerShadowColor: 'rgba(120,80,0,0.4)',
-    bodyColor: '#F7E4AC',
-    cardBg: '#FDF8E9',
-    nameColor: '#B5871E',
+    headerColors: ['#FFD057', '#D09219'],
+    headerShadowColor: 'rgba(142,80,0,0.4)',
+    bodyColor: '#FCEBC9',
+    cardBg: '#FDF5E4',
+    nameColor: '#AD6F00',
+    accent: '#BC7E05',
     stars: 0,
   },
 };
@@ -113,6 +118,12 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
         colors={scheme.headerColors}
         style={styles.header}
       >
+        <LinearGradient
+          pointerEvents="none"
+          colors={['rgba(255,255,255,0.34)', 'rgba(255,255,255,0)']}
+          style={styles.headerGloss}
+        />
+        <View style={[styles.headerEdge, { backgroundColor: shadeColor(scheme.headerColors[1], -22) }]} />
         <View style={styles.floorNumberBadge}>
           <Text style={styles.floorNumberText}>{floorId}</Text>
         </View>
@@ -130,7 +141,12 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
       </LinearGradient>
 
       {/* Production cards */}
-      <View style={[styles.cardsContainer, { backgroundColor: scheme.bodyColor }]}>
+      <LinearGradient
+        colors={[shadeColor(scheme.bodyColor, -10), scheme.bodyColor]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.cardsContainer}
+      >
         {floor.productions.map((production, idx) => {
           const slotWorker = getWorkerForSlot(workers, floorId, idx);
           return (
@@ -150,11 +166,12 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
               productImage={products[idx]?.image ?? products[0].image}
               worker={slotWorker}
               floorDiscount={discount}
+              accentColor={scheme.accent}
               onHire={onHireSlot}
             />
           );
         })}
-      </View>
+      </LinearGradient>
 
     </View>
   );
@@ -165,13 +182,13 @@ export default FloorCard;
 
 const styles = StyleSheet.create({
   floorContainer: {
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: 'hidden',
     shadowColor: 'rgba(60,80,45,1)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+    elevation: 6,
     backgroundColor: '#fff',
   },
   header: {
@@ -179,6 +196,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 31,
     paddingHorizontal: 12,
+  },
+  headerGloss: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '55%',
+  },
+  headerEdge: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    opacity: 0.55,
   },
   floorNumberBadge: {
     width: 21,
@@ -221,8 +253,8 @@ const styles = StyleSheet.create({
   },
   cardsContainer: {
     flexDirection: 'row',
-    gap: 7,
-    padding: 9,
+    gap: 9,
+    padding: 11,
   },
   discountBadge: {
     backgroundColor: 'rgba(255,255,255,0.28)',
