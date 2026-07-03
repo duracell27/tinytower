@@ -454,6 +454,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const upgradeElevator = useGameStore((s) => s.upgradeElevator);
   const upgradeLobby = useGameStore((s) => s.upgradeLobby);
   const claimDailyReward = useGameStore((s) => s.claimDailyReward);
+  const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -796,7 +797,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 {lobbyVisitors.length > 0 && (
                   <Pressable
                     onPress={() => {
-                      if (gems < 1) return;
+                      if (gems < 1) {
+                        showInsufficientResources({ currency: 'gems', need: 1, have: gems });
+                        return;
+                      }
                       const summary = computeDeliverAllSummary(lobbyVisitors, elevatorLevel, dailyGemsCollected, playerLevel);
                       suppressNewWorkerPopup.current = true;
                       deliverAll();
@@ -935,7 +939,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                   {!elevatorMaxed ? (
                     <Pressable
-                      onPress={gems >= elevatorUpgradeCost ? upgradeElevator : undefined}
+                      onPress={() => {
+                        if (gems < elevatorUpgradeCost) {
+                          showInsufficientResources({ currency: 'gems', need: elevatorUpgradeCost, have: gems });
+                        } else {
+                          upgradeElevator();
+                        }
+                      }}
                       style={({ pressed }) => [
                         styles.upgradeButton,
                         pressed && gems >= elevatorUpgradeCost && { opacity: 0.85, transform: [{ translateY: 1 }] },
@@ -993,7 +1003,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                   {!lobbyMaxed ? (
                     <Pressable
-                      onPress={gems >= lobbyUpgradeCost ? upgradeLobby : undefined}
+                      onPress={() => {
+                        if (gems < lobbyUpgradeCost) {
+                          showInsufficientResources({ currency: 'gems', need: lobbyUpgradeCost, have: gems });
+                        } else {
+                          upgradeLobby();
+                        }
+                      }}
                       style={({ pressed }) => [
                         styles.upgradeButton,
                         pressed && gems >= lobbyUpgradeCost && { opacity: 0.85, transform: [{ translateY: 1 }] },
