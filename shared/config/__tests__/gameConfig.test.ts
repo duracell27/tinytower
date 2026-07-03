@@ -21,10 +21,10 @@ describe('gameConfig', () => {
   it('has 5 floor types', () => {
     expect(Object.keys(gameConfig.floorTypes)).toHaveLength(5);
     expect(gameConfig.floorTypes).toHaveProperty('green');
-    expect(gameConfig.floorTypes).toHaveProperty('teal');
-    expect(gameConfig.floorTypes).toHaveProperty('amber');
-    expect(gameConfig.floorTypes).toHaveProperty('purple');
     expect(gameConfig.floorTypes).toHaveProperty('blue');
+    expect(gameConfig.floorTypes).toHaveProperty('yellow');
+    expect(gameConfig.floorTypes).toHaveProperty('violet');
+    expect(gameConfig.floorTypes).toHaveProperty('red');
   });
 
   it('every floor has a valid floorType', () => {

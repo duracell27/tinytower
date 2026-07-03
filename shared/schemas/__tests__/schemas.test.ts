@@ -237,7 +237,7 @@ describe('WorkerSchema', () => {
       id: 'worker-2',
       name: 'Assigned Worker',
       female: true,
-      floorType: 'teal',
+      floorType: 'blue',
       dreamJob: 'wash',
       level: 3,
       hairColor: '#E0A93C',

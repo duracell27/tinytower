@@ -4,15 +4,15 @@ import type { GameConfig, GameState, Floor } from '../types';
 const rawConfig = {
   floorTypes: {
     green:  { shirtColor: '#49AA38', accent: '#20810F', dreamJobs: ['bulky', 'cupcake', 'cake'] },
-    teal:   { shirtColor: '#3376E5', accent: '#0A4DBC', dreamJobs: ['wash', 'dry', 'bleach'] },
-    amber:  { shirtColor: '#E5A72E', accent: '#BC7E05', dreamJobs: ['coffee', 'pancake', 'dessert'] },
-    purple: { shirtColor: '#9A6FD0', accent: '#7B52BC', dreamJobs: ['aroma', 'soap', 'candle'] },
-    blue:   { shirtColor: '#4C9BDD', accent: '#2E78B5', dreamJobs: ['icecream', 'shake', 'sorbet'] },
+    blue:   { shirtColor: '#3376E5', accent: '#0A4DBC', dreamJobs: ['wash', 'dry', 'bleach'] },
+    yellow: { shirtColor: '#E5A72E', accent: '#BC7E05', dreamJobs: ['coffee', 'pancake', 'dessert'] },
+    violet: { shirtColor: '#9A6FD0', accent: '#7B52BC', dreamJobs: ['aroma', 'soap', 'candle'] },
+    red:    { shirtColor: '#4C9BDD', accent: '#2E78B5', dreamJobs: ['icecream', 'shake', 'sorbet'] },
   },
   floors: [
     { id: 2, slots: 3, floorType: 'green', availableTypes: ['bulky', 'cupcake', 'cake'] },
-    { id: 3, slots: 3, floorType: 'teal',  availableTypes: ['wash', 'dry', 'bleach'] },
-    { id: 4, slots: 3, floorType: 'amber', availableTypes: ['coffee', 'pancake', 'dessert'] },
+    { id: 3, slots: 3, floorType: 'blue',  availableTypes: ['wash', 'dry', 'bleach'] },
+    { id: 4, slots: 3, floorType: 'yellow', availableTypes: ['coffee', 'pancake', 'dessert'] },
   ],
   productionTypes: {
     bulky:    { buyCost: 10,  deliveryDuration: 5000,  sellDuration: 10000, batchValue: 20 },

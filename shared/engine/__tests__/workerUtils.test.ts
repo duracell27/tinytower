@@ -17,7 +17,7 @@ describe('getWorkerMood', () => {
 
   it('returns bad for worker on wrong floor type', () => {
     const w = makeWorker({ floorType: 'green', assignedFloorId: 1, assignedSlotIdx: 0 });
-    expect(getWorkerMood(w, 'teal', 'wash')).toBe('bad');
+    expect(getWorkerMood(w, 'blue', 'wash')).toBe('bad');
   });
 
   it('returns mid for worker on matching floor type but wrong product', () => {
@@ -34,7 +34,7 @@ describe('getWorkerMood', () => {
 describe('getRevenueMultiplier', () => {
   it('returns 1.0 for wrong floor type', () => {
     const w = makeWorker({ floorType: 'green' });
-    expect(getRevenueMultiplier(w, 'teal', 'wash')).toBe(1.0);
+    expect(getRevenueMultiplier(w, 'blue', 'wash')).toBe(1.0);
   });
 
   it('returns 1.3 for matching floor, wrong product', () => {

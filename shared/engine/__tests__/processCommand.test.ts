@@ -377,7 +377,7 @@ describe('processCommand', () => {
 
     it('applies 1x multiplier for wrong floor type', () => {
       const state = makeState({
-        workers: [makeWorker({ floorType: 'teal', assignedFloorId: 1, assignedSlotIdx: 0 })],
+        workers: [makeWorker({ floorType: 'blue', assignedFloorId: 1, assignedSlotIdx: 0 })],
       });
       state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 1000 };
       const result = processCommand(state, collectCmd({ timestamp: 12000 }), testConfig, 12000);
