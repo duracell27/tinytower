@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Modal,
+  Linking,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -118,6 +119,20 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         style={[StyleSheet.absoluteFill, { zIndex: 1 }]}
         pointerEvents="none"
       />
+
+      {/* Discord button */}
+      <View style={styles.discordWrapper} pointerEvents="box-none">
+        <Pressable
+          onPress={() => Linking.openURL('https://discord.com/channels/1521796294270517260/1521882117208932483')}
+          style={({ pressed }) => [styles.discordButton, pressed && { opacity: 0.75 }]}
+        >
+          <Image
+            source={require('../../assets/img/discord.png')}
+            style={{ width: 44, height: 44 }}
+            contentFit="contain"
+          />
+        </Pressable>
+      </View>
 
       {/* Logo */}
       <View style={styles.logoContainer}>
@@ -691,5 +706,22 @@ const styles = StyleSheet.create({
   },
   termsUnderline: {
     textDecorationLine: 'underline',
+  },
+  discordWrapper: {
+    position: 'absolute',
+    left: 16,
+    top: 0,
+    bottom: 0,
+    zIndex: 2,
+    justifyContent: 'center',
+    pointerEvents: 'box-none',
+  },
+  discordButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
