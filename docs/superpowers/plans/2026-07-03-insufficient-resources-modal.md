@@ -699,7 +699,8 @@ git commit -m "feat: add InsufficientResourcesModal component"
 - Modify: `app/(tabs)/game.tsx`
 
 **Interfaces:**
-- Consumes: `InsufficientResourcesModal` (no props); `gems` from `useGameStore` (already present at line 58); `useGameStore` for `showInsufficientResources`
+- Consumes: `InsufficientResourcesModal` (no props); `balance` via `useBalance()` (already line 54); `gems` via `useGameStore` (already line 58); `showInsufficientResources` from store
+- The floor's `currency` and `price` are extracted as module-level constants so the `onPress` handler stays generic — supporting both `'coins'` and `'gems'` without hardcoding
 
 - [ ] **Step 1: Add import for the modal**
 
@@ -709,7 +710,21 @@ In `app/(tabs)/game.tsx`, after the existing import of `LevelUpModal` (around li
 import InsufficientResourcesModal from '../../src/components/InsufficientResourcesModal';
 ```
 
-- [ ] **Step 2: Add showInsufficientResources selector**
+- [ ] **Step 2: Extract floor-buy constants + add showInsufficientResources selector**
+
+Replace the existing module-level constant (around line 26):
+
+```typescript
+const NEXT_FLOOR_NUMBER = gameConfig.floors[gameConfig.floors.length - 1].id + 1;
+```
+
+With:
+
+```typescript
+const NEXT_FLOOR_NUMBER = gameConfig.floors[gameConfig.floors.length - 1].id + 1;
+const FLOOR_BUY_PRICE = 250;
+const FLOOR_BUY_CURRENCY: 'coins' | 'gems' = 'gems';
+```
 
 After line 58 (`const gems = useGameStore((s) => s.gems);`), add:
 
@@ -717,7 +732,7 @@ After line 58 (`const gems = useGameStore((s) => s.gems);`), add:
 const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
 ```
 
-- [ ] **Step 3: Wire BuyFloorBanner with an onPress handler**
+- [ ] **Step 3: Wire BuyFloorBanner with a currency-aware onPress**
 
 The `BuyFloorBanner` currently has no `onPress` wired (around line 100). Replace:
 
@@ -734,11 +749,17 @@ With:
 ```tsx
 <BuyFloorBanner
   nextFloorNumber={NEXT_FLOOR_NUMBER}
-  price={250}
-  currency="gems"
+  price={FLOOR_BUY_PRICE}
+  currency={FLOOR_BUY_CURRENCY}
   onPress={() => {
-    if (gems < 250) {
-      showInsufficientResources({ currency: 'gems', need: 250, have: gems });
+    const currentAmount = FLOOR_BUY_CURRENCY === 'gems' ? gems : balance;
+    if (currentAmount < FLOOR_BUY_PRICE) {
+      showInsufficientResources({
+        currency: FLOOR_BUY_CURRENCY,
+        need: FLOOR_BUY_PRICE,
+        have: currentAmount,
+      });
+      return;
     }
     // TODO: actual floor purchase logic
   }}
@@ -757,7 +778,7 @@ After `<LevelUpModal suppressWhileOpen={lobbyOpen || hotelOpen} />` (around line
 
 ```bash
 cd /Users/Apple/IT/tinytower && git add app/(tabs)/game.tsx
-git commit -m "feat: mount InsufficientResourcesModal in game screen, wire BuyFloorBanner"
+git commit -m "feat: mount InsufficientResourcesModal in game screen, wire BuyFloorBanner for coins or gems"
 ```
 
 ---
@@ -926,8 +947,9 @@ git commit -m "feat: show insufficient gems popup in LobbyPanel (deliver all, el
 ## Self-Review
 
 **Spec coverage check:**
-- ✅ Popup shows when not enough coins (ProductionCard Task 5)
-- ✅ Popup shows when not enough gems (LobbyPanel Task 6, BuyFloorBanner Task 4)
+- ✅ Popup shows when not enough coins (ProductionCard Task 5, BuyFloorBanner when `FLOOR_BUY_CURRENCY='coins'` Task 4)
+- ✅ Popup shows when not enough gems (LobbyPanel Task 6, BuyFloorBanner when `FLOOR_BUY_CURRENCY='gems'` Task 4)
+- ✅ BuyFloorBanner handles both currencies dynamically via `FLOOR_BUY_CURRENCY` constant
 - ✅ Popup shows what's missing (deficit row in modal)
 - ✅ For gems: "Buy" button → /shop
 - ✅ Tools case: list of missing tools + "Buy" button → /shop
