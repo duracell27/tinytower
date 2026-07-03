@@ -1,9 +1,22 @@
 import React, { memo } from 'react';
-import Svg, { Circle, Ellipse, Rect } from 'react-native-svg';
-import { gameConfig } from '../../shared/config/gameConfig';
+import { Image } from 'expo-image';
 import type { Worker } from '../../shared/types';
 
-const SKIN = '#F0C49C';
+const MAN: Record<string, ReturnType<typeof require>> = {
+  green:  require('../../assets/img/workers/man-green.png'),
+  blue:   require('../../assets/img/workers/man-blue.png'),
+  yellow: require('../../assets/img/workers/man-yellow.png'),
+  violet: require('../../assets/img/workers/man-violet.png'),
+  red:    require('../../assets/img/workers/man-red.png'),
+};
+
+const WOMAN: Record<string, ReturnType<typeof require>> = {
+  green:  require('../../assets/img/workers/woman-green.png'),
+  blue:   require('../../assets/img/workers/woman-blue.png'),
+  yellow: require('../../assets/img/workers/woman-yellow.png'),
+  violet: require('../../assets/img/workers/woman-violet.png'),
+  red:    require('../../assets/img/workers/woman-red.png'),
+};
 
 interface WorkerAvatarProps {
   worker: Worker;
@@ -11,30 +24,14 @@ interface WorkerAvatarProps {
 }
 
 function WorkerAvatarInner({ worker, size = 60 }: WorkerAvatarProps) {
-  const floorType = gameConfig.floorTypes[worker.floorType];
-  const shirtColor = floorType?.shirtColor ?? '#999';
-  const hair = worker.hairColor;
-
+  const map = worker.female ? WOMAN : MAN;
+  const source = map[worker.floorType] ?? (worker.female ? WOMAN.green : MAN.green);
   return (
-    <Svg width={size} height={size} viewBox="0 0 64 64">
-      {/* Side hair (female only) */}
-      {worker.female && (
-        <>
-          <Ellipse cx={15} cy={35} rx={6} ry={14} fill={hair} />
-          <Ellipse cx={49} cy={35} rx={6} ry={14} fill={hair} />
-        </>
-      )}
-      {/* Shirt (shoulders) */}
-      <Rect x={9} y={45} width={46} height={26} rx={14} fill={shirtColor} />
-      {/* Name tag */}
-      <Rect x={25} y={54} width={14} height={8} rx={2.5} fill="#fff" opacity={0.9} />
-      {/* Neck */}
-      <Rect x={27.5} y={37} width={9} height={10} rx={4} fill={SKIN} />
-      {/* Hair top */}
-      <Circle cx={32} cy={22} r={15} fill={hair} />
-      {/* Head */}
-      <Circle cx={32} cy={27} r={13.5} fill={SKIN} />
-    </Svg>
+    <Image
+      source={source}
+      style={{ width: size, height: size, borderRadius: size / 2 }}
+      contentFit="cover"
+    />
   );
 }
 
