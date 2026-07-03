@@ -1,10 +1,10 @@
 {
   "floorTypes": {
     "green": { "category": "Bakery" },
-    "teal": { "category": "Laundry" },
-    "amber": { "category": "Coffee Shop" },
-    "purple": { "category": "Perfumery" },
-    "blue": { "category": "Ice Cream Parlor" }
+    "blue": { "category": "Laundry" },
+    "yellow": { "category": "Coffee Shop" },
+    "violet": { "category": "Perfumery" },
+    "red": { "category": "Ice Cream Parlor" }
   },
   "floors": {
     "2": { "name": "Bakery" },
