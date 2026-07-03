@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { generateRandomVisitorRole, generateVisitorAppearance } from '../../shared/engine/lobbyUtils';
+import { generateRandomWorkers } from '../../shared/config/workerNames';
 import { applyXpGain, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
 import type { GameState, Command, Floor, Worker } from '../../shared/types';
@@ -22,9 +23,17 @@ interface PlayerStats {
   levelUpQueue: LevelUpEvent[];
 }
 
+interface ToolInventory {
+  briks: number;
+  glass: number;
+  nails: number;
+  screw: number;
+}
+
 interface SyncState {
   lastAckCursor: number;
   stateVersion: number;
+  lastSyncAt: number;
 }
 
 interface GameActions {
@@ -42,12 +51,14 @@ interface GameActions {
   upgradeLobby: () => void;
   claimDailyReward: () => void;
   dismissLevelUp: () => void;
+  setToolInventory: (tools: ToolInventory) => void;
+  setLastSyncAt: (ts: number) => void;
   hydrate: (state: GameState & Partial<SyncState> & { playerLevel?: number; playerXp?: number }) => void;
   reconcile: (state: GameState, stateVersion: number, ackCursor: number, playerLevel?: number, playerXp?: number) => void;
   clearAckedCommands: (ackCursor: number, playerLevel?: number, playerXp?: number) => void;
 }
 
-type GameStore = GameState & PlayerStats & SyncState & GameActions;
+type GameStore = GameState & PlayerStats & SyncState & ToolInventory & GameActions;
 
 function executeCommand(
   get: () => GameStore,
@@ -107,6 +118,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   levelUpQueue: [],
   lastAckCursor: 0,
   stateVersion: 0,
+  lastSyncAt: 0,
+  briks: 1,
+  glass: 1,
+  nails: 1,
+  screw: 1,
 
   buy: (floorId, slotIdx, typeId) => {
     executeCommand(get, set, {
@@ -233,10 +249,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   collectTip: () => {
+    const state = get();
+    const active = state.lobbyVisitors[0];
+    const role = active?.role ?? 'guest';
+    const targetFloor = active?.targetFloor ?? 1;
+
+    let newWorker: ReturnType<typeof generateRandomWorkers>[0] | undefined;
+    if (role === 'guest' && targetFloor === 1) {
+      const hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
+      if (hotelOccupied < state.hotelCapacity) {
+        newWorker = generateRandomWorkers(1, gameConfig)[0];
+      }
+    }
+
     executeCommand(get, set, {
       id: uuid(),
       type: 'collect_tip',
       timestamp: clock.now(),
+      newWorker,
     });
   },
 
@@ -275,6 +305,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   dismissLevelUp: () => {
     set((state) => ({ levelUpQueue: state.levelUpQueue.slice(1) }));
   },
+
+  setToolInventory: (tools) => set(tools),
+
+  setLastSyncAt: (ts) => set({ lastSyncAt: ts }),
 
   hydrate: (state) => set({
     balance: state.balance,

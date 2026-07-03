@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
 import TopBar from '../../src/components/TopBar';
 import FloorCard from '../../src/components/FloorCard';
+import BuyFloorBanner from '../../src/components/BuyFloorBanner';
+import WarehouseSidebar from '../../src/components/WarehouseSidebar';
 import { HotelFloor, LobbyFloor } from '../../src/components/TechnicalFloor';
 import HotelPanel from '../../src/components/HotelPanel';
 import LobbyPanel from '../../src/components/LobbyPanel';
@@ -19,9 +21,13 @@ import { xpForLevel } from '../../shared/engine/xp';
 type FloorItem =
   | { type: 'production'; id: number }
   | { type: 'hotel' }
-  | { type: 'lobby' };
+  | { type: 'lobby' }
+  | { type: 'buyFloor' };
+
+const NEXT_FLOOR_NUMBER = gameConfig.floors[gameConfig.floors.length - 1].id + 1;
 
 const FLOOR_LIST: FloorItem[] = [
+  { type: 'buyFloor' },
   ...gameConfig.floors.map((f) => ({ type: 'production' as const, id: f.id })).reverse(),
   { type: 'hotel' },
   { type: 'lobby' },
@@ -89,6 +95,17 @@ export default function GameScreen() {
   }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor]);
 
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
+    if (item.type === 'buyFloor') {
+      return (
+        <View style={styles.floorWrapper}>
+          <BuyFloorBanner
+            nextFloorNumber={NEXT_FLOOR_NUMBER}
+            price={250}
+            currency="gems"
+          />
+        </View>
+      );
+    }
     if (item.type === 'hotel') {
       return (
         <View style={styles.floorWrapper}>
@@ -139,7 +156,9 @@ export default function GameScreen() {
               initialScrollIndex={FLOOR_LIST.length - 1}
             />
           </View>
-          <View style={styles.sideRight} />
+          <View style={styles.sideRight}>
+            <WarehouseSidebar />
+          </View>
         </View>
 
         <TopBar
@@ -183,7 +202,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sideRight: {
-    width: 0,
+    width: 40,
   },
   listContent: {
     paddingTop: 150,
