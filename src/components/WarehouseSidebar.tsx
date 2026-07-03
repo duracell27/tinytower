@@ -12,7 +12,7 @@ export default function WarehouseSidebar() {
         <Pressable onPress={() => setOpen(true)} style={styles.iconWrap} hitSlop={8}>
           <Image
             source={require('../../assets/img/werehouse.png')}
-            style={{ width: 28, height: 28 }}
+            style={{ width: 30, height: 30 }}
             contentFit="contain"
           />
         </Pressable>
@@ -32,8 +32,8 @@ const styles = StyleSheet.create({
     paddingBottom: 90,
   },
   iconWrap: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
     borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.7)',
     alignItems: 'center',
