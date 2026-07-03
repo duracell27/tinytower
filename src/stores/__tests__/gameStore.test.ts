@@ -1,6 +1,8 @@
 import { processCommand } from '../../../shared/engine/processCommand';
 import { createInitialState } from '../../../shared/config/gameConfig';
 import type { GameState, GameConfig } from '../../../shared/types';
+import { useGameStore } from '../gameStore';
+import type { InsufficientResourcesPayload } from '../gameStore';
 
 const testConfig: GameConfig = {
   floors: [
@@ -72,5 +74,37 @@ describe('game store logic (via processCommand)', () => {
     }));
     const stateWithFullQueue: GameState = { ...state, commandQueue: bigQueue };
     expect(stateWithFullQueue.commandQueue).toHaveLength(10000);
+  });
+});
+
+describe('insufficientResources UI state', () => {
+  beforeEach(() => {
+    useGameStore.setState({ insufficientResources: null });
+  });
+
+  it('starts as null', () => {
+    expect(useGameStore.getState().insufficientResources).toBeNull();
+  });
+
+  it('showInsufficientResources sets the payload', () => {
+    const payload: InsufficientResourcesPayload = { currency: 'gems', need: 5, have: 2 };
+    useGameStore.getState().showInsufficientResources(payload);
+    expect(useGameStore.getState().insufficientResources).toEqual(payload);
+  });
+
+  it('clearInsufficientResources resets to null', () => {
+    useGameStore.getState().showInsufficientResources({ currency: 'coins', need: 100, have: 30 });
+    useGameStore.getState().clearInsufficientResources();
+    expect(useGameStore.getState().insufficientResources).toBeNull();
+  });
+
+  it('showInsufficientResources supports missingTools payload', () => {
+    const payload: InsufficientResourcesPayload = {
+      missingTools: [{ key: 'briks', need: 3, have: 0 }],
+      need: 3,
+      have: 0,
+    };
+    useGameStore.getState().showInsufficientResources(payload);
+    expect(useGameStore.getState().insufficientResources?.missingTools).toHaveLength(1);
   });
 });

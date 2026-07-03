@@ -36,6 +36,21 @@ interface SyncState {
   lastSyncAt: number;
 }
 
+export interface InsufficientResourcesPayload {
+  currency?: 'coins' | 'gems';
+  need: number;
+  have: number;
+  missingTools?: {
+    key: 'briks' | 'glass' | 'nails' | 'screw';
+    need: number;
+    have: number;
+  }[];
+}
+
+interface UIState {
+  insufficientResources: InsufficientResourcesPayload | null;
+}
+
 interface GameActions {
   buy: (floorId: number, slotIdx: number, typeId: string) => void;
   list: (floorId: number, slotIdx: number) => void;
@@ -56,9 +71,11 @@ interface GameActions {
   hydrate: (state: GameState & Partial<SyncState> & { playerLevel?: number; playerXp?: number }) => void;
   reconcile: (state: GameState, stateVersion: number, ackCursor: number, playerLevel?: number, playerXp?: number) => void;
   clearAckedCommands: (ackCursor: number, playerLevel?: number, playerXp?: number) => void;
+  showInsufficientResources: (payload: InsufficientResourcesPayload) => void;
+  clearInsufficientResources: () => void;
 }
 
-type GameStore = GameState & PlayerStats & SyncState & ToolInventory & GameActions;
+type GameStore = GameState & PlayerStats & SyncState & ToolInventory & UIState & GameActions;
 
 function executeCommand(
   get: () => GameStore,
@@ -123,6 +140,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   glass: 1,
   nails: 1,
   screw: 1,
+  insufficientResources: null,
+
+  showInsufficientResources: (payload) => set({ insufficientResources: payload }),
+  clearInsufficientResources: () => set({ insufficientResources: null }),
 
   buy: (floorId, slotIdx, typeId) => {
     executeCommand(get, set, {
@@ -366,10 +387,7 @@ export function useBalance(): number {
 }
 
 export function useFloor(floorId: number): Floor {
-  return useGameStore(
-    (state) => state.floors.find(f => f.id === floorId)!,
-    (a, b) => a.id === b.id && a.productions === b.productions,
-  );
+  return useGameStore((state) => state.floors.find(f => f.id === floorId)!);
 }
 
 export function useVisitors() {
