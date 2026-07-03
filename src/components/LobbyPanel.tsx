@@ -957,7 +957,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       >
                         <Text style={styles.upgradeButtonText}>{t('elevator.upgradeFor')}</Text>
                         <GemIcon size={14} />
-                        <Text style={styles.upgradeButtonText}>{elevatorUpgradeCost}</Text>
+                        <Text style={styles.upgradeGemCount}>{elevatorUpgradeCost}</Text>
                       </LinearGradient>
                       <View style={[
                         styles.upgradeButtonShadow,
@@ -1021,7 +1021,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       >
                         <Text style={styles.upgradeButtonText}>{t('lobbyUpgrade.upgradeForSeats', { count: lobbyUpgradeSeats })}</Text>
                         <GemIcon size={14} />
-                        <Text style={styles.upgradeButtonText}>{lobbyUpgradeCost}</Text>
+                        <Text style={styles.upgradeGemCount}>{lobbyUpgradeCost}</Text>
                       </LinearGradient>
                       <View style={[
                         styles.upgradeButtonShadow,
@@ -1606,7 +1606,7 @@ const styles = StyleSheet.create({
   rewardGemCount: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 14,
-    color: '#fff',
+    color: '#2592AB',
   },
   rewardButtonShadow: {
     position: 'absolute',
@@ -1775,6 +1775,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 14.5,
     color: '#fff',
+  },
+  upgradeGemCount: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 14.5,
+    color: '#2592AB',
   },
   upgradeButtonShadow: {
     position: 'absolute',

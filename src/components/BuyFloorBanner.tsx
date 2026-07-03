@@ -33,7 +33,7 @@ export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPre
       </View>
       <View style={styles.ribbonPricePill}>
         <CurrencyIcon currency={currency} size={13} />
-        <Text style={styles.ribbonPriceText}>{price}</Text>
+        <Text style={[styles.ribbonPriceText, { color: currency === 'gems' ? '#2592AB' : '#C28A22' }]}>{price}</Text>
       </View>
     </Pressable>
   );
