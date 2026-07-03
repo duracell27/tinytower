@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sideRight: {
-    width: 40,
+    width: 50,
   },
   listContent: {
     paddingTop: 150,

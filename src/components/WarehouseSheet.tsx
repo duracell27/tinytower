@@ -76,17 +76,19 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
             </View>
           </View>
 
-          {/* Tool list */}
+          {/* Tool grid — 4 per row */}
           <View style={styles.body}>
-            {TOOLS.map((tool) => (
-              <View key={tool.key} style={styles.row}>
-                <Image source={tool.image} style={{ width: 36, height: 36 }} contentFit="contain" />
-                <Text style={styles.toolLabel}>{tool.label}</Text>
-                <View style={styles.countBadge}>
-                  <Text style={styles.countText}>{counts[tool.key]}</Text>
+            <View style={styles.grid}>
+              {TOOLS.map((tool) => (
+                <View key={tool.key} style={styles.cell}>
+                  <Image source={tool.image} style={{ width: 40, height: 40 }} contentFit="contain" />
+                  <Text style={styles.cellLabel}>{tool.label}</Text>
+                  <View style={styles.countBadge}>
+                    <Text style={styles.countText}>{counts[tool.key]}</Text>
+                  </View>
                 </View>
-              </View>
-            ))}
+              ))}
+            </View>
           </View>
         </Animated.View>
       </View>
@@ -97,7 +99,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
 const styles = StyleSheet.create({
   overlay: { flex: 1 },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(18,26,44,0.5)',
   },
   sheet: {
@@ -144,31 +146,33 @@ const styles = StyleSheet.create({
   },
   body: {
     padding: 16,
+  },
+  grid: {
+    flexDirection: 'row',
     gap: 10,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  cell: {
+    flex: 1,
     backgroundColor: '#fff',
     borderRadius: 14,
-    padding: 12,
-    gap: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+    gap: 4,
   },
-  toolLabel: {
-    flex: 1,
+  cellLabel: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 15,
+    fontSize: 13,
     color: '#2A3344',
   },
   countBadge: {
     backgroundColor: '#F0F2F5',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
   },
   countText: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 15,
+    fontSize: 13,
     color: '#5B6472',
   },
 });
