@@ -79,7 +79,7 @@ const DYNAMIC_T_CALL = /\b(\w+)\(\s*`([^$`]*)\$\{/g;
 
 // Dynamic key lookups deliberately allowed in a chrome namespace, because the key space
 // is a small, fixed enum defined by a TS union/schema elsewhere, not an open-ended string.
-const ALLOWED_DYNAMIC_CHROME_PREFIXES = ['roles.', 'jobPicker.matchBadges.'];
+const ALLOWED_DYNAMIC_CHROME_PREFIXES = ['roles.', 'jobPicker.matchBadges.', 'tools.'];
 
 describe('translation key coverage', () => {
   const files = SOURCE_ROOTS.flatMap((root) => collectSourceFiles(path.join(__dirname, '../../..', root)));

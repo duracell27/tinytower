@@ -117,7 +117,7 @@ function applyVisitorEffect(
       balance += tip;
       dailyTips += tip;
     }
-  } else {
+  } else if (role !== 'builder') {
     balance += tip;
     dailyTips += tip;
   }

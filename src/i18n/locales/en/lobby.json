@@ -12,7 +12,8 @@
     "guest": "Guest",
     "businessman": "Businessman",
     "deliverer": "Deliverer",
-    "seller": "Seller"
+    "seller": "Seller",
+    "builder": "Builder"
   },
   "visitor": {
     "thankYou": "Thank you! 🎉",
@@ -29,7 +30,8 @@
     "checkIntoHotel": "Check into hotel",
     "collect": "Collect",
     "collectTip": "Collect Tip",
-    "deliverAll": "Deliver All For"
+    "deliverAll": "Deliver All For",
+    "acceptMaterials": "Accept Materials"
   },
   "dailyTips": {
     "label": "Tips collected today",
@@ -68,5 +70,16 @@
     "waitingInHotel": "Waiting in the hotel",
     "findJobNow": "Find a Job Now",
     "later": "Later"
+  },
+  "builderPopup": {
+    "title": "Builder Visited!",
+    "subtitle": "Delivered to your warehouse",
+    "dismiss": "Nice!"
+  },
+  "tools": {
+    "briks": "Bricks",
+    "glass": "Glass",
+    "nails": "Nails",
+    "screw": "Screws"
   }
 }

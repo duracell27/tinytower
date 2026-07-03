@@ -25,8 +25,17 @@ import { useGameClock } from '../hooks/useGameClock';
 import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity } from '../../shared/engine/lobbyUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
 import type { Visitor, VisitorRole, Worker } from '../../shared/types';
+import { Image } from 'expo-image';
 import DeliverAllModal, { type DeliverAllSummary } from './DeliverAllModal';
 import WorkerAvatar from './WorkerAvatar';
+
+type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
+const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
+  briks: require('../../assets/img/tools/briks.png'),
+  glass: require('../../assets/img/tools/glass.png'),
+  nails: require('../../assets/img/tools/nails.png'),
+  screw: require('../../assets/img/tools/screw.png'),
+};
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
@@ -39,6 +48,7 @@ const ROLE_COLORS: Record<string, string> = {
   businessman: '#C28A22',
   deliverer: '#2E78B5',
   seller: '#4E9A2E',
+  builder: '#E67E22',
 };
 
 function computeDeliverAllSummary(
@@ -455,6 +465,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const upgradeLobby = useGameStore((s) => s.upgradeLobby);
   const claimDailyReward = useGameStore((s) => s.claimDailyReward);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
+  const builderToolDrop = useGameStore((s) => s.builderToolDrop);
+  const clearBuilderToolDrop = useGameStore((s) => s.clearBuilderToolDrop);
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -496,8 +508,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     if (!visible) {
       setHotelFullNotice(false);
       setNewWorkerPopup(null);
+      clearBuilderToolDrop();
     }
-  }, [visible]);
+  }, [visible, clearBuilderToolDrop]);
 
   useEffect(() => {
     if (visible) {
@@ -607,6 +620,18 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         shadowColor: '#2E72A8',
         textColor: '#fff',
         icon: 'gem' as const,
+        onPress: handleCollectTip,
+      };
+    }
+
+    if (activeVisitor.role === 'builder') {
+      return {
+        label: t('actions.acceptMaterials'),
+        amount: null as string | null,
+        colors: ['#E67E22', '#C96A14'] as [string, string],
+        shadowColor: '#A04000',
+        textColor: '#fff',
+        icon: 'none' as const,
         onPress: handleCollectTip,
       };
     }
@@ -1103,6 +1128,29 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
               </Pressable>
               <Pressable onPress={() => setNewWorkerPopup(null)} style={popupStyles.dismissBtn}>
                 <Text style={popupStyles.dismissText}>{t('newWorkerPopup.later')}</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        )}
+
+        {/* Builder tool drop popup */}
+        {builderToolDrop && (
+          <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={clearBuilderToolDrop}>
+            <Pressable style={popupStyles.card} onPress={() => {}}>
+              <View style={popupStyles.avatarWrap}>
+                <Image
+                  source={TOOL_IMAGES[builderToolDrop]}
+                  style={{ width: 48, height: 48 }}
+                  contentFit="contain"
+                />
+              </View>
+              <View style={popupStyles.info}>
+                <Text style={popupStyles.title}>{t('builderPopup.title')}</Text>
+                <Text style={[popupStyles.name, { color: '#E67E22' }]}>{t(`tools.${builderToolDrop}`)}</Text>
+                <Text style={popupStyles.subtitle}>{t('builderPopup.subtitle')}</Text>
+              </View>
+              <Pressable onPress={clearBuilderToolDrop} style={popupStyles.dismissBtn}>
+                <Text style={popupStyles.dismissText}>{t('builderPopup.dismiss')}</Text>
               </Pressable>
             </Pressable>
           </Pressable>

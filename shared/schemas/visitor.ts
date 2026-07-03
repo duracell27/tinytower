@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const VisitorRoleSchema = z.enum(['guest', 'businessman', 'deliverer', 'seller']);
+export const VisitorRoleSchema = z.enum(['guest', 'businessman', 'deliverer', 'seller', 'builder']);
 
 export const VisitorSchema = z.object({
   id: z.string(),

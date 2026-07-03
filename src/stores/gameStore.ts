@@ -47,8 +47,11 @@ export interface InsufficientResourcesPayload {
   }[];
 }
 
+type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
+
 interface UIState {
   insufficientResources: InsufficientResourcesPayload | null;
+  builderToolDrop: ToolKey | null;
 }
 
 interface GameActions {
@@ -73,6 +76,7 @@ interface GameActions {
   clearAckedCommands: (ackCursor: number, playerLevel?: number, playerXp?: number) => void;
   showInsufficientResources: (payload: InsufficientResourcesPayload) => void;
   clearInsufficientResources: () => void;
+  clearBuilderToolDrop: () => void;
 }
 
 type GameStore = GameState & PlayerStats & SyncState & ToolInventory & UIState & GameActions;
@@ -141,9 +145,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   nails: 1,
   screw: 1,
   insufficientResources: null,
+  builderToolDrop: null,
 
   showInsufficientResources: (payload) => set({ insufficientResources: payload }),
   clearInsufficientResources: () => set({ insufficientResources: null }),
+  clearBuilderToolDrop: () => set({ builderToolDrop: null }),
 
   buy: (floorId, slotIdx, typeId) => {
     executeCommand(get, set, {
@@ -274,6 +280,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const active = state.lobbyVisitors[0];
     const role = active?.role ?? 'guest';
     const targetFloor = active?.targetFloor ?? 1;
+    const prevVisitorCount = state.lobbyVisitors.length;
 
     let newWorker: ReturnType<typeof generateRandomWorkers>[0] | undefined;
     if (role === 'guest' && targetFloor === 1) {
@@ -289,6 +296,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       timestamp: clock.now(),
       newWorker,
     });
+
+    if (role === 'builder' && get().lobbyVisitors.length < prevVisitorCount) {
+      const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
+      const tool = TOOLS[Math.floor(Math.random() * TOOLS.length)];
+      set({ [tool]: get()[tool] + 1, builderToolDrop: tool });
+    }
   },
 
   deliverAll: () => {
