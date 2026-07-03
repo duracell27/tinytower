@@ -33,6 +33,7 @@ yarn-error.*
 # local env files
 .env*.local
 .env
+.env.development
 # typescript
 *.tsbuildinfo
 
@@ -40,4 +41,5 @@ yarn-error.*
 /ios
 /android
 
-/docs
+/docs/
+!/docs/superpowers/
