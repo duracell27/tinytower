@@ -11,5 +11,15 @@
     "minutesAgo": "{{count}}m ago",
     "hoursAgo": "{{count}}h ago",
     "daysAgo": "{{count}}d ago"
+  },
+  "insufficientResources": {
+    "notEnoughCoins": "Not enough coins",
+    "notEnoughGems": "Not enough gems",
+    "missingMaterials": "Missing materials",
+    "have": "Have",
+    "need": "Need",
+    "missing": "Missing",
+    "goToShop": "Go to Shop",
+    "close": "Close"
   }
 }
