@@ -14,7 +14,7 @@ import type { VisitorRole } from '../types';
 
 type LobbyCommand = Extract<Command, { type:
   'spawn_visitor' | 'lift_visitor' | 'collect_tip' |
-  'deliver_all' | 'upgrade_elevator' | 'upgrade_lobby' | 'claim_daily_reward'
+  'deliver_all' | 'upgrade_elevator' | 'upgrade_lobby' | 'claim_daily_reward' | 'expand_hotel'
 }>;
 
 export function processLobbyCommand(
@@ -40,6 +40,8 @@ export function processLobbyCommand(
       return handleUpgradeLobby(state, config, playerLevel);
     case 'claim_daily_reward':
       return handleClaimDailyReward(state, config);
+    case 'expand_hotel':
+      return handleExpandHotel(state);
   }
 }
 
@@ -223,17 +225,8 @@ function handleDeliverAll(
   if (state.lobbyVisitors.length === 0) {
     return { success: false, state, error: 'No visitors to deliver' };
   }
-  const count = state.lobbyVisitors.length;
   let newState = { ...state, gems: state.gems - 1 };
-  for (let i = 0; i < count; i++) {
-    const { role, targetFloor } = generateRandomVisitorRole(newState, config, now);
-    const visitor: Visitor = {
-      id: `deliver-${i}`,
-      role,
-      targetFloor,
-      hairColor: '#000',
-      female: false,
-    };
+  for (const visitor of state.lobbyVisitors) {
     newState = applyVisitorEffect(newState, visitor, config, playerLevel);
   }
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
@@ -278,6 +271,34 @@ function handleUpgradeLobby(
       ...state,
       gems: state.gems - cost,
       lobbyCapacity: state.lobbyCapacity + config.lobbyConfig.lobbyUpgradeSeats,
+    },
+  };
+}
+
+export const MAX_HOTEL_CAPACITY = 50;
+
+export function getHotelExpansionCost(currentCapacity: number): number | null {
+  if (currentCapacity >= MAX_HOTEL_CAPACITY) return null;
+  if (currentCapacity >= 40) return 50;
+  if (currentCapacity >= 30) return 30;
+  if (currentCapacity >= 20) return 20;
+  return 10;
+}
+
+function handleExpandHotel(state: GameState): ProcessResult {
+  const cost = getHotelExpansionCost(state.hotelCapacity);
+  if (cost === null) {
+    return { success: false, state, error: 'Hotel at max capacity' };
+  }
+  if (state.gems < cost) {
+    return { success: false, state, error: 'Not enough gems' };
+  }
+  return {
+    success: true,
+    state: {
+      ...state,
+      gems: state.gems - cost,
+      hotelCapacity: state.hotelCapacity + 1,
     },
   };
 }

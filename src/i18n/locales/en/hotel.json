@@ -59,6 +59,15 @@
       "message": "{{name}} will be evicted from the hotel",
       "cancel": "Cancel",
       "confirm": "Evict"
+    },
+    "emptySlot": {
+      "title": "Vacant",
+      "subtitle": "Empty room"
+    },
+    "expandCard": {
+      "title": "Expand hotel by 1 room",
+      "buy": "Expand",
+      "maxed": "Hotel is full"
     }
   },
   "technicalFloor": {
@@ -89,6 +98,7 @@
       "businessmen": "💼 Businessmen: {{count}}",
       "deliverers": "📦 Deliverers: {{count}}",
       "sellers": "🛒 Sellers: {{count}}",
+      "builders": "🏗️ Builders: {{count}} (materials added to warehouse)",
       "newWorkers": "🏨 New Workers: {{count}}"
     },
     "done": "Done"

@@ -57,7 +57,7 @@ function computeDeliverAllSummary(
   dailyGemsCollected: number,
   playerLevel: number,
 ): DeliverAllSummary {
-  let guestCount = 0, businessmanCount = 0, delivererCount = 0, sellerCount = 0;
+  let guestCount = 0, businessmanCount = 0, delivererCount = 0, sellerCount = 0, builderCount = 0;
   let totalCoins = 0, totalGems = 0, newWorkers = 0;
   let gemsCollected = dailyGemsCollected;
   const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
@@ -89,10 +89,13 @@ function computeDeliverAllSummary(
         sellerCount++;
         totalCoins += calculateTip('seller', targetFloor, elevatorLevel, gameConfig);
         break;
+      case 'builder':
+        builderCount++;
+        break;
     }
   }
 
-  return { guestCount, businessmanCount, delivererCount, sellerCount, totalCoins, totalGems, newWorkers };
+  return { guestCount, businessmanCount, delivererCount, sellerCount, builderCount, totalCoins, totalGems, newWorkers };
 }
 
 function formatCoins(n: number): string {

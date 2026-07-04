@@ -16,6 +16,7 @@ export interface DeliverAllSummary {
   businessmanCount: number;
   delivererCount: number;
   sellerCount: number;
+  builderCount: number;
   totalCoins: number;
   totalGems: number;
   newWorkers: number;
@@ -86,6 +87,11 @@ function DeliverAllContent({ summary, onDismiss }: { summary: DeliverAllSummary;
             {summary.sellerCount > 0 && (
               <View style={styles.row}>
                 <Text style={styles.rowLabel}>{t('deliverAll.rows.sellers', { count: summary.sellerCount })}</Text>
+              </View>
+            )}
+            {summary.builderCount > 0 && (
+              <View style={styles.row}>
+                <Text style={styles.rowLabel}>{t('deliverAll.rows.builders', { count: summary.builderCount })}</Text>
               </View>
             )}
             {summary.newWorkers > 0 && (

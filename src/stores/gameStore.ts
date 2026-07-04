@@ -67,6 +67,7 @@ interface GameActions {
   deliverAll: () => void;
   upgradeElevator: () => void;
   upgradeLobby: () => void;
+  expandHotel: () => void;
   claimDailyReward: () => void;
   dismissLevelUp: () => void;
   setToolInventory: (tools: ToolInventory) => void;
@@ -305,11 +306,27 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   deliverAll: () => {
+    const state = get();
+    const builders = state.lobbyVisitors.filter((v) => v.role === 'builder');
     executeCommand(get, set, {
       id: uuid(),
       type: 'deliver_all',
       timestamp: clock.now(),
     });
+    if (builders.length > 0 && get().lobbyVisitors.length < state.lobbyVisitors.length) {
+      const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
+      const cur = get();
+      const delta: Record<ToolKey, number> = { briks: 0, glass: 0, nails: 0, screw: 0 };
+      for (let i = 0; i < builders.length; i++) {
+        delta[TOOLS[Math.floor(Math.random() * TOOLS.length)]]++;
+      }
+      set({
+        briks: cur.briks + delta.briks,
+        glass: cur.glass + delta.glass,
+        nails: cur.nails + delta.nails,
+        screw: cur.screw + delta.screw,
+      });
+    }
   },
 
   upgradeElevator: () => {
@@ -324,6 +341,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     executeCommand(get, set, {
       id: uuid(),
       type: 'upgrade_lobby',
+      timestamp: clock.now(),
+    });
+  },
+
+  expandHotel: () => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'expand_hotel',
       timestamp: clock.now(),
     });
   },
