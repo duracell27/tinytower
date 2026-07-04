@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
@@ -11,41 +10,60 @@ import type { ImageSource } from 'expo-image';
 
 // Floor color schemes matching the design
 export interface FloorColorScheme {
-  headerColors: [string, string];
+  color: string;
   headerShadowColor: string;
   bodyColor: string;
   cardBg: string;
   nameColor: string;
-  accent: string;
   stars: number;
 }
 
 export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
   2: {
-    headerColors: ['#72D361', '#349523'],
+    color: '#5E8F42',
     headerShadowColor: 'rgba(0,83,0,0.4)',
     bodyColor: '#D0EBCB',
     cardBg: '#E8F5E5',
     nameColor: '#117200',
-    accent: '#20810F',
     stars: 0,
   },
   3: {
-    headerColors: ['#5C9FFF', '#1E61D0'],
+    color: '#2E6EC9',
     headerShadowColor: 'rgba(0,31,142,0.4)',
     bodyColor: '#CADDFC',
     cardBg: '#E5EEFD',
     nameColor: '#003EAD',
-    accent: '#0A4DBC',
     stars: 0,
   },
   4: {
-    headerColors: ['#FFD057', '#D09219'],
+    color: '#E7A52B',
     headerShadowColor: 'rgba(142,80,0,0.4)',
     bodyColor: '#FCEBC9',
     cardBg: '#FDF5E4',
     nameColor: '#AD6F00',
-    accent: '#BC7E05',
+    stars: 0,
+  },
+};
+
+// Dynamic floor type color schemes (for floors not in gameConfig.floors)
+const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
+  green:  FLOOR_SCHEMES[2],
+  blue:   FLOOR_SCHEMES[3],
+  yellow: FLOOR_SCHEMES[4],
+  violet: {
+    color: '#9A6FD0',
+    headerShadowColor: 'rgba(85,40,170,0.4)',
+    bodyColor: '#E8DEFE',
+    cardBg: '#F2ECFF',
+    nameColor: '#6A40A0',
+    stars: 0,
+  },
+  red: {
+    color: '#4C9BDD',
+    headerShadowColor: 'rgba(0,76,142,0.4)',
+    bodyColor: '#C9E5F8',
+    cardBg: '#E4F1FB',
+    nameColor: '#006DAB',
     stars: 0,
   },
 };
@@ -104,26 +122,21 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const { t: tContent } = useTranslation('gameContent');
   const floor = useFloor(floorId);
   const workers = useGameStore((s) => s.workers);
-  const scheme = FLOOR_SCHEMES[floorId] || FLOOR_SCHEMES[1];
+  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const dynamicFloorType = openedFloorTypes?.[String(floorId)];
+  const scheme = FLOOR_SCHEMES[floorId] ?? (dynamicFloorType ? FLOOR_TYPE_SCHEMES[dynamicFloorType] : undefined) ?? FLOOR_SCHEMES[2];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
-  const availableTypes = floorConfig?.availableTypes ?? [];
-  const products = PRODUCT_IMAGES[floorId] || PRODUCT_IMAGES[1];
+  const availableTypes = floorConfig?.availableTypes
+    ?? (dynamicFloorType ? (gameConfig.floorTypes[dynamicFloorType]?.dreamJobs ?? []) : []);
+  const products = PRODUCT_IMAGES[floorId] ?? PRODUCT_IMAGES[2];
   const discount = getFloorDiscount(workers, floorId);
   const floorName = tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
 
   return (
     <View style={styles.floorContainer}>
       {/* Header */}
-      <LinearGradient
-        colors={scheme.headerColors}
-        style={styles.header}
-      >
-        <LinearGradient
-          pointerEvents="none"
-          colors={['rgba(255,255,255,0.34)', 'rgba(255,255,255,0)']}
-          style={styles.headerGloss}
-        />
-        <View style={[styles.headerEdge, { backgroundColor: shadeColor(scheme.headerColors[1], -22) }]} />
+      <View style={[styles.header, { backgroundColor: scheme.color }]}>
+        <View style={[styles.headerEdge, { backgroundColor: shadeColor(scheme.color, -22) }]} />
         <View style={styles.floorNumberBadge}>
           <Text style={styles.floorNumberText}>{floorId}</Text>
         </View>
@@ -138,15 +151,10 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
           )}
           <Stars count={scheme.stars} />
         </View>
-      </LinearGradient>
+      </View>
 
       {/* Production cards */}
-      <LinearGradient
-        colors={[shadeColor(scheme.bodyColor, -10), scheme.bodyColor]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={styles.cardsContainer}
-      >
+      <View style={[styles.cardsContainer, { backgroundColor: scheme.bodyColor }]}>
         {floor.productions.map((production, idx) => {
           const slotWorker = getWorkerForSlot(workers, floorId, idx);
           return (
@@ -166,12 +174,12 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
               productImage={products[idx]?.image ?? products[0].image}
               worker={slotWorker}
               floorDiscount={discount}
-              accentColor={scheme.accent}
+              accentColor={scheme.color}
               onHire={onHireSlot}
             />
           );
         })}
-      </LinearGradient>
+      </View>
 
     </View>
   );
@@ -196,13 +204,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 31,
     paddingHorizontal: 12,
-  },
-  headerGloss: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '55%',
+    zIndex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
   },
   headerEdge: {
     position: 'absolute',
