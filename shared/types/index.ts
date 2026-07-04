@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { ProductionStageSchema, ProductionSchema } from '../schemas/production';
-import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema } from '../schemas/command';
-import { GameConfigSchema, FloorConfigSchema, ProductionTypeConfigSchema, FloorTypeConfigSchema, LobbyConfigSchema } from '../schemas/gameConfig';
-import { GameStateSchema } from '../schemas/gameState';
+import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema, ExpandHotelCommandSchema, BuyFloorCommandSchema, OpenFloorCommandSchema } from '../schemas/command';
+import { GameConfigSchema, FloorConfigSchema, ProductionTypeConfigSchema, FloorTypeConfigSchema, LobbyConfigSchema, FloorUnlockConfigSchema } from '../schemas/gameConfig';
+import { GameStateSchema, UnderConstructionSchema, ToolsSchema } from '../schemas/gameState';
 import { WorkerSchema } from '../schemas/worker';
 import { VisitorSchema, VisitorRoleSchema } from '../schemas/visitor';
 
@@ -22,6 +22,12 @@ export type DeliverAllCommand = z.infer<typeof DeliverAllCommandSchema>;
 export type UpgradeElevatorCommand = z.infer<typeof UpgradeElevatorCommandSchema>;
 export type UpgradeLobbyCommand = z.infer<typeof UpgradeLobbyCommandSchema>;
 export type ClaimDailyRewardCommand = z.infer<typeof ClaimDailyRewardCommandSchema>;
+export type ExpandHotelCommand = z.infer<typeof ExpandHotelCommandSchema>;
+export type BuyFloorCommand = z.infer<typeof BuyFloorCommandSchema>;
+export type OpenFloorCommand = z.infer<typeof OpenFloorCommandSchema>;
+export type FloorUnlockConfig = z.infer<typeof FloorUnlockConfigSchema>;
+export type UnderConstructionState = z.infer<typeof UnderConstructionSchema>;
+export type ToolsState = z.infer<typeof ToolsSchema>;
 export type GameConfig = z.infer<typeof GameConfigSchema>;
 export type FloorConfig = z.infer<typeof FloorConfigSchema>;
 export type ProductionTypeConfig = z.infer<typeof ProductionTypeConfigSchema>;

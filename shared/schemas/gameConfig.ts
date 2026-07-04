@@ -20,6 +20,14 @@ export const FloorConfigSchema = z.object({
   availableTypes: z.array(z.string()).min(1),
 });
 
+export const FloorUnlockConfigSchema = z.object({
+  floorId: z.number().int(),
+  price: z.number().int().positive(),
+  currency: z.enum(['coins', 'gems']),
+  constructionDurationMs: z.number().positive(),
+  requiredToolCount: z.number().int().positive(),
+});
+
 export const LobbyConfigSchema = z.object({
   visitorSpawnInterval: z.number().positive(),
   dailyTipsTarget: z.number().positive(),
@@ -42,4 +50,5 @@ export const GameConfigSchema = z.object({
   startingBalance: z.number().nonnegative(),
   hotelCapacity: z.number().int().positive(),
   lobbyConfig: LobbyConfigSchema,
+  floorUnlocks: z.array(FloorUnlockConfigSchema).default([]),
 });

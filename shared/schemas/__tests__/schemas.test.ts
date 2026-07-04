@@ -408,6 +408,68 @@ describe('VisitorSchema', () => {
   });
 });
 
+describe('New command schemas', () => {
+  it('validates buy_floor command', () => {
+    const cmd = CommandSchema.parse({
+      id: 'c1', type: 'buy_floor', timestamp: 1000,
+      floorId: 5, requiredTool: 'briks',
+    });
+    expect(cmd.type).toBe('buy_floor');
+  });
+
+  it('validates open_floor command', () => {
+    const cmd = CommandSchema.parse({
+      id: 'c2', type: 'open_floor', timestamp: 2000,
+      floorId: 5, floorType: 'violet',
+    });
+    expect(cmd.type).toBe('open_floor');
+  });
+
+  it('rejects buy_floor with unknown tool', () => {
+    expect(CommandSchema.safeParse({
+      id: 'c3', type: 'buy_floor', timestamp: 1000,
+      floorId: 5, requiredTool: 'hammer',
+    }).success).toBe(false);
+  });
+});
+
+describe('GameStateSchema with new fields', () => {
+  const minimalState = {
+    balance: 100, gems: 20,
+    floors: [{ id: 1, productions: [{ typeId: null, stage: 'IDLE', stageStartedAt: 0 }] }],
+    commandQueue: [], workers: [], hotelCapacity: 10,
+    lobbyVisitors: [], lobbyCapacity: 10, elevatorLevel: 1, elevatorFloor: 0,
+    dailyTips: 0, dailyGemsCollected: 0, dailyTipsRewardClaimed: false,
+    lastDailyReset: 0, nextVisitorAt: 0,
+  };
+
+  it('defaults tools to zero when not provided', () => {
+    const result = GameStateSchema.parse(minimalState);
+    expect(result.tools).toEqual({ briks: 0, glass: 0, nails: 0, screw: 0 });
+  });
+
+  it('defaults underConstruction to null when not provided', () => {
+    const result = GameStateSchema.parse(minimalState);
+    expect(result.underConstruction).toBeNull();
+  });
+
+  it('defaults openedFloorTypes to empty object when not provided', () => {
+    const result = GameStateSchema.parse(minimalState);
+    expect(result.openedFloorTypes).toEqual({});
+  });
+
+  it('accepts underConstruction when provided', () => {
+    const result = GameStateSchema.parse({
+      ...minimalState,
+      underConstruction: {
+        floorId: 5, startedAt: 1000, durationMs: 1200000,
+        requiredTool: 'glass', requiredCount: 1,
+      },
+    });
+    expect(result.underConstruction?.floorId).toBe(5);
+  });
+});
+
 describe('Lobby command schemas', () => {
   it('validates spawn_visitor command', () => {
     const cmd = { id: 'c1', type: 'spawn_visitor', timestamp: 1000, visitorId: 'v1', role: 'guest', targetFloor: 3, hairColor: '#5C3A22', female: false };

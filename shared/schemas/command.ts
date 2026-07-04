@@ -93,6 +93,22 @@ export const ClaimDailyRewardCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('claim_daily_reward'),
 });
 
+export const ExpandHotelCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('expand_hotel'),
+});
+
+export const BuyFloorCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('buy_floor'),
+  floorId: z.number().int(),
+  requiredTool: z.enum(['briks', 'glass', 'nails', 'screw']),
+});
+
+export const OpenFloorCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('open_floor'),
+  floorId: z.number().int(),
+  floorType: z.string(),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -107,4 +123,7 @@ export const CommandSchema = z.discriminatedUnion('type', [
   UpgradeElevatorCommandSchema,
   UpgradeLobbyCommandSchema,
   ClaimDailyRewardCommandSchema,
+  ExpandHotelCommandSchema,
+  BuyFloorCommandSchema,
+  OpenFloorCommandSchema,
 ]);

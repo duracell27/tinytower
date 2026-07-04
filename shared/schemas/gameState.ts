@@ -4,6 +4,21 @@ import { CommandSchema } from './command';
 import { WorkerSchema } from './worker';
 import { VisitorSchema } from './visitor';
 
+export const ToolsSchema = z.object({
+  briks: z.number().int().nonnegative(),
+  glass: z.number().int().nonnegative(),
+  nails: z.number().int().nonnegative(),
+  screw: z.number().int().nonnegative(),
+});
+
+export const UnderConstructionSchema = z.object({
+  floorId: z.number().int(),
+  startedAt: z.number(),
+  durationMs: z.number(),
+  requiredTool: z.enum(['briks', 'glass', 'nails', 'screw']),
+  requiredCount: z.number().int().positive(),
+});
+
 export const FloorStateSchema = z.object({
   id: z.number().int(),
   productions: z.array(ProductionSchema).min(1).max(3),
@@ -25,4 +40,7 @@ export const GameStateSchema = z.object({
   dailyTipsRewardClaimed: z.boolean(),
   lastDailyReset: z.number().nonnegative(),
   nextVisitorAt: z.number().nonnegative(),
+  tools: ToolsSchema.default({ briks: 0, glass: 0, nails: 0, screw: 0 }),
+  underConstruction: UnderConstructionSchema.nullable().default(null),
+  openedFloorTypes: z.record(z.string(), z.string()).default({}),
 });
