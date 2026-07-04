@@ -29,6 +29,15 @@ const testConfig: GameConfig = {
     lobbyUpgradeSeats: 3,
     defaultLobbyCapacity: 10,
   },
+  floorUnlocks: [
+    {
+      floorId: 5,
+      price: 10,
+      currency: 'gems' as const,
+      constructionDurationMs: 60000,
+      requiredToolCount: 1,
+    },
+  ],
 };
 
 function makeWorker(overrides?: Partial<Worker>): Worker {
@@ -400,5 +409,112 @@ describe('processCommand', () => {
       const result = processCommand(state, listCmd({ timestamp: 7000 }), testConfig, 7000);
       expect(result.success).toBe(false);
     });
+  });
+});
+
+describe('buy_floor command', () => {
+  function buyFloorCmd(overrides?: Partial<Extract<Command, { type: 'buy_floor' }>>): Command {
+    return {
+      id: 'bf-1', type: 'buy_floor', timestamp: 1000,
+      floorId: 5, requiredTool: 'briks',
+      ...overrides,
+    } as Command;
+  }
+
+  it('deducts gems and sets underConstruction', () => {
+    const state = makeState({ gems: 20 });
+    const result = processCommand(state, buyFloorCmd(), testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(10);
+    expect(result.state.underConstruction).toMatchObject({
+      floorId: 5, requiredTool: 'briks', requiredCount: 1, durationMs: 60000,
+    });
+  });
+
+  it('fails when gems are insufficient', () => {
+    const state = makeState({ gems: 5 });
+    const result = processCommand(state, buyFloorCmd(), testConfig, 1000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient gems');
+  });
+
+  it('fails when already under construction', () => {
+    const state = makeState({
+      gems: 20,
+      underConstruction: {
+        floorId: 5, startedAt: 0, durationMs: 60000,
+        requiredTool: 'briks', requiredCount: 1,
+      },
+    });
+    const result = processCommand(state, buyFloorCmd(), testConfig, 1000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Already under construction');
+  });
+
+  it('fails for unknown floor id', () => {
+    const state = makeState({ gems: 20 });
+    const result = processCommand(state, buyFloorCmd({ floorId: 99 }), testConfig, 1000);
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('open_floor command', () => {
+  function openFloorCmd(overrides?: Partial<Extract<Command, { type: 'open_floor' }>>): Command {
+    return {
+      id: 'of-1', type: 'open_floor', timestamp: 62000,
+      floorId: 5, floorType: 'green',
+      ...overrides,
+    } as Command;
+  }
+
+  const stateUnderConstruction: Partial<GameState> = {
+    gems: 10,
+    tools: { briks: 2, glass: 0, nails: 0, screw: 0 },
+    underConstruction: {
+      floorId: 5, startedAt: 1000, durationMs: 60000,
+      requiredTool: 'briks', requiredCount: 1,
+    },
+  };
+
+  it('adds new floor, deducts tool, clears underConstruction', () => {
+    const state = makeState(stateUnderConstruction);
+    const result = processCommand(state, openFloorCmd(), testConfig, 62000);
+    expect(result.success).toBe(true);
+    expect(result.state.floors).toHaveLength(2);
+    expect(result.state.floors[1].id).toBe(5);
+    expect(result.state.tools.briks).toBe(1);
+    expect(result.state.underConstruction).toBeNull();
+    expect(result.state.openedFloorTypes['5']).toBe('green');
+  });
+
+  it('new floor has 3 productions matching dreamJobs', () => {
+    const state = makeState(stateUnderConstruction);
+    const result = processCommand(state, openFloorCmd(), testConfig, 62000);
+    const newFloor = result.state.floors.find((f) => f.id === 5)!;
+    expect(newFloor.productions.map((p) => p.typeId)).toEqual(['coffee_shop', 'bookstore']);
+  });
+
+  it('fails when timer not complete', () => {
+    const state = makeState(stateUnderConstruction);
+    const result = processCommand(state, openFloorCmd({ timestamp: 30000 }), testConfig, 30000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Construction not complete');
+  });
+
+  it('fails when tools insufficient', () => {
+    const state = makeState({
+      ...stateUnderConstruction,
+      tools: { briks: 0, glass: 0, nails: 0, screw: 0 },
+    });
+    const result = processCommand(state, openFloorCmd(), testConfig, 62000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient tools');
+  });
+
+  it('fails when no floor under construction', () => {
+    const state = makeState({ underConstruction: null });
+    const result = processCommand(state, openFloorCmd(), testConfig, 62000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Floor not under construction');
   });
 });

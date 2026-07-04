@@ -26,6 +26,10 @@ export function processCommand(
     case 'list':
     case 'collect':
       return processProductionCommand(state, command, config, now);
+    case 'buy_floor':
+      return handleBuyFloor(state, command, config);
+    case 'open_floor':
+      return handleOpenFloor(state, command, config);
     case 'spawn_visitor':
     case 'lift_visitor':
     case 'collect_tip':
@@ -33,8 +37,95 @@ export function processCommand(
     case 'upgrade_elevator':
     case 'upgrade_lobby':
     case 'claim_daily_reward':
+    case 'expand_hotel':
       return processLobbyCommand(state, command, config, playerLevel);
   }
+}
+
+function handleBuyFloor(
+  state: GameState,
+  command: Extract<Command, { type: 'buy_floor' }>,
+  config: GameConfig,
+): ProcessResult {
+  const unlockConfig = config.floorUnlocks?.find((f) => f.floorId === command.floorId);
+  if (!unlockConfig) return { success: false, state, error: 'Floor not available for purchase' };
+  if (state.underConstruction !== null) return { success: false, state, error: 'Already under construction' };
+  if (state.floors.some((f) => f.id === command.floorId)) return { success: false, state, error: 'Floor already exists' };
+
+  if (unlockConfig.currency === 'gems') {
+    if (state.gems < unlockConfig.price) return { success: false, state, error: 'Insufficient gems' };
+    return {
+      success: true,
+      state: {
+        ...state,
+        gems: state.gems - unlockConfig.price,
+        underConstruction: {
+          floorId: command.floorId,
+          startedAt: command.timestamp,
+          durationMs: unlockConfig.constructionDurationMs,
+          requiredTool: command.requiredTool,
+          requiredCount: unlockConfig.requiredToolCount,
+        },
+      },
+    };
+  }
+  if (state.balance < unlockConfig.price) return { success: false, state, error: 'Insufficient balance' };
+  return {
+    success: true,
+    state: {
+      ...state,
+      balance: state.balance - unlockConfig.price,
+      underConstruction: {
+        floorId: command.floorId,
+        startedAt: command.timestamp,
+        durationMs: unlockConfig.constructionDurationMs,
+        requiredTool: command.requiredTool,
+        requiredCount: unlockConfig.requiredToolCount,
+      },
+    },
+  };
+}
+
+function handleOpenFloor(
+  state: GameState,
+  command: Extract<Command, { type: 'open_floor' }>,
+  config: GameConfig,
+): ProcessResult {
+  const uc = state.underConstruction;
+  if (!uc || uc.floorId !== command.floorId) return { success: false, state, error: 'Floor not under construction' };
+  if (command.timestamp - uc.startedAt < uc.durationMs) return { success: false, state, error: 'Construction not complete' };
+
+  const currentTools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 };
+  if ((currentTools[uc.requiredTool] ?? 0) < uc.requiredCount) return { success: false, state, error: 'Insufficient tools' };
+
+  const floorTypeConfig = config.floorTypes[command.floorType];
+  if (!floorTypeConfig) return { success: false, state, error: 'Unknown floor type' };
+
+  const newFloor = {
+    id: command.floorId,
+    productions: floorTypeConfig.dreamJobs.map((typeId) => ({
+      typeId,
+      stage: 'IDLE' as const,
+      stageStartedAt: 0,
+    })),
+  };
+
+  return {
+    success: true,
+    state: {
+      ...state,
+      tools: {
+        ...currentTools,
+        [uc.requiredTool]: currentTools[uc.requiredTool] - uc.requiredCount,
+      },
+      floors: [...state.floors, newFloor],
+      openedFloorTypes: {
+        ...(state.openedFloorTypes ?? {}),
+        [String(command.floorId)]: command.floorType,
+      },
+      underConstruction: null,
+    },
+  };
 }
 
 function handleAssignWorker(
@@ -137,6 +228,19 @@ function processProductionCommand(
   }
 }
 
+function resolveFloorType(state: GameState, config: GameConfig, floorId: number): string {
+  const staticConfig = config.floors.find((f) => f.id === floorId);
+  if (staticConfig) return staticConfig.floorType;
+  return state.openedFloorTypes?.[String(floorId)] ?? '';
+}
+
+function resolveAvailableTypes(state: GameState, config: GameConfig, floorId: number): string[] {
+  const staticConfig = config.floors.find((f) => f.id === floorId);
+  if (staticConfig) return staticConfig.availableTypes;
+  const floorType = state.openedFloorTypes?.[String(floorId)];
+  return floorType ? (config.floorTypes[floorType]?.dreamJobs ?? []) : [];
+}
+
 function handleBuy(
   state: GameState,
   command: Extract<Command, { type: 'buy' }>,
@@ -158,8 +262,8 @@ function handleBuy(
   const typeConfig = config.productionTypes[command.typeId];
   if (!typeConfig) return { success: false, state, error: 'Unknown production type' };
 
-  const floorConfig = config.floors.find((f) => f.id === state.floors[floorIdx].id);
-  if (!floorConfig || !floorConfig.availableTypes.includes(command.typeId)) {
+  const availableTypes = resolveAvailableTypes(state, config, state.floors[floorIdx].id);
+  if (!availableTypes.includes(command.typeId)) {
     return { success: false, state, error: 'Type not available on this floor' };
   }
 
@@ -240,8 +344,8 @@ function handleCollect(
     return { success: false, state, error: 'Sale not complete' };
   }
 
-  const floorConfig = config.floors.find((f) => f.id === state.floors[floorIdx].id);
-  const floorType = floorConfig?.floorType ?? '';
+  const floorId = state.floors[floorIdx].id;
+  const floorType = resolveFloorType(state, config, floorId);
   const multiplier = getRevenueMultiplier(worker, floorType, production.typeId);
   const revenue = Math.floor(typeConfig.batchValue * multiplier);
 
