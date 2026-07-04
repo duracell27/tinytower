@@ -37,6 +37,13 @@ const testConfig: GameConfig = {
       constructionDurationMs: 60000,
       requiredToolCount: 1,
     },
+    {
+      floorId: 6,
+      price: 50,
+      currency: 'coins' as const,
+      constructionDurationMs: 60000,
+      requiredToolCount: 2,
+    },
   ],
 };
 
@@ -456,6 +463,27 @@ describe('buy_floor command', () => {
     const result = processCommand(state, buyFloorCmd({ floorId: 99 }), testConfig, 1000);
     expect(result.success).toBe(false);
   });
+
+  it('deducts balance and sets underConstruction for coins currency', () => {
+    const state = makeState({ balance: 100 });
+    const result = processCommand(state, {
+      id: 'bf-2', type: 'buy_floor', timestamp: 1000,
+      floorId: 6, requiredTool: 'glass',
+    } as Command, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.balance).toBe(50);
+    expect(result.state.underConstruction).toMatchObject({ floorId: 6, requiredTool: 'glass' });
+  });
+
+  it('fails with insufficient balance for coins currency', () => {
+    const state = makeState({ balance: 10 });
+    const result = processCommand(state, {
+      id: 'bf-3', type: 'buy_floor', timestamp: 1000,
+      floorId: 6, requiredTool: 'glass',
+    } as Command, testConfig, 1000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient balance');
+  });
 });
 
 describe('open_floor command', () => {
@@ -487,7 +515,7 @@ describe('open_floor command', () => {
     expect(result.state.openedFloorTypes['5']).toBe('green');
   });
 
-  it('new floor has 3 productions matching dreamJobs', () => {
+  it('new floor has 2 productions matching dreamJobs', () => {
     const state = makeState(stateUnderConstruction);
     const result = processCommand(state, openFloorCmd(), testConfig, 62000);
     const newFloor = result.state.floors.find((f) => f.id === 5)!;
