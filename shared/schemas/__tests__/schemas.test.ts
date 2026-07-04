@@ -415,6 +415,8 @@ describe('New command schemas', () => {
       floorId: 5, requiredTool: 'briks',
     });
     expect(cmd.type).toBe('buy_floor');
+    expect((cmd as import('../../types').BuyFloorCommand).floorId).toBe(5);
+    expect((cmd as import('../../types').BuyFloorCommand).requiredTool).toBe('briks');
   });
 
   it('validates open_floor command', () => {
@@ -423,6 +425,8 @@ describe('New command schemas', () => {
       floorId: 5, floorType: 'violet',
     });
     expect(cmd.type).toBe('open_floor');
+    expect((cmd as import('../../types').OpenFloorCommand).floorId).toBe(5);
+    expect((cmd as import('../../types').OpenFloorCommand).floorType).toBe('violet');
   });
 
   it('rejects buy_floor with unknown tool', () => {
