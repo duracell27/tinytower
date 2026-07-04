@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -41,19 +41,19 @@ function formatNumber(n: number): string {
 }
 
 export default function DeliverAllModal({ visible, summary, onDismiss }: DeliverAllModalProps) {
-  if (!visible || !summary) return null;
-  return <DeliverAllContent summary={summary} onDismiss={onDismiss} />;
-}
-
-function DeliverAllContent({ summary, onDismiss }: { summary: DeliverAllSummary; onDismiss: () => void }) {
   const { t } = useTranslation('hotel');
   const scale = useSharedValue(0.5);
   const opacity = useSharedValue(0);
 
   useEffect(() => {
-    opacity.value = withTiming(1, { duration: 200 });
-    scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
-  }, []);
+    if (visible && summary) {
+      opacity.value = withTiming(1, { duration: 200 });
+      scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
+    } else {
+      opacity.value = 0;
+      scale.value = 0.5;
+    }
+  }, [visible, summary]);
 
   const scrimStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
   const cardStyle = useAnimatedStyle(() => ({
@@ -61,10 +61,11 @@ function DeliverAllContent({ summary, onDismiss }: { summary: DeliverAllSummary;
     opacity: opacity.value,
   }));
 
+  if (!visible || !summary) return null;
+
   return (
-    <Modal transparent animationType="none" onRequestClose={onDismiss}>
-      <Animated.View style={[styles.scrim, scrimStyle]}>
-        <Pressable style={styles.scrimPress} onPress={onDismiss} />
+    <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]}>
+      <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
         <Animated.View style={[styles.card, cardStyle]}>
           <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={styles.cardGradient}>
             <Text style={styles.title}>{t('deliverAll.title')}</Text>
@@ -125,20 +126,15 @@ function DeliverAllContent({ summary, onDismiss }: { summary: DeliverAllSummary;
             </Pressable>
           </LinearGradient>
         </Animated.View>
-      </Animated.View>
-    </Modal>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   scrim: {
-    flex: 1,
     backgroundColor: 'rgba(0,0,0,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  scrimPress: {
-    ...StyleSheet.absoluteFillObject,
   },
   card: {
     width: SCREEN_W * 0.78,

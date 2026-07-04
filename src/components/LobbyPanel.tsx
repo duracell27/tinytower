@@ -512,6 +512,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       setHotelFullNotice(false);
       setNewWorkerPopup(null);
       clearBuilderToolDrop();
+      setDeliverSummary(null);
     }
   }, [visible, clearBuilderToolDrop]);
 
@@ -1158,14 +1159,15 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             </Pressable>
           </Pressable>
         )}
+
+        {/* Deliver-all summary overlay — rendered inside Modal to avoid nested-Modal issues */}
+        <DeliverAllModal
+          visible={deliverSummary !== null}
+          summary={deliverSummary}
+          onDismiss={() => setDeliverSummary(null)}
+        />
       </GestureHandlerRootView>
     </Modal>
-
-    <DeliverAllModal
-      visible={deliverSummary !== null}
-      summary={deliverSummary}
-      onDismiss={() => setDeliverSummary(null)}
-    />
     </>
   );
 }
