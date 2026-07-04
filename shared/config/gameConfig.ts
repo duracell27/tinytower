@@ -24,6 +24,12 @@ const rawConfig = {
     coffee:   { buyCost: 20,  deliveryDuration: 8000,  sellDuration: 12000, batchValue: 40 },
     pancake:  { buyCost: 35,  deliveryDuration: 12000, sellDuration: 18000, batchValue: 64 },
     dessert:  { buyCost: 45,  deliveryDuration: 18000, sellDuration: 22000, batchValue: 88 },
+    aroma:    { buyCost: 30,  deliveryDuration: 10000, sellDuration: 14000, batchValue: 58 },
+    soap:     { buyCost: 45,  deliveryDuration: 14000, sellDuration: 20000, batchValue: 82 },
+    candle:   { buyCost: 60,  deliveryDuration: 20000, sellDuration: 26000, batchValue: 110 },
+    icecream: { buyCost: 25,  deliveryDuration: 9000,  sellDuration: 13000, batchValue: 50 },
+    shake:    { buyCost: 40,  deliveryDuration: 13000, sellDuration: 19000, batchValue: 74 },
+    sorbet:   { buyCost: 55,  deliveryDuration: 18000, sellDuration: 24000, batchValue: 98 },
   },
   startingBalance: 1000,
   hotelCapacity: 10,
@@ -41,6 +47,15 @@ const rawConfig = {
     lobbyUpgradeSeats: 3,
     defaultLobbyCapacity: 10,
   },
+  floorUnlocks: [
+    {
+      floorId: 5,
+      price: 250,
+      currency: 'gems' as const,
+      constructionDurationMs: 20 * 60 * 1000,
+      requiredToolCount: 1,
+    },
+  ],
 } satisfies GameConfig;
 
 export const gameConfig: GameConfig = GameConfigSchema.parse(rawConfig);
@@ -69,5 +84,8 @@ export function createInitialState(config: GameConfig): GameState {
     dailyTipsRewardClaimed: false,
     lastDailyReset: 0,
     nextVisitorAt: 0,
+    tools: { briks: 1, glass: 1, nails: 1, screw: 1 },
+    underConstruction: null,
+    openedFloorTypes: {},
   };
 }

@@ -5,8 +5,8 @@ describe('gameConfig', () => {
     expect(gameConfig.floors).toHaveLength(3);
   });
 
-  it('has 9 production types', () => {
-    expect(Object.keys(gameConfig.productionTypes)).toHaveLength(9);
+  it('has 15 production types', () => {
+    expect(Object.keys(gameConfig.productionTypes)).toHaveLength(15);
     expect(gameConfig.productionTypes).toHaveProperty('bulky');
     expect(gameConfig.productionTypes).toHaveProperty('cupcake');
     expect(gameConfig.productionTypes).toHaveProperty('cake');
@@ -16,6 +16,12 @@ describe('gameConfig', () => {
     expect(gameConfig.productionTypes).toHaveProperty('coffee');
     expect(gameConfig.productionTypes).toHaveProperty('pancake');
     expect(gameConfig.productionTypes).toHaveProperty('dessert');
+    expect(gameConfig.productionTypes).toHaveProperty('aroma');
+    expect(gameConfig.productionTypes).toHaveProperty('soap');
+    expect(gameConfig.productionTypes).toHaveProperty('candle');
+    expect(gameConfig.productionTypes).toHaveProperty('icecream');
+    expect(gameConfig.productionTypes).toHaveProperty('shake');
+    expect(gameConfig.productionTypes).toHaveProperty('sorbet');
   });
 
   it('has 5 floor types', () => {
@@ -49,6 +55,17 @@ describe('gameConfig', () => {
 
   it('hotel capacity is 10', () => {
     expect(gameConfig.hotelCapacity).toBe(10);
+  });
+
+  it('has floor unlocks configuration', () => {
+    expect(gameConfig.floorUnlocks).toHaveLength(1);
+    expect(gameConfig.floorUnlocks[0]).toEqual({
+      floorId: 5,
+      price: 250,
+      currency: 'gems',
+      constructionDurationMs: 20 * 60 * 1000,
+      requiredToolCount: 1,
+    });
   });
 });
 
@@ -127,5 +144,25 @@ describe('createInitialState', () => {
     expect(state.dailyTipsRewardClaimed).toBe(false);
     expect(state.lastDailyReset).toBe(0);
     expect(state.nextVisitorAt).toBe(0);
+  });
+
+  it('tools initialized with 1 of each type', () => {
+    const state = createInitialState(gameConfig);
+    expect(state.tools).toEqual({
+      briks: 1,
+      glass: 1,
+      nails: 1,
+      screw: 1,
+    });
+  });
+
+  it('underConstruction initialized to null', () => {
+    const state = createInitialState(gameConfig);
+    expect(state.underConstruction).toBeNull();
+  });
+
+  it('openedFloorTypes initialized to empty object', () => {
+    const state = createInitialState(gameConfig);
+    expect(state.openedFloorTypes).toEqual({});
   });
 });
