@@ -19,7 +19,6 @@ import { useGameClock } from '../../src/hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { syncService } from '../../src/services/sync';
 import { xpForLevel } from '../../shared/engine/xp';
-import type { UnderConstructionState } from '../../shared/types';
 
 type FloorItem =
   | { type: 'production'; id: number }
@@ -185,7 +184,7 @@ export default function GameScreen() {
     }
     return null;
   }, [balance, now, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
-      underConstruction, buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems, showInsufficientResources]);
+      underConstruction, buyFloor, nextFloorId, nextFloorUnlock, gems, showInsufficientResources]);
 
   return (
     <View style={styles.container}>
