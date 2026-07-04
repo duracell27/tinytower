@@ -6,7 +6,7 @@ import { generateRandomVisitorRole, generateVisitorAppearance } from '../../shar
 import { generateRandomWorkers } from '../../shared/config/workerNames';
 import { applyXpGain, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
-import type { GameState, Command, Floor, Worker } from '../../shared/types';
+import type { GameState, Command, Floor, Worker, ToolsState } from '../../shared/types';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -21,13 +21,6 @@ interface PlayerStats {
   playerLevel: number;
   playerXp: number;
   levelUpQueue: LevelUpEvent[];
-}
-
-interface ToolInventory {
-  briks: number;
-  glass: number;
-  nails: number;
-  screw: number;
 }
 
 interface SyncState {
@@ -70,7 +63,9 @@ interface GameActions {
   expandHotel: () => void;
   claimDailyReward: () => void;
   dismissLevelUp: () => void;
-  setToolInventory: (tools: ToolInventory) => void;
+  setToolInventory: (tools: ToolsState) => void;
+  buyFloor: (floorId: number) => void;
+  openFloor: (floorId: number, floorType: string) => void;
   setLastSyncAt: (ts: number) => void;
   hydrate: (state: GameState & Partial<SyncState> & { playerLevel?: number; playerXp?: number }) => void;
   reconcile: (state: GameState, stateVersion: number, ackCursor: number, playerLevel?: number, playerXp?: number) => void;
@@ -80,7 +75,7 @@ interface GameActions {
   clearBuilderToolDrop: () => void;
 }
 
-type GameStore = GameState & PlayerStats & SyncState & ToolInventory & UIState & GameActions;
+type GameStore = GameState & PlayerStats & SyncState & UIState & GameActions;
 
 function executeCommand(
   get: () => GameStore,
@@ -91,11 +86,13 @@ function executeCommand(
   const { balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
+    tools, underConstruction, openedFloorTypes,
   } = store;
   const gameState: GameState = {
     balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
+    tools, underConstruction, openedFloorTypes,
   };
   const result = processCommand(gameState, command, gameConfig, command.timestamp, store.playerLevel);
   if (!result.success) return;
@@ -127,6 +124,9 @@ function executeCommand(
     dailyTipsRewardClaimed: result.state.dailyTipsRewardClaimed,
     lastDailyReset: result.state.lastDailyReset,
     nextVisitorAt: result.state.nextVisitorAt,
+    tools: result.state.tools,
+    underConstruction: result.state.underConstruction,
+    openedFloorTypes: result.state.openedFloorTypes,
     playerXp: xpResult.playerXp,
     playerLevel: xpResult.playerLevel,
     levelUpQueue: [...store.levelUpQueue, ...levelUps],
@@ -141,10 +141,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
   lastAckCursor: 0,
   stateVersion: 0,
   lastSyncAt: 0,
-  briks: 1,
-  glass: 1,
-  nails: 1,
-  screw: 1,
   insufficientResources: null,
   builderToolDrop: null,
 
@@ -301,7 +297,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (role === 'builder' && get().lobbyVisitors.length < prevVisitorCount) {
       const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
       const tool = TOOLS[Math.floor(Math.random() * TOOLS.length)];
-      set({ [tool]: get()[tool] + 1, builderToolDrop: tool });
+      const curTools = get().tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 };
+      set({ tools: { ...curTools, [tool]: curTools[tool] + 1 }, builderToolDrop: tool });
     }
   },
 
@@ -315,17 +312,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
     if (builders.length > 0 && get().lobbyVisitors.length < state.lobbyVisitors.length) {
       const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
-      const cur = get();
       const delta: Record<ToolKey, number> = { briks: 0, glass: 0, nails: 0, screw: 0 };
       for (let i = 0; i < builders.length; i++) {
         delta[TOOLS[Math.floor(Math.random() * TOOLS.length)]]++;
       }
-      set({
-        briks: cur.briks + delta.briks,
-        glass: cur.glass + delta.glass,
-        nails: cur.nails + delta.nails,
-        screw: cur.screw + delta.screw,
-      });
+      set((cur) => ({
+        tools: {
+          briks: (cur.tools?.briks ?? 0) + delta.briks,
+          glass: (cur.tools?.glass ?? 0) + delta.glass,
+          nails: (cur.tools?.nails ?? 0) + delta.nails,
+          screw: (cur.tools?.screw ?? 0) + delta.screw,
+        },
+      }));
     }
   },
 
@@ -365,7 +363,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set((state) => ({ levelUpQueue: state.levelUpQueue.slice(1) }));
   },
 
-  setToolInventory: (tools) => set(tools),
+  setToolInventory: (tools) => set((cur) => ({ tools: { ...cur.tools, ...tools } })),
 
   setLastSyncAt: (ts) => set({ lastSyncAt: ts }),
 
@@ -389,6 +387,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     stateVersion: state.stateVersion ?? 0,
     playerLevel: state.playerLevel ?? 1,
     playerXp: state.playerXp ?? 0,
+    tools: state.tools ?? { briks: 1, glass: 1, nails: 1, screw: 1 },
+    underConstruction: state.underConstruction ?? null,
+    openedFloorTypes: state.openedFloorTypes ?? {},
   }),
 
   reconcile: (serverState, newVersion, ackCursor, playerLevel, playerXp) => set((cur) => ({
@@ -411,6 +412,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     commandQueue: [],
     playerLevel: playerLevel ?? cur.playerLevel,
     playerXp: playerXp ?? cur.playerXp,
+    tools: serverState.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
+    underConstruction: serverState.underConstruction ?? null,
+    openedFloorTypes: serverState.openedFloorTypes ?? {},
   })),
 
   clearAckedCommands: (ackCursor, playerLevel, playerXp) => set((cur) => ({
@@ -418,6 +422,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
     playerLevel: playerLevel ?? cur.playerLevel,
     playerXp: playerXp ?? cur.playerXp,
   })),
+
+  buyFloor: (floorId) => {
+    const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
+    const requiredTool = TOOLS[Math.floor(Math.random() * TOOLS.length)];
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'buy_floor',
+      floorId,
+      requiredTool,
+      timestamp: clock.now(),
+    });
+  },
+
+  openFloor: (floorId, floorType) => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'open_floor',
+      floorId,
+      floorType,
+      timestamp: clock.now(),
+    });
+  },
 }));
 
 export function useBalance(): number {

@@ -35,10 +35,10 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
   const translateY = useSharedValue(SCREEN_HEIGHT);
   const dragY = useSharedValue(0);
 
-  const briks = useGameStore((s) => s.briks);
-  const glass = useGameStore((s) => s.glass);
-  const nails = useGameStore((s) => s.nails);
-  const screw = useGameStore((s) => s.screw);
+  const briks = useGameStore((s) => s.tools?.briks ?? 0);
+  const glass = useGameStore((s) => s.tools?.glass ?? 0);
+  const nails = useGameStore((s) => s.tools?.nails ?? 0);
+  const screw = useGameStore((s) => s.tools?.screw ?? 0);
   const counts: Record<string, number> = { briks, glass, nails, screw };
 
   useEffect(() => {
