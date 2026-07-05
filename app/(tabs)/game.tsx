@@ -25,7 +25,7 @@ type FloorItem =
   | { type: 'hotel' }
   | { type: 'lobby' }
   | { type: 'buyFloor' }
-  | { type: 'underConstruction' };
+  | { type: 'underConstruction'; floorId: number };
 
 
 function formatCoins(n: number): string {
@@ -42,6 +42,7 @@ function formatCoins(n: number): string {
 
 function keyExtractor(item: FloorItem): string {
   if (item.type === 'production') return `prod-${item.id}`;
+  if (item.type === 'underConstruction') return `uc-${item.floorId}`;
   return item.type;
 }
 
@@ -69,26 +70,31 @@ export default function GameScreen() {
   const buyFloor = useGameStore((s) => s.buyFloor);
   const selectFloorType = useGameStore((s) => s.selectFloorType);
   const openFloor = useGameStore((s) => s.openFloor);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const selectedFloorType = underConstruction?.selectedFloorType ?? null;
+  const [pickerOpenFor, setPickerOpenFor] = useState<number | null>(null);
 
   const floors = useGameStore((s) => s.floors);
 
   const { nextFloorId, nextFloorUnlock } = React.useMemo(() => {
-    const highestFloorId = Math.max(...floors.map((f) => f.id), ...gameConfig.floors.map((f) => f.id));
+    const highestFloorId = Math.max(
+      ...floors.map((f) => f.id),
+      ...gameConfig.floors.map((f) => f.id),
+      ...underConstruction.map((uc) => uc.floorId),
+    );
     const nfId = highestFloorId + 1;
     return {
       nextFloorId: nfId,
       nextFloorUnlock: gameConfig.floorUnlocks.find((f) => f.floorId === nfId) ?? null,
     };
-  }, [floors]);
+  }, [floors, underConstruction]);
 
   const floorList: FloorItem[] = React.useMemo(() => {
     const items: FloorItem[] = [];
-    if (underConstruction) {
-      items.push({ type: 'underConstruction' });
-    } else if (nextFloorUnlock && lastSyncAt > 0) {
+    if (nextFloorUnlock && lastSyncAt > 0) {
       items.push({ type: 'buyFloor' });
+    }
+    const sortedUc = [...underConstruction].sort((a, b) => b.floorId - a.floorId);
+    for (const uc of sortedUc) {
+      items.push({ type: 'underConstruction', floorId: uc.floorId });
     }
     const sortedFloorIds = [...floors.map((f) => f.id)].sort((a, b) => b - a);
     for (const id of sortedFloorIds) {
@@ -126,21 +132,22 @@ export default function GameScreen() {
   }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor]);
 
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
-    if (item.type === 'underConstruction' && underConstruction) {
+    if (item.type === 'underConstruction') {
+      const uc = underConstruction.find((u) => u.floorId === item.floorId);
+      if (!uc) return null;
+      const selType = uc.selectedFloorType ?? null;
       return (
         <View style={styles.floorWrapper}>
           <UnderConstructionBanner
-            floorId={underConstruction.floorId}
-            endsAt={underConstruction.startedAt + underConstruction.durationMs}
+            floorId={uc.floorId}
+            endsAt={uc.startedAt + uc.durationMs}
             now={now}
-            requiredTool={underConstruction.requiredTool}
-            requiredCount={underConstruction.requiredCount}
-            selectedFloorType={selectedFloorType}
-            onOpenPicker={() => setPickerOpen(true)}
+            requiredTool={uc.requiredTool}
+            requiredCount={uc.requiredCount}
+            selectedFloorType={selType}
+            onOpenPicker={() => setPickerOpenFor(uc.floorId)}
             onStartBusiness={() => {
-              if (selectedFloorType) {
-                openFloor(underConstruction.floorId, selectedFloorType);
-              }
+              if (selType) openFloor(uc.floorId, selType);
             }}
           />
         </View>
@@ -199,7 +206,7 @@ export default function GameScreen() {
     return null;
   }, [balance, now, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
       underConstruction, buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
-      showInsufficientResources, selectedFloorType]);
+      showInsufficientResources]);
 
   return (
     <View style={styles.container}>
@@ -244,17 +251,18 @@ export default function GameScreen() {
         onClose={() => setLobbyOpen(false)}
         onOpenHotel={() => { setLobbyOpen(false); setHotelOpen(true); }}
       />
-      {underConstruction && (
+      {underConstruction.map((uc) => (
         <BusinessTypePickerSheet
-          visible={pickerOpen}
-          underConstruction={underConstruction}
-          onClose={() => setPickerOpen(false)}
+          key={uc.floorId}
+          visible={pickerOpenFor === uc.floorId}
+          underConstruction={uc}
+          onClose={() => setPickerOpenFor(null)}
           onSelectType={(floorType) => {
-            selectFloorType(floorType);
-            setPickerOpen(false);
+            selectFloorType(uc.floorId, floorType);
+            setPickerOpenFor(null);
           }}
         />
-      )}
+      ))}
       <LevelUpModal suppressWhileOpen={lobbyOpen || hotelOpen} />
       <InsufficientResourcesModal />
     </View>

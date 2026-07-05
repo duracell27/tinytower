@@ -42,6 +42,6 @@ export const GameStateSchema = z.object({
   lastDailyReset: z.number().nonnegative(),
   nextVisitorAt: z.number().nonnegative(),
   tools: ToolsSchema.default({ briks: 0, glass: 0, nails: 0, screw: 0 }),
-  underConstruction: UnderConstructionSchema.nullable().default(null),
+  underConstruction: UnderConstructionSchema.array().default([]),
   openedFloorTypes: z.record(z.string(), z.string()).default({}),
 });

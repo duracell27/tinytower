@@ -49,42 +49,29 @@ function handleBuyFloor(
 ): ProcessResult {
   const unlockConfig = config.floorUnlocks?.find((f) => f.floorId === command.floorId);
   if (!unlockConfig) return { success: false, state, error: 'Floor not available for purchase' };
-  if (state.underConstruction !== null) return { success: false, state, error: 'Already under construction' };
+  if (state.underConstruction.some((uc) => uc.floorId === command.floorId)) return { success: false, state, error: 'Floor already under construction' };
   if (state.floors.some((f) => f.id === command.floorId)) return { success: false, state, error: 'Floor already exists' };
+
+  const newUc = {
+    floorId: command.floorId,
+    startedAt: command.timestamp,
+    durationMs: unlockConfig.constructionDurationMs,
+    requiredTool: command.requiredTool,
+    requiredCount: unlockConfig.requiredToolCount,
+    selectedFloorType: null,
+  };
 
   if (unlockConfig.currency === 'gems') {
     if (state.gems < unlockConfig.price) return { success: false, state, error: 'Insufficient gems' };
     return {
       success: true,
-      state: {
-        ...state,
-        gems: state.gems - unlockConfig.price,
-        underConstruction: {
-          floorId: command.floorId,
-          startedAt: command.timestamp,
-          durationMs: unlockConfig.constructionDurationMs,
-          requiredTool: command.requiredTool,
-          requiredCount: unlockConfig.requiredToolCount,
-          selectedFloorType: null,
-        },
-      },
+      state: { ...state, gems: state.gems - unlockConfig.price, underConstruction: [...state.underConstruction, newUc] },
     };
   }
   if (state.balance < unlockConfig.price) return { success: false, state, error: 'Insufficient balance' };
   return {
     success: true,
-    state: {
-      ...state,
-      balance: state.balance - unlockConfig.price,
-      underConstruction: {
-        floorId: command.floorId,
-        startedAt: command.timestamp,
-        durationMs: unlockConfig.constructionDurationMs,
-        requiredTool: command.requiredTool,
-        requiredCount: unlockConfig.requiredToolCount,
-        selectedFloorType: null,
-      },
-    },
+    state: { ...state, balance: state.balance - unlockConfig.price, underConstruction: [...state.underConstruction, newUc] },
   };
 }
 
@@ -93,8 +80,8 @@ function handleOpenFloor(
   command: Extract<Command, { type: 'open_floor' }>,
   config: GameConfig,
 ): ProcessResult {
-  const uc = state.underConstruction;
-  if (!uc || uc.floorId !== command.floorId) return { success: false, state, error: 'Floor not under construction' };
+  const uc = state.underConstruction.find((u) => u.floorId === command.floorId);
+  if (!uc) return { success: false, state, error: 'Floor not under construction' };
   if (command.timestamp - uc.startedAt < uc.durationMs) return { success: false, state, error: 'Construction not complete' };
 
   const currentTools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 };
@@ -125,7 +112,7 @@ function handleOpenFloor(
         ...(state.openedFloorTypes ?? {}),
         [String(command.floorId)]: command.floorType,
       },
-      underConstruction: null,
+      underConstruction: state.underConstruction.filter((u) => u.floorId !== command.floorId),
     },
   };
 }

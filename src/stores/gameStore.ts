@@ -65,7 +65,7 @@ interface GameActions {
   dismissLevelUp: () => void;
   setToolInventory: (tools: ToolsState) => void;
   buyFloor: (floorId: number) => void;
-  selectFloorType: (floorType: string) => void;
+  selectFloorType: (floorId: number, floorType: string) => void;
   openFloor: (floorId: number, floorType: string) => void;
   setLastSyncAt: (ts: number) => void;
   hydrate: (state: GameState & Partial<SyncState> & { playerLevel?: number; playerXp?: number }) => void;
@@ -389,7 +389,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     playerLevel: state.playerLevel ?? 1,
     playerXp: state.playerXp ?? 0,
     tools: state.tools ?? { briks: 1, glass: 1, nails: 1, screw: 1 },
-    underConstruction: state.underConstruction ?? null,
+    underConstruction: state.underConstruction ?? [],
     openedFloorTypes: state.openedFloorTypes ?? {},
   }),
 
@@ -414,7 +414,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     playerLevel: playerLevel ?? cur.playerLevel,
     playerXp: playerXp ?? cur.playerXp,
     tools: serverState.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
-    underConstruction: serverState.underConstruction ?? null,
+    underConstruction: (serverState.underConstruction ?? []).map((uc) => {
+      const local = cur.underConstruction.find((u) => u.floorId === uc.floorId);
+      return local?.selectedFloorType ? { ...uc, selectedFloorType: local.selectedFloorType } : uc;
+    }),
     openedFloorTypes: serverState.openedFloorTypes ?? {},
   })),
 
@@ -437,11 +440,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
-  selectFloorType: (floorType) => {
+  selectFloorType: (floorId, floorType) => {
     set((cur) => ({
-      underConstruction: cur.underConstruction
-        ? { ...cur.underConstruction, selectedFloorType: floorType }
-        : null,
+      underConstruction: cur.underConstruction.map((uc) =>
+        uc.floorId === floorId ? { ...uc, selectedFloorType: floorType } : uc,
+      ),
     }));
   },
 

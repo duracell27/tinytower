@@ -1,6 +1,7 @@
 import '../src/i18n';
 import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
 import {
@@ -51,11 +52,13 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" options={{ animation: 'none' }} />
-      <Stack.Screen name="login" options={{ animation: 'slide_from_right' }} />
-      <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
-    </Stack>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" options={{ animation: 'none' }} />
+        <Stack.Screen name="login" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
+      </Stack>
+    </GestureHandlerRootView>
   );
 }
 

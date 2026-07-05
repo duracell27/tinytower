@@ -290,7 +290,11 @@ export class SyncService {
       lastDailyReset: (ls.lastDailyReset as number) ?? 0,
       nextVisitorAt: (ls.nextVisitorAt as number) ?? 0,
       tools: (ls.tools as { briks: number; glass: number; nails: number; screw: number }) ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
-      underConstruction: (ls.underConstruction as any) ?? null,
+      underConstruction: Array.isArray(ls.underConstruction)
+        ? (ls.underConstruction as any[])
+        : ls.underConstruction != null
+          ? [ls.underConstruction as any]
+          : [],
       openedFloorTypes: (ls.openedFloorTypes as Record<string, string>) ?? {},
     };
   }

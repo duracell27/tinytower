@@ -48,13 +48,12 @@ const rawConfig = {
     defaultLobbyCapacity: 10,
   },
   floorUnlocks: [
-    {
-      floorId: 5,
-      price: 250,
-      currency: 'gems' as const,
-      constructionDurationMs: 20 * 60 * 1000,
-      requiredToolCount: 1,
-    },
+    { floorId: 5,  price: 250,  currency: 'gems' as const, constructionDurationMs: 20 * 60 * 1000, requiredToolCount: 1 },
+    { floorId: 6,  price: 320,  currency: 'gems' as const, constructionDurationMs: 30 * 60 * 1000, requiredToolCount: 2 },
+    { floorId: 7,  price: 420,  currency: 'gems' as const, constructionDurationMs: 45 * 60 * 1000, requiredToolCount: 2 },
+    { floorId: 8,  price: 550,  currency: 'gems' as const, constructionDurationMs: 60 * 60 * 1000, requiredToolCount: 3 },
+    { floorId: 9,  price: 700,  currency: 'gems' as const, constructionDurationMs: 90 * 60 * 1000, requiredToolCount: 3 },
+    { floorId: 10, price: 900,  currency: 'gems' as const, constructionDurationMs: 120 * 60 * 1000, requiredToolCount: 4 },
   ],
 } satisfies GameConfig;
 
@@ -85,7 +84,7 @@ export function createInitialState(config: GameConfig): GameState {
     lastDailyReset: 0,
     nextVisitorAt: 0,
     tools: { briks: 1, glass: 1, nails: 1, screw: 1 },
-    underConstruction: null,
+    underConstruction: [],
     openedFloorTypes: {},
   };
 }

@@ -433,9 +433,9 @@ describe('buy_floor command', () => {
     const result = processCommand(state, buyFloorCmd(), testConfig, 1000);
     expect(result.success).toBe(true);
     expect(result.state.gems).toBe(10);
-    expect(result.state.underConstruction).toMatchObject({
+    expect(result.state.underConstruction).toMatchObject([{
       floorId: 5, requiredTool: 'briks', requiredCount: 1, durationMs: 60000,
-    });
+    }]);
   });
 
   it('fails when gems are insufficient', () => {
@@ -448,14 +448,14 @@ describe('buy_floor command', () => {
   it('fails when already under construction', () => {
     const state = makeState({
       gems: 20,
-      underConstruction: {
+      underConstruction: [{
         floorId: 5, startedAt: 0, durationMs: 60000,
         requiredTool: 'briks', requiredCount: 1, selectedFloorType: null,
-      },
+      }],
     });
     const result = processCommand(state, buyFloorCmd(), testConfig, 1000);
     expect(result.success).toBe(false);
-    expect(result.error).toBe('Already under construction');
+    expect(result.error).toBe('Floor already under construction');
   });
 
   it('fails for unknown floor id', () => {
@@ -472,7 +472,7 @@ describe('buy_floor command', () => {
     } as Command, testConfig, 1000);
     expect(result.success).toBe(true);
     expect(result.state.balance).toBe(50);
-    expect(result.state.underConstruction).toMatchObject({ floorId: 6, requiredTool: 'glass' });
+    expect(result.state.underConstruction).toMatchObject([{ floorId: 6, requiredTool: 'glass' }]);
   });
 
   it('fails with insufficient balance for coins currency', () => {
@@ -498,10 +498,10 @@ describe('open_floor command', () => {
   const stateUnderConstruction: Partial<GameState> = {
     gems: 10,
     tools: { briks: 2, glass: 0, nails: 0, screw: 0 },
-    underConstruction: {
+    underConstruction: [{
       floorId: 5, startedAt: 1000, durationMs: 60000,
       requiredTool: 'briks', requiredCount: 1, selectedFloorType: null,
-    },
+    }],
   };
 
   it('adds new floor, deducts tool, clears underConstruction', () => {
@@ -511,7 +511,7 @@ describe('open_floor command', () => {
     expect(result.state.floors).toHaveLength(2);
     expect(result.state.floors[1].id).toBe(5);
     expect(result.state.tools.briks).toBe(1);
-    expect(result.state.underConstruction).toBeNull();
+    expect(result.state.underConstruction).toHaveLength(0);
     expect(result.state.openedFloorTypes['5']).toBe('green');
   });
 
@@ -540,7 +540,7 @@ describe('open_floor command', () => {
   });
 
   it('fails when no floor under construction', () => {
-    const state = makeState({ underConstruction: null });
+    const state = makeState({ underConstruction: [] });
     const result = processCommand(state, openFloorCmd(), testConfig, 62000);
     expect(result.success).toBe(false);
     expect(result.error).toBe('Floor not under construction');

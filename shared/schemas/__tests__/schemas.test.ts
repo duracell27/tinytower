@@ -454,7 +454,7 @@ describe('GameStateSchema with new fields', () => {
 
   it('defaults underConstruction to null when not provided', () => {
     const result = GameStateSchema.parse(minimalState);
-    expect(result.underConstruction).toBeNull();
+    expect(result.underConstruction).toEqual([]);
   });
 
   it('defaults openedFloorTypes to empty object when not provided', () => {
@@ -465,12 +465,12 @@ describe('GameStateSchema with new fields', () => {
   it('accepts underConstruction when provided', () => {
     const result = GameStateSchema.parse({
       ...minimalState,
-      underConstruction: {
+      underConstruction: [{
         floorId: 5, startedAt: 1000, durationMs: 1200000,
         requiredTool: 'glass', requiredCount: 1,
-      },
+      }],
     });
-    expect(result.underConstruction?.floorId).toBe(5);
+    expect(result.underConstruction[0]?.floorId).toBe(5);
   });
 });
 
