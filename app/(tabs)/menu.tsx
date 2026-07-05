@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import WarehouseSheet from '../../src/components/WarehouseSheet';
 
@@ -7,27 +8,36 @@ export default function MenuScreen() {
   const [inventoryOpen, setInventoryOpen] = useState(false);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Меню</Text>
+    <ImageBackground
+      source={require('../../assets/welcome-bg.png')}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+      <View style={styles.content}>
+        <Text style={styles.heading}>Меню</Text>
 
-      <Pressable style={styles.menuItem} onPress={() => setInventoryOpen(true)}>
-        <Image
-          source={require('../../assets/img/werehouse.png')}
-          style={{ width: 32, height: 32 }}
-          contentFit="contain"
-        />
-        <Text style={styles.menuLabel}>Інвентар</Text>
-      </Pressable>
+        <Pressable style={styles.menuItem} onPress={() => setInventoryOpen(true)}>
+          <Image
+            source={require('../../assets/img/werehouse.png')}
+            style={{ width: 32, height: 32 }}
+            contentFit="contain"
+          />
+          <Text style={styles.menuLabel}>Інвентар</Text>
+        </Pressable>
+      </View>
 
       <WarehouseSheet visible={inventoryOpen} onClose={() => setInventoryOpen(false)} />
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FA',
+  },
+  content: {
+    flex: 1,
     paddingTop: 72,
     paddingHorizontal: 20,
   },

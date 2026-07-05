@@ -9,7 +9,13 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.duracell27.tinytower-init"
+      "bundleIdentifier": "com.duracell27.tinytower-init",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsLocalNetworking": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +31,8 @@
     "plugins": [
       "expo-image",
       "expo-font",
-      "expo-router"
+      "expo-router",
+      "expo-localization"
     ]
   }
 }

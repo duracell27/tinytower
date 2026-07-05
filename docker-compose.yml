@@ -17,18 +17,18 @@ services:
     volumes:
       - redisdata:/data
 
-  backend:
-    build:
-      context: .
-      dockerfile: ./server/Dockerfile
-    ports:
-      - "3000:3000"
-    env_file:
-      - ./server/.env
-    depends_on:
-      - postgres
-      - redis
-    restart: unless-stopped
+  # backend:
+  #   build:
+  #     context: .
+  #     dockerfile: ./server/Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   env_file:
+  #     - ./server/.env
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   restart: unless-stopped
 
 volumes:
   pgdata:
