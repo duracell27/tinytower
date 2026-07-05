@@ -30,6 +30,7 @@ const testConfig: GameConfig = {
     lobbyUpgradeSeats: 3,
     defaultLobbyCapacity: 10,
   },
+  floorUnlocks: [],
 };
 
 describe('game store logic (via processCommand)', () => {

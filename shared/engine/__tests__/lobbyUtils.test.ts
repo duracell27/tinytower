@@ -38,6 +38,7 @@ const testConfig: GameConfig = {
     lobbyUpgradeSeats: 3,
     defaultLobbyCapacity: 10,
   },
+  floorUnlocks: [],
 };
 
 function makeState(overrides?: Partial<GameState>): GameState {

@@ -69,7 +69,7 @@ interface GameActions {
   setLastSyncAt: (ts: number) => void;
   hydrate: (state: GameState & Partial<SyncState> & { playerLevel?: number; playerXp?: number }) => void;
   reconcile: (state: GameState, stateVersion: number, ackCursor: number, playerLevel?: number, playerXp?: number) => void;
-  clearAckedCommands: (ackCursor: number, playerLevel?: number, playerXp?: number) => void;
+  clearAckedCommands: (ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   showInsufficientResources: (payload: InsufficientResourcesPayload) => void;
   clearInsufficientResources: () => void;
   clearBuilderToolDrop: () => void;
@@ -417,10 +417,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     openedFloorTypes: serverState.openedFloorTypes ?? {},
   })),
 
-  clearAckedCommands: (ackCursor, playerLevel, playerXp) => set((cur) => ({
+  clearAckedCommands: (ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
     lastAckCursor: ackCursor,
     playerLevel: playerLevel ?? cur.playerLevel,
     playerXp: playerXp ?? cur.playerXp,
+    commandQueue: cur.commandQueue.filter((cmd) => !sentIds.has(cmd.id)),
   })),
 
   buyFloor: (floorId) => {

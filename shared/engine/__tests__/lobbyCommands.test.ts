@@ -29,6 +29,7 @@ const testConfig: GameConfig = {
     lobbyUpgradeSeats: 3,
     defaultLobbyCapacity: 10,
   },
+  floorUnlocks: [],
 };
 
 function makeVisitor(overrides?: Partial<Visitor>): Visitor {

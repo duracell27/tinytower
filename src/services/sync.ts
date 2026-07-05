@@ -34,6 +34,7 @@ async function doSync(): Promise<void> {
   if (!useAuthStore.getState().isAuthenticated) return;
 
   const { commandQueue, lastAckCursor } = useGameStore.getState();
+  const sentIds = new Set(commandQueue.map((c) => c.id));
 
   isSyncing = true;
   try {
@@ -52,7 +53,7 @@ async function doSync(): Promise<void> {
     if (needsReconcile) {
       store.reconcile(response.state, response.stateVersion, response.ackCursor, response.playerLevel, response.playerXp);
     } else {
-      store.clearAckedCommands(response.ackCursor, response.playerLevel, response.playerXp);
+      store.clearAckedCommands(response.ackCursor, sentIds, response.playerLevel, response.playerXp);
     }
     useGameStore.getState().setLastSyncAt(Date.now());
   } catch {

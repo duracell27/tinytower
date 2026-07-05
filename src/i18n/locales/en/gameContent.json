@@ -20,6 +20,12 @@
     "bleach": { "displayName": "Bleach" },
     "coffee": { "displayName": "Coffee" },
     "pancake": { "displayName": "Pancakes" },
-    "dessert": { "displayName": "Desserts" }
+    "dessert": { "displayName": "Desserts" },
+    "aroma": { "displayName": "Aroma" },
+    "soap": { "displayName": "Soap" },
+    "candle": { "displayName": "Candles" },
+    "icecream": { "displayName": "Ice Cream" },
+    "shake": { "displayName": "Milkshake" },
+    "sorbet": { "displayName": "Sorbet" }
   }
 }
