@@ -43,6 +43,9 @@ export function loadGameState(): PersistedGameState | null {
       lastDailyReset: parsed.lastDailyReset ?? 0,
       nextVisitorAt: parsed.nextVisitorAt ?? 0,
       gems: parsed.gems ?? 20,
+      tools: parsed.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
+      underConstruction: parsed.underConstruction ?? null,
+      openedFloorTypes: parsed.openedFloorTypes ?? {},
     };
     const result = GameStateSchema.safeParse(withDefaults);
     if (result.success) {
@@ -83,6 +86,9 @@ export function saveGameState(state: PersistedGameState): void {
     stateVersion: state.stateVersion ?? 0,
     playerLevel: state.playerLevel ?? 1,
     playerXp: state.playerXp ?? 0,
+    tools: state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
+    underConstruction: state.underConstruction ?? null,
+    openedFloorTypes: state.openedFloorTypes ?? {},
   }));
 }
 

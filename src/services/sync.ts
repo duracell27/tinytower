@@ -14,16 +14,6 @@ interface SyncResponse {
   playerXp: number;
 }
 
-async function fetchTools(): Promise<void> {
-  if (!useAuthStore.getState().isAuthenticated) return;
-  try {
-    const tools = await api.get<{ briks: number; glass: number; nails: number; screw: number }>('/tools');
-    useGameStore.getState().setToolInventory(tools);
-  } catch {
-    // Network error — keep defaults
-  }
-}
-
 const SYNC_INTERVAL_MS = 5000;
 
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
@@ -87,7 +77,6 @@ export const syncService = {
     scheduleSync();
     appStateSubscription = AppState.addEventListener('change', handleAppState);
     doSync();
-    fetchTools();
   },
   stop: () => {
     if (syncTimer) {

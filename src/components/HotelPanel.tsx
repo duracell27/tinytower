@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Rect } from 'react-native-svg';
+import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
+import { getHotelExpansionCost } from '../../shared/engine/lobbyCommands';
 import type { Worker } from '../../shared/types';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -37,6 +38,11 @@ interface HotelPanelProps {
   onClose: () => void;
 }
 
+type ListItem =
+  | { kind: 'worker'; worker: Worker }
+  | { kind: 'empty'; index: number }
+  | { kind: 'buy' };
+
 export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const { t } = useTranslation('hotel');
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
@@ -47,12 +53,22 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
 
   const workers = useGameStore((s) => s.workers);
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
+  const gems = useGameStore((s) => s.gems);
+  const expandHotel = useGameStore((s) => s.expandHotel);
+  const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
 
   const unemployedWorkers = workers.filter(
     (w: Worker) => w.assignedFloorId === null,
   );
   const occupiedSeats = unemployedWorkers.length;
-  const freeSeats = hotelCapacity - occupiedSeats;
+  const freeSeats = Math.max(0, hotelCapacity - occupiedSeats);
+  const expansionCost = getHotelExpansionCost(hotelCapacity);
+
+  const listData: ListItem[] = [
+    ...unemployedWorkers.map((w): ListItem => ({ kind: 'worker', worker: w })),
+    ...Array.from({ length: freeSeats }, (_, i): ListItem => ({ kind: 'empty', index: i })),
+    { kind: 'buy' },
+  ];
 
   useEffect(() => {
     setExpandedWorkerId(null);
@@ -119,22 +135,57 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
     setPickerWorker(worker);
   }, []);
 
+  const handleExpandHotel = useCallback(() => {
+    if (expansionCost === null) return;
+    if (gems < expansionCost) {
+      showInsufficientResources({ currency: 'gems', need: expansionCost, have: gems });
+      return;
+    }
+    expandHotel();
+  }, [expansionCost, gems, expandHotel, showInsufficientResources]);
+
   const renderItem = useCallback(
-    ({ item }: { item: Worker }) => (
-      <WorkerCard
-        worker={item}
-        expanded={expandedWorkerId === item.id}
-        onToggle={() =>
-          setExpandedWorkerId((prev) => (prev === item.id ? null : item.id))
-        }
-        onFindJob={() => handleFindJob(item)}
-        onEvict={() => handleEvict(item.id, item.name)}
-      />
-    ),
-    [expandedWorkerId, handleEvict, handleFindJob],
+    ({ item, index }: { item: ListItem; index: number }) => {
+      if (item.kind === 'buy') {
+        return (
+          <BuySlotCard
+            cost={expansionCost}
+            onPress={handleExpandHotel}
+            t={t}
+          />
+        );
+      }
+      const roomNumber = index + 1;
+      const card = item.kind === 'worker' ? (
+        <WorkerCard
+          worker={item.worker}
+          expanded={expandedWorkerId === item.worker.id}
+          onToggle={() =>
+            setExpandedWorkerId((prev) => (prev === item.worker.id ? null : item.worker.id))
+          }
+          onFindJob={() => handleFindJob(item.worker)}
+          onEvict={() => handleEvict(item.worker.id, item.worker.name)}
+        />
+      ) : (
+        <EmptySlotCard t={t} />
+      );
+      return (
+        <View style={styles.roomRow}>
+          <View style={styles.roomBadge}>
+            <Text style={styles.roomNumber}>{roomNumber}</Text>
+          </View>
+          <View style={styles.roomCard}>{card}</View>
+        </View>
+      );
+    },
+    [expandedWorkerId, handleEvict, handleFindJob, expansionCost, handleExpandHotel, t],
   );
 
-  const keyExtractor = useCallback((item: Worker) => item.id, []);
+  const keyExtractor = useCallback((item: ListItem) => {
+    if (item.kind === 'worker') return `w-${item.worker.id}`;
+    if (item.kind === 'empty') return `e-${item.index}`;
+    return 'buy';
+  }, []);
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -210,7 +261,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
 
           {/* Worker list */}
           <FlatList
-            data={unemployedWorkers}
+            data={listData}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             contentContainerStyle={styles.listContent}
@@ -229,6 +280,191 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
     </Modal>
   );
 }
+
+function EmptySlotCard({ t }: { t: (key: string) => string }) {
+  return (
+    <View style={slotStyles.card}>
+      <View style={slotStyles.avatarPlaceholder}>
+        <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+            stroke="#C8CDD8"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Circle cx={12} cy={7} r={4} stroke="#C8CDD8" strokeWidth={2} />
+        </Svg>
+      </View>
+      <View style={slotStyles.info}>
+        <Text style={slotStyles.title}>{t('hotelPanel.emptySlot.title')}</Text>
+        <Text style={slotStyles.subtitle}>{t('hotelPanel.emptySlot.subtitle')}</Text>
+      </View>
+    </View>
+  );
+}
+
+function BuySlotCard({
+  cost,
+  onPress,
+  t,
+}: {
+  cost: number | null;
+  onPress: () => void;
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
+  if (cost === null) {
+    return (
+      <View style={buyStyles.card}>
+        <Text style={buyStyles.maxedText}>{t('hotelPanel.expandCard.maxed')}</Text>
+      </View>
+    );
+  }
+  return (
+    <View style={buyStyles.card}>
+      <View style={buyStyles.left}>
+        <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M3 21V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14"
+            stroke="#C9637E"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Rect x={7} y={9} width={4} height={4} rx={0.5} stroke="#C9637E" strokeWidth={1.5} />
+          <Rect x={13} y={9} width={4} height={4} rx={0.5} stroke="#C9637E" strokeWidth={1.5} />
+          <Rect x={7} y={15} width={4} height={4} rx={0.5} stroke="#C9637E" strokeWidth={1.5} />
+          <Rect x={13} y={15} width={4} height={4} rx={0.5} stroke="#C9637E" strokeWidth={1.5} />
+        </Svg>
+        <Text style={buyStyles.title}>{t('hotelPanel.expandCard.title')}</Text>
+      </View>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [buyStyles.btn, pressed && { opacity: 0.82 }]}
+      >
+        <LinearGradient colors={['#D96E8A', '#B84E6A']} style={buyStyles.btnGradient}>
+          <View style={buyStyles.gemDot} />
+          <Text style={buyStyles.btnCost}>{cost}</Text>
+        </LinearGradient>
+        <View style={buyStyles.btnShadow} />
+      </Pressable>
+    </View>
+  );
+}
+
+const slotStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(40,60,90,0.06)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 11,
+    paddingVertical: 11,
+    gap: 12,
+  },
+  avatarPlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#F2F4F8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  info: {
+    flex: 1,
+    gap: 3,
+  },
+  title: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: '#B0B6C2',
+  },
+  subtitle: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 12.5,
+    color: '#C8CDD8',
+  },
+});
+
+const buyStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: 'rgba(201,99,126,0.18)',
+    borderStyle: 'dashed',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    gap: 12,
+    marginTop: 4,
+  },
+  left: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  title: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
+    color: '#3A4250',
+  },
+  btn: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+    minWidth: 64,
+  },
+  btnGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.4)',
+    zIndex: 1,
+  },
+  gemDot: {
+    width: 10,
+    height: 10,
+    backgroundColor: '#A8E4F0',
+    borderRadius: 2,
+    transform: [{ rotate: '45deg' }],
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
+  },
+  btnCost: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 15,
+    color: '#A8E4F0',
+  },
+  btnShadow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: '#963050',
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  maxedText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 14,
+    color: '#B0B6C2',
+    textAlign: 'center',
+    paddingVertical: 10,
+    flex: 1,
+  },
+});
 
 const styles = StyleSheet.create({
   overlay: {
@@ -328,5 +564,27 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 10,
     paddingBottom: 40,
+  },
+  roomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  roomBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#C9637E',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  roomNumber: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
+    color: '#C9637E',
+  },
+  roomCard: {
+    flex: 1,
   },
 });

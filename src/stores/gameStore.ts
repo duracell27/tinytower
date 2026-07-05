@@ -65,6 +65,7 @@ interface GameActions {
   dismissLevelUp: () => void;
   setToolInventory: (tools: ToolsState) => void;
   buyFloor: (floorId: number) => void;
+  selectFloorType: (floorType: string) => void;
   openFloor: (floorId: number, floorType: string) => void;
   setLastSyncAt: (ts: number) => void;
   hydrate: (state: GameState & Partial<SyncState> & { playerLevel?: number; playerXp?: number }) => void;
@@ -434,6 +435,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
       requiredTool,
       timestamp: clock.now(),
     });
+  },
+
+  selectFloorType: (floorType) => {
+    set((cur) => ({
+      underConstruction: cur.underConstruction
+        ? { ...cur.underConstruction, selectedFloorType: floorType }
+        : null,
+    }));
   },
 
   openFloor: (floorId, floorType) => {

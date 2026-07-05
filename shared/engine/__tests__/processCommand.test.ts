@@ -450,7 +450,7 @@ describe('buy_floor command', () => {
       gems: 20,
       underConstruction: {
         floorId: 5, startedAt: 0, durationMs: 60000,
-        requiredTool: 'briks', requiredCount: 1,
+        requiredTool: 'briks', requiredCount: 1, selectedFloorType: null,
       },
     });
     const result = processCommand(state, buyFloorCmd(), testConfig, 1000);
@@ -500,7 +500,7 @@ describe('open_floor command', () => {
     tools: { briks: 2, glass: 0, nails: 0, screw: 0 },
     underConstruction: {
       floorId: 5, startedAt: 1000, durationMs: 60000,
-      requiredTool: 'briks', requiredCount: 1,
+      requiredTool: 'briks', requiredCount: 1, selectedFloorType: null,
     },
   };
 

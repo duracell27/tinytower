@@ -65,6 +65,7 @@ function handleBuyFloor(
           durationMs: unlockConfig.constructionDurationMs,
           requiredTool: command.requiredTool,
           requiredCount: unlockConfig.requiredToolCount,
+          selectedFloorType: null,
         },
       },
     };
@@ -81,6 +82,7 @@ function handleBuyFloor(
         durationMs: unlockConfig.constructionDurationMs,
         requiredTool: command.requiredTool,
         requiredCount: unlockConfig.requiredToolCount,
+        selectedFloorType: null,
       },
     },
   };

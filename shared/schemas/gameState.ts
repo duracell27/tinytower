@@ -17,6 +17,7 @@ export const UnderConstructionSchema = z.object({
   durationMs: z.number(),
   requiredTool: z.enum(['briks', 'glass', 'nails', 'screw']),
   requiredCount: z.number().int().positive(),
+  selectedFloorType: z.string().nullable().default(null),
 });
 
 export const FloorStateSchema = z.object({

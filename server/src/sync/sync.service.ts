@@ -226,6 +226,10 @@ export class SyncService {
             ackCursor = logEntry.cursor;
           }
         }
+
+        await tx.commandLog.deleteMany({
+          where: { playerId, cursor: { lt: ackCursor } },
+        });
       });
     }
 

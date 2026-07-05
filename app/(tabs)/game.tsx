@@ -52,6 +52,7 @@ export default function GameScreen() {
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
+  const lastSyncAt = useGameStore((s) => s.lastSyncAt);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
   const hotelOccupied = useGameStore((s) => s.workers.filter(w => w.assignedFloorId === null).length);
@@ -66,8 +67,10 @@ export default function GameScreen() {
 
   const underConstruction = useGameStore((s) => s.underConstruction);
   const buyFloor = useGameStore((s) => s.buyFloor);
+  const selectFloorType = useGameStore((s) => s.selectFloorType);
   const openFloor = useGameStore((s) => s.openFloor);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const selectedFloorType = underConstruction?.selectedFloorType ?? null;
 
   const floors = useGameStore((s) => s.floors);
 
@@ -84,7 +87,7 @@ export default function GameScreen() {
     const items: FloorItem[] = [];
     if (underConstruction) {
       items.push({ type: 'underConstruction' });
-    } else if (nextFloorUnlock) {
+    } else if (nextFloorUnlock && lastSyncAt > 0) {
       items.push({ type: 'buyFloor' });
     }
     const sortedFloorIds = [...floors.map((f) => f.id)].sort((a, b) => b - a);
@@ -94,7 +97,7 @@ export default function GameScreen() {
     items.push({ type: 'hotel' });
     items.push({ type: 'lobby' });
     return items;
-  }, [underConstruction, floors, nextFloorUnlock]);
+  }, [underConstruction, floors, nextFloorUnlock, lastSyncAt]);
 
   const [hotelOpen, setHotelOpen] = useState(false);
   const [lobbyOpen, setLobbyOpen] = useState(false);
@@ -130,7 +133,15 @@ export default function GameScreen() {
             floorId={underConstruction.floorId}
             endsAt={underConstruction.startedAt + underConstruction.durationMs}
             now={now}
-            onOpenFloor={() => setPickerOpen(true)}
+            requiredTool={underConstruction.requiredTool}
+            requiredCount={underConstruction.requiredCount}
+            selectedFloorType={selectedFloorType}
+            onOpenPicker={() => setPickerOpen(true)}
+            onStartBusiness={() => {
+              if (selectedFloorType) {
+                openFloor(underConstruction.floorId, selectedFloorType);
+              }
+            }}
           />
         </View>
       );
@@ -187,7 +198,8 @@ export default function GameScreen() {
     }
     return null;
   }, [balance, now, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
-      underConstruction, buyFloor, nextFloorId, nextFloorUnlock, gems, showInsufficientResources]);
+      underConstruction, buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
+      showInsufficientResources, selectedFloorType]);
 
   return (
     <View style={styles.container}>
@@ -237,8 +249,8 @@ export default function GameScreen() {
           visible={pickerOpen}
           underConstruction={underConstruction}
           onClose={() => setPickerOpen(false)}
-          onOpen={(floorType) => {
-            openFloor(underConstruction.floorId, floorType);
+          onSelectType={(floorType) => {
+            selectFloorType(floorType);
             setPickerOpen(false);
           }}
         />
