@@ -69,29 +69,32 @@ export default function GameScreen() {
   const openFloor = useGameStore((s) => s.openFloor);
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  // Compute next floor id: one above the highest opened or pre-configured floor
-  const allFloorIds = useGameStore((s) => s.floors.map((f) => f.id));
-  const highestFloorId = Math.max(...allFloorIds, ...gameConfig.floors.map((f) => f.id));
-  const nextFloorId = highestFloorId + 1;
-  const nextFloorUnlock = gameConfig.floorUnlocks.find((f) => f.floorId === nextFloorId);
+  const floors = useGameStore((s) => s.floors);
+
+  const { nextFloorId, nextFloorUnlock } = React.useMemo(() => {
+    const highestFloorId = Math.max(...floors.map((f) => f.id), ...gameConfig.floors.map((f) => f.id));
+    const nfId = highestFloorId + 1;
+    return {
+      nextFloorId: nfId,
+      nextFloorUnlock: gameConfig.floorUnlocks.find((f) => f.floorId === nfId) ?? null,
+    };
+  }, [floors]);
 
   const floorList: FloorItem[] = React.useMemo(() => {
     const items: FloorItem[] = [];
-    // Top: either construction banner or buy banner (if next floor has unlock config)
     if (underConstruction) {
       items.push({ type: 'underConstruction' });
     } else if (nextFloorUnlock) {
       items.push({ type: 'buyFloor' });
     }
-    // Production floors in reverse order (highest first)
-    const sortedFloorIds = [...allFloorIds].sort((a, b) => b - a);
+    const sortedFloorIds = [...floors.map((f) => f.id)].sort((a, b) => b - a);
     for (const id of sortedFloorIds) {
       items.push({ type: 'production', id });
     }
     items.push({ type: 'hotel' });
     items.push({ type: 'lobby' });
     return items;
-  }, [underConstruction, nextFloorUnlock, allFloorIds]);
+  }, [underConstruction, floors, nextFloorUnlock]);
 
   const [hotelOpen, setHotelOpen] = useState(false);
   const [lobbyOpen, setLobbyOpen] = useState(false);
