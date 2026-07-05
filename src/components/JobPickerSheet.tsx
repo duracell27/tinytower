@@ -62,6 +62,8 @@ export default function JobPickerSheet({
   const sheetTranslateY = useSharedValue(102);
 
   const workers = useGameStore((s) => s.workers);
+  const storeFloors = useGameStore((s) => s.floors);
+  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
 
   useEffect(() => {
     if (visible) {
@@ -86,50 +88,66 @@ export default function JobPickerSheet({
 
     const result: FloorSection[] = [];
 
+    // Process static floors
     for (const floorConfig of gameConfig.floors) {
       const slots: SlotItem[] = [];
-
       for (let slotIdx = 0; slotIdx < floorConfig.slots; slotIdx++) {
         const assigned = getWorkerForSlot(workers, floorConfig.id, slotIdx);
-        if (assigned) continue;
-
+        if (assigned && assigned.id !== worker.id) continue;
         const typeId = floorConfig.availableTypes[slotIdx];
         if (!typeId) continue;
-
         let matchLevel: SlotItem['matchLevel'] = 'other';
         if (floorConfig.floorType === worker.floorType) {
-          if (typeId === worker.dreamJob) {
-            matchLevel = 'dream';
-          } else {
-            matchLevel = 'match';
-          }
+          matchLevel = typeId === worker.dreamJob ? 'dream' : 'match';
         }
-
         slots.push({ floorId: floorConfig.id, slotIdx, typeId, matchLevel });
       }
+      if (slots.length > 0) {
+        result.push({
+          floorId: floorConfig.id,
+          floorType: floorConfig.floorType,
+          data: slots,
+        });
+      }
+    }
 
-      if (slots.length === 0) continue;
+    // Process dynamic floors (floor 5+)
+    for (const storeFloor of storeFloors) {
+      if (gameConfig.floors.some((f) => f.id === storeFloor.id)) continue; // skip static
+      const floorType = openedFloorTypes[String(storeFloor.id)];
+      if (!floorType) continue;
+      const floorTypeConfig = gameConfig.floorTypes[floorType];
+      if (!floorTypeConfig) continue;
 
-      // Sort within floor: dream job first, then match, then other
-      const matchOrder = { dream: 0, match: 1, other: 2 };
-      slots.sort((a, b) => matchOrder[a.matchLevel] - matchOrder[b.matchLevel]);
-
-      result.push({
-        floorId: floorConfig.id,
-        floorType: floorConfig.floorType,
-        data: slots,
-      });
+      const slots: SlotItem[] = [];
+      for (let slotIdx = 0; slotIdx < storeFloor.productions.length; slotIdx++) {
+        const assigned = getWorkerForSlot(workers, storeFloor.id, slotIdx);
+        if (assigned && assigned.id !== worker.id) continue;
+        const typeId = floorTypeConfig.dreamJobs[slotIdx] ?? null;
+        let matchLevel: SlotItem['matchLevel'] = 'other';
+        if (floorType === worker.floorType) {
+          matchLevel = typeId === worker.dreamJob ? 'dream' : 'match';
+        }
+        slots.push({ floorId: storeFloor.id, slotIdx, typeId: typeId ?? '', matchLevel });
+      }
+      if (slots.length > 0) {
+        result.push({
+          floorId: storeFloor.id,
+          floorType,
+          data: slots,
+        });
+      }
     }
 
     // Sort sections: matching floorType first
     result.sort((a, b) => {
-      const aMatch = a.floorType === worker.floorType ? 0 : 1;
-      const bMatch = b.floorType === worker.floorType ? 0 : 1;
+      const aMatch = a.floorType === worker.floorType ? -1 : 1;
+      const bMatch = b.floorType === worker.floorType ? -1 : 1;
       return aMatch - bMatch;
     });
 
     return result;
-  }, [worker, workers]);
+  }, [workers, worker, storeFloors, openedFloorTypes]);
 
   const handleAssign = (floorId: number, slotIdx: number) => {
     if (!worker) return;
@@ -227,22 +245,19 @@ export default function JobPickerSheet({
 function SectionHeader({ section }: { section: FloorSection }) {
   const { t: tContent } = useTranslation('gameContent');
   const scheme = FLOOR_SCHEMES[section.floorId];
-  const headerColors = scheme?.headerColors ?? ['#888', '#777'];
+  const headerColor = scheme?.color ?? '#888';
   const floorName = tContent(`floors.${section.floorId}.name`, {
     defaultValue: `Floor ${section.floorId}`,
   });
 
   return (
     <View style={sectionStyles.container}>
-      <LinearGradient
-        colors={headerColors}
-        style={sectionStyles.header}
-      >
+      <View style={[sectionStyles.header, { backgroundColor: headerColor }]}>
         <View style={sectionStyles.numberBadge}>
           <Text style={sectionStyles.numberText}>{section.floorId}</Text>
         </View>
         <Text style={sectionStyles.floorName}>{floorName}</Text>
-      </LinearGradient>
+      </View>
     </View>
   );
 }
