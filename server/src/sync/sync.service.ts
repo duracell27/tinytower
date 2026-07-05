@@ -121,6 +121,7 @@ export class SyncService {
               gems: gameState.gems,
               lobbyVisitors: gameState.lobbyVisitors,
               lobbyCapacity: gameState.lobbyCapacity,
+              hotelCapacity: gameState.hotelCapacity,
               elevatorLevel: gameState.elevatorLevel,
               elevatorFloor: gameState.elevatorFloor,
               dailyTips: gameState.dailyTips,
@@ -128,6 +129,9 @@ export class SyncService {
               dailyTipsRewardClaimed: gameState.dailyTipsRewardClaimed,
               lastDailyReset: gameState.lastDailyReset,
               nextVisitorAt: gameState.nextVisitorAt,
+              tools: gameState.tools,
+              underConstruction: gameState.underConstruction,
+              openedFloorTypes: gameState.openedFloorTypes,
             },
             stateVersion: {
               increment: acceptedCommands.length > 0 ? 1 : 0,
@@ -153,6 +157,26 @@ export class SyncService {
               },
             });
           }
+        }
+
+        // Create new floors that don't exist in DB yet (e.g. opened via open_floor command)
+        for (const floor of gameState.floors) {
+          const dbFloor = player.floors.find((f: any) => f.floorId === floor.id);
+          if (dbFloor) continue; // already exists, handled above
+          await tx.floor.create({
+            data: {
+              playerId,
+              floorId: floor.id,
+              productions: {
+                create: floor.productions.map((prod, slotIdx) => ({
+                  slotIdx,
+                  typeId: prod.typeId,
+                  stage: prod.stage,
+                  stageStartedAt: BigInt(prod.stageStartedAt),
+                })),
+              },
+            },
+          });
         }
 
         for (const w of gameState.workers) {
@@ -251,7 +275,7 @@ export class SyncService {
       floors,
       commandQueue: [],
       workers,
-      hotelCapacity: gameConfig.hotelCapacity,
+      hotelCapacity: (ls.hotelCapacity as number) ?? gameConfig.hotelCapacity,
       lobbyVisitors: (ls.lobbyVisitors as any[]) ?? [],
       lobbyCapacity: (ls.lobbyCapacity as number) ?? gameConfig.lobbyConfig.defaultLobbyCapacity,
       elevatorLevel: (ls.elevatorLevel as number) ?? 1,
@@ -261,6 +285,9 @@ export class SyncService {
       dailyTipsRewardClaimed: (ls.dailyTipsRewardClaimed as boolean) ?? false,
       lastDailyReset: (ls.lastDailyReset as number) ?? 0,
       nextVisitorAt: (ls.nextVisitorAt as number) ?? 0,
+      tools: (ls.tools as { briks: number; glass: number; nails: number; screw: number }) ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
+      underConstruction: (ls.underConstruction as any) ?? null,
+      openedFloorTypes: (ls.openedFloorTypes as Record<string, string>) ?? {},
     };
   }
 }
