@@ -59,11 +59,11 @@ const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     stars: 0,
   },
   red: {
-    color: '#4C9BDD',
-    headerShadowColor: 'rgba(0,76,142,0.4)',
-    bodyColor: '#C9E5F8',
-    cardBg: '#E4F1FB',
-    nameColor: '#006DAB',
+    color: '#E05050',
+    headerShadowColor: 'rgba(170,30,30,0.4)',
+    bodyColor: '#F8DEDE',
+    cardBg: '#FFF0F0',
+    nameColor: '#B02020',
     stars: 0,
   },
 };

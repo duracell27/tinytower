@@ -44,7 +44,7 @@ const FLOOR_TYPE_COLORS: Record<string, [string, string]> = {
   blue:   ['#2E6EC9', '#0E4EA9'],
   yellow: ['#E7A52B', '#C7850B'],
   violet: ['#9A6FD0', '#7A4FB0'],
-  red:    ['#4C9BDD', '#2C7BBD'],
+  red:    ['#E05050', '#C03030'],
 };
 
 interface BusinessTypePickerSheetProps {
