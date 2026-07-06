@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
@@ -13,14 +14,46 @@ import { shadeColor } from '../utils/color';
 import type { Production, EffectiveStage, Worker } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
 
+const AnimatedPath = Animated.createAnimatedComponent(Path);
+
+const STROKE_W = 3;
+const BTN_R = 12;
+
+function calcPerimeter(w: number, h: number): number {
+  const r = Math.max(0, BTN_R - STROKE_W / 2);
+  return 2 * (w - STROKE_W) + 2 * (h - STROKE_W) - r * (8 - 2 * Math.PI);
+}
+
+// Path starting from 12 o'clock (top-center), going clockwise
+function makeRoundRectPath(btnW: number, btnH: number): string {
+  const x = STROKE_W / 2;
+  const y = STROKE_W / 2;
+  const W = btnW - STROKE_W;
+  const H = btnH - STROKE_W;
+  const r = Math.max(0, BTN_R - STROKE_W / 2);
+  const cx = x + W / 2;
+  return [
+    `M ${cx} ${y}`,
+    `L ${x + W - r} ${y}`,
+    `A ${r} ${r} 0 0 1 ${x + W} ${y + r}`,
+    `L ${x + W} ${y + H - r}`,
+    `A ${r} ${r} 0 0 1 ${x + W - r} ${y + H}`,
+    `L ${x + r} ${y + H}`,
+    `A ${r} ${r} 0 0 1 ${x} ${y + H - r}`,
+    `L ${x} ${y + r}`,
+    `A ${r} ${r} 0 0 1 ${x + r} ${y}`,
+    `L ${cx} ${y}`,
+  ].join(' ');
+}
+
 // Button color and shadow configs per stage
 const BTN_COLORS: Record<string, { color: string; shadowColor: string }> = {
   IDLE: { color: '#F0895E', shadowColor: '#B5512A' },
   READY_TO_COLLECT: { color: '#72C24F', shadowColor: '#4A8A2E' },
   EMPTY: { color: '#72C24F', shadowColor: '#4A8A2E' },
-  DELIVERING: { color: '#52A6E2', shadowColor: '#2C73AC' },
+  DELIVERING: { color: '#2EB8A0', shadowColor: '#1A8272' },
   READY_TO_LIST: { color: '#F2AC40', shadowColor: '#C9760F' },
-  SELLING: { color: '#9A72D6', shadowColor: '#6B41A8' },
+  SELLING: { color: '#E0688A', shadowColor: '#A8405A' },
 };
 
 function formatTime(ms: number): string {
@@ -180,6 +213,37 @@ export default function ProductionCard({
   const effectiveRevenue = typeConfig ? Math.floor(typeConfig.batchValue * multiplier) : 0;
   const hasMultiplier = multiplier > 1;
 
+  const isProgressTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING';
+  const totalDur = isProgressTimer && typeConfig
+    ? (effectiveStage === 'DELIVERING' ? typeConfig.deliveryDuration : typeConfig.sellDuration)
+    : 0;
+
+  const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
+  const dashOffset = useSharedValue(99999);
+  const layoutReady = useRef(false);
+
+  useEffect(() => { layoutReady.current = false; }, [effectiveStage]);
+
+  useEffect(() => {
+    if (!isProgressTimer || btnSize.width === 0 || totalDur === 0) return;
+    const perim = calcPerimeter(btnSize.width, btnSize.height);
+    const progress = Math.max(0, Math.min(1, timeRemaining / totalDur));
+    // On the last tick animate to 0 so the border completes before stage changes
+    const isLastTick = timeRemaining < 1200;
+    const target = isLastTick ? 0 : perim * progress;
+    const duration = isLastTick ? Math.max(timeRemaining, 80) : 1100;
+    if (!layoutReady.current) {
+      layoutReady.current = true;
+      dashOffset.value = target;
+    } else {
+      dashOffset.value = withTiming(target, { duration, easing: Easing.linear });
+    }
+  }, [timeRemaining, btnSize, isProgressTimer, totalDur]);
+
+  const animatedRectProps = useAnimatedProps(() => ({
+    strokeDashoffset: dashOffset.value,
+  }));
+
   const handleAction = useCallback(() => {
     const store = useGameStore.getState();
     switch (effectiveStage) {
@@ -334,18 +398,44 @@ export default function ProductionCard({
       </View>
 
       {/* Action button */}
-      <Pressable
-        onPress={canAct ? handleAction : undefined}
-        style={({ pressed }) => [
-          styles.actionButton,
-          { backgroundColor: resolvedBtnConfig.color, shadowColor: resolvedBtnConfig.shadowColor },
-          !canAct && !isTimer && styles.actionButtonDisabled,
-          pressed && canAct && styles.actionButtonPressed,
-        ]}
-      >
-        <StageIcon stage={effectiveStage} />
-        <Text style={styles.actionLabel}>{labelText}</Text>
-      </Pressable>
+      <View onLayout={(e) => setBtnSize(e.nativeEvent.layout)}>
+        <Pressable
+          onPress={canAct ? handleAction : undefined}
+          style={({ pressed }) => [
+            styles.actionButton,
+            { backgroundColor: resolvedBtnConfig.color, shadowColor: resolvedBtnConfig.shadowColor },
+            !canAct && !isTimer && styles.actionButtonDisabled,
+            pressed && canAct && styles.actionButtonPressed,
+          ]}
+        >
+          <StageIcon stage={effectiveStage} />
+          <Text style={styles.actionLabel}>{labelText}</Text>
+        </Pressable>
+        {isProgressTimer && btnSize.width > 0 && (
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            <Svg width={btnSize.width} height={btnSize.height}>
+              {/* Background track */}
+              <Path
+                d={makeRoundRectPath(btnSize.width, btnSize.height)}
+                fill="none"
+                stroke="rgba(255,255,255,0.22)"
+                strokeWidth={STROKE_W}
+                strokeLinecap="round"
+              />
+              {/* Animated progress */}
+              <AnimatedPath
+                d={makeRoundRectPath(btnSize.width, btnSize.height)}
+                fill="none"
+                stroke="rgba(255,255,255,0.88)"
+                strokeWidth={STROKE_W}
+                strokeLinecap="round"
+                strokeDasharray={calcPerimeter(btnSize.width, btnSize.height)}
+                animatedProps={animatedRectProps}
+              />
+            </Svg>
+          </View>
+        )}
+      </View>
 
       {/* Sub-block: price or status */}
       <View style={styles.subContainer}>

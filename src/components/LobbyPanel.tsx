@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Rect, Circle, Polygon } from 'react-native-svg';
+import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -35,6 +35,22 @@ const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
   glass: require('../../assets/img/tools/glass.png'),
   nails: require('../../assets/img/tools/nails.png'),
   screw: require('../../assets/img/tools/screw.png'),
+};
+
+const VISITOR_IMAGES: Record<VisitorRole, ReturnType<typeof require>> = {
+  guest:       require('../../assets/img/lift/visitor.png'),
+  businessman: require('../../assets/img/lift/businessman.png'),
+  deliverer:   require('../../assets/img/lift/delivery.png'),
+  seller:      require('../../assets/img/lift/seller.png'),
+  builder:     require('../../assets/img/lift/builder.png'),
+};
+
+const WORKER_IMAGES: Record<string, { male: ReturnType<typeof require>; female: ReturnType<typeof require> }> = {
+  green:  { male: require('../../assets/img/workers/man-green.png'),  female: require('../../assets/img/workers/woman-green.png') },
+  blue:   { male: require('../../assets/img/workers/man-blue.png'),   female: require('../../assets/img/workers/woman-blue.png') },
+  yellow: { male: require('../../assets/img/workers/man-yellow.png'), female: require('../../assets/img/workers/woman-yellow.png') },
+  violet: { male: require('../../assets/img/workers/man-violet.png'), female: require('../../assets/img/workers/woman-violet.png') },
+  red:    { male: require('../../assets/img/workers/man-red.png'),    female: require('../../assets/img/workers/woman-red.png') },
 };
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -234,40 +250,17 @@ function EmptyElevatorIcon() {
   );
 }
 
-/* ---------- Visitor Avatar SVG ---------- */
+/* ---------- Visitor Avatar ---------- */
 
-function VisitorAvatar({ role, hairColor, female }: { role: VisitorRole; hairColor: string; female: boolean }) {
-  const bodyColor = ROLE_COLORS[role] || '#7B52BC';
-  return (
-    <Svg width={38} height={42} viewBox="0 0 38 42">
-      {/* Body */}
-      <Rect x={5} y={20} width={28} height={18} rx={4} fill={bodyColor} />
-      {/* Collar */}
-      <Polygon points="14,20 19,26 24,20" fill="#fff" opacity={0.85} />
-      {/* Face */}
-      <Circle cx={19} cy={14} r={9} fill="#F0C49C" />
-      {/* Hair */}
-      <Path
-        d={female
-          ? 'M10 14c0-5 4-10 9-10s9 5 9 10c0 0-2-6-9-6s-9 6-9 6z'
-          : 'M10 12c0-5 4-9 9-9s9 4 9 9H10z'}
-        fill={hairColor}
-      />
-      {/* Eyes */}
-      <Circle cx={15} cy={14} r={1.2} fill="#2A3344" />
-      <Circle cx={23} cy={14} r={1.2} fill="#2A3344" />
-      {/* Glasses (businessman) */}
-      {role === 'businessman' && (
-        <>
-          <Rect x={12} y={12} width={5} height={4} rx={1.5} stroke="#4A3322" strokeWidth={1} fill="none" />
-          <Rect x={21} y={12} width={5} height={4} rx={1.5} stroke="#4A3322" strokeWidth={1} fill="none" />
-          <Path d="M17 14h4" stroke="#4A3322" strokeWidth={0.8} />
-        </>
-      )}
-      {/* Name tag */}
-      <Rect x={14} y={30} width={10} height={5} rx={1.5} fill="#FFD23E" />
-    </Svg>
-  );
+function VisitorAvatar({ role, targetFloor, pendingFloorType, female }: { role: string; targetFloor?: number; pendingFloorType?: string; female: boolean }) {
+  const isHotelGuest = role === 'guest' && targetFloor === 1;
+  if (isHotelGuest) {
+    const floorType = pendingFloorType ?? 'green';
+    const src = WORKER_IMAGES[floorType]?.[female ? 'female' : 'male'] ?? VISITOR_IMAGES.guest;
+    return <Image source={src} style={{ width: 48, height: 48 }} contentFit="contain" />;
+  }
+  const src = VISITOR_IMAGES[(role as VisitorRole)] ?? VISITOR_IMAGES.guest;
+  return <Image source={src} style={{ width: 48, height: 48 }} contentFit="contain" />;
 }
 
 /* ---------- Coin Dot ---------- */
@@ -744,7 +737,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                           <View style={styles.avatarTile}>
                             <VisitorAvatar
                               role={activeVisitor.role ?? 'guest'}
-                              hairColor={activeVisitor.hairColor}
+                              targetFloor={activeVisitor.targetFloor}
+                              pendingFloorType={activeVisitor.pendingFloorType}
                               female={activeVisitor.female}
                             />
                           </View>
@@ -952,7 +946,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       end={{ x: 1, y: 0 }}
                       style={[
                         styles.upgradeProgressFill,
-                        { width: `${Math.min(100, elevatorLevel * 12)}%` as any },
+                        { width: `${Math.min(100, (elevatorLevel / maxElevatorLevel) * 100)}%` as any },
                       ]}
                     />
                   </View>
@@ -1832,7 +1826,7 @@ const styles = StyleSheet.create({
   upgradeGemCount: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 14.5,
-    color: '#2592AB',
+    color: '#fff',
   },
   upgradeButtonShadow: {
     position: 'absolute',

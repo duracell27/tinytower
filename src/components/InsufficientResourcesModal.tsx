@@ -11,6 +11,9 @@ import Animated, {
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
+import { formatNum } from '../utils/format';
+
+const COINS_PER_GEM = 1000;
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -36,6 +39,8 @@ export default function InsufficientResourcesModal() {
   const { t } = useTranslation('common');
   const payload = useGameStore((s) => s.insufficientResources);
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
+  const exchangeGemsForCoins = useGameStore((s) => s.exchangeGemsForCoins);
+  const gems = useGameStore((s) => s.gems);
 
   const visible = payload !== null;
   const scale = useSharedValue(0.5);
@@ -71,6 +76,8 @@ export default function InsufficientResourcesModal() {
       : t('insufficientResources.missingMaterials');
 
   const deficit = payload.need - payload.have;
+  const gemsNeeded = isCoins ? Math.ceil(deficit / COINS_PER_GEM) : 0;
+  const canExchange = isCoins && gemsNeeded > 0 && gems >= gemsNeeded;
 
   const handleShop = () => {
     clearInsufficientResources();
@@ -115,7 +122,7 @@ export default function InsufficientResourcesModal() {
                     <View style={styles.deficitValueRow}>
                       {isCoins ? <CoinIcon /> : <GemIcon />}
                       <Text style={[styles.deficitValue, isCoins ? styles.coinText : styles.gemText]}>
-                        {payload.have}
+                        {formatNum(payload.have)}
                       </Text>
                     </View>
                   </View>
@@ -125,7 +132,7 @@ export default function InsufficientResourcesModal() {
                     <View style={styles.deficitValueRow}>
                       {isCoins ? <CoinIcon /> : <GemIcon />}
                       <Text style={[styles.deficitValue, isCoins ? styles.coinText : styles.gemText]}>
-                        {payload.need}
+                        {formatNum(payload.need)}
                       </Text>
                     </View>
                   </View>
@@ -134,7 +141,7 @@ export default function InsufficientResourcesModal() {
                   <Text style={styles.missingLabel}>{t('insufficientResources.missing')}:</Text>
                   <View style={styles.deficitValueRow}>
                     {isCoins ? <CoinIcon /> : <GemIcon />}
-                    <Text style={styles.missingValue}>{deficit}</Text>
+                    <Text style={styles.missingValue}>{formatNum(deficit)}</Text>
                   </View>
                 </View>
               </View>
@@ -160,6 +167,30 @@ export default function InsufficientResourcesModal() {
                   </View>
                 ))}
               </View>
+            )}
+
+            {/* Exchange gems → coins button (coins shortage only) */}
+            {canExchange && (
+              <Pressable
+                onPress={() => {
+                  exchangeGemsForCoins(gemsNeeded);
+                  clearInsufficientResources();
+                }}
+                style={({ pressed }) => [styles.shopBtn, pressed && { opacity: 0.85 }]}
+              >
+                <LinearGradient
+                  colors={['#E5A41C', '#C98A10']}
+                  style={styles.shopBtnGradient}
+                >
+                  <Text style={styles.shopBtnText}>
+                    {t('insufficientResources.exchangeGems', {
+                      gems: gemsNeeded,
+                      coins: formatNum(gemsNeeded * COINS_PER_GEM),
+                    })}
+                  </Text>
+                </LinearGradient>
+                <View style={[styles.shopBtnShadow, { backgroundColor: '#A06A00' }]} />
+              </Pressable>
             )}
 
             {/* Shop button (gems and tools only) */}

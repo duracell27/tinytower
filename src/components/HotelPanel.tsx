@@ -444,7 +444,7 @@ const buyStyles = StyleSheet.create({
   btnCost: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 15,
-    color: '#A8E4F0',
+    color: '#fff',
   },
   btnShadow: {
     position: 'absolute',

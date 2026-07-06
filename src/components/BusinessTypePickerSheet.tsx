@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import {
   View, Text, Pressable, Modal, ScrollView, StyleSheet, Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS,
 } from 'react-native-reanimated';
@@ -24,12 +24,12 @@ const FLOOR_TYPE_NAMES: Record<string, string> = {
   red:    'Морозиво',
 };
 
-const FLOOR_TYPE_COLORS: Record<string, [string, string]> = {
-  green:  ['#5E8F42', '#3E6F22'],
-  blue:   ['#2E6EC9', '#0E4EA9'],
-  yellow: ['#E7A52B', '#C7850B'],
-  violet: ['#9A6FD0', '#7A4FB0'],
-  red:    ['#E05050', '#C03030'],
+const FLOOR_TYPE_ICONS: Record<string, ReturnType<typeof require>> = {
+  green:  require('../../assets/img/flourTypes/products.png'),
+  blue:   require('../../assets/img/flourTypes/service.png'),
+  yellow: require('../../assets/img/flourTypes/rest.png'),
+  violet: require('../../assets/img/flourTypes/fashion.png'),
+  red:    require('../../assets/img/flourTypes/electronics.png'),
 };
 
 interface BusinessTypePickerSheetProps {
@@ -97,19 +97,20 @@ export default function BusinessTypePickerSheet({
         <Text style={styles.subtitle}>Поверх {underConstruction.floorId}</Text>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-          {floorTypes.map((ft) => {
-            const colors = FLOOR_TYPE_COLORS[ft] ?? ['#888', '#666'];
-            return (
-              <Pressable
-                key={ft}
-                onPress={() => onSelectType(ft)}
-                style={({ pressed }) => [styles.typeRow, pressed && { opacity: 0.82 }]}
-              >
-                <LinearGradient colors={colors as [string, string]} style={styles.colorSwatch} />
-                <Text style={styles.typeName}>{FLOOR_TYPE_NAMES[ft] ?? ft}</Text>
-              </Pressable>
-            );
-          })}
+          {floorTypes.map((ft) => (
+            <Pressable
+              key={ft}
+              onPress={() => onSelectType(ft)}
+              style={({ pressed }) => [styles.typeRow, pressed && { opacity: 0.82 }]}
+            >
+              <Image
+                source={FLOOR_TYPE_ICONS[ft]}
+                style={styles.iconSwatch}
+                contentFit="contain"
+              />
+              <Text style={styles.typeName}>{FLOOR_TYPE_NAMES[ft] ?? ft}</Text>
+            </Pressable>
+          ))}
         </ScrollView>
       </Animated.View>
     </Modal>
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  colorSwatch: { width: 36, height: 36, borderRadius: 10 },
+  iconSwatch: { width: 44, height: 44, borderRadius: 10 },
   typeName: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,

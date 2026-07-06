@@ -11,6 +11,7 @@ import { useAuthStore } from '../../src/stores/authStore';
 import { useGameStore } from '../../src/stores/gameStore';
 import { xpForLevel } from '../../shared/engine/xp';
 import { useGameClock } from '../../src/hooks/useGameClock';
+import { formatNum } from '../../src/utils/format';
 
 function formatSyncTime(ts: number, now: number): string {
   if (ts === 0) return i18n.t('common:relativeTime.never');
@@ -107,7 +108,7 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItemXp}>
-              <Text style={styles.statValue}>{playerXp}/{xpNeeded}</Text>
+              <Text style={styles.statValue}>{formatNum(playerXp)}/{formatNum(xpNeeded)}</Text>
               <Text style={styles.statLabel}>{t('profile.stats.xp')}</Text>
             </View>
           </View>
@@ -119,11 +120,11 @@ export default function ProfileScreen() {
           <View style={styles.currencyRow}>
             <View style={styles.currencyItem}>
               <View style={styles.coinIcon} />
-              <Text style={styles.currencyValue}>{balance}</Text>
+              <Text style={styles.currencyValue}>{formatNum(balance)}</Text>
             </View>
             <View style={styles.currencyItem}>
               <View style={styles.gemIcon} />
-              <Text style={styles.currencyValueGem}>{gems}</Text>
+              <Text style={styles.currencyValueGem}>{formatNum(gems)}</Text>
             </View>
           </View>
         </View>
