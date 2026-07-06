@@ -97,7 +97,7 @@ export function saveGameState(state: PersistedGameState): void {
     underConstruction: state.underConstruction ?? [],
     openedFloorTypes: state.openedFloorTypes ?? {},
     stats: state.stats ?? { totalBought: 0, totalListed: 0, totalSold: 0 },
-    achievementQueue: (state as any).achievementQueue ?? [],
+    achievementQueue: state.achievementQueue ?? [],
   }));
 }
 
