@@ -40,6 +40,7 @@ export function generateRandomWorkers(
   count: number,
   config: GameConfig,
   locale: SupportedWorkerLocale = DEFAULT_WORKER_LOCALE,
+  floorTypeOverride?: string,
 ): Worker[] {
   const floorTypeKeys = Object.keys(config.floorTypes);
   const workers: Worker[] = [];
@@ -55,7 +56,9 @@ export function generateRandomWorkers(
     } while (usedNames.has(name));
     usedNames.add(name);
 
-    const floorType = floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)];
+    const floorType = (floorTypeOverride && config.floorTypes[floorTypeOverride])
+      ? floorTypeOverride
+      : floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)];
     const ftConfig = config.floorTypes[floorType];
     const dreamJob = ftConfig.dreamJobs[Math.floor(Math.random() * ftConfig.dreamJobs.length)];
 

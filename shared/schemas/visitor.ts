@@ -8,4 +8,5 @@ export const VisitorSchema = z.object({
   targetFloor: z.number().int().positive().optional(),
   hairColor: z.string(),
   female: z.boolean(),
+  pendingFloorType: z.string().optional(),
 });

@@ -59,6 +59,7 @@ function handleSpawnVisitor(
     targetFloor: command.targetFloor,
     hairColor: command.hairColor,
     female: command.female,
+    pendingFloorType: command.pendingFloorType,
   };
   const newVisitors = [...state.lobbyVisitors, visitor];
   const willBeFull = newVisitors.length >= state.lobbyCapacity;

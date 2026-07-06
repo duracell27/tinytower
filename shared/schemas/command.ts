@@ -56,6 +56,7 @@ export const SpawnVisitorCommandSchema = TimestampedBaseSchema.extend({
   targetFloor: z.number().int().positive(),
   hairColor: z.string(),
   female: z.boolean(),
+  pendingFloorType: z.string().optional(),
 });
 
 export const LiftVisitorCommandSchema = TimestampedBaseSchema.extend({
@@ -109,6 +110,11 @@ export const OpenFloorCommandSchema = TimestampedBaseSchema.extend({
   floorType: z.string(),
 });
 
+export const ExchangeGemsCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('exchange_gems'),
+  gems: z.number().int().positive(),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -126,4 +132,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   ExpandHotelCommandSchema,
   BuyFloorCommandSchema,
   OpenFloorCommandSchema,
+  ExchangeGemsCommandSchema,
 ]);
