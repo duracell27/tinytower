@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { processCommand } from '@shared/engine/processCommand';
 import { xpForCommand, applyXpGain } from '@shared/engine/xp';
 import { gameConfig } from '@shared/config/gameConfig';
-import type { GameState, Command, Floor, Production, Worker } from '@shared/types';
+import type { GameState, Command, Floor, Production, Worker, AchievementGrant } from '@shared/types';
 
 interface LobbyStateJson {
   [key: string]: unknown;
@@ -16,6 +16,7 @@ export interface SyncResult {
   serverTime: number;
   playerLevel: number;
   playerXp: number;
+  newAchievements: AchievementGrant[];
 }
 
 @Injectable()
@@ -80,6 +81,15 @@ export class SyncService {
       }
     }
 
+    let boughtCount = 0;
+    let listedCount = 0;
+    let soldCount   = 0;
+    for (const cmd of acceptedCommands) {
+      if (cmd.type === 'buy')     boughtCount++;
+      if (cmd.type === 'list')    listedCount++;
+      if (cmd.type === 'collect') soldCount++;
+    }
+
     // Capture balances after commands but before XP level-up rewards
     const baseBalance = gameState.balance;
     const baseGems = gameState.gems;
@@ -92,6 +102,7 @@ export class SyncService {
     };
 
     let ackCursor = lastAckCursor;
+    let newAchievements: AchievementGrant[] = [];
 
     if (acceptedCommands.length > 0 || newCommands.length === 0) {
       await this.prisma.$transaction(async (tx) => {
@@ -110,12 +121,56 @@ export class SyncService {
           };
         }
         const { playerLevel: _pl, playerXp: _px, ...existingLs } = (player.lobbyState as LobbyStateJson) ?? {};
+
+        // Compute final stats using pre-locked player values + deltas
+        const finalStats = {
+          totalBought: player.totalBought + boughtCount,
+          totalListed: player.totalListed + listedCount,
+          totalSold:   player.totalSold   + soldCount,
+        };
+        gameState = { ...gameState, stats: finalStats };
+
+        // Check for newly unlocked achievement tiers
+        const grantedRows = await tx.playerAchievement.findMany({
+          where: { playerId },
+          select: { achievementId: true, tier: true },
+        });
+        const grantedSet = new Set(grantedRows.map((r) => `${r.achievementId}:${r.tier}`));
+
+        const localNewAchievements: AchievementGrant[] = [];
+        for (const achievement of gameConfig.achievements) {
+          const statValue = finalStats[achievement.stat];
+          for (const tierConfig of achievement.tiers) {
+            const key = `${achievement.id}:${tierConfig.tier}`;
+            if (!grantedSet.has(key) && statValue >= tierConfig.threshold) {
+              await tx.playerAchievement.create({
+                data: { playerId, achievementId: achievement.id, tier: tierConfig.tier },
+              });
+              if (tierConfig.reward.coins) {
+                gameState = { ...gameState, balance: gameState.balance + tierConfig.reward.coins };
+              }
+              if (tierConfig.reward.gems) {
+                gameState = { ...gameState, gems: gameState.gems + tierConfig.reward.gems };
+              }
+              localNewAchievements.push({
+                achievementId: achievement.id,
+                tier: tierConfig.tier,
+                reward: tierConfig.reward,
+              });
+            }
+          }
+        }
+
+        // Single consolidated player update with all final values
         await tx.player.update({
           where: { id: playerId },
           data: {
             balance: gameState.balance,
             playerLevel: xpResult.playerLevel,
             playerXp: xpResult.playerXp,
+            totalBought: { increment: boughtCount },
+            totalListed: { increment: listedCount },
+            totalSold:   { increment: soldCount },
             lobbyState: {
               ...existingLs,
               gems: gameState.gems,
@@ -132,6 +187,7 @@ export class SyncService {
               tools: gameState.tools,
               underConstruction: gameState.underConstruction,
               openedFloorTypes: gameState.openedFloorTypes,
+              stats: finalStats,
             },
             stateVersion: {
               increment: acceptedCommands.length > 0 ? 1 : 0,
@@ -139,6 +195,8 @@ export class SyncService {
             lastSeenAt: new Date(serverNow),
           },
         });
+
+        newAchievements = localNewAchievements;
 
         for (const floor of gameState.floors) {
           const dbFloor = player.floors.find((f) => f.floorId === floor.id);
@@ -244,6 +302,7 @@ export class SyncService {
       serverTime: serverNow,
       playerLevel: updatedPlayer?.playerLevel ?? xpResult.playerLevel,
       playerXp: updatedPlayer?.playerXp ?? xpResult.playerXp,
+      newAchievements,
     };
   }
 
@@ -296,6 +355,11 @@ export class SyncService {
           ? [ls.underConstruction as any]
           : [],
       openedFloorTypes: (ls.openedFloorTypes as Record<string, string>) ?? {},
+      stats: {
+        totalBought: (ls.stats as any)?.totalBought ?? player.totalBought ?? 0,
+        totalListed: (ls.stats as any)?.totalListed ?? player.totalListed ?? 0,
+        totalSold:   (ls.stats as any)?.totalSold   ?? player.totalSold   ?? 0,
+      },
     };
   }
 }

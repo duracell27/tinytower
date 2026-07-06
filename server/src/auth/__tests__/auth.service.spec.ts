@@ -26,6 +26,9 @@ describe('AuthService', () => {
     stateVersion: 0,
     playerLevel: 1,
     playerXp: 0,
+    totalBought: 0,
+    totalListed: 0,
+    totalSold: 0,
     lastSeenAt: new Date(),
     createdAt: new Date(),
   };
