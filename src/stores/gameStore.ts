@@ -235,7 +235,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const timestamp = (state.nextVisitorAt > 0 && state.nextVisitorAt < now)
       ? state.nextVisitorAt
       : now;
-    const { role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, timestamp);
+    const { role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, timestamp, state.playerLevel);
     const { id, hairColor, female } = generateVisitorAppearance();
     const floorTypeKeys = Object.keys(gameConfig.floorTypes);
     const pendingFloorType = (role === 'guest' && targetFloor === 1)
@@ -279,11 +279,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     };
 
     if (role == null || targetFloor == null) {
-      ({ role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now));
+      ({ role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel));
     } else if (role === 'seller' && !isStillSelling(targetFloor)) {
-      ({ role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now));
+      ({ role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel));
     } else if (role === 'deliverer' && !isStillDelivering(targetFloor)) {
-      ({ role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now));
+      ({ role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel));
     }
 
     executeCommand(get, set, {

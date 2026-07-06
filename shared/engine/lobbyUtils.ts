@@ -66,6 +66,7 @@ export function generateRandomVisitorRole(
   state: GameState,
   config: GameConfig,
   now: number,
+  playerLevel = 1,
 ): { role: VisitorRole; targetFloor: number } {
   const totalFloors = config.floors.length + 1;
 
@@ -90,10 +91,15 @@ export function generateRandomVisitorRole(
     return { role: 'builder', targetFloor };
   }
 
+  const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel;
+  const hasGemsLeft = state.dailyGemsCollected < gemLimit;
+  // businessman appears more often while daily gems are still available
+  const businessmanChance = hasGemsLeft ? 0.10 : 0.01;
+
   let role: VisitorRole;
   const businessmanRoll = Math.random();
 
-  if (businessmanRoll < 0.03) {
+  if (businessmanRoll < businessmanChance) {
     role = 'businessman';
   } else {
     if (hasDelivering && hasSelling) {
@@ -144,7 +150,7 @@ export function generateVisitorAppearance(): { id: string; hairColor: string; fe
 
 /** @deprecated use generateRandomVisitorRole + generateVisitorAppearance separately */
 export function generateRandomVisitor(state: GameState, config: GameConfig, now = Date.now()): Visitor {
-  const { role, targetFloor } = generateRandomVisitorRole(state, config, now);
+  const { role, targetFloor } = generateRandomVisitorRole(state, config, now, 1);
   return {
     ...generateVisitorAppearance(),
     role,
