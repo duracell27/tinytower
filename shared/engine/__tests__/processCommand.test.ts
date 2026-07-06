@@ -613,3 +613,23 @@ describe('open_floor command', () => {
     expect(result.error).toBe('Floor not under construction');
   });
 });
+
+describe('exchange gems', () => {
+  it('exchanges gems for coins at 1000 coins per gem', () => {
+    const state = makeState({ gems: 10, balance: 500 });
+    const cmd: Command = { id: 'e1', type: 'exchange_gems', gems: 3, timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(7);
+    expect(result.state.balance).toBe(3500);
+  });
+
+  it('fails when gems are insufficient', () => {
+    const state = makeState({ gems: 2, balance: 500 });
+    const cmd: Command = { id: 'e2', type: 'exchange_gems', gems: 5, timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(false);
+    expect(result.state.gems).toBe(2);
+    expect(result.state.balance).toBe(500);
+  });
+});
