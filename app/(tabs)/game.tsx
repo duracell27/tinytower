@@ -212,7 +212,7 @@ export default function GameScreen() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require('../../assets/img/backgroung/bg3.png')}
+        source={require('../../assets/welcome-bg.png')}
         style={styles.background}
         resizeMode="cover"
       >
