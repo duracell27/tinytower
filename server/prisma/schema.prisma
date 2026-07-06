@@ -17,11 +17,15 @@ model Player {
   stateVersion  Int       @default(0)
   playerLevel   Int       @default(1)
   playerXp      Int       @default(0)
+  totalBought   Int       @default(0)
+  totalListed   Int       @default(0)
+  totalSold     Int       @default(0)
   lastSeenAt    DateTime  @default(now())
   createdAt     DateTime  @default(now())
   floors        Floor[]
   workers       Worker[]
   tools         PlayerTools?
+  achievements  PlayerAchievement[]
 }
 
 model Floor {
@@ -86,4 +90,16 @@ model CommandLog {
   processedAt DateTime @default(now())
 
   @@index([playerId, cursor])
+}
+
+model PlayerAchievement {
+  id            String   @id @default(cuid())
+  playerId      String
+  achievementId String
+  tier          Int
+  grantedAt     DateTime @default(now())
+  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, achievementId, tier])
+  @@index([playerId])
 }
