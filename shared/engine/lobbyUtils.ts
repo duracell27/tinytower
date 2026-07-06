@@ -84,7 +84,7 @@ export function generateRandomVisitorRole(
   const hasSelling = state.floors.some((f) => f.productions.some(isActiveSelling));
 
   // 1% chance: builder visitor brings a random tool
-  if (Math.random() < 0.01) {
+  if (Math.random() < 0.02) {
     const targetFloor = 1 + Math.floor(Math.random() * totalFloors);
     return { role: 'builder', targetFloor };
   }
