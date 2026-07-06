@@ -86,6 +86,13 @@
       "full": "Full"
     }
   },
+  "achievement": {
+    "claim": "Collect Reward",
+    "tier": "Tier {{tier}}",
+    "buyer": { "title": "Shopaholic" },
+    "lister": { "title": "Merchant" },
+    "seller": { "title": "Sales Star" }
+  },
   "levelUp": {
     "title": "New Level!",
     "subtitle": "Level {{level}}",

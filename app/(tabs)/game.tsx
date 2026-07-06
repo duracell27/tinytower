@@ -12,6 +12,7 @@ import { HotelFloor, LobbyFloor } from '../../src/components/TechnicalFloor';
 import HotelPanel from '../../src/components/HotelPanel';
 import LobbyPanel from '../../src/components/LobbyPanel';
 import LevelUpModal from '../../src/components/LevelUpModal';
+import AchievementModal from '../../src/components/AchievementModal';
 import InsufficientResourcesModal from '../../src/components/InsufficientResourcesModal';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -211,7 +212,7 @@ export default function GameScreen() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require('../../assets/welcome-bg.png')}
+        source={require('../../assets/img/backgroung/bg3.png')}
         style={styles.background}
         resizeMode="cover"
       >
@@ -264,6 +265,7 @@ export default function GameScreen() {
         />
       ))}
       <LevelUpModal suppressWhileOpen={lobbyOpen || hotelOpen} />
+      <AchievementModal />
       <InsufficientResourcesModal />
     </View>
   );
