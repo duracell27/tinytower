@@ -109,8 +109,8 @@ export class SyncService {
         // Re-read playerLevel/playerXp under a row lock to prevent concurrent-sync races.
         // If another request committed a level change between our initial read and now,
         // recompute XP from the locked values so both requests' rewards are applied correctly.
-        const [locked] = await tx.$queryRaw<{ playerLevel: number; playerXp: number }[]>`
-          SELECT "playerLevel", "playerXp" FROM "Player" WHERE id = ${playerId} FOR UPDATE
+        const [locked] = await tx.$queryRaw<{ playerLevel: number; playerXp: number; totalBought: number; totalListed: number; totalSold: number }[]>`
+          SELECT "playerLevel", "playerXp", "totalBought", "totalListed", "totalSold" FROM "Player" WHERE id = ${playerId} FOR UPDATE
         `;
         if (locked && (locked.playerLevel !== player.playerLevel || locked.playerXp !== player.playerXp)) {
           xpResult = applyXpGain(locked.playerLevel, locked.playerXp, totalXpGained);
@@ -122,11 +122,11 @@ export class SyncService {
         }
         const { playerLevel: _pl, playerXp: _px, ...existingLs } = (player.lobbyState as LobbyStateJson) ?? {};
 
-        // Compute final stats using pre-locked player values + deltas
+        // Compute final stats using locked player values + deltas to avoid stale reads under concurrency
         const finalStats = {
-          totalBought: player.totalBought + boughtCount,
-          totalListed: player.totalListed + listedCount,
-          totalSold:   player.totalSold   + soldCount,
+          totalBought: (locked?.totalBought ?? player.totalBought) + boughtCount,
+          totalListed: (locked?.totalListed ?? player.totalListed) + listedCount,
+          totalSold:   (locked?.totalSold   ?? player.totalSold)   + soldCount,
         };
         gameState = { ...gameState, stats: finalStats };
 
@@ -190,7 +190,7 @@ export class SyncService {
               stats: finalStats,
             },
             stateVersion: {
-              increment: acceptedCommands.length > 0 ? 1 : 0,
+              increment: (acceptedCommands.length > 0 || localNewAchievements.length > 0) ? 1 : 0,
             },
             lastSeenAt: new Date(serverNow),
           },
@@ -356,9 +356,9 @@ export class SyncService {
           : [],
       openedFloorTypes: (ls.openedFloorTypes as Record<string, string>) ?? {},
       stats: {
-        totalBought: (ls.stats as any)?.totalBought ?? player.totalBought ?? 0,
-        totalListed: (ls.stats as any)?.totalListed ?? player.totalListed ?? 0,
-        totalSold:   (ls.stats as any)?.totalSold   ?? player.totalSold   ?? 0,
+        totalBought: player.totalBought ?? (ls.stats as any)?.totalBought ?? 0,
+        totalListed: player.totalListed ?? (ls.stats as any)?.totalListed ?? 0,
+        totalSold:   player.totalSold   ?? (ls.stats as any)?.totalSold   ?? 0,
       },
     };
   }

@@ -98,6 +98,9 @@ describe('SyncService', () => {
     stateVersion: 0,
     playerLevel: 1,
     playerXp: 0,
+    totalBought: 0,
+    totalListed: 0,
+    totalSold: 0,
     lastSeenAt: new Date(Date.now() - 60000), // 60s ago
     createdAt: new Date(),
     floors: mockFloors,
@@ -111,7 +114,11 @@ describe('SyncService', () => {
       player: { update: jest.fn().mockResolvedValue({}) },
       production: { update: jest.fn().mockResolvedValue({}) },
       worker: { upsert: jest.fn().mockResolvedValue({}), deleteMany: jest.fn().mockResolvedValue({}) },
-      commandLog: { create: jest.fn().mockResolvedValue({ cursor: 1 }) },
+      commandLog: { create: jest.fn().mockResolvedValue({ cursor: 1 }), deleteMany: jest.fn().mockResolvedValue({}) },
+      playerAchievement: {
+        findMany: jest.fn().mockResolvedValue([]),
+        create: jest.fn().mockResolvedValue({}),
+      },
       // Returns empty array so locked values match player.playerLevel/playerXp (no recompute branch)
       $queryRaw: jest.fn().mockResolvedValue([]),
     };
