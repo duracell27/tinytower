@@ -30,6 +30,8 @@ export function processCommand(
       return handleBuyFloor(state, command, config);
     case 'open_floor':
       return handleOpenFloor(state, command, config);
+    case 'exchange_gems':
+      return handleExchangeGems(state, command);
     case 'spawn_visitor':
     case 'lift_visitor':
     case 'collect_tip':
@@ -40,6 +42,23 @@ export function processCommand(
     case 'expand_hotel':
       return processLobbyCommand(state, command, config, playerLevel);
   }
+}
+
+const COINS_PER_GEM = 1000;
+
+function handleExchangeGems(
+  state: GameState,
+  command: Extract<Command, { type: 'exchange_gems' }>,
+): ProcessResult {
+  if (state.gems < command.gems) return { success: false, state, error: 'Insufficient gems' };
+  return {
+    success: true,
+    state: {
+      ...state,
+      gems: state.gems - command.gems,
+      balance: state.balance + command.gems * COINS_PER_GEM,
+    },
+  };
 }
 
 function handleBuyFloor(
@@ -273,6 +292,7 @@ function handleBuy(
         stage: 'DELIVERING',
         stageStartedAt: now,
       }),
+      stats: { ...state.stats, totalBought: state.stats.totalBought + 1 },
     },
   };
 }
@@ -307,6 +327,7 @@ function handleList(
         stage: 'SELLING',
         stageStartedAt: now,
       }),
+      stats: { ...state.stats, totalListed: state.stats.totalListed + 1 },
     },
   };
 }
@@ -348,6 +369,7 @@ function handleCollect(
         stage: 'IDLE',
         stageStartedAt: 0,
       }),
+      stats: { ...state.stats, totalSold: state.stats.totalSold + 1 },
     },
   };
 }

@@ -487,6 +487,72 @@ describe('buy_floor command', () => {
   });
 });
 
+describe('stats tracking', () => {
+  const worker = makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 });
+
+  it('increments totalBought on successful buy', () => {
+    const state = makeState({
+      balance: 1000,
+      workers: [worker],
+      stats: { totalBought: 5, totalListed: 0, totalSold: 0 },
+    });
+    const cmd: Command = { id: 'b1', type: 'buy', floorId: 1, slotIdx: 0, typeId: 'coffee_shop', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.stats.totalBought).toBe(6);
+    expect(result.state.stats.totalListed).toBe(0);
+    expect(result.state.stats.totalSold).toBe(0);
+  });
+
+  it('increments totalListed on successful list', () => {
+    const state = makeState({
+      balance: 1000,
+      workers: [worker],
+      floors: [{
+        id: 1,
+        productions: [{ typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 0 }, { typeId: 'bookstore', stage: 'IDLE', stageStartedAt: 0 }],
+      }],
+      stats: { totalBought: 0, totalListed: 3, totalSold: 0 },
+    });
+    const cmd: Command = { id: 'l1', type: 'list', floorId: 1, slotIdx: 0, timestamp: 10000 };
+    const result = processCommand(state, cmd, testConfig, 10000);
+    expect(result.success).toBe(true);
+    expect(result.state.stats.totalListed).toBe(4);
+    expect(result.state.stats.totalBought).toBe(0);
+    expect(result.state.stats.totalSold).toBe(0);
+  });
+
+  it('increments totalSold on successful collect', () => {
+    const state = makeState({
+      balance: 0,
+      workers: [worker],
+      floors: [{
+        id: 1,
+        productions: [{ typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 }, { typeId: 'bookstore', stage: 'IDLE', stageStartedAt: 0 }],
+      }],
+      stats: { totalBought: 0, totalListed: 0, totalSold: 7 },
+    });
+    const cmd: Command = { id: 'c1', type: 'collect', floorId: 1, slotIdx: 0, timestamp: 15000 };
+    const result = processCommand(state, cmd, testConfig, 15000);
+    expect(result.success).toBe(true);
+    expect(result.state.stats.totalSold).toBe(8);
+    expect(result.state.stats.totalBought).toBe(0);
+    expect(result.state.stats.totalListed).toBe(0);
+  });
+
+  it('does not increment stats on failed command', () => {
+    const state = makeState({
+      balance: 0,  // insufficient balance
+      workers: [worker],
+      stats: { totalBought: 5, totalListed: 0, totalSold: 0 },
+    });
+    const cmd: Command = { id: 'b2', type: 'buy', floorId: 1, slotIdx: 0, typeId: 'coffee_shop', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(false);
+    expect(result.state.stats.totalBought).toBe(5);
+  });
+});
+
 describe('open_floor command', () => {
   function openFloorCmd(overrides?: Partial<Extract<Command, { type: 'open_floor' }>>): Command {
     return {
