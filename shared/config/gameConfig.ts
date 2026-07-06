@@ -55,6 +55,7 @@ const rawConfig = {
     { floorId: 9,  price: 700,  currency: 'gems' as const, constructionDurationMs: 90 * 60 * 1000, requiredToolCount: 3 },
     { floorId: 10, price: 900,  currency: 'gems' as const, constructionDurationMs: 120 * 60 * 1000, requiredToolCount: 4 },
   ],
+  achievements: [],
 } satisfies GameConfig;
 
 export const gameConfig: GameConfig = GameConfigSchema.parse(rawConfig);
@@ -86,5 +87,6 @@ export function createInitialState(config: GameConfig): GameState {
     tools: { briks: 1, glass: 1, nails: 1, screw: 1 },
     underConstruction: [],
     openedFloorTypes: {},
+    stats: { totalBought: 0, totalListed: 0, totalSold: 0 },
   };
 }

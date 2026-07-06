@@ -20,6 +20,12 @@ export const UnderConstructionSchema = z.object({
   selectedFloorType: z.string().nullable().default(null),
 });
 
+export const StatsSchema = z.object({
+  totalBought: z.number().int().nonnegative().default(0),
+  totalListed: z.number().int().nonnegative().default(0),
+  totalSold:   z.number().int().nonnegative().default(0),
+});
+
 export const FloorStateSchema = z.object({
   id: z.number().int(),
   productions: z.array(ProductionSchema).min(1).max(3),
@@ -44,4 +50,5 @@ export const GameStateSchema = z.object({
   tools: ToolsSchema.default({ briks: 0, glass: 0, nails: 0, screw: 0 }),
   underConstruction: UnderConstructionSchema.array().default([]),
   openedFloorTypes: z.record(z.string(), z.string()).default({}),
+  stats: StatsSchema.default({ totalBought: 0, totalListed: 0, totalSold: 0 }),
 });

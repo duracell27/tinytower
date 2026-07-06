@@ -39,6 +39,7 @@ const testConfig: GameConfig = {
     defaultLobbyCapacity: 10,
   },
   floorUnlocks: [],
+  achievements: [],
 };
 
 function makeState(overrides?: Partial<GameState>): GameState {
