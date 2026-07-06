@@ -6,7 +6,7 @@ import { generateRandomVisitorRole, generateVisitorAppearance } from '../../shar
 import { generateRandomWorkers } from '../../shared/config/workerNames';
 import { applyXpGain, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
-import type { GameState, Command, Floor, Worker, ToolsState } from '../../shared/types';
+import type { GameState, Command, Floor, Worker, ToolsState, AchievementGrant } from '../../shared/types';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -45,6 +45,7 @@ type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
 interface UIState {
   insufficientResources: InsufficientResourcesPayload | null;
   builderToolDrop: ToolKey | null;
+  achievementQueue: AchievementGrant[];
 }
 
 interface GameActions {
@@ -69,11 +70,14 @@ interface GameActions {
   openFloor: (floorId: number, floorType: string) => void;
   setLastSyncAt: (ts: number) => void;
   hydrate: (state: GameState & Partial<SyncState> & { playerLevel?: number; playerXp?: number }) => void;
-  reconcile: (state: GameState, stateVersion: number, ackCursor: number, playerLevel?: number, playerXp?: number) => void;
+  reconcile: (state: GameState, stateVersion: number, ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   clearAckedCommands: (ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
+  exchangeGemsForCoins: (gems: number) => void;
   showInsufficientResources: (payload: InsufficientResourcesPayload) => void;
   clearInsufficientResources: () => void;
   clearBuilderToolDrop: () => void;
+  addAchievements: (grants: AchievementGrant[]) => void;
+  dismissAchievement: () => void;
 }
 
 type GameStore = GameState & PlayerStats & SyncState & UIState & GameActions;
@@ -87,13 +91,13 @@ function executeCommand(
   const { balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
-    tools, underConstruction, openedFloorTypes,
+    tools, underConstruction, openedFloorTypes, stats,
   } = store;
   const gameState: GameState = {
     balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
-    tools, underConstruction, openedFloorTypes,
+    tools, underConstruction, openedFloorTypes, stats,
   };
   const result = processCommand(gameState, command, gameConfig, command.timestamp, store.playerLevel);
   if (!result.success) return;
@@ -128,6 +132,7 @@ function executeCommand(
     tools: result.state.tools,
     underConstruction: result.state.underConstruction,
     openedFloorTypes: result.state.openedFloorTypes,
+    stats: result.state.stats,
     playerXp: xpResult.playerXp,
     playerLevel: xpResult.playerLevel,
     levelUpQueue: [...store.levelUpQueue, ...levelUps],
@@ -144,10 +149,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
   lastSyncAt: 0,
   insufficientResources: null,
   builderToolDrop: null,
+  achievementQueue: [],
 
+  exchangeGemsForCoins: (gems) => {
+    executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
+  },
   showInsufficientResources: (payload) => set({ insufficientResources: payload }),
   clearInsufficientResources: () => set({ insufficientResources: null }),
   clearBuilderToolDrop: () => set({ builderToolDrop: null }),
+
+  addAchievements: (grants) => set((cur) => ({
+    achievementQueue: [...cur.achievementQueue, ...grants],
+  })),
+
+  dismissAchievement: () => set((cur) => ({
+    achievementQueue: cur.achievementQueue.slice(1),
+  })),
 
   buy: (floorId, slotIdx, typeId) => {
     executeCommand(get, set, {
@@ -220,6 +237,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       : now;
     const { role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, timestamp);
     const { id, hairColor, female } = generateVisitorAppearance();
+    const floorTypeKeys = Object.keys(gameConfig.floorTypes);
+    const pendingFloorType = (role === 'guest' && targetFloor === 1)
+      ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
+      : undefined;
     executeCommand(get, set, {
       id: uuid(),
       type: 'spawn_visitor',
@@ -228,6 +249,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       targetFloor,
       hairColor,
       female,
+      pendingFloorType,
       timestamp,
     });
   },
@@ -284,7 +306,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (role === 'guest' && targetFloor === 1) {
       const hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
       if (hotelOccupied < state.hotelCapacity) {
-        newWorker = generateRandomWorkers(1, gameConfig)[0];
+        newWorker = generateRandomWorkers(1, gameConfig, undefined, active?.pendingFloorType)[0];
       }
     }
 
@@ -391,9 +413,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     tools: state.tools ?? { briks: 1, glass: 1, nails: 1, screw: 1 },
     underConstruction: state.underConstruction ?? [],
     openedFloorTypes: state.openedFloorTypes ?? {},
+    stats: state.stats ?? { totalBought: 0, totalListed: 0, totalSold: 0 },
+    achievementQueue: (state as any).achievementQueue ?? [],
   }),
 
-  reconcile: (serverState, newVersion, ackCursor, playerLevel, playerXp) => set((cur) => ({
+  reconcile: (serverState, newVersion, ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
     balance: serverState.balance,
     gems: serverState.gems,
     floors: serverState.floors,
@@ -410,7 +434,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     nextVisitorAt: serverState.nextVisitorAt,
     stateVersion: newVersion,
     lastAckCursor: ackCursor,
-    commandQueue: [],
+    commandQueue: cur.commandQueue.filter((cmd) => !sentIds.has(cmd.id)),
     playerLevel: playerLevel ?? cur.playerLevel,
     playerXp: playerXp ?? cur.playerXp,
     tools: serverState.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
@@ -419,6 +443,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return local?.selectedFloorType ? { ...uc, selectedFloorType: local.selectedFloorType } : uc;
     }),
     openedFloorTypes: serverState.openedFloorTypes ?? {},
+    stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalSold: 0 },
   })),
 
   clearAckedCommands: (ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({

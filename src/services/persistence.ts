@@ -2,7 +2,7 @@ import { createMMKV } from 'react-native-mmkv';
 import { AppState } from 'react-native';
 import { GameStateSchema } from '../../shared/schemas/gameState';
 import { useGameStore } from '../stores/gameStore';
-import type { GameState } from '../../shared/types';
+import type { GameState, AchievementGrant } from '../../shared/types';
 
 let storage: ReturnType<typeof createMMKV> | null = null;
 
@@ -20,6 +20,7 @@ interface PersistedGameState extends GameState {
   stateVersion?: number;
   playerLevel?: number;
   playerXp?: number;
+  achievementQueue?: AchievementGrant[];
 }
 
 export function loadGameState(): PersistedGameState | null {
@@ -50,6 +51,7 @@ export function loadGameState(): PersistedGameState | null {
           ? [parsed.underConstruction]
           : [],
       openedFloorTypes: parsed.openedFloorTypes ?? {},
+      stats: parsed.stats ?? { totalBought: 0, totalListed: 0, totalSold: 0 },
     };
     const result = GameStateSchema.safeParse(withDefaults);
     if (result.success) {
@@ -59,6 +61,7 @@ export function loadGameState(): PersistedGameState | null {
         stateVersion: typeof parsed.stateVersion === 'number' ? parsed.stateVersion : 0,
         playerLevel: typeof parsed.playerLevel === 'number' ? parsed.playerLevel : 1,
         playerXp: typeof parsed.playerXp === 'number' ? parsed.playerXp : 0,
+        achievementQueue: Array.isArray(parsed.achievementQueue) ? parsed.achievementQueue : [],
       };
     }
     console.warn('Invalid game state in MMKV, starting fresh');
@@ -93,6 +96,8 @@ export function saveGameState(state: PersistedGameState): void {
     tools: state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
     underConstruction: state.underConstruction ?? [],
     openedFloorTypes: state.openedFloorTypes ?? {},
+    stats: state.stats ?? { totalBought: 0, totalListed: 0, totalSold: 0 },
+    achievementQueue: (state as any).achievementQueue ?? [],
   }));
 }
 

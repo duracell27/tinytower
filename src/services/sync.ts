@@ -3,7 +3,7 @@ import { api } from './api';
 import { clock } from './clock';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
-import type { GameState } from '../../shared/types';
+import type { GameState, AchievementGrant } from '../../shared/types';
 
 interface SyncResponse {
   state: GameState;
@@ -12,9 +12,10 @@ interface SyncResponse {
   serverTime: number;
   playerLevel: number;
   playerXp: number;
+  newAchievements?: AchievementGrant[];
 }
 
-const SYNC_INTERVAL_MS = 5000;
+const SYNC_INTERVAL_MS = 30_000;
 
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 let isSyncing = false;
@@ -41,9 +42,12 @@ async function doSync(): Promise<void> {
       (store.workers.length === 0 && response.state.workers.length > 0);
 
     if (needsReconcile) {
-      store.reconcile(response.state, response.stateVersion, response.ackCursor, response.playerLevel, response.playerXp);
+      store.reconcile(response.state, response.stateVersion, response.ackCursor, sentIds, response.playerLevel, response.playerXp);
     } else {
       store.clearAckedCommands(response.ackCursor, sentIds, response.playerLevel, response.playerXp);
+    }
+    if (response.newAchievements && response.newAchievements.length > 0) {
+      useGameStore.getState().addAchievements(response.newAchievements);
     }
     useGameStore.getState().setLastSyncAt(Date.now());
   } catch {
