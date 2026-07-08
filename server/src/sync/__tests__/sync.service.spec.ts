@@ -125,7 +125,7 @@ describe('SyncService', () => {
       $queryRaw: jest.fn().mockResolvedValue([]),
       playerState: { upsert: jest.fn().mockResolvedValue({}) },
       floorConstruction: { deleteMany: jest.fn().mockResolvedValue({}), upsert: jest.fn().mockResolvedValue({}) },
-      playerFloorType: { upsert: jest.fn().mockResolvedValue({}) },
+      playerFloorType: { upsert: jest.fn().mockResolvedValue({}), deleteMany: jest.fn().mockResolvedValue({}) },
     };
 
     prisma = {

@@ -235,6 +235,10 @@ export class SyncService {
           });
         }
 
+        const activeFloorTypeIds = Object.keys(gameState.openedFloorTypes ?? {}).map(Number);
+        await tx.playerFloorType.deleteMany({
+          where: { playerId, floorId: { notIn: activeFloorTypeIds } },
+        });
         for (const [floorIdStr, floorType] of Object.entries(gameState.openedFloorTypes ?? {})) {
           const floorId = Number(floorIdStr);
           await tx.playerFloorType.upsert({
