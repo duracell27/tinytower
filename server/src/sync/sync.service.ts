@@ -175,6 +175,75 @@ export class SyncService {
           },
         });
 
+        await tx.playerState.upsert({
+          where: { playerId },
+          create: {
+            playerId,
+            gems: gameState.gems,
+            lobbyCapacity: gameState.lobbyCapacity,
+            hotelCapacity: gameState.hotelCapacity,
+            elevatorLevel: gameState.elevatorLevel,
+            elevatorFloor: gameState.elevatorFloor,
+            dailyTips: gameState.dailyTips,
+            dailyGemsCollected: gameState.dailyGemsCollected,
+            dailyTipsRewardClaimed: gameState.dailyTipsRewardClaimed,
+            lastDailyReset: BigInt(gameState.lastDailyReset),
+            nextVisitorAt: BigInt(gameState.nextVisitorAt),
+            briks: gameState.tools.briks,
+            glass: gameState.tools.glass,
+            nails: gameState.tools.nails,
+            screw: gameState.tools.screw,
+            lobbyVisitors: gameState.lobbyVisitors,
+          },
+          update: {
+            gems: gameState.gems,
+            lobbyCapacity: gameState.lobbyCapacity,
+            hotelCapacity: gameState.hotelCapacity,
+            elevatorLevel: gameState.elevatorLevel,
+            elevatorFloor: gameState.elevatorFloor,
+            dailyTips: gameState.dailyTips,
+            dailyGemsCollected: gameState.dailyGemsCollected,
+            dailyTipsRewardClaimed: gameState.dailyTipsRewardClaimed,
+            lastDailyReset: BigInt(gameState.lastDailyReset),
+            nextVisitorAt: BigInt(gameState.nextVisitorAt),
+            briks: gameState.tools.briks,
+            glass: gameState.tools.glass,
+            nails: gameState.tools.nails,
+            screw: gameState.tools.screw,
+            lobbyVisitors: gameState.lobbyVisitors,
+          },
+        });
+
+        const activeFloorIds = gameState.underConstruction.map((uc) => uc.floorId);
+        await tx.floorConstruction.deleteMany({
+          where: { playerId, floorId: { notIn: activeFloorIds } },
+        });
+        for (const uc of gameState.underConstruction) {
+          await tx.floorConstruction.upsert({
+            where: { playerId_floorId: { playerId, floorId: uc.floorId } },
+            create: {
+              playerId,
+              floorId: uc.floorId,
+              startedAt: BigInt(uc.startedAt),
+              durationMs: uc.durationMs,
+              requiredTools: uc.requiredTools,
+              selectedFloorType: uc.selectedFloorType ?? null,
+            },
+            update: {
+              selectedFloorType: uc.selectedFloorType ?? null,
+            },
+          });
+        }
+
+        for (const [floorIdStr, floorType] of Object.entries(gameState.openedFloorTypes ?? {})) {
+          const floorId = Number(floorIdStr);
+          await tx.playerFloorType.upsert({
+            where: { playerId_floorId: { playerId, floorId } },
+            create: { playerId, floorId, floorType },
+            update: { floorType },
+          });
+        }
+
         newAchievements = localNewAchievements;
 
         for (const floor of gameState.floors) {

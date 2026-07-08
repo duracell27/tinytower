@@ -123,6 +123,9 @@ describe('SyncService', () => {
       },
       // Returns empty array so locked values match player.playerLevel/playerXp (no recompute branch)
       $queryRaw: jest.fn().mockResolvedValue([]),
+      playerState: { upsert: jest.fn().mockResolvedValue({}) },
+      floorConstruction: { deleteMany: jest.fn().mockResolvedValue({}), upsert: jest.fn().mockResolvedValue({}) },
+      playerFloorType: { upsert: jest.fn().mockResolvedValue({}) },
     };
 
     prisma = {
@@ -463,6 +466,39 @@ describe('SyncService', () => {
       const result = await syncService.processSync('player-uuid', [], 0);
 
       expect(result.state.openedFloorTypes).toEqual({ '7': 'blue', '8': 'green' });
+    });
+
+    it('should upsert PlayerState and write FloorConstruction on accepted command', async () => {
+      prisma.player.findUnique
+        .mockResolvedValueOnce(mockPlayer)
+        .mockResolvedValueOnce({ ...mockPlayer, stateVersion: 1 });
+
+      const buyCmd: Command = {
+        id: 'cmd-write',
+        type: 'buy',
+        floorId: 2,
+        slotIdx: 0,
+        typeId: 'buns',
+        timestamp: Date.now(),
+      };
+
+      await syncService.processSync('player-uuid', [buyCmd], 0);
+
+      expect(txMock.playerState.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { playerId: 'player-uuid' },
+          create: expect.objectContaining({ playerId: 'player-uuid' }),
+          update: expect.objectContaining({ gems: expect.any(Number) }),
+        }),
+      );
+      expect(txMock.floorConstruction.deleteMany).toHaveBeenCalledWith({
+        where: { playerId: 'player-uuid', floorId: { notIn: [] } },
+      });
+      expect(txMock.player.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.not.objectContaining({ lobbyState: expect.anything() }),
+        }),
+      );
     });
   });
 });
