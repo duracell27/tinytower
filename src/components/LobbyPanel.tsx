@@ -28,6 +28,7 @@ import type { Visitor, VisitorRole, Worker } from '../../shared/types';
 import { Image } from 'expo-image';
 import DeliverAllModal, { type DeliverAllSummary } from './DeliverAllModal';
 import WorkerAvatar from './WorkerAvatar';
+import { CoinIcon, GemIcon } from './CurrencyIcons';
 
 type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
 const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
@@ -49,7 +50,7 @@ const WORKER_IMAGES: Record<string, { male: ReturnType<typeof require>; female: 
   green:  { male: require('../../assets/img/workers/man-green.png'),  female: require('../../assets/img/workers/woman-green.png') },
   blue:   { male: require('../../assets/img/workers/man-blue.png'),   female: require('../../assets/img/workers/woman-blue.png') },
   yellow: { male: require('../../assets/img/workers/man-yellow.png'), female: require('../../assets/img/workers/woman-yellow.png') },
-  violet: { male: require('../../assets/img/workers/man-violet.png'), female: require('../../assets/img/workers/woman-violet.png') },
+  purple: { male: require('../../assets/img/workers/man-violet.png'), female: require('../../assets/img/workers/woman-violet.png') },
   red:    { male: require('../../assets/img/workers/man-red.png'),    female: require('../../assets/img/workers/woman-red.png') },
 };
 
@@ -176,23 +177,6 @@ function PeopleGroupIcon({ size = 20, color = '#5A6478' }: { size?: number; colo
   );
 }
 
-function GemIcon({ size = 14 }: { size?: number }) {
-  const inner = Math.round(size * 0.72);
-  return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <View style={{
-        width: inner,
-        height: inner,
-        backgroundColor: '#3FB8D6',
-        borderRadius: Math.round(inner * 0.22),
-        transform: [{ rotate: '45deg' }],
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.65)',
-      }} />
-    </View>
-  );
-}
-
 function ChevronLeftIcon() {
   return (
     <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
@@ -261,21 +245,6 @@ function VisitorAvatar({ role, targetFloor, pendingFloorType, female }: { role: 
   }
   const src = VISITOR_IMAGES[(role as VisitorRole)] ?? VISITOR_IMAGES.guest;
   return <Image source={src} style={{ width: 48, height: 48 }} contentFit="contain" />;
-}
-
-/* ---------- Coin Dot ---------- */
-
-function CoinDot({ size = 16 }: { size?: number }) {
-  return (
-    <View style={{
-      width: size,
-      height: size,
-      borderRadius: size / 2,
-      backgroundColor: '#F2B330',
-      borderWidth: 1.5,
-      borderColor: '#FFE69B',
-    }} />
-  );
 }
 
 /* ---------- Elevator Shaft ---------- */
@@ -683,7 +652,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   <View style={styles.headerRight}>
                     {/* Coin chip */}
                     <View style={styles.coinChip}>
-                      <CoinDot size={14} />
+                      <CoinIcon size={14} />
                       <Text style={styles.coinChipText}>{formatCoins(balance)}</Text>
                     </View>
                     {/* Close button */}
@@ -787,7 +756,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                               <Text style={[styles.actionButtonText, { color: actionButton.textColor }]}>
                                 {actionButton.label}
                               </Text>
-                              {actionButton.icon === 'coin' && <CoinDot size={14} />}
+                              {actionButton.icon === 'coin' && <CoinIcon size={14} />}
                               {actionButton.icon === 'gem' && <GemIcon size={14} />}
                               {actionButton.amount != null && (
                                 <Text style={[styles.actionButtonText, { color: actionButton.textColor }]}>
@@ -844,7 +813,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   <View style={styles.dailyTipsHeader}>
                     <Text style={styles.dailyTipsLabel}>{t('dailyTips.label')}</Text>
                     <View style={styles.dailyTipsValue}>
-                      <CoinDot size={12} />
+                      <CoinIcon size={12} />
                       <Text style={styles.dailyTipsAmount}>{formatCoins(dailyTips)}</Text>
                       <Text style={styles.dailyTipsTarget}>/ {formatCoins(dailyTipsTarget)}</Text>
                     </View>

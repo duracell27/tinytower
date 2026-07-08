@@ -116,14 +116,13 @@ export default function JobPickerSheet({
       if (gameConfig.floors.some((f) => f.id === storeFloor.id)) continue; // skip static
       const floorType = openedFloorTypes[String(storeFloor.id)];
       if (!floorType) continue;
-      const floorTypeConfig = gameConfig.floorTypes[floorType];
-      if (!floorTypeConfig) continue;
+      if (!gameConfig.floorTypes[floorType]) continue;
 
       const slots: SlotItem[] = [];
       for (let slotIdx = 0; slotIdx < storeFloor.productions.length; slotIdx++) {
         const assigned = getWorkerForSlot(workers, storeFloor.id, slotIdx);
         if (assigned && assigned.id !== worker.id) continue;
-        const typeId = floorTypeConfig.dreamJobs[slotIdx] ?? null;
+        const typeId = storeFloor.productions[slotIdx]?.typeId ?? null;
         let matchLevel: SlotItem['matchLevel'] = 'other';
         if (floorType === worker.floorType) {
           matchLevel = typeId === worker.dreamJob ? 'dream' : 'match';

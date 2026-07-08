@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
+import { CoinIcon, GemIcon } from './CurrencyIcons';
 
 interface TopBarProps {
   name: string;
@@ -76,11 +77,11 @@ export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins
 
           <View style={styles.currencySection}>
             <View style={styles.coinBadge}>
-              <View style={styles.coinIcon} />
+              <CoinIcon size={18} />
               <Text style={styles.coinText}>{coins}</Text>
             </View>
             <View style={styles.gemBadge}>
-              <View style={styles.gemIcon} />
+              <GemIcon size={14} />
               <Text style={styles.gemText}>{gems}</Text>
             </View>
           </View>

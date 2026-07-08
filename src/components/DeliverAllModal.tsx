@@ -8,6 +8,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
+import { CoinIcon, GemIcon } from './CurrencyIcons';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -106,13 +107,13 @@ export default function DeliverAllModal({ visible, summary, onDismiss }: Deliver
             <View style={styles.totalRow}>
               {summary.totalCoins > 0 && (
                 <View style={styles.totalChip}>
-                  <View style={styles.coinDot} />
+                  <CoinIcon size={16} />
                   <Text style={styles.totalCoinsText}>+{formatNumber(summary.totalCoins)}</Text>
                 </View>
               )}
               {summary.totalGems > 0 && (
                 <View style={styles.totalChip}>
-                  <View style={styles.gemDot} />
+                  <GemIcon size={14} />
                   <Text style={styles.totalGemsText}>+{summary.totalGems}</Text>
                 </View>
               )}
@@ -194,27 +195,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  coinDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#F2B330',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.6)',
-  },
   totalCoinsText: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 14,
     color: '#C28A22',
-  },
-  gemDot: {
-    width: 12,
-    height: 12,
-    backgroundColor: '#3FB8D6',
-    borderRadius: 2,
-    transform: [{ rotate: '45deg' }],
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.6)',
   },
   totalGemsText: {
     fontFamily: 'Fredoka_700Bold',

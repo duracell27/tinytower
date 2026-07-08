@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
+import { CoinIcon, GemIcon } from './CurrencyIcons';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -72,13 +73,13 @@ export default function AchievementModal() {
                 <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
                   {grant.reward.coins != null && (
                     <View style={styles.rewardRow}>
-                      <View style={styles.coinIcon} />
+                      <CoinIcon size={20} />
                       <Text style={styles.rewardText}>+{formatNumber(grant.reward.coins)}</Text>
                     </View>
                   )}
                   {grant.reward.gems != null && (
                     <View style={styles.rewardRow}>
-                      <View style={styles.gemIcon} />
+                      <GemIcon size={16} />
                       <Text style={styles.rewardTextGem}>+{grant.reward.gems}</Text>
                     </View>
                   )}

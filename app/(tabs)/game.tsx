@@ -143,8 +143,7 @@ export default function GameScreen() {
             floorId={uc.floorId}
             endsAt={uc.startedAt + uc.durationMs}
             now={now}
-            requiredTool={uc.requiredTool}
-            requiredCount={uc.requiredCount}
+            requiredTools={uc.requiredTools}
             selectedFloorType={selType}
             onOpenPicker={() => setPickerOpenFor(uc.floorId)}
             onStartBusiness={() => {
@@ -295,7 +294,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingTop: 150,
     paddingBottom: 85,
-    paddingHorizontal: 8,
+    paddingHorizontal: 14,
   },
   floorWrapper: {
     marginBottom: 13,

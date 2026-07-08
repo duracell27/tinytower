@@ -101,7 +101,7 @@ export const ExpandHotelCommandSchema = TimestampedBaseSchema.extend({
 export const BuyFloorCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('buy_floor'),
   floorId: z.number().int(),
-  requiredTool: z.enum(['briks', 'glass', 'nails', 'screw']),
+  requiredTools: z.array(z.object({ tool: z.enum(['briks', 'glass', 'nails', 'screw']) })),
 });
 
 export const OpenFloorCommandSchema = TimestampedBaseSchema.extend({

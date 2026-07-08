@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { useTranslation } from 'react-i18next';
 import { shadeColor } from '../utils/color';
+import { CoinIcon, GemIcon } from './CurrencyIcons';
 
 const BANNER_COLOR = '#5B6472';
 const BANNER_BG = shadeColor(BANNER_COLOR, 45);
@@ -14,13 +16,12 @@ interface BuyFloorBannerProps {
 }
 
 function CurrencyIcon({ currency, size = 14 }: { currency: 'coins' | 'gems'; size?: number }) {
-  if (currency === 'gems') {
-    return <View style={[styles.gemIcon, { width: size, height: size }]} />;
-  }
-  return <View style={[styles.coinIcon, { width: size, height: size, borderRadius: size / 2 }]} />;
+  if (currency === 'gems') return <GemIcon size={size} />;
+  return <CoinIcon size={size} />;
 }
 
 export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPress }: BuyFloorBannerProps) {
+  const { t } = useTranslation('tabs');
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.ribbon, pressed && styles.pressed]}>
       <View style={styles.ribbonLeft}>
@@ -29,7 +30,7 @@ export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPre
           style={{ width: 28, height: 28 }}
           contentFit="contain"
         />
-        <Text style={styles.ribbonTitle} numberOfLines={1}>{`Купити ${nextFloorNumber} поверх`}</Text>
+        <Text style={styles.ribbonTitle} numberOfLines={1}>{t('game.buyFloor', { number: nextFloorNumber })}</Text>
       </View>
       <View style={styles.ribbonPricePill}>
         <CurrencyIcon currency={currency} size={13} />
@@ -42,18 +43,6 @@ export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPre
 const styles = StyleSheet.create({
   pressed: {
     opacity: 0.85,
-  },
-  coinIcon: {
-    backgroundColor: '#F2B330',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.55)',
-  },
-  gemIcon: {
-    backgroundColor: '#3FB8D6',
-    borderRadius: 3,
-    transform: [{ rotate: '45deg' }],
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.6)',
   },
   ribbon: {
     flexDirection: 'row',

@@ -13,6 +13,7 @@ import WorkerAvatar from './WorkerAvatar';
 import { shadeColor } from '../utils/color';
 import type { Production, EffectiveStage, Worker } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
+import { CoinIcon } from './CurrencyIcons';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -454,7 +455,7 @@ export default function ProductionCard({
           </View>
         ) : subText ? (
           <View style={styles.pricePill}>
-            <View style={styles.priceCoinIcon} />
+            <CoinIcon size={13} />
             <Text style={styles.priceText}>{subText}</Text>
           </View>
         ) : null}

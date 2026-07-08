@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Svg, { Path } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -19,10 +20,10 @@ const CLOSE_THRESHOLD = 80;
 const CLOSE_VELOCITY = 600;
 
 const TOOLS: { key: 'briks' | 'glass' | 'nails' | 'screw'; label: string; image: ReturnType<typeof require> }[] = [
-  { key: 'briks',  label: 'Цегла',   image: require('../../assets/img/tools/briks.png') },
-  { key: 'glass',  label: 'Скло',    image: require('../../assets/img/tools/glass.png') },
-  { key: 'nails',  label: 'Цвяхи',   image: require('../../assets/img/tools/nails.png') },
-  { key: 'screw',  label: 'Шурупи',  image: require('../../assets/img/tools/screw.png') },
+  { key: 'briks',  label: 'Bricks',  image: require('../../assets/img/tools/briks.png') },
+  { key: 'glass',  label: 'Glass',   image: require('../../assets/img/tools/glass.png') },
+  { key: 'nails',  label: 'Nails',   image: require('../../assets/img/tools/nails.png') },
+  { key: 'screw',  label: 'Screws',  image: require('../../assets/img/tools/screw.png') },
 ];
 
 interface WarehouseSheetProps {
@@ -31,6 +32,7 @@ interface WarehouseSheetProps {
 }
 
 export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps) {
+  const { t } = useTranslation('tabs');
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SCREEN_HEIGHT);
   const dragY = useSharedValue(0);
@@ -88,7 +90,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                   style={{ width: 28, height: 28 }}
                   contentFit="contain"
                 />
-                <Text style={styles.title}>Склад</Text>
+                <Text style={styles.title}>{t('menu.warehouseTitle')}</Text>
                 <Pressable onPress={onClose} style={styles.closeBtn}>
                   <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                     <Path d="M18 6L6 18M6 6l12 12" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" />
@@ -129,6 +131,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    minHeight: SCREEN_HEIGHT * 0.42,
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     backgroundColor: '#EAEDF2',

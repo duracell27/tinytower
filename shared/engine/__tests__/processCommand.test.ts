@@ -4,7 +4,13 @@ import type { GameState, GameConfig, Command, Worker } from '../../types';
 
 const testConfig: GameConfig = {
   floorTypes: {
-    green: { shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee_shop', 'bookstore'] },
+    green: {
+      shirtColor: '#62B23F', accent: '#4E9A2E',
+      businesses: [
+        { name: 'Coffee Shop',   dreamJobs: ['coffee_shop', 'bookstore'] },
+        { name: 'Coffee Shop 2', dreamJobs: ['coffee_shop', 'bookstore'] },
+      ],
+    },
   },
   floors: [
     { id: 1, slots: 2, floorType: 'green', availableTypes: ['coffee_shop', 'bookstore'] },
@@ -35,6 +41,7 @@ const testConfig: GameConfig = {
       price: 10,
       currency: 'gems' as const,
       constructionDurationMs: 60000,
+      requiredToolSlots: 1,
       requiredToolCount: 1,
     },
     {
@@ -42,6 +49,7 @@ const testConfig: GameConfig = {
       price: 50,
       currency: 'coins' as const,
       constructionDurationMs: 60000,
+      requiredToolSlots: 1,
       requiredToolCount: 2,
     },
   ],
@@ -424,7 +432,7 @@ describe('buy_floor command', () => {
   function buyFloorCmd(overrides?: Partial<Extract<Command, { type: 'buy_floor' }>>): Command {
     return {
       id: 'bf-1', type: 'buy_floor', timestamp: 1000,
-      floorId: 5, requiredTool: 'briks',
+      floorId: 5, requiredTools: [{ tool: 'briks' }],
       ...overrides,
     } as Command;
   }
@@ -435,7 +443,7 @@ describe('buy_floor command', () => {
     expect(result.success).toBe(true);
     expect(result.state.gems).toBe(10);
     expect(result.state.underConstruction).toMatchObject([{
-      floorId: 5, requiredTool: 'briks', requiredCount: 1, durationMs: 60000,
+      floorId: 5, requiredTools: [{ tool: 'briks', count: 1 }], durationMs: 60000,
     }]);
   });
 
@@ -451,7 +459,7 @@ describe('buy_floor command', () => {
       gems: 20,
       underConstruction: [{
         floorId: 5, startedAt: 0, durationMs: 60000,
-        requiredTool: 'briks', requiredCount: 1, selectedFloorType: null,
+        requiredTools: [{ tool: 'briks', count: 1 }], selectedFloorType: null,
       }],
     });
     const result = processCommand(state, buyFloorCmd(), testConfig, 1000);
@@ -469,18 +477,18 @@ describe('buy_floor command', () => {
     const state = makeState({ balance: 100 });
     const result = processCommand(state, {
       id: 'bf-2', type: 'buy_floor', timestamp: 1000,
-      floorId: 6, requiredTool: 'glass',
+      floorId: 6, requiredTools: [{ tool: 'glass' }],
     } as Command, testConfig, 1000);
     expect(result.success).toBe(true);
     expect(result.state.balance).toBe(50);
-    expect(result.state.underConstruction).toMatchObject([{ floorId: 6, requiredTool: 'glass' }]);
+    expect(result.state.underConstruction).toMatchObject([{ floorId: 6, requiredTools: [{ tool: 'glass', count: 2 }] }]);
   });
 
   it('fails with insufficient balance for coins currency', () => {
     const state = makeState({ balance: 10 });
     const result = processCommand(state, {
       id: 'bf-3', type: 'buy_floor', timestamp: 1000,
-      floorId: 6, requiredTool: 'glass',
+      floorId: 6, requiredTools: [{ tool: 'glass' }],
     } as Command, testConfig, 1000);
     expect(result.success).toBe(false);
     expect(result.error).toBe('Insufficient balance');
@@ -567,7 +575,7 @@ describe('open_floor command', () => {
     tools: { briks: 2, glass: 0, nails: 0, screw: 0 },
     underConstruction: [{
       floorId: 5, startedAt: 1000, durationMs: 60000,
-      requiredTool: 'briks', requiredCount: 1, selectedFloorType: null,
+      requiredTools: [{ tool: 'briks', count: 1 }], selectedFloorType: null,
     }],
   };
 
@@ -582,7 +590,7 @@ describe('open_floor command', () => {
     expect(result.state.openedFloorTypes['5']).toBe('green');
   });
 
-  it('new floor has 2 productions matching dreamJobs', () => {
+  it('new floor has 2 productions from the selected business tier', () => {
     const state = makeState(stateUnderConstruction);
     const result = processCommand(state, openFloorCmd(), testConfig, 62000);
     const newFloor = result.state.floors.find((f) => f.id === 5)!;
@@ -598,8 +606,8 @@ describe('open_floor command', () => {
 
   it('fails when tools insufficient', () => {
     const state = makeState({
-      ...stateUnderConstruction,
       tools: { briks: 0, glass: 0, nails: 0, screw: 0 },
+      underConstruction: stateUnderConstruction.underConstruction,
     });
     const result = processCommand(state, openFloorCmd(), testConfig, 62000);
     expect(result.success).toBe(false);

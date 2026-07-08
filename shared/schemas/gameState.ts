@@ -11,12 +11,16 @@ export const ToolsSchema = z.object({
   screw: z.number().int().nonnegative(),
 });
 
+export const RequiredToolEntrySchema = z.object({
+  tool: z.enum(['briks', 'glass', 'nails', 'screw']),
+  count: z.number().int().positive(),
+});
+
 export const UnderConstructionSchema = z.object({
   floorId: z.number().int(),
   startedAt: z.number(),
   durationMs: z.number(),
-  requiredTool: z.enum(['briks', 'glass', 'nails', 'screw']),
-  requiredCount: z.number().int().positive(),
+  requiredTools: z.array(RequiredToolEntrySchema),
   selectedFloorType: z.string().nullable().default(null),
 });
 

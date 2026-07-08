@@ -109,7 +109,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   quickLogin: async (password) => {
     const last = get().lastPlayer;
     if (!last) throw new Error('No saved account');
-    await get().login(last.email, password);
+    try {
+      await get().login(last.email, password);
+    } catch (e: unknown) {
+      const status = (e as { status?: number })?.status;
+      if (status === 404 || status === 401) {
+        getStorage().remove('lastPlayer');
+        set({ lastPlayer: null });
+      }
+      throw e;
+    }
   },
 
   logout: () => {

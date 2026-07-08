@@ -28,5 +28,13 @@
       "critical": "{{count}} commands not synced · possible data loss"
     },
     "logout": "Log Out"
+  },
+  "menu": {
+    "heading": "Menu",
+    "inventory": "Inventory",
+    "warehouseTitle": "Warehouse"
+  },
+  "game": {
+    "buyFloor": "Buy floor {{number}}"
   }
 }

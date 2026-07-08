@@ -75,8 +75,7 @@ function handleBuyFloor(
     floorId: command.floorId,
     startedAt: command.timestamp,
     durationMs: unlockConfig.constructionDurationMs,
-    requiredTool: command.requiredTool,
-    requiredCount: unlockConfig.requiredToolCount,
+    requiredTools: command.requiredTools.map(({ tool }) => ({ tool, count: unlockConfig.requiredToolCount })),
     selectedFloorType: null,
   };
 
@@ -104,28 +103,40 @@ function handleOpenFloor(
   if (command.timestamp - uc.startedAt < uc.durationMs) return { success: false, state, error: 'Construction not complete' };
 
   const currentTools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 };
-  if ((currentTools[uc.requiredTool] ?? 0) < uc.requiredCount) return { success: false, state, error: 'Insufficient tools' };
+  const hasAllTools = uc.requiredTools.every(({ tool, count }) => (currentTools[tool] ?? 0) >= count);
+  if (!hasAllTools) return { success: false, state, error: 'Insufficient tools' };
 
   const floorTypeConfig = config.floorTypes[command.floorType];
   if (!floorTypeConfig) return { success: false, state, error: 'Unknown floor type' };
 
+  const staticBuiltOfType = config.floors.filter(
+    (f) => f.floorType === command.floorType && state.floors.some((sf) => sf.id === f.id),
+  ).length;
+  const dynamicBuiltOfType = Object.values(state.openedFloorTypes ?? {})
+    .filter((t) => t === command.floorType).length;
+  const tier = staticBuiltOfType + dynamicBuiltOfType;
+  const business = floorTypeConfig.businesses[tier];
+  if (!business) return { success: false, state, error: 'All businesses of this type already built' };
+
   const newFloor = {
     id: command.floorId,
-    productions: floorTypeConfig.dreamJobs.map((typeId) => ({
+    productions: business.dreamJobs.map((typeId) => ({
       typeId,
       stage: 'IDLE' as const,
       stageStartedAt: 0,
     })),
   };
 
+  const updatedTools = { ...currentTools };
+  for (const { tool, count } of uc.requiredTools) {
+    updatedTools[tool] = updatedTools[tool] - count;
+  }
+
   return {
     success: true,
     state: {
       ...state,
-      tools: {
-        ...currentTools,
-        [uc.requiredTool]: currentTools[uc.requiredTool] - uc.requiredCount,
-      },
+      tools: updatedTools,
       floors: [...state.floors, newFloor],
       openedFloorTypes: {
         ...(state.openedFloorTypes ?? {}),
@@ -245,8 +256,8 @@ function resolveFloorType(state: GameState, config: GameConfig, floorId: number)
 function resolveAvailableTypes(state: GameState, config: GameConfig, floorId: number): string[] {
   const staticConfig = config.floors.find((f) => f.id === floorId);
   if (staticConfig) return staticConfig.availableTypes;
-  const floorType = state.openedFloorTypes?.[String(floorId)];
-  return floorType ? (config.floorTypes[floorType]?.dreamJobs ?? []) : [];
+  const floor = state.floors.find((f) => f.id === floorId);
+  return floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
 }
 
 function handleBuy(

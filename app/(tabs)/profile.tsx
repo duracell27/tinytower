@@ -12,6 +12,7 @@ import { useGameStore } from '../../src/stores/gameStore';
 import { xpForLevel } from '../../shared/engine/xp';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { formatNum } from '../../src/utils/format';
+import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
 
 function formatSyncTime(ts: number, now: number): string {
   if (ts === 0) return i18n.t('common:relativeTime.never');
@@ -119,11 +120,11 @@ export default function ProfileScreen() {
 
           <View style={styles.currencyRow}>
             <View style={styles.currencyItem}>
-              <View style={styles.coinIcon} />
+              <CoinIcon size={18} />
               <Text style={styles.currencyValue}>{formatNum(balance)}</Text>
             </View>
             <View style={styles.currencyItem}>
-              <View style={styles.gemIcon} />
+              <GemIcon size={16} />
               <Text style={styles.currencyValueGem}>{formatNum(gems)}</Text>
             </View>
           </View>
@@ -279,27 +280,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  coinIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#F2B330',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.55)',
-  },
   currencyValue: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#C28A22',
-  },
-  gemIcon: {
-    width: 14,
-    height: 14,
-    backgroundColor: '#3FB8D6',
-    borderRadius: 3,
-    transform: [{ rotate: '45deg' }],
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.6)',
   },
   currencyValueGem: {
     fontFamily: 'Fredoka_600SemiBold',

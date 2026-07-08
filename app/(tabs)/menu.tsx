@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
+import { useTranslation } from 'react-i18next';
 import WarehouseSheet from '../../src/components/WarehouseSheet';
 
 export default function MenuScreen() {
+  const { t } = useTranslation('tabs');
   const [inventoryOpen, setInventoryOpen] = useState(false);
 
   return (
@@ -15,7 +17,7 @@ export default function MenuScreen() {
     >
       <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
       <View style={styles.content}>
-        <Text style={styles.heading}>Меню</Text>
+        <Text style={styles.heading}>{t('menu.heading')}</Text>
 
         <Pressable style={styles.menuItem} onPress={() => setInventoryOpen(true)}>
           <Image
@@ -23,7 +25,7 @@ export default function MenuScreen() {
             style={{ width: 32, height: 32 }}
             contentFit="contain"
           />
-          <Text style={styles.menuLabel}>Інвентар</Text>
+          <Text style={styles.menuLabel}>{t('menu.inventory')}</Text>
         </Pressable>
       </View>
 

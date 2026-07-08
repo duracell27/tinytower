@@ -12,7 +12,7 @@ import type { GameConfig, GameState } from '../../types';
 
 const testConfig: GameConfig = {
   floorTypes: {
-    green: { shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee'] },
+    green: { shirtColor: '#62B23F', accent: '#4E9A2E', businesses: [{ name: 'Coffee Shop', dreamJobs: ['coffee'] }] },
   },
   floors: [
     { id: 2, slots: 3, floorType: 'green', availableTypes: ['coffee'] },

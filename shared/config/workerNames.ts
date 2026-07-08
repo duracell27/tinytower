@@ -60,7 +60,8 @@ export function generateRandomWorkers(
       ? floorTypeOverride
       : floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)];
     const ftConfig = config.floorTypes[floorType];
-    const dreamJob = ftConfig.dreamJobs[Math.floor(Math.random() * ftConfig.dreamJobs.length)];
+    const business = ftConfig.businesses[Math.floor(Math.random() * ftConfig.businesses.length)];
+    const dreamJob = business.dreamJobs[Math.floor(Math.random() * business.dreamJobs.length)];
 
     workers.push({
       id: uuidv4(),

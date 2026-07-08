@@ -21,18 +21,18 @@ const TOOL_META: Record<
   'briks' | 'glass' | 'nails' | 'screw',
   { label: string; image: ReturnType<typeof require> }
 > = {
-  briks: { label: 'Цегла',  image: require('../../assets/img/tools/briks.png') },
-  glass: { label: 'Скло',   image: require('../../assets/img/tools/glass.png') },
-  nails: { label: 'Цвяхи',  image: require('../../assets/img/tools/nails.png') },
-  screw: { label: 'Шурупи', image: require('../../assets/img/tools/screw.png') },
+  briks: { label: 'Bricks',  image: require('../../assets/img/tools/briks.png') },
+  glass: { label: 'Glass',   image: require('../../assets/img/tools/glass.png') },
+  nails: { label: 'Nails',   image: require('../../assets/img/tools/nails.png') },
+  screw: { label: 'Screws',  image: require('../../assets/img/tools/screw.png') },
 };
 
 function CoinIcon() {
-  return <View style={icons.coin} />;
+  return <Image source={require('../../assets/img/coin.png')} style={{ width: 16, height: 16 }} contentFit="contain" />;
 }
 
 function GemIcon() {
-  return <View style={icons.gem} />;
+  return <Image source={require('../../assets/img/diamond.png')} style={{ width: 16, height: 16 }} contentFit="contain" />;
 }
 
 export default function InsufficientResourcesModal() {

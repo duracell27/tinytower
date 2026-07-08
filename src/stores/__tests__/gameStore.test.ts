@@ -12,7 +12,7 @@ const testConfig: GameConfig = {
     coffee_shop: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 },
   },
   floorTypes: {
-    green: { shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee_shop'] },
+    green: { shirtColor: '#62B23F', accent: '#4E9A2E', businesses: [{ name: 'Coffee Shop', dreamJobs: ['coffee_shop'] }] },
   },
   startingBalance: 100,
   hotelCapacity: 10,
@@ -31,6 +31,7 @@ const testConfig: GameConfig = {
     defaultLobbyCapacity: 10,
   },
   floorUnlocks: [],
+  achievements: [],
 };
 
 describe('game store logic (via processCommand)', () => {

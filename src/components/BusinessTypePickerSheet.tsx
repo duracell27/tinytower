@@ -17,18 +17,18 @@ const SWIPE_CLOSE_THRESHOLD = 80;
 const VELOCITY_CLOSE_THRESHOLD = 500;
 
 const FLOOR_TYPE_NAMES: Record<string, string> = {
-  green:  'Пекарня',
-  blue:   'Пральня',
-  yellow: 'Кафе',
-  violet: 'Ательє',
-  red:    'Морозиво',
+  green:  'Products',
+  blue:   'Service',
+  yellow: 'Rest',
+  purple: 'Fashion',
+  red:    'Electronics',
 };
 
 const FLOOR_TYPE_ICONS: Record<string, ReturnType<typeof require>> = {
   green:  require('../../assets/img/flourTypes/products.png'),
   blue:   require('../../assets/img/flourTypes/service.png'),
   yellow: require('../../assets/img/flourTypes/rest.png'),
-  violet: require('../../assets/img/flourTypes/fashion.png'),
+  purple: require('../../assets/img/flourTypes/fashion.png'),
   red:    require('../../assets/img/flourTypes/electronics.png'),
 };
 
@@ -89,12 +89,12 @@ export default function BusinessTypePickerSheet({
         </GestureDetector>
 
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Вибери тип бізнесу</Text>
+          <Text style={styles.title}>Choose business type</Text>
           <Pressable onPress={onClose} style={styles.closeBtn} hitSlop={8}>
             <Text style={styles.closeBtnText}>✕</Text>
           </Pressable>
         </View>
-        <Text style={styles.subtitle}>Поверх {underConstruction.floorId}</Text>
+        <Text style={styles.subtitle}>Floor {underConstruction.floorId}</Text>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
           {floorTypes.map((ft) => (

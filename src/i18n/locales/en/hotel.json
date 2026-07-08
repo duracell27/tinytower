@@ -74,7 +74,7 @@
     "hotel": {
       "name": "Hotel",
       "tag": "SERVICE",
-      "hasVacancy": "Vacancies available",
+      "hasVacancy": "Rooms available",
       "full": "No vacancies",
       "occupied": "OCCUPIED"
     },
@@ -82,7 +82,7 @@
       "name": "Lobby",
       "tag": "SERVICE",
       "waiting": "Waiting",
-      "newGuest": "New guest",
+      "newGuest": "New guest in",
       "full": "Full"
     }
   },

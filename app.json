@@ -5,11 +5,16 @@
     "scheme": "tinytower",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/img/logoBlack.png",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.duracell27.tinytower-init",
+      "icon": {
+        "light": "./assets/img/logoWhite.png",
+        "dark": "./assets/img/logoBlack.png",
+        "tinted": "./assets/img/logoBlack.png"
+      },
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,

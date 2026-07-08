@@ -6,7 +6,7 @@ const MAN: Record<string, ReturnType<typeof require>> = {
   green:  require('../../assets/img/workers/man-green.png'),
   blue:   require('../../assets/img/workers/man-blue.png'),
   yellow: require('../../assets/img/workers/man-yellow.png'),
-  violet: require('../../assets/img/workers/man-violet.png'),
+  purple: require('../../assets/img/workers/man-violet.png'),
   red:    require('../../assets/img/workers/man-red.png'),
 };
 
@@ -14,7 +14,7 @@ const WOMAN: Record<string, ReturnType<typeof require>> = {
   green:  require('../../assets/img/workers/woman-green.png'),
   blue:   require('../../assets/img/workers/woman-blue.png'),
   yellow: require('../../assets/img/workers/woman-yellow.png'),
-  violet: require('../../assets/img/workers/woman-violet.png'),
+  purple: require('../../assets/img/workers/woman-violet.png'),
   red:    require('../../assets/img/workers/woman-red.png'),
 };
 

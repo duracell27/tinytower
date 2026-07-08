@@ -4,7 +4,7 @@ import type { GameState, GameConfig, Command, Visitor } from '../../types';
 
 const testConfig: GameConfig = {
   floorTypes: {
-    green: { shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee'] },
+    green: { shirtColor: '#62B23F', accent: '#4E9A2E', businesses: [{ name: 'Coffee Shop', dreamJobs: ['coffee'] }] },
   },
   floors: [
     { id: 2, slots: 3, floorType: 'green', availableTypes: ['coffee'] },
@@ -112,6 +112,7 @@ describe('collect_tip', () => {
 
   it('guest to floor 1 creates a new worker', () => {
     const state = makeState({
+      workers: [],
       lobbyVisitors: [makeVisitor({ role: 'guest', targetFloor: 1 })],
       elevatorFloor: 1,
       elevatorLevel: 1,

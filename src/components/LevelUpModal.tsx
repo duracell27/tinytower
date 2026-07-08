@@ -12,6 +12,7 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { type LevelUpEvent } from '../../shared/engine/xp';
+import { CoinIcon, GemIcon } from './CurrencyIcons';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -92,11 +93,11 @@ export default function LevelUpModal({ suppressWhileOpen = false }: { suppressWh
 
                 <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
                   <View style={styles.rewardRow}>
-                    <View style={styles.coinIcon} />
+                    <CoinIcon size={20} />
                     <Text style={styles.rewardText}>+{formatNumber(event.coinReward)}</Text>
                   </View>
                   <View style={styles.rewardRow}>
-                    <View style={styles.gemIcon} />
+                    <GemIcon size={16} />
                     <Text style={styles.rewardTextGem}>+{event.gemReward}</Text>
                   </View>
                 </Animated.View>

@@ -120,7 +120,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         pointerEvents="none"
       />
 
-      {/* Discord button */}
+      {/* Social buttons */}
       <View style={styles.discordWrapper} pointerEvents="box-none">
         <Pressable
           onPress={() => Linking.openURL('https://discord.com/channels/1521796294270517260/1521882117208932483')}
@@ -128,6 +128,16 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         >
           <Image
             source={require('../../assets/img/discord.png')}
+            style={{ width: 44, height: 44 }}
+            contentFit="contain"
+          />
+        </Pressable>
+        <Pressable
+          onPress={() => Linking.openURL('https://www.reddit.com/r/TinyTowerGame/')}
+          style={({ pressed }) => [styles.discordButton, { marginTop: 10 }, pressed && { opacity: 0.75 }]}
+        >
+          <Image
+            source={require('../../assets/img/reddit.png')}
             style={{ width: 44, height: 44 }}
             contentFit="contain"
           />
@@ -155,13 +165,11 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       {showChips && (
         <View style={styles.chipsContainer}>
           <View style={styles.chip}>
-            <View style={styles.coinIcon} />
+            <Image source={require('../../assets/img/coin.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <Text style={styles.chipValue}>{formatNumber(balance)}</Text>
           </View>
           <View style={styles.chip}>
-            <View style={styles.gemIconWrap}>
-              <View style={styles.gemIcon} />
-            </View>
+            <Image source={require('../../assets/img/diamond.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <Text style={styles.chipValue}>{gems}</Text>
           </View>
           <View style={styles.chip}>

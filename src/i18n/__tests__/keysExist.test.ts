@@ -147,7 +147,10 @@ describe('translation key coverage', () => {
     });
 
     it('gameContent has no orphan floor entries', () => {
-      const validIds = new Set(gameConfig.floors.map((f) => String(f.id)));
+      const validIds = new Set([
+        ...gameConfig.floors.map((f) => String(f.id)),
+        ...(gameConfig.floorUnlocks ?? []).map((f) => String(f.floorId)),
+      ]);
       for (const id of Object.keys(gameContent.floors)) {
         expect(validIds.has(id)).toBe(true);
       }

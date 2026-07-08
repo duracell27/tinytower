@@ -4,7 +4,7 @@ import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { generateRandomVisitorRole, generateVisitorAppearance } from '../../shared/engine/lobbyUtils';
 import { generateRandomWorkers } from '../../shared/config/workerNames';
-import { applyXpGain, type LevelUpEvent } from '../../shared/engine/xp';
+import { applyXpGain, xpForCommand, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
 import type { GameState, Command, Floor, Worker, ToolsState, AchievementGrant } from '../../shared/types';
 
@@ -107,7 +107,7 @@ function executeCommand(
     newQueue = newQueue.slice(newQueue.length - COMMAND_QUEUE_CAP);
   }
 
-  const xpGained = Math.abs(result.state.balance - balance) + (command.type === 'list' ? 10 : 0);
+  const xpGained = xpForCommand(command.type, balance, result.state.balance, gems, result.state.gems);
   const xpResult = applyXpGain(store.playerLevel, store.playerXp, xpGained);
   let newBalance = result.state.balance + xpResult.bonusCoins;
   let newGems = result.state.gems + xpResult.bonusGems;
@@ -435,9 +435,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     stateVersion: newVersion,
     lastAckCursor: ackCursor,
     commandQueue: cur.commandQueue.filter((cmd) => !sentIds.has(cmd.id)),
-    playerLevel: playerLevel ?? cur.playerLevel,
-    playerXp: playerXp ?? cur.playerXp,
-    tools: serverState.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
+    playerLevel: playerLevel != null ? Math.max(playerLevel, cur.playerLevel) : cur.playerLevel,
+    playerXp: (() => {
+      if (playerLevel == null) return cur.playerXp;
+      if (playerLevel > cur.playerLevel) return playerXp ?? 0;
+      if (playerLevel < cur.playerLevel) return cur.playerXp;
+      return Math.max(playerXp ?? 0, cur.playerXp);
+    })(),
+    tools: serverState.tools ?? cur.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
     underConstruction: (serverState.underConstruction ?? []).map((uc) => {
       const local = cur.underConstruction.find((u) => u.floorId === uc.floorId);
       return local?.selectedFloorType ? { ...uc, selectedFloorType: local.selectedFloorType } : uc;
@@ -455,12 +460,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   buyFloor: (floorId) => {
     const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
-    const requiredTool = TOOLS[Math.floor(Math.random() * TOOLS.length)];
+    const unlock = gameConfig.floorUnlocks.find((f) => f.floorId === floorId);
+    const slots = unlock?.requiredToolSlots ?? 1;
+    const shuffled = [...TOOLS].sort(() => Math.random() - 0.5);
+    const requiredTools = shuffled.slice(0, slots).map((tool) => ({ tool }));
     executeCommand(get, set, {
       id: uuid(),
       type: 'buy_floor',
       floorId,
-      requiredTool,
+      requiredTools,
       timestamp: clock.now(),
     });
   },

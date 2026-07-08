@@ -50,7 +50,7 @@ const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
   green:  FLOOR_SCHEMES[2],
   blue:   FLOOR_SCHEMES[3],
   yellow: FLOOR_SCHEMES[4],
-  violet: {
+  purple: {
     color: '#9A6FD0',
     headerShadowColor: 'rgba(85,40,170,0.4)',
     bodyColor: '#E8DEFE',
@@ -68,23 +68,53 @@ const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
   },
 };
 
-// Product images for each floor's 3 slots (display names come from the gameContent i18n namespace)
-const PRODUCT_IMAGES: Record<number, { image: ImageSource }[]> = {
-  2: [
-    { image: require('../../assets/products/bulky.png') },
-    { image: require('../../assets/products/cupcake.png') },
-    { image: require('../../assets/products/cake.png') },
-  ],
-  3: [
-    { image: require('../../assets/products/wash.png') },
-    { image: require('../../assets/products/dry.png') },
-    { image: require('../../assets/products/bleach.png') },
-  ],
-  4: [
-    { image: require('../../assets/products/coffee.png') },
-    { image: require('../../assets/products/pancake.png') },
-    { image: require('../../assets/products/dessert.png') },
-  ],
+// Product images keyed by production typeId
+const PRODUCT_IMAGES: Record<string, ImageSource> = {
+  buns:             require('../../assets/products/buns.png'),
+  pastries:         require('../../assets/products/pastries.png'),
+  cakes:            require('../../assets/products/cakes.png'),
+  burgers:          require('../../assets/products/burgers.png'),
+  fries:            require('../../assets/products/fries.png'),
+  drinks:           require('../../assets/products/drinks.png'),
+  milk:             require('../../assets/products/milk.png'),
+  cheese:           require('../../assets/products/cheese.png'),
+  yogurt:           require('../../assets/products/yogurt.png'),
+  cards:            require('../../assets/products/cards.png'),
+  loans:            require('../../assets/products/loans.png'),
+  accounts:         require('../../assets/products/accounts.png'),
+  scooters:         require('../../assets/products/scooters.png'),
+  consoles:         require('../../assets/products/consoles.png'),
+  tools:            require('../../assets/products/tools.png'),
+  fillings:         require('../../assets/products/filings.png'),
+  cleaning:         require('../../assets/products/cleaning.png'),
+  braces:           require('../../assets/products/braces.png'),
+  paintings:        require('../../assets/products/paintings.png'),
+  sculptures:       require('../../assets/products/sculptures.png'),
+  gallery:          require('../../assets/products/gallery.png'),
+  karts:            require('../../assets/products/carts.png'),
+  helmets:          require('../../assets/products/helmets.png'),
+  track:            require('../../assets/products/track.png'),
+  cocktails:        require('../../assets/products/cocktails.png'),
+  hookahs:          require('../../assets/products/hookahs.png'),
+  pizza:            require('../../assets/products/pizza.png'),
+  canvas_shoes:     require('../../assets/products/canvasShoes.png'),
+  sneakers:         require('../../assets/products/sneakers.png'),
+  custom_sneakers:  require('../../assets/products/customSneakers.png'),
+  tshirts:          require('../../assets/products/tshirts.png'),
+  pants:            require('../../assets/products/pants.png'),
+  jackets:          require('../../assets/products/jackets.png'),
+  hoodies:          require('../../assets/products/hoodies.png'),
+  sweatshirts:      require('../../assets/products/sweatshirts.png'),
+  caps:             require('../../assets/products/caps.png'),
+  phones:           require('../../assets/products/phones.png'),
+  cases:            require('../../assets/products/cases.png'),
+  screen_protectors:require('../../assets/products/screenProtectors.png'),
+  pcs:              require('../../assets/products/pcs.png'),
+  laptops:          require('../../assets/products/laptops.png'),
+  monitors:         require('../../assets/products/monitors.png'),
+  robots:           require('../../assets/products/robots.png'),
+  drones:           require('../../assets/products/drones.png'),
+  spare_parts:      require('../../assets/products/spareParts.png'),
 };
 
 function Stars({ count, color = '#FFD23E' }: { count: number; color?: string }) {
@@ -127,8 +157,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const scheme = FLOOR_SCHEMES[floorId] ?? (dynamicFloorType ? FLOOR_TYPE_SCHEMES[dynamicFloorType] : undefined) ?? FLOOR_SCHEMES[2];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
   const availableTypes = floorConfig?.availableTypes
-    ?? (dynamicFloorType ? (gameConfig.floorTypes[dynamicFloorType]?.dreamJobs ?? []) : []);
-  const products = PRODUCT_IMAGES[floorId] ?? PRODUCT_IMAGES[2];
+    ?? floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
   const discount = getFloorDiscount(workers, floorId);
   const floorName = tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
 
@@ -171,7 +200,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
               productTitle={tContent(`productionTypes.${availableTypes[idx]}.displayName`, {
                 defaultValue: availableTypes[idx] ?? t('floorCard.productFallback', { index: idx + 1 }),
               })}
-              productImage={products[idx]?.image ?? products[0].image}
+              productImage={PRODUCT_IMAGES[availableTypes[idx]] ?? PRODUCT_IMAGES[availableTypes[0]]}
               worker={slotWorker}
               floorDiscount={discount}
               accentColor={scheme.color}

@@ -12,7 +12,7 @@ const BANNER_COLOR = '#E67E22';
 const BANNER_BG = shadeColor(BANNER_COLOR, 45);
 
 const TOOL_NAMES: Record<string, string> = {
-  briks: 'Цегла', glass: 'Скло', nails: 'Цвяхи', screw: 'Гвинти',
+  briks: 'Bricks', glass: 'Glass', nails: 'Nails', screw: 'Screws',
 };
 const TOOL_IMAGES: Record<string, ReturnType<typeof require>> = {
   briks: require('../../assets/img/tools/briks.png'),
@@ -21,18 +21,17 @@ const TOOL_IMAGES: Record<string, ReturnType<typeof require>> = {
   screw: require('../../assets/img/tools/screw.png'),
 };
 const FLOOR_TYPE_NAMES: Record<string, string> = {
-  green: 'Пекарня', blue: 'Пральня', yellow: 'Кафе', violet: 'Ательє', red: 'Морозиво',
+  green: 'Products', blue: 'Service', yellow: 'Rest', purple: 'Fashion', red: 'Electronics',
 };
 const FLOOR_TYPE_COLORS: Record<string, string> = {
-  green: '#5E8F42', blue: '#2E6EC9', yellow: '#C78800', violet: '#9A6FD0', red: '#E05050',
+  green: '#5E8F42', blue: '#2E6EC9', yellow: '#C78800', purple: '#9A6FD0', red: '#E05050',
 };
 
 interface UnderConstructionBannerProps {
   floorId: number;
   endsAt: number;
   now: number;
-  requiredTool: string;
-  requiredCount: number;
+  requiredTools: { tool: string; count: number }[];
   selectedFloorType: string | null;
   onOpenPicker: () => void;
   onStartBusiness: () => void;
@@ -50,8 +49,7 @@ export default function UnderConstructionBanner({
   floorId,
   endsAt,
   now,
-  requiredTool,
-  requiredCount,
+  requiredTools,
   selectedFloorType,
   onOpenPicker,
   onStartBusiness,
@@ -59,8 +57,7 @@ export default function UnderConstructionBanner({
   const tools = useGameStore((s) => s.tools);
   const timeLeft = Math.max(0, endsAt - now);
   const isReady = timeLeft === 0;
-  const have = tools?.[requiredTool as keyof typeof tools] ?? 0;
-  const canStart = have >= requiredCount;
+  const canStart = requiredTools.every(({ tool, count }) => (tools?.[tool as keyof typeof tools] ?? 0) >= count);
 
   const [collapsed, setCollapsed] = useState<boolean>(
     () => uiStorage.getBoolean(`uc-collapsed-${floorId}`) ?? false,
@@ -88,9 +85,9 @@ export default function UnderConstructionBanner({
       return (
         <View style={[styles.collapsedRow, { borderColor: typeColor, backgroundColor: cardBg }]}>
           <Text style={styles.collapsedTitle} numberOfLines={1}>
-            {'Поверх '}
+            {'Floor '}
             <Text style={{ color: typeColor }}>{typeName}</Text>
-            {' очікує відкриття'}
+            {' awaits opening'}
           </Text>
           <Pressable onPress={toggleCollapse} hitSlop={8}>
             <View style={[styles.chevronCircle, { backgroundColor: typeColor }]}>
@@ -106,9 +103,9 @@ export default function UnderConstructionBanner({
         {/* Header row with collapse button */}
         <View style={styles.cardHeader}>
           <Text style={[styles.cardTitle, { flex: 1 }]}>
-            {'Поверх '}
+            {'Floor '}
             <Text style={[styles.cardTitleType, { color: typeColor }]}>{typeName}</Text>
-            {' очікує відкриття.'}
+            {' awaits opening.'}
           </Text>
           <Pressable onPress={toggleCollapse} hitSlop={8}>
             <View style={[styles.chevronCircle, { backgroundColor: typeColor }]}>
@@ -117,27 +114,30 @@ export default function UnderConstructionBanner({
           </Pressable>
         </View>
         <Text style={styles.cardHint}>
-          Зберіть усі необхідні матеріали для відкриття бізнесу
+          Gather all required materials to open the business
         </Text>
 
         {/* Tools row — centred */}
         <View style={styles.toolsRow}>
-          <View style={styles.toolCircleWrap}>
-            <View style={[
-              styles.toolCircle,
-              { borderColor: canStart ? '#49AA38' : '#C8CDD6' },
-            ]}>
-              <Image
-                source={TOOL_IMAGES[requiredTool] ?? TOOL_IMAGES.briks}
-                style={{ width: 28, height: 28 }}
-                contentFit="contain"
-              />
-            </View>
-            <Text style={[styles.toolCount, { color: canStart ? '#49AA38' : '#E05050' }]}>
-              {`${have}/${requiredCount}`}
-            </Text>
-            <Text style={styles.toolLabel}>{TOOL_NAMES[requiredTool] ?? requiredTool}</Text>
-          </View>
+          {requiredTools.map(({ tool, count }) => {
+            const have = tools?.[tool as keyof typeof tools] ?? 0;
+            const met = have >= count;
+            return (
+              <View key={tool} style={styles.toolCircleWrap}>
+                <View style={[styles.toolCircle, { borderColor: met ? '#49AA38' : '#C8CDD6' }]}>
+                  <Image
+                    source={TOOL_IMAGES[tool] ?? TOOL_IMAGES.briks}
+                    style={{ width: 28, height: 28 }}
+                    contentFit="contain"
+                  />
+                </View>
+                <Text style={[styles.toolCount, { color: met ? '#49AA38' : '#E05050' }]}>
+                  {`${have}/${count}`}
+                </Text>
+                <Text style={styles.toolLabel}>{TOOL_NAMES[tool] ?? tool}</Text>
+              </View>
+            );
+          })}
         </View>
 
         {/* Start button — full width below tools */}
@@ -153,7 +153,7 @@ export default function UnderConstructionBanner({
             colors={canStart ? ['#72C24F', '#5BA63C'] : ['#B7BDC8', '#A2A9B6']}
             style={styles.startBtnGradient}
           >
-            <Text style={styles.startBtnText}>Запустити бізнес</Text>
+            <Text style={styles.startBtnText}>Open business</Text>
           </LinearGradient>
           {canStart && <View style={styles.startBtnShadow} />}
         </Pressable>
@@ -171,7 +171,7 @@ export default function UnderConstructionBanner({
           contentFit="contain"
         />
         <Text style={[styles.ribbonTitle, { color: BANNER_COLOR }]} numberOfLines={1}>
-          {`Будується ${floorId} поверх`}
+          {`Building floor ${floorId}`}
         </Text>
       </View>
 
@@ -188,7 +188,7 @@ export default function UnderConstructionBanner({
             style={({ pressed }) => [styles.openBtn, pressed && { opacity: 0.85 }]}
           >
             <LinearGradient colors={['#E67E22', '#C96A14']} style={styles.openBtnGradient}>
-              <Text style={styles.openBtnText}>Вибрати бізнес</Text>
+              <Text style={styles.openBtnText}>Choose business</Text>
             </LinearGradient>
             <View style={styles.openBtnShadow} />
           </Pressable>

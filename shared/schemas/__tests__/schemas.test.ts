@@ -158,12 +158,12 @@ describe('GameConfigSchema', () => {
 
   it('accepts valid config', () => {
     const result = GameConfigSchema.parse({
-      floors: [{ id: 1, name: 'Floor 1', slots: 2, floorType: 'green', availableTypes: ['coffee_shop'] }],
+      floors: [{ id: 1, slots: 2, floorType: 'green', availableTypes: ['coffee_shop'] }],
       productionTypes: {
-        coffee_shop: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25, displayName: 'Coffee' },
+        coffee_shop: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 },
       },
       floorTypes: {
-        green: { category: 'Test', shirtColor: '#62B23F', accent: '#4E9A2E', dreamJobs: ['coffee_shop'] },
+        green: { shirtColor: '#62B23F', accent: '#4E9A2E', businesses: [{ name: 'Test', dreamJobs: ['coffee_shop'] }] },
       },
       startingBalance: 100,
       hotelCapacity: 10,
@@ -174,9 +174,9 @@ describe('GameConfigSchema', () => {
 
   it('rejects config with zero slots', () => {
     expect(GameConfigSchema.safeParse({
-      floors: [{ id: 1, name: 'Floor 1', slots: 0, floorType: 'green', availableTypes: ['x'] }],
-      productionTypes: { x: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25, displayName: 'X' } },
-      floorTypes: { green: { category: 'Test', shirtColor: '#000', accent: '#000', dreamJobs: ['x'] } },
+      floors: [{ id: 1, slots: 0, floorType: 'green', availableTypes: ['x'] }],
+      productionTypes: { x: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 } },
+      floorTypes: { green: { shirtColor: '#000', accent: '#000', businesses: [{ name: 'T', dreamJobs: ['x'] }] } },
       startingBalance: 100,
       hotelCapacity: 10,
       lobbyConfig: baseLobbyConfig,
@@ -185,9 +185,9 @@ describe('GameConfigSchema', () => {
 
   it('rejects config with negative buyCost', () => {
     expect(GameConfigSchema.safeParse({
-      floors: [{ id: 1, name: 'Floor 1', slots: 1, floorType: 'green', availableTypes: ['x'] }],
-      productionTypes: { x: { buyCost: -10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25, displayName: 'X' } },
-      floorTypes: { green: { category: 'Test', shirtColor: '#000', accent: '#000', dreamJobs: ['x'] } },
+      floors: [{ id: 1, slots: 1, floorType: 'green', availableTypes: ['x'] }],
+      productionTypes: { x: { buyCost: -10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 } },
+      floorTypes: { green: { shirtColor: '#000', accent: '#000', businesses: [{ name: 'T', dreamJobs: ['x'] }] } },
       startingBalance: 100,
       hotelCapacity: 10,
       lobbyConfig: baseLobbyConfig,
@@ -196,8 +196,8 @@ describe('GameConfigSchema', () => {
 
   it('rejects config without floorTypes', () => {
     expect(GameConfigSchema.safeParse({
-      floors: [{ id: 1, name: 'Floor 1', slots: 1, floorType: 'green', availableTypes: ['x'] }],
-      productionTypes: { x: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25, displayName: 'X' } },
+      floors: [{ id: 1, slots: 1, floorType: 'green', availableTypes: ['x'] }],
+      productionTypes: { x: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 } },
       startingBalance: 100,
       hotelCapacity: 10,
       lobbyConfig: baseLobbyConfig,
@@ -206,9 +206,9 @@ describe('GameConfigSchema', () => {
 
   it('rejects config without hotelCapacity', () => {
     expect(GameConfigSchema.safeParse({
-      floors: [{ id: 1, name: 'Floor 1', slots: 1, floorType: 'green', availableTypes: ['x'] }],
-      productionTypes: { x: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25, displayName: 'X' } },
-      floorTypes: { green: { category: 'Test', shirtColor: '#000', accent: '#000', dreamJobs: ['x'] } },
+      floors: [{ id: 1, slots: 1, floorType: 'green', availableTypes: ['x'] }],
+      productionTypes: { x: { buyCost: 10, deliveryDuration: 5000, sellDuration: 10000, batchValue: 25 } },
+      floorTypes: { green: { shirtColor: '#000', accent: '#000', businesses: [{ name: 'T', dreamJobs: ['x'] }] } },
       startingBalance: 100,
       lobbyConfig: baseLobbyConfig,
     }).success).toBe(false);
@@ -412,27 +412,27 @@ describe('New command schemas', () => {
   it('validates buy_floor command', () => {
     const cmd = CommandSchema.parse({
       id: 'c1', type: 'buy_floor', timestamp: 1000,
-      floorId: 5, requiredTool: 'briks',
+      floorId: 5, requiredTools: [{ tool: 'briks' }],
     });
     expect(cmd.type).toBe('buy_floor');
     expect((cmd as import('../../types').BuyFloorCommand).floorId).toBe(5);
-    expect((cmd as import('../../types').BuyFloorCommand).requiredTool).toBe('briks');
+    expect((cmd as import('../../types').BuyFloorCommand).requiredTools[0].tool).toBe('briks');
   });
 
   it('validates open_floor command', () => {
     const cmd = CommandSchema.parse({
       id: 'c2', type: 'open_floor', timestamp: 2000,
-      floorId: 5, floorType: 'violet',
+      floorId: 5, floorType: 'purple',
     });
     expect(cmd.type).toBe('open_floor');
     expect((cmd as import('../../types').OpenFloorCommand).floorId).toBe(5);
-    expect((cmd as import('../../types').OpenFloorCommand).floorType).toBe('violet');
+    expect((cmd as import('../../types').OpenFloorCommand).floorType).toBe('purple');
   });
 
   it('rejects buy_floor with unknown tool', () => {
     expect(CommandSchema.safeParse({
       id: 'c3', type: 'buy_floor', timestamp: 1000,
-      floorId: 5, requiredTool: 'hammer',
+      floorId: 5, requiredTools: [{ tool: 'hammer' }],
     }).success).toBe(false);
   });
 });
@@ -467,10 +467,11 @@ describe('GameStateSchema with new fields', () => {
       ...minimalState,
       underConstruction: [{
         floorId: 5, startedAt: 1000, durationMs: 1200000,
-        requiredTool: 'glass', requiredCount: 1,
+        requiredTools: [{ tool: 'glass', count: 1 }],
       }],
     });
     expect(result.underConstruction[0]?.floorId).toBe(5);
+    expect(result.underConstruction[0]?.requiredTools[0].tool).toBe('glass');
   });
 });
 

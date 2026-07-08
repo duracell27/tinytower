@@ -26,6 +26,7 @@ import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
 import { getHotelExpansionCost } from '../../shared/engine/lobbyCommands';
 import type { Worker } from '../../shared/types';
+import { GemIcon } from './CurrencyIcons';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
@@ -57,9 +58,9 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const expandHotel = useGameStore((s) => s.expandHotel);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
 
-  const unemployedWorkers = workers.filter(
-    (w: Worker) => w.assignedFloorId === null,
-  );
+  const unemployedWorkers = workers
+    .filter((w: Worker) => w.assignedFloorId === null)
+    .sort((a, b) => a.id.localeCompare(b.id));
   const occupiedSeats = unemployedWorkers.length;
   const freeSeats = Math.max(0, hotelCapacity - occupiedSeats);
   const expansionCost = getHotelExpansionCost(hotelCapacity);
@@ -343,7 +344,7 @@ function BuySlotCard({
         style={({ pressed }) => [buyStyles.btn, pressed && { opacity: 0.82 }]}
       >
         <LinearGradient colors={['#D96E8A', '#B84E6A']} style={buyStyles.btnGradient}>
-          <View style={buyStyles.gemDot} />
+          <GemIcon size={16} />
           <Text style={buyStyles.btnCost}>{cost}</Text>
         </LinearGradient>
         <View style={buyStyles.btnShadow} />
@@ -431,15 +432,6 @@ const buyStyles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.4)',
     zIndex: 1,
-  },
-  gemDot: {
-    width: 10,
-    height: 10,
-    backgroundColor: '#A8E4F0',
-    borderRadius: 2,
-    transform: [{ rotate: '45deg' }],
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.5)',
   },
   btnCost: {
     fontFamily: 'Fredoka_700Bold',
