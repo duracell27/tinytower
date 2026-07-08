@@ -8,24 +8,67 @@ datasource db {
 }
 
 model Player {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  passwordHash  String
-  playerName    String
-  balance       Int       @default(100)
-  lobbyState    Json?
-  stateVersion  Int       @default(0)
-  playerLevel   Int       @default(1)
-  playerXp      Int       @default(0)
-  totalBought   Int       @default(0)
-  totalListed   Int       @default(0)
-  totalSold     Int       @default(0)
-  lastSeenAt    DateTime  @default(now())
-  createdAt     DateTime  @default(now())
-  floors        Floor[]
-  workers       Worker[]
-  tools         PlayerTools?
-  achievements  PlayerAchievement[]
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  passwordHash       String
+  playerName         String
+  balance            Int                 @default(100)
+  stateVersion       Int                 @default(0)
+  playerLevel        Int                 @default(1)
+  playerXp           Int                 @default(0)
+  totalBought        Int                 @default(0)
+  totalListed        Int                 @default(0)
+  totalSold          Int                 @default(0)
+  lastSeenAt         DateTime            @default(now())
+  createdAt          DateTime            @default(now())
+  floors             Floor[]
+  workers            Worker[]
+  state              PlayerState?
+  floorConstructions FloorConstruction[]
+  floorTypes         PlayerFloorType[]
+  achievements       PlayerAchievement[]
+}
+
+model PlayerState {
+  playerId               String  @id
+  gems                   Int     @default(20)
+  lobbyCapacity          Int     @default(10)
+  hotelCapacity          Int     @default(10)
+  elevatorLevel          Int     @default(1)
+  elevatorFloor          Int     @default(0)
+  dailyTips              Float   @default(0)
+  dailyGemsCollected     Int     @default(0)
+  dailyTipsRewardClaimed Boolean @default(false)
+  lastDailyReset         BigInt  @default(0)
+  nextVisitorAt          BigInt  @default(0)
+  briks                  Int     @default(1)
+  glass                  Int     @default(1)
+  nails                  Int     @default(1)
+  screw                  Int     @default(1)
+  lobbyVisitors          Json    @default("[]")
+  player                 Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model FloorConstruction {
+  id                Int     @id @default(autoincrement())
+  playerId          String
+  floorId           Int
+  startedAt         BigInt
+  durationMs        Int
+  requiredTools     Json
+  selectedFloorType String?
+  player            Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, floorId])
+}
+
+model PlayerFloorType {
+  playerId  String
+  floorId   Int
+  floorType String
+  player    Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@id([playerId, floorId])
 }
 
 model Floor {
@@ -64,16 +107,6 @@ model Worker {
   player          Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([playerId])
-}
-
-model PlayerTools {
-  id       Int    @id @default(autoincrement())
-  playerId String @unique
-  briks    Int    @default(1)
-  glass    Int    @default(1)
-  nails    Int    @default(1)
-  screw    Int    @default(1)
-  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }
 
 model CommandLog {
