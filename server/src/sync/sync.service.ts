@@ -5,10 +5,6 @@ import { xpForCommand, applyXpGain } from '@shared/engine/xp';
 import { gameConfig } from '@shared/config/gameConfig';
 import type { GameState, Command, Floor, Production, Worker, AchievementGrant } from '@shared/types';
 
-interface LobbyStateJson {
-  [key: string]: unknown;
-}
-
 export interface SyncResult {
   state: GameState;
   stateVersion: number;
@@ -40,6 +36,9 @@ export class SyncService {
           orderBy: { floorId: 'asc' },
         },
         workers: true,
+        state: true,
+        floorConstructions: true,
+        floorTypes: true,
       },
     });
 
@@ -120,8 +119,6 @@ export class SyncService {
             gems: baseGems + xpResult.bonusGems,
           };
         }
-        const { playerLevel: _pl, playerXp: _px, ...existingLs } = (player.lobbyState as LobbyStateJson) ?? {};
-
         // Compute final stats using locked player values + deltas to avoid stale reads under concurrency
         const finalStats = {
           totalBought: (locked?.totalBought ?? player.totalBought) + boughtCount,
@@ -171,24 +168,6 @@ export class SyncService {
             totalBought: { increment: boughtCount },
             totalListed: { increment: listedCount },
             totalSold:   { increment: soldCount },
-            lobbyState: {
-              ...existingLs,
-              gems: gameState.gems,
-              lobbyVisitors: gameState.lobbyVisitors,
-              lobbyCapacity: gameState.lobbyCapacity,
-              hotelCapacity: gameState.hotelCapacity,
-              elevatorLevel: gameState.elevatorLevel,
-              elevatorFloor: gameState.elevatorFloor,
-              dailyTips: gameState.dailyTips,
-              dailyGemsCollected: gameState.dailyGemsCollected,
-              dailyTipsRewardClaimed: gameState.dailyTipsRewardClaimed,
-              lastDailyReset: gameState.lastDailyReset,
-              nextVisitorAt: gameState.nextVisitorAt,
-              tools: gameState.tools,
-              underConstruction: gameState.underConstruction,
-              openedFloorTypes: gameState.openedFloorTypes,
-              stats: finalStats,
-            },
             stateVersion: {
               increment: (acceptedCommands.length > 0 || localNewAchievements.length > 0) ? 1 : 0,
             },
@@ -330,35 +309,44 @@ export class SyncService {
       assignedSlotIdx: w.assignedSlotIdx ?? null,
     }));
 
-    const ls = (player.lobbyState as LobbyStateJson) ?? {};
+    const s = player.state;
 
     return {
       balance: player.balance,
-      gems: (ls.gems as number) ?? 20,
+      gems: s?.gems ?? 20,
       floors,
       commandQueue: [],
       workers,
-      hotelCapacity: (ls.hotelCapacity as number) ?? gameConfig.hotelCapacity,
-      lobbyVisitors: (ls.lobbyVisitors as any[]) ?? [],
-      lobbyCapacity: (ls.lobbyCapacity as number) ?? gameConfig.lobbyConfig.defaultLobbyCapacity,
-      elevatorLevel: (ls.elevatorLevel as number) ?? 1,
-      elevatorFloor: (ls.elevatorFloor as number) ?? 0,
-      dailyTips: (ls.dailyTips as number) ?? 0,
-      dailyGemsCollected: (ls.dailyGemsCollected as number) ?? 0,
-      dailyTipsRewardClaimed: (ls.dailyTipsRewardClaimed as boolean) ?? false,
-      lastDailyReset: (ls.lastDailyReset as number) ?? 0,
-      nextVisitorAt: (ls.nextVisitorAt as number) ?? 0,
-      tools: (ls.tools as { briks: number; glass: number; nails: number; screw: number }) ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
-      underConstruction: Array.isArray(ls.underConstruction)
-        ? (ls.underConstruction as any[])
-        : ls.underConstruction != null
-          ? [ls.underConstruction as any]
-          : [],
-      openedFloorTypes: (ls.openedFloorTypes as Record<string, string>) ?? {},
+      hotelCapacity: s?.hotelCapacity ?? gameConfig.hotelCapacity,
+      lobbyVisitors: (s?.lobbyVisitors as any[]) ?? [],
+      lobbyCapacity: s?.lobbyCapacity ?? gameConfig.lobbyConfig.defaultLobbyCapacity,
+      elevatorLevel: s?.elevatorLevel ?? 1,
+      elevatorFloor: s?.elevatorFloor ?? 0,
+      dailyTips: s?.dailyTips ?? 0,
+      dailyGemsCollected: s?.dailyGemsCollected ?? 0,
+      dailyTipsRewardClaimed: s?.dailyTipsRewardClaimed ?? false,
+      lastDailyReset: Number(s?.lastDailyReset ?? 0),
+      nextVisitorAt: Number(s?.nextVisitorAt ?? 0),
+      tools: {
+        briks: s?.briks ?? 1,
+        glass: s?.glass ?? 1,
+        nails: s?.nails ?? 1,
+        screw: s?.screw ?? 1,
+      },
+      underConstruction: (player.floorConstructions ?? []).map((fc: any) => ({
+        floorId: fc.floorId,
+        startedAt: Number(fc.startedAt),
+        durationMs: fc.durationMs,
+        requiredTools: fc.requiredTools as { tool: string; count: number }[],
+        selectedFloorType: fc.selectedFloorType ?? null,
+      })),
+      openedFloorTypes: Object.fromEntries(
+        (player.floorTypes ?? []).map((ft: any) => [String(ft.floorId), ft.floorType]),
+      ),
       stats: {
-        totalBought: player.totalBought ?? (ls.stats as any)?.totalBought ?? 0,
-        totalListed: player.totalListed ?? (ls.stats as any)?.totalListed ?? 0,
-        totalSold:   player.totalSold   ?? (ls.stats as any)?.totalSold   ?? 0,
+        totalBought: player.totalBought,
+        totalListed: player.totalListed,
+        totalSold: player.totalSold,
       },
     };
   }

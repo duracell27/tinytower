@@ -94,17 +94,19 @@ describe('SyncService', () => {
     passwordHash: 'hashed',
     playerName: 'TestPlayer',
     balance: 100,
-    lobbyState: null,
     stateVersion: 0,
     playerLevel: 1,
     playerXp: 0,
     totalBought: 0,
     totalListed: 0,
     totalSold: 0,
-    lastSeenAt: new Date(Date.now() - 60000), // 60s ago
+    lastSeenAt: new Date(Date.now() - 60000),
     createdAt: new Date(),
     floors: mockFloors,
     workers: mockWorkers,
+    state: null,
+    floorConstructions: [],
+    floorTypes: [],
   };
 
   let txMock: Record<string, any>;
@@ -185,14 +187,14 @@ describe('SyncService', () => {
         type: 'buy',
         floorId: 2,
         slotIdx: 0,
-        typeId: 'bulky',
+        typeId: 'buns',
         timestamp: Date.now(),
       };
 
       const result = await syncService.processSync('player-uuid', [buyCmd], 0);
 
-      expect(result.state.balance).toBe(91); // 100 - 9 (bulky buyCost 10 with 1% level-1 worker discount)
-      expect(result.state.floors[0].productions[0].typeId).toBe('bulky');
+      expect(result.state.balance).toBe(91); // 100 - 9 (buns buyCost 10 with 1% level-1 worker discount)
+      expect(result.state.floors[0].productions[0].typeId).toBe('buns');
       expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
       expect(result.stateVersion).toBe(1);
       expect(txMock.player.update).toHaveBeenCalled();
@@ -210,7 +212,7 @@ describe('SyncService', () => {
         type: 'buy',
         floorId: 2,
         slotIdx: 0,
-        typeId: 'bulky',
+        typeId: 'buns',
         timestamp: Date.now(),
       };
 
@@ -231,7 +233,7 @@ describe('SyncService', () => {
         type: 'buy',
         floorId: 999,
         slotIdx: 0,
-        typeId: 'bulky',
+        typeId: 'buns',
         timestamp: Date.now(),
       };
 
@@ -259,7 +261,7 @@ describe('SyncService', () => {
           type: 'buy',
           floorId: 2,
           slotIdx: 0,
-          typeId: 'bulky',
+          typeId: 'buns',
           timestamp: Date.now(),
         },
         {
@@ -267,14 +269,14 @@ describe('SyncService', () => {
           type: 'buy',
           floorId: 2,
           slotIdx: 1,
-          typeId: 'bulky',
+          typeId: 'buns',
           timestamp: Date.now(),
         },
       ];
 
       const result = await syncService.processSync('player-uuid', cmds, 0);
 
-      expect(result.state.balance).toBe(82); // 100 - 9 - 9 (bulky buyCost 10 with 2% discount from 2 level-1 workers)
+      expect(result.state.balance).toBe(82); // 100 - 9 - 9 (buns buyCost 10 with 2% discount from 2 level-1 workers)
       expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
       expect(result.state.floors[0].productions[1].stage).toBe('DELIVERING');
       expect(result.ackCursor).toBe(2);
@@ -287,7 +289,7 @@ describe('SyncService', () => {
           {
             ...mockFloors[0],
             productions: [
-              { id: 1, floorDbId: 1, slotIdx: 0, typeId: 'bulky', stage: 'DELIVERING', stageStartedAt: BigInt(1700000000000) },
+              { id: 1, floorDbId: 1, slotIdx: 0, typeId: 'buns', stage: 'DELIVERING', stageStartedAt: BigInt(1700000000000) },
               { id: 2, floorDbId: 1, slotIdx: 1, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
               { id: 3, floorDbId: 1, slotIdx: 2, typeId: null, stage: 'IDLE', stageStartedAt: BigInt(0) },
             ],
@@ -343,7 +345,7 @@ describe('SyncService', () => {
           {
             ...mockFloors[0],
             productions: [
-              { id: 1, floorDbId: 1, slotIdx: 0, typeId: 'bulky', stage: 'SELLING', stageStartedAt: BigInt(0) },
+              { id: 1, floorDbId: 1, slotIdx: 0, typeId: 'buns', stage: 'SELLING', stageStartedAt: BigInt(0) },
               mockFloors[0].productions[1],
               mockFloors[0].productions[2],
             ],
@@ -368,6 +370,99 @@ describe('SyncService', () => {
 
       expect(result.playerLevel).toBe(2);
       expect(result.playerXp).toBe(5);
+    });
+
+    it('should read tools from PlayerState when state exists', async () => {
+      const playerWithState = {
+        ...mockPlayer,
+        state: {
+          playerId: 'player-uuid',
+          gems: 50,
+          lobbyCapacity: 10,
+          hotelCapacity: 10,
+          elevatorLevel: 1,
+          elevatorFloor: 0,
+          dailyTips: 0,
+          dailyGemsCollected: 0,
+          dailyTipsRewardClaimed: false,
+          lastDailyReset: BigInt(0),
+          nextVisitorAt: BigInt(0),
+          briks: 3,
+          glass: 2,
+          nails: 1,
+          screw: 4,
+          lobbyVisitors: [],
+        },
+      };
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithState)
+        .mockResolvedValueOnce({ ...mockPlayer });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.state.tools).toEqual({ briks: 3, glass: 2, nails: 1, screw: 4 });
+      expect(result.state.gems).toBe(50);
+    });
+
+    it('should default tools to 1 each when state is null', async () => {
+      prisma.player.findUnique
+        .mockResolvedValueOnce({ ...mockPlayer, state: null })
+        .mockResolvedValueOnce({ ...mockPlayer });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.state.tools).toEqual({ briks: 1, glass: 1, nails: 1, screw: 1 });
+    });
+
+    it('should read underConstruction from FloorConstruction rows', async () => {
+      const playerWithConstruction = {
+        ...mockPlayer,
+        floorConstructions: [
+          {
+            id: 1,
+            playerId: 'player-uuid',
+            floorId: 10,
+            startedAt: BigInt(1700000000000),
+            durationMs: 60000,
+            requiredTools: [{ tool: 'briks', count: 1 }],
+            selectedFloorType: 'green',
+          },
+        ],
+      };
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithConstruction)
+        .mockResolvedValueOnce({ ...mockPlayer });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.state.underConstruction).toHaveLength(1);
+      expect(result.state.underConstruction[0]).toEqual({
+        floorId: 10,
+        startedAt: 1700000000000,
+        durationMs: 60000,
+        requiredTools: [{ tool: 'briks', count: 1 }],
+        selectedFloorType: 'green',
+      });
+    });
+
+    it('should read openedFloorTypes from PlayerFloorType rows', async () => {
+      const playerWithFloorTypes = {
+        ...mockPlayer,
+        floorTypes: [
+          { playerId: 'player-uuid', floorId: 7, floorType: 'blue' },
+          { playerId: 'player-uuid', floorId: 8, floorType: 'green' },
+        ],
+      };
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithFloorTypes)
+        .mockResolvedValueOnce({ ...mockPlayer });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.state.openedFloorTypes).toEqual({ '7': 'blue', '8': 'green' });
     });
   });
 });
