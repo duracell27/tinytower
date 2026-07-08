@@ -64,7 +64,7 @@ export class PlayerService {
         });
       }
 
-      await tx.playerTools.create({ data: { playerId: player.id } });
+      await tx.playerState.create({ data: { playerId: player.id } });
 
       return player;
     });
