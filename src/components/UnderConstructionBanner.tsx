@@ -55,7 +55,6 @@ export default function UnderConstructionBanner({
   onStartBusiness,
 }: UnderConstructionBannerProps) {
   const tools = useGameStore((s) => s.tools);
-  const gems = useGameStore((s) => s.gems);
   const speedUpConstruction = useGameStore((s) => s.speedUpConstruction);
   const [confirming, setConfirming] = useState(false);
 
