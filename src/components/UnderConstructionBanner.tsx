@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -55,8 +55,17 @@ export default function UnderConstructionBanner({
   onStartBusiness,
 }: UnderConstructionBannerProps) {
   const tools = useGameStore((s) => s.tools);
+  const gems = useGameStore((s) => s.gems);
+  const speedUpConstruction = useGameStore((s) => s.speedUpConstruction);
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => { setConfirming(false); }, [floorId]);
+
   const timeLeft = Math.max(0, endsAt - now);
   const isReady = timeLeft === 0;
+
+  const MS_PER_HOUR = 3_600_000;
+  const speedUpCost = Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));
   const canStart = requiredTools.every(({ tool, count }) => (tools?.[tool as keyof typeof tools] ?? 0) >= count);
 
   const [collapsed, setCollapsed] = useState<boolean>(
@@ -177,11 +186,42 @@ export default function UnderConstructionBanner({
 
       <View style={styles.ribbonRight}>
         {!isReady ? (
-          <View style={styles.timerPill}>
-            <Text style={[styles.timerText, { color: BANNER_COLOR }]}>
-              {formatCountdown(timeLeft)}
-            </Text>
-          </View>
+          confirming ? (
+            <View style={styles.confirmRow}>
+              <Text style={styles.confirmLabel}>⚡ {speedUpCost}💎?</Text>
+              <Pressable
+                onPress={() => { speedUpConstruction(floorId); setConfirming(false); }}
+                style={styles.confirmBtn}
+                hitSlop={8}
+              >
+                <Text style={styles.confirmBtnText}>✓</Text>
+              </Pressable>
+              <Pressable onPress={() => setConfirming(false)} style={styles.cancelBtn} hitSlop={8}>
+                <Text style={styles.cancelBtnText}>✗</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View style={styles.timerRow}>
+              <View style={styles.timerPill}>
+                <Text style={[styles.timerText, { color: BANNER_COLOR }]}>
+                  {formatCountdown(timeLeft)}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => setConfirming(true)}
+                style={styles.speedUpBtn}
+                hitSlop={6}
+              >
+                <Text style={styles.speedUpIcon}>⚡</Text>
+                <Image
+                  source={require('../../assets/img/diamond.png')}
+                  style={{ width: 13, height: 13 }}
+                  contentFit="contain"
+                />
+                <Text style={styles.speedUpCost}>{speedUpCost}</Text>
+              </Pressable>
+            </View>
+          )
         ) : (
           <>
             <Pressable
@@ -390,6 +430,62 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 13,
     fontVariant: ['tabular-nums'],
+  },
+  timerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  speedUpBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(37,146,171,0.15)',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(37,146,171,0.35)',
+  },
+  speedUpIcon: {
+    fontSize: 13,
+  },
+  speedUpCost: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 13,
+    color: '#2592AB',
+  },
+  confirmRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  confirmLabel: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 13,
+    color: BANNER_COLOR,
+  },
+  confirmBtn: {
+    backgroundColor: '#49AA38',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  confirmBtnText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 13,
+    color: '#fff',
+  },
+  cancelBtn: {
+    backgroundColor: '#D9534F',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  cancelBtnText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 13,
+    color: '#fff',
   },
   openBtn: {
     borderRadius: 11,
