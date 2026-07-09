@@ -6,6 +6,7 @@ import {
   getMaxLobbyCapacity,
   checkDailyReset,
   generateRandomVisitor,
+  getFillLobbyCost,
 } from '../lobbyUtils';
 import { createInitialState } from '../../config/gameConfig';
 import type { GameConfig, GameState } from '../../types';
@@ -202,5 +203,42 @@ describe('generateRandomVisitor', () => {
         expect(v.targetFloor).toBeGreaterThanOrEqual(2);
       }
     }
+  });
+});
+
+describe('getFillLobbyCost', () => {
+  it('returns 1 for uses 0–4', () => {
+    expect(getFillLobbyCost(0)).toBe(1);
+    expect(getFillLobbyCost(4)).toBe(1);
+  });
+  it('returns 2 for uses 5–9', () => {
+    expect(getFillLobbyCost(5)).toBe(2);
+    expect(getFillLobbyCost(9)).toBe(2);
+  });
+  it('returns 3 for uses 10–14', () => {
+    expect(getFillLobbyCost(10)).toBe(3);
+    expect(getFillLobbyCost(14)).toBe(3);
+  });
+  it('returns 5 for uses 15+', () => {
+    expect(getFillLobbyCost(15)).toBe(5);
+    expect(getFillLobbyCost(100)).toBe(5);
+  });
+});
+
+describe('checkDailyReset resets dailyFillLobbyUses', () => {
+  it('resets dailyFillLobbyUses to 0 on new day', () => {
+    const midnight = new Date('2026-01-01T00:00:00').getTime();
+    const state = makeState({ dailyFillLobbyUses: 7, lastDailyReset: midnight });
+    const nextDay = midnight + 25 * 60 * 60 * 1000;
+    const result = checkDailyReset(state, nextDay);
+    expect(result.dailyFillLobbyUses).toBe(0);
+  });
+
+  it('does not reset dailyFillLobbyUses within same day', () => {
+    const midnight = new Date('2026-01-01T00:00:00').getTime();
+    const state = makeState({ dailyFillLobbyUses: 7, lastDailyReset: midnight });
+    const sameDay = midnight + 10 * 60 * 60 * 1000;
+    const result = checkDailyReset(state, sameDay);
+    expect(result.dailyFillLobbyUses).toBe(7);
   });
 });

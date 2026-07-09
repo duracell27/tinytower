@@ -50,6 +50,7 @@ export const GameStateSchema = z.object({
   dailyGemsCollected: z.number().int().nonnegative(),
   dailyTipsRewardClaimed: z.boolean(),
   lastDailyReset: z.number().nonnegative(),
+  dailyFillLobbyUses: z.number().int().nonnegative().default(0),
   nextVisitorAt: z.number().nonnegative(),
   tools: ToolsSchema.default({ briks: 0, glass: 0, nails: 0, screw: 0 }),
   underConstruction: UnderConstructionSchema.array().default([]),

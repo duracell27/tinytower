@@ -55,6 +55,7 @@ export function checkDailyReset(state: GameState, commandTimestamp: number): Gam
       dailyTips: 0,
       dailyGemsCollected: 0,
       dailyTipsRewardClaimed: false,
+      dailyFillLobbyUses: 0,
       lastDailyReset: getMidnightBefore(commandTimestamp),
     };
   }
@@ -146,6 +147,13 @@ export function generateVisitorAppearance(): { id: string; hairColor: string; fe
     hairColor: HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)],
     female: Math.random() < 0.5,
   };
+}
+
+export function getFillLobbyCost(uses: number): number {
+  if (uses < 5)  return 1;
+  if (uses < 10) return 2;
+  if (uses < 15) return 3;
+  return 5;
 }
 
 /** @deprecated use generateRandomVisitorRole + generateVisitorAppearance separately */

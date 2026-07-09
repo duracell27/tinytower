@@ -197,6 +197,7 @@ export function createInitialState(config: GameConfig): GameState {
     dailyGemsCollected: 0,
     dailyTipsRewardClaimed: false,
     lastDailyReset: 0,
+    dailyFillLobbyUses: 0,
     nextVisitorAt: 0,
     tools: (() => {
       const keys = ['briks', 'glass', 'nails', 'screw'] as const;
