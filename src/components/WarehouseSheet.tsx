@@ -59,6 +59,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
     })
     .onEnd((e) => {
       if (e.translationY > CLOSE_THRESHOLD || e.velocityY > CLOSE_VELOCITY) {
+        dragY.value = 0;
         translateY.value = withTiming(SCREEN_HEIGHT, TIMING);
         scrimOpacity.value = withTiming(0, { duration: 280, easing: Easing.linear });
         runOnJS(onClose)();

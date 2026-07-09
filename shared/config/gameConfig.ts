@@ -1,6 +1,7 @@
 import { GameConfigSchema } from '../schemas/gameConfig';
 import type { GameConfig, GameState, Floor } from '../types';
 import { generateRandomWorkers } from './workerNames';
+import { generateVisitorAppearance } from '../engine/lobbyUtils';
 
 const rawConfig = {
   floorTypes: {
@@ -88,7 +89,7 @@ const rawConfig = {
     pizza:     { buyCost: 2320, deliveryDuration: 4_800_000, sellDuration: 9_600_000, batchValue: 10208 },
     // Purple / Fashion — Sneaker Store (tier 1)
     canvas_shoes:    { buyCost: 40,   deliveryDuration:   300_000, sellDuration:  1_200_000, batchValue: 320 },
-    sneakers:        { buyCost: 50,   deliveryDuration:   600_000, sellDuration:  1_200_000, batchValue: 845 },
+    sneakers:        { buyCost: 50,   deliveryDuration:   600_000, sellDuration:  1_200_000, batchValue: 844 },
     custom_sneakers: { buyCost: 60,   deliveryDuration: 1_800_000, sellDuration:  3_600_000, batchValue: 3828 },
     // Purple / Fashion — Clothing Store (tier 2)
     tshirts:  { buyCost: 70,   deliveryDuration:   420_000, sellDuration:  1_008_000, batchValue: 444 },
@@ -189,7 +190,7 @@ export function createInitialState(config: GameConfig): GameState {
     commandQueue: [],
     workers: generateRandomWorkers(5, config),
     hotelCapacity: config.hotelCapacity,
-    lobbyVisitors: [],
+    lobbyVisitors: Array.from({ length: config.lobbyConfig.defaultLobbyCapacity }, () => generateVisitorAppearance()),
     lobbyCapacity: config.lobbyConfig.defaultLobbyCapacity,
     elevatorLevel: 1,
     elevatorFloor: 0,
@@ -199,16 +200,7 @@ export function createInitialState(config: GameConfig): GameState {
     lastDailyReset: 0,
     dailyFillLobbyUses: 0,
     nextVisitorAt: 0,
-    tools: (() => {
-      const keys = ['briks', 'glass', 'nails', 'screw'] as const;
-      const picked = [...keys].sort(() => Math.random() - 0.5).slice(0, 3);
-      return {
-        briks: picked.includes('briks') ? 1 : 0,
-        glass: picked.includes('glass') ? 1 : 0,
-        nails: picked.includes('nails') ? 1 : 0,
-        screw: picked.includes('screw') ? 1 : 0,
-      };
-    })(),
+    tools: { briks: 1, glass: 1, nails: 1, screw: 1 },
     underConstruction: [],
     openedFloorTypes: {},
     stats: { totalBought: 0, totalListed: 0, totalSold: 0 },

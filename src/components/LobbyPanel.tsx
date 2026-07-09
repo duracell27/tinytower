@@ -29,7 +29,6 @@ import { Image } from 'expo-image';
 import DeliverAllModal, { type DeliverAllSummary } from './DeliverAllModal';
 import WorkerAvatar from './WorkerAvatar';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
-import InsufficientResourcesModal from './InsufficientResourcesModal';
 
 type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
 const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
@@ -1155,7 +1154,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
           onDismiss={() => setDeliverSummary(null)}
         />
 
-        <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
     </>

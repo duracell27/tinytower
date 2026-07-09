@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { gameConfig } from '@shared/config/gameConfig';
 import { generateRandomWorkers } from '@shared/config/workerNames';
+import { generateVisitorAppearance } from '@shared/engine/lobbyUtils';
 
 @Injectable()
 export class PlayerService {
@@ -64,7 +65,13 @@ export class PlayerService {
         });
       }
 
-      await tx.playerState.create({ data: { playerId: player.id } });
+      const initialVisitors = Array.from(
+        { length: gameConfig.lobbyConfig.defaultLobbyCapacity },
+        () => generateVisitorAppearance(),
+      );
+      await tx.playerState.create({
+        data: { playerId: player.id, lobbyVisitors: JSON.stringify(initialVisitors) },
+      });
 
       return player;
     });

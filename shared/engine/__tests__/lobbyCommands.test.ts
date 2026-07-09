@@ -43,7 +43,7 @@ function makeState(overrides?: Partial<GameState>): GameState {
 
 describe('spawn_visitor', () => {
   it('adds visitor to lobby with role assigned at spawn', () => {
-    const state = makeState();
+    const state = makeState({ lobbyVisitors: [] });
     const cmd: Command = {
       id: 'c1', type: 'spawn_visitor', timestamp: 1000,
       visitorId: 'v1', role: 'guest', targetFloor: 3, hairColor: '#5C3A22', female: false,
@@ -88,7 +88,7 @@ describe('lift_visitor', () => {
   });
 
   it('fails when no visitors', () => {
-    const state = makeState();
+    const state = makeState({ lobbyVisitors: [] });
     const cmd: Command = { id: 'c1', type: 'lift_visitor', timestamp: 1000, role: 'guest', targetFloor: 2 };
     const result = processCommand(state, cmd, testConfig, 1000);
     expect(result.success).toBe(false);
@@ -228,7 +228,7 @@ describe('deliver_all', () => {
   });
 
   it('fails with empty lobby', () => {
-    const state = makeState({ gems: 5 });
+    const state = makeState({ gems: 5, lobbyVisitors: [] });
     const result = processCommand(state, { id: 'c1', type: 'deliver_all', timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(false);
   });

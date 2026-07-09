@@ -183,21 +183,23 @@ export default function UnderConstructionBanner({
             </Text>
           </View>
         ) : (
-          <Pressable
-            onPress={onOpenPicker}
-            style={({ pressed }) => [styles.openBtn, pressed && { opacity: 0.85 }]}
-          >
-            <LinearGradient colors={['#E67E22', '#C96A14']} style={styles.openBtnGradient}>
-              <Text style={styles.openBtnText}>Choose business</Text>
-            </LinearGradient>
-            <View style={styles.openBtnShadow} />
-          </Pressable>
+          <>
+            <Pressable
+              onPress={onOpenPicker}
+              style={({ pressed }) => [styles.openBtn, pressed && { opacity: 0.85 }]}
+            >
+              <LinearGradient colors={['#E67E22', '#C96A14']} style={styles.openBtnGradient}>
+                <Text style={styles.openBtnText}>Choose business</Text>
+              </LinearGradient>
+              <View style={styles.openBtnShadow} />
+            </Pressable>
+            <Pressable onPress={toggleCollapse} hitSlop={8}>
+              <View style={[styles.chevronCircle, { backgroundColor: BANNER_COLOR }]}>
+                <View style={[styles.chevronShape, collapsed ? styles.chevronDown : styles.chevronUp]} />
+              </View>
+            </Pressable>
+          </>
         )}
-        <Pressable onPress={toggleCollapse} hitSlop={8}>
-          <View style={[styles.chevronCircle, { backgroundColor: BANNER_COLOR }]}>
-            <View style={[styles.chevronShape, collapsed ? styles.chevronDown : styles.chevronUp]} />
-          </View>
-        </Pressable>
       </View>
     </View>
   );

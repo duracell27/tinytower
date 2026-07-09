@@ -24,7 +24,6 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
-import InsufficientResourcesModal from './InsufficientResourcesModal';
 import { getHotelExpansionCost } from '../../shared/engine/lobbyCommands';
 import type { Worker } from '../../shared/types';
 import { GemIcon } from './CurrencyIcons';
@@ -281,7 +280,6 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           />
         </Animated.View>
 
-        <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
   );

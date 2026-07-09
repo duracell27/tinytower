@@ -205,7 +205,7 @@ describe('createInitialState', () => {
 
   it('lobby fields initialized', () => {
     const state = createInitialState(gameConfig);
-    expect(state.lobbyVisitors).toEqual([]);
+    expect(state.lobbyVisitors).toHaveLength(gameConfig.lobbyConfig.defaultLobbyCapacity);
     expect(state.lobbyCapacity).toBe(gameConfig.lobbyConfig.defaultLobbyCapacity);
     expect(state.elevatorLevel).toBe(1);
     expect(state.elevatorFloor).toBe(0);
@@ -216,13 +216,11 @@ describe('createInitialState', () => {
     expect(state.nextVisitorAt).toBe(0);
   });
 
-  it('tools initialized with exactly 3 of the 4 types having 1', () => {
+  it('tools initialized with all 4 types having 1', () => {
     const state = createInitialState(gameConfig);
     const keys = ['briks', 'glass', 'nails', 'screw'] as const;
-    const total = keys.reduce((sum, k) => sum + state.tools[k], 0);
-    expect(total).toBe(3);
     for (const k of keys) {
-      expect(state.tools[k]).toBeLessThanOrEqual(1);
+      expect(state.tools[k]).toBe(1);
     }
   });
 
