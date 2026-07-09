@@ -25,7 +25,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/logo.png"
+        "foregroundImage": "./assets/img/logoBlack.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.duracell27.tinytowerinit"
