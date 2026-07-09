@@ -160,7 +160,14 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const availableTypes = floorConfig?.availableTypes
     ?? floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
   const discount = getFloorDiscount(workers, floorId);
-  const floorName = tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
+  const dynamicFloorName = (() => {
+    if (!dynamicFloorType) return null;
+    const staticCount = gameConfig.floors.filter((f) => f.floorType === dynamicFloorType).length;
+    const dynamicPredCount = Object.entries(openedFloorTypes ?? {})
+      .filter(([id, type]) => type === dynamicFloorType && Number(id) < floorId).length;
+    return gameConfig.floorTypes[dynamicFloorType]?.businesses[staticCount + dynamicPredCount]?.name ?? null;
+  })();
+  const floorName = dynamicFloorName ?? tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
 
   return (
     <View style={styles.floorContainer}>
