@@ -65,6 +65,8 @@ export const LiftVisitorCommandSchema = TimestampedBaseSchema.extend({
   targetFloor: z.number().int().positive(),
 });
 
+const ToolKeySchema = z.enum(['briks', 'glass', 'nails', 'screw']);
+
 export const CollectTipCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('collect_tip'),
   newWorker: z.object({
@@ -76,10 +78,12 @@ export const CollectTipCommandSchema = TimestampedBaseSchema.extend({
     level: z.number().int().min(1).max(9),
     hairColor: z.string(),
   }).optional(),
+  builderTool: ToolKeySchema.optional(),
 });
 
 export const DeliverAllCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('deliver_all'),
+  builderTools: z.array(ToolKeySchema).optional(),
 });
 
 export const UpgradeElevatorCommandSchema = TimestampedBaseSchema.extend({
@@ -96,6 +100,18 @@ export const ClaimDailyRewardCommandSchema = TimestampedBaseSchema.extend({
 
 export const ExpandHotelCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('expand_hotel'),
+});
+
+export const FillLobbyCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('fill_lobby'),
+  visitors: z.array(z.object({
+    visitorId: z.string(),
+    role: VisitorRoleSchema,
+    targetFloor: z.number().int().positive(),
+    hairColor: z.string(),
+    female: z.boolean(),
+    pendingFloorType: z.string().optional(),
+  })),
 });
 
 export const BuyFloorCommandSchema = TimestampedBaseSchema.extend({
@@ -130,6 +146,7 @@ export const CommandSchema = z.discriminatedUnion('type', [
   UpgradeLobbyCommandSchema,
   ClaimDailyRewardCommandSchema,
   ExpandHotelCommandSchema,
+  FillLobbyCommandSchema,
   BuyFloorCommandSchema,
   OpenFloorCommandSchema,
   ExchangeGemsCommandSchema,

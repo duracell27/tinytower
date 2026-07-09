@@ -8,13 +8,14 @@ import {
   getMaxLobbyCapacity,
   checkDailyReset,
   generateRandomVisitorRole,
+  getFillLobbyCost,
 } from './lobbyUtils';
 import { generateRandomWorkers } from '../config/workerNames';
 import type { VisitorRole } from '../types';
 
 type LobbyCommand = Extract<Command, { type:
   'spawn_visitor' | 'lift_visitor' | 'collect_tip' |
-  'deliver_all' | 'upgrade_elevator' | 'upgrade_lobby' | 'claim_daily_reward' | 'expand_hotel'
+  'deliver_all' | 'upgrade_elevator' | 'upgrade_lobby' | 'claim_daily_reward' | 'expand_hotel' | 'fill_lobby'
 }>;
 
 export function processLobbyCommand(
@@ -33,7 +34,7 @@ export function processLobbyCommand(
     case 'collect_tip':
       return handleCollectTip(state, config, playerLevel, command.timestamp, command);
     case 'deliver_all':
-      return handleDeliverAll(state, config, playerLevel, command.timestamp);
+      return handleDeliverAll(state, config, playerLevel, command.timestamp, command);
     case 'upgrade_elevator':
       return handleUpgradeElevator(state, config);
     case 'upgrade_lobby':
@@ -42,6 +43,8 @@ export function processLobbyCommand(
       return handleClaimDailyReward(state, config);
     case 'expand_hotel':
       return handleExpandHotel(state);
+    case 'fill_lobby':
+      return handleFillLobby(state, command, config);
   }
 }
 
@@ -105,11 +108,13 @@ function applyVisitorEffect(
   config: GameConfig,
   playerLevel: number,
   preGeneratedWorker?: { id: string; name: string; female: boolean; floorType: string; dreamJob: string; level: number; hairColor: string },
+  preGeneratedTool?: string,
 ): GameState {
   const role = visitor.role ?? 'guest';
   const targetFloor = visitor.targetFloor ?? 1;
   const tip = calculateTip(role, targetFloor, state.elevatorLevel, config);
   let { balance, gems, dailyTips, dailyGemsCollected, workers, floors } = state;
+  let tools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 };
 
   if (role === 'businessman') {
     const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel;
@@ -120,7 +125,12 @@ function applyVisitorEffect(
       balance += tip;
       dailyTips += tip;
     }
-  } else if (role !== 'builder') {
+  } else if (role === 'builder') {
+    if (preGeneratedTool && preGeneratedTool in tools) {
+      const key = preGeneratedTool as keyof typeof tools;
+      tools = { ...tools, [key]: tools[key] + 1 };
+    }
+  } else {
     balance += tip;
     dailyTips += tip;
   }
@@ -183,7 +193,7 @@ function applyVisitorEffect(
     }
   }
 
-  return { ...state, balance, gems, dailyTips, dailyGemsCollected, workers, floors };
+  return { ...state, balance, gems, dailyTips, dailyGemsCollected, workers, floors, tools };
 }
 
 function handleCollectTip(
@@ -200,7 +210,7 @@ function handleCollectTip(
   if (state.elevatorFloor !== active.targetFloor) {
     return { success: false, state, error: 'Elevator not at target floor' };
   }
-  let newState = applyVisitorEffect(state, active, config, playerLevel, command.newWorker);
+  let newState = applyVisitorEffect(state, active, config, playerLevel, command.newWorker, command.builderTool);
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
   const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
     ? now + config.lobbyConfig.visitorSpawnInterval
@@ -219,6 +229,7 @@ function handleDeliverAll(
   config: GameConfig,
   playerLevel: number,
   now: number,
+  command: Extract<Command, { type: 'deliver_all' }>,
 ): ProcessResult {
   if (state.gems < 1) {
     return { success: false, state, error: 'Not enough gems' };
@@ -226,9 +237,13 @@ function handleDeliverAll(
   if (state.lobbyVisitors.length === 0) {
     return { success: false, state, error: 'No visitors to deliver' };
   }
+  const builderTools = command.builderTools ?? [];
+  let builderIdx = 0;
   let newState = { ...state, gems: state.gems - 1 };
   for (const visitor of state.lobbyVisitors) {
-    newState = applyVisitorEffect(newState, visitor, config, playerLevel);
+    const isBuilder = (visitor.role ?? 'guest') === 'builder';
+    const tool = isBuilder ? builderTools[builderIdx++] : undefined;
+    newState = applyVisitorEffect(newState, visitor, config, playerLevel, undefined, tool);
   }
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
   const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
@@ -317,6 +332,39 @@ function handleClaimDailyReward(state: GameState, config: GameConfig): ProcessRe
       ...state,
       gems: state.gems + config.lobbyConfig.dailyTipsReward,
       dailyTipsRewardClaimed: true,
+    },
+  };
+}
+
+function handleFillLobby(
+  state: GameState,
+  command: Extract<Command, { type: 'fill_lobby' }>,
+  config: GameConfig,
+): ProcessResult {
+  if (state.lobbyVisitors.length > 0) {
+    return { success: false, state, error: 'Lobby is not empty' };
+  }
+  const cost = getFillLobbyCost(state.dailyFillLobbyUses);
+  if (state.gems < cost) {
+    return { success: false, state, error: 'Not enough gems' };
+  }
+  const slots = state.lobbyCapacity - state.lobbyVisitors.length;
+  const newVisitors: Visitor[] = command.visitors.slice(0, slots).map((v) => ({
+    id: v.visitorId,
+    role: v.role,
+    targetFloor: v.targetFloor,
+    hairColor: v.hairColor,
+    female: v.female,
+    pendingFloorType: v.pendingFloorType,
+  }));
+  return {
+    success: true,
+    state: {
+      ...state,
+      gems: state.gems - cost,
+      lobbyVisitors: newVisitors,
+      dailyFillLobbyUses: state.dailyFillLobbyUses + 1,
+      nextVisitorAt: 0,
     },
   };
 }

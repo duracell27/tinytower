@@ -40,6 +40,7 @@ export function processCommand(
     case 'upgrade_lobby':
     case 'claim_daily_reward':
     case 'expand_hotel':
+    case 'fill_lobby':
       return processLobbyCommand(state, command, config, playerLevel);
   }
 }

@@ -293,3 +293,78 @@ describe('claim_daily_reward', () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe('fill_lobby', () => {
+  it('fills lobby to capacity and deducts 1 gem on first use', () => {
+    const state = makeState({ gems: 5, lobbyCapacity: 3, lobbyVisitors: [] });
+    const cmd: Command = {
+      id: 'c1', type: 'fill_lobby', timestamp: 1000,
+      visitors: [
+        { visitorId: 'v1', role: 'guest', targetFloor: 2, hairColor: '#aaa', female: false },
+        { visitorId: 'v2', role: 'businessman', targetFloor: 2, hairColor: '#bbb', female: true },
+        { visitorId: 'v3', role: 'guest', targetFloor: 3, hairColor: '#ccc', female: false },
+      ],
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(4);
+    expect(result.state.lobbyVisitors).toHaveLength(3);
+    expect(result.state.lobbyVisitors[0].id).toBe('v1');
+    expect(result.state.dailyFillLobbyUses).toBe(1);
+    expect(result.state.nextVisitorAt).toBe(0);
+  });
+
+  it('deducts 2 gems when dailyFillLobbyUses is 5', () => {
+    const state = makeState({ gems: 5, lobbyCapacity: 2, lobbyVisitors: [], dailyFillLobbyUses: 5 });
+    const cmd: Command = {
+      id: 'c1', type: 'fill_lobby', timestamp: 1000,
+      visitors: [
+        { visitorId: 'v1', role: 'guest', targetFloor: 2, hairColor: '#aaa', female: false },
+        { visitorId: 'v2', role: 'guest', targetFloor: 2, hairColor: '#bbb', female: true },
+      ],
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(3);
+  });
+
+  it('fails when not enough gems', () => {
+    const state = makeState({ gems: 0, lobbyCapacity: 2, lobbyVisitors: [] });
+    const cmd: Command = {
+      id: 'c1', type: 'fill_lobby', timestamp: 1000,
+      visitors: [
+        { visitorId: 'v1', role: 'guest', targetFloor: 2, hairColor: '#aaa', female: false },
+      ],
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(false);
+    expect(result.state.gems).toBe(0);
+  });
+
+  it('fails when lobby already has visitors', () => {
+    const state = makeState({ gems: 5, lobbyVisitors: [makeVisitor()], lobbyCapacity: 3 });
+    const cmd: Command = {
+      id: 'c1', type: 'fill_lobby', timestamp: 1000,
+      visitors: [
+        { visitorId: 'v2', role: 'guest', targetFloor: 2, hairColor: '#aaa', female: false },
+      ],
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(false);
+  });
+
+  it('only adds visitors up to capacity (ignores excess in command)', () => {
+    const state = makeState({ gems: 5, lobbyCapacity: 2, lobbyVisitors: [] });
+    const cmd: Command = {
+      id: 'c1', type: 'fill_lobby', timestamp: 1000,
+      visitors: [
+        { visitorId: 'v1', role: 'guest', targetFloor: 2, hairColor: '#aaa', female: false },
+        { visitorId: 'v2', role: 'guest', targetFloor: 2, hairColor: '#bbb', female: true },
+        { visitorId: 'v3', role: 'guest', targetFloor: 2, hairColor: '#ccc', female: false },
+      ],
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.lobbyVisitors).toHaveLength(2);
+  });
+});
