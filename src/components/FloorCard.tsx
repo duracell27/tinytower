@@ -160,13 +160,13 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const availableTypes = floorConfig?.availableTypes
     ?? floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
   const discount = getFloorDiscount(workers, floorId);
-  const deliveryLockMs = (() => {
-    const dp = floor.productions.find((p) => p.stage === 'DELIVERING' && p.typeId);
-    if (!dp) return 0;
-    const tc = gameConfig.productionTypes[dp.typeId!];
-    if (!tc) return 0;
-    return Math.max(0, tc.deliveryDuration - (now - dp.stageStartedAt));
-  })();
+  const deliveryLockMs = floor.productions.reduce((maxRemaining, p) => {
+    if (p.stage !== 'DELIVERING' || !p.typeId) return maxRemaining;
+    const tc = gameConfig.productionTypes[p.typeId];
+    if (!tc) return maxRemaining;
+    const remaining = tc.deliveryDuration - (now - p.stageStartedAt);
+    return Math.max(maxRemaining, remaining);
+  }, 0);
   // Derive business name from the first production typeId — stable regardless of what
   // other floors of the same type get opened later.
   const dynamicFloorName = (() => {

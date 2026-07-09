@@ -205,6 +205,15 @@ describe('processCommand', () => {
       expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
     });
 
+    it('succeeds when another slot delivery timer is exactly at zero', () => {
+      const state = stateWithTwoWorkers();
+      // slot 1: bookstore deliveryDuration=15000, started=1000, now=16000 → remaining=0 (exactly expired)
+      state.floors[0].productions[1] = { typeId: 'bookstore', stage: 'DELIVERING', stageStartedAt: 1000 };
+      const result = processCommand(state, buyCmd({ slotIdx: 0 }), testConfig, 16000);
+      expect(result.success).toBe(true);
+      expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
+    });
+
     it('blocks buy on slot 1 when slot 0 is actively delivering', () => {
       const state = stateWithTwoWorkers();
       // slot 0: coffee_shop deliveryDuration=5000, started=1000, now=4000 → remaining=2000

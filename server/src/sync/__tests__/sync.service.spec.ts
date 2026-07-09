@@ -258,6 +258,10 @@ describe('SyncService', () => {
         .mockResolvedValueOnce(mockPlayer)
         .mockResolvedValueOnce({ ...mockPlayer, stateVersion: 1 });
 
+      // buns deliveryDuration = 105_000 ms.  Give cmd-2 a timestamp 105_001 ms after
+      // cmd-1 so the delivery lock from the first buy has expired by the time the
+      // second buy is processed (remaining = 105_000 - 105_001 = -1 < 0).
+      const baseTs = 1_000;
       const cmds: Command[] = [
         {
           id: 'cmd-1',
@@ -265,7 +269,7 @@ describe('SyncService', () => {
           floorId: 2,
           slotIdx: 0,
           typeId: 'buns',
-          timestamp: Date.now(),
+          timestamp: baseTs,
         },
         {
           id: 'cmd-2',
@@ -273,7 +277,7 @@ describe('SyncService', () => {
           floorId: 2,
           slotIdx: 1,
           typeId: 'buns',
-          timestamp: Date.now(),
+          timestamp: baseTs + 105_001,
         },
       ];
 
