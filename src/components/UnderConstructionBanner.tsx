@@ -40,8 +40,10 @@ interface UnderConstructionBannerProps {
 function formatCountdown(ms: number): string {
   if (ms <= 0) return '0:00';
   const totalSeconds = Math.ceil(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}h ${String(minutes).padStart(2, '0')}m`;
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
@@ -439,12 +441,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: 'rgba(37,146,171,0.15)',
+    backgroundColor: '#fff',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(37,146,171,0.35)',
+    borderWidth: 1.5,
+    borderColor: '#2592AB',
   },
   speedUpIcon: {
     fontSize: 13,
