@@ -153,7 +153,6 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const floor = useFloor(floorId);
   const workers = useGameStore((s) => s.workers);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
-  const underConstruction = useGameStore((s) => s.underConstruction);
   const dynamicFloorType = openedFloorTypes?.[String(floorId)];
   const scheme = FLOOR_SCHEMES[floorId] ?? (dynamicFloorType ? FLOOR_TYPE_SCHEMES[dynamicFloorType] : undefined) ?? FLOOR_SCHEMES[2];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
@@ -161,14 +160,20 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const availableTypes = floorConfig?.availableTypes
     ?? floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
   const discount = getFloorDiscount(workers, floorId);
+  const deliveryLockMs = (() => {
+    const dp = floor.productions.find((p) => p.stage === 'DELIVERING' && p.typeId);
+    if (!dp) return 0;
+    const tc = gameConfig.productionTypes[dp.typeId!];
+    if (!tc) return 0;
+    return Math.max(0, tc.deliveryDuration - (now - dp.stageStartedAt));
+  })();
+  // Derive business name from the first production typeId — stable regardless of what
+  // other floors of the same type get opened later.
   const dynamicFloorName = (() => {
-    if (!dynamicFloorType) return null;
-    const staticCount = gameConfig.floors.filter((f) => f.floorType === dynamicFloorType).length;
-    const openedPredCount = Object.entries(openedFloorTypes ?? {})
-      .filter(([id, type]) => type === dynamicFloorType && Number(id) < floorId).length;
-    const pendingPredCount = underConstruction
-      .filter((u) => u.selectedFloorType === dynamicFloorType && u.floorId < floorId).length;
-    return gameConfig.floorTypes[dynamicFloorType]?.businesses[staticCount + openedPredCount + pendingPredCount]?.name ?? null;
+    if (!dynamicFloorType || !availableTypes[0]) return null;
+    const business = gameConfig.floorTypes[dynamicFloorType]?.businesses
+      .find((b) => b.dreamJobs.includes(availableTypes[0]));
+    return business?.name ?? null;
   })();
   const floorName = dynamicFloorName ?? tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
 
@@ -217,6 +222,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
               floorDiscount={discount}
               accentColor={scheme.color}
               onHire={onHireSlot}
+              deliveryLockMs={deliveryLockMs}
             />
           );
         })}

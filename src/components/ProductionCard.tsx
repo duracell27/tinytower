@@ -131,6 +131,21 @@ function StageIcon({ stage }: { stage: EffectiveStage }) {
   }
 }
 
+function LockIcon() {
+  return (
+    <Svg viewBox="0 0 24 24" width={13} height={13}>
+      <Rect x={5} y={11} width={14} height={10} rx={2} fill="#fff" />
+      <Path
+        d="M8 11V7a4 4 0 0 1 8 0v4"
+        stroke="#fff"
+        strokeWidth={2.5}
+        strokeLinecap="round"
+        fill="none"
+      />
+    </Svg>
+  );
+}
+
 const iconStyles = StyleSheet.create({
   coinCircle: {
     width: 14,
@@ -162,6 +177,7 @@ interface ProductionCardProps {
   floorDiscount?: number;
   accentColor: string;
   onHire?: (floorId: number, slotIdx: number) => void;
+  deliveryLockMs?: number;   // NEW
 }
 
 export default function ProductionCard({
@@ -180,6 +196,7 @@ export default function ProductionCard({
   floorDiscount,
   accentColor,
   onHire,
+  deliveryLockMs,
 }: ProductionCardProps) {
   const typeConfig = production.typeId
     ? gameConfig.productionTypes[production.typeId] ?? null
@@ -187,6 +204,10 @@ export default function ProductionCard({
 
   const status = getProductionStatus(production, typeConfig, now, balance);
   const { effectiveStage, timeRemaining, canAct } = status;
+
+  const isDeliveryLocked =
+    (effectiveStage === 'IDLE' || effectiveStage === 'EMPTY') &&
+    (deliveryLockMs ?? 0) > 0;
 
   const btnConfig = BTN_COLORS[effectiveStage] || BTN_COLORS.IDLE;
 
@@ -390,6 +411,9 @@ export default function ProductionCard({
             <View style={styles.workerBadge}>
               <WorkerAvatar worker={worker} size={24} />
             </View>
+            <View style={[styles.workerLevelBadge, { backgroundColor: accentColor }]}>
+              <Text style={styles.workerLevelText}>{worker.level}</Text>
+            </View>
             {hasMultiplier && (
               <View style={[styles.bonusBubble, { backgroundColor: accentColor }]}>
                 <Text style={styles.bonusBubbleText}>×{multiplier}</Text>
@@ -402,15 +426,15 @@ export default function ProductionCard({
       {/* Action button */}
       <View onLayout={(e) => setBtnSize(e.nativeEvent.layout)}>
         <Pressable
-          onPress={canAct ? handleAction : undefined}
+          onPress={isDeliveryLocked ? undefined : (canAct ? handleAction : undefined)}
           style={({ pressed }) => [
             styles.actionButton,
             { backgroundColor: resolvedBtnConfig.color, shadowColor: resolvedBtnConfig.shadowColor },
-            !canAct && !isTimer && styles.actionButtonDisabled,
-            pressed && canAct && styles.actionButtonPressed,
+            ((!canAct && !isTimer) || isDeliveryLocked) && styles.actionButtonDisabled,
+            pressed && canAct && !isDeliveryLocked && styles.actionButtonPressed,
           ]}
         >
-          <StageIcon stage={effectiveStage} />
+          {isDeliveryLocked ? <LockIcon /> : <StageIcon stage={effectiveStage} />}
           <Text style={styles.actionLabel}>{labelText}</Text>
         </Pressable>
         {isProgressTimer && btnSize.width > 0 && (
@@ -441,7 +465,11 @@ export default function ProductionCard({
 
       {/* Sub-block: price or status */}
       <View style={styles.subContainer}>
-        {effectiveStage === 'READY_TO_LIST' && subText ? (
+        {isDeliveryLocked ? (
+          <View style={styles.statusPill}>
+            <Text style={styles.statusText}>{formatTime(deliveryLockMs ?? 0)}</Text>
+          </View>
+        ) : effectiveStage === 'READY_TO_LIST' && subText ? (
           <View style={styles.statusPill}>
             <Svg viewBox="0 0 24 24" width={10} height={10} fill="none" stroke="#8A8475" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
               <Path d="M3 4h2.2l2.4 10.5h9.1l1.9-7H6.3" />
@@ -636,6 +664,22 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#fff',
     overflow: 'hidden',
+  },
+  workerLevelBadge: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#fff',
+    marginTop: -7,
+  },
+  workerLevelText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 8,
+    color: '#fff',
+    lineHeight: 8,
   },
   bonusBubble: {
     borderRadius: 8,
