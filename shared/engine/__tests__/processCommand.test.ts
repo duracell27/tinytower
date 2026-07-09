@@ -79,6 +79,15 @@ function buyCmd(overrides?: Partial<Extract<Command, { type: 'buy' }>>): Command
   return { id: 'cmd-1', type: 'buy', floorId: 1, slotIdx: 0, typeId: 'coffee_shop', timestamp: 1000, ...overrides };
 }
 
+function stateWithTwoWorkers(): GameState {
+  return makeState({
+    workers: [
+      makeWorker({ id: 'w1', assignedFloorId: 1, assignedSlotIdx: 0 }),
+      makeWorker({ id: 'w2', assignedFloorId: 1, assignedSlotIdx: 1 }),
+    ],
+  });
+}
+
 function listCmd(overrides?: Partial<Extract<Command, { type: 'list' }>>): Command {
   return { id: 'cmd-2', type: 'list', floorId: 1, slotIdx: 0, timestamp: 7000, ...overrides };
 }
@@ -176,6 +185,38 @@ describe('processCommand', () => {
     it('fails for nonexistent slot index', () => {
       const result = processCommand(stateWithWorker(), buyCmd({ slotIdx: 99 }), testConfig, 1000);
       expect(result.success).toBe(false);
+    });
+
+    it('fails when another slot on the same floor has an active delivery', () => {
+      const state = stateWithTwoWorkers();
+      // slot 1: bookstore deliveryDuration=15000, started=1000, now=5000 → remaining=11000
+      state.floors[0].productions[1] = { typeId: 'bookstore', stage: 'DELIVERING', stageStartedAt: 1000 };
+      const result = processCommand(state, buyCmd({ slotIdx: 0 }), testConfig, 5000);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Another delivery in progress on this floor');
+    });
+
+    it('succeeds when another slot delivery timer has expired', () => {
+      const state = stateWithTwoWorkers();
+      // slot 1: bookstore deliveryDuration=15000, started=1000, now=20000 → remaining=-4000 (expired)
+      state.floors[0].productions[1] = { typeId: 'bookstore', stage: 'DELIVERING', stageStartedAt: 1000 };
+      const result = processCommand(state, buyCmd({ slotIdx: 0 }), testConfig, 20000);
+      expect(result.success).toBe(true);
+      expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
+    });
+
+    it('blocks buy on slot 1 when slot 0 is actively delivering', () => {
+      const state = stateWithTwoWorkers();
+      // slot 0: coffee_shop deliveryDuration=5000, started=1000, now=4000 → remaining=2000
+      state.floors[0].productions[0] = { typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 1000 };
+      const result = processCommand(
+        state,
+        buyCmd({ slotIdx: 1, typeId: 'bookstore' }),
+        testConfig,
+        4000,
+      );
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Another delivery in progress on this floor');
     });
   });
 

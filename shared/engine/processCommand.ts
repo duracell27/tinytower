@@ -316,6 +316,17 @@ function handleBuy(
     return { success: false, state, error: 'Production not idle' };
   }
 
+  // Block buy if another slot on this floor has an active delivery
+  const hasActiveDelivery = state.floors[floorIdx].productions.some((p, i) => {
+    if (i === slotIdx) return false;
+    if (p.stage !== 'DELIVERING' || !p.typeId) return false;
+    const tc = config.productionTypes[p.typeId];
+    return tc ? (now - p.stageStartedAt) < tc.deliveryDuration : false;
+  });
+  if (hasActiveDelivery) {
+    return { success: false, state, error: 'Another delivery in progress on this floor' };
+  }
+
   if (production.typeId !== null && production.typeId !== command.typeId) {
     return { success: false, state, error: 'Cannot change production type' };
   }
