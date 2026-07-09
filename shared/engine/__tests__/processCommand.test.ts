@@ -641,3 +641,68 @@ describe('exchange gems', () => {
     expect(result.state.balance).toBe(500);
   });
 });
+
+describe('speed_up_construction', () => {
+  const ucEntry: GameState['underConstruction'][0] = {
+    floorId: 5,
+    startedAt: 0,
+    durationMs: 3_600_000,        // 1 hour
+    requiredTools: [{ tool: 'briks', count: 1 }],
+    selectedFloorType: null,
+  };
+
+  function speedUpCmd(overrides?: Partial<Extract<Command, { type: 'speed_up_construction' }>>): Command {
+    return { id: 'su-1', type: 'speed_up_construction', timestamp: 1_800_000, floorId: 5, ...overrides } as Command;
+  }
+
+  it('deducts 1 gem per hour remaining and marks construction complete', () => {
+    // 1 hour total, 30 min elapsed → 30 min left → ceil(0.5h) = 1 gem
+    const state = makeState({ gems: 5, underConstruction: [ucEntry] });
+    const result = processCommand(state, speedUpCmd({ timestamp: 1_800_000 }), testConfig, 1_800_000);
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(4);
+    // construction entry startedAt set so timestamp - startedAt >= durationMs
+    const uc = result.state.underConstruction.find((u) => u.floorId === 5)!;
+    expect(uc.startedAt + uc.durationMs).toBeLessThanOrEqual(1_800_000);
+  });
+
+  it('charges 2 gems when more than 1 hour remains', () => {
+    // 0 elapsed of 3h → ceil(3) = 3; or 0 elapsed of 2h → 2 gems
+    const twoHourUc = { ...ucEntry, durationMs: 2 * 3_600_000 };
+    const state = makeState({ gems: 10, underConstruction: [twoHourUc] });
+    const result = processCommand(state, speedUpCmd({ timestamp: 0 }), testConfig, 0);
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(8);
+  });
+
+  it('charges minimum 1 gem when less than 1 minute remains', () => {
+    const almostDoneUc = { ...ucEntry, startedAt: 0, durationMs: 30_000 }; // 30 seconds
+    const state = makeState({ gems: 3, underConstruction: [almostDoneUc] });
+    const result = processCommand(state, speedUpCmd({ timestamp: 0 }), testConfig, 0);
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(2);
+  });
+
+  it('fails when floor is not under construction', () => {
+    const state = makeState({ gems: 5, underConstruction: [] });
+    const result = processCommand(state, speedUpCmd(), testConfig, 1_800_000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Floor not under construction');
+  });
+
+  it('fails when construction already complete', () => {
+    // timestamp >= startedAt + durationMs → already done
+    const state = makeState({ gems: 5, underConstruction: [ucEntry] });
+    const result = processCommand(state, speedUpCmd({ timestamp: 4_000_000 }), testConfig, 4_000_000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Construction already complete');
+  });
+
+  it('fails when insufficient gems', () => {
+    const state = makeState({ gems: 0, underConstruction: [ucEntry] });
+    const result = processCommand(state, speedUpCmd({ timestamp: 1_800_000 }), testConfig, 1_800_000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient gems');
+    expect(result.state.gems).toBe(0);
+  });
+});

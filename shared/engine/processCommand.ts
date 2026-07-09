@@ -32,6 +32,8 @@ export function processCommand(
       return handleOpenFloor(state, command, config);
     case 'exchange_gems':
       return handleExchangeGems(state, command);
+    case 'speed_up_construction':
+      return handleSpeedUpConstruction(state, command);
     case 'spawn_visitor':
     case 'lift_visitor':
     case 'collect_tip':
@@ -58,6 +60,34 @@ function handleExchangeGems(
       ...state,
       gems: state.gems - command.gems,
       balance: state.balance + command.gems * COINS_PER_GEM,
+    },
+  };
+}
+
+const MS_PER_HOUR = 3_600_000;
+
+function handleSpeedUpConstruction(
+  state: GameState,
+  command: Extract<Command, { type: 'speed_up_construction' }>,
+): ProcessResult {
+  const uc = state.underConstruction.find((u) => u.floorId === command.floorId);
+  if (!uc) return { success: false, state, error: 'Floor not under construction' };
+
+  const timeLeft = uc.startedAt + uc.durationMs - command.timestamp;
+  if (timeLeft <= 0) return { success: false, state, error: 'Construction already complete' };
+
+  const cost = Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));
+  if (state.gems < cost) return { success: false, state, error: 'Insufficient gems' };
+
+  const updatedUc = { ...uc, startedAt: command.timestamp - uc.durationMs };
+  return {
+    success: true,
+    state: {
+      ...state,
+      gems: state.gems - cost,
+      underConstruction: state.underConstruction.map((u) =>
+        u.floorId === command.floorId ? updatedUc : u,
+      ),
     },
   };
 }

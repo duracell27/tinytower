@@ -43,6 +43,16 @@ describe('xpForCommand', () => {
     expect(xpForCommand('buy_floor', 500, 500, 10, 7)).toBe(0);
     expect(xpForCommand('buy_floor', 1000, 700, 10, 7)).toBe(0);
   });
+
+  it('exchange_gems always gives 0 XP regardless of coins gained', () => {
+    expect(xpForCommand('exchange_gems', 0, 1000)).toBe(0);
+    expect(xpForCommand('exchange_gems', 500, 3500)).toBe(0);
+  });
+
+  it('speed_up_construction always gives 0 XP', () => {
+    expect(xpForCommand('speed_up_construction', 500, 500)).toBe(0);
+    expect(xpForCommand('speed_up_construction', 500, 200)).toBe(0);
+  });
 });
 
 describe('applyXpGain', () => {

@@ -55,7 +55,7 @@ export function xpForCommand(
   prevGems: number = 0,
   nextGems: number = 0,
 ): number {
-  if (cmdType === 'buy_floor') return 0;
+  if (cmdType === 'buy_floor' || cmdType === 'exchange_gems' || cmdType === 'speed_up_construction') return 0;
   const coinDelta = Math.abs(nextBalance - prevBalance);
   const listBonus = cmdType === 'list' ? 10 : 0;
   return coinDelta + listBonus;
