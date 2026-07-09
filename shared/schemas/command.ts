@@ -131,6 +131,11 @@ export const ExchangeGemsCommandSchema = TimestampedBaseSchema.extend({
   gems: z.number().int().positive(),
 });
 
+export const SpeedUpConstructionCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('speed_up_construction'),
+  floorId: z.number().int(),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -150,4 +155,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   BuyFloorCommandSchema,
   OpenFloorCommandSchema,
   ExchangeGemsCommandSchema,
+  SpeedUpConstructionCommandSchema,
 ]);
