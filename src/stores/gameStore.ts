@@ -74,6 +74,7 @@ interface GameActions {
   reconcile: (state: GameState, stateVersion: number, ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   clearAckedCommands: (ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   exchangeGemsForCoins: (gems: number) => void;
+  speedUpConstruction: (floorId: number) => void;
   showInsufficientResources: (payload: InsufficientResourcesPayload) => void;
   clearInsufficientResources: () => void;
   clearBuilderToolDrop: () => void;
@@ -155,6 +156,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
+  },
+  speedUpConstruction: (floorId) => {
+    const state = get();
+    const now = clock.now();
+    const uc = state.underConstruction.find((u) => u.floorId === floorId);
+    if (!uc) return;
+    const timeLeft = uc.startedAt + uc.durationMs - now;
+    if (timeLeft <= 0) return;
+    const cost = Math.max(1, Math.ceil(timeLeft / 3_600_000));
+    if (state.gems < cost) {
+      state.showInsufficientResources({ currency: 'gems', need: cost, have: state.gems });
+      return;
+    }
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'speed_up_construction',
+      timestamp: now,
+      floorId,
+    });
   },
   showInsufficientResources: (payload) => set({ insufficientResources: payload }),
   clearInsufficientResources: () => set({ insufficientResources: null }),
