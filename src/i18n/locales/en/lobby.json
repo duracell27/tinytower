@@ -31,7 +31,8 @@
     "collect": "Collect",
     "collectTip": "Collect Tip",
     "deliverAll": "Deliver All For",
-    "acceptMaterials": "Accept Materials"
+    "acceptMaterials": "Accept Materials",
+    "fillLobby": "Fill Lobby"
   },
   "dailyTips": {
     "label": "Tips collected today",

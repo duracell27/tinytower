@@ -22,7 +22,7 @@ import Animated, {
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useGameStore, useLobbyState, useBalance } from '../stores/gameStore';
 import { useGameClock } from '../hooks/useGameClock';
-import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity } from '../../shared/engine/lobbyUtils';
+import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity, getFillLobbyCost } from '../../shared/engine/lobbyUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
 import type { Visitor, VisitorRole, Worker } from '../../shared/types';
 import { Image } from 'expo-image';
@@ -417,12 +417,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     dailyTipsRewardClaimed,
     nextVisitorAt,
     gems,
+    dailyFillLobbyUses,
   } = useLobbyState();
 
   const balance = useBalance();
   const now = useGameClock(1000);
   const playerLevel = useGameStore((s) => s.playerLevel);
 
+  const fillLobby = useGameStore((s) => s.fillLobby);
   const liftVisitor = useGameStore((s) => s.liftVisitor);
   const collectTip = useGameStore((s) => s.collectTip);
   const deliverAll = useGameStore((s) => s.deliverAll);
@@ -430,6 +432,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const upgradeLobby = useGameStore((s) => s.upgradeLobby);
   const claimDailyReward = useGameStore((s) => s.claimDailyReward);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
+  const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
   const builderToolDrop = useGameStore((s) => s.builderToolDrop);
   const clearBuilderToolDrop = useGameStore((s) => s.clearBuilderToolDrop);
 
@@ -514,6 +517,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const sheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
+
+  useEffect(() => {
+    if (!visible) clearInsufficientResources();
+  }, [visible, clearInsufficientResources]);
 
   // Ref to suppress new-worker popup during deliverAll (which shows its own summary instead)
   const suppressNewWorkerPopup = useRef(false);
@@ -781,6 +788,23 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <EmptyElevatorIcon />
                       <Text style={styles.emptyTitle}>{t('empty.title')}</Text>
                       <Text style={styles.emptySubtitle}>{t('empty.subtitle')}</Text>
+                      <Pressable
+                        onPress={fillLobby}
+                        style={({ pressed }) => [
+                          styles.fillLobbyButton,
+                          pressed && { opacity: 0.85, transform: [{ translateY: 1 }] },
+                        ]}
+                      >
+                        <LinearGradient
+                          colors={['#52A6E2', '#3B8BCB']}
+                          style={styles.fillLobbyGradient}
+                        >
+                          <Text style={styles.fillLobbyText}>{t('actions.fillLobby')}</Text>
+                          <GemIcon size={14} />
+                          <Text style={styles.fillLobbyGemCount}>{getFillLobbyCost(dailyFillLobbyUses)}</Text>
+                        </LinearGradient>
+                        <View style={styles.fillLobbyButtonShadow} />
+                      </Pressable>
                     </View>
                   )}
                 </View>
@@ -931,13 +955,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                   {!elevatorMaxed ? (
                     <Pressable
-                      onPress={() => {
-                        if (gems < elevatorUpgradeCost) {
-                          showInsufficientResources({ currency: 'gems', need: elevatorUpgradeCost, have: gems });
-                        } else {
-                          upgradeElevator();
-                        }
-                      }}
+                      onPress={gems >= elevatorUpgradeCost ? upgradeElevator : undefined}
                       style={({ pressed }) => [
                         styles.upgradeButton,
                         pressed && gems >= elevatorUpgradeCost && { opacity: 0.85, transform: [{ translateY: 1 }] },
@@ -995,13 +1013,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                   {!lobbyMaxed ? (
                     <Pressable
-                      onPress={() => {
-                        if (gems < lobbyUpgradeCost) {
-                          showInsufficientResources({ currency: 'gems', need: lobbyUpgradeCost, have: gems });
-                        } else {
-                          upgradeLobby();
-                        }
-                      }}
+                      onPress={gems >= lobbyUpgradeCost ? upgradeLobby : undefined}
                       style={({ pressed }) => [
                         styles.upgradeButton,
                         pressed && gems >= lobbyUpgradeCost && { opacity: 0.85, transform: [{ translateY: 1 }] },
@@ -1492,6 +1504,45 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_500Medium',
     fontSize: 12,
     color: '#A6ACB8',
+  },
+  fillLobbyButton: {
+    borderRadius: 13,
+    overflow: 'hidden',
+    position: 'relative',
+    marginTop: 8,
+    alignSelf: 'stretch',
+  },
+  fillLobbyGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 11,
+    borderRadius: 13,
+    zIndex: 1,
+  },
+  fillLobbyText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 14.5,
+    color: '#fff',
+    textShadowColor: 'rgba(0,0,0,0.15)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  fillLobbyGemCount: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 14.5,
+    color: '#fff',
+  },
+  fillLobbyButtonShadow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: '#2E72A8',
+    borderBottomLeftRadius: 13,
+    borderBottomRightRadius: 13,
   },
 
   /* Deliver All */
