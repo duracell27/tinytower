@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
-import { generateRandomVisitorRole, generateVisitorAppearance } from '../../shared/engine/lobbyUtils';
+import { generateRandomVisitorRole, generateVisitorAppearance, getFillLobbyCost } from '../../shared/engine/lobbyUtils';
 import { generateRandomWorkers } from '../../shared/config/workerNames';
 import { applyXpGain, xpForCommand, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
@@ -59,6 +59,7 @@ interface GameActions {
   liftVisitor: () => void;
   collectTip: () => void;
   deliverAll: () => void;
+  fillLobby: () => void;
   upgradeElevator: () => void;
   upgradeLobby: () => void;
   expandHotel: () => void;
@@ -91,13 +92,13 @@ function executeCommand(
   const { balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
-    tools, underConstruction, openedFloorTypes, stats,
+    tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
   } = store;
   const gameState: GameState = {
     balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
-    tools, underConstruction, openedFloorTypes, stats,
+    tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
   };
   const result = processCommand(gameState, command, gameConfig, command.timestamp, store.playerLevel);
   if (!result.success) return;
@@ -129,6 +130,7 @@ function executeCommand(
     dailyTipsRewardClaimed: result.state.dailyTipsRewardClaimed,
     lastDailyReset: result.state.lastDailyReset,
     nextVisitorAt: result.state.nextVisitorAt,
+    dailyFillLobbyUses: result.state.dailyFillLobbyUses,
     tools: result.state.tools,
     underConstruction: result.state.underConstruction,
     openedFloorTypes: result.state.openedFloorTypes,
@@ -310,44 +312,59 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
+    const builderTool = role === 'builder'
+      ? (['briks', 'glass', 'nails', 'screw'] as ToolKey[])[Math.floor(Math.random() * 4)]
+      : undefined;
+
     executeCommand(get, set, {
       id: uuid(),
       type: 'collect_tip',
       timestamp: clock.now(),
       newWorker,
+      builderTool,
     });
 
-    if (role === 'builder' && get().lobbyVisitors.length < prevVisitorCount) {
-      const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
-      const tool = TOOLS[Math.floor(Math.random() * TOOLS.length)];
-      const curTools = get().tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 };
-      set({ tools: { ...curTools, [tool]: curTools[tool] + 1 }, builderToolDrop: tool });
+    if (builderTool && get().lobbyVisitors.length < prevVisitorCount) {
+      set({ builderToolDrop: builderTool });
     }
   },
 
   deliverAll: () => {
     const state = get();
     const builders = state.lobbyVisitors.filter((v) => v.role === 'builder');
+    const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
+    const builderTools = builders.map(() => TOOLS[Math.floor(Math.random() * TOOLS.length)]);
     executeCommand(get, set, {
       id: uuid(),
       type: 'deliver_all',
       timestamp: clock.now(),
+      builderTools,
     });
-    if (builders.length > 0 && get().lobbyVisitors.length < state.lobbyVisitors.length) {
-      const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
-      const delta: Record<ToolKey, number> = { briks: 0, glass: 0, nails: 0, screw: 0 };
-      for (let i = 0; i < builders.length; i++) {
-        delta[TOOLS[Math.floor(Math.random() * TOOLS.length)]]++;
-      }
-      set((cur) => ({
-        tools: {
-          briks: (cur.tools?.briks ?? 0) + delta.briks,
-          glass: (cur.tools?.glass ?? 0) + delta.glass,
-          nails: (cur.tools?.nails ?? 0) + delta.nails,
-          screw: (cur.tools?.screw ?? 0) + delta.screw,
-        },
-      }));
+  },
+
+  fillLobby: () => {
+    const state = get();
+    const slotsToFill = state.lobbyCapacity - state.lobbyVisitors.length;
+    const now = clock.now();
+    const cost = getFillLobbyCost(state.dailyFillLobbyUses);
+    if (state.gems < cost) {
+      state.showInsufficientResources({ currency: 'gems', need: cost, have: state.gems });
+      return;
     }
+    const visitors = Array.from({ length: slotsToFill }, () => {
+      const { role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
+      const { id, hairColor, female } = generateVisitorAppearance();
+      const pendingFloorType = (role === 'guest' && targetFloor === 1)
+        ? Object.keys(gameConfig.floorTypes)[Math.floor(Math.random() * Object.keys(gameConfig.floorTypes).length)]
+        : undefined;
+      return { visitorId: id, role, targetFloor, hairColor, female, pendingFloorType };
+    });
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'fill_lobby',
+      timestamp: now,
+      visitors,
+    });
   },
 
   upgradeElevator: () => {
@@ -406,6 +423,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     dailyTipsRewardClaimed: state.dailyTipsRewardClaimed ?? false,
     lastDailyReset: state.lastDailyReset ?? 0,
     nextVisitorAt: state.nextVisitorAt ?? 0,
+    dailyFillLobbyUses: state.dailyFillLobbyUses ?? 0,
     lastAckCursor: state.lastAckCursor ?? 0,
     stateVersion: state.stateVersion ?? 0,
     playerLevel: state.playerLevel ?? 1,
@@ -432,6 +450,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     dailyTipsRewardClaimed: serverState.dailyTipsRewardClaimed,
     lastDailyReset: serverState.lastDailyReset,
     nextVisitorAt: serverState.nextVisitorAt,
+    dailyFillLobbyUses: serverState.dailyFillLobbyUses ?? 0,
     stateVersion: newVersion,
     lastAckCursor: ackCursor,
     commandQueue: cur.commandQueue.filter((cmd) => !sentIds.has(cmd.id)),
@@ -515,5 +534,6 @@ export function useLobbyState() {
     dailyTipsRewardClaimed: state.dailyTipsRewardClaimed,
     nextVisitorAt: state.nextVisitorAt,
     gems: state.gems,
+    dailyFillLobbyUses: state.dailyFillLobbyUses,
   })));
 }

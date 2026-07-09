@@ -421,6 +421,7 @@ export class SyncService {
         totalListed: player.totalListed,
         totalSold: player.totalSold,
       },
+      dailyFillLobbyUses: s?.dailyFillLobbyUses ?? 0,
     };
   }
 }
