@@ -667,7 +667,7 @@ describe('speed_up_construction', () => {
   });
 
   it('charges 2 gems when more than 1 hour remains', () => {
-    // 0 elapsed of 3h → ceil(3) = 3; or 0 elapsed of 2h → 2 gems
+    // 0 elapsed of 2h total → ceil(2) = 2 gems
     const twoHourUc = { ...ucEntry, durationMs: 2 * 3_600_000 };
     const state = makeState({ gems: 10, underConstruction: [twoHourUc] });
     const result = processCommand(state, speedUpCmd({ timestamp: 0 }), testConfig, 0);

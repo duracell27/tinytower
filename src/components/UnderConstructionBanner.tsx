@@ -58,7 +58,7 @@ export default function UnderConstructionBanner({
   const speedUpConstruction = useGameStore((s) => s.speedUpConstruction);
   const [confirming, setConfirming] = useState(false);
 
-  useEffect(() => { setConfirming(false); }, [floorId]);
+  useEffect(() => { setConfirming(false); }, [floorId, isReady]);
 
   const timeLeft = Math.max(0, endsAt - now);
   const isReady = timeLeft === 0;

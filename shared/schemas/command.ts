@@ -133,7 +133,7 @@ export const ExchangeGemsCommandSchema = TimestampedBaseSchema.extend({
 
 export const SpeedUpConstructionCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('speed_up_construction'),
-  floorId: z.number().int(),
+  floorId: z.number().int().positive(),
 });
 
 export const CommandSchema = z.discriminatedUnion('type', [
