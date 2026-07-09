@@ -39,6 +39,7 @@ model PlayerState {
   dailyTips              Float   @default(0)
   dailyGemsCollected     Int     @default(0)
   dailyTipsRewardClaimed Boolean @default(false)
+  dailyFillLobbyUses     Int     @default(0)
   lastDailyReset         BigInt  @default(0)
   nextVisitorAt          BigInt  @default(0)
   briks                  Int     @default(1)
