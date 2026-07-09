@@ -38,7 +38,7 @@ export function processLobbyCommand(
     case 'upgrade_elevator':
       return handleUpgradeElevator(state, config);
     case 'upgrade_lobby':
-      return handleUpgradeLobby(state, config, playerLevel);
+      return handleUpgradeLobby(state, config);
     case 'claim_daily_reward':
       return handleClaimDailyReward(state, config);
     case 'expand_hotel':
@@ -254,11 +254,11 @@ function handleDeliverAll(
 }
 
 function handleUpgradeElevator(state: GameState, config: GameConfig): ProcessResult {
-  const maxLevel = getMaxElevatorLevel(config);
+  const maxLevel = getMaxElevatorLevel(state.floors.length);
   if (state.elevatorLevel >= maxLevel) {
     return { success: false, state, error: 'Elevator at max level' };
   }
-  const cost = calculateElevatorUpgradeCost(state.elevatorLevel, config);
+  const cost = calculateElevatorUpgradeCost(state.elevatorLevel);
   if (state.gems < cost) {
     return { success: false, state, error: 'Not enough gems' };
   }
@@ -268,16 +268,12 @@ function handleUpgradeElevator(state: GameState, config: GameConfig): ProcessRes
   };
 }
 
-function handleUpgradeLobby(
-  state: GameState,
-  config: GameConfig,
-  playerLevel: number,
-): ProcessResult {
-  const maxCapacity = getMaxLobbyCapacity(playerLevel, config);
+function handleUpgradeLobby(state: GameState, config: GameConfig): ProcessResult {
+  const maxCapacity = getMaxLobbyCapacity();
   if (state.lobbyCapacity >= maxCapacity) {
     return { success: false, state, error: 'Lobby at max capacity' };
   }
-  const cost = calculateLobbyUpgradeCost(state.lobbyCapacity, config);
+  const cost = calculateLobbyUpgradeCost();
   if (state.gems < cost) {
     return { success: false, state, error: 'Not enough gems' };
   }
@@ -286,7 +282,7 @@ function handleUpgradeLobby(
     state: {
       ...state,
       gems: state.gems - cost,
-      lobbyCapacity: state.lobbyCapacity + config.lobbyConfig.lobbyUpgradeSeats,
+      lobbyCapacity: state.lobbyCapacity + 1,
     },
   };
 }

@@ -235,39 +235,41 @@ describe('deliver_all', () => {
 });
 
 describe('upgrade_elevator', () => {
-  it('increments elevator level and deducts gems', () => {
+  it('increments elevator level and deducts gems equal to target level', () => {
+    // testConfig has 2 floors → max = 2; starting at level 1, cost = 1+1 = 2
     const state = makeState({ gems: 10, elevatorLevel: 1 });
     const result = processCommand(state, { id: 'c1', type: 'upgrade_elevator', timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(true);
     expect(result.state.elevatorLevel).toBe(2);
-    expect(result.state.gems).toBe(7);
+    expect(result.state.gems).toBe(8);
   });
 
-  it('fails at max level', () => {
-    const state = makeState({ gems: 100, elevatorLevel: 3 });
+  it('fails at max level (equals floors count)', () => {
+    // testConfig has 2 floors → max = 2
+    const state = makeState({ gems: 100, elevatorLevel: 2 });
     const result = processCommand(state, { id: 'c1', type: 'upgrade_elevator', timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(false);
   });
 
   it('fails with insufficient gems', () => {
-    const state = makeState({ gems: 0, elevatorLevel: 1 });
+    const state = makeState({ gems: 1, elevatorLevel: 1 });
     const result = processCommand(state, { id: 'c1', type: 'upgrade_elevator', timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(false);
   });
 });
 
 describe('upgrade_lobby', () => {
-  it('adds seats and deducts gems', () => {
+  it('adds 1 seat and deducts 5 gems', () => {
     const state = makeState({ gems: 10, lobbyCapacity: 10 });
-    const result = processCommand(state, { id: 'c1', type: 'upgrade_lobby', timestamp: 1000 } as Command, testConfig, 1000, 5);
+    const result = processCommand(state, { id: 'c1', type: 'upgrade_lobby', timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(true);
-    expect(result.state.lobbyCapacity).toBe(13);
+    expect(result.state.lobbyCapacity).toBe(11);
     expect(result.state.gems).toBe(5);
   });
 
-  it('fails at max capacity for player level', () => {
-    const state = makeState({ gems: 100, lobbyCapacity: 13 });
-    const result = processCommand(state, { id: 'c1', type: 'upgrade_lobby', timestamp: 1000 } as Command, testConfig, 1000, 1);
+  it('fails at max capacity (50)', () => {
+    const state = makeState({ gems: 100, lobbyCapacity: 50 });
+    const result = processCommand(state, { id: 'c1', type: 'upgrade_lobby', timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(false);
   });
 });

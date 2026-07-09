@@ -139,6 +139,7 @@ function handleOpenFloor(
       ...state,
       tools: updatedTools,
       floors: [...state.floors, newFloor],
+      lobbyCapacity: Math.min(50, state.lobbyCapacity + 1),
       openedFloorTypes: {
         ...(state.openedFloorTypes ?? {}),
         [String(command.floorId)]: command.floorType,

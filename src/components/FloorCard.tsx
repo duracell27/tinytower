@@ -156,6 +156,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const dynamicFloorType = openedFloorTypes?.[String(floorId)];
   const scheme = FLOOR_SCHEMES[floorId] ?? (dynamicFloorType ? FLOOR_TYPE_SCHEMES[dynamicFloorType] : undefined) ?? FLOOR_SCHEMES[2];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
+  const floorType = floorConfig?.floorType ?? dynamicFloorType ?? null;
   const availableTypes = floorConfig?.availableTypes
     ?? floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
   const discount = getFloorDiscount(workers, floorId);
@@ -193,6 +194,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
               balance={balance}
               now={now}
               floorId={floorId}
+              floorType={floorType}
               slotIdx={idx}
               floorAvailableTypes={availableTypes}
               cardBg={scheme.cardBg}

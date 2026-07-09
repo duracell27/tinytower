@@ -124,7 +124,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
       <KeyboardAvoidingView
         style={styles.cardWrapper}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={20}
+        keyboardVerticalOffset={0}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -326,7 +326,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 22,
-    paddingVertical: 40,
+    paddingTop: 60,
+    paddingBottom: 24,
   },
   card: {
     width: '100%',

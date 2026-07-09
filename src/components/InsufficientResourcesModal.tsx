@@ -35,7 +35,11 @@ function GemIcon() {
   return <Image source={require('../../assets/img/diamond.png')} style={{ width: 16, height: 16 }} contentFit="contain" />;
 }
 
-export default function InsufficientResourcesModal() {
+interface Props {
+  asOverlay?: boolean;
+}
+
+export default function InsufficientResourcesModal({ asOverlay = false }: Props = {}) {
   const { t } = useTranslation('common');
   const payload = useGameStore((s) => s.insufficientResources);
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
@@ -64,8 +68,8 @@ export default function InsufficientResourcesModal() {
 
   if (!visible || !payload) return null;
 
-  const isGems = payload.currency === 'gems';
   const isCoins = payload.currency === 'coins';
+  const isGems = payload.currency === 'gems';
   const isTools = !payload.currency && !!payload.missingTools?.length;
   const canBuy = isGems || isTools;
 
@@ -84,9 +88,8 @@ export default function InsufficientResourcesModal() {
     router.replace('/shop');
   };
 
-  return (
-    <Modal transparent animationType="none" onRequestClose={clearInsufficientResources}>
-      <Animated.View style={[styles.scrim, scrimStyle]}>
+  const inner = (
+    <Animated.View style={[asOverlay ? styles.overlayScrim : styles.scrim, scrimStyle]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={clearInsufficientResources} />
 
         <Animated.View style={[styles.card, cardStyle]}>
@@ -217,6 +220,12 @@ export default function InsufficientResourcesModal() {
           </LinearGradient>
         </Animated.View>
       </Animated.View>
+  );
+
+  if (asOverlay) return inner;
+  return (
+    <Modal transparent animationType="none" onRequestClose={clearInsufficientResources}>
+      {inner}
     </Modal>
   );
 }
@@ -244,6 +253,12 @@ const icons = StyleSheet.create({
 const styles = StyleSheet.create({
   scrim: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  overlayScrim: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.55)',
     alignItems: 'center',
     justifyContent: 'center',

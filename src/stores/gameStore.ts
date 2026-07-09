@@ -535,5 +535,6 @@ export function useLobbyState() {
     nextVisitorAt: state.nextVisitorAt,
     gems: state.gems,
     dailyFillLobbyUses: state.dailyFillLobbyUses,
+    floorsCount: state.floors.length,
   })));
 }

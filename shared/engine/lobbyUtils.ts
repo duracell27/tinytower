@@ -20,21 +20,20 @@ export function calculateTip(
   return config.lobbyConfig.guestTipBase * elevatorLevel * targetFloor;
 }
 
-export function calculateElevatorUpgradeCost(currentLevel: number, config: GameConfig): number {
-  return config.lobbyConfig.elevatorUpgradeBaseCost + (currentLevel - 1) * 2;
+export function calculateElevatorUpgradeCost(currentLevel: number): number {
+  return currentLevel + 1;
 }
 
-export function calculateLobbyUpgradeCost(currentCapacity: number, config: GameConfig): number {
-  const tiers = (currentCapacity - config.lobbyConfig.defaultLobbyCapacity) / config.lobbyConfig.lobbyUpgradeSeats;
-  return config.lobbyConfig.lobbyUpgradeBaseCost + tiers * 2;
+export function calculateLobbyUpgradeCost(): number {
+  return 5;
 }
 
-export function getMaxElevatorLevel(config: GameConfig): number {
-  return config.floors.length + 1;
+export function getMaxElevatorLevel(floorCount: number): number {
+  return floorCount;
 }
 
-export function getMaxLobbyCapacity(playerLevel: number, config: GameConfig): number {
-  return config.lobbyConfig.defaultLobbyCapacity + playerLevel * config.lobbyConfig.lobbyUpgradeSeats;
+export function getMaxLobbyCapacity(): number {
+  return 50;
 }
 
 function getMidnightBefore(timestamp: number): number {

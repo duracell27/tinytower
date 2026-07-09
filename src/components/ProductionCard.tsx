@@ -151,6 +151,7 @@ interface ProductionCardProps {
   balance: number;
   now: number;
   floorId: number;
+  floorType: string | null;
   slotIdx: number;
   floorAvailableTypes: string[];
   cardBg: string;
@@ -168,6 +169,7 @@ export default function ProductionCard({
   balance,
   now,
   floorId,
+  floorType,
   slotIdx,
   floorAvailableTypes,
   cardBg,
@@ -207,9 +209,8 @@ export default function ProductionCard({
   const discountPercent = hasDiscount ? Math.round((floorDiscount ?? 0) * 100) : 0;
 
   // Compute revenue multiplier
-  const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
-  const multiplier = worker && floorConfig
-    ? getRevenueMultiplier(worker, floorConfig.floorType, production.typeId)
+  const multiplier = worker && floorType
+    ? getRevenueMultiplier(worker, floorType, production.typeId)
     : 1;
   const effectiveRevenue = typeConfig ? Math.floor(typeConfig.batchValue * multiplier) : 0;
   const hasMultiplier = multiplier > 1;
@@ -496,6 +497,7 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingRight: 10,
   },
   hireSlot: {
     width: 54,

@@ -56,7 +56,7 @@
     "cardTitle": "Lobby",
     "seats": "{{count}} seats",
     "description": "A bigger lobby holds more visitors waiting for the elevator",
-    "upgradeForSeats": "+{{count}} seats for",
+    "upgradeForSeats": "+1 seat for",
     "maxLevel": "Max Level!"
   },
   "hotelFullPopup": {

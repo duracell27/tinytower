@@ -29,6 +29,7 @@ import { Image } from 'expo-image';
 import DeliverAllModal, { type DeliverAllSummary } from './DeliverAllModal';
 import WorkerAvatar from './WorkerAvatar';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
+import InsufficientResourcesModal from './InsufficientResourcesModal';
 
 type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
 const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
@@ -418,6 +419,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     nextVisitorAt,
     gems,
     dailyFillLobbyUses,
+    floorsCount,
   } = useLobbyState();
 
   const balance = useBalance();
@@ -459,14 +461,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const rewardReady = dailyTips >= dailyTipsTarget && !dailyTipsRewardClaimed;
 
   // Upgrade costs
-  const elevatorUpgradeCost = calculateElevatorUpgradeCost(elevatorLevel, gameConfig);
-  const maxElevatorLevel = getMaxElevatorLevel(gameConfig);
+  const elevatorUpgradeCost = calculateElevatorUpgradeCost(elevatorLevel);
+  const maxElevatorLevel = getMaxElevatorLevel(floorsCount);
   const elevatorMaxed = elevatorLevel >= maxElevatorLevel;
 
-  const lobbyUpgradeCost = calculateLobbyUpgradeCost(lobbyCapacity, gameConfig);
-  const maxLobbyCapacity = getMaxLobbyCapacity(playerLevel, gameConfig);
+  const lobbyUpgradeCost = calculateLobbyUpgradeCost();
+  const maxLobbyCapacity = getMaxLobbyCapacity();
   const lobbyMaxed = lobbyCapacity >= maxLobbyCapacity;
-  const lobbyUpgradeSeats = gameConfig.lobbyConfig.lobbyUpgradeSeats;
 
   // Gem limit for businessman
   const dailyGemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
@@ -955,10 +956,16 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                   {!elevatorMaxed ? (
                     <Pressable
-                      onPress={gems >= elevatorUpgradeCost ? upgradeElevator : undefined}
+                      onPress={() => {
+                        if (gems < elevatorUpgradeCost) {
+                          showInsufficientResources({ currency: 'gems', need: elevatorUpgradeCost, have: gems });
+                          return;
+                        }
+                        upgradeElevator();
+                      }}
                       style={({ pressed }) => [
                         styles.upgradeButton,
-                        pressed && gems >= elevatorUpgradeCost && { opacity: 0.85, transform: [{ translateY: 1 }] },
+                        pressed && { opacity: 0.85, transform: [{ translateY: 1 }] },
                       ]}
                     >
                       <LinearGradient
@@ -997,7 +1004,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       end={{ x: 1, y: 0 }}
                       style={[
                         styles.upgradeProgressFill,
-                        { width: `${Math.min(100, (lobbyCapacity / 100) * 100)}%` as any },
+                        { width: `${Math.min(100, (lobbyCapacity / maxLobbyCapacity) * 100)}%` as any },
                       ]}
                     />
                   </View>
@@ -1013,17 +1020,23 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                   {!lobbyMaxed ? (
                     <Pressable
-                      onPress={gems >= lobbyUpgradeCost ? upgradeLobby : undefined}
+                      onPress={() => {
+                        if (gems < lobbyUpgradeCost) {
+                          showInsufficientResources({ currency: 'gems', need: lobbyUpgradeCost, have: gems });
+                          return;
+                        }
+                        upgradeLobby();
+                      }}
                       style={({ pressed }) => [
                         styles.upgradeButton,
-                        pressed && gems >= lobbyUpgradeCost && { opacity: 0.85, transform: [{ translateY: 1 }] },
+                        pressed && { opacity: 0.85, transform: [{ translateY: 1 }] },
                       ]}
                     >
                       <LinearGradient
                         colors={gems >= lobbyUpgradeCost ? ['#52A6E2', '#3B8BCB'] : ['#B7BDC8', '#A2A9B6']}
                         style={styles.upgradeButtonGradient}
                       >
-                        <Text style={styles.upgradeButtonText}>{t('lobbyUpgrade.upgradeForSeats', { count: lobbyUpgradeSeats })}</Text>
+                        <Text style={styles.upgradeButtonText}>{t('lobbyUpgrade.upgradeForSeats')}</Text>
                         <GemIcon size={14} />
                         <Text style={styles.upgradeGemCount}>{lobbyUpgradeCost}</Text>
                       </LinearGradient>
@@ -1141,6 +1154,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
           summary={deliverSummary}
           onDismiss={() => setDeliverSummary(null)}
         />
+
+        <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
     </>

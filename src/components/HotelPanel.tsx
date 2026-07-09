@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
+import InsufficientResourcesModal from './InsufficientResourcesModal';
 import { getHotelExpansionCost } from '../../shared/engine/lobbyCommands';
 import type { Worker } from '../../shared/types';
 import { GemIcon } from './CurrencyIcons';
@@ -57,6 +58,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const gems = useGameStore((s) => s.gems);
   const expandHotel = useGameStore((s) => s.expandHotel);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
+  const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
 
   const unemployedWorkers = workers
     .filter((w: Worker) => w.assignedFloorId === null)
@@ -73,7 +75,8 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
 
   useEffect(() => {
     setExpandedWorkerId(null);
-  }, [visible]);
+    if (!visible) clearInsufficientResources();
+  }, [visible, clearInsufficientResources]);
 
   useEffect(() => {
     if (visible) {
@@ -277,6 +280,8 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
             onClose={() => setPickerWorker(null)}
           />
         </Animated.View>
+
+        <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
   );

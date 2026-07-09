@@ -69,40 +69,33 @@ describe('calculateTip', () => {
 });
 
 describe('calculateElevatorUpgradeCost', () => {
-  it('level 1 costs 3 gems', () => {
-    expect(calculateElevatorUpgradeCost(1, testConfig)).toBe(3);
+  it('cost equals target level (upgrading from 1 costs 2)', () => {
+    expect(calculateElevatorUpgradeCost(1)).toBe(2);
   });
-  it('level 2 costs 5 gems', () => {
-    expect(calculateElevatorUpgradeCost(2, testConfig)).toBe(5);
+  it('upgrading from level 4 costs 5', () => {
+    expect(calculateElevatorUpgradeCost(4)).toBe(5);
   });
-  it('level 3 costs 7 gems', () => {
-    expect(calculateElevatorUpgradeCost(3, testConfig)).toBe(7);
+  it('upgrading from level 9 costs 10', () => {
+    expect(calculateElevatorUpgradeCost(9)).toBe(10);
   });
 });
 
 describe('calculateLobbyUpgradeCost', () => {
-  it('capacity 10 costs 5 gems', () => {
-    expect(calculateLobbyUpgradeCost(10, testConfig)).toBe(5);
-  });
-  it('capacity 13 costs 7 gems', () => {
-    expect(calculateLobbyUpgradeCost(13, testConfig)).toBe(7);
-  });
-  it('capacity 16 costs 9 gems', () => {
-    expect(calculateLobbyUpgradeCost(16, testConfig)).toBe(9);
+  it('always costs 5 gems regardless of capacity', () => {
+    expect(calculateLobbyUpgradeCost()).toBe(5);
   });
 });
 
 describe('getMaxElevatorLevel', () => {
-  it('equals total floors above lobby (hotel=1 + 3 production = 4)', () => {
-    expect(getMaxElevatorLevel(testConfig)).toBe(4);
+  it('equals the number of open floors', () => {
+    expect(getMaxElevatorLevel(3)).toBe(3);
+    expect(getMaxElevatorLevel(5)).toBe(5);
   });
 });
 
 describe('getMaxLobbyCapacity', () => {
-  it('returns 10 + playerLevel * 3', () => {
-    expect(getMaxLobbyCapacity(1, testConfig)).toBe(13);
-    expect(getMaxLobbyCapacity(5, testConfig)).toBe(25);
-    expect(getMaxLobbyCapacity(10, testConfig)).toBe(40);
+  it('always returns 50', () => {
+    expect(getMaxLobbyCapacity()).toBe(50);
   });
 });
 
