@@ -140,12 +140,22 @@ function handleOpenFloor(
   const floorTypeConfig = config.floorTypes[command.floorType];
   if (!floorTypeConfig) return { success: false, state, error: 'Unknown floor type' };
 
-  const staticBuiltOfType = config.floors.filter(
-    (f) => f.floorType === command.floorType && state.floors.some((sf) => sf.id === f.id),
-  ).length;
-  const dynamicBuiltOfType = Object.values(state.openedFloorTypes ?? {})
-    .filter((t) => t === command.floorType).length;
-  const tier = staticBuiltOfType + dynamicBuiltOfType;
+  // Tier = position of this floor among ALL floors of the same type sorted by floorId
+  // (static built + dynamic opened + pending with type selected + current floor).
+  // Lower floorIds always get lower tiers regardless of open order.
+  const allOfTypeSorted = [
+    ...config.floors
+      .filter((f) => f.floorType === command.floorType && state.floors.some((sf) => sf.id === f.id))
+      .map((f) => f.id),
+    ...Object.entries(state.openedFloorTypes ?? {})
+      .filter(([, t]) => t === command.floorType)
+      .map(([id]) => Number(id)),
+    ...state.underConstruction
+      .filter((u) => u.selectedFloorType === command.floorType && u.floorId !== command.floorId)
+      .map((u) => u.floorId),
+    command.floorId,
+  ].sort((a, b) => a - b);
+  const tier = allOfTypeSorted.indexOf(command.floorId);
   const business = floorTypeConfig.businesses[tier];
   if (!business) return { success: false, state, error: 'All businesses of this type already built' };
 

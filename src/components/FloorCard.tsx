@@ -153,6 +153,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const floor = useFloor(floorId);
   const workers = useGameStore((s) => s.workers);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const underConstruction = useGameStore((s) => s.underConstruction);
   const dynamicFloorType = openedFloorTypes?.[String(floorId)];
   const scheme = FLOOR_SCHEMES[floorId] ?? (dynamicFloorType ? FLOOR_TYPE_SCHEMES[dynamicFloorType] : undefined) ?? FLOOR_SCHEMES[2];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
@@ -163,9 +164,11 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const dynamicFloorName = (() => {
     if (!dynamicFloorType) return null;
     const staticCount = gameConfig.floors.filter((f) => f.floorType === dynamicFloorType).length;
-    const dynamicPredCount = Object.entries(openedFloorTypes ?? {})
+    const openedPredCount = Object.entries(openedFloorTypes ?? {})
       .filter(([id, type]) => type === dynamicFloorType && Number(id) < floorId).length;
-    return gameConfig.floorTypes[dynamicFloorType]?.businesses[staticCount + dynamicPredCount]?.name ?? null;
+    const pendingPredCount = underConstruction
+      .filter((u) => u.selectedFloorType === dynamicFloorType && u.floorId < floorId).length;
+    return gameConfig.floorTypes[dynamicFloorType]?.businesses[staticCount + openedPredCount + pendingPredCount]?.name ?? null;
   })();
   const floorName = dynamicFloorName ?? tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
 
