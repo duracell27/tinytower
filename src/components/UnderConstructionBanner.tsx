@@ -426,6 +426,8 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: BANNER_COLOR,
   },
   timerText: {
     fontFamily: 'Fredoka_700Bold',
