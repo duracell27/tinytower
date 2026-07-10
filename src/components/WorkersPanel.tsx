@@ -244,6 +244,12 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
       if (!floor) return null;
       const floorType = resolveFloorType(openedFloorTypes, worker.assignedFloorId!);
       const floorName = resolveFloorName(openedFloorTypes, floors, worker.assignedFloorId!, tContent);
+      const dreamFloor = floors.find((f) =>
+        f.productions.some((p) => p.typeId === worker.dreamJob),
+      );
+      const dreamFloorName = dreamFloor
+        ? resolveFloorName(openedFloorTypes, floors, dreamFloor.id, tContent)
+        : floorName;
       const now = clock.now();
 
       return (
@@ -252,6 +258,7 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
           floor={floor}
           floorType={floorType}
           floorName={floorName}
+          dreamFloorName={dreamFloorName}
           now={now}
           expanded={expandedWorkerId === worker.id}
           isSpecialistTab={activeTab === 'specialists'}
