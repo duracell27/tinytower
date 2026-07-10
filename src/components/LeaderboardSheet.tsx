@@ -1,0 +1,261 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal,
+} from 'react-native';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withSpring, withTiming, runOnJS, Easing,
+} from 'react-native-reanimated';
+import { useAuthStore } from '../stores/authStore';
+import { api, type LeaderboardResponse, type LeaderboardEntry } from '../services/api';
+import { formatNum } from '../utils/format';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
+
+type Tab = 'level' | 'floors' | 'revenue';
+
+const TABS: { key: Tab; label: string }[] = [
+  { key: 'level',   label: 'Рівень' },
+  { key: 'floors',  label: 'Поверхи' },
+  { key: 'revenue', label: 'Виручка/хв' },
+];
+
+interface Props {
+  visible: boolean;
+  onClose: () => void;
+}
+
+export default function LeaderboardSheet({ visible, onClose }: Props) {
+  const [mounted, setMounted] = useState(false);
+  const [tab, setTab] = useState<Tab>('level');
+  const [page, setPage] = useState(1);
+  const [data, setData] = useState<LeaderboardResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const myId = useAuthStore(s => s.player?.id);
+
+  const slideY = useSharedValue(SHEET_HEIGHT);
+  const scrimOpacity = useSharedValue(0);
+
+  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: slideY.value }] }));
+  const scrimStyle = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
+
+  useEffect(() => {
+    if (visible) {
+      setMounted(true);
+      slideY.value = withSpring(0, { damping: 20, stiffness: 200 });
+      scrimOpacity.value = withTiming(0.5, { duration: 300, easing: Easing.linear });
+    } else if (mounted) {
+      scrimOpacity.value = withTiming(0, { duration: 280, easing: Easing.linear });
+      slideY.value = withTiming(SHEET_HEIGHT, { duration: 300, easing: Easing.bezier(0.4, 0, 1, 1) }, () => {
+        runOnJS(setMounted)(false);
+      });
+    }
+  }, [visible]);
+
+  useEffect(() => { setPage(1); }, [tab]);
+
+  useEffect(() => {
+    if (!visible) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    api.leaderboard(tab, page)
+      .then(d => { if (!cancelled) setData(d); })
+      .catch(() => { if (!cancelled) setError('Помилка завантаження'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [visible, tab, page]);
+
+  const totalPages = data ? Math.ceil(data.total / 20) : 1;
+  const isOnPage = data?.entries.some(e => e.playerId === myId) ?? false;
+
+  function formatValue(v: number) {
+    return tab === 'revenue' ? `${formatNum(v)}/хв` : String(v);
+  }
+
+  function renderEntry({ item }: { item: LeaderboardEntry }) {
+    const isMe = item.playerId === myId;
+    return (
+      <View style={[styles.row, isMe && styles.rowHighlight]}>
+        <Text style={[styles.rank, isMe && styles.rankHighlight]}>#{item.rank}</Text>
+        <Text style={[styles.name, isMe && styles.textHighlight]} numberOfLines={1}>
+          {item.playerName}
+        </Text>
+        <Text style={[styles.value, isMe && styles.textHighlight]}>{formatValue(item.value)}</Text>
+      </View>
+    );
+  }
+
+  if (!mounted) return null;
+
+  return (
+    <Modal visible={mounted} transparent animationType="none" onRequestClose={onClose}>
+      {/* Scrim + tap to close */}
+      <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
+        <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]} />
+      </Pressable>
+
+      {/* Sheet */}
+      <Animated.View style={[styles.sheet, sheetStyle]}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Рейтинг</Text>
+          <Pressable onPress={onClose} hitSlop={12}>
+            <Text style={styles.closeIcon}>✕</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.tabs}>
+          {TABS.map(t => (
+            <Pressable
+              key={t.key}
+              style={[styles.tab, tab === t.key && styles.tabActive]}
+              onPress={() => setTab(t.key)}
+            >
+              <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
+                {t.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {loading && <ActivityIndicator style={styles.loader} color="#5B6CF8" size="large" />}
+
+        {error && !loading && (
+          <View style={styles.errorWrap}>
+            <Text style={styles.errorText}>{error}</Text>
+            <Pressable onPress={() => setPage(p => p)} style={styles.retryBtn}>
+              <Text style={styles.retryText}>Повторити</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {!loading && !error && data && (
+          <FlatList
+            data={data.entries}
+            keyExtractor={e => e.playerId}
+            renderItem={renderEntry}
+            contentContainerStyle={styles.list}
+            style={{ flex: 1 }}
+          />
+        )}
+
+        {/* Pinned row: current player is not visible on this page */}
+        {!loading && !error && data && !isOnPage && (
+          <View style={[styles.row, styles.rowHighlight, styles.pinnedRow]}>
+            <Text style={[styles.rank, styles.rankHighlight]}>#{data.currentPlayer.rank}</Text>
+            <Text style={[styles.name, styles.textHighlight]}>Ви</Text>
+            <Text style={[styles.value, styles.textHighlight]}>
+              {formatValue(data.currentPlayer.value)}
+            </Text>
+          </View>
+        )}
+
+        {/* Pagination */}
+        {!loading && !error && data && (
+          <View style={styles.pagination}>
+            <Pressable
+              style={[styles.pageBtn, page === 1 && styles.pageBtnDisabled]}
+              onPress={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              <Text style={styles.pageBtnText}>◀</Text>
+            </Pressable>
+            <Text style={styles.pageLabel}>{page} / {totalPages}</Text>
+            <Pressable
+              style={[styles.pageBtn, page >= totalPages && styles.pageBtnDisabled]}
+              onPress={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+            >
+              <Text style={styles.pageBtnText}>▶</Text>
+            </Pressable>
+          </View>
+        )}
+      </Animated.View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  scrim: { backgroundColor: '#000' },
+  sheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: SHEET_HEIGHT,
+    backgroundColor: '#F4F6FB',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    overflow: 'hidden',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+  title: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#2A3344' },
+  closeIcon: { fontSize: 18, color: '#8A95A3' },
+  tabs: { flexDirection: 'row', paddingHorizontal: 16, gap: 8, marginBottom: 8 },
+  tab: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 12,
+    backgroundColor: '#E8EAF0',
+  },
+  tabActive: { backgroundColor: '#5B6CF8' },
+  tabText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#6B7280' },
+  tabTextActive: { color: '#fff' },
+  loader: { flex: 1 },
+  errorWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  errorText: { fontFamily: 'Fredoka_400Regular', fontSize: 15, color: '#E05A4A' },
+  retryBtn: { paddingHorizontal: 20, paddingVertical: 8, backgroundColor: '#5B6CF8', borderRadius: 10 },
+  retryText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#fff' },
+  list: { paddingHorizontal: 16, paddingBottom: 8 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 4,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+  },
+  rowHighlight: { backgroundColor: '#FFF7E0' },
+  rank: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
+    color: '#6B7280',
+    width: 46,
+  },
+  rankHighlight: { color: '#B8860B' },
+  name: { fontFamily: 'Fredoka_400Regular', fontSize: 15, color: '#2A3344', flex: 1 },
+  value: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2A3344', textAlign: 'right' },
+  textHighlight: { color: '#B8860B' },
+  pinnedRow: { marginHorizontal: 16, marginBottom: 4, borderRadius: 12 },
+  pagination: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 20,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E8EAF0',
+  },
+  pageBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#5B6CF8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pageBtnDisabled: { backgroundColor: '#D1D5DB' },
+  pageBtnText: { fontSize: 16, color: '#fff' },
+  pageLabel: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2A3344' },
+});

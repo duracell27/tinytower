@@ -1,5 +1,18 @@
 import { createMMKV } from 'react-native-mmkv';
 
+export interface LeaderboardEntry {
+  rank: number;
+  playerId: string;
+  playerName: string;
+  value: number;
+}
+
+export interface LeaderboardResponse {
+  entries: LeaderboardEntry[];
+  total: number;
+  currentPlayer: { rank: number; value: number };
+}
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? (
   __DEV__ ? 'http://localhost:3000' : 'https://api.tinytower.com'
 );
@@ -91,6 +104,8 @@ async function request<T>(
 export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
+  leaderboard: (tab: 'level' | 'floors' | 'revenue', page: number) =>
+    request<LeaderboardResponse>('GET', `/leaderboard?tab=${tab}&page=${page}`),
   setTokens,
   clearTokens,
   getAccessToken,

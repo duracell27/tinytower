@@ -37,5 +37,14 @@
   },
   "game": {
     "buyFloor": "Buy floor {{number}}"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "tabLevel": "Level",
+    "tabFloors": "Floors",
+    "tabRevenue": "Revenue/min",
+    "you": "You",
+    "errorLoad": "Failed to load",
+    "retry": "Retry"
   }
 }
