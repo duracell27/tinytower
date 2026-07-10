@@ -310,7 +310,9 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
                       </Text>
                       <View style={[styles.tabCount, activeTab === tab && styles.tabCountActive]}>
                         <Text style={[styles.tabCountText, activeTab === tab && styles.tabCountTextActive]}>
-                          {categorized[tab].length}
+                          {tab === 'happy'
+                            ? categorized.happy.length + categorized.specialists.length
+                            : categorized[tab].length}
                         </Text>
                       </View>
                     </Pressable>

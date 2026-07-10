@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Polygon } from 'react-native-svg';
+import Svg, { Path, Polygon, Circle } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -132,7 +132,7 @@ export default function WorkerJobCard({
       <Pressable onPress={onToggle} style={styles.collapsedRow}>
         <View style={styles.avatarWrap}>
           <WorkerAvatar worker={worker} size={60} />
-          {(isSpecialistTab || worker.isSpecialist) && (
+          {(isSpecialistTab || worker.level === 9) && (
             <View style={styles.starBadge}>
               <StarIcon filled={worker.isSpecialist} />
             </View>
@@ -143,8 +143,19 @@ export default function WorkerJobCard({
           <Text style={styles.nameText} numberOfLines={1}>{worker.name}</Text>
           {isMidTab ? (
             <>
-              <Text style={[styles.dreamJobText, { color: accent }]} numberOfLines={1}>{dreamJobName}</Text>
-              <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{floorName}</Text>
+              <View style={styles.iconRow}>
+                <Svg width={10} height={10} viewBox="0 0 24 24">
+                  <Path d="M12 21C12 21 4 14 4 8.5C4 5.97 6.02 4 8.5 4C10.05 4 11.43 4.82 12 6C12.57 4.82 13.95 4 15.5 4C17.98 4 20 5.97 20 8.5C20 14 12 21 12 21Z" fill={accent} />
+                </Svg>
+                <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{dreamJobName}</Text>
+              </View>
+              <View style={styles.iconRow}>
+                <Svg width={10} height={10} viewBox="0 0 24 24">
+                  <Path d="M3 21V7l9-4 9 4v14H3z" fill="none" stroke={accent} strokeWidth={2} strokeLinejoin="round" />
+                  <Path d="M10 21v-5h4v5" fill={accent} />
+                </Svg>
+                <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{floorName}</Text>
+              </View>
             </>
           ) : (
             <>
@@ -255,10 +266,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 12.5,
   },
-  dreamJobText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 12.5,
-    color: '#9098A6',
+  iconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   statusText: {
     fontFamily: 'Fredoka_500Medium',
