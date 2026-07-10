@@ -4,10 +4,12 @@ import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import WarehouseSheet from '../../src/components/WarehouseSheet';
+import WorkersPanel from '../../src/components/WorkersPanel';
 
 export default function MenuScreen() {
   const { t } = useTranslation('tabs');
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [workersOpen, setWorkersOpen] = useState(false);
 
   return (
     <ImageBackground
@@ -21,33 +23,42 @@ export default function MenuScreen() {
 
         <Pressable style={styles.menuItem} onPress={() => setInventoryOpen(true)}>
           <Image
-            source={require('../../assets/img/werehouse.png')}
+            source={require('../../assets/img/menu/werehouse.png')}
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
           <Text style={styles.menuLabel}>{t('menu.inventory')}</Text>
         </Pressable>
+
+        <Pressable style={styles.menuItem} onPress={() => setWorkersOpen(true)}>
+          <Image
+            source={require('../../assets/img/menu/workers.png')}
+            style={{ width: 56, height: 56 }}
+            contentFit="contain"
+          />
+          <Text style={styles.menuLabel}>{t('menu.workers')}</Text>
+        </Pressable>
       </View>
 
       <WarehouseSheet visible={inventoryOpen} onClose={() => setInventoryOpen(false)} />
+      <WorkersPanel visible={workersOpen} onClose={() => setWorkersOpen(false)} />
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   content: {
     flex: 1,
     paddingTop: 72,
     paddingHorizontal: 20,
+    gap: 12,
   },
   heading: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 26,
     color: '#2A3344',
-    marginBottom: 24,
+    marginBottom: 12,
   },
   menuItem: {
     flexDirection: 'row',
