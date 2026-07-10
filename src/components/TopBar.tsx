@@ -12,6 +12,7 @@ interface TopBarProps {
   initial: string;
   coins: string;
   gems: string;
+  revenuePerMin?: number;
 }
 
 function ProgressRing({ progress, size = 50 }: { progress: number; size?: number }) {
@@ -46,7 +47,7 @@ function ProgressRing({ progress, size = 50 }: { progress: number; size?: number
   );
 }
 
-export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins, gems }: TopBarProps) {
+export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins, gems, revenuePerMin }: TopBarProps) {
   const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
 
   return (
@@ -72,7 +73,14 @@ export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins
                 <Text style={styles.levelText}>{level}</Text>
               </View>
             </View>
-            <Text style={styles.nameText}>{name}</Text>
+            <View style={styles.nameColumn}>
+              <Text style={styles.nameText}>{name}</Text>
+              {revenuePerMin !== undefined && revenuePerMin > 0 && (
+                <View style={styles.revenuePill}>
+                  <Text style={styles.revenuePillText}>⚡ {revenuePerMin} /min</Text>
+                </View>
+              )}
+            </View>
           </View>
 
           <View style={styles.currencySection}>
@@ -182,6 +190,27 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#27331F',
     lineHeight: 17,
+  },
+  nameColumn: {
+    flexDirection: 'column',
+    gap: 3,
+  },
+  revenuePill: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#fff',
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    borderRadius: 10,
+    shadowColor: 'rgba(120,110,60,1)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  revenuePillText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 11,
+    color: '#27331F',
   },
   currencySection: {
     flexDirection: 'column',
