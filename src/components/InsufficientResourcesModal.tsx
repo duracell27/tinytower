@@ -89,7 +89,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: Props 
   };
 
   const inner = (
-    <Animated.View style={[asOverlay ? styles.overlayScrim : styles.scrim, scrimStyle]}>
+    <Animated.View style={asOverlay ? [StyleSheet.absoluteFill, styles.overlayScrim, scrimStyle] : [styles.scrim, scrimStyle]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={clearInsufficientResources} />
 
         <Animated.View style={[styles.card, cardStyle]}>
@@ -258,7 +258,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   overlayScrim: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.55)',
     alignItems: 'center',
     justifyContent: 'center',

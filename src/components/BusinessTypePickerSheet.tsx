@@ -105,6 +105,7 @@ export default function BusinessTypePickerSheet({
               <Pressable
                 key={ft}
                 onPress={isExhausted ? undefined : () => onSelectType(ft)}
+                accessibilityState={{ disabled: isExhausted }}
                 style={({ pressed }) => [
                   styles.typeRow,
                   isExhausted && styles.typeRowExhausted,

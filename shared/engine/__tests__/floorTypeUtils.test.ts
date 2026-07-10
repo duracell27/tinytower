@@ -100,4 +100,18 @@ describe('getExhaustedFloorTypes', () => {
     // 0 static + 2 opened = 2, not exhausted (max 3)
     expect(result.has('green')).toBe(false);
   });
+
+  it('does not double-count a floor that is in both floors[] and openedFloorTypes', () => {
+    // floor id:5 with type 'green' appears in both built floors[] and openedFloorTypes
+    // total green = 1 (static config floor id:2 in floors[]) + 1 (opened id:5 in openedFloorTypes)
+    //             = 2, NOT 3 — not yet exhausted
+    const result = getExhaustedFloorTypes(
+      10,
+      [{ id: 2 }, { id: 5 }],           // 5 is a dynamic floor, also in openedFloorTypes
+      { '5': 'green' },                   // same floor 5 in openedFloorTypes too
+      [],
+      config,                              // config from the existing describe block
+    );
+    expect(result.has('green')).toBe(false);
+  });
 });

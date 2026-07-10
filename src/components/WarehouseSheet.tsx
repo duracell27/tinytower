@@ -91,7 +91,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
               <View style={styles.handle} />
               <View style={styles.titleRow}>
                 <Image
-                  source={require('../../assets/img/werehouse.png')}
+                  source={require('../../assets/img/menu/werehouse.png')}
                   style={{ width: 28, height: 28 }}
                   contentFit="contain"
                 />

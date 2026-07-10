@@ -1,0 +1,583 @@
+{
+  "meta": {
+    "version": 2,
+    "note": "Starter: floors 1-3 only. Purchase = full price (no discount). Coins = base value (x1.2/x2 ignored).",
+    "units": {
+      "purchase": "coins (full price, no discount)",
+      "delivery": "seconds",
+      "sale": "seconds",
+      "coins": "coins (base revenue)"
+    },
+    "formulas": {
+      "balanceRule": "From floor 3 onward both purchase and coins are fixed ratios of delivery time. purchase = delivery * [1/6, 0.26667, 0.48333]; coins = delivery * [0.26667, 0.35167, 0.53167]. Floors 1-2 are hand-tuned for early game.",
+      "slotRates": {
+        "1": 0.26667,
+        "2": 0.35167,
+        "3": 0.53167
+      },
+      "exception": "Floor 1 slot 1 is a deliberately weakened starter product (rate 0.152)",
+      "purchaseRates": {
+        "1": 0.16667,
+        "2": 0.26667,
+        "3": 0.48333
+      }
+    }
+  },
+  "floorCategories": [
+    {
+      "id": "products",
+      "name": "Products",
+      "color": "#4CAF50",
+      "colorName": "green",
+      "clickSpeed": "fastest",
+      "floors": [
+        {
+          "floorId": 1,
+          "name": "Confectionery",
+          "purchaseDiscount": 0.25,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Buns",
+              "purchase": 10,
+              "delivery": 105,
+              "sale": 300,
+              "coins": 16,
+              "coinsPerDeliverySecond": 0.15238
+            },
+            {
+              "slot": 2,
+              "name": "Pastries",
+              "purchase": 15,
+              "delivery": 180,
+              "sale": 720,
+              "coins": 63,
+              "coinsPerDeliverySecond": 0.35
+            },
+            {
+              "slot": 3,
+              "name": "Cakes",
+              "purchase": 20,
+              "delivery": 600,
+              "sale": 1440,
+              "coins": 318,
+              "coinsPerDeliverySecond": 0.53
+            }
+          ]
+        },
+        {
+          "floorId": 2,
+          "name": "Burger Joint",
+          "purchaseDiscount": 0.13,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Burgers",
+              "purchase": 30,
+              "delivery": 180,
+              "sale": 360,
+              "coins": 48,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Fries",
+              "purchase": 100,
+              "delivery": 600,
+              "sale": 1200,
+              "coins": 211,
+              "coinsPerDeliverySecond": 0.35167
+            },
+            {
+              "slot": 3,
+              "name": "Drinks",
+              "purchase": 400,
+              "delivery": 1800,
+              "sale": 3600,
+              "coins": 957,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 3,
+          "name": "Cheese Dairy",
+          "purchaseDiscount": 0.17,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Milk",
+              "purchase": 50,
+              "delivery": 300,
+              "sale": 600,
+              "coins": 80,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Cheese",
+              "purchase": 255,
+              "delivery": 960,
+              "sale": 1920,
+              "coins": 338,
+              "coinsPerDeliverySecond": 0.35208
+            },
+            {
+              "slot": 3,
+              "name": "Yogurt",
+              "purchase": 1450,
+              "delivery": 3000,
+              "sale": 6000,
+              "coins": 1595,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "service",
+      "name": "Service",
+      "color": "#2196F3",
+      "colorName": "blue",
+      "clickSpeed": "fast",
+      "floors": [
+        {
+          "floorId": 1,
+          "name": "Banking",
+          "purchaseDiscount": 0.2,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Cards",
+              "purchase": 20,
+              "delivery": 120,
+              "sale": 480,
+              "coins": 32,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Loans",
+              "purchase": 25,
+              "delivery": 300,
+              "sale": 1200,
+              "coins": 106,
+              "coinsPerDeliverySecond": 0.35333
+            },
+            {
+              "slot": 3,
+              "name": "Accounts",
+              "purchase": 30,
+              "delivery": 900,
+              "sale": 1800,
+              "coins": 479,
+              "coinsPerDeliverySecond": 0.53222
+            }
+          ]
+        },
+        {
+          "floorId": 2,
+          "name": "Rental",
+          "purchaseDiscount": 0.16,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Scooters",
+              "purchase": 40,
+              "delivery": 300,
+              "sale": 1200,
+              "coins": 80,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Consoles",
+              "purchase": 150,
+              "delivery": 900,
+              "sale": 3600,
+              "coins": 317,
+              "coinsPerDeliverySecond": 0.35222
+            },
+            {
+              "slot": 3,
+              "name": "Tools",
+              "purchase": 800,
+              "delivery": 3000,
+              "sale": 6000,
+              "coins": 1595,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 3,
+          "name": "Dental Clinic",
+          "purchaseDiscount": 0.11,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Fillings",
+              "purchase": 80,
+              "delivery": 480,
+              "sale": 1920,
+              "coins": 128,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Cleaning",
+              "purchase": 400,
+              "delivery": 1500,
+              "sale": 3600,
+              "coins": 527,
+              "coinsPerDeliverySecond": 0.35133
+            },
+            {
+              "slot": 3,
+              "name": "Braces",
+              "purchase": 1740,
+              "delivery": 3600,
+              "sale": 7200,
+              "coins": 1914,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rest",
+      "name": "Rest",
+      "color": "#FFC107",
+      "colorName": "yellow",
+      "clickSpeed": "medium",
+      "floors": [
+        {
+          "floorId": 1,
+          "name": "Exhibition",
+          "purchaseDiscount": 0.16,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Paintings",
+              "purchase": 30,
+              "delivery": 180,
+              "sale": 720,
+              "coins": 48,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Sculptures",
+              "purchase": 40,
+              "delivery": 420,
+              "sale": 840,
+              "coins": 148,
+              "coinsPerDeliverySecond": 0.35238
+            },
+            {
+              "slot": 3,
+              "name": "Gallery",
+              "purchase": 50,
+              "delivery": 1200,
+              "sale": 2400,
+              "coins": 638,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 2,
+          "name": "Karting",
+          "purchaseDiscount": 0.16,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Karts",
+              "purchase": 60,
+              "delivery": 360,
+              "sale": 864,
+              "coins": 95,
+              "coinsPerDeliverySecond": 0.26389
+            },
+            {
+              "slot": 2,
+              "name": "Helmets",
+              "purchase": 120,
+              "delivery": 1080,
+              "sale": 2160,
+              "coins": 380,
+              "coinsPerDeliverySecond": 0.35185
+            },
+            {
+              "slot": 3,
+              "name": "Track",
+              "purchase": 900,
+              "delivery": 3000,
+              "sale": 6000,
+              "coins": 1595,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 3,
+          "name": "Lounge",
+          "purchaseDiscount": 0.11,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Cocktails",
+              "purchase": 100,
+              "delivery": 600,
+              "sale": 2400,
+              "coins": 160,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Hookahs",
+              "purchase": 480,
+              "delivery": 1800,
+              "sale": 3600,
+              "coins": 634,
+              "coinsPerDeliverySecond": 0.35222
+            },
+            {
+              "slot": 3,
+              "name": "Pizza",
+              "purchase": 2320,
+              "delivery": 4800,
+              "sale": 9600,
+              "coins": 2552,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fashion",
+      "name": "Fashion",
+      "color": "#9C27B0",
+      "colorName": "purple",
+      "clickSpeed": "slow",
+      "floors": [
+        {
+          "floorId": 1,
+          "name": "Sneaker Store",
+          "purchaseDiscount": 0.22,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Canvas Shoes",
+              "purchase": 40,
+              "delivery": 300,
+              "sale": 1200,
+              "coins": 80,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Sneakers",
+              "purchase": 50,
+              "delivery": 600,
+              "sale": 1200,
+              "coins": 211,
+              "coinsPerDeliverySecond": 0.35167
+            },
+            {
+              "slot": 3,
+              "name": "Custom Sneakers",
+              "purchase": 60,
+              "delivery": 1800,
+              "sale": 3600,
+              "coins": 957,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 2,
+          "name": "Clothing Store",
+          "purchaseDiscount": 0.11,
+          "products": [
+            {
+              "slot": 1,
+              "name": "T-Shirts",
+              "purchase": 70,
+              "delivery": 420,
+              "sale": 1008,
+              "coins": 111,
+              "coinsPerDeliverySecond": 0.26429
+            },
+            {
+              "slot": 2,
+              "name": "Pants",
+              "purchase": 300,
+              "delivery": 1200,
+              "sale": 2400,
+              "coins": 422,
+              "coinsPerDeliverySecond": 0.35167
+            },
+            {
+              "slot": 3,
+              "name": "Jackets",
+              "purchase": 1000,
+              "delivery": 3600,
+              "sale": 7200,
+              "coins": 1914,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 3,
+          "name": "Merch Shop",
+          "purchaseDiscount": 0.13,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Hoodies",
+              "purchase": 120,
+              "delivery": 720,
+              "sale": 2880,
+              "coins": 192,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Sweatshirts",
+              "purchase": 640,
+              "delivery": 2400,
+              "sale": 5760,
+              "coins": 845,
+              "coinsPerDeliverySecond": 0.35208
+            },
+            {
+              "slot": 3,
+              "name": "Caps",
+              "purchase": 3190,
+              "delivery": 6600,
+              "sale": 13200,
+              "coins": 3509,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "electronics",
+      "name": "Electronics",
+      "color": "#F44336",
+      "colorName": "red",
+      "clickSpeed": "slowest",
+      "floors": [
+        {
+          "floorId": 1,
+          "name": "Smartphones",
+          "purchaseDiscount": 0.18,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Phones",
+              "purchase": 60,
+              "delivery": 420,
+              "sale": 1680,
+              "coins": 112,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Cases",
+              "purchase": 70,
+              "delivery": 1200,
+              "sale": 2400,
+              "coins": 422,
+              "coinsPerDeliverySecond": 0.35167
+            },
+            {
+              "slot": 3,
+              "name": "Screen Protectors",
+              "purchase": 80,
+              "delivery": 3600,
+              "sale": 7200,
+              "coins": 1914,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 2,
+          "name": "Computers",
+          "purchaseDiscount": 0.1,
+          "products": [
+            {
+              "slot": 1,
+              "name": "PCs",
+              "purchase": 100,
+              "delivery": 900,
+              "sale": 2160,
+              "coins": 240,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Laptops",
+              "purchase": 400,
+              "delivery": 2700,
+              "sale": 6480,
+              "coins": 950,
+              "coinsPerDeliverySecond": 0.35185
+            },
+            {
+              "slot": 3,
+              "name": "Monitors",
+              "purchase": 1500,
+              "delivery": 7200,
+              "sale": 17280,
+              "coins": 3827,
+              "coinsPerDeliverySecond": 0.53153
+            }
+          ]
+        },
+        {
+          "floorId": 3,
+          "name": "Robotics",
+          "purchaseDiscount": 0.12,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Robots",
+              "purchase": 200,
+              "delivery": 1200,
+              "sale": 4800,
+              "coins": 320,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Drones",
+              "purchase": 960,
+              "delivery": 3600,
+              "sale": 8640,
+              "coins": 1266,
+              "coinsPerDeliverySecond": 0.35167
+            },
+            {
+              "slot": 3,
+              "name": "Spare Parts",
+              "purchase": 5220,
+              "delivery": 10800,
+              "sale": 25920,
+              "coins": 5741,
+              "coinsPerDeliverySecond": 0.53157
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
