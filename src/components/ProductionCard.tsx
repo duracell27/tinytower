@@ -210,7 +210,7 @@ export default function ProductionCard({
     : '#999';
 
   // Card border: gold for specialists, else shirt color
-  const cardBorderColor = worker?.isSpecialist ? '#F5C842' : (worker ? shirtColor : 'transparent');
+  const cardBorderColor = worker?.isSpecialist ? '#F5C842' : 'transparent';
 
   // Level badge background: gold for specialists, else accent color
   const levelBadgeBg = worker?.isSpecialist ? '#F5C842' : accentColor;
