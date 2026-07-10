@@ -780,6 +780,175 @@ const longDeliveryConfig: GameConfig = {
   },
 };
 
+// ---- helpers needed for these tests ----
+function stateWithAssignedWorker(overrides?: Partial<Worker>): GameState {
+  const worker = makeWorker({
+    id: 'w-specialist', assignedFloorId: 1, assignedSlotIdx: 0,
+    floorType: 'green', dreamJob: 'coffee_shop', level: 9,
+    isSpecialist: false,
+    ...overrides,
+  });
+  return makeState({ workers: [worker], gems: 50 });
+}
+
+describe('upgrade_to_specialist', () => {
+  it('converts eligible level-9 dream-job worker to specialist, costs 10 gems', () => {
+    const state = stateWithAssignedWorker();
+    // worker is at slot 0 which has typeId 'coffee_shop' = dreamJob → mood 'good'
+    // We need a production in place so mood resolves to 'good':
+    const stateWithProd: GameState = {
+      ...state,
+      floors: [{ id: 1, productions: [
+        { typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 },
+        { typeId: 'bookstore',   stage: 'IDLE', stageStartedAt: 0 },
+      ]}],
+    };
+    const cmd: Command = { id: 'c1', type: 'upgrade_to_specialist', workerId: 'w-specialist', timestamp: 1000 };
+    const result = processCommand(stateWithProd, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.workers[0].isSpecialist).toBe(true);
+    expect(result.state.gems).toBe(40);
+  });
+
+  it('fails if worker is already a specialist', () => {
+    const state = stateWithAssignedWorker({ isSpecialist: true });
+    const stateWithProd: GameState = {
+      ...state,
+      floors: [{ id: 1, productions: [
+        { typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 },
+        { typeId: 'bookstore',   stage: 'IDLE', stageStartedAt: 0 },
+      ]}],
+    };
+    const cmd: Command = { id: 'c1', type: 'upgrade_to_specialist', workerId: 'w-specialist', timestamp: 1000 };
+    const result = processCommand(stateWithProd, cmd, testConfig, 1000);
+    expect(result.success).toBe(false);
+  });
+
+  it('fails if worker is not level 9', () => {
+    const state = stateWithAssignedWorker({ level: 5 });
+    const stateWithProd: GameState = {
+      ...state,
+      floors: [{ id: 1, productions: [
+        { typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 },
+        { typeId: 'bookstore',   stage: 'IDLE', stageStartedAt: 0 },
+      ]}],
+    };
+    const cmd: Command = { id: 'c1', type: 'upgrade_to_specialist', workerId: 'w-specialist', timestamp: 1000 };
+    const result = processCommand(stateWithProd, cmd, testConfig, 1000);
+    expect(result.success).toBe(false);
+  });
+
+  it('fails if insufficient gems', () => {
+    const state = { ...stateWithAssignedWorker(), gems: 5 };
+    const stateWithProd: GameState = {
+      ...state,
+      floors: [{ id: 1, productions: [
+        { typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 },
+        { typeId: 'bookstore',   stage: 'IDLE', stageStartedAt: 0 },
+      ]}],
+    };
+    const cmd: Command = { id: 'c1', type: 'upgrade_to_specialist', workerId: 'w-specialist', timestamp: 1000 };
+    const result = processCommand(stateWithProd, cmd, testConfig, 1000);
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('fire_and_evict_worker', () => {
+  it('removes assigned worker permanently', () => {
+    const worker = makeWorker({ id: 'w1', assignedFloorId: 1, assignedSlotIdx: 0 });
+    const state: GameState = {
+      ...makeState({ workers: [worker] }),
+      floors: [{ id: 1, productions: [
+        { typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 },
+        { typeId: 'bookstore',   stage: 'IDLE', stageStartedAt: 0 },
+      ]}],
+    };
+    const cmd: Command = { id: 'c1', type: 'fire_and_evict_worker', workerId: 'w1', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.workers).toHaveLength(0);
+  });
+
+  it('fails if worker is delivering', () => {
+    const worker = makeWorker({ id: 'w1', assignedFloorId: 1, assignedSlotIdx: 0 });
+    const state: GameState = {
+      ...makeState({ workers: [worker] }),
+      floors: [{ id: 1, productions: [
+        { typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 500 },
+        { typeId: 'bookstore',   stage: 'IDLE',       stageStartedAt: 0 },
+      ]}],
+    };
+    const cmd: Command = { id: 'c1', type: 'fire_and_evict_worker', workerId: 'w1', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(false);
+  });
+
+  it('fails if worker is selling', () => {
+    const worker = makeWorker({ id: 'w1', assignedFloorId: 1, assignedSlotIdx: 0 });
+    const state: GameState = {
+      ...makeState({ workers: [worker] }),
+      floors: [{ id: 1, productions: [
+        { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 500 },
+        { typeId: 'bookstore',   stage: 'IDLE',    stageStartedAt: 0 },
+      ]}],
+    };
+    const cmd: Command = { id: 'c1', type: 'fire_and_evict_worker', workerId: 'w1', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(false);
+  });
+
+  it('fails if worker not assigned', () => {
+    const worker = makeWorker({ id: 'w1' });
+    const state = makeState({ workers: [worker] });
+    const cmd: Command = { id: 'c1', type: 'fire_and_evict_worker', workerId: 'w1', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('specialist bonus in collect', () => {
+  it('applies 9% bonus when one specialist is on the floor', () => {
+    const worker = makeWorker({
+      id: 'w1', assignedFloorId: 1, assignedSlotIdx: 0,
+      floorType: 'green', dreamJob: 'coffee_shop',
+      isSpecialist: true,
+    });
+    const state: GameState = {
+      ...makeState({ workers: [worker] }),
+      floors: [{ id: 1, productions: [
+        { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 },
+        { typeId: 'bookstore',   stage: 'IDLE',    stageStartedAt: 0 },
+      ]}],
+    };
+    // coffee_shop batchValue=25, worker mood='good' → multiplier=2.0, specialist bonus=0.09
+    // revenue = floor(25 * 2.0 * 1.09) = floor(54.5) = 54
+    const cmd: Command = { id: 'c1', type: 'collect', floorId: 1, slotIdx: 0, timestamp: 20000 };
+    const result = processCommand(state, cmd, testConfig, 20000);
+    expect(result.success).toBe(true);
+    expect(result.state.balance).toBe(state.balance + 54);
+  });
+
+  it('no bonus when worker is not a specialist', () => {
+    const worker = makeWorker({
+      id: 'w1', assignedFloorId: 1, assignedSlotIdx: 0,
+      floorType: 'green', dreamJob: 'coffee_shop',
+      isSpecialist: false,
+    });
+    const state: GameState = {
+      ...makeState({ workers: [worker] }),
+      floors: [{ id: 1, productions: [
+        { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 },
+        { typeId: 'bookstore',   stage: 'IDLE',    stageStartedAt: 0 },
+      ]}],
+    };
+    // revenue = floor(25 * 2.0 * 1.0) = 50
+    const cmd: Command = { id: 'c1', type: 'collect', floorId: 1, slotIdx: 0, timestamp: 20000 };
+    const result = processCommand(state, cmd, testConfig, 20000);
+    expect(result.success).toBe(true);
+    expect(result.state.balance).toBe(state.balance + 50);
+  });
+});
+
 describe('speed_up_delivery command', () => {
   it('succeeds, deducts gems, and sets stageStartedAt to now - deliveryDuration', () => {
     const state = { ...stateWithWorker(), gems: 5 };

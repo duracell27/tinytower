@@ -1,5 +1,5 @@
 import type { GameState, Command, GameConfig, Worker } from '../types';
-import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier } from './workerUtils';
+import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getFloorSpecialistBonus, getWorkerMood } from './workerUtils';
 import { processLobbyCommand } from './lobbyCommands';
 
 export interface ProcessResult {
@@ -23,7 +23,7 @@ export function processCommand(
     case 'evict_worker':
       return handleEvictWorker(state, command);
     case 'upgrade_to_specialist':
-      return handleUpgradeToSpecialist(state, command);
+      return handleUpgradeToSpecialist(state, command, config);
     case 'fire_and_evict_worker':
       return handleFireAndEvictWorker(state, command);
     case 'buy':
@@ -463,7 +463,8 @@ function handleCollect(
   const floorId = state.floors[floorIdx].id;
   const floorType = resolveFloorType(state, config, floorId);
   const multiplier = getRevenueMultiplier(worker, floorType, production.typeId);
-  const revenue = Math.floor(typeConfig.batchValue * multiplier);
+  const specialistBonus = getFloorSpecialistBonus(state.workers, floorId);
+  const revenue = Math.floor(typeConfig.batchValue * multiplier * (1 + specialistBonus));
 
   return {
     success: true,
@@ -483,19 +484,29 @@ function handleCollect(
 function handleUpgradeToSpecialist(
   state: GameState,
   command: Extract<Command, { type: 'upgrade_to_specialist' }>,
+  config: GameConfig,
 ): ProcessResult {
   const worker = state.workers.find((w) => w.id === command.workerId);
   if (!worker) return { success: false, state, error: 'Worker not found' };
-  if (worker.isSpecialist) return { success: false, state, error: 'Worker is already a specialist' };
+  if (worker.assignedFloorId === null) return { success: false, state, error: 'Worker not assigned' };
+  if (worker.level !== 9) return { success: false, state, error: 'Worker must be level 9' };
+  if (worker.isSpecialist) return { success: false, state, error: 'Already a specialist' };
+  if (state.gems < 10) return { success: false, state, error: 'Insufficient gems' };
+
+  const floorConfig = config.floors.find((f) => f.id === worker.assignedFloorId);
+  const floorType = floorConfig?.floorType ?? state.openedFloorTypes?.[String(worker.assignedFloorId)] ?? '';
+  const floor = state.floors.find((f) => f.id === worker.assignedFloorId);
+  const production = floor?.productions[worker.assignedSlotIdx!];
+  const mood = getWorkerMood(worker, floorType, production?.typeId ?? null);
+  if (mood !== 'good') return { success: false, state, error: 'Worker not at dream job' };
 
   return {
     success: true,
     state: {
       ...state,
+      gems: state.gems - 10,
       workers: state.workers.map((w) =>
-        w.id === command.workerId
-          ? { ...w, isSpecialist: true }
-          : w,
+        w.id === command.workerId ? { ...w, isSpecialist: true } : w,
       ),
     },
   };
@@ -507,6 +518,15 @@ function handleFireAndEvictWorker(
 ): ProcessResult {
   const worker = state.workers.find((w) => w.id === command.workerId);
   if (!worker) return { success: false, state, error: 'Worker not found' };
+  if (worker.assignedFloorId === null) return { success: false, state, error: 'Worker not assigned' };
+
+  const floorIdx = state.floors.findIndex((f) => f.id === worker.assignedFloorId);
+  if (floorIdx === -1) return { success: false, state, error: 'Floor not found' };
+
+  const production = state.floors[floorIdx].productions[worker.assignedSlotIdx!];
+  if (production && (production.stage === 'DELIVERING' || production.stage === 'SELLING')) {
+    return { success: false, state, error: 'Cannot fire during active production' };
+  }
 
   return {
     success: true,

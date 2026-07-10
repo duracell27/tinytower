@@ -43,3 +43,10 @@ export function getWorkerForSlot(
     (w) => w.assignedFloorId === floorId && w.assignedSlotIdx === slotIdx,
   );
 }
+
+export function getFloorSpecialistBonus(workers: Worker[], floorId: number): number {
+  const count = workers.filter(
+    (w) => w.assignedFloorId === floorId && w.isSpecialist,
+  ).length;
+  return count * 0.09;
+}

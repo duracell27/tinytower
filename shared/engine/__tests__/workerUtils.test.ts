@@ -1,4 +1,4 @@
-import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getWorkerMood } from '../workerUtils';
+import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getWorkerMood, getFloorSpecialistBonus } from '../workerUtils';
 import type { Worker } from '../../types';
 
 describe('Worker schema isSpecialist default', () => {
@@ -91,5 +91,41 @@ describe('getWorkerForSlot', () => {
 
   it('returns undefined for empty slot', () => {
     expect(getWorkerForSlot([], 1, 0)).toBeUndefined();
+  });
+});
+
+describe('getFloorSpecialistBonus', () => {
+  it('returns 0 when no workers on floor', () => {
+    expect(getFloorSpecialistBonus([], 1)).toBe(0);
+  });
+
+  it('returns 0 when workers are not specialists', () => {
+    const workers = [
+      makeWorker({ id: 'w1', assignedFloorId: 1, assignedSlotIdx: 0, isSpecialist: false }),
+    ];
+    expect(getFloorSpecialistBonus(workers, 1)).toBe(0);
+  });
+
+  it('returns 0.09 for one specialist', () => {
+    const workers = [
+      makeWorker({ id: 'w1', assignedFloorId: 1, assignedSlotIdx: 0, isSpecialist: true }),
+    ];
+    expect(getFloorSpecialistBonus(workers, 1)).toBeCloseTo(0.09);
+  });
+
+  it('returns 0.27 for three specialists', () => {
+    const workers = [
+      makeWorker({ id: 'w1', assignedFloorId: 1, assignedSlotIdx: 0, isSpecialist: true }),
+      makeWorker({ id: 'w2', assignedFloorId: 1, assignedSlotIdx: 1, isSpecialist: true }),
+      makeWorker({ id: 'w3', assignedFloorId: 1, assignedSlotIdx: 2, isSpecialist: true }),
+    ];
+    expect(getFloorSpecialistBonus(workers, 1)).toBeCloseTo(0.27);
+  });
+
+  it('ignores specialists on other floors', () => {
+    const workers = [
+      makeWorker({ id: 'w1', assignedFloorId: 2, assignedSlotIdx: 0, isSpecialist: true }),
+    ];
+    expect(getFloorSpecialistBonus(workers, 1)).toBe(0);
   });
 });
