@@ -382,6 +382,7 @@ export class SyncService {
       hairColor: w.hairColor,
       assignedFloorId: w.assignedFloorId ?? null,
       assignedSlotIdx: w.assignedSlotIdx ?? null,
+      isSpecialist: w.isSpecialist ?? false,
     }));
 
     const s = player.state;
