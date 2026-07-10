@@ -132,7 +132,7 @@ export default function WorkerJobCard({
       <Pressable onPress={onToggle} style={styles.collapsedRow}>
         <View style={styles.avatarWrap}>
           <WorkerAvatar worker={worker} size={60} />
-          {isSpecialistTab && (
+          {(isSpecialistTab || worker.isSpecialist) && (
             <View style={styles.starBadge}>
               <StarIcon filled={worker.isSpecialist} />
             </View>
@@ -143,7 +143,7 @@ export default function WorkerJobCard({
           <Text style={styles.nameText} numberOfLines={1}>{worker.name}</Text>
           {isMidTab ? (
             <>
-              <Text style={styles.dreamJobText} numberOfLines={1}>{dreamJobName}</Text>
+              <Text style={[styles.dreamJobText, { color: accent }]} numberOfLines={1}>{dreamJobName}</Text>
               <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{floorName}</Text>
             </>
           ) : (
