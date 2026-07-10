@@ -12,7 +12,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-g
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
-import { getWorkerMood } from '../../shared/engine/workerUtils';
+import { getWorkerMood, SPECIALIST_UPGRADE_COST } from '../../shared/engine/workerUtils';
 import { clock } from '../services/clock';
 import WorkerCard from './WorkerCard';
 import WorkerJobCard, { getProductionTimeRemaining } from './WorkerJobCard';
@@ -167,12 +167,14 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
       const floor = floors.find((f) => f.id === worker.assignedFloorId);
       if (!floor) return;
       const now = clock.now();
-      const active = getProductionTimeRemaining(floor, worker.assignedSlotIdx!, now);
+      const production = floor.productions[worker.assignedSlotIdx!];
+      const stage = production?.stage;
 
-      if (active) {
-        const stageLabel = active.stage === 'DELIVERING'
-          ? t('workersPanel.fireBlockedDelivering', { name: worker.name, time: formatTimeShort(active.remainingMs) })
-          : t('workersPanel.fireBlockedSelling', { name: worker.name, time: formatTimeShort(active.remainingMs) });
+      if (stage === 'DELIVERING' || stage === 'SELLING') {
+        const active = getProductionTimeRemaining(floor, worker.assignedSlotIdx!, now);
+        const stageLabel = stage === 'DELIVERING'
+          ? t('workersPanel.fireBlockedDelivering', { name: worker.name, time: active ? formatTimeShort(active.remainingMs) : '0s' })
+          : t('workersPanel.fireBlockedSelling', { name: worker.name, time: active ? formatTimeShort(active.remainingMs) : '0s' });
         Alert.alert(t('workersPanel.fireBlockedTitle'), stageLabel, [{ text: 'OK' }]);
         return;
       }
@@ -200,8 +202,8 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
 
   const handleTrain = useCallback(
     (worker: Worker) => {
-      if (gems < 10) {
-        showInsufficientResources({ currency: 'gems', need: 10, have: gems });
+      if (gems < SPECIALIST_UPGRADE_COST) {
+        showInsufficientResources({ currency: 'gems', need: SPECIALIST_UPGRADE_COST, have: gems });
         return;
       }
       upgradeToSpecialist(worker.id);

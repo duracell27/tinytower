@@ -1,5 +1,5 @@
 import type { GameState, Command, GameConfig, Worker } from '../types';
-import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getFloorSpecialistBonus, getWorkerMood } from './workerUtils';
+import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getFloorSpecialistBonus, getWorkerMood, SPECIALIST_UPGRADE_COST } from './workerUtils';
 import { processLobbyCommand } from './lobbyCommands';
 
 export interface ProcessResult {
@@ -491,7 +491,7 @@ function handleUpgradeToSpecialist(
   if (worker.assignedFloorId === null) return { success: false, state, error: 'Worker not assigned' };
   if (worker.level !== 9) return { success: false, state, error: 'Worker must be level 9' };
   if (worker.isSpecialist) return { success: false, state, error: 'Already a specialist' };
-  if (state.gems < 10) return { success: false, state, error: 'Insufficient gems' };
+  if (state.gems < SPECIALIST_UPGRADE_COST) return { success: false, state, error: 'Insufficient gems' };
 
   const floorConfig = config.floors.find((f) => f.id === worker.assignedFloorId);
   const floorType = floorConfig?.floorType ?? state.openedFloorTypes?.[String(worker.assignedFloorId)] ?? '';
@@ -504,7 +504,7 @@ function handleUpgradeToSpecialist(
     success: true,
     state: {
       ...state,
-      gems: state.gems - 10,
+      gems: state.gems - SPECIALIST_UPGRADE_COST,
       workers: state.workers.map((w) =>
         w.id === command.workerId ? { ...w, isSpecialist: true } : w,
       ),
@@ -519,6 +519,7 @@ function handleFireAndEvictWorker(
   const worker = state.workers.find((w) => w.id === command.workerId);
   if (!worker) return { success: false, state, error: 'Worker not found' };
   if (worker.assignedFloorId === null) return { success: false, state, error: 'Worker not assigned' };
+  if (worker.assignedSlotIdx === null) return { success: false, state, error: 'Worker slot not assigned' };
 
   const floorIdx = state.floors.findIndex((f) => f.id === worker.assignedFloorId);
   if (floorIdx === -1) return { success: false, state, error: 'Floor not found' };

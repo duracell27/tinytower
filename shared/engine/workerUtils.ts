@@ -1,5 +1,7 @@
 import type { Worker } from '../types';
 
+export const SPECIALIST_UPGRADE_COST = 10;
+
 export type WorkerMood = 'good' | 'mid' | 'bad';
 
 export function getWorkerMood(
