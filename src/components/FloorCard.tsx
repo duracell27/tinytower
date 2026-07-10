@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
-import { getWorkerForSlot, getFloorDiscount } from '../../shared/engine/workerUtils';
+import { getWorkerForSlot, getFloorDiscount, getFloorSpecialistBonus } from '../../shared/engine/workerUtils';
 import { shadeColor } from '../utils/color';
 import type { ImageSource } from 'expo-image';
 
@@ -161,6 +161,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const availableTypes = floorConfig?.availableTypes
     ?? floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
   const discount = getFloorDiscount(workers, floorId);
+  const specialistBonus = getFloorSpecialistBonus(workers, floorId);
   const deliveryLockMs = floor.productions.reduce((maxRemaining, p) => {
     if (p.stage !== 'DELIVERING' || !p.typeId) return maxRemaining;
     const tc = gameConfig.productionTypes[p.typeId];
@@ -193,6 +194,13 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
           {discount > 0 && (
             <View style={styles.discountBadge}>
               <Text style={styles.discountBadgeText}>−{Math.round(discount * 100)}%</Text>
+            </View>
+          )}
+          {specialistBonus > 0 && (
+            <View style={styles.specialistBonusBadge}>
+              <Text style={styles.specialistBonusBadgeText}>
+                +{Math.round(specialistBonus * 100)}%
+              </Text>
             </View>
           )}
           <Stars count={scheme.stars} />
@@ -321,6 +329,17 @@ const styles = StyleSheet.create({
   discountBadgeText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 10,
+    color: '#fff',
+  },
+  specialistBonusBadge: {
+    backgroundColor: '#F5C842',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  specialistBonusBadgeText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 11,
     color: '#fff',
   },
 });
