@@ -10,4 +10,5 @@ export const WorkerSchema = z.object({
   hairColor: z.string(),
   assignedFloorId: z.number().nullable(),
   assignedSlotIdx: z.number().nullable(),
+  isSpecialist: z.boolean().default(false),
 });

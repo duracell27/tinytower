@@ -61,6 +61,7 @@ function makeWorker(overrides?: Partial<Worker>): Worker {
     id: 'w1', name: 'Test', female: false, floorType: 'green',
     dreamJob: 'coffee_shop', level: 5, hairColor: '#5C3A22',
     assignedFloorId: null, assignedSlotIdx: null,
+    isSpecialist: false,
     ...overrides,
   };
 }

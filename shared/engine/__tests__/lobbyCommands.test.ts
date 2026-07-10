@@ -126,7 +126,7 @@ describe('collect_tip', () => {
   it('guest to floor 1 does NOT create worker when hotel is full', () => {
     const fullWorkers = Array.from({ length: 10 }, (_, i) => ({
       id: `w${i}`, name: `Worker ${i}`, female: false, floorType: 'green',
-      dreamJob: 'coffee', level: 1, hairColor: '#000', assignedFloorId: null, assignedSlotIdx: null,
+      dreamJob: 'coffee', level: 1, hairColor: '#000', assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false,
     }));
     const state = makeState({
       lobbyVisitors: [makeVisitor({ role: 'guest', targetFloor: 1 })],

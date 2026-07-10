@@ -50,6 +50,7 @@ describe('game store logic (via processCommand)', () => {
         hairColor: '#5C3A22',
         assignedFloorId: 1,
         assignedSlotIdx: 0,
+        isSpecialist: false,
       }],
     };
     const result = processCommand(

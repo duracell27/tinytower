@@ -1,11 +1,24 @@
 import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getWorkerMood } from '../workerUtils';
 import type { Worker } from '../../types';
 
+describe('Worker schema isSpecialist default', () => {
+  it('defaults isSpecialist to false when field is absent', () => {
+    const { WorkerSchema } = require('../../schemas/worker');
+    const result = WorkerSchema.parse({
+      id: 'w1', name: 'Test', female: false, floorType: 'green',
+      dreamJob: 'buns', level: 5, hairColor: '#5C3A22',
+      assignedFloorId: null, assignedSlotIdx: null,
+    });
+    expect(result.isSpecialist).toBe(false);
+  });
+});
+
 function makeWorker(overrides?: Partial<Worker>): Worker {
   return {
     id: 'w1', name: 'Test', female: false, floorType: 'green',
     dreamJob: 'bulky', level: 5, hairColor: '#5C3A22',
     assignedFloorId: null, assignedSlotIdx: null,
+    isSpecialist: false,
     ...overrides,
   };
 }

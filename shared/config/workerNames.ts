@@ -73,6 +73,7 @@ export function generateRandomWorkers(
       hairColor: HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)],
       assignedFloorId: null,
       assignedSlotIdx: null,
+      isSpecialist: false,
     });
   }
 

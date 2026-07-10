@@ -139,7 +139,7 @@ function applyVisitorEffect(
     const hotelOccupied = workers.filter((w) => w.assignedFloorId === null).length;
     if (hotelOccupied < state.hotelCapacity) {
       const workerData = preGeneratedWorker ?? generateRandomWorkers(1, config)[0];
-      const newWorker: Worker = { ...workerData, assignedFloorId: null, assignedSlotIdx: null };
+      const newWorker: Worker = { ...workerData, assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false };
       workers = [...workers, newWorker];
     }
     // Hotel full → worker leaves, no effect beyond the tip
