@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ProductionStageSchema, ProductionSchema } from '../schemas/production';
-import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema, ExpandHotelCommandSchema, BuyFloorCommandSchema, OpenFloorCommandSchema, SpeedUpDeliveryCommandSchema } from '../schemas/command';
+import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, UpgradeToSpecialistCommandSchema, FireAndEvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema, ExpandHotelCommandSchema, BuyFloorCommandSchema, OpenFloorCommandSchema, SpeedUpDeliveryCommandSchema } from '../schemas/command';
 import { GameConfigSchema, FloorConfigSchema, ProductionTypeConfigSchema, FloorTypeConfigSchema, LobbyConfigSchema, FloorUnlockConfigSchema, AchievementConfigSchema, AchievementTierSchema, AchievementRewardSchema } from '../schemas/gameConfig';
 import { GameStateSchema, UnderConstructionSchema, ToolsSchema, StatsSchema } from '../schemas/gameState';
 import { WorkerSchema } from '../schemas/worker';
@@ -15,6 +15,8 @@ export type CollectCommand = z.infer<typeof CollectCommandSchema>;
 export type AssignWorkerCommand = z.infer<typeof AssignWorkerCommandSchema>;
 export type FireWorkerCommand = z.infer<typeof FireWorkerCommandSchema>;
 export type EvictWorkerCommand = z.infer<typeof EvictWorkerCommandSchema>;
+export type UpgradeToSpecialistCommand = z.infer<typeof UpgradeToSpecialistCommandSchema>;
+export type FireAndEvictWorkerCommand = z.infer<typeof FireAndEvictWorkerCommandSchema>;
 export type SpawnVisitorCommand = z.infer<typeof SpawnVisitorCommandSchema>;
 export type LiftVisitorCommand = z.infer<typeof LiftVisitorCommandSchema>;
 export type CollectTipCommand = z.infer<typeof CollectTipCommandSchema>;

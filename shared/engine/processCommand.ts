@@ -22,6 +22,10 @@ export function processCommand(
       return handleFireWorker(state, command);
     case 'evict_worker':
       return handleEvictWorker(state, command);
+    case 'upgrade_to_specialist':
+      return handleUpgradeToSpecialist(state, command);
+    case 'fire_and_evict_worker':
+      return handleFireAndEvictWorker(state, command);
     case 'buy':
     case 'list':
     case 'collect':
@@ -472,6 +476,43 @@ function handleCollect(
         stageStartedAt: 0,
       }),
       stats: { ...state.stats, totalSold: state.stats.totalSold + 1 },
+    },
+  };
+}
+
+function handleUpgradeToSpecialist(
+  state: GameState,
+  command: Extract<Command, { type: 'upgrade_to_specialist' }>,
+): ProcessResult {
+  const worker = state.workers.find((w) => w.id === command.workerId);
+  if (!worker) return { success: false, state, error: 'Worker not found' };
+  if (worker.isSpecialist) return { success: false, state, error: 'Worker is already a specialist' };
+
+  return {
+    success: true,
+    state: {
+      ...state,
+      workers: state.workers.map((w) =>
+        w.id === command.workerId
+          ? { ...w, isSpecialist: true }
+          : w,
+      ),
+    },
+  };
+}
+
+function handleFireAndEvictWorker(
+  state: GameState,
+  command: Extract<Command, { type: 'fire_and_evict_worker' }>,
+): ProcessResult {
+  const worker = state.workers.find((w) => w.id === command.workerId);
+  if (!worker) return { success: false, state, error: 'Worker not found' };
+
+  return {
+    success: true,
+    state: {
+      ...state,
+      workers: state.workers.filter((w) => w.id !== command.workerId),
     },
   };
 }

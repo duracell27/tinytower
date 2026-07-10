@@ -44,6 +44,20 @@ export const EvictWorkerCommandSchema = z.object({
   timestamp: z.number(),
 });
 
+export const UpgradeToSpecialistCommandSchema = z.object({
+  id: z.string(),
+  type: z.literal('upgrade_to_specialist'),
+  workerId: z.string(),
+  timestamp: z.number(),
+});
+
+export const FireAndEvictWorkerCommandSchema = z.object({
+  id: z.string(),
+  type: z.literal('fire_and_evict_worker'),
+  workerId: z.string(),
+  timestamp: z.number(),
+});
+
 const TimestampedBaseSchema = z.object({
   id: z.string(),
   timestamp: z.number(),
@@ -149,6 +163,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
   AssignWorkerCommandSchema,
   FireWorkerCommandSchema,
   EvictWorkerCommandSchema,
+  UpgradeToSpecialistCommandSchema,
+  FireAndEvictWorkerCommandSchema,
   SpawnVisitorCommandSchema,
   LiftVisitorCommandSchema,
   CollectTipCommandSchema,
