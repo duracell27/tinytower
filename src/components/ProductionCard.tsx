@@ -406,7 +406,7 @@ export default function ProductionCard({
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: cardBg, borderLeftColor: cardBorderColor, borderRightColor: cardBorderColor }]}>
+    <View style={[styles.card, { backgroundColor: cardBg, borderLeftColor: cardBorderColor, borderRightColor: cardBorderColor, borderLeftWidth: worker?.isSpecialist ? 2 : 0, borderRightWidth: worker?.isSpecialist ? 2 : 0 }]}>
       {/* Title */}
       <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
         {productTitle}
@@ -543,8 +543,6 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255,255,255,0.55)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.07)',
-    borderLeftWidth: 2,
-    borderRightWidth: 2,
     shadowColor: 'rgba(60,70,45,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
