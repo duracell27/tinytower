@@ -211,7 +211,10 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
     [gems, upgradeToSpecialist, showInsufficientResources],
   );
 
-  const currentWorkers = categorized[activeTab];
+  const currentWorkers =
+    activeTab === 'happy'
+      ? [...categorized.happy, ...categorized.specialists]
+      : categorized[activeTab];
 
   const renderItem = useCallback(
     ({ item: worker }: { item: Worker }) => {
@@ -252,6 +255,7 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
           now={now}
           expanded={expandedWorkerId === worker.id}
           isSpecialistTab={activeTab === 'specialists'}
+          isMidTab={activeTab === 'mid'}
           onToggle={() => setExpandedWorkerId((p) => (p === worker.id ? null : worker.id))}
           onFire={() => handleFireFromJob(worker)}
           onTrain={() => handleTrain(worker)}

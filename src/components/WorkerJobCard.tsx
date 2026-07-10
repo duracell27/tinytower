@@ -23,6 +23,7 @@ interface WorkerJobCardProps {
   now: number;
   expanded: boolean;
   isSpecialistTab: boolean;
+  isMidTab?: boolean;
   onToggle: () => void;
   onFire: () => void;
   onTrain: () => void;
@@ -85,6 +86,7 @@ export default function WorkerJobCard({
   now,
   expanded,
   isSpecialistTab,
+  isMidTab = false,
   onToggle,
   onFire,
   onTrain,
@@ -139,10 +141,17 @@ export default function WorkerJobCard({
 
         <View style={styles.infoColumn}>
           <Text style={styles.nameText} numberOfLines={1}>{worker.name}</Text>
-          <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>
-            {floorName}
-          </Text>
-          <Text style={styles.statusText} numberOfLines={1}>{statusLabel}</Text>
+          {isMidTab ? (
+            <>
+              <Text style={styles.dreamJobText} numberOfLines={1}>{dreamJobName}</Text>
+              <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{floorName}</Text>
+            </>
+          ) : (
+            <>
+              <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{floorName}</Text>
+              <Text style={styles.statusText} numberOfLines={1}>{statusLabel}</Text>
+            </>
+          )}
         </View>
 
         <View style={styles.levelBlock}>
@@ -245,6 +254,11 @@ const styles = StyleSheet.create({
   floorText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 12.5,
+  },
+  dreamJobText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 12.5,
+    color: '#9098A6',
   },
   statusText: {
     fontFamily: 'Fredoka_500Medium',
