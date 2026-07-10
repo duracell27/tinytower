@@ -136,6 +136,12 @@ export const SpeedUpConstructionCommandSchema = TimestampedBaseSchema.extend({
   floorId: z.number().int().positive(),
 });
 
+export const SpeedUpDeliveryCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('speed_up_delivery'),
+  floorId: z.number().int(),
+  slotIdx: z.number().int().nonnegative(),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -156,4 +162,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   OpenFloorCommandSchema,
   ExchangeGemsCommandSchema,
   SpeedUpConstructionCommandSchema,
+  SpeedUpDeliveryCommandSchema,
 ]);

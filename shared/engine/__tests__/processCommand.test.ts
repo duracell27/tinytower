@@ -756,3 +756,136 @@ describe('speed_up_construction', () => {
     expect(result.state.gems).toBe(0);
   });
 });
+
+function speedUpDeliveryCmd(
+  overrides?: Partial<Extract<Command, { type: 'speed_up_delivery' }>>,
+): Command {
+  return {
+    id: 'cmd-sud',
+    type: 'speed_up_delivery',
+    floorId: 1,
+    slotIdx: 0,
+    timestamp: 3000,
+    ...overrides,
+  } as Command;
+}
+
+// Local config with a 2-hour delivery duration for cost formula tests
+const longDeliveryConfig: GameConfig = {
+  ...testConfig,
+  productionTypes: {
+    ...testConfig.productionTypes,
+    coffee_shop: { ...testConfig.productionTypes.coffee_shop, deliveryDuration: 7_200_000 },
+  },
+};
+
+describe('speed_up_delivery command', () => {
+  it('succeeds, deducts gems, and sets stageStartedAt to now - deliveryDuration', () => {
+    const state = { ...stateWithWorker(), gems: 5 };
+    state.floors[0].productions[0] = {
+      typeId: 'coffee_shop',
+      stage: 'DELIVERING',
+      stageStartedAt: 1000,
+    };
+    // coffee_shop deliveryDuration=5000, now=3000, timeLeft=5000-(3000-1000)=3000ms (<1h) → cost=1
+    const result = processCommand(state, speedUpDeliveryCmd(), testConfig, 3000);
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(4);
+    expect(result.state.floors[0].productions[0].stageStartedAt).toBe(3000 - 5000); // -2000
+  });
+
+  it('fails when slot is not DELIVERING', () => {
+    const state = { ...stateWithWorker(), gems: 5 };
+    // slot is IDLE by default from createInitialState
+    const result = processCommand(state, speedUpDeliveryCmd(), testConfig, 3000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Not delivering');
+  });
+
+  it('fails when delivery timer has already expired', () => {
+    const state = { ...stateWithWorker(), gems: 5 };
+    state.floors[0].productions[0] = {
+      typeId: 'coffee_shop',
+      stage: 'DELIVERING',
+      stageStartedAt: 1000,
+    };
+    // coffee_shop deliveryDuration=5000, now=7000, timeLeft=5000-(7000-1000)=-1000 ≤ 0
+    const result = processCommand(
+      state,
+      speedUpDeliveryCmd({ timestamp: 7000 }),
+      testConfig,
+      7000,
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Delivery already complete');
+  });
+
+  it('fails with insufficient gems', () => {
+    const state = { ...stateWithWorker(), gems: 0 };
+    state.floors[0].productions[0] = {
+      typeId: 'coffee_shop',
+      stage: 'DELIVERING',
+      stageStartedAt: 1000,
+    };
+    const result = processCommand(state, speedUpDeliveryCmd(), testConfig, 3000);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient gems');
+  });
+
+  it('costs 1 gem when less than 1 hour remains (30 min)', () => {
+    const state = { ...stateWithWorker(), gems: 5 };
+    const now = 10_000_000;
+    // deliveryDuration=7_200_000, elapsed=5_400_000, timeLeft=1_800_000 (30min) → ceil(0.5)=1
+    state.floors[0].productions[0] = {
+      typeId: 'coffee_shop',
+      stage: 'DELIVERING',
+      stageStartedAt: now - 5_400_000,
+    };
+    const result = processCommand(
+      state,
+      speedUpDeliveryCmd({ timestamp: now }),
+      longDeliveryConfig,
+      now,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(4); // 5 - 1
+  });
+
+  it('costs 2 gems when just over 1 hour remains (61 min)', () => {
+    const state = { ...stateWithWorker(), gems: 5 };
+    const now = 10_000_000;
+    // deliveryDuration=7_200_000, elapsed=3_540_000, timeLeft=3_660_000 (61min) → ceil(1.0167)=2
+    state.floors[0].productions[0] = {
+      typeId: 'coffee_shop',
+      stage: 'DELIVERING',
+      stageStartedAt: now - 3_540_000,
+    };
+    const result = processCommand(
+      state,
+      speedUpDeliveryCmd({ timestamp: now }),
+      longDeliveryConfig,
+      now,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(3); // 5 - 2
+  });
+
+  it('costs 1 gem when exactly 1 hour remains', () => {
+    const state = { ...stateWithWorker(), gems: 5 };
+    const now = 10_000_000;
+    // deliveryDuration=7_200_000, elapsed=3_600_000, timeLeft=3_600_000 (60min exactly) → ceil(1.0)=1
+    state.floors[0].productions[0] = {
+      typeId: 'coffee_shop',
+      stage: 'DELIVERING',
+      stageStartedAt: now - 3_600_000,
+    };
+    const result = processCommand(
+      state,
+      speedUpDeliveryCmd({ timestamp: now }),
+      longDeliveryConfig,
+      now,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(4); // 5 - 1
+  });
+});

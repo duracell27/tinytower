@@ -34,6 +34,8 @@ export function processCommand(
       return handleExchangeGems(state, command);
     case 'speed_up_construction':
       return handleSpeedUpConstruction(state, command);
+    case 'speed_up_delivery':
+      return handleSpeedUpDelivery(state, command, config, now);
     case 'spawn_visitor':
     case 'lift_visitor':
     case 'collect_tip':
@@ -88,6 +90,42 @@ function handleSpeedUpConstruction(
       underConstruction: state.underConstruction.map((u) =>
         u.floorId === command.floorId ? updatedUc : u,
       ),
+    },
+  };
+}
+
+function handleSpeedUpDelivery(
+  state: GameState,
+  command: Extract<Command, { type: 'speed_up_delivery' }>,
+  config: GameConfig,
+  now: number,
+): ProcessResult {
+  const floorIdx = state.floors.findIndex((f) => f.id === command.floorId);
+  if (floorIdx === -1) return { success: false, state, error: 'Floor not found' };
+
+  const production = state.floors[floorIdx].productions[command.slotIdx];
+  if (!production) return { success: false, state, error: 'Slot not found' };
+  if (production.stage !== 'DELIVERING') return { success: false, state, error: 'Not delivering' };
+  if (!production.typeId) return { success: false, state, error: 'No type assigned' };
+
+  const typeConfig = config.productionTypes[production.typeId];
+  if (!typeConfig) return { success: false, state, error: 'Unknown production type' };
+
+  const timeLeft = typeConfig.deliveryDuration - (now - production.stageStartedAt);
+  if (timeLeft <= 0) return { success: false, state, error: 'Delivery already complete' };
+
+  const cost = Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));
+  if (state.gems < cost) return { success: false, state, error: 'Insufficient gems' };
+
+  return {
+    success: true,
+    state: {
+      ...state,
+      gems: state.gems - cost,
+      floors: updateProduction(state.floors, floorIdx, command.slotIdx, {
+        ...production,
+        stageStartedAt: now - typeConfig.deliveryDuration,
+      }),
     },
   };
 }

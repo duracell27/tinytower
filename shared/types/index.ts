@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ProductionStageSchema, ProductionSchema } from '../schemas/production';
-import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema, ExpandHotelCommandSchema, BuyFloorCommandSchema, OpenFloorCommandSchema } from '../schemas/command';
+import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema, ExpandHotelCommandSchema, BuyFloorCommandSchema, OpenFloorCommandSchema, SpeedUpDeliveryCommandSchema } from '../schemas/command';
 import { GameConfigSchema, FloorConfigSchema, ProductionTypeConfigSchema, FloorTypeConfigSchema, LobbyConfigSchema, FloorUnlockConfigSchema, AchievementConfigSchema, AchievementTierSchema, AchievementRewardSchema } from '../schemas/gameConfig';
 import { GameStateSchema, UnderConstructionSchema, ToolsSchema, StatsSchema } from '../schemas/gameState';
 import { WorkerSchema } from '../schemas/worker';
@@ -25,6 +25,7 @@ export type ClaimDailyRewardCommand = z.infer<typeof ClaimDailyRewardCommandSche
 export type ExpandHotelCommand = z.infer<typeof ExpandHotelCommandSchema>;
 export type BuyFloorCommand = z.infer<typeof BuyFloorCommandSchema>;
 export type OpenFloorCommand = z.infer<typeof OpenFloorCommandSchema>;
+export type SpeedUpDeliveryCommand = z.infer<typeof SpeedUpDeliveryCommandSchema>;
 export type FloorUnlockConfig = z.infer<typeof FloorUnlockConfigSchema>;
 export type UnderConstructionState = z.infer<typeof UnderConstructionSchema>;
 export type ToolsState = z.infer<typeof ToolsSchema>;
