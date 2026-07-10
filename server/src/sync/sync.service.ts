@@ -297,6 +297,8 @@ export class SyncService {
             update: {
               assignedFloorId: w.assignedFloorId,
               assignedSlotIdx: w.assignedSlotIdx,
+              level: w.level,
+              isSpecialist: w.isSpecialist,
             },
             create: {
               id: w.id,
@@ -306,6 +308,7 @@ export class SyncService {
               floorType: w.floorType,
               dreamJob: w.dreamJob,
               level: w.level,
+              isSpecialist: w.isSpecialist,
               hairColor: w.hairColor,
               assignedFloorId: w.assignedFloorId,
               assignedSlotIdx: w.assignedSlotIdx,

@@ -102,6 +102,7 @@ model Worker {
   floorType       String
   dreamJob        String
   level           Int
+  isSpecialist    Boolean @default(false)
   hairColor       String
   assignedFloorId Int?
   assignedSlotIdx Int?

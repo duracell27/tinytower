@@ -50,6 +50,8 @@ export function processCommand(
     case 'expand_hotel':
     case 'fill_lobby':
       return processLobbyCommand(state, command, config, playerLevel);
+    case 'dev_add_gems':
+      return { success: true, state: { ...state, gems: state.gems + command.amount } };
   }
 }
 

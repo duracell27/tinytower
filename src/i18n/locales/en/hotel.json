@@ -121,7 +121,7 @@
       "specialists": "Specialists"
     },
     "fireButton": "Fire",
-    "trainButton": "Train · 💎10",
+    "trainButton": "Train for 10",
     "fireBlockedTitle": "Cannot Fire",
     "fireBlockedDelivering": "{{name}} is delivering, {{time}} remaining.",
     "fireBlockedSelling": "{{name}} is selling, {{time}} remaining.",

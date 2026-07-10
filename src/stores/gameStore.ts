@@ -76,6 +76,7 @@ interface GameActions {
   reconcile: (state: GameState, stateVersion: number, ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   clearAckedCommands: (ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   exchangeGemsForCoins: (gems: number) => void;
+  devAddGems: (amount: number) => void;
   speedUpConstruction: (floorId: number) => void;
   speedUpDelivery: (floorId: number, slotIdx: number) => void;
   showInsufficientResources: (payload: InsufficientResourcesPayload) => void;
@@ -159,6 +160,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
+  },
+  devAddGems: (amount) => {
+    executeCommand(get, set, { id: uuid(), type: 'dev_add_gems', amount, timestamp: clock.now() });
   },
   speedUpConstruction: (floorId) => {
     const state = get();

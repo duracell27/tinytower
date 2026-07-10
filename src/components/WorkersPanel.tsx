@@ -4,7 +4,7 @@ import {
   StyleSheet, Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Polygon } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle, useSharedValue, withTiming, withSpring, runOnJS, Easing,
 } from 'react-native-reanimated';
@@ -28,6 +28,13 @@ const SCRIM_TIMING = { duration: 400, easing: Easing.linear };
 
 type Tab = 'unsatisfied' | 'mid' | 'happy' | 'specialists';
 const TABS: Tab[] = ['unsatisfied', 'mid', 'happy', 'specialists'];
+
+const TAB_COLORS: Record<Tab, string> = {
+  unsatisfied: '#E05A4A',
+  mid: '#E5A72E',
+  happy: '#49AA38',
+  specialists: '#B0B6C2',
+};
 
 interface WorkersPanelProps {
   visible: boolean;
@@ -310,24 +317,45 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
                 </View>
 
                 <View style={styles.tabBar}>
-                  {TABS.map((tab) => (
-                    <Pressable
-                      key={tab}
-                      onPress={() => { setActiveTab(tab); setExpandedWorkerId(null); }}
-                      style={[styles.tabButton, activeTab === tab && styles.tabButtonActive]}
-                    >
-                      <Text style={[styles.tabLabel, activeTab === tab && styles.tabLabelActive]}>
-                        {t(`workersPanel.tabs.${tab}`)}
-                      </Text>
-                      <View style={[styles.tabCount, activeTab === tab && styles.tabCountActive]}>
-                        <Text style={[styles.tabCountText, activeTab === tab && styles.tabCountTextActive]}>
-                          {tab === 'happy'
-                            ? categorized.happy.length + categorized.specialists.length
-                            : categorized[tab].length}
+                  {TABS.map((tab) => {
+                    const isActive = activeTab === tab;
+                    const color = TAB_COLORS[tab];
+                    const count = tab === 'happy'
+                      ? categorized.happy.length + categorized.specialists.length
+                      : categorized[tab].length;
+                    return (
+                      <Pressable
+                        key={tab}
+                        onPress={() => { setActiveTab(tab); setExpandedWorkerId(null); }}
+                        style={[styles.tabButton, isActive && styles.tabButtonActive]}
+                      >
+                        <Text style={[styles.tabLabel, { color: isActive ? color : 'rgba(255,255,255,0.75)' }]}>
+                          {t(`workersPanel.tabs.${tab}`)}
                         </Text>
-                      </View>
-                    </Pressable>
-                  ))}
+                        {tab === 'specialists' ? (
+                          <View style={[styles.tabStarWrap, isActive && { borderColor: '#F5C842' }]}>
+                            <Svg width={14} height={14} viewBox="0 0 24 24">
+                              <Polygon
+                                points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                                fill={isActive ? '#F5C842' : '#B0B6C2'}
+                                stroke={isActive ? '#E0A800' : '#9098A6'}
+                                strokeWidth={1.5}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </Svg>
+                            <Text style={[styles.tabCountText, { color: isActive ? '#7A5A00' : 'rgba(255,255,255,0.9)' }]}>
+                              {count}
+                            </Text>
+                          </View>
+                        ) : (
+                          <View style={[styles.tabCount, { backgroundColor: isActive ? color : 'rgba(255,255,255,0.2)' }]}>
+                            <Text style={styles.tabCountText}>{count}</Text>
+                          </View>
+                        )}
+                      </Pressable>
+                    );
+                  })}
                 </View>
               </LinearGradient>
             </Animated.View>
@@ -417,33 +445,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEF2F8',
   },
   tabLabel: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.75)',
-  },
-  tabLabelActive: {
-    color: '#3A6BBF',
     fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 10,
   },
   tabCount: {
     minWidth: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
-  },
-  tabCountActive: {
-    backgroundColor: '#3A6BBF',
   },
   tabCountText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 11,
     color: 'rgba(255,255,255,0.9)',
   },
-  tabCountTextActive: {
-    color: '#fff',
+  tabStarWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 9,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   list: { flex: 1 },
   listContent: { padding: 14, gap: 10, paddingBottom: 40 },

@@ -198,9 +198,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
           )}
           {specialistBonus > 0 && (
             <View style={styles.specialistBonusBadge}>
-              <Text style={styles.specialistBonusBadgeText}>
-                +{Math.round(specialistBonus * 100)}% 💰
-              </Text>
+              <Text style={styles.specialistBonusBadgeText}>+{Math.round(specialistBonus * 100)}%</Text>
             </View>
           )}
           <Stars count={scheme.stars} />
@@ -229,6 +227,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
               productImage={PRODUCT_IMAGES[availableTypes[idx]] ?? PRODUCT_IMAGES[availableTypes[0]]}
               worker={slotWorker}
               floorDiscount={discount}
+              specialistBonus={specialistBonus}
               accentColor={scheme.color}
               onHire={onHireSlot}
               deliveryLockMs={deliveryLockMs}
@@ -332,14 +331,14 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   specialistBonusBadge: {
-    backgroundColor: '#F5C842',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    backgroundColor: 'rgba(255,255,255,0.28)',
+    borderRadius: 7,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
   },
   specialistBonusBadgeText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 11,
-    color: '#7A5A00',
+    fontSize: 10,
+    color: '#fff',
   },
 });

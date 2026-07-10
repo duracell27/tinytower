@@ -169,11 +169,11 @@ export default function WorkerJobCard({
         </View>
 
         <View style={styles.levelBlock}>
-          <View style={[styles.levelInner, worker.isSpecialist && styles.levelInnerGold]}>
-            <Text style={[styles.levelLabel, worker.isSpecialist && styles.levelLabelGold]}>
+          <View style={styles.levelInner}>
+            <Text style={styles.levelLabel}>
               {t('workerCard.level')}
             </Text>
-            <Text style={[styles.levelNumber, { color: worker.isSpecialist ? '#fff' : accent }]}>
+            <Text style={[styles.levelNumber, { color: accent }]}>
               {worker.level}
             </Text>
           </View>
@@ -199,8 +199,8 @@ export default function WorkerJobCard({
               style={({ pressed }) => [styles.actionButton, pressed && styles.actionButtonPressed]}
             >
               <LinearGradient colors={['#F5C842', '#D4A500']} style={styles.actionButtonGradient}>
-                <GemIcon size={16} />
                 <Text style={styles.actionButtonText}>{t('workersPanel.trainButton')}</Text>
+                <GemIcon size={16} />
               </LinearGradient>
               <View style={[styles.actionButtonShadow, { backgroundColor: '#A07800' }]} />
             </Pressable>
@@ -308,17 +308,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 2,
   },
-  levelInnerGold: {
-    backgroundColor: '#F5C842',
-  },
   levelLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 8,
     color: '#AEB4C0',
     letterSpacing: 0.5,
-  },
-  levelLabelGold: {
-    color: '#fff',
   },
   levelNumber: {
     fontFamily: 'Fredoka_700Bold',

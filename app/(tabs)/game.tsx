@@ -57,6 +57,7 @@ export default function GameScreen() {
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
+  const devAddGems = useGameStore((s) => s.devAddGems);
   const lastSyncAt = useGameStore((s) => s.lastSyncAt);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
@@ -278,6 +279,7 @@ export default function GameScreen() {
           coins={formatCoins(balance)}
           gems={String(gems)}
           revenuePerMin={revenuePerMin}
+          onDevAddGems={() => devAddGems(100)}
         />
       </ImageBackground>
 

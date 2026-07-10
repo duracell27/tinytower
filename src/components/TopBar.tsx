@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
@@ -13,6 +13,7 @@ interface TopBarProps {
   coins: string;
   gems: string;
   revenuePerMin?: number;
+  onDevAddGems?: () => void;
 }
 
 function ProgressRing({ progress, size = 50 }: { progress: number; size?: number }) {
@@ -47,7 +48,7 @@ function ProgressRing({ progress, size = 50 }: { progress: number; size?: number
   );
 }
 
-export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins, gems, revenuePerMin }: TopBarProps) {
+export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins, gems, revenuePerMin, onDevAddGems }: TopBarProps) {
   const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
 
   return (
@@ -89,10 +90,10 @@ export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins
               <CoinIcon size={18} />
               <Text style={styles.coinText}>{coins}</Text>
             </View>
-            <View style={styles.gemBadge}>
+            <Pressable style={styles.gemBadge} onLongPress={onDevAddGems} delayLongPress={800}>
               <GemIcon size={14} />
               <Text style={styles.gemText}>{gems}</Text>
-            </View>
+            </Pressable>
           </View>
         </View>
       </View>

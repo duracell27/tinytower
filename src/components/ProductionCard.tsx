@@ -175,6 +175,7 @@ interface ProductionCardProps {
   productImage: ImageSource;
   worker?: Worker;
   floorDiscount?: number;
+  specialistBonus?: number;
   accentColor: string;
   onHire?: (floorId: number, slotIdx: number) => void;
   deliveryLockMs?: number;   // NEW
@@ -195,6 +196,7 @@ export default function ProductionCard({
   productImage,
   worker,
   floorDiscount,
+  specialistBonus,
   accentColor,
   onHire,
   deliveryLockMs,
@@ -208,9 +210,6 @@ export default function ProductionCard({
   const shirtColor = floorType && gameConfig.floorTypes[floorType]
     ? gameConfig.floorTypes[floorType].shirtColor
     : '#999';
-
-  // Card border: gold for specialists, else shirt color
-  const cardBorderColor = worker?.isSpecialist ? '#F5C842' : 'transparent';
 
   // Level badge background: gold for specialists, else accent color
   const levelBadgeBg = worker?.isSpecialist ? '#F5C842' : accentColor;
@@ -252,7 +251,7 @@ export default function ProductionCard({
   const multiplier = worker && floorType
     ? getRevenueMultiplier(worker, floorType, production.typeId)
     : 1;
-  const effectiveRevenue = typeConfig ? Math.floor(typeConfig.batchValue * multiplier) : 0;
+  const effectiveRevenue = typeConfig ? Math.floor(typeConfig.batchValue * multiplier * (1 + (specialistBonus ?? 0))) : 0;
   const hasMultiplier = multiplier > 1;
 
   const isProgressTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING';
@@ -408,7 +407,7 @@ export default function ProductionCard({
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: cardBg, borderLeftColor: cardBorderColor, borderRightColor: cardBorderColor, borderLeftWidth: worker?.isSpecialist ? 2 : 0, borderRightWidth: worker?.isSpecialist ? 2 : 0 }]}>
+    <View style={[styles.card, { backgroundColor: cardBg }]}>
       {/* Title */}
       <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
         {productTitle}

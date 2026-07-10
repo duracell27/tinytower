@@ -156,6 +156,11 @@ export const SpeedUpDeliveryCommandSchema = TimestampedBaseSchema.extend({
   slotIdx: z.number().int().nonnegative(),
 });
 
+export const DevAddGemsCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('dev_add_gems'),
+  amount: z.number().int().positive(),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -179,4 +184,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   ExchangeGemsCommandSchema,
   SpeedUpConstructionCommandSchema,
   SpeedUpDeliveryCommandSchema,
+  DevAddGemsCommandSchema,
 ]);
