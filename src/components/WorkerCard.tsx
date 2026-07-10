@@ -96,7 +96,7 @@ export default function WorkerCard({
               />
             </Svg>
             <Text style={[styles.dreamJobText, { color: accent }]}>
-              {`${dreamJobName} · ${category}`}
+              {`${category} · ${dreamJobName}`}
             </Text>
           </View>
 
