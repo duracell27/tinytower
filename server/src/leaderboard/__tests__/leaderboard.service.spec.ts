@@ -1,0 +1,109 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { LeaderboardService } from '../leaderboard.service';
+import { PrismaService } from '../../prisma/prisma.service';
+
+describe('LeaderboardService', () => {
+  let service: LeaderboardService;
+  let prisma: Record<string, any>;
+
+  const mockRows = [
+    { id: 'p1', playerName: 'Alice', playerLevel: 10, openedFloorsCount: 5, maxRevenuePerMin: 1000 },
+    { id: 'p2', playerName: 'Bob',   playerLevel: 8,  openedFloorsCount: 3, maxRevenuePerMin: 800 },
+  ];
+
+  beforeEach(async () => {
+    prisma = {
+      player: {
+        findMany:   jest.fn(),
+        count:      jest.fn(),
+        findUnique: jest.fn(),
+      },
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        LeaderboardService,
+        { provide: PrismaService, useValue: prisma },
+      ],
+    }).compile();
+
+    service = module.get<LeaderboardService>(LeaderboardService);
+  });
+
+  afterEach(() => jest.clearAllMocks());
+
+  it('should return level leaderboard with correct ranks and currentPlayer', async () => {
+    prisma.player.findMany.mockResolvedValue(mockRows);
+    prisma.player.count
+      .mockResolvedValueOnce(50)  // total
+      .mockResolvedValueOnce(5);  // players with playerLevel > myValue (7)
+    prisma.player.findUnique.mockResolvedValue({
+      playerLevel: 7, openedFloorsCount: 2, maxRevenuePerMin: 700,
+    });
+
+    const result = await service.getLeaderboard('level', 1, 'my-id');
+
+    expect(result.total).toBe(50);
+    expect(result.entries).toHaveLength(2);
+    expect(result.entries[0]).toEqual({ rank: 1, playerId: 'p1', playerName: 'Alice', value: 10 });
+    expect(result.entries[1]).toEqual({ rank: 2, playerId: 'p2', playerName: 'Bob', value: 8 });
+    expect(result.currentPlayer).toEqual({ rank: 6, value: 7 });
+  });
+
+  it('should use openedFloorsCount as value for floors tab', async () => {
+    prisma.player.findMany.mockResolvedValue([mockRows[0]]);
+    prisma.player.count.mockResolvedValueOnce(10).mockResolvedValueOnce(0);
+    prisma.player.findUnique.mockResolvedValue({
+      playerLevel: 10, openedFloorsCount: 5, maxRevenuePerMin: 1000,
+    });
+
+    const result = await service.getLeaderboard('floors', 1, 'p1');
+
+    expect(result.entries[0].value).toBe(5);
+    expect(result.currentPlayer.rank).toBe(1);
+  });
+
+  it('should use maxRevenuePerMin as value for revenue tab', async () => {
+    prisma.player.findMany.mockResolvedValue([mockRows[0]]);
+    prisma.player.count.mockResolvedValueOnce(10).mockResolvedValueOnce(3);
+    prisma.player.findUnique.mockResolvedValue({
+      playerLevel: 7, openedFloorsCount: 2, maxRevenuePerMin: 500,
+    });
+
+    const result = await service.getLeaderboard('revenue', 1, 'my-id');
+
+    expect(result.entries[0].value).toBe(1000);
+    expect(result.currentPlayer).toEqual({ rank: 4, value: 500 });
+  });
+
+  it('should offset ranks correctly on page 2', async () => {
+    prisma.player.findMany.mockResolvedValue([
+      { id: 'p21', playerName: 'Charlie', playerLevel: 3, openedFloorsCount: 1, maxRevenuePerMin: 300 },
+    ]);
+    prisma.player.count.mockResolvedValueOnce(50).mockResolvedValueOnce(49);
+    prisma.player.findUnique.mockResolvedValue({
+      playerLevel: 1, openedFloorsCount: 0, maxRevenuePerMin: 0,
+    });
+
+    const result = await service.getLeaderboard('level', 2, 'my-id');
+
+    expect(result.entries[0].rank).toBe(21);
+    expect(result.currentPlayer.rank).toBe(50);
+  });
+
+  it('should pass correct orderBy and pagination to prisma', async () => {
+    prisma.player.findMany.mockResolvedValue([]);
+    prisma.player.count.mockResolvedValue(0);
+    prisma.player.findUnique.mockResolvedValue({ playerLevel: 1, openedFloorsCount: 0, maxRevenuePerMin: 0 });
+
+    await service.getLeaderboard('revenue', 3, 'my-id');
+
+    expect(prisma.player.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ maxRevenuePerMin: 'desc' }, { createdAt: 'asc' }],
+        skip: 40,
+        take: 20,
+      }),
+    );
+  });
+});
