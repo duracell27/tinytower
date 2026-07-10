@@ -51,7 +51,6 @@ function resolveFloorName(
   openedFloorTypes: Record<string, string>,
   floors: Floor[],
   floorId: number,
-  _t: (key: string, opts?: Record<string, unknown>) => string,
   tContent: (key: string, opts?: Record<string, unknown>) => string,
 ): string {
   const floorType = resolveFloorType(openedFloorTypes, floorId);
@@ -239,7 +238,7 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
       const floor = floors.find((f) => f.id === worker.assignedFloorId);
       if (!floor) return null;
       const floorType = resolveFloorType(openedFloorTypes, worker.assignedFloorId!);
-      const floorName = resolveFloorName(openedFloorTypes, floors, worker.assignedFloorId!, t, tContent);
+      const floorName = resolveFloorName(openedFloorTypes, floors, worker.assignedFloorId!, tContent);
       const now = clock.now();
 
       return (
@@ -334,9 +333,9 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
             worker={pickerWorker}
             onClose={() => setPickerWorker(null)}
           />
-        </Animated.View>
 
-        <InsufficientResourcesModal asOverlay />
+          <InsufficientResourcesModal asOverlay />
+        </Animated.View>
       </GestureHandlerRootView>
     </Modal>
   );
