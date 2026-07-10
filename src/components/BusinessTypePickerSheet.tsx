@@ -37,6 +37,7 @@ interface BusinessTypePickerSheetProps {
   underConstruction: UnderConstructionState;
   onClose: () => void;
   onSelectType: (floorType: string) => void;
+  exhaustedTypes?: Set<string>;
 }
 
 export default function BusinessTypePickerSheet({
@@ -44,6 +45,7 @@ export default function BusinessTypePickerSheet({
   underConstruction,
   onClose,
   onSelectType,
+  exhaustedTypes = new Set(),
 }: BusinessTypePickerSheetProps) {
   const translateY = useSharedValue(SHEET_HEIGHT);
 
@@ -97,20 +99,34 @@ export default function BusinessTypePickerSheet({
         <Text style={styles.subtitle}>Floor {underConstruction.floorId}</Text>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-          {floorTypes.map((ft) => (
-            <Pressable
-              key={ft}
-              onPress={() => onSelectType(ft)}
-              style={({ pressed }) => [styles.typeRow, pressed && { opacity: 0.82 }]}
-            >
-              <Image
-                source={FLOOR_TYPE_ICONS[ft]}
-                style={styles.iconSwatch}
-                contentFit="contain"
-              />
-              <Text style={styles.typeName}>{FLOOR_TYPE_NAMES[ft] ?? ft}</Text>
-            </Pressable>
-          ))}
+          {floorTypes.map((ft) => {
+            const isExhausted = exhaustedTypes.has(ft);
+            return (
+              <Pressable
+                key={ft}
+                onPress={isExhausted ? undefined : () => onSelectType(ft)}
+                style={({ pressed }) => [
+                  styles.typeRow,
+                  isExhausted && styles.typeRowExhausted,
+                  !isExhausted && pressed && { opacity: 0.82 },
+                ]}
+              >
+                <Image
+                  source={FLOOR_TYPE_ICONS[ft]}
+                  style={styles.iconSwatch}
+                  contentFit="contain"
+                />
+                <View style={styles.typeTextCol}>
+                  <Text style={styles.typeName}>{FLOOR_TYPE_NAMES[ft] ?? ft}</Text>
+                  {isExhausted && (
+                    <Text style={styles.typeExhaustedHint}>
+                      All floors of this category already built
+                    </Text>
+                  )}
+                </View>
+              </Pressable>
+            );
+          })}
         </ScrollView>
       </Animated.View>
     </Modal>
@@ -192,10 +208,21 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   iconSwatch: { width: 44, height: 44, borderRadius: 10 },
+  typeTextCol: {
+    flex: 1,
+  },
   typeName: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#2A3344',
-    flex: 1,
+  },
+  typeRowExhausted: {
+    opacity: 0.4,
+  },
+  typeExhaustedHint: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 12,
+    color: '#9BA3B0',
+    marginTop: 1,
   },
 });
