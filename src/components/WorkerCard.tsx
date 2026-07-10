@@ -16,6 +16,7 @@ import WorkerAvatar from './WorkerAvatar';
 interface WorkerCardProps {
   worker: Worker;
   expanded: boolean;
+  dreamFloorName?: string;
   onToggle: () => void;
   onFindJob: () => void;
   onEvict: () => void;
@@ -26,6 +27,7 @@ const TIMING_CONFIG = { duration: 300, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 export default function WorkerCard({
   worker,
   expanded,
+  dreamFloorName,
   onToggle,
   onFindJob,
   onEvict,
@@ -96,7 +98,7 @@ export default function WorkerCard({
               />
             </Svg>
             <Text style={[styles.dreamJobText, { color: accent }]}>
-              {`${category} · ${dreamJobName}`}
+              {`${dreamFloorName ?? category} · ${dreamJobName}`}
             </Text>
           </View>
 

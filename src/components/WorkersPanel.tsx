@@ -223,6 +223,10 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
           <WorkerCard
             worker={worker}
             expanded={expandedWorkerId === worker.id}
+            dreamFloorName={(() => {
+              const df = floors.find((f) => f.productions.some((p) => p.typeId === worker.dreamJob));
+              return df ? resolveFloorName(openedFloorTypes, floors, df.id, tContent) : undefined;
+            })()}
             onToggle={() => setExpandedWorkerId((p) => (p === worker.id ? null : worker.id))}
             onFindJob={() => setPickerWorker(worker)}
             onEvict={() => {

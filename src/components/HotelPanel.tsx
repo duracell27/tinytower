@@ -47,6 +47,7 @@ type ListItem =
 
 export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const { t } = useTranslation('hotel');
+  const { t: tContent } = useTranslation('gameContent');
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
 
@@ -54,6 +55,8 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const translateY = useSharedValue(SHEET_HEIGHT);
 
   const workers = useGameStore((s) => s.workers);
+  const floors = useGameStore((s) => s.floors);
+  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
   const gems = useGameStore((s) => s.gems);
   const expandHotel = useGameStore((s) => s.expandHotel);
@@ -160,10 +163,18 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
         );
       }
       const roomNumber = index + 1;
+      const workerDreamJob = item.kind === 'worker' ? item.worker.dreamJob : null;
+      const dreamFloor = workerDreamJob
+        ? floors.find((f) => f.productions.some((p) => p.typeId === workerDreamJob))
+        : undefined;
+      const dreamFloorName = dreamFloor
+        ? (openedFloorTypes[String(dreamFloor.id)] ?? tContent(`floors.${dreamFloor.id}.name`, { defaultValue: `Floor ${dreamFloor.id}` }))
+        : undefined;
       const card = item.kind === 'worker' ? (
         <WorkerCard
           worker={item.worker}
           expanded={expandedWorkerId === item.worker.id}
+          dreamFloorName={dreamFloorName}
           onToggle={() =>
             setExpandedWorkerId((prev) => (prev === item.worker.id ? null : item.worker.id))
           }
