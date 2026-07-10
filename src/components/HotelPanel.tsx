@@ -27,6 +27,7 @@ import JobPickerSheet from './JobPickerSheet';
 import { getHotelExpansionCost } from '../../shared/engine/lobbyCommands';
 import type { Worker } from '../../shared/types';
 import { GemIcon } from './CurrencyIcons';
+import InsufficientResourcesModal from './InsufficientResourcesModal';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
@@ -280,6 +281,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           />
         </Animated.View>
 
+        <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
   );

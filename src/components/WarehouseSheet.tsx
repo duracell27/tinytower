@@ -15,9 +15,10 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SHEET_MIN_HEIGHT = SCREEN_HEIGHT * 0.42;
 const TIMING = { duration: 380, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const CLOSE_THRESHOLD = 80;
-const CLOSE_VELOCITY = 600;
+const CLOSE_VELOCITY = 500;
 
 const TOOLS: { key: 'briks' | 'glass' | 'nails' | 'screw'; label: string; image: ReturnType<typeof require> }[] = [
   { key: 'briks',  label: 'Bricks',  image: require('../../assets/img/tools/briks.png') },
@@ -35,7 +36,6 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
   const { t } = useTranslation('tabs');
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SCREEN_HEIGHT);
-  const dragY = useSharedValue(0);
 
   const briks = useGameStore((s) => s.tools?.briks ?? 0);
   const glass = useGameStore((s) => s.tools?.glass ?? 0);
@@ -54,23 +54,27 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
   }, [visible]);
 
   const pan = Gesture.Pan()
+    .enabled(visible)
     .onUpdate((e) => {
-      if (e.translationY > 0) dragY.value = e.translationY;
+      if (e.translationY > 0) {
+        translateY.value = e.translationY;
+        scrimOpacity.value = Math.max(0, 1 - e.translationY / SHEET_MIN_HEIGHT);
+      }
     })
     .onEnd((e) => {
       if (e.translationY > CLOSE_THRESHOLD || e.velocityY > CLOSE_VELOCITY) {
-        dragY.value = 0;
-        translateY.value = withTiming(SCREEN_HEIGHT, TIMING);
-        scrimOpacity.value = withTiming(0, { duration: 280, easing: Easing.linear });
+        translateY.value = withTiming(SCREEN_HEIGHT, { duration: 300 });
+        scrimOpacity.value = withTiming(0, { duration: 300 });
         runOnJS(onClose)();
       } else {
-        dragY.value = withSpring(0, { damping: 20, stiffness: 200 });
+        translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
+        scrimOpacity.value = withTiming(1, { duration: 200 });
       }
     });
 
   const scrimStyle = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
   const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value + dragY.value }],
+    transform: [{ translateY: translateY.value }],
   }));
 
   return (

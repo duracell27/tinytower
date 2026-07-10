@@ -29,6 +29,7 @@ import { Image } from 'expo-image';
 import DeliverAllModal, { type DeliverAllSummary } from './DeliverAllModal';
 import WorkerAvatar from './WorkerAvatar';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
+import InsufficientResourcesModal from './InsufficientResourcesModal';
 
 type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
 const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
@@ -968,17 +969,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       ]}
                     >
                       <LinearGradient
-                        colors={gems >= elevatorUpgradeCost ? ['#72C24F', '#5BA63C'] : ['#B7BDC8', '#A2A9B6']}
+                        colors={['#72C24F', '#5BA63C']}
                         style={styles.upgradeButtonGradient}
                       >
                         <Text style={styles.upgradeButtonText}>{t('elevator.upgradeFor')}</Text>
                         <GemIcon size={14} />
                         <Text style={styles.upgradeGemCount}>{elevatorUpgradeCost}</Text>
                       </LinearGradient>
-                      <View style={[
-                        styles.upgradeButtonShadow,
-                        { backgroundColor: gems >= elevatorUpgradeCost ? '#4A8A2E' : '#8A909C' },
-                      ]} />
+                      <View style={[styles.upgradeButtonShadow, { backgroundColor: '#4A8A2E' }]} />
                     </Pressable>
                   ) : (
                     <View style={styles.maxLevelStrip}>
@@ -1032,17 +1030,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       ]}
                     >
                       <LinearGradient
-                        colors={gems >= lobbyUpgradeCost ? ['#52A6E2', '#3B8BCB'] : ['#B7BDC8', '#A2A9B6']}
+                        colors={['#52A6E2', '#3B8BCB']}
                         style={styles.upgradeButtonGradient}
                       >
                         <Text style={styles.upgradeButtonText}>{t('lobbyUpgrade.upgradeForSeats')}</Text>
                         <GemIcon size={14} />
                         <Text style={styles.upgradeGemCount}>{lobbyUpgradeCost}</Text>
                       </LinearGradient>
-                      <View style={[
-                        styles.upgradeButtonShadow,
-                        { backgroundColor: gems >= lobbyUpgradeCost ? '#2E72A8' : '#8A909C' },
-                      ]} />
+                      <View style={[styles.upgradeButtonShadow, { backgroundColor: '#2E72A8' }]} />
                     </Pressable>
                   ) : (
                     <View style={styles.maxLevelStrip}>
@@ -1154,6 +1149,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
           onDismiss={() => setDeliverSummary(null)}
         />
 
+        <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
     </>
