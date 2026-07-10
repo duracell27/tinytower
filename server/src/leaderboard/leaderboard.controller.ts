@@ -12,8 +12,8 @@ const QuerySchema = z.object({
 export class LeaderboardController {
   constructor(private leaderboardService: LeaderboardService) {}
 
-  @Get()
   @UseGuards(JwtAuthGuard)
+  @Get()
   async getLeaderboard(
     @Req() req: { user: { playerId: string } },
     @Query() query: unknown,
