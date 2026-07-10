@@ -75,6 +75,7 @@ interface GameActions {
   clearAckedCommands: (ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   exchangeGemsForCoins: (gems: number) => void;
   speedUpConstruction: (floorId: number) => void;
+  speedUpDelivery: (floorId: number, slotIdx: number) => void;
   showInsufficientResources: (payload: InsufficientResourcesPayload) => void;
   clearInsufficientResources: () => void;
   clearBuilderToolDrop: () => void;
@@ -174,6 +175,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
       type: 'speed_up_construction',
       timestamp: now,
       floorId,
+    });
+  },
+  speedUpDelivery: (floorId, slotIdx) => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'speed_up_delivery',
+      floorId,
+      slotIdx,
+      timestamp: clock.now(),
     });
   },
   showInsufficientResources: (payload) => set({ insufficientResources: payload }),

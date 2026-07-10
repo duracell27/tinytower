@@ -13,7 +13,7 @@ import WorkerAvatar from './WorkerAvatar';
 import { shadeColor } from '../utils/color';
 import type { Production, EffectiveStage, Worker } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
-import { CoinIcon } from './CurrencyIcons';
+import { CoinIcon, GemIcon } from './CurrencyIcons';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -178,6 +178,7 @@ interface ProductionCardProps {
   accentColor: string;
   onHire?: (floorId: number, slotIdx: number) => void;
   deliveryLockMs?: number;   // NEW
+  gems: number;
 }
 
 export default function ProductionCard({
@@ -197,6 +198,7 @@ export default function ProductionCard({
   accentColor,
   onHire,
   deliveryLockMs,
+  gems,
 }: ProductionCardProps) {
   const typeConfig = production.typeId
     ? gameConfig.productionTypes[production.typeId] ?? null
@@ -208,6 +210,11 @@ export default function ProductionCard({
   const isDeliveryLocked =
     (effectiveStage === 'IDLE' || effectiveStage === 'EMPTY') &&
     (deliveryLockMs ?? 0) > 0;
+
+  const MS_PER_HOUR = 3_600_000;
+  const speedUpCost = effectiveStage === 'DELIVERING'
+    ? Math.max(1, Math.ceil(timeRemaining / MS_PER_HOUR))
+    : 0;
 
   const btnConfig = BTN_COLORS[effectiveStage] || BTN_COLORS.IDLE;
 
@@ -302,6 +309,15 @@ export default function ProductionCard({
         break;
     }
   }, [effectiveStage, floorId, slotIdx, floorAvailableTypes, production.typeId, effectiveCost, floorDiscount]);
+
+  const handleSpeedUp = useCallback(() => {
+    const store = useGameStore.getState();
+    if (gems < speedUpCost) {
+      store.showInsufficientResources({ currency: 'gems', need: speedUpCost, have: gems });
+      return;
+    }
+    store.speedUpDelivery(floorId, slotIdx);
+  }, [gems, speedUpCost, floorId, slotIdx]);
 
   const { t } = useTranslation('hotel');
   const isHire = effectiveStage === 'EMPTY';
@@ -469,6 +485,14 @@ export default function ProductionCard({
           <View style={styles.statusPill}>
             <Text style={styles.statusText}>{formatTime(deliveryLockMs ?? 0)}</Text>
           </View>
+        ) : effectiveStage === 'DELIVERING' ? (
+          <Pressable
+            onPress={handleSpeedUp}
+            style={({ pressed }) => [styles.speedUpPill, pressed && { opacity: 0.7 }]}
+          >
+            <Text style={styles.speedUpPillText}>⚡ {speedUpCost}</Text>
+            <GemIcon size={12} />
+          </Pressable>
         ) : effectiveStage === 'READY_TO_LIST' && subText ? (
           <View style={styles.statusPill}>
             <Svg viewBox="0 0 24 24" width={10} height={10} fill="none" stroke="#8A8475" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
@@ -692,5 +716,21 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 8,
     color: '#fff',
+  },
+  speedUpPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    backgroundColor: 'rgba(103, 78, 167, 0.13)',
+    borderWidth: 1,
+    borderColor: 'rgba(103, 78, 167, 0.25)',
+  },
+  speedUpPillText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 10.5,
+    color: '#6B4EA7',
   },
 });

@@ -153,6 +153,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const floor = useFloor(floorId);
   const workers = useGameStore((s) => s.workers);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const gems = useGameStore((s) => s.gems);
   const dynamicFloorType = openedFloorTypes?.[String(floorId)];
   const scheme = FLOOR_SCHEMES[floorId] ?? (dynamicFloorType ? FLOOR_TYPE_SCHEMES[dynamicFloorType] : undefined) ?? FLOOR_SCHEMES[2];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
@@ -223,6 +224,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
               accentColor={scheme.color}
               onHire={onHireSlot}
               deliveryLockMs={deliveryLockMs}
+              gems={gems}
             />
           );
         })}
