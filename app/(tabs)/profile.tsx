@@ -88,19 +88,19 @@ export default function ProfileScreen() {
     >
       <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{t('profile.title')}</Text>
-        </View>
-
         <View style={styles.card}>
-          <LinearGradient
-            colors={['#74D3C4', '#3FA9A0']}
-            style={styles.avatar}
-          >
-            <Text style={styles.avatarText}>{initial}</Text>
-          </LinearGradient>
-          <Text style={styles.name}>{player?.playerName ?? t('profile.guestFallbackName')}</Text>
-          <Text style={styles.email}>{player?.email ?? ''}</Text>
+          <View style={styles.profileRow}>
+            <LinearGradient
+              colors={['#74D3C4', '#3FA9A0']}
+              style={styles.avatar}
+            >
+              <Text style={styles.avatarText}>{initial}</Text>
+            </LinearGradient>
+            <View style={styles.profileInfo}>
+              <Text style={styles.name}>{player?.playerName ?? t('profile.guestFallbackName')}</Text>
+              <Text style={styles.email}>{player?.email ?? ''}</Text>
+            </View>
+          </View>
 
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
@@ -172,20 +172,9 @@ const styles = StyleSheet.create({
   scroll: {
     paddingBottom: 150,
   },
-  header: {
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 12,
-  },
-  title: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 20,
-    color: '#27331F',
-  },
   card: {
     marginHorizontal: 20,
-    marginTop: 20,
+    marginTop: 60,
     backgroundColor: '#fff',
     borderRadius: 24,
     padding: 28,
@@ -215,11 +204,19 @@ const styles = StyleSheet.create({
     fontSize: 30,
     color: '#fff',
   },
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    gap: 16,
+  },
+  profileInfo: {
+    flex: 1,
+  },
   name: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 22,
     color: '#27331F',
-    marginTop: 14,
   },
   email: {
     fontFamily: 'Nunito_600SemiBold',

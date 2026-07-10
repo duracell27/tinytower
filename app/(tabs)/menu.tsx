@@ -22,7 +22,7 @@ export default function MenuScreen() {
         <Pressable style={styles.menuItem} onPress={() => setInventoryOpen(true)}>
           <Image
             source={require('../../assets/img/werehouse.png')}
-            style={{ width: 32, height: 32 }}
+            style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
           <Text style={styles.menuLabel}>{t('menu.inventory')}</Text>
@@ -55,7 +55,9 @@ const styles = StyleSheet.create({
     gap: 14,
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 16,
+    paddingVertical: 10,
+    paddingLeft: 10,
+    paddingRight: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
