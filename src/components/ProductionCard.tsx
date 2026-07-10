@@ -488,9 +488,9 @@ export default function ProductionCard({
         ) : effectiveStage === 'DELIVERING' ? (
           <Pressable
             onPress={handleSpeedUp}
-            style={({ pressed }) => [styles.speedUpPill, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [styles.speedUpPill, { borderColor: accentColor }, pressed && { opacity: 0.7 }]}
           >
-            <Text style={styles.speedUpPillText}>⚡ {speedUpCost}</Text>
+            <Text style={styles.speedUpPillText}>speed up {speedUpCost}</Text>
             <GemIcon size={12} />
           </Pressable>
         ) : effectiveStage === 'READY_TO_LIST' && subText ? (
@@ -724,13 +724,13 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     paddingHorizontal: 8,
     borderRadius: 10,
-    backgroundColor: 'rgba(103, 78, 167, 0.13)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(103, 78, 167, 0.25)',
+    borderColor: 'transparent',
   },
   speedUpPillText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 10.5,
-    color: '#6B4EA7',
+    color: '#8A8475',
   },
 });
