@@ -204,6 +204,18 @@ export default function ProductionCard({
     ? gameConfig.productionTypes[production.typeId] ?? null
     : null;
 
+  // Get shirt color from floor type config
+  const shirtColor = floorType && gameConfig.floorTypes[floorType]
+    ? gameConfig.floorTypes[floorType].shirtColor
+    : '#999';
+
+  // Card border: gold for specialists, else shirt color
+  const cardBorderColor = worker?.isSpecialist ? '#F5C842' : (worker ? shirtColor : 'transparent');
+
+  // Level badge background: gold for specialists, else accent color
+  const levelBadgeBg = worker?.isSpecialist ? '#F5C842' : accentColor;
+  const levelBadgeTextColor = worker?.isSpecialist ? '#fff' : '#fff';
+
   const status = getProductionStatus(production, typeConfig, now, balance);
   const { effectiveStage, timeRemaining, canAct } = status;
 
@@ -394,7 +406,7 @@ export default function ProductionCard({
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: cardBg }]}>
+    <View style={[styles.card, { backgroundColor: cardBg, borderLeftColor: cardBorderColor, borderRightColor: cardBorderColor }]}>
       {/* Title */}
       <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
         {productTitle}
@@ -427,8 +439,8 @@ export default function ProductionCard({
             <View style={styles.workerBadge}>
               <WorkerAvatar worker={worker} size={24} />
             </View>
-            <View style={[styles.workerLevelBadge, { backgroundColor: accentColor }]}>
-              <Text style={styles.workerLevelText}>{worker.level}</Text>
+            <View style={[styles.workerLevelBadge, { backgroundColor: levelBadgeBg }]}>
+              <Text style={[styles.workerLevelText, { color: levelBadgeTextColor }]}>{worker.level}</Text>
             </View>
             {hasMultiplier && (
               <View style={[styles.bonusBubble, { backgroundColor: accentColor }]}>
@@ -531,6 +543,8 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255,255,255,0.55)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.07)',
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
     shadowColor: 'rgba(60,70,45,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
