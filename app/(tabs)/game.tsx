@@ -80,8 +80,8 @@ export default function GameScreen() {
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
 
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig),
-    [floors, workers, openedFloorTypes],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now),
+    [floors, workers, openedFloorTypes, now],
   );
 
   const { nextFloorId, nextFloorUnlock } = React.useMemo(() => {

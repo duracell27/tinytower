@@ -6,6 +6,7 @@ export function calcRevenuePerMin(
   workers: Worker[],
   openedFloorTypes: Record<string, string>,
   config: GameConfig,
+  now: number,
 ): number {
   let total = 0;
   for (const floor of floors) {
@@ -17,6 +18,7 @@ export function calcRevenuePerMin(
       if (production.stage !== 'SELLING' || !production.typeId) return;
       const typeConfig = config.productionTypes[production.typeId];
       if (!typeConfig) return;
+      if (now - production.stageStartedAt >= typeConfig.sellDuration) return;
 
       const worker = getWorkerForSlot(workers, floor.id, slotIdx);
       const multiplier = worker && floorType

@@ -25,7 +25,7 @@ const mockConfig = {
 
 describe('calcRevenuePerMin', () => {
   it('returns 0 when no floors', () => {
-    expect(calcRevenuePerMin([], [], {}, mockConfig)).toBe(0);
+    expect(calcRevenuePerMin([], [], {}, mockConfig, 0)).toBe(0);
   });
 
   it('returns 0 when no productions are SELLING', () => {
@@ -33,7 +33,7 @@ describe('calcRevenuePerMin', () => {
       id: 2,
       productions: [{ typeId: 'buns', stage: 'DELIVERING', stageStartedAt: 0 }],
     }];
-    expect(calcRevenuePerMin(floors, [], {}, mockConfig)).toBe(0);
+    expect(calcRevenuePerMin(floors, [], {}, mockConfig, 0)).toBe(0);
   });
 
   it('skips production with null typeId', () => {
@@ -41,7 +41,16 @@ describe('calcRevenuePerMin', () => {
       id: 2,
       productions: [{ typeId: null, stage: 'SELLING', stageStartedAt: 0 }],
     }];
-    expect(calcRevenuePerMin(floors, [], {}, mockConfig)).toBe(0);
+    expect(calcRevenuePerMin(floors, [], {}, mockConfig, 0)).toBe(0);
+  });
+
+  it('skips expired SELLING production (sale ended, awaiting collect)', () => {
+    // stageStartedAt=0, sellDuration=300_000ms → expired when now >= 300_000
+    const floors: Floor[] = [{
+      id: 2,
+      productions: [{ typeId: 'buns', stage: 'SELLING', stageStartedAt: 0 }],
+    }];
+    expect(calcRevenuePerMin(floors, [], {}, mockConfig, 300_000)).toBe(0);
   });
 
   it('computes revenuePerMin for one SELLING production with no worker', () => {
@@ -52,7 +61,7 @@ describe('calcRevenuePerMin', () => {
       id: 2,
       productions: [{ typeId: 'buns', stage: 'SELLING', stageStartedAt: 0 }],
     }];
-    expect(calcRevenuePerMin(floors, [], {}, mockConfig)).toBe(12);
+    expect(calcRevenuePerMin(floors, [], {}, mockConfig, 0)).toBe(12);
   });
 
   it('applies 2x multiplier for dream-job worker', () => {
@@ -66,7 +75,7 @@ describe('calcRevenuePerMin', () => {
       floorType: 'green', dreamJob: 'buns',
       assignedFloorId: 2, assignedSlotIdx: 0,
     })];
-    expect(calcRevenuePerMin(floors, workers, {}, mockConfig)).toBe(25);
+    expect(calcRevenuePerMin(floors, workers, {}, mockConfig, 0)).toBe(25);
   });
 
   it('applies 1.3x multiplier for mid-mood worker', () => {
@@ -80,7 +89,7 @@ describe('calcRevenuePerMin', () => {
       floorType: 'green', dreamJob: 'other',
       assignedFloorId: 2, assignedSlotIdx: 0,
     })];
-    expect(calcRevenuePerMin(floors, workers, {}, mockConfig)).toBe(16);
+    expect(calcRevenuePerMin(floors, workers, {}, mockConfig, 0)).toBe(16);
   });
 
   it('applies specialist bonus from same floor', () => {
@@ -94,7 +103,7 @@ describe('calcRevenuePerMin', () => {
     const workers = [makeWorker({
       assignedFloorId: 2, assignedSlotIdx: 1, isSpecialist: true,
     })];
-    expect(calcRevenuePerMin(floors, workers, {}, mockConfig)).toBe(13);
+    expect(calcRevenuePerMin(floors, workers, {}, mockConfig, 0)).toBe(13);
   });
 
   it('sums across multiple SELLING productions on different floors', () => {
@@ -107,7 +116,7 @@ describe('calcRevenuePerMin', () => {
       { id: 2, productions: [{ typeId: 'buns', stage: 'SELLING', stageStartedAt: 0 }] },
       { id: 3, productions: [{ typeId: 'cards', stage: 'SELLING', stageStartedAt: 0 }] },
     ];
-    expect(calcRevenuePerMin(floors, [], { '3': 'blue' }, mockConfig)).toBe(28);
+    expect(calcRevenuePerMin(floors, [], { '3': 'blue' }, mockConfig, 0)).toBe(28);
   });
 
   it('resolves floorType from openedFloorTypes for dynamic floors', () => {
@@ -123,6 +132,6 @@ describe('calcRevenuePerMin', () => {
       floorType: 'green', dreamJob: 'buns',
       assignedFloorId: 99, assignedSlotIdx: 0,
     })];
-    expect(calcRevenuePerMin(floors, workers, { '99': 'green' }, mockConfig)).toBe(25);
+    expect(calcRevenuePerMin(floors, workers, { '99': 'green' }, mockConfig, 0)).toBe(25);
   });
 });
