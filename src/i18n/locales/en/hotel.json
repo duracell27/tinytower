@@ -109,5 +109,30 @@
       "newWorkers": "🏨 New Workers: {{count}}"
     },
     "done": "Done"
+  },
+  "workersPanel": {
+    "title": "My Workers",
+    "subtitle": "All employees",
+    "tabs": {
+      "unsatisfied": "Unsatisfied",
+      "mid": "Mid",
+      "happy": "Happy",
+      "specialists": "Specialists"
+    },
+    "fireButton": "Fire",
+    "trainButton": "Train · 💎10",
+    "fireBlockedTitle": "Cannot Fire",
+    "fireBlockedDelivering": "{{name}} is delivering, {{time}} remaining.",
+    "fireBlockedSelling": "{{name}} is selling, {{time}} remaining.",
+    "fireHotelFullTitle": "Hotel is full",
+    "fireHotelFullMessage": "{{name}} will permanently leave the skyscraper.",
+    "fireHotelFullConfirm": "Confirm",
+    "fireHotelFullCancel": "Cancel",
+    "workerJobCard": {
+      "worksAt": "Works At",
+      "dreamJob": "Dream Job",
+      "skill": "Skill",
+      "floor": "Floor {{id}}"
+    }
   }
 }
