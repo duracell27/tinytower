@@ -18,6 +18,7 @@ import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
+import { getExhaustedFloorTypes } from '../../shared/engine/floorTypeUtils';
 import { syncService } from '../../src/services/sync';
 import { xpForLevel } from '../../shared/engine/xp';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
@@ -83,6 +84,23 @@ export default function GameScreen() {
     () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now),
     [floors, workers, openedFloorTypes, now],
   );
+
+  const exhaustedByFloor = React.useMemo(() => {
+    const map = new Map<number, Set<string>>();
+    for (const uc of underConstruction) {
+      map.set(
+        uc.floorId,
+        getExhaustedFloorTypes(
+          uc.floorId,
+          floors,
+          openedFloorTypes ?? {},
+          underConstruction,
+          gameConfig,
+        ),
+      );
+    }
+    return map;
+  }, [underConstruction, floors, openedFloorTypes]);
 
   const { nextFloorId, nextFloorUnlock } = React.useMemo(() => {
     const highestFloorId = Math.max(
@@ -279,6 +297,7 @@ export default function GameScreen() {
             selectFloorType(uc.floorId, floorType);
             setPickerOpenFor(null);
           }}
+          exhaustedTypes={exhaustedByFloor.get(uc.floorId)}
         />
       ))}
       <LevelUpModal suppressWhileOpen={lobbyOpen || hotelOpen} />
