@@ -55,6 +55,8 @@ interface GameActions {
   assignWorker: (workerId: string, floorId: number, slotIdx: number) => void;
   fireWorker: (workerId: string) => void;
   evictWorker: (workerId: string) => void;
+  upgradeToSpecialist: (workerId: string) => void;
+  fireAndEvictWorker: (workerId: string) => void;
   spawnVisitor: () => void;
   liftVisitor: () => void;
   collectTip: () => void;
@@ -253,6 +255,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
     executeCommand(get, set, {
       id: uuid(),
       type: 'evict_worker',
+      workerId,
+      timestamp: clock.now(),
+    });
+  },
+
+  upgradeToSpecialist: (workerId) => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'upgrade_to_specialist',
+      workerId,
+      timestamp: clock.now(),
+    });
+  },
+
+  fireAndEvictWorker: (workerId) => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'fire_and_evict_worker',
       workerId,
       timestamp: clock.now(),
     });
