@@ -75,7 +75,7 @@ export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins
             </View>
             <View style={styles.nameColumn}>
               <Text style={styles.nameText}>{name}</Text>
-              {revenuePerMin !== undefined && revenuePerMin > 0 && (
+              {revenuePerMin !== undefined && (
                 <View style={styles.revenuePill}>
                   <CoinIcon size={12} />
                   <Text style={styles.revenuePillText}>{revenuePerMin} /min</Text>
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   },
   revenuePillText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 14,
+    fontSize: 12,
     color: '#C28A22',
   },
   currencySection: {
