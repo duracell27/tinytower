@@ -146,12 +146,14 @@ export default function WorkerJobCard({
               <View style={[styles.moodDotInner, { backgroundColor: isMidTab ? '#E5A72E' : '#49AA38' }]} />
             </View>
           </View>
-          <View style={styles.iconRow}>
-            <Svg width={13} height={13} viewBox="0 0 24 24" fill="none">
-              <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-            </Svg>
-            <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{`${dreamJobName} · ${category}`}</Text>
-          </View>
+          {isMidTab && (
+            <View style={styles.iconRow}>
+              <Svg width={13} height={13} viewBox="0 0 24 24" fill="none">
+                <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+              </Svg>
+              <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{`${dreamJobName} · ${category}`}</Text>
+            </View>
+          )}
           <View style={styles.iconRow}>
             <Svg width={13} height={13} viewBox="0 0 24 24" fill="none">
               <Path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
