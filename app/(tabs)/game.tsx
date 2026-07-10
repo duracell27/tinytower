@@ -20,13 +20,14 @@ import { useGameClock } from '../../src/hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { syncService } from '../../src/services/sync';
 import { xpForLevel } from '../../shared/engine/xp';
+import type { UnderConstructionState } from '../../shared/types';
 
 type FloorItem =
   | { type: 'production'; id: number }
   | { type: 'hotel' }
   | { type: 'lobby' }
   | { type: 'buyFloor' }
-  | { type: 'underConstruction'; floorId: number };
+  | { type: 'underConstruction'; floorId: number; uc: UnderConstructionState };
 
 
 function formatCoins(n: number): string {
@@ -93,14 +94,23 @@ export default function GameScreen() {
     if (nextFloorUnlock && lastSyncAt > 0) {
       items.push({ type: 'buyFloor' });
     }
-    const sortedUc = [...underConstruction].sort((a, b) => b.floorId - a.floorId);
-    for (const uc of sortedUc) {
-      items.push({ type: 'underConstruction', floorId: uc.floorId });
+
+    // Merge all floors (production + UC) sorted by ID descending so they appear
+    // in the correct tower order (highest floor at top, between buyFloor and hotel).
+    const ucById = new Map(underConstruction.map((uc) => [uc.floorId, uc]));
+    const allIds = new Set([
+      ...floors.map((f) => f.id),
+      ...underConstruction.map((uc) => uc.floorId),
+    ]);
+    for (const id of [...allIds].sort((a, b) => b - a)) {
+      const uc = ucById.get(id);
+      if (uc) {
+        items.push({ type: 'underConstruction', floorId: id, uc });
+      } else {
+        items.push({ type: 'production', id });
+      }
     }
-    const sortedFloorIds = [...floors.map((f) => f.id)].sort((a, b) => b - a);
-    for (const id of sortedFloorIds) {
-      items.push({ type: 'production', id });
-    }
+
     items.push({ type: 'hotel' });
     items.push({ type: 'lobby' });
     return items;
@@ -134,8 +144,7 @@ export default function GameScreen() {
 
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
     if (item.type === 'underConstruction') {
-      const uc = underConstruction.find((u) => u.floorId === item.floorId);
-      if (!uc) return null;
+      const { uc } = item;
       const selType = uc.selectedFloorType ?? null;
       return (
         <View style={styles.floorWrapper}>
@@ -205,7 +214,7 @@ export default function GameScreen() {
     }
     return null;
   }, [balance, now, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
-      underConstruction, buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
+      buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
       showInsufficientResources]);
 
   return (
@@ -265,7 +274,7 @@ export default function GameScreen() {
       ))}
       <LevelUpModal suppressWhileOpen={lobbyOpen || hotelOpen} />
       <AchievementModal />
-      <InsufficientResourcesModal />
+      {!hotelOpen && !lobbyOpen && <InsufficientResourcesModal />}
     </View>
   );
 }
