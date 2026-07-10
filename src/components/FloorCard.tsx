@@ -199,7 +199,7 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
           {specialistBonus > 0 && (
             <View style={styles.specialistBonusBadge}>
               <Text style={styles.specialistBonusBadgeText}>
-                +{Math.round(specialistBonus * 100)}%
+                +{Math.round(specialistBonus * 100)}% 💰
               </Text>
             </View>
           )}
@@ -338,8 +338,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   specialistBonusBadgeText: {
-    fontFamily: 'Fredoka_700Bold',
+    fontFamily: 'Fredoka_600SemiBold',
     fontSize: 11,
-    color: '#fff',
+    color: '#7A5A00',
   },
 });
