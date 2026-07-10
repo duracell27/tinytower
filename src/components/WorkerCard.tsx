@@ -96,7 +96,7 @@ export default function WorkerCard({
               />
             </Svg>
             <Text style={[styles.dreamJobText, { color: accent }]}>
-              {dreamJobName}
+              {`${dreamJobName} · ${category}`}
             </Text>
           </View>
 
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     width: 15,
     height: 15,
     borderRadius: 8,
-    backgroundColor: 'rgba(226,104,90,0.24)',
+    backgroundColor: 'rgba(224,90,74,0.24)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     width: 9,
     height: 9,
     borderRadius: 5,
-    backgroundColor: '#E2685A',
+    backgroundColor: '#E05A4A',
   },
   detailRow: {
     flexDirection: 'row',
