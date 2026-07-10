@@ -400,7 +400,9 @@ export default function ProductionCard({
           <Text style={styles.actionLabel}>{t('productionCard.actions.hire')}</Text>
         </Pressable>
 
-        <View style={styles.subContainer} />
+        <View style={styles.subContainer}>
+          <Text style={styles.statusText}>{t('productionCard.actions.workerWanted')}</Text>
+        </View>
       </View>
     );
   }
