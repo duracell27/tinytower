@@ -436,7 +436,7 @@ export default function ProductionCard({
         {/* Worker mini-indicator */}
         {worker && (
           <View style={styles.workerBadgeColumn}>
-            <View style={styles.workerBadge}>
+            <View style={[styles.workerBadge, worker.isSpecialist && { borderColor: '#F5C842' }]}>
               <WorkerAvatar worker={worker} size={24} />
             </View>
             <View style={[styles.workerLevelBadge, { backgroundColor: levelBadgeBg }]}>
