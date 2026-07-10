@@ -140,13 +140,17 @@ export default function WorkerJobCard({
         </View>
 
         <View style={styles.infoColumn}>
-          <Text style={styles.nameText} numberOfLines={1}>{worker.name}</Text>
+          <View style={styles.nameRow}>
+            <Text style={styles.nameText} numberOfLines={1}>{worker.name}</Text>
+            <View style={[styles.moodDotOuter, { backgroundColor: isMidTab ? 'rgba(234,179,8,0.24)' : 'rgba(34,197,94,0.24)' }]}>
+              <View style={[styles.moodDotInner, { backgroundColor: isMidTab ? '#EAB308' : '#22C55E' }]} />
+            </View>
+          </View>
           {isMidTab ? (
             <>
               <View style={styles.iconRow}>
                 <Svg width={13} height={13} viewBox="0 0 24 24" fill="none">
-                  <Path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                  <Path d="M4 22V15" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                  <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                 </Svg>
                 <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{dreamJobName}</Text>
               </View>
@@ -155,12 +159,12 @@ export default function WorkerJobCard({
                   <Path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                   <Path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                 </Svg>
-                <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{floorName}</Text>
+                <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{`${floorName} · ${productionName}`}</Text>
               </View>
             </>
           ) : (
             <>
-              <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{floorName}</Text>
+              <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{`${floorName} · ${productionName}`}</Text>
               <Text style={styles.statusText} numberOfLines={1}>{statusLabel}</Text>
             </>
           )}
@@ -252,6 +256,23 @@ const styles = StyleSheet.create({
     right: -2,
     backgroundColor: '#fff',
     borderRadius: 12,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  moodDotOuter: {
+    width: 15,
+    height: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  moodDotInner: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
   },
   infoColumn: {
     flex: 1,
