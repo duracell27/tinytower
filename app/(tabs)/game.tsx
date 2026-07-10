@@ -20,6 +20,7 @@ import { useGameClock } from '../../src/hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { syncService } from '../../src/services/sync';
 import { xpForLevel } from '../../shared/engine/xp';
+import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import type { UnderConstructionState } from '../../shared/types';
 
 type FloorItem =
@@ -75,6 +76,13 @@ export default function GameScreen() {
   const [pickerOpenFor, setPickerOpenFor] = useState<number | null>(null);
 
   const floors = useGameStore((s) => s.floors);
+  const workers = useGameStore((s) => s.workers);
+  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+
+  const revenuePerMin = React.useMemo(
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig),
+    [floors, workers, openedFloorTypes],
+  );
 
   const { nextFloorId, nextFloorUnlock } = React.useMemo(() => {
     const highestFloorId = Math.max(
@@ -251,6 +259,7 @@ export default function GameScreen() {
           initial={initial}
           coins={formatCoins(balance)}
           gems={String(gems)}
+          revenuePerMin={revenuePerMin}
         />
       </ImageBackground>
 
