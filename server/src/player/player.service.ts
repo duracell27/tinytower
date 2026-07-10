@@ -70,7 +70,7 @@ export class PlayerService {
         () => generateVisitorAppearance(),
       );
       await tx.playerState.create({
-        data: { playerId: player.id, lobbyVisitors: JSON.stringify(initialVisitors) },
+        data: { playerId: player.id, lobbyVisitors: initialVisitors },
       });
 
       return player;

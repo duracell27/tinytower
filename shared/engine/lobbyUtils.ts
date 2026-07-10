@@ -120,19 +120,19 @@ export function generateRandomVisitorRole(
   if (role === 'businessman') {
     targetFloor = 2 + Math.floor(Math.random() * (totalFloors - 1));
   } else if (role === 'deliverer') {
-    const deliveringFloors = config.floors.filter((fc) => {
-      const floor = state.floors.find((f) => f.id === fc.id);
-      return floor?.productions.some(isActiveDelivering);
-    });
-    const picked = deliveringFloors[Math.floor(Math.random() * deliveringFloors.length)];
-    targetFloor = picked.id;
+    const deliveringFloors = state.floors.filter((f) => f.productions.some(isActiveDelivering));
+    if (deliveringFloors.length === 0) {
+      targetFloor = 1 + Math.floor(Math.random() * totalFloors);
+    } else {
+      targetFloor = deliveringFloors[Math.floor(Math.random() * deliveringFloors.length)].id;
+    }
   } else if (role === 'seller') {
-    const sellingFloors = config.floors.filter((fc) => {
-      const floor = state.floors.find((f) => f.id === fc.id);
-      return floor?.productions.some(isActiveSelling);
-    });
-    const picked = sellingFloors[Math.floor(Math.random() * sellingFloors.length)];
-    targetFloor = picked.id;
+    const sellingFloors = state.floors.filter((f) => f.productions.some(isActiveSelling));
+    if (sellingFloors.length === 0) {
+      targetFloor = 1 + Math.floor(Math.random() * totalFloors);
+    } else {
+      targetFloor = sellingFloors[Math.floor(Math.random() * sellingFloors.length)].id;
+    }
   } else {
     targetFloor = 1 + Math.floor(Math.random() * totalFloors);
   }
