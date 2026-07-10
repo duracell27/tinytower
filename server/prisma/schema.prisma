@@ -19,6 +19,8 @@ model Player {
   totalBought        Int                 @default(0)
   totalListed        Int                 @default(0)
   totalSold          Int                 @default(0)
+  maxRevenuePerMin   Int                 @default(0)
+  openedFloorsCount  Int                 @default(0)
   lastSeenAt         DateTime            @default(now())
   createdAt          DateTime            @default(now())
   floors             Floor[]
