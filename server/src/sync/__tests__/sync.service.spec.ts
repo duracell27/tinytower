@@ -100,6 +100,8 @@ describe('SyncService', () => {
     totalBought: 0,
     totalListed: 0,
     totalSold: 0,
+    maxRevenuePerMin: 0,
+    openedFloorsCount: 0,
     lastSeenAt: new Date(Date.now() - 60000),
     createdAt: new Date(),
     floors: mockFloors,
@@ -503,6 +505,47 @@ describe('SyncService', () => {
           data: expect.not.objectContaining({ lobbyState: expect.anything() }),
         }),
       );
+    });
+
+    it('should set openedFloorsCount from player floor types on sync', async () => {
+      const playerWithFloorTypes = {
+        ...mockPlayer,
+        openedFloorsCount: 0,
+        floorTypes: [
+          { playerId: 'player-uuid', floorId: 10, floorType: 'food' },
+          { playerId: 'player-uuid', floorId: 11, floorType: 'tech' },
+        ],
+      };
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithFloorTypes)
+        .mockResolvedValueOnce({ ...playerWithFloorTypes, openedFloorsCount: 2 });
+
+      await syncService.processSync('player-uuid', [], 0);
+
+      expect(txMock.player.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ openedFloorsCount: 2 }),
+        }),
+      );
+    });
+
+    it('should not overwrite maxRevenuePerMin when current revenue is lower than stored', async () => {
+      const playerWithHighMaxRevenue = {
+        ...mockPlayer,
+        maxRevenuePerMin: 999,
+        openedFloorsCount: 0,
+      };
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithHighMaxRevenue)
+        .mockResolvedValueOnce({ ...playerWithHighMaxRevenue });
+
+      await syncService.processSync('player-uuid', [], 0);
+
+      const updateCall = txMock.player.update.mock.calls[0][0];
+      // All productions are IDLE so calcRevenuePerMin returns 0 < 999
+      expect(updateCall.data).not.toHaveProperty('maxRevenuePerMin');
     });
   });
 });

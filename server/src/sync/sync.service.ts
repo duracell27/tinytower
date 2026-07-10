@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { processCommand } from '@shared/engine/processCommand';
 import { xpForCommand, applyXpGain } from '@shared/engine/xp';
 import { gameConfig } from '@shared/config/gameConfig';
+import { calcRevenuePerMin } from '@shared/engine/ratingUtils';
 import type { GameState, Command, Floor, Production, Worker, AchievementGrant } from '@shared/types';
 
 export interface SyncResult {
@@ -100,6 +101,15 @@ export class SyncService {
       gems: baseGems + xpResult.bonusGems,
     };
 
+    const currentRevenue = calcRevenuePerMin(
+      gameState.floors,
+      gameState.workers,
+      gameState.openedFloorTypes ?? {},
+      gameConfig,
+      serverNow,
+    );
+    const currentOpenedFloors = Object.keys(gameState.openedFloorTypes ?? {}).length;
+
     let ackCursor = lastAckCursor;
     let newAchievements: AchievementGrant[] = [];
 
@@ -108,8 +118,8 @@ export class SyncService {
         // Re-read playerLevel/playerXp under a row lock to prevent concurrent-sync races.
         // If another request committed a level change between our initial read and now,
         // recompute XP from the locked values so both requests' rewards are applied correctly.
-        const [locked] = await tx.$queryRaw<{ playerLevel: number; playerXp: number; totalBought: number; totalListed: number; totalSold: number }[]>`
-          SELECT "playerLevel", "playerXp", "totalBought", "totalListed", "totalSold" FROM "Player" WHERE id = ${playerId} FOR UPDATE
+        const [locked] = await tx.$queryRaw<{ playerLevel: number; playerXp: number; totalBought: number; totalListed: number; totalSold: number; maxRevenuePerMin: number }[]>`
+          SELECT "playerLevel", "playerXp", "totalBought", "totalListed", "totalSold", "maxRevenuePerMin" FROM "Player" WHERE id = ${playerId} FOR UPDATE
         `;
         if (locked && (locked.playerLevel !== player.playerLevel || locked.playerXp !== player.playerXp)) {
           xpResult = applyXpGain(locked.playerLevel, locked.playerXp, totalXpGained);
@@ -172,6 +182,10 @@ export class SyncService {
               increment: (acceptedCommands.length > 0 || localNewAchievements.length > 0) ? 1 : 0,
             },
             lastSeenAt: new Date(serverNow),
+            openedFloorsCount: currentOpenedFloors,
+            ...(currentRevenue > (locked?.maxRevenuePerMin ?? player.maxRevenuePerMin ?? 0)
+              ? { maxRevenuePerMin: currentRevenue }
+              : {}),
           },
         });
 
