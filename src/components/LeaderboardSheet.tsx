@@ -30,6 +30,12 @@ const TAB_ACTIVE_COLORS: Record<Tab, string> = {
   revenue: '#E5A72E',
 };
 
+const VALUE_LABELS: Record<Tab, string> = {
+  level: 'LVL',
+  floors: 'FLOORS',
+  revenue: '/MIN',
+};
+
 function rankBorder(rank: number): { borderWidth: number; borderColor: string } {
   if (rank === 1) return { borderWidth: 2, borderColor: '#F5C842' };
   if (rank === 2) return { borderWidth: 2, borderColor: '#B8C0CC' };
@@ -100,21 +106,27 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
   const isOnPage = data?.entries.some(e => e.playerId === myId) ?? false;
 
   function formatValue(v: number) {
-    return tab === 'revenue' ? `${formatNum(v)}${t('leaderboard.revenueSuffix')}` : String(v);
+    return formatNum(v);
   }
 
   const renderEntry = useCallback(({ item }: { item: LeaderboardEntry }) => {
     const isMe = item.playerId === myId;
+    const accent = TAB_ACTIVE_COLORS[tab];
     return (
       <View style={[styles.row, rankBorder(item.rank), isMe && styles.rowHighlight]}>
-        <Text style={[styles.rank, isMe && styles.rankHighlight]}>#{item.rank}</Text>
+        <Text style={[styles.rankNum, isMe && styles.rankHighlight]}>#{item.rank}</Text>
         <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.playerName) }]}>
           <Text style={styles.avatarText}>{item.playerName.charAt(0).toUpperCase()}</Text>
         </View>
         <Text style={[styles.name, isMe && styles.textHighlight]} numberOfLines={1}>
           {item.playerName}
         </Text>
-        <Text style={[styles.value, isMe && styles.textHighlight]}>{formatValue(item.value)}</Text>
+        <View style={styles.valueBlock}>
+          <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
+          <Text style={[styles.valueBig, { color: isMe ? '#B8860B' : accent }]}>
+            {formatValue(item.value)}
+          </Text>
+        </View>
       </View>
     );
   }, [myId, tab]);
@@ -182,14 +194,17 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
 
         {!loading && !error && data && !isOnPage && (
           <View style={[styles.row, rankBorder(data.currentPlayer.rank), styles.rowHighlight, styles.pinnedRow]}>
-            <Text style={[styles.rank, styles.rankHighlight]}>#{data.currentPlayer.rank}</Text>
+            <Text style={[styles.rankNum, styles.rankHighlight]}>#{data.currentPlayer.rank}</Text>
             <View style={[styles.avatar, { backgroundColor: '#C9951A' }]}>
               <Text style={styles.avatarText}>★</Text>
             </View>
             <Text style={[styles.name, styles.textHighlight]}>{t('leaderboard.you')}</Text>
-            <Text style={[styles.value, styles.textHighlight]}>
-              {formatValue(data.currentPlayer.value)}
-            </Text>
+            <View style={styles.valueBlock}>
+              <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
+              <Text style={[styles.valueBig, { color: '#B8860B' }]}>
+                {formatValue(data.currentPlayer.value)}
+              </Text>
+            </View>
           </View>
         )}
 
@@ -274,11 +289,11 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   rowHighlight: { backgroundColor: '#FFF7E0' },
-  rank: {
+  rankNum: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
     color: '#9CA3AF',
-    width: 38,
+    width: 36,
   },
   rankHighlight: { color: '#B8860B' },
   avatar: {
@@ -293,8 +308,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
   },
-  name: { fontFamily: 'Fredoka_400Regular', fontSize: 15, color: '#2A3344', flex: 1 },
-  value: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#4B5563', textAlign: 'right' },
+  name: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2A3344', flex: 1 },
+  valueBlock: { alignItems: 'center', gap: 1 },
+  valueLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 8,
+    color: '#AEB4C0',
+    letterSpacing: 0.5,
+  },
+  valueBig: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 24,
+  },
   textHighlight: { color: '#B8860B' },
   pinnedRow: { marginHorizontal: 16, marginBottom: 6, borderRadius: 18 },
   pagination: {
