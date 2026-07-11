@@ -36,11 +36,11 @@ const VALUE_LABELS: Record<Tab, string> = {
   revenue: '/MIN',
 };
 
-function rankBorder(rank: number): { borderWidth: number; borderColor: string } {
-  if (rank === 1) return { borderWidth: 2, borderColor: '#F5C842' };
-  if (rank === 2) return { borderWidth: 2, borderColor: '#B8C0CC' };
-  if (rank === 3) return { borderWidth: 2, borderColor: '#C8926A' };
-  return { borderWidth: 1, borderColor: 'rgba(40,60,90,0.06)' };
+function rankStyle(rank: number): { borderWidth: number; borderColor: string; backgroundColor: string } {
+  if (rank === 1) return { borderWidth: 2, borderColor: '#F5C842', backgroundColor: '#FEFCE8' };
+  if (rank === 2) return { borderWidth: 2, borderColor: '#B8C0CC', backgroundColor: '#F4F6F8' };
+  if (rank === 3) return { borderWidth: 2, borderColor: '#C8926A', backgroundColor: '#FFF5EE' };
+  return { borderWidth: 1, borderColor: 'rgba(40,60,90,0.06)', backgroundColor: '#fff' };
 }
 
 interface Props {
@@ -113,7 +113,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     const isMe = item.playerId === myId;
     const accent = TAB_ACTIVE_COLORS[tab];
     return (
-      <View style={[styles.row, rankBorder(item.rank), isMe && styles.rowHighlight]}>
+      <View style={[styles.row, rankStyle(item.rank), isMe && styles.rowHighlight]}>
         <Text style={[styles.rankNum, isMe && styles.rankHighlight]}>#{item.rank}</Text>
         <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.playerName) }]}>
           <Text style={styles.avatarText}>{item.playerName.charAt(0).toUpperCase()}</Text>
@@ -193,7 +193,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         )}
 
         {!loading && !error && data && !isOnPage && (
-          <View style={[styles.row, rankBorder(data.currentPlayer.rank), styles.rowHighlight, styles.pinnedRow]}>
+          <View style={[styles.row, rankStyle(data.currentPlayer.rank), styles.rowHighlight, styles.pinnedRow]}>
             <Text style={[styles.rankNum, styles.rankHighlight]}>#{data.currentPlayer.rank}</Text>
             <View style={[styles.avatar, { backgroundColor: '#C9951A' }]}>
               <Text style={styles.avatarText}>★</Text>
@@ -284,7 +284,6 @@ const styles = StyleSheet.create({
     paddingLeft: 11,
     paddingRight: 13,
     marginBottom: 8,
-    backgroundColor: '#fff',
     borderRadius: 18,
     gap: 10,
   },
