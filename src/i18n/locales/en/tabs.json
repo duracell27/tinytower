@@ -33,7 +33,8 @@
     "heading": "Menu",
     "inventory": "Inventory",
     "warehouseTitle": "Warehouse",
-    "workers": "My Workers"
+    "workers": "My Workers",
+    "leaderboard": "Leaderboard"
   },
   "game": {
     "buyFloor": "Buy floor {{number}}"

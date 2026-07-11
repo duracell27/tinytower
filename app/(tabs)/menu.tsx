@@ -5,11 +5,13 @@ import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import WarehouseSheet from '../../src/components/WarehouseSheet';
 import WorkersPanel from '../../src/components/WorkersPanel';
+import LeaderboardSheet from '../../src/components/LeaderboardSheet';
 
 export default function MenuScreen() {
   const { t } = useTranslation('tabs');
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [workersOpen, setWorkersOpen] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
 
   return (
     <ImageBackground
@@ -38,10 +40,20 @@ export default function MenuScreen() {
           />
           <Text style={styles.menuLabel}>{t('menu.workers')}</Text>
         </Pressable>
+
+        <Pressable style={styles.menuItem} onPress={() => setLeaderboardOpen(true)}>
+          <Image
+            source={require('../../assets/img/menu/rating.png')}
+            style={{ width: 56, height: 56 }}
+            contentFit="contain"
+          />
+          <Text style={styles.menuLabel}>{t('menu.leaderboard')}</Text>
+        </Pressable>
       </View>
 
       <WarehouseSheet visible={inventoryOpen} onClose={() => setInventoryOpen(false)} />
       <WorkersPanel visible={workersOpen} onClose={() => setWorkersOpen(false)} />
+      <LeaderboardSheet visible={leaderboardOpen} onClose={() => setLeaderboardOpen(false)} />
     </ImageBackground>
   );
 }
