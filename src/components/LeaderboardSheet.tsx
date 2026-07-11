@@ -37,9 +37,9 @@ const VALUE_LABELS: Record<Tab, string> = {
 };
 
 function rankStyle(rank: number): { borderWidth: number; borderColor: string; backgroundColor: string } {
-  if (rank === 1) return { borderWidth: 2, borderColor: '#E8B800', backgroundColor: '#FFF5C2' };
-  if (rank === 2) return { borderWidth: 2, borderColor: '#A0AABA', backgroundColor: '#E2E6EC' };
-  if (rank === 3) return { borderWidth: 2, borderColor: '#B87040', backgroundColor: '#FFE0C4' };
+  if (rank === 1) return { borderWidth: 2, borderColor: '#E8B800', backgroundColor: '#FFF' };
+  if (rank === 2) return { borderWidth: 2, borderColor: '#A0AABA', backgroundColor: '#fff' };
+  if (rank === 3) return { borderWidth: 2, borderColor: '#B87040', backgroundColor: '#FFf' };
   return { borderWidth: 1, borderColor: 'rgba(40,60,90,0.06)', backgroundColor: '#fff' };
 }
 
@@ -113,19 +113,15 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     const isMe = item.playerId === myId;
     const accent = TAB_ACTIVE_COLORS[tab];
     return (
-      <View style={[styles.row, rankStyle(item.rank), isMe && styles.rowHighlight]}>
-        <Text style={[styles.rankNum, isMe && styles.rankHighlight]}>#{item.rank}</Text>
+      <View style={[styles.row, isMe ? styles.rowMe : rankStyle(item.rank)]}>
+        <Text style={styles.rankNum}>#{item.rank}</Text>
         <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.playerName) }]}>
           <Text style={styles.avatarText}>{item.playerName.charAt(0).toUpperCase()}</Text>
         </View>
-        <Text style={[styles.name, isMe && styles.textHighlight]} numberOfLines={1}>
-          {item.playerName}
-        </Text>
+        <Text style={styles.name} numberOfLines={1}>{item.playerName}</Text>
         <View style={styles.valueBlock}>
           <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
-          <Text style={[styles.valueBig, { color: isMe ? '#B8860B' : accent }]}>
-            {formatValue(item.value)}
-          </Text>
+          <Text style={[styles.valueBig, { color: accent }]}>{formatValue(item.value)}</Text>
         </View>
       </View>
     );
@@ -193,15 +189,15 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         )}
 
         {!loading && !error && data && !isOnPage && (
-          <View style={[styles.row, rankStyle(data.currentPlayer.rank), styles.rowHighlight, styles.pinnedRow]}>
-            <Text style={[styles.rankNum, styles.rankHighlight]}>#{data.currentPlayer.rank}</Text>
-            <View style={[styles.avatar, { backgroundColor: '#C9951A' }]}>
+          <View style={[styles.row, styles.rowMe, styles.pinnedRow]}>
+            <Text style={styles.rankNum}>#{data.currentPlayer.rank}</Text>
+            <View style={[styles.avatar, { backgroundColor: '#49AA38' }]}>
               <Text style={styles.avatarText}>★</Text>
             </View>
-            <Text style={[styles.name, styles.textHighlight]}>{t('leaderboard.you')}</Text>
+            <Text style={styles.name}>{t('leaderboard.you')}</Text>
             <View style={styles.valueBlock}>
               <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
-              <Text style={[styles.valueBig, { color: '#B8860B' }]}>
+              <Text style={[styles.valueBig, { color: TAB_ACTIVE_COLORS[tab] }]}>
                 {formatValue(data.currentPlayer.value)}
               </Text>
             </View>
@@ -287,14 +283,23 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     gap: 10,
   },
-  rowHighlight: { backgroundColor: '#FFF7E0' },
+  rowMe: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#49AA38',
+    borderStyle: 'dashed',
+    shadowColor: '#49AA38',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   rankNum: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
     color: '#9CA3AF',
     width: 36,
   },
-  rankHighlight: { color: '#B8860B' },
   avatar: {
     width: 36,
     height: 36,
@@ -319,7 +324,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 24,
   },
-  textHighlight: { color: '#B8860B' },
   pinnedRow: { marginHorizontal: 16, marginBottom: 6, borderRadius: 18 },
   pagination: {
     flexDirection: 'row',
