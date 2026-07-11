@@ -37,9 +37,9 @@ const VALUE_LABELS: Record<Tab, string> = {
 };
 
 function rankStyle(rank: number): { borderWidth: number; borderColor: string; backgroundColor: string } {
-  if (rank === 1) return { borderWidth: 2, borderColor: '#F5C842', backgroundColor: '#FEFCE8' };
-  if (rank === 2) return { borderWidth: 2, borderColor: '#B8C0CC', backgroundColor: '#F4F6F8' };
-  if (rank === 3) return { borderWidth: 2, borderColor: '#C8926A', backgroundColor: '#FFF5EE' };
+  if (rank === 1) return { borderWidth: 2, borderColor: '#E8B800', backgroundColor: '#FFF5C2' };
+  if (rank === 2) return { borderWidth: 2, borderColor: '#A0AABA', backgroundColor: '#E2E6EC' };
+  if (rank === 3) return { borderWidth: 2, borderColor: '#B87040', backgroundColor: '#FFE0C4' };
   return { borderWidth: 1, borderColor: 'rgba(40,60,90,0.06)', backgroundColor: '#fff' };
 }
 
