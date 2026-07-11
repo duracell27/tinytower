@@ -30,6 +30,13 @@ const TAB_ACTIVE_COLORS: Record<Tab, string> = {
   revenue: '#E5A72E',
 };
 
+function rankBorder(rank: number): { borderWidth: number; borderColor: string } {
+  if (rank === 1) return { borderWidth: 2, borderColor: '#F5C842' };
+  if (rank === 2) return { borderWidth: 2, borderColor: '#B8C0CC' };
+  if (rank === 3) return { borderWidth: 2, borderColor: '#C8926A' };
+  return { borderWidth: 1, borderColor: 'rgba(40,60,90,0.06)' };
+}
+
 interface Props {
   visible: boolean;
   onClose: () => void;
@@ -99,7 +106,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
   const renderEntry = useCallback(({ item }: { item: LeaderboardEntry }) => {
     const isMe = item.playerId === myId;
     return (
-      <View style={[styles.row, isMe && styles.rowHighlight]}>
+      <View style={[styles.row, rankBorder(item.rank), isMe && styles.rowHighlight]}>
         <Text style={[styles.rank, isMe && styles.rankHighlight]}>#{item.rank}</Text>
         <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.playerName) }]}>
           <Text style={styles.avatarText}>{item.playerName.charAt(0).toUpperCase()}</Text>
@@ -174,7 +181,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         )}
 
         {!loading && !error && data && !isOnPage && (
-          <View style={[styles.row, styles.rowHighlight, styles.pinnedRow]}>
+          <View style={[styles.row, rankBorder(data.currentPlayer.rank), styles.rowHighlight, styles.pinnedRow]}>
             <Text style={[styles.rank, styles.rankHighlight]}>#{data.currentPlayer.rank}</Text>
             <View style={[styles.avatar, { backgroundColor: '#C9951A' }]}>
               <Text style={styles.avatarText}>★</Text>
@@ -258,16 +265,13 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    marginBottom: 6,
+    paddingVertical: 11,
+    paddingLeft: 11,
+    paddingRight: 13,
+    marginBottom: 8,
     backgroundColor: '#fff',
-    borderRadius: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    borderRadius: 18,
+    gap: 10,
   },
   rowHighlight: { backgroundColor: '#FFF7E0' },
   rank: {
@@ -278,12 +282,11 @@ const styles = StyleSheet.create({
   },
   rankHighlight: { color: '#B8860B' },
   avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
   },
   avatarText: {
     fontFamily: 'Fredoka_600SemiBold',
@@ -293,7 +296,7 @@ const styles = StyleSheet.create({
   name: { fontFamily: 'Fredoka_400Regular', fontSize: 15, color: '#2A3344', flex: 1 },
   value: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#4B5563', textAlign: 'right' },
   textHighlight: { color: '#B8860B' },
-  pinnedRow: { marginHorizontal: 16, marginBottom: 4, borderRadius: 14 },
+  pinnedRow: { marginHorizontal: 16, marginBottom: 6, borderRadius: 18 },
   pagination: {
     flexDirection: 'row',
     alignItems: 'center',
