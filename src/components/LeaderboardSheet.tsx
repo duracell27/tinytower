@@ -3,8 +3,9 @@ import {
   View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal,
 } from 'react-native';
 import Animated, {
-  useSharedValue, useAnimatedStyle, withSpring, withTiming, runOnJS, Easing,
+  useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing,
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { api, type LeaderboardResponse, type LeaderboardEntry } from '../services/api';
@@ -14,6 +15,20 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
 
 type Tab = 'level' | 'floors' | 'revenue';
+
+const AVATAR_COLORS = ['#5B6CF8', '#49AA38', '#E5A72E', '#E05A4A', '#8B5CF6', '#06B6D4'];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+const TAB_ACTIVE_COLORS: Record<Tab, string> = {
+  level: '#5B6CF8',
+  floors: '#49AA38',
+  revenue: '#E5A72E',
+};
 
 interface Props {
   visible: boolean;
@@ -41,7 +56,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
   useEffect(() => {
     if (visible) {
       setMounted(true);
-      slideY.value = withSpring(0, { damping: 20, stiffness: 200 });
+      slideY.value = withTiming(0, { duration: 420, easing: Easing.bezier(0.4, 0, 0.2, 1) });
       scrimOpacity.value = withTiming(0.5, { duration: 300, easing: Easing.linear });
     } else if (mounted) {
       scrimOpacity.value = withTiming(0, { duration: 280, easing: Easing.linear });
@@ -86,6 +101,9 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     return (
       <View style={[styles.row, isMe && styles.rowHighlight]}>
         <Text style={[styles.rank, isMe && styles.rankHighlight]}>#{item.rank}</Text>
+        <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.playerName) }]}>
+          <Text style={styles.avatarText}>{item.playerName.charAt(0).toUpperCase()}</Text>
+        </View>
         <Text style={[styles.name, isMe && styles.textHighlight]} numberOfLines={1}>
           {item.playerName}
         </Text>
@@ -98,33 +116,41 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
 
   return (
     <Modal visible={mounted} transparent animationType="none" onRequestClose={onClose}>
-      {/* Scrim + tap to close */}
       <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
         <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]} />
       </Pressable>
 
-      {/* Sheet */}
       <Animated.View style={[styles.sheet, sheetStyle]}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{t('leaderboard.title')}</Text>
-          <Pressable onPress={onClose} hitSlop={12}>
-            <Text style={styles.closeIcon}>✕</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.tabs}>
-          {TABS.map(tabItem => (
-            <Pressable
-              key={tabItem.key}
-              style={[styles.tab, tab === tabItem.key && styles.tabActive]}
-              onPress={() => setTab(tabItem.key)}
-            >
-              <Text style={[styles.tabText, tab === tabItem.key && styles.tabTextActive]}>
-                {tabItem.label}
-              </Text>
+        <LinearGradient colors={['#5B8DD9', '#3A6BBF']} style={styles.gradientHeader}>
+          <View style={styles.header}>
+            <Text style={styles.title}>{t('leaderboard.title')}</Text>
+            <Pressable onPress={onClose} hitSlop={12}>
+              <Text style={styles.closeIcon}>✕</Text>
             </Pressable>
-          ))}
-        </View>
+          </View>
+
+          <View style={styles.tabs}>
+            {TABS.map(tabItem => {
+              const isActive = tab === tabItem.key;
+              return (
+                <Pressable
+                  key={tabItem.key}
+                  style={[styles.tab, isActive && styles.tabActive]}
+                  onPress={() => setTab(tabItem.key)}
+                >
+                  <Text style={[
+                    styles.tabText,
+                    isActive
+                      ? { color: TAB_ACTIVE_COLORS[tabItem.key] }
+                      : styles.tabTextInactive,
+                  ]}>
+                    {tabItem.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </LinearGradient>
 
         {loading && <ActivityIndicator style={styles.loader} color="#5B6CF8" size="large" />}
 
@@ -147,10 +173,12 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
           />
         )}
 
-        {/* Pinned row: current player is not visible on this page */}
         {!loading && !error && data && !isOnPage && (
           <View style={[styles.row, styles.rowHighlight, styles.pinnedRow]}>
             <Text style={[styles.rank, styles.rankHighlight]}>#{data.currentPlayer.rank}</Text>
+            <View style={[styles.avatar, { backgroundColor: '#C9951A' }]}>
+              <Text style={styles.avatarText}>★</Text>
+            </View>
             <Text style={[styles.name, styles.textHighlight]}>{t('leaderboard.you')}</Text>
             <Text style={[styles.value, styles.textHighlight]}>
               {formatValue(data.currentPlayer.value)}
@@ -158,7 +186,6 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
           </View>
         )}
 
-        {/* Pagination */}
         {!loading && !error && data && (
           <View style={styles.pagination}>
             <Pressable
@@ -196,54 +223,77 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     overflow: 'hidden',
   },
+  gradientHeader: {
+    paddingTop: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingBottom: 14,
   },
-  title: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#2A3344' },
-  closeIcon: { fontSize: 18, color: '#8A95A3' },
-  tabs: { flexDirection: 'row', paddingHorizontal: 16, gap: 8, marginBottom: 8 },
+  title: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#fff' },
+  closeIcon: { fontSize: 18, color: 'rgba(255,255,255,0.7)' },
+  tabs: { flexDirection: 'row', paddingHorizontal: 12, gap: 6 },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 12,
-    backgroundColor: '#E8EAF0',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
-  tabActive: { backgroundColor: '#5B6CF8' },
-  tabText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#6B7280' },
-  tabTextActive: { color: '#fff' },
+  tabActive: { backgroundColor: '#EEF2F8' },
+  tabText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+  tabTextInactive: { color: 'rgba(255,255,255,0.75)' },
   loader: { flex: 1 },
   errorWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   errorText: { fontFamily: 'Fredoka_400Regular', fontSize: 15, color: '#E05A4A' },
   retryBtn: { paddingHorizontal: 20, paddingVertical: 8, backgroundColor: '#5B6CF8', borderRadius: 10 },
   retryText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#fff' },
-  list: { paddingHorizontal: 16, paddingBottom: 8 },
+  list: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 14,
-    marginBottom: 4,
+    marginBottom: 6,
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   rowHighlight: { backgroundColor: '#FFF7E0' },
   rank: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 15,
-    color: '#6B7280',
-    width: 46,
+    fontSize: 14,
+    color: '#9CA3AF',
+    width: 38,
   },
   rankHighlight: { color: '#B8860B' },
+  avatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  avatarText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: '#fff',
+  },
   name: { fontFamily: 'Fredoka_400Regular', fontSize: 15, color: '#2A3344', flex: 1 },
-  value: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2A3344', textAlign: 'right' },
+  value: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#4B5563', textAlign: 'right' },
   textHighlight: { color: '#B8860B' },
-  pinnedRow: { marginHorizontal: 16, marginBottom: 4, borderRadius: 12 },
+  pinnedRow: { marginHorizontal: 16, marginBottom: 4, borderRadius: 14 },
   pagination: {
     flexDirection: 'row',
     alignItems: 'center',
