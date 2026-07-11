@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withSpring, withTiming, runOnJS, Easing,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { api, type LeaderboardResponse, type LeaderboardEntry } from '../services/api';
 import { formatNum } from '../utils/format';
@@ -14,21 +15,17 @@ const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
 
 type Tab = 'level' | 'floors' | 'revenue';
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'level',   label: 'Рівень' },
-  { key: 'floors',  label: 'Поверхи' },
-  { key: 'revenue', label: 'Виручка/хв' },
-];
-
 interface Props {
   visible: boolean;
   onClose: () => void;
 }
 
 export default function LeaderboardSheet({ visible, onClose }: Props) {
+  const { t } = useTranslation('tabs');
   const [mounted, setMounted] = useState(false);
   const [tab, setTab] = useState<Tab>('level');
   const [page, setPage] = useState(1);
+  const [retryKey, setRetryKey] = useState(0);
   const [data, setData] = useState<LeaderboardResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,9 +49,12 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         runOnJS(setMounted)(false);
       });
     }
-  }, [visible]);
+  }, [visible, mounted]);
 
-  useEffect(() => { setPage(1); }, [tab]);
+  useEffect(() => {
+    setPage(1);
+    setRetryKey(0);
+  }, [tab]);
 
   useEffect(() => {
     if (!visible) return;
@@ -63,10 +63,16 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     setError(null);
     api.leaderboard(tab, page)
       .then(d => { if (!cancelled) setData(d); })
-      .catch(() => { if (!cancelled) setError('Помилка завантаження'); })
+      .catch(() => { if (!cancelled) setError(t('leaderboard.errorLoad')); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [visible, tab, page]);
+  }, [visible, tab, page, retryKey]);
+
+  const TABS: { key: Tab; label: string }[] = [
+    { key: 'level',   label: t('leaderboard.tabLevel') },
+    { key: 'floors',  label: t('leaderboard.tabFloors') },
+    { key: 'revenue', label: t('leaderboard.tabRevenue') },
+  ];
 
   const totalPages = data ? Math.ceil(data.total / 20) : 1;
   const isOnPage = data?.entries.some(e => e.playerId === myId) ?? false;
@@ -75,7 +81,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     return tab === 'revenue' ? `${formatNum(v)}/хв` : String(v);
   }
 
-  function renderEntry({ item }: { item: LeaderboardEntry }) {
+  const renderEntry = useCallback(({ item }: { item: LeaderboardEntry }) => {
     const isMe = item.playerId === myId;
     return (
       <View style={[styles.row, isMe && styles.rowHighlight]}>
@@ -86,7 +92,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         <Text style={[styles.value, isMe && styles.textHighlight]}>{formatValue(item.value)}</Text>
       </View>
     );
-  }
+  }, [myId, tab]);
 
   if (!mounted) return null;
 
@@ -100,21 +106,21 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
       {/* Sheet */}
       <Animated.View style={[styles.sheet, sheetStyle]}>
         <View style={styles.header}>
-          <Text style={styles.title}>Рейтинг</Text>
+          <Text style={styles.title}>{t('leaderboard.title')}</Text>
           <Pressable onPress={onClose} hitSlop={12}>
             <Text style={styles.closeIcon}>✕</Text>
           </Pressable>
         </View>
 
         <View style={styles.tabs}>
-          {TABS.map(t => (
+          {TABS.map(tabItem => (
             <Pressable
-              key={t.key}
-              style={[styles.tab, tab === t.key && styles.tabActive]}
-              onPress={() => setTab(t.key)}
+              key={tabItem.key}
+              style={[styles.tab, tab === tabItem.key && styles.tabActive]}
+              onPress={() => setTab(tabItem.key)}
             >
-              <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
-                {t.label}
+              <Text style={[styles.tabText, tab === tabItem.key && styles.tabTextActive]}>
+                {tabItem.label}
               </Text>
             </Pressable>
           ))}
@@ -125,8 +131,8 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         {error && !loading && (
           <View style={styles.errorWrap}>
             <Text style={styles.errorText}>{error}</Text>
-            <Pressable onPress={() => setPage(p => p)} style={styles.retryBtn}>
-              <Text style={styles.retryText}>Повторити</Text>
+            <Pressable onPress={() => setRetryKey(k => k + 1)} style={styles.retryBtn}>
+              <Text style={styles.retryText}>{t('leaderboard.retry')}</Text>
             </Pressable>
           </View>
         )}
@@ -145,7 +151,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         {!loading && !error && data && !isOnPage && (
           <View style={[styles.row, styles.rowHighlight, styles.pinnedRow]}>
             <Text style={[styles.rank, styles.rankHighlight]}>#{data.currentPlayer.rank}</Text>
-            <Text style={[styles.name, styles.textHighlight]}>Ви</Text>
+            <Text style={[styles.name, styles.textHighlight]}>{t('leaderboard.you')}</Text>
             <Text style={[styles.value, styles.textHighlight]}>
               {formatValue(data.currentPlayer.value)}
             </Text>
