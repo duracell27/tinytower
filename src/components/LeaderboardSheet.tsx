@@ -78,7 +78,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
   const isOnPage = data?.entries.some(e => e.playerId === myId) ?? false;
 
   function formatValue(v: number) {
-    return tab === 'revenue' ? `${formatNum(v)}/хв` : String(v);
+    return tab === 'revenue' ? `${formatNum(v)}${t('leaderboard.revenueSuffix')}` : String(v);
   }
 
   const renderEntry = useCallback(({ item }: { item: LeaderboardEntry }) => {

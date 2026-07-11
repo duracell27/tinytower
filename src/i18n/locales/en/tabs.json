@@ -46,6 +46,7 @@
     "tabRevenue": "Revenue/min",
     "you": "You",
     "errorLoad": "Failed to load",
-    "retry": "Retry"
+    "retry": "Retry",
+    "revenueSuffix": "/min"
   }
 }
