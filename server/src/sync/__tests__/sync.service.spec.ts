@@ -519,13 +519,14 @@ describe('SyncService', () => {
 
       prisma.player.findUnique
         .mockResolvedValueOnce(playerWithFloorTypes)
-        .mockResolvedValueOnce({ ...playerWithFloorTypes, openedFloorsCount: 2 });
+        .mockResolvedValueOnce({ ...playerWithFloorTypes, openedFloorsCount: 4 });
 
       await syncService.processSync('player-uuid', [], 0);
 
+      // 2 config floors (gameConfig.floors.length) + 2 opened floor types = 4
       expect(txMock.player.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ openedFloorsCount: 2 }),
+          data: expect.objectContaining({ openedFloorsCount: 4 }),
         }),
       );
     });
