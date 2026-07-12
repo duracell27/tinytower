@@ -165,6 +165,8 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
               );
             })}
           </View>
+
+          <Text style={styles.cacheNotice}>{t('leaderboard.cacheNotice')}</Text>
         </LinearGradient>
 
         {loading && <ActivityIndicator style={styles.loader} color="#5B6CF8" size="large" />}
@@ -267,6 +269,13 @@ const styles = StyleSheet.create({
   tabActive: { backgroundColor: '#EEF2F8' },
   tabText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
   tabTextInactive: { color: 'rgba(255,255,255,0.75)' },
+  cacheNotice: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.5)',
+    textAlign: 'center',
+    paddingBottom: 8,
+  },
   loader: { flex: 1 },
   errorWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   errorText: { fontFamily: 'Fredoka_400Regular', fontSize: 15, color: '#E05A4A' },

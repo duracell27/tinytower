@@ -47,6 +47,7 @@
     "you": "You",
     "errorLoad": "Failed to load",
     "retry": "Retry",
-    "revenueSuffix": "/min"
+    "revenueSuffix": "/min",
+    "cacheNotice": "Updates every 5 min"
   }
 }
