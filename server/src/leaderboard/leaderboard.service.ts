@@ -36,13 +36,13 @@ export class LeaderboardService {
   async getLeaderboard(tab: LeaderboardTab, page: number, playerId: string): Promise<LeaderboardResult> {
     const cacheKey = `lb:${tab}:${page}`;
 
-    const [cached, me] = await Promise.all([
-      this.redis.get(cacheKey),
-      this.prisma.player.findUnique({
-        where: { id: playerId },
-        select: { playerLevel: true, openedFloorsCount: true, maxRevenuePerMin: true },
-      }),
-    ]);
+    let cached: string | null = null;
+    try { cached = await this.redis.get(cacheKey); } catch { /* fall through to DB */ }
+
+    const me = await this.prisma.player.findUnique({
+      where: { id: playerId },
+      select: { playerLevel: true, openedFloorsCount: true, maxRevenuePerMin: true },
+    });
 
     const myValue = me
       ? (tab === 'level' ? me.playerLevel : tab === 'floors' ? me.openedFloorsCount : me.maxRevenuePerMin)
@@ -85,9 +85,10 @@ export class LeaderboardService {
       value: tab === 'level' ? p.playerLevel : tab === 'floors' ? p.openedFloorsCount : p.maxRevenuePerMin,
     }));
 
-    await this.redis.setex(cacheKey, CACHE_TTL, JSON.stringify({ entries, total } satisfies CachedPage));
-
-    const rank = await this.prisma.player.count({ where: aboveMe }) + 1;
+    const [rank] = await Promise.all([
+      this.prisma.player.count({ where: aboveMe }).then(n => n + 1),
+      this.redis.setex(cacheKey, CACHE_TTL, JSON.stringify({ entries, total } satisfies CachedPage)).catch(() => {}),
+    ]);
 
     return { entries, total, currentPlayer: { rank, value: myValue } };
   }
