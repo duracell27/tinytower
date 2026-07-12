@@ -36,13 +36,13 @@ export class LeaderboardService {
   async getLeaderboard(tab: LeaderboardTab, page: number, playerId: string): Promise<LeaderboardResult> {
     const cacheKey = `lb:${tab}:${page}`;
 
-    let cached: string | null = null;
-    try { cached = await this.redis.get(cacheKey); } catch { /* fall through to DB */ }
-
-    const me = await this.prisma.player.findUnique({
-      where: { id: playerId },
-      select: { playerLevel: true, openedFloorsCount: true, maxRevenuePerMin: true },
-    });
+    const [cached, me] = await Promise.all([
+      this.redis.get(cacheKey).catch(() => null),
+      this.prisma.player.findUnique({
+        where: { id: playerId },
+        select: { playerLevel: true, openedFloorsCount: true, maxRevenuePerMin: true },
+      }),
+    ]);
 
     const myValue = me
       ? (tab === 'level' ? me.playerLevel : tab === 'floors' ? me.openedFloorsCount : me.maxRevenuePerMin)
