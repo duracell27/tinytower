@@ -557,7 +557,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
   reconcile: (serverState, newVersion, ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
     balance: serverState.balance,
     gems: serverState.gems,
-    floors: serverState.floors,
     workers: serverState.workers,
     hotelCapacity: serverState.hotelCapacity,
     lobbyVisitors: serverState.lobbyVisitors,
@@ -585,7 +584,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const local = cur.underConstruction.find((u) => u.floorId === uc.floorId);
       return local?.selectedFloorType ? { ...uc, selectedFloorType: local.selectedFloorType } : uc;
     }),
-    openedFloorTypes: serverState.openedFloorTypes ?? {},
+    openedFloorTypes: (() => {
+      const base = serverState.openedFloorTypes ?? {};
+      // Pending open_floor commands (not in this sync batch) must survive reconcile so
+      // subsequent open_floor commands for other floors compute the correct tier.
+      const extra: Record<string, string> = {};
+      for (const cmd of cur.commandQueue) {
+        if (!sentIds.has(cmd.id) && cmd.type === 'open_floor') {
+          extra[String(cmd.floorId)] = cmd.floorType;
+        }
+      }
+      return { ...base, ...extra };
+    })(),
+    floors: serverState.floors,
     stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     locallyGrantedAchievements: new Set<string>(),
   })),
