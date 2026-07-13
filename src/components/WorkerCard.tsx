@@ -39,6 +39,8 @@ export default function WorkerCard({
   const shirtColor = ft?.shirtColor ?? '#999';
   const category = tContent(`floorTypes.${worker.floorType}.category`, { defaultValue: worker.floorType });
   const dreamJobName = tContent(`productionTypes.${worker.dreamJob}.displayName`, { defaultValue: worker.dreamJob });
+  const dreamBusiness = ft?.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
+  const dreamBusinessName = dreamBusiness?.name;
 
   const expandAnim = useSharedValue(expanded ? 1 : 0);
   const chevronAnim = useSharedValue(expanded ? 1 : 0);
@@ -98,7 +100,7 @@ export default function WorkerCard({
               />
             </Svg>
             <Text style={[styles.dreamJobText, { color: accent }]}>
-              {`${dreamFloorName ?? category} · ${dreamJobName}`}
+              {`${dreamFloorName ?? dreamBusinessName ?? category} · ${dreamJobName}`}
             </Text>
           </View>
 
@@ -152,7 +154,7 @@ export default function WorkerCard({
           {/* Info rows */}
           <View style={styles.infoRows}>
             <InfoRow label={t('workerCard.info.skill')} value={`${category} · ${worker.level}`} />
-            <InfoRow label={t('workerCard.info.dreamJob')} value={dreamJobName} />
+            <InfoRow label={t('workerCard.info.dreamJob')} value={`${dreamFloorName ?? dreamBusinessName ?? category} · ${dreamJobName}`} />
             <InfoRow
               label={t('workerCard.info.worksAt')}
               value={worker.female ? t('workerCard.unemployedFemale') : t('workerCard.unemployedMale')}
