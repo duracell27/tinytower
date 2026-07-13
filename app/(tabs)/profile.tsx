@@ -141,7 +141,7 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
         >
           <Text style={styles.achievementsButtonText}>
-            Досягнення ({totalEarnedLevels})
+            Achievements ({totalEarnedLevels})
           </Text>
         </Pressable>
 
