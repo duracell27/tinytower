@@ -179,11 +179,13 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
 
       if (stage === 'DELIVERING' || stage === 'SELLING') {
         const active = getProductionTimeRemaining(floor, worker.assignedSlotIdx!, now);
-        const stageLabel = stage === 'DELIVERING'
-          ? t('workersPanel.fireBlockedDelivering', { name: worker.name, time: active ? formatTimeShort(active.remainingMs) : '0s' })
-          : t('workersPanel.fireBlockedSelling', { name: worker.name, time: active ? formatTimeShort(active.remainingMs) : '0s' });
-        Alert.alert(t('workersPanel.fireBlockedTitle'), stageLabel, [{ text: 'OK' }]);
-        return;
+        if (active && active.remainingMs > 0) {
+          const stageLabel = active.stage === 'DELIVERING'
+            ? t('workersPanel.fireBlockedDelivering', { name: worker.name, time: formatTimeShort(active.remainingMs) })
+            : t('workersPanel.fireBlockedSelling', { name: worker.name, time: formatTimeShort(active.remainingMs) });
+          Alert.alert(t('workersPanel.fireBlockedTitle'), stageLabel, [{ text: 'OK' }]);
+          return;
+        }
       }
 
       const hotelOccupied = workers.filter((w) => w.assignedFloorId === null).length;
