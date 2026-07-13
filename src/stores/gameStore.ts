@@ -69,6 +69,7 @@ interface GameActions {
   upgradeElevator: () => void;
   upgradeLobby: () => void;
   expandHotel: () => void;
+  evictLowLevelWorkers: () => void;
   claimDailyReward: () => void;
   dismissLevelUp: () => void;
   setToolInventory: (tools: ToolsState) => void;
@@ -293,6 +294,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
       workerId,
       timestamp: clock.now(),
     });
+  },
+
+  evictLowLevelWorkers: () => {
+    const state = get();
+    if (state.gems < 1) {
+      state.showInsufficientResources({ currency: 'gems', need: 1, have: state.gems });
+      return;
+    }
+    executeCommand(get, set, { id: uuid(), type: 'evict_low_level_workers', timestamp: clock.now() });
   },
 
   upgradeToSpecialist: (workerId) => {
