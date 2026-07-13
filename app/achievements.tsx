@@ -108,12 +108,12 @@ export default function AchievementsScreen() {
                 </View>
               ) : nextLevelConfig ? (
                 <View style={styles.progressSection}>
-                  <View style={styles.inlineRow}>
-                    <Text style={styles.sectionLabel}>Next rank: </Text>
-                    <Text style={styles.nextTitleBold}>{nextLevelConfig.title}</Text>
-                    <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
-                  </View>
-                  <View style={styles.progressLabelRow}>
+                  <View style={styles.nextRankRow}>
+                    <View style={styles.inlineRow}>
+                      <Text style={styles.sectionLabel}>Next rank: </Text>
+                      <Text style={styles.nextTitleBold}>{nextLevelConfig.title}</Text>
+                      <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
+                    </View>
                     <Text style={styles.progressCount}>
                       {formatNum(progress)} / {formatNum(nextLevelConfig.threshold)}
                     </Text>
@@ -243,6 +243,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 6,
+  },
+  nextRankRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   progressLabelRow: {
     flexDirection: 'row',
