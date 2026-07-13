@@ -251,7 +251,11 @@ export default function ProductionCard({
   const multiplier = worker && floorType
     ? getRevenueMultiplier(worker, floorType, production.typeId)
     : 1;
-  const effectiveRevenue = typeConfig ? Math.floor(typeConfig.batchValue * multiplier * (1 + (specialistBonus ?? 0))) : 0;
+  const coinBonusPercent = useGameStore(s => s.coinBonusPercent);
+  const specialistBonusPercent = Math.round((specialistBonus ?? 0) * 100);
+  const effectiveRevenue = typeConfig
+    ? Math.floor(typeConfig.batchValue * (1 + (coinBonusPercent + specialistBonusPercent) / 100))
+    : 0;
   const hasMultiplier = multiplier > 1;
 
   const isProgressTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING';
