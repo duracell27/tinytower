@@ -30,7 +30,6 @@ const testConfig: GameConfig = {
     defaultLobbyCapacity: 10,
   },
   floorUnlocks: [],
-  achievements: [],
 };
 
 function makeVisitor(overrides?: Partial<Visitor>): Visitor {
