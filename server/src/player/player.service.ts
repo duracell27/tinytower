@@ -26,6 +26,7 @@ export class PlayerService {
           passwordHash,
           playerName,
           balance: gameConfig.startingBalance,
+          openedFloorsCount: gameConfig.floors.length,
         },
       });
 

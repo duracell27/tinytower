@@ -258,9 +258,17 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
       const dreamFloor = floors.find((f) =>
         f.productions.some((p) => p.typeId === worker.dreamJob),
       );
-      const dreamFloorName = dreamFloor
-        ? resolveFloorName(openedFloorTypes, floors, dreamFloor.id, tContent)
-        : floorName;
+      let dreamFloorName: string;
+      if (dreamFloor) {
+        dreamFloorName = resolveFloorName(openedFloorTypes, floors, dreamFloor.id, tContent);
+      } else {
+        let bizName: string | undefined;
+        for (const ft of Object.values(gameConfig.floorTypes)) {
+          const biz = ft.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
+          if (biz) { bizName = biz.name; break; }
+        }
+        dreamFloorName = bizName ?? tContent(`floorTypes.${worker.floorType}.category`, { defaultValue: worker.floorType });
+      }
       const now = clock.now();
 
       return (

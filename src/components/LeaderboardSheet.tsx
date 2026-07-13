@@ -138,7 +138,10 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
       <Animated.View style={[styles.sheet, sheetStyle]}>
         <LinearGradient colors={['#5B8DD9', '#3A6BBF']} style={styles.gradientHeader}>
           <View style={styles.header}>
-            <Text style={styles.title}>{t('leaderboard.title')}</Text>
+            <View>
+              <Text style={styles.title}>{t('leaderboard.title')}</Text>
+              <Text style={styles.cacheNotice}>{t('leaderboard.cacheNotice')}</Text>
+            </View>
             <Pressable onPress={onClose} hitSlop={12}>
               <Text style={styles.closeIcon}>✕</Text>
             </Pressable>
@@ -166,7 +169,6 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
             })}
           </View>
 
-          <Text style={styles.cacheNotice}>{t('leaderboard.cacheNotice')}</Text>
         </LinearGradient>
 
         {loading && <ActivityIndicator style={styles.loader} color="#5B6CF8" size="large" />}
@@ -272,9 +274,8 @@ const styles = StyleSheet.create({
   cacheNotice: {
     fontFamily: 'Fredoka_400Regular',
     fontSize: 11,
-    color: 'rgba(255,255,255,0.5)',
-    textAlign: 'center',
-    paddingBottom: 8,
+    color: 'rgba(255,255,255,0.55)',
+    marginTop: 1,
   },
   loader: { flex: 1 },
   errorWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },

@@ -35,14 +35,6 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     nameColor: '#003EAD',
     stars: 0,
   },
-  4: {
-    color: '#E7A52B',
-    headerShadowColor: 'rgba(142,80,0,0.4)',
-    bodyColor: '#FCEBC9',
-    cardBg: '#FDF5E4',
-    nameColor: '#AD6F00',
-    stars: 0,
-  },
 };
 
 // Dynamic floor type color schemes (for floors not in gameConfig.floors)
