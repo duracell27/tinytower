@@ -389,7 +389,7 @@ function EvictLowLevelCard({
   t: (key: string) => string;
 }) {
   return (
-    <View style={buyStyles.card}>
+    <View style={[buyStyles.card, { paddingVertical: 8 }]}>
       <View style={buyStyles.left}>
         <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
           <Path
@@ -414,7 +414,7 @@ function EvictLowLevelCard({
         onPress={onPress}
         style={({ pressed }) => [buyStyles.btn, pressed && { opacity: 0.82 }]}
       >
-        <LinearGradient colors={['#D96E8A', '#B84E6A']} style={buyStyles.btnGradient}>
+        <LinearGradient colors={['#D96E8A', '#B84E6A']} style={[buyStyles.btnGradient, { paddingVertical: 6 }]}>
           <GemIcon size={16} />
           <Text style={buyStyles.btnCost}>1</Text>
         </LinearGradient>

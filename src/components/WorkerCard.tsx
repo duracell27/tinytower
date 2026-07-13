@@ -39,8 +39,11 @@ export default function WorkerCard({
   const shirtColor = ft?.shirtColor ?? '#999';
   const category = tContent(`floorTypes.${worker.floorType}.category`, { defaultValue: worker.floorType });
   const dreamJobName = tContent(`productionTypes.${worker.dreamJob}.displayName`, { defaultValue: worker.dreamJob });
-  const dreamBusiness = ft?.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
-  const dreamBusinessName = dreamBusiness?.name;
+  let dreamBusinessName: string | undefined;
+  for (const floorTypeEntry of Object.values(gameConfig.floorTypes)) {
+    const biz = floorTypeEntry.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
+    if (biz) { dreamBusinessName = biz.name; break; }
+  }
 
   const expandAnim = useSharedValue(expanded ? 1 : 0);
   const chevronAnim = useSharedValue(expanded ? 1 : 0);
