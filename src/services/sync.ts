@@ -40,6 +40,7 @@ async function doSync(): Promise<void> {
 
     clock.updateOffset(response.serverTime);
 
+    // Capture before reconcile so store.locallyGrantedAchievements has the pre-reconcile optimistic keys.
     const store = useGameStore.getState();
     const needsReconcile =
       (response.stateVersion !== store.stateVersion && response.stateVersion > 0) ||

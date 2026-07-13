@@ -254,6 +254,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     coinBonusPercent: 0,
     xpBonusPercent: 0,
     categoryProgress: {},
+    locallyGrantedAchievements: new Set<string>(),
   }),
 
   buy: (floorId, slotIdx, typeId) => {
