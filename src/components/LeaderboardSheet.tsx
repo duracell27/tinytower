@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal,
+  View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal, Image,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing,
@@ -114,7 +114,23 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     const accent = TAB_ACTIVE_COLORS[tab];
     return (
       <View style={[styles.row, isMe ? styles.rowMe : rankStyle(item.rank)]}>
-        <Text style={styles.rankNum}>#{item.rank}</Text>
+        {item.rank <= 3 ? (
+          <View style={styles.trophyWrap}>
+            <Text style={styles.trophyRankNum}>#{item.rank}</Text>
+            <Image
+              source={
+                item.rank === 1
+                  ? require('../../assets/img/rating/1PlaceCup.png')
+                  : item.rank === 2
+                  ? require('../../assets/img/rating/2PlaceCup.png')
+                  : require('../../assets/img/rating/3PlaceCup.png')
+              }
+              style={item.rank === 1 ? styles.trophy1 : item.rank === 2 ? styles.trophy2 : styles.trophy3}
+            />
+          </View>
+        ) : (
+          <Text style={styles.rankNum}>#{item.rank}</Text>
+        )}
         <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.playerName) }]}>
           <Text style={styles.avatarText}>{item.playerName.charAt(0).toUpperCase()}</Text>
         </View>
@@ -309,6 +325,11 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     width: 36,
   },
+  trophyWrap: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  trophyRankNum: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#9CA3AF' },
+  trophy1: { width: 28, height: 28 },
+  trophy2: { width: 24, height: 24 },
+  trophy3: { width: 20, height: 20 },
   avatar: {
     width: 36,
     height: 36,

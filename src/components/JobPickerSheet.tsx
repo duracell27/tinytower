@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerForSlot } from '../../shared/engine/workerUtils';
-import { FLOOR_SCHEMES } from './FloorCard';
+import { FLOOR_TYPE_SCHEMES } from './FloorCard';
 import WorkerAvatar from './WorkerAvatar';
 import type { Worker } from '../../shared/types';
 
@@ -243,7 +243,7 @@ export default function JobPickerSheet({
 
 function SectionHeader({ section }: { section: FloorSection }) {
   const { t: tContent } = useTranslation('gameContent');
-  const scheme = FLOOR_SCHEMES[section.floorId];
+  const scheme = FLOOR_TYPE_SCHEMES[section.floorType];
   const headerColor = scheme?.color ?? '#888';
   const floorName = tContent(`floors.${section.floorId}.name`, {
     defaultValue: `Floor ${section.floorId}`,

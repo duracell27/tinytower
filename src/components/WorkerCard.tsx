@@ -40,9 +40,14 @@ export default function WorkerCard({
   const category = tContent(`floorTypes.${worker.floorType}.category`, { defaultValue: worker.floorType });
   const dreamJobName = tContent(`productionTypes.${worker.dreamJob}.displayName`, { defaultValue: worker.dreamJob });
   let dreamBusinessName: string | undefined;
+  let dreamAccent = accent;
   for (const floorTypeEntry of Object.values(gameConfig.floorTypes)) {
     const biz = floorTypeEntry.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
-    if (biz) { dreamBusinessName = biz.name; break; }
+    if (biz) {
+      dreamBusinessName = biz.name;
+      dreamAccent = floorTypeEntry.accent ?? accent;
+      break;
+    }
   }
 
   const expandAnim = useSharedValue(expanded ? 1 : 0);
@@ -96,13 +101,13 @@ export default function WorkerCard({
             <Svg width={13} height={13} viewBox="0 0 24 24" fill="none">
               <Path
                 d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                stroke={accent}
+                stroke={dreamAccent}
                 strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </Svg>
-            <Text style={[styles.dreamJobText, { color: accent }]}>
+            <Text style={[styles.dreamJobText, { color: dreamAccent }]}>
               {`${dreamFloorName ?? dreamBusinessName ?? category} · ${dreamJobName}`}
             </Text>
           </View>
@@ -157,7 +162,7 @@ export default function WorkerCard({
           {/* Info rows */}
           <View style={styles.infoRows}>
             <InfoRow label={t('workerCard.info.skill')} value={`${category} · ${worker.level}`} />
-            <InfoRow label={t('workerCard.info.dreamJob')} value={`${dreamFloorName ?? dreamBusinessName ?? category} · ${dreamJobName}`} />
+            <InfoRow label={t('workerCard.info.dreamJob')} value={`${dreamFloorName ?? dreamBusinessName ?? category} · ${dreamJobName}`} valueColor={dreamAccent} />
             <InfoRow
               label={t('workerCard.info.worksAt')}
               value={worker.female ? t('workerCard.unemployedFemale') : t('workerCard.unemployedMale')}
@@ -219,11 +224,11 @@ export default function WorkerCard({
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
   return (
     <View style={styles.infoRow}>
       <Text style={styles.infoRowLabel}>{label}</Text>
-      <Text style={styles.infoRowValue}>{value}</Text>
+      <Text style={[styles.infoRowValue, valueColor ? { color: valueColor } : undefined]}>{value}</Text>
     </View>
   );
 }

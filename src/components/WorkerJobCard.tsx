@@ -98,6 +98,14 @@ export default function WorkerJobCard({
 
   const ft = gameConfig.floorTypes[worker.floorType];
   const accent = ft?.accent ?? '#888';
+  const floorAccent = gameConfig.floorTypes[floorType]?.accent ?? '#888';
+  let dreamAccent = accent;
+  for (const floorTypeEntry of Object.values(gameConfig.floorTypes)) {
+    if (floorTypeEntry.businesses.some((b) => b.dreamJobs.includes(worker.dreamJob))) {
+      dreamAccent = floorTypeEntry.accent ?? accent;
+      break;
+    }
+  }
   const production = floor.productions[worker.assignedSlotIdx!];
   const productionName = production?.typeId
     ? tContent(`productionTypes.${production.typeId}.displayName`, { defaultValue: production.typeId })
@@ -151,17 +159,17 @@ export default function WorkerJobCard({
           {isMidTab && (
             <View style={styles.iconRow}>
               <Svg width={13} height={13} viewBox="0 0 24 24" fill="none">
-                <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke={dreamAccent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
               </Svg>
-              <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{`${dreamFloorName} · ${dreamJobName}`}</Text>
+              <Text style={[styles.floorText, { color: dreamAccent }]} numberOfLines={1}>{`${dreamFloorName} · ${dreamJobName}`}</Text>
             </View>
           )}
           <View style={styles.iconRow}>
             <Svg width={13} height={13} viewBox="0 0 24 24" fill="none">
-              <Path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-              <Path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke={accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+              <Path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke={floorAccent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+              <Path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke={floorAccent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
             </Svg>
-            <Text style={[styles.floorText, { color: accent }]} numberOfLines={1}>{`${floorName} · ${productionName}`}</Text>
+            <Text style={[styles.floorText, { color: floorAccent }]} numberOfLines={1}>{`${floorName} · ${productionName}`}</Text>
           </View>
           {activeProduction && (
             <Text style={styles.statusText} numberOfLines={1}>{statusLabel}</Text>
@@ -189,8 +197,8 @@ export default function WorkerJobCard({
         <View style={styles.expandedContent}>
           <View style={styles.infoRows}>
             <InfoRow label={t('workersPanel.workerJobCard.skill')} value={`${category} · ${worker.level}`} />
-            <InfoRow label={t('workersPanel.workerJobCard.dreamJob')} value={dreamJobName} />
-            <InfoRow label={t('workersPanel.workerJobCard.worksAt')} value={`${floorName} · ${productionName}`} />
+            <InfoRow label={t('workersPanel.workerJobCard.dreamJob')} value={dreamJobName} valueColor={dreamAccent} />
+            <InfoRow label={t('workersPanel.workerJobCard.worksAt')} value={`${floorName} · ${productionName}`} valueColor={floorAccent} />
           </View>
 
           {isSpecialistTab && !worker.isSpecialist && (
@@ -221,11 +229,11 @@ export default function WorkerJobCard({
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
   return (
     <View style={styles.infoRow}>
       <Text style={styles.infoRowLabel}>{label}</Text>
-      <Text style={styles.infoRowValue}>{value}</Text>
+      <Text style={[styles.infoRowValue, valueColor ? { color: valueColor } : undefined]}>{value}</Text>
     </View>
   );
 }

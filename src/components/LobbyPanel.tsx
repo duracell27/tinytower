@@ -1682,7 +1682,7 @@ const styles = StyleSheet.create({
   rewardGemCount: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 14,
-    color: '#2592AB',
+    color: '#fff',
   },
   rewardButtonShadow: {
     position: 'absolute',

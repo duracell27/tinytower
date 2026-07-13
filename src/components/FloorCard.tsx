@@ -18,8 +18,9 @@ export interface FloorColorScheme {
   stars: number;
 }
 
-export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
-  2: {
+// Single source of truth for all floor type color schemes
+export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
+  green: {
     color: '#5E8F42',
     headerShadowColor: 'rgba(0,83,0,0.4)',
     bodyColor: '#D0EBCB',
@@ -27,7 +28,7 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     nameColor: '#117200',
     stars: 0,
   },
-  3: {
+  blue: {
     color: '#2E6EC9',
     headerShadowColor: 'rgba(0,31,142,0.4)',
     bodyColor: '#CADDFC',
@@ -35,13 +36,14 @@ export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = {
     nameColor: '#003EAD',
     stars: 0,
   },
-};
-
-// Dynamic floor type color schemes (for floors not in gameConfig.floors)
-const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
-  green:  FLOOR_SCHEMES[2],
-  blue:   FLOOR_SCHEMES[3],
-  yellow: FLOOR_SCHEMES[4],
+  yellow: {
+    color: '#E7A52B',
+    headerShadowColor: 'rgba(142,80,0,0.4)',
+    bodyColor: '#FCEBC9',
+    cardBg: '#FDF5E4',
+    nameColor: '#AD6F00',
+    stars: 0,
+  },
   purple: {
     color: '#9A6FD0',
     headerShadowColor: 'rgba(85,40,170,0.4)',
@@ -59,6 +61,13 @@ const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     stars: 0,
   },
 };
+
+// Derived automatically from gameConfig — no manual sync needed when static floors change
+export const FLOOR_SCHEMES: Record<number, FloorColorScheme> = Object.fromEntries(
+  gameConfig.floors
+    .map((f) => [f.id, FLOOR_TYPE_SCHEMES[f.floorType]])
+    .filter((entry): entry is [number, FloorColorScheme] => entry[1] != null),
+);
 
 // Product images keyed by production typeId
 const PRODUCT_IMAGES: Record<string, ImageSource> = {
@@ -147,9 +156,9 @@ function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
   const gems = useGameStore((s) => s.gems);
   const dynamicFloorType = openedFloorTypes?.[String(floorId)];
-  const scheme = FLOOR_SCHEMES[floorId] ?? (dynamicFloorType ? FLOOR_TYPE_SCHEMES[dynamicFloorType] : undefined) ?? FLOOR_SCHEMES[2];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
   const floorType = floorConfig?.floorType ?? dynamicFloorType ?? null;
+  const scheme = (floorType ? FLOOR_TYPE_SCHEMES[floorType] : undefined) ?? FLOOR_TYPE_SCHEMES.green;
   const availableTypes = floorConfig?.availableTypes
     ?? floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
   const discount = getFloorDiscount(workers, floorId);

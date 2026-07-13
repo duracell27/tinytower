@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
@@ -140,6 +140,7 @@ export default function ProfileScreen() {
           onPress={() => router.push('/achievements')}
           style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
         >
+          <Image source={require('../../assets/img/profile/profileAchivments.png')} style={styles.achievementsIcon} />
           <Text style={styles.achievementsButtonText}>
             Achievements ({totalEarnedLevels})
           </Text>
@@ -351,9 +352,16 @@ const styles = StyleSheet.create({
     marginTop: 14,
     backgroundColor: '#fff',
     borderRadius: 18,
-    padding: 16,
+    padding: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   achievementsButtonPressed: { opacity: 0.7 },
+  achievementsIcon: {
+    width: 36,
+    height: 36,
+  },
   achievementsButtonText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
