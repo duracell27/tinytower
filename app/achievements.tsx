@@ -73,7 +73,7 @@ export default function AchievementsScreen() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.heading}>Досягнення</Text>
+        <Text style={styles.heading}>Achievements</Text>
 
         {ACHIEVEMENT_CATEGORIES.map(category => {
           const prog = categoryProgress[category.key] ?? { progress: 0, currentLevel: 0, claimedLevels: [] };
@@ -93,8 +93,8 @@ export default function AchievementsScreen() {
                   <Text style={styles.categoryTitle}>{category.title}</Text>
                   <Text style={styles.levelLabel}>
                     {currentLevel === 0
-                      ? 'Рівень не отримано'
-                      : `Рівень ${currentLevel} · ${currentLevelConfig?.title ?? ''}`}
+                      ? 'No rank earned'
+                      : `Rank ${currentLevel} · ${currentLevelConfig?.title ?? ''}`}
                   </Text>
                 </View>
                 <Image source={TIER_IMAGES[currentLevel]} style={styles.tierIcon} />
@@ -104,19 +104,19 @@ export default function AchievementsScreen() {
 
               {isMaxed ? (
                 <View style={styles.maxedRow}>
-                  <Text style={styles.maxedText}>Максимальний рівень досягнуто 🏆</Text>
+                  <Text style={styles.maxedText}>Max level reached 🏆</Text>
                 </View>
               ) : nextLevelConfig ? (
                 <View style={styles.progressSection}>
+                  <Text style={styles.sectionLabel}>Next rank:</Text>
                   <View style={styles.progressLabelRow}>
-                    <Text style={styles.nextTitle}>
-                      {'→ '}<Text style={styles.nextTitleBold}>{nextLevelConfig.title}</Text>
-                    </Text>
+                    <Text style={styles.nextTitleBold}>{nextLevelConfig.title}</Text>
                     <Text style={styles.progressCount}>
                       {formatNum(progress)} / {formatNum(nextLevelConfig.threshold)}
                     </Text>
                   </View>
                   <ProgressBar value={progress} max={nextLevelConfig.threshold} />
+                  <Text style={styles.sectionLabel}>Reward:</Text>
                   <View style={styles.rewardRow}>
                     <View style={styles.rewardChip}>
                       <Image source={DIAMOND_ICON} style={styles.diamondIcon} />
@@ -124,12 +124,12 @@ export default function AchievementsScreen() {
                     </View>
                     {nextIncomeBonus > 0 && (
                       <View style={styles.rewardChipBonus}>
-                        <Text style={styles.rewardChipBonusText}>+{nextIncomeBonus}% монет</Text>
+                        <Text style={styles.rewardChipBonusText}>+{nextIncomeBonus}% coins</Text>
                       </View>
                     )}
                     {nextXpBonus > 0 && (
                       <View style={styles.rewardChipBonus}>
-                        <Text style={styles.rewardChipBonusText}>+{nextXpBonus}% досвіду</Text>
+                        <Text style={styles.rewardChipBonusText}>+{nextXpBonus}% XP</Text>
                       </View>
                     )}
                   </View>
@@ -201,6 +201,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#7C8A6E',
   },
+  sectionLabel: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 11,
+    color: '#9BA3B0',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   tierIcon: {
     width: 44,
     height: 44,
@@ -232,11 +239,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  nextTitle: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 13,
-    color: '#7C8A6E',
   },
   nextTitleBold: {
     fontFamily: 'Fredoka_600SemiBold',
