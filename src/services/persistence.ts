@@ -2,16 +2,14 @@ import { createMMKV } from 'react-native-mmkv';
 import { AppState } from 'react-native';
 import { GameStateSchema } from '../../shared/schemas/gameState';
 import { useGameStore } from '../stores/gameStore';
-import type { GameState, AchievementGrant } from '../../shared/types';
+import type { GameState } from '../../shared/types';
+import type { NewAchievementGrant } from '../../shared/types/achievements';
 
+let currentUserId: string | null = null;
 let storage: ReturnType<typeof createMMKV> | null = null;
+let storeUnsubscribe: (() => void) | null = null;
+let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
-function getStorage() {
-  if (!storage) {
-    storage = createMMKV({ id: 'game-state' });
-  }
-  return storage;
-}
 const GAME_STATE_KEY = 'gameState';
 const SAVE_DEBOUNCE_MS = 3000;
 
@@ -20,16 +18,25 @@ interface PersistedGameState extends GameState {
   stateVersion?: number;
   playerLevel?: number;
   playerXp?: number;
-  achievementQueue?: AchievementGrant[];
+  achievementQueue?: NewAchievementGrant[];
+}
+
+function getStorage(): ReturnType<typeof createMMKV> | null {
+  if (!currentUserId) return null;
+  if (!storage) {
+    storage = createMMKV({ id: `game-state-${currentUserId}` });
+  }
+  return storage;
 }
 
 export function loadGameState(): PersistedGameState | null {
-  const raw = getStorage().getString(GAME_STATE_KEY);
+  const s = getStorage();
+  if (!s) return null;
+  const raw = s.getString(GAME_STATE_KEY);
   if (!raw) return null;
 
   try {
     const parsed = JSON.parse(raw);
-    // Backward compat: old saves may lack workers/hotelCapacity/lobby fields
     const withDefaults = {
       ...parsed,
       workers: parsed.workers ?? [],
@@ -73,7 +80,9 @@ export function loadGameState(): PersistedGameState | null {
 }
 
 export function saveGameState(state: PersistedGameState): void {
-  getStorage().set(GAME_STATE_KEY, JSON.stringify({
+  const s = getStorage();
+  if (!s) return;
+  s.set(GAME_STATE_KEY, JSON.stringify({
     balance: state.balance,
     gems: state.gems,
     floors: state.floors,
@@ -101,31 +110,52 @@ export function saveGameState(state: PersistedGameState): void {
   }));
 }
 
-export function setupPersistence(): void {
+function flushSave() {
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+    saveTimeout = null;
+  }
+  saveGameState(useGameStore.getState());
+}
+
+export function setupUserPersistence(userId: string): void {
+  if (storeUnsubscribe) {
+    storeUnsubscribe();
+    storeUnsubscribe = null;
+  }
+
+  currentUserId = userId;
+  storage = null;
+
   const savedState = loadGameState();
   if (savedState) {
     useGameStore.getState().hydrate(savedState);
+  } else {
+    useGameStore.getState().reset();
   }
 
-  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
-
-  useGameStore.subscribe((state) => {
+  storeUnsubscribe = useGameStore.subscribe((state) => {
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
       saveGameState(state);
       saveTimeout = null;
     }, SAVE_DEBOUNCE_MS);
   });
-
-  const handleAppState = (nextAppState: string) => {
-    if (nextAppState === 'background' || nextAppState === 'inactive') {
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
-        saveTimeout = null;
-      }
-      saveGameState(useGameStore.getState());
-    }
-  };
-
-  AppState.addEventListener('change', handleAppState);
 }
+
+export function teardownPersistence(): void {
+  if (storeUnsubscribe) {
+    storeUnsubscribe();
+    storeUnsubscribe = null;
+  }
+  flushSave();
+  currentUserId = null;
+  storage = null;
+  useGameStore.getState().reset();
+}
+
+AppState.addEventListener('change', (nextAppState) => {
+  if (nextAppState === 'background' || nextAppState === 'inactive') {
+    flushSave();
+  }
+});

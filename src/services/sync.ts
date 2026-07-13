@@ -3,7 +3,8 @@ import { api } from './api';
 import { clock } from './clock';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
-import type { GameState, AchievementGrant } from '../../shared/types';
+import type { GameState } from '../../shared/types';
+import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 
 interface SyncResponse {
   state: GameState;
@@ -12,7 +13,10 @@ interface SyncResponse {
   serverTime: number;
   playerLevel: number;
   playerXp: number;
-  newAchievements?: AchievementGrant[];
+  newAchievements: NewAchievementGrant[];
+  coinBonusPercent: number;
+  xpBonusPercent: number;
+  categoryProgress: Record<string, CategoryProgressState>;
 }
 
 const SYNC_INTERVAL_MS = 30_000;
@@ -49,6 +53,11 @@ async function doSync(): Promise<void> {
     if (response.newAchievements && response.newAchievements.length > 0) {
       useGameStore.getState().addAchievements(response.newAchievements);
     }
+    useGameStore.setState({
+      coinBonusPercent: response.coinBonusPercent ?? 0,
+      xpBonusPercent: response.xpBonusPercent ?? 0,
+      categoryProgress: response.categoryProgress ?? {},
+    });
     useGameStore.getState().setLastSyncAt(Date.now());
   } catch {
     // Network error — retry next cycle

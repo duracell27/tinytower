@@ -6,7 +6,8 @@ import { generateRandomVisitorRole, generateVisitorAppearance, getFillLobbyCost 
 import { generateRandomWorkers } from '../../shared/config/workerNames';
 import { applyXpGain, xpForCommand, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
-import type { GameState, Command, Floor, Worker, ToolsState, AchievementGrant } from '../../shared/types';
+import type { GameState, Command, Floor, Worker, ToolsState } from '../../shared/types';
+import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -45,7 +46,10 @@ type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
 interface UIState {
   insufficientResources: InsufficientResourcesPayload | null;
   builderToolDrop: ToolKey | null;
-  achievementQueue: AchievementGrant[];
+  achievementQueue: NewAchievementGrant[];
+  coinBonusPercent: number;
+  xpBonusPercent: number;
+  categoryProgress: Record<string, CategoryProgressState>;
 }
 
 interface GameActions {
@@ -82,8 +86,9 @@ interface GameActions {
   showInsufficientResources: (payload: InsufficientResourcesPayload) => void;
   clearInsufficientResources: () => void;
   clearBuilderToolDrop: () => void;
-  addAchievements: (grants: AchievementGrant[]) => void;
+  addAchievements: (grants: NewAchievementGrant[]) => void;
   dismissAchievement: () => void;
+  reset: () => void;
 }
 
 type GameStore = GameState & PlayerStats & SyncState & UIState & GameActions;
@@ -105,7 +110,10 @@ function executeCommand(
     dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
   };
-  const result = processCommand(gameState, command, gameConfig, command.timestamp, store.playerLevel);
+  const result = processCommand(
+    gameState, command, gameConfig, command.timestamp, store.playerLevel,
+    { coinPercent: store.coinBonusPercent, xpPercent: store.xpBonusPercent },
+  );
   if (!result.success) return;
 
   let newQueue = [...result.state.commandQueue, command];
@@ -113,7 +121,9 @@ function executeCommand(
     newQueue = newQueue.slice(newQueue.length - COMMAND_QUEUE_CAP);
   }
 
-  const xpGained = xpForCommand(command.type, balance, result.state.balance, gems, result.state.gems);
+  const xpGained = result.xpGained !== undefined
+    ? result.xpGained
+    : xpForCommand(command.type, balance, result.state.balance, gems, result.state.gems);
   const xpResult = applyXpGain(store.playerLevel, store.playerXp, xpGained);
   let newBalance = result.state.balance + xpResult.bonusCoins;
   let newGems = result.state.gems + xpResult.bonusGems;
@@ -157,6 +167,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   insufficientResources: null,
   builderToolDrop: null,
   achievementQueue: [],
+  coinBonusPercent: 0,
+  xpBonusPercent: 0,
+  categoryProgress: {},
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -203,6 +216,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
   dismissAchievement: () => set((cur) => ({
     achievementQueue: cur.achievementQueue.slice(1),
   })),
+
+  reset: () => set({
+    ...createInitialState(gameConfig),
+    playerLevel: 1,
+    playerXp: 0,
+    levelUpQueue: [],
+    lastAckCursor: 0,
+    stateVersion: 0,
+    lastSyncAt: 0,
+    insufficientResources: null,
+    builderToolDrop: null,
+    achievementQueue: [],
+    coinBonusPercent: 0,
+    xpBonusPercent: 0,
+    categoryProgress: {},
+  }),
 
   buy: (floorId, slotIdx, typeId) => {
     executeCommand(get, set, {
@@ -487,6 +516,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     openedFloorTypes: state.openedFloorTypes ?? {},
     stats: state.stats ?? { totalBought: 0, totalListed: 0, totalSold: 0 },
     achievementQueue: (state as any).achievementQueue ?? [],
+    coinBonusPercent: (state as any).coinBonusPercent ?? 0,
+    xpBonusPercent: (state as any).xpBonusPercent ?? 0,
+    categoryProgress: (state as any).categoryProgress ?? {},
   }),
 
   reconcile: (serverState, newVersion, ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
