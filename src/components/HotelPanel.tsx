@@ -389,9 +389,9 @@ function EvictLowLevelCard({
   t: (key: string) => string;
 }) {
   return (
-    <View style={[buyStyles.card, { paddingVertical: 8 }]}>
+    <View style={[buyStyles.card, { paddingVertical: 5 }]}>
       <View style={buyStyles.left}>
-        <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
+        <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
           <Path
             d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
             stroke="#C9637E"
@@ -408,15 +408,15 @@ function EvictLowLevelCard({
           />
           <Circle cx={12} cy={5} r={3} stroke="#C9637E" strokeWidth={2} />
         </Svg>
-        <Text style={buyStyles.title}>{t('hotelPanel.evictLowLevelCard.title')}</Text>
+        <Text style={[buyStyles.title, { fontSize: 13 }]}>{t('hotelPanel.evictLowLevelCard.title')}</Text>
       </View>
       <Pressable
         onPress={onPress}
         style={({ pressed }) => [buyStyles.btn, pressed && { opacity: 0.82 }]}
       >
-        <LinearGradient colors={['#D96E8A', '#B84E6A']} style={[buyStyles.btnGradient, { paddingVertical: 6 }]}>
-          <GemIcon size={16} />
-          <Text style={buyStyles.btnCost}>1</Text>
+        <LinearGradient colors={['#D96E8A', '#B84E6A']} style={[buyStyles.btnGradient, { paddingVertical: 4, paddingHorizontal: 10 }]}>
+          <GemIcon size={13} />
+          <Text style={[buyStyles.btnCost, { fontSize: 13 }]}>1</Text>
         </LinearGradient>
         <View style={buyStyles.btnShadow} />
       </Pressable>
