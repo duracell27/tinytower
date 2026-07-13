@@ -69,6 +69,9 @@
       "title": "Expand hotel by 1 room",
       "buy": "Expand",
       "maxed": "Hotel is full"
+    },
+    "evictLowLevelCard": {
+      "title": "Evict all below level 9"
     }
   },
   "technicalFloor": {

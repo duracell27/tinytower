@@ -43,6 +43,7 @@ interface HotelPanelProps {
 type ListItem =
   | { kind: 'worker'; worker: Worker }
   | { kind: 'empty'; index: number }
+  | { kind: 'evict-low' }
   | { kind: 'buy' };
 
 export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
@@ -60,6 +61,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
   const gems = useGameStore((s) => s.gems);
   const expandHotel = useGameStore((s) => s.expandHotel);
+  const evictLowLevelWorkers = useGameStore((s) => s.evictLowLevelWorkers);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
 
@@ -69,10 +71,12 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const occupiedSeats = unemployedWorkers.length;
   const freeSeats = Math.max(0, hotelCapacity - occupiedSeats);
   const expansionCost = getHotelExpansionCost(hotelCapacity);
+  const hasLowLevelWorkers = unemployedWorkers.some((w: Worker) => w.level < 9);
 
   const listData: ListItem[] = [
     ...unemployedWorkers.map((w): ListItem => ({ kind: 'worker', worker: w })),
     ...Array.from({ length: freeSeats }, (_, i): ListItem => ({ kind: 'empty', index: i })),
+    ...(hasLowLevelWorkers ? [{ kind: 'evict-low' } as ListItem] : []),
     { kind: 'buy' },
   ];
 
@@ -151,6 +155,10 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
     expandHotel();
   }, [expansionCost, gems, expandHotel, showInsufficientResources]);
 
+  const handleEvictLowLevel = useCallback(() => {
+    evictLowLevelWorkers();
+  }, [evictLowLevelWorkers]);
+
   const renderItem = useCallback(
     ({ item, index }: { item: ListItem; index: number }) => {
       if (item.kind === 'buy') {
@@ -161,6 +169,9 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
             t={t}
           />
         );
+      }
+      if (item.kind === 'evict-low') {
+        return <EvictLowLevelCard onPress={handleEvictLowLevel} t={t} />;
       }
       const roomNumber = index + 1;
       const workerDreamJob = item.kind === 'worker' ? item.worker.dreamJob : null;
@@ -193,12 +204,13 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
         </View>
       );
     },
-    [expandedWorkerId, handleEvict, handleFindJob, expansionCost, handleExpandHotel, t],
+    [expandedWorkerId, handleEvict, handleFindJob, expansionCost, handleExpandHotel, evictLowLevelWorkers, handleEvictLowLevel, t],
   );
 
   const keyExtractor = useCallback((item: ListItem) => {
     if (item.kind === 'worker') return `w-${item.worker.id}`;
     if (item.kind === 'empty') return `e-${item.index}`;
+    if (item.kind === 'evict-low') return 'evict-low';
     return 'buy';
   }, []);
 
@@ -362,6 +374,49 @@ function BuySlotCard({
         <LinearGradient colors={['#D96E8A', '#B84E6A']} style={buyStyles.btnGradient}>
           <GemIcon size={16} />
           <Text style={buyStyles.btnCost}>{cost}</Text>
+        </LinearGradient>
+        <View style={buyStyles.btnShadow} />
+      </Pressable>
+    </View>
+  );
+}
+
+function EvictLowLevelCard({
+  onPress,
+  t,
+}: {
+  onPress: () => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <View style={buyStyles.card}>
+      <View style={buyStyles.left}>
+        <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+            stroke="#C9637E"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Path
+            d="M9 7l6 6M15 7l-6 6"
+            stroke="#C9637E"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Circle cx={12} cy={5} r={3} stroke="#C9637E" strokeWidth={2} />
+        </Svg>
+        <Text style={buyStyles.title}>{t('hotelPanel.evictLowLevelCard.title')}</Text>
+      </View>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [buyStyles.btn, pressed && { opacity: 0.82 }]}
+      >
+        <LinearGradient colors={['#D96E8A', '#B84E6A']} style={buyStyles.btnGradient}>
+          <GemIcon size={16} />
+          <Text style={buyStyles.btnCost}>1</Text>
         </LinearGradient>
         <View style={buyStyles.btnShadow} />
       </Pressable>
