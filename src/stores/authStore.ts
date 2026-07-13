@@ -142,6 +142,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       playerName: `${adj} ${noun}`,
     };
     set({ player: guestPlayer, isAuthenticated: false, isGuest: true });
+    setupUserPersistence(guestPlayer.id);
   },
 
   loadTokens: () => {
