@@ -11,21 +11,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
-import { CoinIcon, GemIcon } from './CurrencyIcons';
+import { GemIcon } from './CurrencyIcons';
 
 const { width: SCREEN_W } = Dimensions.get('window');
-
-function formatNumber(n: number): string {
-  if (n >= 1000) {
-    const str = String(n);
-    const parts: string[] = [];
-    for (let i = str.length; i > 0; i -= 3) {
-      parts.unshift(str.slice(Math.max(0, i - 3), i));
-    }
-    return parts.join(' ');
-  }
-  return String(n);
-}
 
 export default function AchievementModal() {
   const { t } = useTranslation('hotel');
@@ -67,20 +55,24 @@ export default function AchievementModal() {
             <Animated.View style={[styles.card, cardStyle]}>
               <LinearGradient colors={['#E8F4FF', '#D0E8FF']} style={styles.cardGradient}>
                 <Text style={styles.trophy}>🏆</Text>
-                <Text style={styles.tierBadge}>{t('achievement.tier', { tier: grant.level })}</Text>
+                <Text style={styles.tierBadge}>{grant.categoryTitle}</Text>
                 <Text style={styles.title}>{grant.title}</Text>
 
                 <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
-                  {grant.incomeBonus > 0 && (
-                    <View style={styles.rewardRow}>
-                      <CoinIcon size={20} />
-                      <Text style={styles.rewardText}>+{grant.incomeBonus}%</Text>
-                    </View>
-                  )}
                   {grant.gems > 0 && (
                     <View style={styles.rewardRow}>
                       <GemIcon size={16} />
                       <Text style={styles.rewardTextGem}>+{grant.gems}</Text>
+                    </View>
+                  )}
+                  {grant.incomeBonus > 0 && (
+                    <View style={styles.rewardRow}>
+                      <Text style={styles.rewardText}>+{grant.incomeBonus}% до монет</Text>
+                    </View>
+                  )}
+                  {grant.xpBonus > 0 && (
+                    <View style={styles.rewardRow}>
+                      <Text style={styles.rewardText}>+{grant.xpBonus}% до досвіду</Text>
                     </View>
                   )}
                 </Animated.View>
