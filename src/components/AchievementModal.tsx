@@ -67,20 +67,20 @@ export default function AchievementModal() {
             <Animated.View style={[styles.card, cardStyle]}>
               <LinearGradient colors={['#E8F4FF', '#D0E8FF']} style={styles.cardGradient}>
                 <Text style={styles.trophy}>🏆</Text>
-                <Text style={styles.tierBadge}>{t('achievement.tier', { tier: grant.tier })}</Text>
-                <Text style={styles.title}>{t(`achievement.${grant.achievementId}.title`)}</Text>
+                <Text style={styles.tierBadge}>{t('achievement.tier', { tier: grant.level })}</Text>
+                <Text style={styles.title}>{grant.title}</Text>
 
                 <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
-                  {grant.reward.coins != null && (
+                  {grant.incomeBonus > 0 && (
                     <View style={styles.rewardRow}>
                       <CoinIcon size={20} />
-                      <Text style={styles.rewardText}>+{formatNumber(grant.reward.coins)}</Text>
+                      <Text style={styles.rewardText}>+{grant.incomeBonus}%</Text>
                     </View>
                   )}
-                  {grant.reward.gems != null && (
+                  {grant.gems > 0 && (
                     <View style={styles.rewardRow}>
                       <GemIcon size={16} />
-                      <Text style={styles.rewardTextGem}>+{grant.reward.gems}</Text>
+                      <Text style={styles.rewardTextGem}>+{grant.gems}</Text>
                     </View>
                   )}
                 </Animated.View>

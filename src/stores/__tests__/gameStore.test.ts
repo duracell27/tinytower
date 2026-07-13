@@ -31,7 +31,6 @@ const testConfig: GameConfig = {
     defaultLobbyCapacity: 10,
   },
   floorUnlocks: [],
-  achievements: [],
 };
 
 describe('game store logic (via processCommand)', () => {
