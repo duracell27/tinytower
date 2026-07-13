@@ -108,16 +108,19 @@ export default function AchievementsScreen() {
                 </View>
               ) : nextLevelConfig ? (
                 <View style={styles.progressSection}>
-                  <Text style={styles.sectionLabel}>Next rank:</Text>
-                  <View style={styles.progressLabelRow}>
+                  <View style={styles.inlineRow}>
+                    <Text style={styles.sectionLabel}>Next rank: </Text>
                     <Text style={styles.nextTitleBold}>{nextLevelConfig.title}</Text>
+                    <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
+                  </View>
+                  <View style={styles.progressLabelRow}>
                     <Text style={styles.progressCount}>
                       {formatNum(progress)} / {formatNum(nextLevelConfig.threshold)}
                     </Text>
                   </View>
                   <ProgressBar value={progress} max={nextLevelConfig.threshold} />
-                  <Text style={styles.sectionLabel}>Reward:</Text>
-                  <View style={styles.rewardRow}>
+                  <View style={styles.inlineRow}>
+                    <Text style={styles.sectionLabel}>Reward: </Text>
                     <View style={styles.rewardChip}>
                       <Image source={DIAMOND_ICON} style={styles.diamondIcon} />
                       <Text style={styles.rewardChipText}>{nextGems}</Text>
@@ -235,14 +238,25 @@ const styles = StyleSheet.create({
   progressSection: {
     gap: 8,
   },
+  inlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
   progressLabelRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
   nextTitleBold: {
     fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
     color: '#27331F',
+  },
+  nextTierIcon: {
+    width: 22,
+    height: 22,
+    resizeMode: 'contain',
   },
   progressCount: {
     fontFamily: 'Nunito_600SemiBold',
