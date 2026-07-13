@@ -51,7 +51,10 @@ async function doSync(): Promise<void> {
       store.clearAckedCommands(response.ackCursor, sentIds, response.playerLevel, response.playerXp);
     }
     if (response.newAchievements && response.newAchievements.length > 0) {
-      useGameStore.getState().addAchievements(response.newAchievements);
+      const unshown = response.newAchievements.filter(
+        (g) => !store.locallyGrantedAchievements.has(`${g.categoryKey}-${g.level}`),
+      );
+      if (unshown.length > 0) useGameStore.getState().addAchievements(unshown);
     }
     useGameStore.setState({
       coinBonusPercent: response.coinBonusPercent ?? 0,
