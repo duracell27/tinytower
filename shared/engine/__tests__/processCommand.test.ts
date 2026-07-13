@@ -948,6 +948,84 @@ describe('specialist bonus in collect', () => {
   });
 });
 
+describe('collect with coinBonusPercent', () => {
+  it('applies coinBonusPercent to collect revenue', () => {
+    const worker = makeWorker({ floorType: 'green', dreamJob: 'coffee_shop', assignedFloorId: 1, assignedSlotIdx: 0 });
+    // worker mood = good → workerMultiplier = 2.0, specialistBonusPercent = 0
+    const state: GameState = {
+      ...createInitialState(testConfig),
+      balance: 0,
+      coinBonusPercent: 50,
+      xpBonusPercent: 0,
+      workers: [worker],
+      stats: { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
+      floors: [{
+        id: 1,
+        productions: [
+          { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 },
+          { typeId: null, stage: 'IDLE', stageStartedAt: 0 },
+        ],
+      }],
+    };
+    // batchValue=25, coinMultiplier=1+(50+0)/100=1.5, workerMultiplier=2.0
+    // revenue = floor(25 * 1.5 * 2.0) = floor(75) = 75
+    const cmd = { id: 'c1', type: 'collect' as const, floorId: 1, slotIdx: 0, timestamp: 100_000 };
+    const result = processCommand(state, cmd, testConfig, 100_000, 1, { coinPercent: 50, xpPercent: 0 });
+    expect(result.success).toBe(true);
+    expect(result.state.balance).toBe(75);
+  });
+
+  it('returns xpGained based on xpBonusPercent not coinDelta', () => {
+    const worker = makeWorker({ floorType: 'green', dreamJob: 'coffee_shop', assignedFloorId: 1, assignedSlotIdx: 0 });
+    const state: GameState = {
+      ...createInitialState(testConfig),
+      balance: 0,
+      coinBonusPercent: 50,
+      xpBonusPercent: 20,
+      workers: [worker],
+      stats: { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
+      floors: [{
+        id: 1,
+        productions: [
+          { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 },
+          { typeId: null, stage: 'IDLE', stageStartedAt: 0 },
+        ],
+      }],
+    };
+    // xpMultiplier = 1 + 20/100 = 1.2, workerMultiplier = 2.0
+    // xpGained = floor(25 * 1.2 * 2.0) = floor(60) = 60
+    const cmd = { id: 'c1', type: 'collect' as const, floorId: 1, slotIdx: 0, timestamp: 100_000 };
+    const result = processCommand(state, cmd, testConfig, 100_000, 1, { coinPercent: 50, xpPercent: 20 });
+    expect(result.success).toBe(true);
+    expect(result.xpGained).toBe(60);
+    // coin delta = 75 (from coinBonus=50%), but xpGained = 60 (from xpBonus=20%)
+    expect(result.state.balance).toBe(75);
+  });
+
+  it('works with default bonuses (zero) — same as before', () => {
+    const worker = makeWorker({ floorType: 'green', dreamJob: 'coffee_shop', assignedFloorId: 1, assignedSlotIdx: 0 });
+    const state: GameState = {
+      ...createInitialState(testConfig),
+      balance: 0,
+      workers: [worker],
+      stats: { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
+      floors: [{
+        id: 1,
+        productions: [
+          { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 },
+          { typeId: null, stage: 'IDLE', stageStartedAt: 0 },
+        ],
+      }],
+    };
+    // batchValue=25, no bonus, workerMultiplier=2.0 → floor(25 * 1.0 * 2.0) = 50
+    const cmd = { id: 'c1', type: 'collect' as const, floorId: 1, slotIdx: 0, timestamp: 100_000 };
+    const result = processCommand(state, cmd, testConfig, 100_000);
+    expect(result.success).toBe(true);
+    expect(result.state.balance).toBe(50);
+    expect(result.xpGained).toBe(50);
+  });
+});
+
 describe('speed_up_delivery command', () => {
   it('succeeds, deducts gems, and sets stageStartedAt to now - deliveryDuration', () => {
     const state = { ...stateWithWorker(), gems: 5 };

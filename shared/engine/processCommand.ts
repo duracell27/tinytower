@@ -6,6 +6,7 @@ export interface ProcessResult {
   success: boolean;
   state: GameState;
   error?: string;
+  xpGained?: number;
 }
 
 export function processCommand(
@@ -14,6 +15,7 @@ export function processCommand(
   config: GameConfig,
   now: number,
   playerLevel: number = 1,
+  bonuses: { coinPercent: number; xpPercent: number } = { coinPercent: 0, xpPercent: 0 },
 ): ProcessResult {
   switch (command.type) {
     case 'assign_worker':
@@ -29,7 +31,7 @@ export function processCommand(
     case 'buy':
     case 'list':
     case 'collect':
-      return processProductionCommand(state, command, config, now);
+      return processProductionCommand(state, command, config, now, bonuses);
     case 'buy_floor':
       return handleBuyFloor(state, command, config);
     case 'open_floor':
@@ -312,6 +314,7 @@ function processProductionCommand(
   command: Extract<Command, { type: 'buy' | 'list' | 'collect' }>,
   config: GameConfig,
   now: number,
+  bonuses: { coinPercent: number; xpPercent: number } = { coinPercent: 0, xpPercent: 0 },
 ): ProcessResult {
   const floorIdx = state.floors.findIndex((f) => f.id === command.floorId);
   if (floorIdx === -1) return { success: false, state, error: 'Floor not found' };
@@ -329,7 +332,7 @@ function processProductionCommand(
     case 'list':
       return handleList(state, config, now, floorIdx, command.slotIdx, production);
     case 'collect':
-      return handleCollect(state, config, now, floorIdx, command.slotIdx, production, worker);
+      return handleCollect(state, config, now, floorIdx, command.slotIdx, production, worker, bonuses);
   }
 }
 
@@ -448,6 +451,7 @@ function handleCollect(
   slotIdx: number,
   production: GameState['floors'][0]['productions'][0],
   worker: Worker,
+  bonuses: { coinPercent: number; xpPercent: number } = { coinPercent: 0, xpPercent: 0 },
 ): ProcessResult {
   if (production.stage !== 'SELLING') {
     return { success: false, state, error: 'Production not selling' };
@@ -464,12 +468,18 @@ function handleCollect(
 
   const floorId = state.floors[floorIdx].id;
   const floorType = resolveFloorType(state, config, floorId);
-  const multiplier = getRevenueMultiplier(worker, floorType, production.typeId);
-  const specialistBonus = getFloorSpecialistBonus(state.workers, floorId);
-  const revenue = Math.floor(typeConfig.batchValue * multiplier * (1 + specialistBonus));
+  const workerMultiplier = getRevenueMultiplier(worker, floorType, production.typeId);
+  const specialistBonusPercent = Math.round(getFloorSpecialistBonus(state.workers, floorId) * 100);
+
+  const coinMultiplier = 1 + (bonuses.coinPercent + specialistBonusPercent) / 100;
+  const revenue = Math.floor(typeConfig.batchValue * coinMultiplier * workerMultiplier);
+
+  const xpMultiplier = 1 + bonuses.xpPercent / 100;
+  const xpGained = Math.floor(typeConfig.batchValue * xpMultiplier * workerMultiplier);
 
   return {
     success: true,
+    xpGained,
     state: {
       ...state,
       balance: state.balance + revenue,
