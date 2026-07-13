@@ -18,7 +18,8 @@ model Player {
   playerXp           Int                 @default(0)
   totalBought        Int                 @default(0)
   totalListed        Int                 @default(0)
-  totalSold          Int                 @default(0)
+  totalCollected        Int                 @default(0)
+  totalPassengersLifted Int                 @default(0)
   maxRevenuePerMin   Int                 @default(0)
   openedFloorsCount  Int                 @default(0)
   lastSeenAt         DateTime            @default(now())
@@ -28,7 +29,7 @@ model Player {
   state              PlayerState?
   floorConstructions FloorConstruction[]
   floorTypes         PlayerFloorType[]
-  achievements       PlayerAchievement[]
+  categoryProgress   PlayerCategoryProgress[]
 }
 
 model PlayerState {
@@ -43,6 +44,8 @@ model PlayerState {
   dailyTipsRewardClaimed Boolean @default(false)
   dailyFillLobbyUses     Int     @default(0)
   lastDailyReset         BigInt  @default(0)
+  coinBonusPercent       Int     @default(0)
+  xpBonusPercent         Int     @default(0)
   nextVisitorAt          BigInt  @default(0)
   briks                  Int     @default(1)
   glass                  Int     @default(1)
@@ -129,14 +132,15 @@ model CommandLog {
   @@index([playerId, cursor])
 }
 
-model PlayerAchievement {
-  id            String   @id @default(cuid())
+model PlayerCategoryProgress {
   playerId      String
-  achievementId String
-  tier          Int
-  grantedAt     DateTime @default(now())
-  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  categoryKey   String
+  progress      Int        @default(0)
+  currentLevel  Int        @default(0)
+  claimedLevels Int[]      @default([])
+  updatedAt     DateTime   @updatedAt
+  player        Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
-  @@unique([playerId, achievementId, tier])
+  @@id([playerId, categoryKey])
   @@index([playerId])
 }
