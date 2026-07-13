@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { useGameStore } from '../../src/stores/gameStore';
+import { useGameStore } from '../src/stores/gameStore';
 import {
   ACHIEVEMENT_CATEGORIES,
   ACHIEVEMENT_GEM_REWARDS,
   ACHIEVEMENT_INCOME_BONUS,
   ACHIEVEMENT_XP_BONUS,
-} from '../../shared/config/achievementCategories';
+} from '../shared/config/achievementCategories';
 
 function formatNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
