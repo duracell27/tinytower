@@ -8,6 +8,7 @@ import { applyXpGain, xpForCommand, type LevelUpEvent } from '../../shared/engin
 import { clock } from '../services/clock';
 import type { GameState, Command, Floor, Worker, ToolsState } from '../../shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
+import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -50,6 +51,7 @@ interface UIState {
   coinBonusPercent: number;
   xpBonusPercent: number;
   categoryProgress: Record<string, CategoryProgressState>;
+  locallyGrantedAchievements: Set<string>;
 }
 
 interface GameActions {
@@ -132,6 +134,16 @@ function executeCommand(
   let newGems = result.state.gems + xpResult.bonusGems;
   const levelUps: LevelUpEvent[] = xpResult.levelUpEvents;
 
+  const optimisticGrants = detectOptimisticGrants(
+    stats,
+    result.state.stats,
+    store.categoryProgress,
+    store.locallyGrantedAchievements,
+  );
+  if (optimisticGrants.length > 0) {
+    newGems += optimisticGrants.reduce((sum, g) => sum + g.gems, 0);
+  }
+
   set({
     balance: newBalance,
     gems: newGems,
@@ -156,6 +168,13 @@ function executeCommand(
     playerXp: xpResult.playerXp,
     playerLevel: xpResult.playerLevel,
     levelUpQueue: [...store.levelUpQueue, ...levelUps],
+    ...(optimisticGrants.length > 0 ? {
+      achievementQueue: [...store.achievementQueue, ...optimisticGrants],
+      locallyGrantedAchievements: new Set([
+        ...store.locallyGrantedAchievements,
+        ...optimisticGrants.map((g) => `${g.categoryKey}-${g.level}`),
+      ]),
+    } : {}),
   });
 }
 
@@ -170,6 +189,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   insufficientResources: null,
   builderToolDrop: null,
   achievementQueue: [],
+  locallyGrantedAchievements: new Set<string>(),
   coinBonusPercent: 0,
   xpBonusPercent: 0,
   categoryProgress: {},
@@ -566,6 +586,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }),
     openedFloorTypes: serverState.openedFloorTypes ?? {},
     stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
+    locallyGrantedAchievements: new Set<string>(),
   })),
 
   clearAckedCommands: (ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
