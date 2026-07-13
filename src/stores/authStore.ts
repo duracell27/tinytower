@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createMMKV } from 'react-native-mmkv';
 import i18n from '../i18n';
 import { api } from '../services/api';
+import { setupUserPersistence, teardownPersistence } from '../services/persistence';
 
 type GuestNameLocale = 'en';
 
@@ -81,6 +82,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
+      setupUserPersistence(data.player.id);
     } catch (e) {
       set({ isLoading: false });
       throw e;
@@ -100,6 +102,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
+      setupUserPersistence(data.player.id);
     } catch (e) {
       set({ isLoading: false });
       throw e;
@@ -122,6 +125,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   logout: () => {
+    teardownPersistence();
     api.post('/auth/logout').catch(() => {});
     api.clearTokens();
     getStorage().remove('player');
@@ -148,6 +152,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       try {
         const player = JSON.parse(playerStr) as PlayerInfo;
         set({ player, lastPlayer: lastPlayer ?? player, isAuthenticated: true });
+        setupUserPersistence(player.id);
       } catch {
         set({ player: null, lastPlayer, isAuthenticated: false });
       }

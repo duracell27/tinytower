@@ -16,7 +16,6 @@ import {
   Nunito_700Bold,
   Nunito_800ExtraBold,
 } from '@expo-google-fonts/nunito';
-import { setupPersistence } from '../src/services/persistence';
 import { useAuthStore } from '../src/stores/authStore';
 import { setAuthFailureCallback } from '../src/services/api';
 
@@ -35,7 +34,6 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    setupPersistence();
     useAuthStore.getState().loadTokens();
     setAuthFailureCallback(() => {
       useAuthStore.getState().logout();
