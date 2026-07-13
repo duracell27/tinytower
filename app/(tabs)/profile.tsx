@@ -10,6 +10,7 @@ import i18n from '../../src/i18n';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useGameStore } from '../../src/stores/gameStore';
 import { xpForLevel } from '../../shared/engine/xp';
+import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { formatNum } from '../../src/utils/format';
 import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
@@ -64,7 +65,12 @@ export default function ProfileScreen() {
   const balance = useGameStore((s) => s.balance);
   const commandQueueLength = useGameStore((s) => s.commandQueue.length);
   const lastSyncAt = useGameStore((s) => s.lastSyncAt);
+  const categoryProgress = useGameStore((s) => s.categoryProgress);
   const xpNeeded = xpForLevel(playerLevel);
+  const totalEarnedLevels = ACHIEVEMENT_CATEGORIES.reduce(
+    (sum, cat) => sum + (categoryProgress[cat.key]?.currentLevel ?? 0),
+    0,
+  );
   const now = useGameClock(10_000);
 
   const syncStatus = commandQueueLength > 2000
@@ -153,6 +159,15 @@ export default function ProfileScreen() {
             <Text style={styles.syncTime}>{formatSyncTime(lastSyncAt, now)}</Text>
           </View>
         </View>
+
+        <Pressable
+          onPress={() => router.push('/achievements')}
+          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
+        >
+          <Text style={styles.achievementsButtonText}>
+            Досягнення ({totalEarnedLevels})
+          </Text>
+        </Pressable>
 
         <Pressable onPress={handleLogout} style={({ pressed }) => [
           styles.logoutButton,
@@ -330,6 +345,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_600SemiBold',
     fontSize: 12,
     color: '#9BA3B0',
+  },
+  achievementsButton: {
+    marginHorizontal: 20,
+    marginTop: 14,
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#3FA535',
+  },
+  achievementsButtonPressed: { opacity: 0.7 },
+  achievementsButtonText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: '#3FA535',
   },
   logoutButton: {
     marginHorizontal: 20,
