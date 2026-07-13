@@ -142,35 +142,6 @@ const rawConfig = {
     { floorId: 14, price: 18000, currency: 'coins' as const, constructionDurationMs: 600 * 60 * 1000, requiredToolSlots: 2, requiredToolCount: 2 },
     { floorId: 15, price: 50,    currency: 'gems'  as const, constructionDurationMs: 720 * 60 * 1000, requiredToolSlots: 2, requiredToolCount: 2 },
   ],
-  achievements: [
-    {
-      id: 'buyer',
-      stat: 'totalBought' as const,
-      tiers: [
-        { tier: 1, threshold: 100,  reward: { coins: 500 } },
-        { tier: 2, threshold: 500,  reward: { coins: 2000 } },
-        { tier: 3, threshold: 1000, reward: { gems: 10 } },
-      ],
-    },
-    {
-      id: 'lister',
-      stat: 'totalListed' as const,
-      tiers: [
-        { tier: 1, threshold: 100,  reward: { coins: 500 } },
-        { tier: 2, threshold: 500,  reward: { coins: 2000 } },
-        { tier: 3, threshold: 1000, reward: { gems: 10 } },
-      ],
-    },
-    {
-      id: 'seller',
-      stat: 'totalSold' as const,
-      tiers: [
-        { tier: 1, threshold: 100,  reward: { coins: 500 } },
-        { tier: 2, threshold: 500,  reward: { coins: 2000 } },
-        { tier: 3, threshold: 1000, reward: { gems: 10 } },
-      ],
-    },
-  ],
 } satisfies GameConfig;
 
 export const gameConfig: GameConfig = GameConfigSchema.parse(rawConfig);

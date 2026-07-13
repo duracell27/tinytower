@@ -53,7 +53,6 @@ const testConfig: GameConfig = {
       requiredToolCount: 2,
     },
   ],
-  achievements: [],
 };
 
 function makeWorker(overrides?: Partial<Worker>): Worker {

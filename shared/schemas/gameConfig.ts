@@ -49,23 +49,6 @@ export const LobbyConfigSchema = z.object({
   defaultLobbyCapacity: z.number().int().positive(),
 });
 
-export const AchievementRewardSchema = z.object({
-  coins: z.number().int().nonnegative().optional(),
-  gems:  z.number().int().nonnegative().optional(),
-});
-
-export const AchievementTierSchema = z.object({
-  tier:      z.number().int().positive(),
-  threshold: z.number().int().positive(),
-  reward:    AchievementRewardSchema,
-});
-
-export const AchievementConfigSchema = z.object({
-  id:   z.string(),
-  stat: z.enum(['totalBought', 'totalListed', 'totalSold']),
-  tiers: z.array(AchievementTierSchema).min(1),
-});
-
 export const GameConfigSchema = z.object({
   floors: z.array(FloorConfigSchema).min(1),
   productionTypes: z.record(z.string(), ProductionTypeConfigSchema),
@@ -74,5 +57,4 @@ export const GameConfigSchema = z.object({
   hotelCapacity: z.number().int().positive(),
   lobbyConfig: LobbyConfigSchema,
   floorUnlocks: z.array(FloorUnlockConfigSchema).default([]),
-  achievements: z.array(AchievementConfigSchema).default([]),
 });

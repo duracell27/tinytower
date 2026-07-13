@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ProductionStageSchema, ProductionSchema } from '../schemas/production';
 import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, UpgradeToSpecialistCommandSchema, FireAndEvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema, ExpandHotelCommandSchema, BuyFloorCommandSchema, OpenFloorCommandSchema, SpeedUpDeliveryCommandSchema } from '../schemas/command';
-import { GameConfigSchema, FloorConfigSchema, ProductionTypeConfigSchema, FloorTypeConfigSchema, LobbyConfigSchema, FloorUnlockConfigSchema, AchievementConfigSchema, AchievementTierSchema, AchievementRewardSchema } from '../schemas/gameConfig';
+import { GameConfigSchema, FloorConfigSchema, ProductionTypeConfigSchema, FloorTypeConfigSchema, LobbyConfigSchema, FloorUnlockConfigSchema } from '../schemas/gameConfig';
 import { GameStateSchema, UnderConstructionSchema, ToolsSchema, StatsSchema } from '../schemas/gameState';
 import { WorkerSchema } from '../schemas/worker';
 import { VisitorSchema, VisitorRoleSchema } from '../schemas/visitor';
@@ -41,16 +41,6 @@ export type Worker = z.infer<typeof WorkerSchema>;
 export type Visitor = z.infer<typeof VisitorSchema>;
 export type VisitorRole = z.infer<typeof VisitorRoleSchema>;
 export type Stats = z.infer<typeof StatsSchema>;
-export type AchievementConfig = z.infer<typeof AchievementConfigSchema>;
-export type AchievementTierConfig = z.infer<typeof AchievementTierSchema>;
-export type AchievementReward = z.infer<typeof AchievementRewardSchema>;
-
-export interface AchievementGrant {
-  achievementId: string;
-  tier: number;
-  reward: { coins?: number; gems?: number };
-}
-
 export interface Floor {
   id: number;
   productions: Production[];
