@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ImageBackground, Image, Pressable } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
 import { useGameStore } from '../src/stores/gameStore';
 import {
@@ -9,10 +10,41 @@ import {
   ACHIEVEMENT_XP_BONUS,
 } from '../shared/config/achievementCategories';
 
+const CATEGORY_IMAGES: Record<string, ReturnType<typeof require>> = {
+  buy:      require('../assets/img/achivment/achivBuyCategory.png'),
+  list:     require('../assets/img/achivment/achivDeliverCategory.png'),
+  collect:  require('../assets/img/achivment/achivCollectcoinsCategory.png'),
+  elevator: require('../assets/img/achivment/achivLiftCategory.png'),
+};
+
+const TIER_IMAGES: ReturnType<typeof require>[] = [
+  require('../assets/img/achivment/0TierAchive.png'),
+  require('../assets/img/achivment/1TierAchive.png'),
+  require('../assets/img/achivment/2TierAchive.png'),
+  require('../assets/img/achivment/3TierAchive.png'),
+  require('../assets/img/achivment/4TierAchive.png'),
+  require('../assets/img/achivment/5TierAchive.png'),
+  require('../assets/img/achivment/6TierAchive.png'),
+  require('../assets/img/achivment/7TierAchive.png'),
+];
+
 function formatNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  if (n >= 1_000) return `${Math.floor(n / 1_000)}K`;
   return String(n);
+}
+
+function LevelSegments({ current }: { current: number }) {
+  return (
+    <View style={styles.segmentsRow}>
+      {Array.from({ length: 7 }).map((_, i) => (
+        <View
+          key={i}
+          style={[styles.segment, i < current ? styles.segmentFilled : styles.segmentEmpty]}
+        />
+      ))}
+    </View>
+  );
 }
 
 function ProgressBar({ value, max }: { value: number; max: number }) {
@@ -28,148 +60,266 @@ export default function AchievementsScreen() {
   const categoryProgress = useGameStore(s => s.categoryProgress);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Назад</Text>
-        </Pressable>
-        <Text style={styles.heading}>Досягнення</Text>
-      </View>
+    <ImageBackground
+      source={require('../assets/welcome-bg.png')}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.heading}>Досягнення</Text>
+
         {ACHIEVEMENT_CATEGORIES.map(category => {
           const prog = categoryProgress[category.key] ?? { progress: 0, currentLevel: 0, claimedLevels: [] };
           const { progress, currentLevel } = prog;
           const isMaxed = currentLevel === 7;
           const currentLevelConfig = category.levels.find(l => l.level === currentLevel);
           const nextLevelConfig = category.levels.find(l => l.level === currentLevel + 1);
+          const nextGems = nextLevelConfig ? ACHIEVEMENT_GEM_REWARDS[nextLevelConfig.level] : 0;
+          const nextIncomeBonus = nextLevelConfig ? ACHIEVEMENT_INCOME_BONUS[nextLevelConfig.level] : 0;
+          const nextXpBonus = nextLevelConfig ? ACHIEVEMENT_XP_BONUS[nextLevelConfig.level] : 0;
 
           return (
             <View key={category.key} style={styles.card}>
-              <Text style={styles.categoryTitle}>{category.title}</Text>
+              <View style={styles.cardTop}>
+                <Image source={CATEGORY_IMAGES[category.key]} style={styles.categoryIcon} />
+                <View style={styles.cardTopText}>
+                  <Text style={styles.categoryTitle}>{category.title}</Text>
+                  <Text style={styles.levelLabel}>
+                    {currentLevel === 0
+                      ? 'Рівень не отримано'
+                      : `Рівень ${currentLevel} · ${currentLevelConfig?.title ?? ''}`}
+                  </Text>
+                </View>
+                <Image source={TIER_IMAGES[currentLevel]} style={styles.tierIcon} />
+              </View>
 
-              <Text style={styles.currentTitle}>
-                {currentLevel === 0 ? 'Рівень не отримано' : currentLevelConfig?.title ?? ''}
-              </Text>
+              <LevelSegments current={currentLevel} />
 
               {isMaxed ? (
-                <>
-                  <Text style={styles.progressText}>
-                    {formatNum(progress)} / {formatNum(category.levels[6].threshold)}
-                  </Text>
-                  <ProgressBar value={1} max={1} />
-                  <Text style={styles.maxedText}>Максимальний рівень досягнуто</Text>
-                </>
+                <View style={styles.maxedRow}>
+                  <Text style={styles.maxedText}>Максимальний рівень досягнуто 🏆</Text>
+                </View>
               ) : nextLevelConfig ? (
-                <>
-                  <Text style={styles.progressText}>
-                    {formatNum(progress)} / {formatNum(nextLevelConfig.threshold)}
-                  </Text>
-                  <ProgressBar value={progress} max={nextLevelConfig.threshold} />
-                  <Text style={styles.nextLabel}>
-                    Наступне звання: <Text style={styles.nextTitle}>{nextLevelConfig.title}</Text>
-                  </Text>
-                  <View style={styles.rewardRow}>
-                    <Text style={styles.rewardLabel}>Нагорода: </Text>
-                    <Text style={styles.rewardValue}>
-                      {ACHIEVEMENT_GEM_REWARDS[nextLevelConfig.level]} 💎
-                      {ACHIEVEMENT_INCOME_BONUS[nextLevelConfig.level] > 0
-                        ? `  +${ACHIEVEMENT_INCOME_BONUS[nextLevelConfig.level]}% до монет`
-                        : ''}
-                      {ACHIEVEMENT_XP_BONUS[nextLevelConfig.level] > 0
-                        ? `  +${ACHIEVEMENT_XP_BONUS[nextLevelConfig.level]}% до досвіду`
-                        : ''}
+                <View style={styles.progressSection}>
+                  <View style={styles.progressLabelRow}>
+                    <Text style={styles.nextTitle}>
+                      {'→ '}<Text style={styles.nextTitleBold}>{nextLevelConfig.title}</Text>
+                    </Text>
+                    <Text style={styles.progressCount}>
+                      {formatNum(progress)} / {formatNum(nextLevelConfig.threshold)}
                     </Text>
                   </View>
-                </>
+                  <ProgressBar value={progress} max={nextLevelConfig.threshold} />
+                  <View style={styles.rewardRow}>
+                    <View style={styles.rewardChip}>
+                      <Text style={styles.rewardChipText}>{nextGems} 💎</Text>
+                    </View>
+                    {nextIncomeBonus > 0 && (
+                      <View style={styles.rewardChipBonus}>
+                        <Text style={styles.rewardChipBonusText}>+{nextIncomeBonus}% монет</Text>
+                      </View>
+                    )}
+                    {nextXpBonus > 0 && (
+                      <View style={styles.rewardChipBonus}>
+                        <Text style={styles.rewardChipBonusText}>+{nextXpBonus}% досвіду</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
               ) : null}
             </View>
           );
         })}
       </ScrollView>
-    </View>
+
+      <Pressable
+        onPress={() => router.back()}
+        style={({ pressed }) => [styles.closeBtn, pressed && styles.closeBtnPressed]}
+      >
+        <Text style={styles.closeBtnText}>✕</Text>
+      </Pressable>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F3EC' },
-  header: {
-    paddingTop: 56,
+  container: { flex: 1 },
+  scroll: {
+    paddingTop: 64,
     paddingHorizontal: 20,
-    paddingBottom: 12,
+    paddingBottom: 120,
+    gap: 14,
+  },
+  heading: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 28,
+    color: '#27331F',
+    marginBottom: 6,
+  },
+
+  // Card
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: 'rgba(60,80,45,1)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.09,
+    shadowRadius: 10,
+    elevation: 4,
+    gap: 14,
+  },
+  cardTop: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  backBtn: { padding: 4 },
-  backText: { fontFamily: 'Fredoka_500Medium', fontSize: 16, color: '#3FA535' },
-  heading: { fontFamily: 'Fredoka_700Bold', fontSize: 24, color: '#27331F' },
-  scroll: { padding: 16, paddingBottom: 120, gap: 14 },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 20,
-    shadowColor: 'rgba(60,80,45,1)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+  categoryIcon: {
+    width: 48,
+    height: 48,
+    resizeMode: 'contain',
+  },
+  cardTopText: {
+    flex: 1,
+    gap: 2,
   },
   categoryTitle: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 18,
+    fontSize: 17,
     color: '#27331F',
-    marginBottom: 4,
   },
-  currentTitle: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 15,
+  levelLabel: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 13,
     color: '#7C8A6E',
-    marginBottom: 10,
   },
-  progressText: {
+  tierIcon: {
+    width: 44,
+    height: 44,
+    resizeMode: 'contain',
+  },
+
+  // Level segments
+  segmentsRow: {
+    flexDirection: 'row',
+    gap: 5,
+  },
+  segment: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+  },
+  segmentFilled: {
+    backgroundColor: '#3FA535',
+  },
+  segmentEmpty: {
+    backgroundColor: 'rgba(63,165,53,0.15)',
+  },
+
+  // Progress
+  progressSection: {
+    gap: 8,
+  },
+  progressLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  nextTitle: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: '#7C8A6E',
+  },
+  nextTitleBold: {
+    fontFamily: 'Fredoka_600SemiBold',
+    color: '#27331F',
+  },
+  progressCount: {
     fontFamily: 'Nunito_600SemiBold',
     fontSize: 13,
     color: '#5A6652',
-    marginBottom: 6,
   },
   barBg: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(60,120,40,0.12)',
+    backgroundColor: 'rgba(63,165,53,0.15)',
     overflow: 'hidden',
-    marginBottom: 10,
   },
   barFill: {
     height: '100%',
     borderRadius: 4,
     backgroundColor: '#3FA535',
   },
-  nextLabel: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 13,
-    color: '#7C8A6E',
-    marginBottom: 4,
+
+  // Reward chips
+  rewardRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
   },
-  nextTitle: {
+  rewardChip: {
+    backgroundColor: '#EEF9EC',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  rewardChipText: {
     fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
     color: '#27331F',
   },
-  rewardRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 },
-  rewardLabel: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 13,
-    color: '#7C8A6E',
+  rewardChipBonus: {
+    backgroundColor: '#FFF4E0',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
-  rewardValue: {
+  rewardChipBonusText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 13,
-    color: '#3FA535',
+    color: '#A06B00',
+  },
+
+  // Maxed
+  maxedRow: {
+    alignItems: 'center',
+    paddingVertical: 4,
   },
   maxedText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 14,
+    fontSize: 15,
     color: '#3FA535',
-    marginTop: 4,
+  },
+
+  // Close button
+  closeBtn: {
+    position: 'absolute',
+    bottom: 40,
+    alignSelf: 'center',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: 'rgba(60,80,45,1)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  closeBtnPressed: {
+    opacity: 0.7,
+  },
+  closeBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 20,
+    color: '#27331F',
+    lineHeight: 22,
   },
 });
