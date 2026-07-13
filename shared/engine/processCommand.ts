@@ -21,13 +21,13 @@ export function processCommand(
     case 'assign_worker':
       return handleAssignWorker(state, command);
     case 'fire_worker':
-      return handleFireWorker(state, command, config, now);
+      return handleFireWorker(state, command);
     case 'evict_worker':
       return handleEvictWorker(state, command);
     case 'upgrade_to_specialist':
       return handleUpgradeToSpecialist(state, command, config);
     case 'fire_and_evict_worker':
-      return handleFireAndEvictWorker(state, command, config, now);
+      return handleFireAndEvictWorker(state, command);
     case 'buy':
     case 'list':
     case 'collect':
@@ -267,8 +267,6 @@ function handleAssignWorker(
 function handleFireWorker(
   state: GameState,
   command: Extract<Command, { type: 'fire_worker' }>,
-  config: GameConfig,
-  now: number,
 ): ProcessResult {
   const worker = state.workers.find((w) => w.id === command.workerId);
   if (!worker) return { success: false, state, error: 'Worker not found' };
@@ -279,13 +277,7 @@ function handleFireWorker(
 
   const production = state.floors[floorIdx].productions[worker.assignedSlotIdx!];
   if (production && (production.stage === 'DELIVERING' || production.stage === 'SELLING')) {
-    const typeConfig = production.typeId ? config.productionTypes[production.typeId] : null;
-    if (typeConfig) {
-      const duration = production.stage === 'DELIVERING' ? typeConfig.deliveryDuration : typeConfig.sellDuration;
-      if (duration - (now - production.stageStartedAt) > 0) {
-        return { success: false, state, error: 'Cannot fire during active production' };
-      }
-    }
+    return { success: false, state, error: 'Cannot fire during active production' };
   }
 
   return {
@@ -536,8 +528,6 @@ function handleUpgradeToSpecialist(
 function handleFireAndEvictWorker(
   state: GameState,
   command: Extract<Command, { type: 'fire_and_evict_worker' }>,
-  config: GameConfig,
-  now: number,
 ): ProcessResult {
   const worker = state.workers.find((w) => w.id === command.workerId);
   if (!worker) return { success: false, state, error: 'Worker not found' };
@@ -549,13 +539,7 @@ function handleFireAndEvictWorker(
 
   const production = state.floors[floorIdx].productions[worker.assignedSlotIdx!];
   if (production && (production.stage === 'DELIVERING' || production.stage === 'SELLING')) {
-    const typeConfig = production.typeId ? config.productionTypes[production.typeId] : null;
-    if (typeConfig) {
-      const duration = production.stage === 'DELIVERING' ? typeConfig.deliveryDuration : typeConfig.sellDuration;
-      if (duration - (now - production.stageStartedAt) > 0) {
-        return { success: false, state, error: 'Cannot fire during active production' };
-      }
-    }
+    return { success: false, state, error: 'Cannot fire during active production' };
   }
 
   return {
