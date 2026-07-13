@@ -136,6 +136,22 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        <Pressable
+          onPress={() => router.push('/achievements')}
+          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
+        >
+          <Text style={styles.achievementsButtonText}>
+            Досягнення ({totalEarnedLevels})
+          </Text>
+        </Pressable>
+
+        <Pressable onPress={handleLogout} style={({ pressed }) => [
+          styles.logoutButton,
+          pressed && styles.logoutPressed,
+        ]}>
+          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
+        </Pressable>
+
         {/* Sync status card */}
         <View style={styles.syncCard}>
           <View style={[
@@ -159,22 +175,6 @@ export default function ProfileScreen() {
             <Text style={styles.syncTime}>{formatSyncTime(lastSyncAt, now)}</Text>
           </View>
         </View>
-
-        <Pressable
-          onPress={() => router.push('/achievements')}
-          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
-        >
-          <Text style={styles.achievementsButtonText}>
-            Досягнення ({totalEarnedLevels})
-          </Text>
-        </Pressable>
-
-        <Pressable onPress={handleLogout} style={({ pressed }) => [
-          styles.logoutButton,
-          pressed && styles.logoutPressed,
-        ]}>
-          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
-        </Pressable>
       </ScrollView>
     </ImageBackground>
   );
@@ -352,15 +352,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 18,
     padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#3FA535',
   },
   achievementsButtonPressed: { opacity: 0.7 },
   achievementsButtonText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
-    color: '#3FA535',
+    color: '#27331F',
   },
   logoutButton: {
     marginHorizontal: 20,

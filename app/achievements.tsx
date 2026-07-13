@@ -17,6 +17,8 @@ const CATEGORY_IMAGES: Record<string, ReturnType<typeof require>> = {
   elevator: require('../assets/img/achivment/achivLiftCategory.png'),
 };
 
+const DIAMOND_ICON = require('../assets/img/diamond.png');
+
 const TIER_IMAGES: ReturnType<typeof require>[] = [
   require('../assets/img/achivment/0TierAchive.png'),
   require('../assets/img/achivment/1TierAchive.png'),
@@ -117,7 +119,8 @@ export default function AchievementsScreen() {
                   <ProgressBar value={progress} max={nextLevelConfig.threshold} />
                   <View style={styles.rewardRow}>
                     <View style={styles.rewardChip}>
-                      <Text style={styles.rewardChipText}>{nextGems} 💎</Text>
+                      <Image source={DIAMOND_ICON} style={styles.diamondIcon} />
+                      <Text style={styles.rewardChipText}>{nextGems}</Text>
                     </View>
                     {nextIncomeBonus > 0 && (
                       <View style={styles.rewardChipBonus}>
@@ -263,10 +266,18 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   rewardChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#EEF9EC',
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
+    gap: 4,
+  },
+  diamondIcon: {
+    width: 14,
+    height: 14,
+    resizeMode: 'contain',
   },
   rewardChipText: {
     fontFamily: 'Fredoka_600SemiBold',
@@ -304,14 +315,14 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#fff',
+    backgroundColor: '#1A1A1A',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: 'rgba(60,80,45,1)',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.25,
     shadowRadius: 12,
-    elevation: 6,
+    elevation: 8,
   },
   closeBtnPressed: {
     opacity: 0.7,
@@ -319,7 +330,7 @@ const styles = StyleSheet.create({
   closeBtnText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 20,
-    color: '#27331F',
+    color: '#fff',
     lineHeight: 22,
   },
 });
