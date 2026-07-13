@@ -174,6 +174,13 @@ export function createInitialState(config: GameConfig): GameState {
     tools: { briks: 1, glass: 1, nails: 1, screw: 1 },
     underConstruction: [],
     openedFloorTypes: {},
-    stats: { totalBought: 0, totalListed: 0, totalSold: 0 },
+    stats: {
+      totalBought: 0,
+      totalListed: 0,
+      totalCollected: 0,
+      totalPassengersLifted: 0,
+    },
+    coinBonusPercent: 0,
+    xpBonusPercent: 0,
   };
 }

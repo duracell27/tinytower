@@ -478,7 +478,7 @@ function handleCollect(
         stage: 'IDLE',
         stageStartedAt: 0,
       }),
-      stats: { ...state.stats, totalSold: state.stats.totalSold + 1 },
+      stats: { ...state.stats, totalCollected: state.stats.totalCollected + 1 },
     },
   };
 }
