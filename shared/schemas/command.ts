@@ -161,6 +161,10 @@ export const DevAddGemsCommandSchema = TimestampedBaseSchema.extend({
   amount: z.number().int().positive(),
 });
 
+export const EvictLowLevelWorkersCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('evict_low_level_workers'),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -185,4 +189,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   SpeedUpConstructionCommandSchema,
   SpeedUpDeliveryCommandSchema,
   DevAddGemsCommandSchema,
+  EvictLowLevelWorkersCommandSchema,
 ]);

@@ -407,6 +407,51 @@ describe('processCommand', () => {
     });
   });
 
+  function evictLowLevelCmd(): Command {
+    return { id: 'cmd-ell', type: 'evict_low_level_workers', timestamp: 1000 } as Command;
+  }
+
+  describe('evict_low_level_workers command', () => {
+    it('removes all unassigned workers with level < 9 and deducts 1 gem', () => {
+      const state = makeState({
+        gems: 3,
+        workers: [
+          makeWorker({ id: 'w1', level: 5, assignedFloorId: null }),
+          makeWorker({ id: 'w2', level: 8, assignedFloorId: null }),
+          makeWorker({ id: 'w3', level: 9, assignedFloorId: null }),
+        ],
+      });
+      const result = processCommand(state, evictLowLevelCmd(), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.gems).toBe(2);
+      expect(result.state.workers.map(w => w.id)).toEqual(['w3']);
+    });
+
+    it('keeps assigned workers even if level < 9', () => {
+      const state = makeState({
+        gems: 1,
+        workers: [
+          makeWorker({ id: 'w1', level: 3, assignedFloorId: 1, assignedSlotIdx: 0 }),
+          makeWorker({ id: 'w2', level: 2, assignedFloorId: null }),
+        ],
+      });
+      const result = processCommand(state, evictLowLevelCmd(), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.workers.map(w => w.id)).toEqual(['w1']);
+    });
+
+    it('fails when gems < 1', () => {
+      const state = makeState({
+        gems: 0,
+        workers: [makeWorker({ id: 'w1', level: 5, assignedFloorId: null })],
+      });
+      const result = processCommand(state, evictLowLevelCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+      expect(result.state.workers).toHaveLength(1);
+      expect(result.state.gems).toBe(0);
+    });
+  });
+
   describe('buy with worker checks', () => {
     it('fails if no worker on slot', () => {
       const state = makeState({ workers: [] });

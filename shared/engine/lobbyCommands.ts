@@ -15,7 +15,8 @@ import type { VisitorRole } from '../types';
 
 type LobbyCommand = Extract<Command, { type:
   'spawn_visitor' | 'lift_visitor' | 'collect_tip' |
-  'deliver_all' | 'upgrade_elevator' | 'upgrade_lobby' | 'claim_daily_reward' | 'expand_hotel' | 'fill_lobby'
+  'deliver_all' | 'upgrade_elevator' | 'upgrade_lobby' | 'claim_daily_reward' | 'expand_hotel' | 'fill_lobby' |
+  'evict_low_level_workers'
 }>;
 
 export function processLobbyCommand(
@@ -45,6 +46,8 @@ export function processLobbyCommand(
       return handleExpandHotel(state);
     case 'fill_lobby':
       return handleFillLobby(state, command, config);
+    case 'evict_low_level_workers':
+      return handleEvictLowLevelWorkers(state);
   }
 }
 
@@ -319,6 +322,20 @@ function handleExpandHotel(state: GameState): ProcessResult {
       ...state,
       gems: state.gems - cost,
       hotelCapacity: state.hotelCapacity + 1,
+    },
+  };
+}
+
+function handleEvictLowLevelWorkers(state: GameState): ProcessResult {
+  if (state.gems < 1) {
+    return { success: false, state, error: 'Not enough gems' };
+  }
+  return {
+    success: true,
+    state: {
+      ...state,
+      gems: state.gems - 1,
+      workers: state.workers.filter(w => w.level === 9 || w.assignedFloorId !== null),
     },
   };
 }
