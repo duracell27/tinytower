@@ -295,6 +295,47 @@ describe('claim_daily_reward', () => {
   });
 });
 
+describe('passenger tracking', () => {
+  const baseState = (): GameState => ({
+    ...createInitialState(testConfig),
+    stats: { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 5 },
+    lobbyVisitors: [
+      { id: 'v1', role: 'guest', targetFloor: 2, hairColor: 'black', female: false },
+    ],
+    elevatorFloor: 2,
+    elevatorLevel: 1,
+  });
+
+  it('collect_tip increments totalPassengersLifted by 1', () => {
+    const cmd = {
+      id: 'ct1', type: 'collect_tip' as const, timestamp: 1000,
+      newWorker: undefined, builderTool: undefined,
+    };
+    const result = processCommand(baseState(), cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.stats.totalPassengersLifted).toBe(6);
+  });
+
+  it('deliver_all increments totalPassengersLifted by lobby size', () => {
+    const state = {
+      ...baseState(),
+      gems: 5,
+      lobbyVisitors: [
+        { id: 'v1', role: 'guest' as const, targetFloor: 2, hairColor: 'black', female: false },
+        { id: 'v2', role: 'guest' as const, targetFloor: 3, hairColor: 'brown', female: true },
+        { id: 'v3', role: 'businessman' as const, targetFloor: 1, hairColor: 'blonde', female: false },
+      ],
+    };
+    const cmd = {
+      id: 'da1', type: 'deliver_all' as const, timestamp: 1000,
+      builderTools: [],
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.stats.totalPassengersLifted).toBe(8); // 5 + 3 lobby visitors
+  });
+});
+
 describe('fill_lobby', () => {
   it('fills lobby to capacity and deducts 1 gem on first use', () => {
     const state = makeState({ gems: 5, lobbyCapacity: 3, lobbyVisitors: [] });

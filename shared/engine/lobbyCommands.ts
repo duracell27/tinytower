@@ -220,6 +220,7 @@ function handleCollectTip(
     lobbyVisitors: newState.lobbyVisitors.slice(1),
     elevatorFloor: 0,
     nextVisitorAt,
+    stats: { ...newState.stats, totalPassengersLifted: newState.stats.totalPassengersLifted + 1 },
   };
   return { success: true, state: newState };
 }
@@ -237,6 +238,7 @@ function handleDeliverAll(
   if (state.lobbyVisitors.length === 0) {
     return { success: false, state, error: 'No visitors to deliver' };
   }
+  const passengersDelivered = state.lobbyVisitors.length;
   const builderTools = command.builderTools ?? [];
   let builderIdx = 0;
   let newState = { ...state, gems: state.gems - 1 };
@@ -249,7 +251,13 @@ function handleDeliverAll(
   const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
     ? now + config.lobbyConfig.visitorSpawnInterval
     : state.nextVisitorAt;
-  newState = { ...newState, lobbyVisitors: [], elevatorFloor: 0, nextVisitorAt };
+  newState = {
+    ...newState,
+    lobbyVisitors: [],
+    elevatorFloor: 0,
+    nextVisitorAt,
+    stats: { ...newState.stats, totalPassengersLifted: newState.stats.totalPassengersLifted + passengersDelivered },
+  };
   return { success: true, state: newState };
 }
 
