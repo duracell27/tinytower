@@ -58,7 +58,7 @@ export function loadGameState(): PersistedGameState | null {
           ? [parsed.underConstruction]
           : [],
       openedFloorTypes: parsed.openedFloorTypes ?? {},
-      stats: parsed.stats ?? { totalBought: 0, totalListed: 0, totalSold: 0 },
+      stats: parsed.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     };
     const result = GameStateSchema.safeParse(withDefaults);
     if (result.success) {
@@ -105,7 +105,7 @@ export function saveGameState(state: PersistedGameState): void {
     tools: state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
     underConstruction: state.underConstruction ?? [],
     openedFloorTypes: state.openedFloorTypes ?? {},
-    stats: state.stats ?? { totalBought: 0, totalListed: 0, totalSold: 0 },
+    stats: state.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     achievementQueue: state.achievementQueue ?? [],
   }));
 }

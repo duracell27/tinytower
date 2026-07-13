@@ -516,7 +516,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     tools: state.tools ?? { briks: 1, glass: 1, nails: 1, screw: 1 },
     underConstruction: state.underConstruction ?? [],
     openedFloorTypes: state.openedFloorTypes ?? {},
-    stats: state.stats ?? { totalBought: 0, totalListed: 0, totalSold: 0 },
+    stats: state.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     achievementQueue: (state as any).achievementQueue ?? [],
     coinBonusPercent: (state as any).coinBonusPercent ?? 0,
     xpBonusPercent: (state as any).xpBonusPercent ?? 0,
@@ -555,7 +555,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return local?.selectedFloorType ? { ...uc, selectedFloorType: local.selectedFloorType } : uc;
     }),
     openedFloorTypes: serverState.openedFloorTypes ?? {},
-    stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalSold: 0 },
+    stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
   })),
 
   clearAckedCommands: (ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
