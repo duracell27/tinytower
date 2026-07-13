@@ -4,7 +4,9 @@ import { processCommand } from '@shared/engine/processCommand';
 import { xpForCommand, applyXpGain } from '@shared/engine/xp';
 import { gameConfig } from '@shared/config/gameConfig';
 import { calcRevenuePerMin } from '@shared/engine/ratingUtils';
-import type { GameState, Command, Floor, Production, Worker, AchievementGrant } from '@shared/types';
+import type { GameState, Command, Floor, Production, Worker } from '@shared/types';
+import type { NewAchievementGrant, CategoryProgressState } from '@shared/types/achievements';
+import { AchievementService } from '../achievement/achievement.service';
 
 export interface SyncResult {
   state: GameState;
@@ -13,14 +15,20 @@ export interface SyncResult {
   serverTime: number;
   playerLevel: number;
   playerXp: number;
-  newAchievements: AchievementGrant[];
+  newAchievements: NewAchievementGrant[];
+  coinBonusPercent: number;
+  xpBonusPercent: number;
+  categoryProgress: Record<string, CategoryProgressState>;
 }
 
 @Injectable()
 export class SyncService {
   private readonly logger = new Logger(SyncService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private achievementService: AchievementService,
+  ) {}
 
   async processSync(
     playerId: string,
@@ -66,14 +74,21 @@ export class SyncService {
     }
 
     let gameState = this.dbToGameState(player);
+    const gameStateBefore = this.dbToGameState(player);
     const acceptedCommands: Command[] = [];
     let totalXpGained = 0;
 
     for (const command of newCommands) {
       const prevBalance = gameState.balance;
-      const result = processCommand(gameState, command, gameConfig, command.timestamp, player.playerLevel);
+      const result = processCommand(
+        gameState, command, gameConfig, command.timestamp, player.playerLevel,
+        { coinPercent: gameState.coinBonusPercent, xpPercent: gameState.xpBonusPercent },
+      );
       if (result.success) {
-        totalXpGained += xpForCommand(command.type, prevBalance, result.state.balance);
+        const xp = result.xpGained !== undefined
+          ? result.xpGained
+          : xpForCommand(command.type, prevBalance, result.state.balance);
+        totalXpGained += xp;
         gameState = result.state;
         acceptedCommands.push(command);
       } else {
@@ -83,12 +98,13 @@ export class SyncService {
 
     let boughtCount = 0;
     let listedCount = 0;
-    let soldCount   = 0;
+    let collectCount = 0;
     for (const cmd of acceptedCommands) {
       if (cmd.type === 'buy')     boughtCount++;
       if (cmd.type === 'list')    listedCount++;
-      if (cmd.type === 'collect') soldCount++;
+      if (cmd.type === 'collect') collectCount++;
     }
+    const passengersCount = gameState.stats.totalPassengersLifted - gameStateBefore.stats.totalPassengersLifted;
 
     // Capture balances after commands but before XP level-up rewards
     const baseBalance = gameState.balance;
@@ -108,18 +124,29 @@ export class SyncService {
       gameConfig,
       serverNow,
     );
-    const currentOpenedFloors = Object.keys(gameState.openedFloorTypes ?? {}).length;
+    const currentOpenedFloors = gameConfig.floors.length + Object.keys(gameState.openedFloorTypes ?? {}).length;
 
     let ackCursor = lastAckCursor;
-    let newAchievements: AchievementGrant[] = [];
+    let allNewGrants: NewAchievementGrant[] = [];
+    let coinBonusDelta = 0;
+    let xpBonusDelta = 0;
 
     if (acceptedCommands.length > 0 || newCommands.length === 0) {
       await this.prisma.$transaction(async (tx) => {
         // Re-read playerLevel/playerXp under a row lock to prevent concurrent-sync races.
         // If another request committed a level change between our initial read and now,
         // recompute XP from the locked values so both requests' rewards are applied correctly.
-        const [locked] = await tx.$queryRaw<{ playerLevel: number; playerXp: number; totalBought: number; totalListed: number; totalSold: number; maxRevenuePerMin: number }[]>`
-          SELECT "playerLevel", "playerXp", "totalBought", "totalListed", "totalSold", "maxRevenuePerMin" FROM "Player" WHERE id = ${playerId} FOR UPDATE
+        const [locked] = await tx.$queryRaw<{
+          playerLevel: number;
+          playerXp: number;
+          totalBought: number;
+          totalListed: number;
+          totalCollected: number;
+          totalPassengersLifted: number;
+          maxRevenuePerMin: number;
+        }[]>`
+          SELECT "playerLevel", "playerXp", "totalBought", "totalListed", "totalCollected", "totalPassengersLifted", "maxRevenuePerMin"
+          FROM "Player" WHERE id = ${playerId} FOR UPDATE
         `;
         if (locked && (locked.playerLevel !== player.playerLevel || locked.playerXp !== player.playerXp)) {
           xpResult = applyXpGain(locked.playerLevel, locked.playerXp, totalXpGained);
@@ -131,41 +158,37 @@ export class SyncService {
         }
         // Compute final stats using locked player values + deltas to avoid stale reads under concurrency
         const finalStats = {
-          totalBought: (locked?.totalBought ?? player.totalBought) + boughtCount,
-          totalListed: (locked?.totalListed ?? player.totalListed) + listedCount,
-          totalSold:   (locked?.totalSold   ?? player.totalSold)   + soldCount,
+          totalBought:           (locked?.totalBought           ?? player.totalBought)           + boughtCount,
+          totalListed:           (locked?.totalListed            ?? player.totalListed)            + listedCount,
+          totalCollected:        (locked?.totalCollected         ?? player.totalCollected)         + collectCount,
+          totalPassengersLifted: (locked?.totalPassengersLifted  ?? player.totalPassengersLifted)  + passengersCount,
         };
         gameState = { ...gameState, stats: finalStats };
 
-        // Check for newly unlocked achievement tiers
-        const grantedRows = await tx.playerAchievement.findMany({
-          where: { playerId },
-          select: { achievementId: true, tier: true },
-        });
-        const grantedSet = new Set(grantedRows.map((r) => `${r.achievementId}:${r.tier}`));
+        // Achievement progress
+        const categoryDeltas: [string, number][] = [
+          ['buy',      boughtCount],
+          ['list',     listedCount],
+          ['collect',  collectCount],
+          ['elevator', passengersCount],
+        ];
+        for (const [key, amount] of categoryDeltas) {
+          if (amount === 0) continue;
+          const r = await this.achievementService.incrementProgress(tx, playerId, key, amount);
+          gameState = { ...gameState, gems: gameState.gems + r.gemsToAdd };
+          coinBonusDelta += r.coinBonusDelta;
+          xpBonusDelta   += r.xpBonusDelta;
+          allNewGrants.push(...r.newGrants);
+        }
 
-        const localNewAchievements: AchievementGrant[] = [];
-        for (const achievement of gameConfig.achievements) {
-          const statValue = finalStats[achievement.stat];
-          for (const tierConfig of achievement.tiers) {
-            const key = `${achievement.id}:${tierConfig.tier}`;
-            if (!grantedSet.has(key) && statValue >= tierConfig.threshold) {
-              await tx.playerAchievement.create({
-                data: { playerId, achievementId: achievement.id, tier: tierConfig.tier },
-              });
-              if (tierConfig.reward.coins) {
-                gameState = { ...gameState, balance: gameState.balance + tierConfig.reward.coins };
-              }
-              if (tierConfig.reward.gems) {
-                gameState = { ...gameState, gems: gameState.gems + tierConfig.reward.gems };
-              }
-              localNewAchievements.push({
-                achievementId: achievement.id,
-                tier: tierConfig.tier,
-                reward: tierConfig.reward,
-              });
-            }
-          }
+        if (coinBonusDelta > 0 || xpBonusDelta > 0) {
+          await tx.playerState.update({
+            where: { playerId },
+            data: {
+              coinBonusPercent: { increment: coinBonusDelta },
+              xpBonusPercent:   { increment: xpBonusDelta },
+            },
+          });
         }
 
         // Single consolidated player update with all final values
@@ -175,11 +198,12 @@ export class SyncService {
             balance: gameState.balance,
             playerLevel: xpResult.playerLevel,
             playerXp: xpResult.playerXp,
-            totalBought: { increment: boughtCount },
-            totalListed: { increment: listedCount },
-            totalSold:   { increment: soldCount },
+            totalBought:           { increment: boughtCount },
+            totalListed:           { increment: listedCount },
+            totalCollected:        { increment: collectCount },
+            totalPassengersLifted: { increment: passengersCount },
             stateVersion: {
-              increment: (acceptedCommands.length > 0 || localNewAchievements.length > 0) ? 1 : 0,
+              increment: (acceptedCommands.length > 0 || allNewGrants.length > 0) ? 1 : 0,
             },
             lastSeenAt: new Date(serverNow),
             openedFloorsCount: currentOpenedFloors,
@@ -263,8 +287,6 @@ export class SyncService {
             update: { floorType },
           });
         }
-
-        newAchievements = localNewAchievements;
 
         for (const floor of gameState.floors) {
           const dbFloor = player.floors.find((f) => f.floorId === floor.id);
@@ -366,6 +388,22 @@ export class SyncService {
       where: { id: playerId },
     });
 
+    const progressRows = await this.prisma.playerCategoryProgress.findMany({
+      where: { playerId },
+      select: { categoryKey: true, progress: true, currentLevel: true, claimedLevels: true },
+    });
+    const categoryProgress: Record<string, CategoryProgressState> = {};
+    for (const row of progressRows) {
+      categoryProgress[row.categoryKey] = {
+        progress: row.progress,
+        currentLevel: row.currentLevel,
+        claimedLevels: row.claimedLevels as number[],
+      };
+    }
+
+    const finalCoinBonus = gameState.coinBonusPercent + coinBonusDelta;
+    const finalXpBonus   = gameState.xpBonusPercent   + xpBonusDelta;
+
     return {
       state: gameState,
       stateVersion: updatedPlayer?.stateVersion ?? player.stateVersion,
@@ -373,7 +411,10 @@ export class SyncService {
       serverTime: serverNow,
       playerLevel: updatedPlayer?.playerLevel ?? xpResult.playerLevel,
       playerXp: updatedPlayer?.playerXp ?? xpResult.playerXp,
-      newAchievements,
+      newAchievements: allNewGrants,
+      coinBonusPercent: finalCoinBonus,
+      xpBonusPercent: finalXpBonus,
+      categoryProgress,
     };
   }
 
@@ -437,10 +478,13 @@ export class SyncService {
         (player.floorTypes ?? []).map((ft: any) => [String(ft.floorId), ft.floorType]),
       ),
       stats: {
-        totalBought: player.totalBought,
-        totalListed: player.totalListed,
-        totalSold: player.totalSold,
+        totalBought:           player.totalBought,
+        totalListed:           player.totalListed,
+        totalCollected:        player.totalCollected        ?? 0,
+        totalPassengersLifted: player.totalPassengersLifted ?? 0,
       },
+      coinBonusPercent: s?.coinBonusPercent ?? 0,
+      xpBonusPercent:   s?.xpBonusPercent   ?? 0,
       dailyFillLobbyUses: s?.dailyFillLobbyUses ?? 0,
     };
   }

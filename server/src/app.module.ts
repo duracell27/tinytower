@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { PlayerModule } from './player/player.module';
 import { SyncModule } from './sync/sync.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { AchievementModule } from './achievement/achievement.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
     PlayerModule,
     SyncModule,
     LeaderboardModule,
+    AchievementModule,
   ],
 })
 export class AppModule {}

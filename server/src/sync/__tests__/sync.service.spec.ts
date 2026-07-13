@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { SyncService } from '../sync.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AchievementService } from '../../achievement/achievement.service';
 import type { Command } from '@shared/types';
 
 describe('SyncService', () => {
@@ -99,7 +100,8 @@ describe('SyncService', () => {
     playerXp: 0,
     totalBought: 0,
     totalListed: 0,
-    totalSold: 0,
+    totalCollected: 0,
+    totalPassengersLifted: 0,
     maxRevenuePerMin: 0,
     openedFloorsCount: 0,
     lastSeenAt: new Date(Date.now() - 60000),
@@ -119,15 +121,16 @@ describe('SyncService', () => {
       production: { update: jest.fn().mockResolvedValue({}) },
       worker: { upsert: jest.fn().mockResolvedValue({}), deleteMany: jest.fn().mockResolvedValue({}) },
       commandLog: { create: jest.fn().mockResolvedValue({ cursor: 1 }), deleteMany: jest.fn().mockResolvedValue({}) },
-      playerAchievement: {
-        findMany: jest.fn().mockResolvedValue([]),
-        create: jest.fn().mockResolvedValue({}),
+      playerCategoryProgress: {
+        upsert: jest.fn().mockResolvedValue({ progress: 1, claimedLevels: [], currentLevel: 0 }),
+        update: jest.fn().mockResolvedValue({}),
       },
       // Returns empty array so locked values match player.playerLevel/playerXp (no recompute branch)
       $queryRaw: jest.fn().mockResolvedValue([]),
-      playerState: { upsert: jest.fn().mockResolvedValue({}) },
+      playerState: { upsert: jest.fn().mockResolvedValue({}), update: jest.fn().mockResolvedValue({}) },
       floorConstruction: { deleteMany: jest.fn().mockResolvedValue({}), upsert: jest.fn().mockResolvedValue({}) },
       playerFloorType: { upsert: jest.fn().mockResolvedValue({}), deleteMany: jest.fn().mockResolvedValue({}) },
+      floor: { create: jest.fn().mockResolvedValue({}) },
     };
 
     prisma = {
@@ -135,6 +138,9 @@ describe('SyncService', () => {
         findUnique: jest.fn(),
       },
       commandLog: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      playerCategoryProgress: {
         findMany: jest.fn().mockResolvedValue([]),
       },
       $transaction: jest.fn(async (fn: (tx: any) => Promise<void>) => {
@@ -148,6 +154,17 @@ describe('SyncService', () => {
         {
           provide: PrismaService,
           useValue: prisma,
+        },
+        {
+          provide: AchievementService,
+          useValue: {
+            incrementProgress: jest.fn().mockResolvedValue({
+              newGrants: [],
+              gemsToAdd: 0,
+              coinBonusDelta: 0,
+              xpBonusDelta: 0,
+            }),
+          },
         },
       ],
     }).compile();
