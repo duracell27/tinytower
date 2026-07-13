@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { View, Text, Pressable, Modal, StyleSheet, Dimensions, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -12,6 +11,24 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { GemIcon } from './CurrencyIcons';
+import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
+
+const TIER_IMAGES: Record<number, ReturnType<typeof require>> = {
+  1: require('../../assets/img/achivment/1TierAchive.png'),
+  2: require('../../assets/img/achivment/2TierAchive.png'),
+  3: require('../../assets/img/achivment/3TierAchive.png'),
+  4: require('../../assets/img/achivment/4TierAchive.png'),
+  5: require('../../assets/img/achivment/5TierAchive.png'),
+  6: require('../../assets/img/achivment/6TierAchive.png'),
+  7: require('../../assets/img/achivment/7TierAchive.png'),
+};
+
+const CATEGORY_IMAGES: Record<string, ReturnType<typeof require>> = {
+  buy:      require('../../assets/img/achivment/achivBuyCategory.png'),
+  list:     require('../../assets/img/achivment/achivDeliverCategory.png'),
+  collect:  require('../../assets/img/achivment/achivCollectcoinsCategory.png'),
+  elevator: require('../../assets/img/achivment/achivLiftCategory.png'),
+};
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -47,15 +64,33 @@ export default function AchievementModal() {
       onRequestClose={dismiss}
       onShow={triggerAnimations}
     >
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={styles.scrim}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
+      <View style={styles.scrim}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
 
-          {grant && (
+        {grant && (() => {
+          const threshold = ACHIEVEMENT_CATEGORIES
+            .find(c => c.key === grant.categoryKey)
+            ?.levels.find(l => l.level === grant.level)
+            ?.threshold;
+          const categoryImg = CATEGORY_IMAGES[grant.categoryKey];
+          const tierImg = TIER_IMAGES[grant.level];
+          return (
             <Animated.View style={[styles.card, cardStyle]}>
               <LinearGradient colors={['#E8F4FF', '#D0E8FF']} style={styles.cardGradient}>
-                <Text style={styles.trophy}>🏆</Text>
-                <Text style={styles.tierBadge}>{grant.categoryTitle}</Text>
+                {tierImg && <Image source={tierImg} style={styles.tierImage} resizeMode="contain" />}
+                <View style={styles.categoryRow}>
+                  {categoryImg && <Image source={categoryImg} style={styles.categoryIcon} resizeMode="contain" />}
+                  <Text style={styles.tierBadge}>{grant.categoryTitle}</Text>
+                </View>
+                {threshold != null && (
+                  <Text style={styles.thresholdText}>
+                    {threshold >= 1_000_000
+                      ? `${(threshold / 1_000_000).toFixed(threshold % 1_000_000 === 0 ? 0 : 1)}M`
+                      : threshold >= 1_000
+                      ? `${(threshold / 1_000).toFixed(threshold % 1_000 === 0 ? 0 : 1)}K`
+                      : threshold} дій
+                  </Text>
+                )}
                 <Text style={styles.title}>{grant.title}</Text>
 
                 <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
@@ -88,9 +123,9 @@ export default function AchievementModal() {
                 </Pressable>
               </LinearGradient>
             </Animated.View>
-          )}
-        </View>
-      </GestureHandlerRootView>
+          );
+        })()}
+      </View>
     </Modal>
   );
 }
@@ -114,21 +149,37 @@ const styles = StyleSheet.create({
   },
   cardGradient: {
     alignItems: 'center',
-    paddingTop: 28,
+    paddingTop: 24,
     paddingBottom: 24,
     paddingHorizontal: 24,
   },
-  trophy: {
-    fontSize: 52,
-    marginBottom: 6,
+  tierImage: {
+    width: 80,
+    height: 80,
+    marginBottom: 10,
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  categoryIcon: {
+    width: 20,
+    height: 20,
   },
   tierBadge: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 13,
     color: '#5A8AB0',
     letterSpacing: 1,
-    marginBottom: 4,
     textTransform: 'uppercase',
+  },
+  thresholdText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 12,
+    color: '#8AAECF',
+    marginBottom: 6,
   },
   title: {
     fontFamily: 'Fredoka_700Bold',
