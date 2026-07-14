@@ -225,6 +225,14 @@ export default function GameScreen() {
     }
   }, [quickActionMode, filteredFloors.length]);
 
+  // Snap to the bottom floor (action target) on QA entry — no animation
+  // so floors don't visibly scroll. setTimeout(0) lets FlashList finish
+  // measuring the new shorter content before we call scrollToEnd.
+  useEffect(() => {
+    if (quickActionMode === null) return;
+    const id = setTimeout(() => listRef.current?.scrollToEnd({ animated: false }), 0);
+    return () => clearTimeout(id);
+  }, [quickActionMode]);
 
   const resolveFloorName = useCallback(
     (floorId: number, floor: { productions: { typeId: string | null }[] }): string => {
@@ -383,7 +391,6 @@ export default function GameScreen() {
           <View style={styles.sideLeft} />
           <View style={styles.towerColumn}>
             <FlashList
-              key={quickActionMode !== null ? 'qa' : 'normal'}
               ref={listRef}
               data={quickActionMode !== null ? qaItems : floorList}
               renderItem={renderItem}
@@ -392,7 +399,7 @@ export default function GameScreen() {
               extraData={listExtraData}
               contentContainerStyle={quickActionMode !== null ? styles.listContentQA : styles.listContent}
               showsVerticalScrollIndicator={false}
-              initialScrollIndex={quickActionMode !== null ? Math.max(0, qaItems.length - 1) : Math.max(0, floorList.length - 1)}
+              initialScrollIndex={Math.max(0, floorList.length - 1)}
             />
           </View>
           <View style={styles.sideRight} />
