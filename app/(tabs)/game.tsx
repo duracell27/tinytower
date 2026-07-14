@@ -225,18 +225,6 @@ export default function GameScreen() {
     }
   }, [quickActionMode, filteredFloors.length]);
 
-  // Scroll to top when entering quick action mode; back to bottom when exiting.
-  // setTimeout defers until FlashList has finished rendering the new data.
-  useEffect(() => {
-    const id = setTimeout(() => {
-      if (quickActionMode !== null) {
-        listRef.current?.scrollToOffset({ offset: 0, animated: false });
-      } else {
-        listRef.current?.scrollToEnd({ animated: false });
-      }
-    }, 50);
-    return () => clearTimeout(id);
-  }, [quickActionMode]);
 
   const resolveFloorName = useCallback(
     (floorId: number, floor: { productions: { typeId: string | null }[] }): string => {
