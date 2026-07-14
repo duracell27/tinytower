@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { processCommand } from '@shared/engine/processCommand';
+import { checkDailyReset } from '@shared/engine/lobbyUtils';
 import { xpForCommand, applyXpGain } from '@shared/engine/xp';
 import { gameConfig } from '@shared/config/gameConfig';
 import { calcRevenuePerMin } from '@shared/engine/ratingUtils';
@@ -73,7 +74,7 @@ export class SyncService {
       this.logger.log(`Processing ${newCommands.length} new commands: ${newCommands.map((c) => c.type).join(', ')}`);
     }
 
-    let gameState = this.dbToGameState(player);
+    let gameState = checkDailyReset(this.dbToGameState(player), serverNow);
     const gameStateBefore = this.dbToGameState(player);
     const acceptedCommands: Command[] = [];
     let totalXpGained = 0;

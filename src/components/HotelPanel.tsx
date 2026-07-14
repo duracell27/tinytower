@@ -25,6 +25,7 @@ import { useGameStore } from '../stores/gameStore';
 import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
 import { getHotelExpansionCost } from '../../shared/engine/lobbyCommands';
+import { gameConfig } from '../../shared/config/gameConfig';
 import type { Worker } from '../../shared/types';
 import { GemIcon } from './CurrencyIcons';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
@@ -175,12 +176,13 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
       }
       const roomNumber = index + 1;
       const workerDreamJob = item.kind === 'worker' ? item.worker.dreamJob : null;
-      const dreamFloor = workerDreamJob
-        ? floors.find((f) => f.productions.some((p) => p.typeId === workerDreamJob))
-        : undefined;
-      const dreamFloorName = dreamFloor
-        ? (openedFloorTypes[String(dreamFloor.id)] ?? tContent(`floors.${dreamFloor.id}.name`, { defaultValue: `Floor ${dreamFloor.id}` }))
-        : undefined;
+      let dreamFloorName: string | undefined;
+      if (workerDreamJob) {
+        for (const ft of Object.values(gameConfig.floorTypes)) {
+          const biz = ft.businesses.find((b) => b.dreamJobs.includes(workerDreamJob));
+          if (biz) { dreamFloorName = biz.name; break; }
+        }
+      }
       const card = item.kind === 'worker' ? (
         <WorkerCard
           worker={item.worker}

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
-import { generateRandomVisitorRole, generateVisitorAppearance, getFillLobbyCost } from '../../shared/engine/lobbyUtils';
+import { generateRandomVisitorRole, generateVisitorAppearance, getFillLobbyCost, checkDailyReset } from '../../shared/engine/lobbyUtils';
 import { generateRandomWorkers } from '../../shared/config/workerNames';
 import { applyXpGain, xpForCommand, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
@@ -108,13 +108,16 @@ function executeCommand(
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
     coinBonusPercent, xpBonusPercent,
   } = store;
-  const gameState: GameState = {
+  let gameState: GameState = {
     balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
     coinBonusPercent, xpBonusPercent,
   };
+  // Use real wall-clock time so daily reset fires even when spawn_visitor
+  // timestamps are from yesterday (catch-up cadence).
+  gameState = checkDailyReset(gameState, clock.now());
   const result = processCommand(
     gameState, command, gameConfig, command.timestamp, store.playerLevel,
     { coinPercent: store.coinBonusPercent, xpPercent: store.xpBonusPercent },

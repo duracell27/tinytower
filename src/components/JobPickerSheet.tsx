@@ -156,11 +156,18 @@ export default function JobPickerSheet({
 
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
-  const ft = worker ? gameConfig.floorTypes[worker.floorType] : null;
+  const ft = worker ? gameConfig.floorTypes[worker.floorType as keyof typeof gameConfig.floorTypes] : null;
   const accent = ft?.accent ?? '#888';
   const category = tContent(`floorTypes.${worker?.floorType ?? ''}.category`, {
     defaultValue: worker?.floorType ?? '',
   });
+
+  const dreamJobBusinessName = worker && ft
+    ? (ft.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob))?.name ?? '')
+    : '';
+  const dreamJobProductName = worker
+    ? tContent(`productionTypes.${worker.dreamJob}.displayName`, { defaultValue: worker.dreamJob })
+    : '';
 
   const isEmpty = sections.length === 0;
 
@@ -189,10 +196,17 @@ export default function JobPickerSheet({
                 <Text style={styles.nameText} numberOfLines={1}>
                   {worker?.name ?? ''}
                 </Text>
-                <View
-                  style={[styles.typePill, { backgroundColor: accent }]}
-                >
-                  <Text style={styles.typePillText}>{category}</Text>
+                <View style={styles.pillRow}>
+                  <View style={[styles.typePill, { backgroundColor: accent }]}>
+                    <Text style={styles.typePillText}>{category}</Text>
+                  </View>
+                  {!!dreamJobBusinessName && (
+                    <View style={[styles.dreamPill, { borderColor: accent }]}>
+                      <Text style={[styles.dreamPillText, { color: accent }]} numberOfLines={1}>
+                        {dreamJobBusinessName} · {dreamJobProductName}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </View>
             </View>
@@ -241,13 +255,26 @@ export default function JobPickerSheet({
   );
 }
 
+function resolveSectionName(
+  section: FloorSection,
+  tContent: (key: string, opts?: object) => string,
+): string {
+  const translated = tContent(`floors.${section.floorId}.name`, { defaultValue: '' });
+  if (translated) return translated;
+  const ftBusinesses =
+    gameConfig.floorTypes[section.floorType as keyof typeof gameConfig.floorTypes]?.businesses ?? [];
+  const firstTypeId = section.data[0]?.typeId;
+  return (
+    ftBusinesses.find((b) => b.dreamJobs.includes(firstTypeId))?.name ??
+    `Floor ${section.floorId}`
+  );
+}
+
 function SectionHeader({ section }: { section: FloorSection }) {
   const { t: tContent } = useTranslation('gameContent');
   const scheme = FLOOR_TYPE_SCHEMES[section.floorType];
   const headerColor = scheme?.color ?? '#888';
-  const floorName = tContent(`floors.${section.floorId}.name`, {
-    defaultValue: `Floor ${section.floorId}`,
-  });
+  const floorName = resolveSectionName(section, tContent);
 
   return (
     <View style={sectionStyles.container}>
@@ -363,6 +390,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     textTransform: 'capitalize',
   },
+  pillRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
   typePill: {
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
@@ -373,6 +406,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_500Medium',
     fontSize: 11,
     color: '#fff',
+  },
+  dreamPill: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  dreamPillText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 11,
   },
   closeButton: {
     width: 32,

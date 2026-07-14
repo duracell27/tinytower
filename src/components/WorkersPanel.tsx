@@ -233,8 +233,11 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
             worker={worker}
             expanded={expandedWorkerId === worker.id}
             dreamFloorName={(() => {
-              const df = floors.find((f) => f.productions.some((p) => p.typeId === worker.dreamJob));
-              return df ? resolveFloorName(openedFloorTypes, floors, df.id, tContent) : undefined;
+              for (const ft of Object.values(gameConfig.floorTypes)) {
+                const biz = ft.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
+                if (biz) return biz.name;
+              }
+              return undefined;
             })()}
             onToggle={() => setExpandedWorkerId((p) => (p === worker.id ? null : worker.id))}
             onFindJob={() => setPickerWorker(worker)}
@@ -257,19 +260,10 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
       if (!floor) return null;
       const floorType = resolveFloorType(openedFloorTypes, worker.assignedFloorId!);
       const floorName = resolveFloorName(openedFloorTypes, floors, worker.assignedFloorId!, tContent);
-      const dreamFloor = floors.find((f) =>
-        f.productions.some((p) => p.typeId === worker.dreamJob),
-      );
-      let dreamFloorName: string;
-      if (dreamFloor) {
-        dreamFloorName = resolveFloorName(openedFloorTypes, floors, dreamFloor.id, tContent);
-      } else {
-        let bizName: string | undefined;
-        for (const ft of Object.values(gameConfig.floorTypes)) {
-          const biz = ft.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
-          if (biz) { bizName = biz.name; break; }
-        }
-        dreamFloorName = bizName ?? tContent(`floorTypes.${worker.floorType}.category`, { defaultValue: worker.floorType });
+      let dreamFloorName = tContent(`floorTypes.${worker.floorType}.category`, { defaultValue: worker.floorType });
+      for (const ft of Object.values(gameConfig.floorTypes)) {
+        const biz = ft.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
+        if (biz) { dreamFloorName = biz.name; break; }
       }
       const now = clock.now();
 
