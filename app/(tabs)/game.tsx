@@ -226,6 +226,15 @@ export default function GameScreen() {
     }
   }, [quickActionMode, filteredFloors.length]);
 
+  // Scroll to top when entering quick action mode; back to bottom when exiting
+  useEffect(() => {
+    if (quickActionMode !== null) {
+      listRef.current?.scrollToOffset({ offset: 0, animated: false });
+    } else {
+      listRef.current?.scrollToEnd({ animated: false });
+    }
+  }, [quickActionMode]);
+
   const resolveFloorName = useCallback(
     (floorId: number, floor: { productions: { typeId: string | null }[] }): string => {
       const dynamicType = openedFloorTypes?.[String(floorId)];
