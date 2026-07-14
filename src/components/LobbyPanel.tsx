@@ -416,7 +416,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     dailyTips,
     dailyGemsCollected,
     dailyTipsStage1Claimed,
-    dailyTipsStage2Claimed,
     nextVisitorAt,
     gems,
     dailyFillLobbyUses,
@@ -456,9 +455,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const timerText = isFull ? t('stats.full') : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
   // Daily tips
-  const { stage1: dailyTipsStage1Target, stage2: dailyTipsStage2Target } = getDailyTipsTargets(elevatorLevel, gameConfig);
+  const { stage1: dailyTipsStage1Target } = getDailyTipsTargets(elevatorLevel, gameConfig);
   const dailyTipsStage1Reward = gameConfig.lobbyConfig.dailyTipsStage1Reward;
-  const dailyTipsStage2Reward = gameConfig.lobbyConfig.dailyTipsStage2Reward;
   const dailyTipsProgress = Math.min(1, dailyTips / dailyTipsStage1Target);
   const rewardReady = dailyTips >= dailyTipsStage1Target && !dailyTipsStage1Claimed;
 
@@ -842,7 +840,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={styles.dailyTipsValue}>
                       <CoinIcon size={12} />
                       <Text style={styles.dailyTipsAmount}>{formatCoins(dailyTips)}</Text>
-                      <Text style={styles.dailyTipsTarget}>/ {formatCoins(dailyTipsTarget)}</Text>
+                      <Text style={styles.dailyTipsTarget}>/ {formatCoins(dailyTipsStage1Target)}</Text>
                     </View>
                   </View>
                   {/* Progress bar */}
