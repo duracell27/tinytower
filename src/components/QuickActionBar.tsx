@@ -9,6 +9,7 @@ interface Props {
   mode: QuickActionMode;
   info: FloorActionInfo | null;
   onPress: () => void;
+  onExit: () => void;
 }
 
 const MODE_COLORS: Record<QuickActionMode, { colors: [string, string]; shadow: string }> = {
@@ -18,7 +19,7 @@ const MODE_COLORS: Record<QuickActionMode, { colors: [string, string]; shadow: s
   hire:    { colors: ['#D96E8A', '#B84E6A'], shadow: '#7A2840' },
 };
 
-export default function QuickActionBar({ mode, info, onPress }: Props) {
+export default function QuickActionBar({ mode, info, onPress, onExit }: Props) {
   const { t: tContent } = useTranslation('gameContent');
   const { colors, shadow } = MODE_COLORS[mode];
 
@@ -43,8 +44,15 @@ export default function QuickActionBar({ mode, info, onPress }: Props) {
   return (
     <View style={styles.wrapper}>
       <Pressable
+        onPress={onExit}
+        style={({ pressed }) => [styles.exitBtn, pressed && { opacity: 0.7 }]}
+      >
+        <Text style={styles.exitIcon}>✕</Text>
+      </Pressable>
+
+      <Pressable
         onPress={onPress}
-        style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
+        style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}
       >
         <LinearGradient colors={colors} style={styles.btnGradient}>
           <Text style={styles.btnLabel} numberOfLines={1}>{label}</Text>
@@ -61,14 +69,33 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 10,
     paddingHorizontal: 16,
     paddingBottom: 90,
-    paddingTop: 10,
-    backgroundColor: 'rgba(248,252,248,0.92)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.06)',
+    paddingTop: 8,
   },
-  btn: {
+  exitBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  exitIcon: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 20,
+    color: '#6A7585',
+  },
+  actionBtn: {
+    flex: 1,
     borderRadius: 18,
     overflow: 'visible',
   },

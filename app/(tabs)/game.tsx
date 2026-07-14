@@ -24,7 +24,6 @@ import { xpForLevel } from '../../shared/engine/xp';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import type { UnderConstructionState } from '../../shared/types';
 import QuickActionFAB from '../../src/components/QuickActionFAB';
-import QuickActionFloorRow from '../../src/components/QuickActionFloorRow';
 import QuickActionBar from '../../src/components/QuickActionBar';
 import {
   getAvailableMode,
@@ -306,21 +305,6 @@ export default function GameScreen() {
   ]);
 
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
-    if (item.type === 'production' && quickActionMode !== null) {
-      const floor = floors.find((f) => f.id === item.id);
-      if (!floor) return null;
-      const info = getFloorActionInfo(quickActionMode, floor, now, workers);
-      return (
-        <View style={styles.floorWrapper}>
-          <QuickActionFloorRow
-            floorId={item.id}
-            floorName={resolveFloorName(item.id, floor)}
-            mode={quickActionMode}
-            info={info}
-          />
-        </View>
-      );
-    }
     if (item.type === 'underConstruction') {
       const { uc } = item;
       const selType = uc.selectedFloorType ?? null;
@@ -393,7 +377,7 @@ export default function GameScreen() {
     return null;
   }, [balance, now, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
-      showInsufficientResources, quickActionMode, floors, workers, resolveFloorName]);
+      showInsufficientResources]);
 
   return (
     <View style={styles.container}>
@@ -444,6 +428,7 @@ export default function GameScreen() {
             mode={quickActionMode}
             info={bottomFloorInfo}
             onPress={handleQuickAction}
+            onExit={() => setQuickActionMode(null)}
           />
         )}
       </ImageBackground>

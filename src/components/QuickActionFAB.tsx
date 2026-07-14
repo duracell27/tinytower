@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import type { QuickActionMode } from '../utils/quickAction';
 
@@ -20,27 +20,7 @@ const MODE_META: Record<QuickActionMode, {
 };
 
 export default function QuickActionFAB({ availableMode, activeMode, onPress }: Props) {
-  if (activeMode !== null) {
-    return (
-      <Pressable
-        onPress={onPress}
-        style={({ pressed }) => [
-          styles.btn,
-          {
-            shadowColor: '#8A95A8',
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: pressed ? 0.4 : 0.7,
-            shadowRadius: 12,
-            elevation: 10,
-          },
-          pressed && { opacity: 0.75 },
-        ]}
-      >
-        <Text style={styles.closeIcon}>✕</Text>
-      </Pressable>
-    );
-  }
-
+  if (activeMode !== null) return null;
   if (availableMode === null) return null;
 
   const meta = MODE_META[availableMode];
@@ -81,10 +61,5 @@ const styles = StyleSheet.create({
   icon: {
     width: 28,
     height: 28,
-  },
-  closeIcon: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 20,
-    color: '#6A7585',
   },
 });
