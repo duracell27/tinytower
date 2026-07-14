@@ -159,7 +159,7 @@ export default function GameScreen() {
   const [hotelOpen, setHotelOpen] = useState(false);
   const [lobbyOpen, setLobbyOpen] = useState(false);
   const listRef = useRef<FlashList<FloorItem>>(null);
-  const savedScrollOffsetRef = useRef(0);
+  const savedScrollOffsetRef = useRef(Number.MAX_SAFE_INTEGER);
   const qaEnteredRef = useRef(false);
   const quickActionModeRef = useRef<QuickActionMode | null>(null);
 
@@ -184,8 +184,8 @@ export default function GameScreen() {
   );
 
   const listExtraData = React.useMemo(
-    () => ({ now, quickActionMode }),
-    [now, quickActionMode],
+    () => ({ now, quickActionMode, nextFloorUnlock }),
+    [now, quickActionMode, nextFloorUnlock],
   );
 
   // The bottom-most floor (last in sorted-descending list = lowest ID = nearest the bar)
