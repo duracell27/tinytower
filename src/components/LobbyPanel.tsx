@@ -843,7 +843,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                 {/* Daily tips card */}
                 <View style={styles.dailyTipsCard}>
-                  <Text style={styles.dailyTipsLabel}>{t('dailyTips.label')}</Text>
+                  {/* Current coins collected row */}
+                  <View style={styles.dailyTipsTopRow}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                      <CoinIcon size={12} />
+                      <Text style={styles.dailyTipsCurrentAmount}>{formatCoins(dailyTips)}</Text>
+                    </View>
+                  </View>
 
                   {/* Labels above bar */}
                   <View style={styles.milestoneAboveRow}>
@@ -1678,10 +1684,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(40,60,90,0.06)',
   },
-  dailyTipsLabel: {
+  dailyTipsTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  dailyTipsCurrentAmount: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 12.5,
-    color: '#6E7686',
+    fontSize: 13,
+    color: '#C28A22',
   },
   progressTrack: {
     height: 8,
