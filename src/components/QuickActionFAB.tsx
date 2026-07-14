@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { QuickActionMode } from '../utils/quickAction';
 
@@ -9,11 +10,16 @@ interface Props {
   onPress: () => void;
 }
 
-const MODE_META: Record<QuickActionMode, { label: string; colors: [string, string]; shadow: string }> = {
-  collect:  { label: 'Монети',    colors: ['#F5C842', '#D4A017'], shadow: '#9A6E00' },
-  list:     { label: 'Викладка',  colors: ['#F07A3A', '#C45A18'], shadow: '#8A3800' },
-  buy:      { label: 'Закупівля', colors: ['#4A90D9', '#2563EB'], shadow: '#1A3E9A' },
-  hire:     { label: 'Пошук',     colors: ['#D96E8A', '#B84E6A'], shadow: '#7A2840' },
+const MODE_META: Record<QuickActionMode, {
+  label: string;
+  colors: [string, string];
+  shadow: string;
+  icon: ReturnType<typeof require>;
+}> = {
+  collect: { label: 'Монети',    colors: ['#F5C842', '#D4A017'], shadow: '#9A6E00', icon: require('../../assets/img/quicActions/collect.png') },
+  list:    { label: 'Викладка',  colors: ['#F07A3A', '#C45A18'], shadow: '#8A3800', icon: require('../../assets/img/quicActions/deliver.png') },
+  buy:     { label: 'Закупівля', colors: ['#4A90D9', '#2563EB'], shadow: '#1A3E9A', icon: require('../../assets/img/quicActions/buy.png') },
+  hire:    { label: 'Пошук',     colors: ['#D96E8A', '#B84E6A'], shadow: '#7A2840', icon: require('../../assets/img/quicActions/findWorker.png') },
 };
 
 export default function QuickActionFAB({ availableMode, activeMode, onPress }: Props) {
@@ -40,6 +46,7 @@ export default function QuickActionFAB({ availableMode, activeMode, onPress }: P
       style={({ pressed }) => [styles.fab, pressed && { opacity: 0.82 }]}
     >
       <LinearGradient colors={meta.colors} style={styles.fabGradient}>
+        <Image source={meta.icon} style={styles.fabIcon} contentFit="contain" />
         <Text style={styles.fabLabel}>{meta.label}</Text>
       </LinearGradient>
       <View style={[styles.shadow, { backgroundColor: meta.shadow }]} />
@@ -56,12 +63,19 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   fabGradient: {
-    paddingHorizontal: 18,
-    paddingVertical: 11,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 22,
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.35)',
     zIndex: 1,
+  },
+  fabIcon: {
+    width: 22,
+    height: 22,
   },
   fabLabel: {
     fontFamily: 'Fredoka_700Bold',
