@@ -225,6 +225,19 @@ export default function GameScreen() {
     }
   }, [quickActionMode, filteredFloors.length]);
 
+  // On mode entry: scroll until the bottom floor (action target) is in view.
+  // qaItems is captured at the same render as quickActionMode change, so it's fresh.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (quickActionMode === null) return;
+    const lastIdx = qaItems.length - 1;
+    if (lastIdx < 0) return;
+    const id = setTimeout(() => {
+      listRef.current?.scrollToIndex({ index: lastIdx, animated: true, viewPosition: 1 });
+    }, 50);
+    return () => clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickActionMode]);
 
   const resolveFloorName = useCallback(
     (floorId: number, floor: { productions: { typeId: string | null }[] }): string => {
