@@ -159,8 +159,12 @@ export default function GameScreen() {
   const [hotelOpen, setHotelOpen] = useState(false);
   const [lobbyOpen, setLobbyOpen] = useState(false);
   const listRef = useRef<FlashList<FloorItem>>(null);
+  const savedScrollOffsetRef = useRef(0);
+  const qaEnteredRef = useRef(false);
+  const quickActionModeRef = useRef<QuickActionMode | null>(null);
 
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
+  quickActionModeRef.current = quickActionMode;
 
   // Highest-priority mode currently available — only computed when not already in a mode
   const availableMode = React.useMemo(
@@ -232,11 +236,17 @@ export default function GameScreen() {
     return () => clearTimeout(id);
   }, []);
 
-  // Snap to the bottom floor (action target) on QA entry — no animation.
+  // On QA entry: snap to bottom floor. On QA exit: restore saved position.
   useEffect(() => {
-    if (quickActionMode === null) return;
-    const id = setTimeout(() => listRef.current?.scrollToEnd({ animated: false }), 0);
-    return () => clearTimeout(id);
+    if (quickActionMode !== null) {
+      qaEnteredRef.current = true;
+      const id = setTimeout(() => listRef.current?.scrollToEnd({ animated: false }), 0);
+      return () => clearTimeout(id);
+    } else if (qaEnteredRef.current) {
+      const target = savedScrollOffsetRef.current;
+      const id = setTimeout(() => listRef.current?.scrollToOffset({ offset: target, animated: false }), 0);
+      return () => clearTimeout(id);
+    }
   }, [quickActionMode]);
 
   const resolveFloorName = useCallback(
@@ -404,6 +414,12 @@ export default function GameScreen() {
               extraData={listExtraData}
               contentContainerStyle={quickActionMode !== null ? styles.listContentQA : styles.listContent}
               showsVerticalScrollIndicator={false}
+              scrollEventThrottle={100}
+              onScroll={(e) => {
+                if (quickActionModeRef.current === null) {
+                  savedScrollOffsetRef.current = e.nativeEvent.contentOffset.y;
+                }
+              }}
             />
           </View>
           <View style={styles.sideRight} />
