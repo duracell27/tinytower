@@ -843,16 +843,17 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                 {/* Daily tips card */}
                 <View style={styles.dailyTipsCard}>
-                  {/* Current coins collected row */}
-                  <View style={styles.dailyTipsTopRow}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                      <CoinIcon size={12} />
-                      <Text style={styles.dailyTipsCurrentAmount}>{formatCoins(dailyTips)}</Text>
-                    </View>
-                  </View>
+                  <Text style={styles.dailyTipsLabel}>{t('dailyTips.label')}</Text>
 
                   {/* Labels above bar */}
                   <View style={styles.milestoneAboveRow}>
+                    {/* Current amount — left */}
+                    <View style={styles.milestone0}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                        <CoinIcon size={11} />
+                        <Text style={styles.milestoneAmount}>{formatCoins(dailyTips)}</Text>
+                      </View>
+                    </View>
                     {/* Stage 1: centered at 50% */}
                     <View style={styles.milestone50}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
@@ -1684,15 +1685,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(40,60,90,0.06)',
   },
-  dailyTipsTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  dailyTipsCurrentAmount: {
+  dailyTipsLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 13,
-    color: '#C28A22',
+    color: '#5A6478',
   },
   progressTrack: {
     height: 8,
@@ -1722,6 +1718,12 @@ const styles = StyleSheet.create({
     position: 'relative',
     height: 14,
     marginTop: 1,
+  },
+  milestone0: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    alignItems: 'center',
   },
   milestone50: {
     position: 'absolute',
