@@ -845,19 +845,25 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <View style={styles.dailyTipsCard}>
                   <Text style={styles.dailyTipsLabel}>{t('dailyTips.label')}</Text>
 
-                  {/* Milestone label row above bar */}
-                  <View style={styles.milestoneLabelRow}>
-                    <View style={styles.milestoneLabelHalf}>
-                      <Text style={styles.milestoneAmount}>
-                        {dailyTipsStage1Claimed ? t('dailyTips.received') : formatShortCoins(stage1Target)}
-                      </Text>
-                      <CoinIcon size={11} />
+                  {/* Labels above bar */}
+                  <View style={styles.milestoneAboveRow}>
+                    {/* Stage 1: centered at 50% */}
+                    <View style={styles.milestone50}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                        <CoinIcon size={11} />
+                        <Text style={styles.milestoneAmount}>
+                          {dailyTipsStage1Claimed ? t('dailyTips.received') : formatShortCoins(stage1Target)}
+                        </Text>
+                      </View>
                     </View>
-                    <View style={styles.milestoneLabelHalf}>
-                      <Text style={styles.milestoneAmount}>
-                        {dailyTipsStage2Claimed ? t('dailyTips.received') : formatShortCoins(stage2Target)}
-                      </Text>
-                      <CoinIcon size={11} />
+                    {/* Stage 2: at right edge */}
+                    <View style={styles.milestone100}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                        <CoinIcon size={11} />
+                        <Text style={styles.milestoneAmount}>
+                          {dailyTipsStage2Claimed ? t('dailyTips.received') : formatShortCoins(stage2Target)}
+                        </Text>
+                      </View>
                     </View>
                   </View>
 
@@ -872,15 +878,19 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={styles.stageDivider} pointerEvents="none" />
                   </View>
 
-                  {/* Reward row below bar */}
-                  <View style={styles.milestoneLabelRow}>
-                    <View style={styles.milestoneLabelHalf}>
-                      <Text style={styles.milestoneReward}>+{stage1Reward}</Text>
-                      <GemIcon size={10} />
+                  {/* Labels below bar */}
+                  <View style={styles.milestoneBelowRow}>
+                    <View style={styles.milestone50}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                        <Text style={styles.milestoneReward}>+{stage1Reward}</Text>
+                        <GemIcon size={10} />
+                      </View>
                     </View>
-                    <View style={styles.milestoneLabelHalf}>
-                      <Text style={styles.milestoneReward}>+{stage2Reward}</Text>
-                      <GemIcon size={10} />
+                    <View style={styles.milestone100}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                        <Text style={styles.milestoneReward}>+{stage2Reward}</Text>
+                        <GemIcon size={10} />
+                      </View>
                     </View>
                   </View>
 
@@ -1691,16 +1701,29 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.6)',
     borderRadius: 1,
   },
-  milestoneLabelRow: {
-    flexDirection: 'row',
-    marginVertical: 2,
+  milestoneAboveRow: {
+    position: 'relative',
+    height: 20,
+    marginBottom: 2,
   },
-  milestoneLabelHalf: {
-    flex: 1,
-    flexDirection: 'row',
+  milestoneBelowRow: {
+    position: 'relative',
+    height: 18,
+    marginTop: 2,
+  },
+  milestone50: {
+    position: 'absolute',
+    left: '50%' as any,
+    width: 64,
+    marginLeft: -32,
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 2,
+    top: 0,
+  },
+  milestone100: {
+    position: 'absolute',
+    right: 0,
+    alignItems: 'center',
+    top: 0,
   },
   milestoneAmount: {
     fontFamily: 'Fredoka_600SemiBold',
