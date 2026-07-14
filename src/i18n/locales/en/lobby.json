@@ -36,8 +36,8 @@
   },
   "dailyTips": {
     "label": "Tips collected today",
-    "claimReward": "Claim Plan Reward",
-    "claimed": "Plan completed · reward claimed"
+    "claimReward": "Claim Reward",
+    "received": "Received"
   },
   "dailyGems": {
     "label": "Gems today"

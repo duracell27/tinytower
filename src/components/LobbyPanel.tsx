@@ -128,6 +128,11 @@ function formatCoins(n: number): string {
   return String(n);
 }
 
+function formatShortCoins(n: number): string {
+  if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
+  return String(n);
+}
+
 /* ---------- Inline SVG Icons ---------- */
 
 function ElevatorIcon({ size = 22, color = '#fff' }: { size?: number; color?: string }) {
@@ -416,6 +421,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     dailyTips,
     dailyGemsCollected,
     dailyTipsStage1Claimed,
+    dailyTipsStage2Claimed,
     nextVisitorAt,
     gems,
     dailyFillLobbyUses,
@@ -455,10 +461,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const timerText = isFull ? t('stats.full') : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
   // Daily tips
-  const { stage1: dailyTipsStage1Target } = getDailyTipsTargets(elevatorLevel, gameConfig);
-  const dailyTipsStage1Reward = gameConfig.lobbyConfig.dailyTipsStage1Reward;
-  const dailyTipsProgress = Math.min(1, dailyTips / dailyTipsStage1Target);
-  const rewardReady = dailyTips >= dailyTipsStage1Target && !dailyTipsStage1Claimed;
+  const { stage1: stage1Target, stage2: stage2Target } = getDailyTipsTargets(elevatorLevel, gameConfig);
+  const stage1Reward = gameConfig.lobbyConfig.dailyTipsStage1Reward;
+  const stage2Reward = gameConfig.lobbyConfig.dailyTipsStage2Reward;
+  const tipsProgress = Math.min(1, dailyTips / stage2Target);
+  const stage1Ready = dailyTips >= stage1Target && !dailyTipsStage1Claimed;
+  const stage2Ready = dailyTips >= stage2Target && !dailyTipsStage2Claimed;
 
   // Upgrade costs
   const elevatorUpgradeCost = calculateElevatorUpgradeCost(elevatorLevel);
@@ -835,26 +843,49 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                 {/* Daily tips card */}
                 <View style={styles.dailyTipsCard}>
-                  <View style={styles.dailyTipsHeader}>
-                    <Text style={styles.dailyTipsLabel}>{t('dailyTips.label')}</Text>
-                    <View style={styles.dailyTipsValue}>
-                      <CoinIcon size={12} />
-                      <Text style={styles.dailyTipsAmount}>{formatCoins(dailyTips)}</Text>
-                      <Text style={styles.dailyTipsTarget}>/ {formatCoins(dailyTipsStage1Target)}</Text>
+                  <Text style={styles.dailyTipsLabel}>{t('dailyTips.label')}</Text>
+
+                  {/* Milestone label row above bar */}
+                  <View style={styles.milestoneLabelRow}>
+                    <View style={styles.milestoneLabelHalf}>
+                      <Text style={styles.milestoneAmount}>
+                        {dailyTipsStage1Claimed ? t('dailyTips.received') : formatShortCoins(stage1Target)}
+                      </Text>
+                      <GemIcon size={11} />
+                    </View>
+                    <View style={styles.milestoneLabelHalf}>
+                      <Text style={styles.milestoneAmount}>
+                        {dailyTipsStage2Claimed ? t('dailyTips.received') : formatShortCoins(stage2Target)}
+                      </Text>
+                      <GemIcon size={11} />
                     </View>
                   </View>
-                  {/* Progress bar */}
+
+                  {/* Progress bar with mid divider */}
                   <View style={styles.progressTrack}>
                     <LinearGradient
                       colors={['#F6C642', '#E5A41C']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
-                      style={[styles.progressFill, { width: `${dailyTipsProgress * 100}%` as any }]}
+                      style={[styles.progressFill, { width: `${tipsProgress * 100}%` as any }]}
                     />
+                    <View style={styles.stageDivider} pointerEvents="none" />
                   </View>
 
-                  {/* Reward button or claimed state */}
-                  {rewardReady && (
+                  {/* Reward row below bar */}
+                  <View style={styles.milestoneLabelRow}>
+                    <View style={styles.milestoneLabelHalf}>
+                      <Text style={styles.milestoneReward}>+{stage1Reward}</Text>
+                      <GemIcon size={10} />
+                    </View>
+                    <View style={styles.milestoneLabelHalf}>
+                      <Text style={styles.milestoneReward}>+{stage2Reward}</Text>
+                      <GemIcon size={10} />
+                    </View>
+                  </View>
+
+                  {/* Claim button(s) */}
+                  {stage1Ready && (
                     <Pressable
                       onPress={() => claimDailyReward(1)}
                       style={({ pressed }) => [
@@ -869,17 +900,30 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         <GiftIcon size={16} color="#fff" />
                         <Text style={styles.rewardButtonText}>{t('dailyTips.claimReward')}</Text>
                         <GemIcon size={14} />
-                        <Text style={styles.rewardGemCount}>{dailyTipsStage1Reward}</Text>
+                        <Text style={styles.rewardGemCount}>+{stage1Reward}</Text>
                       </LinearGradient>
                       <View style={styles.rewardButtonShadow} />
                     </Pressable>
                   )}
-
-                  {dailyTipsStage1Claimed && (
-                    <View style={styles.claimedStrip}>
-                      <CheckIcon size={14} color="#2592AB" />
-                      <Text style={styles.claimedText}>{t('dailyTips.claimed')}</Text>
-                    </View>
+                  {stage2Ready && (
+                    <Pressable
+                      onPress={() => claimDailyReward(2)}
+                      style={({ pressed }) => [
+                        styles.rewardButton,
+                        pressed && { opacity: 0.85, transform: [{ translateY: 1 }] },
+                      ]}
+                    >
+                      <LinearGradient
+                        colors={['#52A6E2', '#3B8BCB']}
+                        style={styles.rewardButtonGradient}
+                      >
+                        <GiftIcon size={16} color="#fff" />
+                        <Text style={styles.rewardButtonText}>{t('dailyTips.claimReward')}</Text>
+                        <GemIcon size={14} />
+                        <Text style={styles.rewardGemCount}>+{stage2Reward}</Text>
+                      </LinearGradient>
+                      <View style={styles.rewardButtonShadow} />
+                    </Pressable>
                   )}
                 </View>
 
@@ -1623,30 +1667,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(40,60,90,0.06)',
   },
-  dailyTipsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
   dailyTipsLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 12.5,
     color: '#6E7686',
-  },
-  dailyTipsValue: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  dailyTipsAmount: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 13,
-    color: '#C28A22',
-  },
-  dailyTipsTarget: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 12,
-    color: '#A6ACB8',
   },
   progressTrack: {
     height: 8,
@@ -1657,6 +1681,36 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     borderRadius: 4,
+  },
+  stageDivider: {
+    position: 'absolute',
+    left: '50%' as any,
+    top: 0,
+    bottom: 0,
+    width: 2,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    borderRadius: 1,
+  },
+  milestoneLabelRow: {
+    flexDirection: 'row',
+    marginVertical: 3,
+  },
+  milestoneLabelHalf: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 2,
+  },
+  milestoneAmount: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 12,
+    color: '#5A6070',
+  },
+  milestoneReward: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 11,
+    color: '#3B8BCB',
   },
 
   /* Reward button */
@@ -1696,15 +1750,6 @@ const styles = StyleSheet.create({
   },
 
   /* Claimed state */
-  claimedStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#EAF4FB',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
   claimedText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 12,
