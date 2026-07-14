@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { formatNum } from '../utils/format';
@@ -23,6 +23,17 @@ export default function QuickActionBar({ mode, info, onPress, onExit }: Props) {
   const { t: tContent } = useTranslation('gameContent');
   const { colors, shadow } = MODE_COLORS[mode];
 
+  const slideY = useRef(new Animated.Value(120)).current;
+  useEffect(() => {
+    Animated.spring(slideY, {
+      toValue: 0,
+      useNativeDriver: true,
+      damping: 14,
+      stiffness: 160,
+      mass: 0.9,
+    }).start();
+  }, [slideY]);
+
   const label = (() => {
     if (!info) return '…';
     switch (info.mode) {
@@ -42,7 +53,7 @@ export default function QuickActionBar({ mode, info, onPress, onExit }: Props) {
   })();
 
   return (
-    <View style={styles.wrapper}>
+    <Animated.View style={[styles.wrapper, { transform: [{ translateY: slideY }] }]}>
       <Pressable
         onPress={onExit}
         style={({ pressed }) => [styles.exitBtn, pressed && { opacity: 0.7 }]}
@@ -58,7 +69,7 @@ export default function QuickActionBar({ mode, info, onPress, onExit }: Props) {
           <Text style={styles.btnLabel} numberOfLines={1}>{label}</Text>
         </LinearGradient>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 }
 
