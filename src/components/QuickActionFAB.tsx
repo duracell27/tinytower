@@ -1,7 +1,6 @@
 import React from 'react';
-import { Pressable, Text, View, StyleSheet } from 'react-native';
+import { Pressable, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import type { QuickActionMode } from '../utils/quickAction';
 
 interface Props {
@@ -11,15 +10,13 @@ interface Props {
 }
 
 const MODE_META: Record<QuickActionMode, {
-  label: string;
-  colors: [string, string];
-  shadow: string;
   icon: ReturnType<typeof require>;
+  glow: string;
 }> = {
-  collect: { label: 'Монети',    colors: ['#F5C842', '#D4A017'], shadow: '#9A6E00', icon: require('../../assets/img/quicActions/collect.png') },
-  list:    { label: 'Викладка',  colors: ['#F07A3A', '#C45A18'], shadow: '#8A3800', icon: require('../../assets/img/quicActions/deliver.png') },
-  buy:     { label: 'Закупівля', colors: ['#4A90D9', '#2563EB'], shadow: '#1A3E9A', icon: require('../../assets/img/quicActions/buy.png') },
-  hire:    { label: 'Пошук',     colors: ['#D96E8A', '#B84E6A'], shadow: '#7A2840', icon: require('../../assets/img/quicActions/findWorker.png') },
+  collect: { icon: require('../../assets/img/quicActions/collect.png'), glow: '#F5C842' },
+  list:    { icon: require('../../assets/img/quicActions/deliver.png'), glow: '#F07A3A' },
+  buy:     { icon: require('../../assets/img/quicActions/buy.png'),     glow: '#4A90D9' },
+  hire:    { icon: require('../../assets/img/quicActions/findWorker.png'), glow: '#D96E8A' },
 };
 
 export default function QuickActionFAB({ availableMode, activeMode, onPress }: Props) {
@@ -27,12 +24,19 @@ export default function QuickActionFAB({ availableMode, activeMode, onPress }: P
     return (
       <Pressable
         onPress={onPress}
-        style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.75 }]}
+        style={({ pressed }) => [
+          styles.btn,
+          {
+            shadowColor: '#8A95A8',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: pressed ? 0.4 : 0.7,
+            shadowRadius: 12,
+            elevation: 10,
+          },
+          pressed && { opacity: 0.75 },
+        ]}
       >
-        <LinearGradient colors={['#8A95A8', '#6A7585']} style={styles.closeBtnGradient}>
-          <Text style={styles.closeIcon}>✕</Text>
-        </LinearGradient>
-        <View style={[styles.shadow, { backgroundColor: '#45505F' }]} />
+        <Text style={styles.closeIcon}>✕</Text>
       </Pressable>
     );
   }
@@ -43,75 +47,44 @@ export default function QuickActionFAB({ availableMode, activeMode, onPress }: P
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.fab, pressed && { opacity: 0.82 }]}
+      style={({ pressed }) => [
+        styles.btn,
+        {
+          shadowColor: meta.glow,
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: pressed ? 0.5 : 0.95,
+          shadowRadius: 16,
+          elevation: 14,
+        },
+        pressed && { opacity: 0.82 },
+      ]}
     >
-      <LinearGradient colors={meta.colors} style={styles.fabGradient}>
-        <Image source={meta.icon} style={styles.fabIcon} contentFit="contain" />
-        <Text style={styles.fabLabel}>{meta.label}</Text>
-      </LinearGradient>
-      <View style={[styles.shadow, { backgroundColor: meta.shadow }]} />
+      <Image source={meta.icon} style={styles.icon} contentFit="contain" />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  fab: {
+  btn: {
     position: 'absolute',
     right: 16,
     bottom: 96,
-    borderRadius: 22,
-    overflow: 'visible',
-  },
-  fabGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 22,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.35)',
-    zIndex: 1,
-  },
-  fabIcon: {
-    width: 22,
-    height: 22,
-  },
-  fabLabel: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 15,
-    color: '#fff',
-    letterSpacing: 0.4,
-  },
-  closeBtn: {
-    position: 'absolute',
-    right: 16,
-    bottom: 96,
-    borderRadius: 22,
-    overflow: 'visible',
-  },
-  closeBtnGradient: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: '#F8F9FA',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.25)',
-    zIndex: 1,
+    borderColor: 'rgba(255,255,255,0.9)',
+  },
+  icon: {
+    width: 28,
+    height: 28,
   },
   closeIcon: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 18,
-    color: '#fff',
-  },
-  shadow: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
+    fontSize: 20,
+    color: '#6A7585',
   },
 });
