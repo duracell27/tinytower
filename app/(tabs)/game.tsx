@@ -225,13 +225,17 @@ export default function GameScreen() {
     }
   }, [quickActionMode, filteredFloors.length]);
 
-  // Scroll to top when entering quick action mode; back to bottom when exiting
+  // Scroll to top when entering quick action mode; back to bottom when exiting.
+  // setTimeout defers until FlashList has finished rendering the new data.
   useEffect(() => {
-    if (quickActionMode !== null) {
-      listRef.current?.scrollToOffset({ offset: 0, animated: false });
-    } else {
-      listRef.current?.scrollToEnd({ animated: false });
-    }
+    const id = setTimeout(() => {
+      if (quickActionMode !== null) {
+        listRef.current?.scrollToOffset({ offset: 0, animated: false });
+      } else {
+        listRef.current?.scrollToEnd({ animated: false });
+      }
+    }, 50);
+    return () => clearTimeout(id);
   }, [quickActionMode]);
 
   const resolveFloorName = useCallback(
@@ -397,7 +401,7 @@ export default function GameScreen() {
               keyExtractor={keyExtractor}
               estimatedItemSize={150}
               extraData={listExtraData}
-              contentContainerStyle={styles.listContent}
+              contentContainerStyle={quickActionMode !== null ? styles.listContentQA : styles.listContent}
               showsVerticalScrollIndicator={false}
               initialScrollIndex={floorList.length - 1}
             />
@@ -483,6 +487,11 @@ const styles = StyleSheet.create({
   listContent: {
     paddingTop: 150,
     paddingBottom: 85,
+    paddingHorizontal: 14,
+  },
+  listContentQA: {
+    paddingTop: 150,
+    paddingBottom: 165, // 90 (tab bar) + 50 (bar button) + 25 (gap/margin)
     paddingHorizontal: 14,
   },
   floorWrapper: {

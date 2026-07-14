@@ -57,7 +57,6 @@ export default function QuickActionBar({ mode, info, onPress, onExit }: Props) {
         <LinearGradient colors={colors} style={styles.btnGradient}>
           <Text style={styles.btnLabel} numberOfLines={1}>{label}</Text>
         </LinearGradient>
-        <View style={[styles.btnShadow, { backgroundColor: shadow }]} />
       </Pressable>
     </View>
   );
@@ -97,7 +96,11 @@ const styles = StyleSheet.create({
   actionBtn: {
     flex: 1,
     borderRadius: 18,
-    overflow: 'visible',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 6,
+    elevation: 8,
   },
   btnGradient: {
     paddingVertical: 16,
@@ -106,21 +109,11 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.4)',
     alignItems: 'center',
-    zIndex: 1,
   },
   btnLabel: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 17,
     color: '#fff',
     letterSpacing: 0.3,
-  },
-  btnShadow: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 4,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
   },
 });
