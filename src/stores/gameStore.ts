@@ -73,7 +73,7 @@ interface GameActions {
   upgradeLobby: () => void;
   expandHotel: () => void;
   evictLowLevelWorkers: () => void;
-  claimDailyReward: () => void;
+  claimDailyReward: (stage: 1 | 2) => void;
   dismissLevelUp: () => void;
   setToolInventory: (tools: ToolsState) => void;
   buyFloor: (floorId: number) => void;
@@ -105,14 +105,14 @@ function executeCommand(
   const store = get();
   const { balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
-    dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
+    dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
     coinBonusPercent, xpBonusPercent,
   } = store;
   let gameState: GameState = {
     balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
-    dailyTips, dailyGemsCollected, dailyTipsRewardClaimed, lastDailyReset, nextVisitorAt,
+    dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
     coinBonusPercent, xpBonusPercent,
   };
@@ -185,7 +185,8 @@ function executeCommand(
     elevatorFloor: result.state.elevatorFloor,
     dailyTips: result.state.dailyTips,
     dailyGemsCollected: result.state.dailyGemsCollected,
-    dailyTipsRewardClaimed: result.state.dailyTipsRewardClaimed,
+    dailyTipsStage1Claimed: result.state.dailyTipsStage1Claimed,
+    dailyTipsStage2Claimed: result.state.dailyTipsStage2Claimed,
     lastDailyReset: result.state.lastDailyReset,
     nextVisitorAt: result.state.nextVisitorAt,
     dailyFillLobbyUses: result.state.dailyFillLobbyUses,
@@ -536,10 +537,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
-  claimDailyReward: () => {
+  claimDailyReward: (stage: 1 | 2) => {
     executeCommand(get, set, {
       id: uuid(),
       type: 'claim_daily_reward',
+      stage,
       timestamp: clock.now(),
     });
   },
@@ -565,7 +567,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     elevatorFloor: state.elevatorFloor ?? 0,
     dailyTips: state.dailyTips ?? 0,
     dailyGemsCollected: state.dailyGemsCollected ?? 0,
-    dailyTipsRewardClaimed: state.dailyTipsRewardClaimed ?? false,
+    dailyTipsStage1Claimed: (state as any).dailyTipsStage1Claimed ?? (state as any).dailyTipsRewardClaimed ?? false,
+    dailyTipsStage2Claimed: (state as any).dailyTipsStage2Claimed ?? false,
     lastDailyReset: state.lastDailyReset ?? 0,
     nextVisitorAt: state.nextVisitorAt ?? 0,
     dailyFillLobbyUses: state.dailyFillLobbyUses ?? 0,
@@ -594,7 +597,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     elevatorFloor: serverState.elevatorFloor,
     dailyTips: serverState.dailyTips,
     dailyGemsCollected: serverState.dailyGemsCollected,
-    dailyTipsRewardClaimed: serverState.dailyTipsRewardClaimed,
+    dailyTipsStage1Claimed: serverState.dailyTipsStage1Claimed,
+    dailyTipsStage2Claimed: serverState.dailyTipsStage2Claimed,
     lastDailyReset: serverState.lastDailyReset,
     nextVisitorAt: serverState.nextVisitorAt,
     dailyFillLobbyUses: serverState.dailyFillLobbyUses ?? 0,
@@ -691,7 +695,8 @@ export function useLobbyState() {
     elevatorFloor: state.elevatorFloor,
     dailyTips: state.dailyTips,
     dailyGemsCollected: state.dailyGemsCollected,
-    dailyTipsRewardClaimed: state.dailyTipsRewardClaimed,
+    dailyTipsStage1Claimed: state.dailyTipsStage1Claimed,
+    dailyTipsStage2Claimed: state.dailyTipsStage2Claimed,
     nextVisitorAt: state.nextVisitorAt,
     gems: state.gems,
     dailyFillLobbyUses: state.dailyFillLobbyUses,

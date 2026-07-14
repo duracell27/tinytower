@@ -22,7 +22,7 @@ import Animated, {
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useGameStore, useLobbyState, useBalance } from '../stores/gameStore';
 import { useGameClock } from '../hooks/useGameClock';
-import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity, getFillLobbyCost } from '../../shared/engine/lobbyUtils';
+import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity, getFillLobbyCost, getDailyTipsTargets } from '../../shared/engine/lobbyUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
 import type { Visitor, VisitorRole, Worker } from '../../shared/types';
 import { Image } from 'expo-image';
@@ -415,7 +415,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     elevatorFloor,
     dailyTips,
     dailyGemsCollected,
-    dailyTipsRewardClaimed,
+    dailyTipsStage1Claimed,
+    dailyTipsStage2Claimed,
     nextVisitorAt,
     gems,
     dailyFillLobbyUses,
@@ -455,10 +456,11 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const timerText = isFull ? t('stats.full') : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
   // Daily tips
-  const dailyTipsTarget = gameConfig.lobbyConfig.dailyTipsTarget;
-  const dailyTipsReward = gameConfig.lobbyConfig.dailyTipsReward;
-  const dailyTipsProgress = Math.min(1, dailyTips / dailyTipsTarget);
-  const rewardReady = dailyTips >= dailyTipsTarget && !dailyTipsRewardClaimed;
+  const { stage1: dailyTipsStage1Target, stage2: dailyTipsStage2Target } = getDailyTipsTargets(elevatorLevel, gameConfig);
+  const dailyTipsStage1Reward = gameConfig.lobbyConfig.dailyTipsStage1Reward;
+  const dailyTipsStage2Reward = gameConfig.lobbyConfig.dailyTipsStage2Reward;
+  const dailyTipsProgress = Math.min(1, dailyTips / dailyTipsStage1Target);
+  const rewardReady = dailyTips >= dailyTipsStage1Target && !dailyTipsStage1Claimed;
 
   // Upgrade costs
   const elevatorUpgradeCost = calculateElevatorUpgradeCost(elevatorLevel);
@@ -856,7 +858,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   {/* Reward button or claimed state */}
                   {rewardReady && (
                     <Pressable
-                      onPress={claimDailyReward}
+                      onPress={() => claimDailyReward(1)}
                       style={({ pressed }) => [
                         styles.rewardButton,
                         pressed && { opacity: 0.85, transform: [{ translateY: 1 }] },
@@ -869,13 +871,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         <GiftIcon size={16} color="#fff" />
                         <Text style={styles.rewardButtonText}>{t('dailyTips.claimReward')}</Text>
                         <GemIcon size={14} />
-                        <Text style={styles.rewardGemCount}>{dailyTipsReward}</Text>
+                        <Text style={styles.rewardGemCount}>{dailyTipsStage1Reward}</Text>
                       </LinearGradient>
                       <View style={styles.rewardButtonShadow} />
                     </Pressable>
                   )}
 
-                  {dailyTipsRewardClaimed && (
+                  {dailyTipsStage1Claimed && (
                     <View style={styles.claimedStrip}>
                       <CheckIcon size={14} color="#2592AB" />
                       <Text style={styles.claimedText}>{t('dailyTips.claimed')}</Text>
