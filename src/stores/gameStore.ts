@@ -9,6 +9,7 @@ import { clock } from '../services/clock';
 import type { GameState, Command, Floor, Worker, ToolsState } from '../../shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
+import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -147,6 +148,30 @@ function executeCommand(
     newGems += optimisticGrants.reduce((sum, g) => sum + g.gems, 0);
   }
 
+  // Keep categoryProgress in sync with optimistic stats so the achievements
+  // screen reflects the current local state instead of the last server sync.
+  // Use delta-based progress (same logic as the server) so the counter stays
+  // consistent with playerCategoryProgress.progress even if it diverges from
+  // stats[stat] (e.g. stats column was added before the progress table).
+  const newCategoryProgress = { ...store.categoryProgress };
+  let hasCategoryChanges = false;
+  for (const category of ACHIEVEMENT_CATEGORIES) {
+    const delta = result.state.stats[category.stat] - stats[category.stat];
+    if (delta <= 0) continue;
+    hasCategoryChanges = true;
+    const existing = store.categoryProgress[category.key] ?? { progress: 0, currentLevel: 0, claimedLevels: [] };
+    const grants = optimisticGrants.filter((g) => g.categoryKey === category.key);
+    const newLevel = grants.reduce((max, g) => Math.max(max, g.level), existing.currentLevel);
+    const newClaimed = grants.length > 0
+      ? [...new Set([...existing.claimedLevels, ...grants.map((g) => g.level)])].sort((a, b) => a - b)
+      : existing.claimedLevels;
+    newCategoryProgress[category.key] = {
+      progress: existing.progress + delta,
+      currentLevel: newLevel,
+      claimedLevels: newClaimed,
+    };
+  }
+
   set({
     balance: newBalance,
     gems: newGems,
@@ -171,6 +196,7 @@ function executeCommand(
     playerXp: xpResult.playerXp,
     playerLevel: xpResult.playerLevel,
     levelUpQueue: [...store.levelUpQueue, ...levelUps],
+    ...(hasCategoryChanges ? { categoryProgress: newCategoryProgress } : {}),
     ...(optimisticGrants.length > 0 ? {
       achievementQueue: [...store.achievementQueue, ...optimisticGrants],
       locallyGrantedAchievements: new Set([

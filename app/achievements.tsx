@@ -84,6 +84,9 @@ export default function AchievementsScreen() {
           const nextGems = nextLevelConfig ? ACHIEVEMENT_GEM_REWARDS[nextLevelConfig.level] : 0;
           const nextIncomeBonus = nextLevelConfig ? ACHIEVEMENT_INCOME_BONUS[nextLevelConfig.level] : 0;
           const nextXpBonus = nextLevelConfig ? ACHIEVEMENT_XP_BONUS[nextLevelConfig.level] : 0;
+          const currentThreshold = currentLevelConfig?.threshold ?? 0;
+          const relativeProgress = Math.max(0, progress - currentThreshold);
+          const relativeMax = nextLevelConfig ? nextLevelConfig.threshold : 1;
 
           return (
             <View key={category.key} style={styles.card}>
@@ -115,10 +118,10 @@ export default function AchievementsScreen() {
                       <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
                     </View>
                     <Text style={styles.progressCount}>
-                      {formatNum(progress)} / {formatNum(nextLevelConfig.threshold)}
+                      {formatNum(relativeProgress)} / {formatNum(relativeMax)}
                     </Text>
                   </View>
-                  <ProgressBar value={progress} max={nextLevelConfig.threshold} />
+                  <ProgressBar value={relativeProgress} max={relativeMax} />
                   <View style={styles.inlineRow}>
                     <Text style={styles.sectionLabel}>Reward: </Text>
                     <View style={styles.rewardChip}>

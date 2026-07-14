@@ -30,6 +30,13 @@ const CATEGORY_IMAGES: Record<string, ReturnType<typeof require>> = {
   elevator: require('../../assets/img/achivment/achivLiftCategory.png'),
 };
 
+const CATEGORY_ACTION_LABEL: Record<string, string> = {
+  buy:      'purchased items',
+  list:     'stocked items',
+  collect:  'coin collections',
+  elevator: 'passengers lifted',
+};
+
 const { width: SCREEN_W } = Dimensions.get('window');
 
 export default function AchievementModal() {
@@ -88,7 +95,7 @@ export default function AchievementModal() {
                       ? `${(threshold / 1_000_000).toFixed(threshold % 1_000_000 === 0 ? 0 : 1)}M`
                       : threshold >= 1_000
                       ? `${(threshold / 1_000).toFixed(threshold % 1_000 === 0 ? 0 : 1)}K`
-                      : threshold} дій
+                      : threshold} {CATEGORY_ACTION_LABEL[grant.categoryKey] ?? 'actions'}
                   </Text>
                 )}
                 <Text style={styles.title}>{grant.title}</Text>

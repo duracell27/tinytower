@@ -57,10 +57,27 @@ async function doSync(): Promise<void> {
       );
       if (unshown.length > 0) useGameStore.getState().addAchievements(unshown);
     }
+    // Merge server categoryProgress with local optimistic state: take MAX for
+    // each field so a stale sync response (from before pending commands were
+    // processed) never rolls back progress the user can already see.
+    const serverCP = response.categoryProgress ?? {};
+    const localCP = useGameStore.getState().categoryProgress;
+    const mergedCP: typeof serverCP = { ...serverCP };
+    for (const key of Object.keys(localCP)) {
+      const local = localCP[key];
+      const server = serverCP[key];
+      if (!server || local.progress > server.progress) {
+        mergedCP[key] = server ? {
+          progress: Math.max(server.progress, local.progress),
+          currentLevel: Math.max(server.currentLevel, local.currentLevel),
+          claimedLevels: [...new Set([...server.claimedLevels, ...local.claimedLevels])].sort((a, b) => a - b),
+        } : local;
+      }
+    }
     useGameStore.setState({
       coinBonusPercent: response.coinBonusPercent ?? 0,
       xpBonusPercent: response.xpBonusPercent ?? 0,
-      categoryProgress: response.categoryProgress ?? {},
+      categoryProgress: mergedCP,
     });
     useGameStore.getState().setLastSyncAt(Date.now());
   } catch {
