@@ -110,6 +110,7 @@ export const UpgradeLobbyCommandSchema = TimestampedBaseSchema.extend({
 
 export const ClaimDailyRewardCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('claim_daily_reward'),
+  stage: z.union([z.literal(1), z.literal(2)]),
 });
 
 export const ExpandHotelCommandSchema = TimestampedBaseSchema.extend({

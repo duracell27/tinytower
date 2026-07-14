@@ -36,8 +36,9 @@ export const FloorUnlockConfigSchema = z.object({
 
 export const LobbyConfigSchema = z.object({
   visitorSpawnInterval: z.number().positive(),
-  dailyTipsTarget: z.number().positive(),
-  dailyTipsReward: z.number().int().positive(),
+  dailyTipsBaseTarget: z.number().positive(),
+  dailyTipsStage1Reward: z.number().int().positive(),
+  dailyTipsStage2Reward: z.number().int().positive(),
   dailyGemLimitBase: z.number().int().positive(),
   guestTipBase: z.number().positive(),
   businessmanFallbackBase: z.number().positive(),
