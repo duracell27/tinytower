@@ -851,13 +851,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <Text style={styles.milestoneAmount}>
                         {dailyTipsStage1Claimed ? t('dailyTips.received') : formatShortCoins(stage1Target)}
                       </Text>
-                      <GemIcon size={11} />
+                      <CoinIcon size={11} />
                     </View>
                     <View style={styles.milestoneLabelHalf}>
                       <Text style={styles.milestoneAmount}>
                         {dailyTipsStage2Claimed ? t('dailyTips.received') : formatShortCoins(stage2Target)}
                       </Text>
-                      <GemIcon size={11} />
+                      <CoinIcon size={11} />
                     </View>
                   </View>
 
@@ -1657,7 +1657,7 @@ const styles = StyleSheet.create({
   dailyTipsCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 15,
+    padding: 13,
     gap: 10,
     shadowColor: 'rgba(40,60,90,1)',
     shadowOffset: { width: 0, height: 2 },
@@ -1693,7 +1693,7 @@ const styles = StyleSheet.create({
   },
   milestoneLabelRow: {
     flexDirection: 'row',
-    marginVertical: 3,
+    marginVertical: 2,
   },
   milestoneLabelHalf: {
     flex: 1,

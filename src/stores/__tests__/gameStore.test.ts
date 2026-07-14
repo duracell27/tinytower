@@ -111,3 +111,17 @@ describe('insufficientResources UI state', () => {
     expect(useGameStore.getState().insufficientResources?.missingTools).toHaveLength(1);
   });
 });
+
+describe('hydrate migration', () => {
+  it('hydrate migrates dailyTipsRewardClaimed to dailyTipsStage1Claimed', () => {
+    const store = useGameStore.getState();
+    store.hydrate({
+      ...createInitialState(testConfig),
+      dailyTipsStage1Claimed: undefined,
+      dailyTipsRewardClaimed: true,
+    } as any);
+    const state = useGameStore.getState();
+    expect(state.dailyTipsStage1Claimed).toBe(true);
+    expect(state.dailyTipsStage2Claimed).toBe(false);
+  });
+});
