@@ -23,6 +23,16 @@ import { syncService } from '../../src/services/sync';
 import { xpForLevel } from '../../shared/engine/xp';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import type { UnderConstructionState } from '../../shared/types';
+import QuickActionFAB from '../../src/components/QuickActionFAB';
+import QuickActionFloorRow from '../../src/components/QuickActionFloorRow';
+import QuickActionBar from '../../src/components/QuickActionBar';
+import {
+  getAvailableMode,
+  getFloorsForMode,
+  getFloorActionInfo,
+  type QuickActionMode,
+} from '../../src/utils/quickAction';
+import { getProductionStatus } from '../../shared/engine/productionStatus';
 
 type FloorItem =
   | { type: 'production'; id: number }
@@ -52,12 +62,16 @@ function keyExtractor(item: FloorItem): string {
 
 export default function GameScreen() {
   const { t } = useTranslation('tabs');
+  const { t: tContent } = useTranslation('gameContent');
   const balance = useBalance();
   const now = useGameClock(1000);
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
   const devAddGems = useGameStore((s) => s.devAddGems);
+  const storeCollect = useGameStore((s) => s.collect);
+  const storeList = useGameStore((s) => s.list);
+  const storeBuy = useGameStore((s) => s.buy);
   const lastSyncAt = useGameStore((s) => s.lastSyncAt);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
@@ -147,6 +161,32 @@ export default function GameScreen() {
   const [lobbyOpen, setLobbyOpen] = useState(false);
   const listRef = useRef<FlashList<FloorItem>>(null);
 
+  const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
+
+  // Highest-priority mode currently available — only computed when not already in a mode
+  const availableMode = React.useMemo(
+    () => (quickActionMode !== null ? null : getAvailableMode(floors, workers, now)),
+    [quickActionMode, floors, workers, now],
+  );
+
+  // Floors matching the active mode, sorted highest ID first
+  const filteredFloors = React.useMemo(
+    () => (quickActionMode !== null ? getFloorsForMode(quickActionMode, floors, workers, now) : []),
+    [quickActionMode, floors, workers, now],
+  );
+
+  // The bottom-most floor (last in sorted-descending list = lowest ID = nearest the bar)
+  const bottomFloor = filteredFloors.length > 0 ? filteredFloors[filteredFloors.length - 1] : null;
+
+  // Action info for the bottom floor — drives the QuickActionBar label
+  const bottomFloorInfo = React.useMemo(
+    () =>
+      bottomFloor !== null && quickActionMode !== null
+        ? getFloorActionInfo(quickActionMode, bottomFloor, now)
+        : null,
+    [bottomFloor, quickActionMode, now],
+  );
+
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   useEffect(() => {
@@ -169,7 +209,99 @@ export default function GameScreen() {
     }
   }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor]);
 
+  // Auto-exit when the filtered list empties after the last action
+  useEffect(() => {
+    if (quickActionMode !== null && filteredFloors.length === 0) {
+      setQuickActionMode(null);
+    }
+  }, [quickActionMode, filteredFloors.length]);
+
+  const resolveFloorName = useCallback(
+    (floorId: number, floor: { productions: { typeId: string | null }[] }): string => {
+      const dynamicType = openedFloorTypes?.[String(floorId)];
+      if (dynamicType) {
+        const firstTypeId = floor.productions[0]?.typeId;
+        if (firstTypeId) {
+          const biz = gameConfig.floorTypes[dynamicType]?.businesses.find((b) =>
+            b.dreamJobs.includes(firstTypeId),
+          );
+          if (biz?.name) return biz.name;
+        }
+      }
+      return tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
+    },
+    [openedFloorTypes, tContent],
+  );
+
+  const handleFABPress = useCallback(() => {
+    if (quickActionMode !== null) {
+      setQuickActionMode(null);
+    } else if (availableMode !== null) {
+      setQuickActionMode(availableMode);
+    }
+  }, [quickActionMode, availableMode]);
+
+  const handleQuickAction = useCallback(() => {
+    if (!quickActionMode || !bottomFloor) return;
+
+    if (quickActionMode === 'collect') {
+      bottomFloor.productions.forEach((prod, slotIdx) => {
+        if (!prod.typeId) return;
+        const tc = gameConfig.productionTypes[prod.typeId];
+        if (!tc) return;
+        if (getProductionStatus(prod, tc, now, balance).effectiveStage === 'READY_TO_COLLECT') {
+          storeCollect(bottomFloor.id, slotIdx);
+        }
+      });
+      return;
+    }
+
+    if (quickActionMode === 'list') {
+      bottomFloor.productions.forEach((prod, slotIdx) => {
+        if (!prod.typeId) return;
+        const tc = gameConfig.productionTypes[prod.typeId];
+        if (!tc) return;
+        if (getProductionStatus(prod, tc, now, balance).effectiveStage === 'READY_TO_LIST') {
+          storeList(bottomFloor.id, slotIdx);
+        }
+      });
+      return;
+    }
+
+    if (quickActionMode === 'buy') {
+      if (!bottomFloorInfo || bottomFloorInfo.mode !== 'buy') return;
+      if (balance < bottomFloorInfo.buyCost) {
+        showInsufficientResources({ currency: 'coins', need: bottomFloorInfo.buyCost, have: balance });
+        return;
+      }
+      storeBuy(bottomFloor.id, bottomFloorInfo.slotIdx, bottomFloorInfo.typeId);
+      return;
+    }
+
+    if (quickActionMode === 'hire') {
+      setHotelOpen(true);
+    }
+  }, [
+    quickActionMode, bottomFloor, bottomFloorInfo, now, balance,
+    storeCollect, storeList, storeBuy, showInsufficientResources,
+  ]);
+
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
+    if (item.type === 'production' && quickActionMode !== null) {
+      const floor = floors.find((f) => f.id === item.id);
+      if (!floor) return null;
+      const info = getFloorActionInfo(quickActionMode, floor, now);
+      return (
+        <View style={styles.floorWrapper}>
+          <QuickActionFloorRow
+            floorId={item.id}
+            floorName={resolveFloorName(item.id, floor)}
+            mode={quickActionMode}
+            info={info}
+          />
+        </View>
+      );
+    }
     if (item.type === 'underConstruction') {
       const { uc } = item;
       const selType = uc.selectedFloorType ?? null;
@@ -242,7 +374,7 @@ export default function GameScreen() {
     return null;
   }, [balance, now, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
-      showInsufficientResources]);
+      showInsufficientResources, quickActionMode, floors, resolveFloorName]);
 
   return (
     <View style={styles.container}>
@@ -257,11 +389,15 @@ export default function GameScreen() {
           <View style={styles.towerColumn}>
             <FlashList
               ref={listRef}
-              data={floorList}
+              data={
+                quickActionMode !== null
+                  ? filteredFloors.map((f) => ({ type: 'production' as const, id: f.id }))
+                  : floorList
+              }
               renderItem={renderItem}
               keyExtractor={keyExtractor}
               estimatedItemSize={150}
-              extraData={now}
+              extraData={{ now, quickActionMode }}
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
               initialScrollIndex={floorList.length - 1}
@@ -281,6 +417,20 @@ export default function GameScreen() {
           revenuePerMin={revenuePerMin}
           onDevAddGems={() => devAddGems(100)}
         />
+
+        <QuickActionFAB
+          availableMode={availableMode}
+          activeMode={quickActionMode}
+          onPress={handleFABPress}
+        />
+
+        {quickActionMode !== null && (
+          <QuickActionBar
+            mode={quickActionMode}
+            info={bottomFloorInfo}
+            onPress={handleQuickAction}
+          />
+        )}
       </ImageBackground>
 
       <HotelPanel visible={hotelOpen} onClose={() => setHotelOpen(false)} />
