@@ -225,9 +225,14 @@ export default function GameScreen() {
     }
   }, [quickActionMode, filteredFloors.length]);
 
-  // Snap to the bottom floor (action target) on QA entry — no animation
-  // so floors don't visibly scroll. setTimeout(0) lets FlashList finish
-  // measuring the new shorter content before we call scrollToEnd.
+  // Initial scroll to lobby on mount (replaces initialScrollIndex prop which
+  // re-applies itself every time data changes, causing unwanted lobby jump on exit).
+  useEffect(() => {
+    const id = setTimeout(() => listRef.current?.scrollToEnd({ animated: false }), 0);
+    return () => clearTimeout(id);
+  }, []);
+
+  // Snap to the bottom floor (action target) on QA entry — no animation.
   useEffect(() => {
     if (quickActionMode === null) return;
     const id = setTimeout(() => listRef.current?.scrollToEnd({ animated: false }), 0);
@@ -399,7 +404,6 @@ export default function GameScreen() {
               extraData={listExtraData}
               contentContainerStyle={quickActionMode !== null ? styles.listContentQA : styles.listContent}
               showsVerticalScrollIndicator={false}
-              initialScrollIndex={Math.max(0, floorList.length - 1)}
             />
           </View>
           <View style={styles.sideRight} />
