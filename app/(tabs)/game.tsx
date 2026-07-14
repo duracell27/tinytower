@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
   },
   listContentQA: {
     paddingTop: 150,
-    paddingBottom: 165, // 90 (tab bar) + 50 (bar button) + 25 (gap/margin)
+    paddingBottom: 140,
     paddingHorizontal: 14,
   },
   floorWrapper: {
