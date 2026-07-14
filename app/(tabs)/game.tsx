@@ -225,16 +225,6 @@ export default function GameScreen() {
     }
   }, [quickActionMode, filteredFloors.length]);
 
-  // On mode entry: scrollToEnd so the bottom floor (action target) sits
-  // just above the bar. paddingBottom:140 reserves that space.
-  // Delay 80ms to let FlashList finish re-rendering with qaItems data.
-  useEffect(() => {
-    if (quickActionMode === null) return;
-    const id = setTimeout(() => {
-      listRef.current?.scrollToEnd({ animated: false });
-    }, 80);
-    return () => clearTimeout(id);
-  }, [quickActionMode]);
 
   const resolveFloorName = useCallback(
     (floorId: number, floor: { productions: { typeId: string | null }[] }): string => {
@@ -393,6 +383,7 @@ export default function GameScreen() {
           <View style={styles.sideLeft} />
           <View style={styles.towerColumn}>
             <FlashList
+              key={quickActionMode !== null ? 'qa' : 'normal'}
               ref={listRef}
               data={quickActionMode !== null ? qaItems : floorList}
               renderItem={renderItem}
@@ -401,7 +392,7 @@ export default function GameScreen() {
               extraData={listExtraData}
               contentContainerStyle={quickActionMode !== null ? styles.listContentQA : styles.listContent}
               showsVerticalScrollIndicator={false}
-              initialScrollIndex={floorList.length - 1}
+              initialScrollIndex={quickActionMode !== null ? Math.max(0, qaItems.length - 1) : Math.max(0, floorList.length - 1)}
             />
           </View>
           <View style={styles.sideRight} />
