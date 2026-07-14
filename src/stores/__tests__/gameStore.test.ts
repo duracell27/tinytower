@@ -18,8 +18,9 @@ const testConfig: GameConfig = {
   hotelCapacity: 10,
   lobbyConfig: {
     visitorSpawnInterval: 120_000,
-    dailyTipsTarget: 10_000,
-    dailyTipsReward: 5,
+    dailyTipsBaseTarget: 10_000,
+    dailyTipsStage1Reward: 2,
+    dailyTipsStage2Reward: 3,
     dailyGemLimitBase: 15,
     guestTipBase: 10,
     businessmanFallbackBase: 100,

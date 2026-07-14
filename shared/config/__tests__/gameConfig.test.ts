@@ -211,7 +211,8 @@ describe('createInitialState', () => {
     expect(state.elevatorFloor).toBe(0);
     expect(state.dailyTips).toBe(0);
     expect(state.dailyGemsCollected).toBe(0);
-    expect(state.dailyTipsRewardClaimed).toBe(false);
+    expect(state.dailyTipsStage1Claimed).toBe(false);
+    expect(state.dailyTipsStage2Claimed).toBe(false);
     expect(state.lastDailyReset).toBe(0);
     expect(state.nextVisitorAt).toBe(0);
   });

@@ -143,8 +143,9 @@ describe('CommandSchema', () => {
 describe('GameConfigSchema', () => {
   const baseLobbyConfig = {
     visitorSpawnInterval: 120_000,
-    dailyTipsTarget: 10_000,
-    dailyTipsReward: 5,
+    dailyTipsBaseTarget: 10_000,
+    dailyTipsStage1Reward: 2,
+    dailyTipsStage2Reward: 3,
     dailyGemLimitBase: 15,
     guestTipBase: 10,
     businessmanFallbackBase: 100,
@@ -296,7 +297,8 @@ describe('GameStateSchema', () => {
       elevatorFloor: 0,
       dailyTips: 0,
       dailyGemsCollected: 0,
-      dailyTipsRewardClaimed: false,
+      dailyTipsStage1Claimed: false,
+      dailyTipsStage2Claimed: false,
       lastDailyReset: 0,
       nextVisitorAt: 0,
     });
@@ -331,7 +333,8 @@ describe('GameStateSchema', () => {
       elevatorFloor: 0,
       dailyTips: 0,
       dailyGemsCollected: 0,
-      dailyTipsRewardClaimed: false,
+      dailyTipsStage1Claimed: false,
+      dailyTipsStage2Claimed: false,
       lastDailyReset: 0,
       nextVisitorAt: 0,
     });
@@ -352,7 +355,8 @@ describe('GameStateSchema', () => {
       elevatorFloor: 0,
       dailyTips: 0,
       dailyGemsCollected: 0,
-      dailyTipsRewardClaimed: false,
+      dailyTipsStage1Claimed: false,
+      dailyTipsStage2Claimed: false,
       lastDailyReset: 0,
       nextVisitorAt: 0,
     }).success).toBe(false);
@@ -371,7 +375,8 @@ describe('GameStateSchema', () => {
       elevatorFloor: 0,
       dailyTips: 0,
       dailyGemsCollected: 0,
-      dailyTipsRewardClaimed: false,
+      dailyTipsStage1Claimed: false,
+      dailyTipsStage2Claimed: false,
       lastDailyReset: 0,
       nextVisitorAt: 0,
     }).success).toBe(false);
@@ -390,7 +395,8 @@ describe('GameStateSchema', () => {
       elevatorFloor: 0,
       dailyTips: 0,
       dailyGemsCollected: 0,
-      dailyTipsRewardClaimed: false,
+      dailyTipsStage1Claimed: false,
+      dailyTipsStage2Claimed: false,
       lastDailyReset: 0,
       nextVisitorAt: 0,
     }).success).toBe(false);
@@ -443,7 +449,7 @@ describe('GameStateSchema with new fields', () => {
     floors: [{ id: 1, productions: [{ typeId: null, stage: 'IDLE', stageStartedAt: 0 }] }],
     commandQueue: [], workers: [], hotelCapacity: 10,
     lobbyVisitors: [], lobbyCapacity: 10, elevatorLevel: 1, elevatorFloor: 0,
-    dailyTips: 0, dailyGemsCollected: 0, dailyTipsRewardClaimed: false,
+    dailyTips: 0, dailyGemsCollected: 0, dailyTipsStage1Claimed: false, dailyTipsStage2Claimed: false,
     lastDailyReset: 0, nextVisitorAt: 0,
   };
 
@@ -507,7 +513,7 @@ describe('Lobby command schemas', () => {
   });
 
   it('validates claim_daily_reward command', () => {
-    const cmd = { id: 'c1', type: 'claim_daily_reward', timestamp: 1000 };
+    const cmd = { id: 'c1', type: 'claim_daily_reward', timestamp: 1000, stage: 1 };
     expect(CommandSchema.parse(cmd).type).toBe('claim_daily_reward');
   });
 });
