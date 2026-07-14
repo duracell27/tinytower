@@ -9,6 +9,7 @@ import {
   checkDailyReset,
   generateRandomVisitorRole,
   getFillLobbyCost,
+  getDailyTipsTargets,
 } from './lobbyUtils';
 import { generateRandomWorkers } from '../config/workerNames';
 import type { VisitorRole } from '../types';
@@ -41,7 +42,7 @@ export function processLobbyCommand(
     case 'upgrade_lobby':
       return handleUpgradeLobby(state, config);
     case 'claim_daily_reward':
-      return handleClaimDailyReward(state, config);
+      return handleClaimDailyReward(state, config, command);
     case 'expand_hotel':
       return handleExpandHotel(state);
     case 'fill_lobby':
@@ -340,19 +341,43 @@ function handleEvictLowLevelWorkers(state: GameState): ProcessResult {
   };
 }
 
-function handleClaimDailyReward(state: GameState, config: GameConfig): ProcessResult {
-  if (state.dailyTips < config.lobbyConfig.dailyTipsTarget) {
-    return { success: false, state, error: 'Daily tips target not met' };
+function handleClaimDailyReward(
+  state: GameState,
+  config: GameConfig,
+  command: Extract<Command, { type: 'claim_daily_reward' }>,
+): ProcessResult {
+  const { stage1, stage2 } = getDailyTipsTargets(state.elevatorLevel, config);
+
+  if (command.stage === 1) {
+    if (state.dailyTips < stage1) {
+      return { success: false, state, error: 'Daily tips stage 1 target not met' };
+    }
+    if (state.dailyTipsStage1Claimed) {
+      return { success: false, state, error: 'Stage 1 reward already claimed' };
+    }
+    return {
+      success: true,
+      state: {
+        ...state,
+        gems: state.gems + config.lobbyConfig.dailyTipsStage1Reward,
+        dailyTipsStage1Claimed: true,
+      },
+    };
   }
-  if (state.dailyTipsRewardClaimed) {
-    return { success: false, state, error: 'Reward already claimed' };
+
+  // stage 2
+  if (state.dailyTips < stage2) {
+    return { success: false, state, error: 'Daily tips stage 2 target not met' };
+  }
+  if (state.dailyTipsStage2Claimed) {
+    return { success: false, state, error: 'Stage 2 reward already claimed' };
   }
   return {
     success: true,
     state: {
       ...state,
-      gems: state.gems + config.lobbyConfig.dailyTipsReward,
-      dailyTipsRewardClaimed: true,
+      gems: state.gems + config.lobbyConfig.dailyTipsStage2Reward,
+      dailyTipsStage2Claimed: true,
     },
   };
 }

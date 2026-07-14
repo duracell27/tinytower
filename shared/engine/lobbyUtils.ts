@@ -20,6 +20,14 @@ export function calculateTip(
   return config.lobbyConfig.guestTipBase * elevatorLevel * targetFloor;
 }
 
+export function getDailyTipsTargets(
+  elevatorLevel: number,
+  config: GameConfig,
+): { stage1: number; stage2: number } {
+  const stage1 = Math.round(config.lobbyConfig.dailyTipsBaseTarget * Math.sqrt(elevatorLevel));
+  return { stage1, stage2: stage1 * 2 };
+}
+
 export function calculateElevatorUpgradeCost(currentLevel: number): number {
   return currentLevel + 1;
 }
@@ -53,7 +61,8 @@ export function checkDailyReset(state: GameState, commandTimestamp: number): Gam
       ...state,
       dailyTips: 0,
       dailyGemsCollected: 0,
-      dailyTipsRewardClaimed: false,
+      dailyTipsStage1Claimed: false,
+      dailyTipsStage2Claimed: false,
       dailyFillLobbyUses: 0,
       lastDailyReset: getMidnightBefore(commandTimestamp),
     };

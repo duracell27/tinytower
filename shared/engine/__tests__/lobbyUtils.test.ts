@@ -7,6 +7,7 @@ import {
   checkDailyReset,
   generateRandomVisitor,
   getFillLobbyCost,
+  getDailyTipsTargets,
 } from '../lobbyUtils';
 import { createInitialState } from '../../config/gameConfig';
 import type { GameConfig, GameState } from '../../types';
@@ -105,14 +106,16 @@ describe('checkDailyReset', () => {
     const state = makeState({
       dailyTips: 5000,
       dailyGemsCollected: 10,
-      dailyTipsRewardClaimed: true,
+      dailyTipsStage1Claimed: true,
+      dailyTipsStage2Claimed: true,
       lastDailyReset: midnight,
     });
     const nextDay = midnight + 25 * 60 * 60 * 1000;
     const result = checkDailyReset(state, nextDay);
     expect(result.dailyTips).toBe(0);
     expect(result.dailyGemsCollected).toBe(0);
-    expect(result.dailyTipsRewardClaimed).toBe(false);
+    expect(result.dailyTipsStage1Claimed).toBe(false);
+    expect(result.dailyTipsStage2Claimed).toBe(false);
     expect(result.lastDailyReset).toBeGreaterThan(midnight);
   });
 
@@ -233,5 +236,23 @@ describe('checkDailyReset resets dailyFillLobbyUses', () => {
     const sameDay = midnight + 10 * 60 * 60 * 1000;
     const result = checkDailyReset(state, sameDay);
     expect(result.dailyFillLobbyUses).toBe(7);
+  });
+});
+
+describe('getDailyTipsTargets', () => {
+  it('returns 10000/20000 at elevator level 1', () => {
+    const { stage1, stage2 } = getDailyTipsTargets(1, testConfig);
+    expect(stage1).toBe(10_000);
+    expect(stage2).toBe(20_000);
+  });
+
+  it('scales stage1 by sqrt of elevatorLevel', () => {
+    const { stage1 } = getDailyTipsTargets(4, testConfig);
+    expect(stage1).toBe(20_000); // round(10000 * sqrt(4)) = round(10000 * 2) = 20000
+  });
+
+  it('stage2 is always 2 × stage1', () => {
+    const { stage1, stage2 } = getDailyTipsTargets(9, testConfig);
+    expect(stage2).toBe(stage1 * 2);
   });
 });
