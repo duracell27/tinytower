@@ -1667,7 +1667,8 @@ const styles = StyleSheet.create({
   dailyTipsCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 13,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     gap: 10,
     shadowColor: 'rgba(40,60,90,1)',
     shadowOffset: { width: 0, height: 2 },
@@ -1703,13 +1704,13 @@ const styles = StyleSheet.create({
   },
   milestoneAboveRow: {
     position: 'relative',
-    height: 20,
-    marginBottom: 2,
+    height: 16,
+    marginBottom: 1,
   },
   milestoneBelowRow: {
     position: 'relative',
-    height: 18,
-    marginTop: 2,
+    height: 14,
+    marginTop: 1,
   },
   milestone50: {
     position: 'absolute',
