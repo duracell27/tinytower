@@ -1,6 +1,6 @@
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
-import { getWorkerForSlot } from '../../shared/engine/workerUtils';
+import { getFloorDiscount, getWorkerForSlot } from '../../shared/engine/workerUtils';
 import type { Floor, Worker, Production } from '../../shared/types';
 
 export type QuickActionMode = 'collect' | 'list' | 'buy' | 'hire';
@@ -69,6 +69,7 @@ export function getFloorActionInfo(
   mode: QuickActionMode,
   floor: Floor,
   now: number,
+  workers: Worker[],
 ): FloorActionInfo | null {
   switch (mode) {
     case 'collect': {
@@ -94,7 +95,9 @@ export function getFloorActionInfo(
         if (prod.stage === 'IDLE' && prod.typeId !== null) {
           const tc = gameConfig.productionTypes[prod.typeId];
           if (!tc) continue;
-          return { mode: 'buy', slotIdx, typeId: prod.typeId, buyCost: tc.buyCost };
+          const discount = getFloorDiscount(workers, floor.id);
+          const buyCost = Math.floor(tc.buyCost * (1 - discount));
+          return { mode: 'buy', slotIdx, typeId: prod.typeId, buyCost };
         }
       }
       return null;

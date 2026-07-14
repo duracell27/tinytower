@@ -175,6 +175,16 @@ export default function GameScreen() {
     [quickActionMode, floors, workers, now],
   );
 
+  const qaItems = React.useMemo(
+    () => filteredFloors.map((f) => ({ type: 'production' as const, id: f.id })),
+    [filteredFloors],
+  );
+
+  const listExtraData = React.useMemo(
+    () => ({ now, quickActionMode }),
+    [now, quickActionMode],
+  );
+
   // The bottom-most floor (last in sorted-descending list = lowest ID = nearest the bar)
   const bottomFloor = filteredFloors.length > 0 ? filteredFloors[filteredFloors.length - 1] : null;
 
@@ -182,9 +192,9 @@ export default function GameScreen() {
   const bottomFloorInfo = React.useMemo(
     () =>
       bottomFloor !== null && quickActionMode !== null
-        ? getFloorActionInfo(quickActionMode, bottomFloor, now)
+        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers)
         : null,
-    [bottomFloor, quickActionMode, now],
+    [bottomFloor, quickActionMode, now, workers],
   );
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -290,7 +300,7 @@ export default function GameScreen() {
     if (item.type === 'production' && quickActionMode !== null) {
       const floor = floors.find((f) => f.id === item.id);
       if (!floor) return null;
-      const info = getFloorActionInfo(quickActionMode, floor, now);
+      const info = getFloorActionInfo(quickActionMode, floor, now, workers);
       return (
         <View style={styles.floorWrapper}>
           <QuickActionFloorRow
@@ -374,7 +384,7 @@ export default function GameScreen() {
     return null;
   }, [balance, now, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
-      showInsufficientResources, quickActionMode, floors, resolveFloorName]);
+      showInsufficientResources, quickActionMode, floors, workers, resolveFloorName]);
 
   return (
     <View style={styles.container}>
@@ -389,15 +399,11 @@ export default function GameScreen() {
           <View style={styles.towerColumn}>
             <FlashList
               ref={listRef}
-              data={
-                quickActionMode !== null
-                  ? filteredFloors.map((f) => ({ type: 'production' as const, id: f.id }))
-                  : floorList
-              }
+              data={quickActionMode !== null ? qaItems : floorList}
               renderItem={renderItem}
               keyExtractor={keyExtractor}
               estimatedItemSize={150}
-              extraData={{ now, quickActionMode }}
+              extraData={listExtraData}
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
               initialScrollIndex={floorList.length - 1}

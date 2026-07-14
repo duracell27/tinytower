@@ -179,18 +179,18 @@ describe('getFloorActionInfo', () => {
       { typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 },
       { typeId: REAL_TYPE, stage: 'SELLING', stageStartedAt: now - 100 }, // not ready
     ]);
-    const info = getFloorActionInfo('collect', floor, now);
+    const info = getFloorActionInfo('collect', floor, now, []);
     expect(info).toEqual({ mode: 'collect', totalCoins: tc.batchValue * 2 });
   });
 
   it('collect — returns null when no slot is ready', () => {
     const floor = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'SELLING', stageStartedAt: now - 100 }]);
-    expect(getFloorActionInfo('collect', floor, now)).toBeNull();
+    expect(getFloorActionInfo('collect', floor, now, [])).toBeNull();
   });
 
   it('list — returns count 1 for a single ready slot', () => {
     const floor = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'READY_TO_LIST', stageStartedAt: 0 }]);
-    expect(getFloorActionInfo('list', floor, now)).toEqual({ mode: 'list', count: 1 });
+    expect(getFloorActionInfo('list', floor, now, [])).toEqual({ mode: 'list', count: 1 });
   });
 
   it('list — returns count for multiple ready slots', () => {
@@ -198,7 +198,7 @@ describe('getFloorActionInfo', () => {
       { typeId: REAL_TYPE, stage: 'READY_TO_LIST', stageStartedAt: 0 },
       { typeId: REAL_TYPE, stage: 'READY_TO_LIST', stageStartedAt: 0 },
     ]);
-    expect(getFloorActionInfo('list', floor, now)).toEqual({ mode: 'list', count: 2 });
+    expect(getFloorActionInfo('list', floor, now, [])).toEqual({ mode: 'list', count: 2 });
   });
 
   it('buy — returns highest slotIdx that is IDLE', () => {
@@ -206,7 +206,7 @@ describe('getFloorActionInfo', () => {
       { typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 },    // slot 0
       { typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 },    // slot 1
     ]);
-    const info = getFloorActionInfo('buy', floor, now);
+    const info = getFloorActionInfo('buy', floor, now, []);
     expect(info).toMatchObject({ mode: 'buy', slotIdx: 1, typeId: REAL_TYPE, buyCost: tc.buyCost });
   });
 
@@ -215,17 +215,17 @@ describe('getFloorActionInfo', () => {
       { typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 },      // slot 0
       { typeId: REAL_TYPE, stage: 'SELLING', stageStartedAt: now },  // slot 1 — not IDLE
     ]);
-    const info = getFloorActionInfo('buy', floor, now);
+    const info = getFloorActionInfo('buy', floor, now, []);
     expect(info).toMatchObject({ mode: 'buy', slotIdx: 0 });
   });
 
   it('buy — returns null when no IDLE slot with typeId', () => {
     const floor = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'SELLING', stageStartedAt: now - 100 }]);
-    expect(getFloorActionInfo('buy', floor, now)).toBeNull();
+    expect(getFloorActionInfo('buy', floor, now, [])).toBeNull();
   });
 
   it('hire — always returns hire info', () => {
     const floor = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'SELLING', stageStartedAt: now - 100 }]);
-    expect(getFloorActionInfo('hire', floor, now)).toEqual({ mode: 'hire' });
+    expect(getFloorActionInfo('hire', floor, now, [])).toEqual({ mode: 'hire' });
   });
 });
