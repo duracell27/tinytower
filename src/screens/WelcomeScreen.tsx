@@ -17,6 +17,8 @@ import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
+import { getUserIcon } from '../utils/userIcon';
+import { formatNum } from '../utils/format';
 
 interface WelcomeScreenProps {
   onPlay: () => void;
@@ -25,27 +27,13 @@ interface WelcomeScreenProps {
   onRegister: () => void;
 }
 
-function formatNumber(n: number): string {
-  if (n >= 1000) {
-    const str = String(n);
-    const parts: string[] = [];
-    for (let i = str.length; i > 0; i -= 3) {
-      parts.unshift(str.slice(Math.max(0, i - 3), i));
-    }
-    return parts.join(' ');
-  }
-  return String(n);
-}
-
-function PlayerAvatar({ name, size = 36 }: { name: string; size?: number }) {
-  const initial = name.charAt(0).toUpperCase();
+function PlayerAvatar({ level, size = 36 }: { level: number; size?: number }) {
   return (
-    <LinearGradient
-      colors={['#74D3C4', '#3FA9A0']}
-      style={[styles.avatarCircle, { width: size, height: size, borderRadius: size / 2 }]}
-    >
-      <Text style={[styles.avatarInitial, { fontSize: size * 0.45 }]}>{initial}</Text>
-    </LinearGradient>
+    <Image
+      source={getUserIcon(level)}
+      style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}
+      contentFit="cover"
+    />
   );
 }
 
@@ -58,6 +46,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
   const balance = useGameStore((s) => s.balance);
   const gems = useGameStore((s) => s.gems);
   const floorCount = useGameStore((s) => s.floors.length);
+  const playerLevel = useGameStore((s) => s.playerLevel);
   const player = useAuthStore((s) => s.player);
 
   // Case 1: active session
@@ -166,7 +155,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         <View style={styles.chipsContainer}>
           <View style={styles.chip}>
             <Image source={require('../../assets/img/coin.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
-            <Text style={styles.chipValue}>{formatNumber(balance)}</Text>
+            <Text style={styles.chipValue}>{formatNum(balance)}</Text>
           </View>
           <View style={styles.chip}>
             <Image source={require('../../assets/img/diamond.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
@@ -199,7 +188,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         >
           <Pressable style={styles.promptBackdrop} onPress={() => setShowPasswordPrompt(false)} />
           <View style={styles.promptCard}>
-            <PlayerAvatar name={lastPlayer?.playerName ?? '?'} size={52} />
+            <PlayerAvatar level={playerLevel} size={52} />
             <Text style={styles.promptTitle}>{lastPlayer?.playerName}</Text>
             <Text style={styles.promptEmail}>{lastPlayer?.email}</Text>
 
@@ -242,7 +231,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
             style={({ pressed }) => [styles.continueButton, pressed && { opacity: 0.88 }]}
           >
             <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.continueGradient}>
-              <PlayerAvatar name={activePlayerName} size={36} />
+              <PlayerAvatar level={playerLevel} size={36} />
               <View style={styles.continueMeta}>
                 <Text style={styles.continueName}>{activePlayerName}</Text>
                 <Text style={styles.continueLabel}>
@@ -305,9 +294,19 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
 
         <Text style={styles.termsText}>
           {t('welcome.terms.continuingText')}
-          <Text style={styles.termsUnderline}>{t('welcome.terms.terms')}</Text>
+          <Text
+            style={styles.termsUnderline}
+            onPress={() => Linking.openURL('https://TODO/terms')}
+          >
+            {t('welcome.terms.terms')}
+          </Text>
           {t('welcome.terms.and')}
-          <Text style={styles.termsUnderline}>{t('welcome.terms.policy')}</Text>
+          <Text
+            style={styles.termsUnderline}
+            onPress={() => Linking.openURL('https://TODO/privacy')}
+          >
+            {t('welcome.terms.policy')}
+          </Text>
         </Text>
       </View>
     </View>
@@ -474,18 +473,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9A9684',
     marginTop: 3,
-  },
-
-  /* Avatar */
-  avatarCircle: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.5)',
-  },
-  avatarInitial: {
-    fontFamily: 'Fredoka_700Bold',
-    color: '#fff',
   },
 
   /* Continue button (case 1 & 2) */
