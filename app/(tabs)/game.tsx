@@ -454,11 +454,13 @@ export default function GameScreen() {
                 } else if (pendingRestoreRef.current !== null) {
                   const target = pendingRestoreRef.current;
                   pendingRestoreRef.current = null;
-                  if (target === Number.MAX_SAFE_INTEGER) {
-                    listRef.current?.scrollToEnd({ animated: false });
-                  } else {
-                    listRef.current?.scrollToOffset({ offset: target, animated: false });
-                  }
+                  requestAnimationFrame(() => {
+                    if (target === Number.MAX_SAFE_INTEGER) {
+                      listRef.current?.scrollToEnd({ animated: false });
+                    } else {
+                      listRef.current?.scrollToOffset({ offset: target, animated: false });
+                    }
+                  });
                 }
               }}
               onLayout={(e) => { viewHeightRef.current = e.nativeEvent.layout.height; }}
