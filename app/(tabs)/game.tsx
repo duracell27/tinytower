@@ -444,10 +444,12 @@ export default function GameScreen() {
                 contentHeightRef.current = h;
                 if (!hasRevealedRef.current && h > 0 && viewHeightRef.current > 0) {
                   hasRevealedRef.current = true;
-                  listRef.current?.scrollToEnd({ animated: false });
-                  towerOpacity.value = withTiming(1, {
-                    duration: 350,
-                    easing: ReanimatedEasing.out(ReanimatedEasing.quad),
+                  requestAnimationFrame(() => {
+                    listRef.current?.scrollToEnd({ animated: false });
+                    towerOpacity.value = withTiming(1, {
+                      duration: 350,
+                      easing: ReanimatedEasing.out(ReanimatedEasing.quad),
+                    });
                   });
                 } else if (pendingRestoreRef.current !== null) {
                   const target = pendingRestoreRef.current;
