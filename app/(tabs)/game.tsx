@@ -172,6 +172,7 @@ export default function GameScreen() {
   const contentHeightRef = useRef(0);
   const viewHeightRef = useRef(0);
   const hasRevealedRef = useRef(false);
+  const pendingRestoreRef = useRef<number | null>(null);
   const towerOpacity = useSharedValue(0);
   const towerStyle = useAnimatedStyle(() => ({ opacity: towerOpacity.value }));
 
@@ -261,9 +262,7 @@ export default function GameScreen() {
       const id = setTimeout(() => listRef.current?.scrollToEnd({ animated: false }), 0);
       return () => clearTimeout(id);
     } else if (qaEnteredRef.current) {
-      const target = savedScrollOffsetRef.current;
-      const id = setTimeout(() => listRef.current?.scrollToOffset({ offset: target, animated: false }), 0);
-      return () => clearTimeout(id);
+      pendingRestoreRef.current = savedScrollOffsetRef.current;
     }
   }, [quickActionMode]);
 
@@ -450,6 +449,14 @@ export default function GameScreen() {
                     duration: 350,
                     easing: ReanimatedEasing.out(ReanimatedEasing.quad),
                   });
+                } else if (pendingRestoreRef.current !== null) {
+                  const target = pendingRestoreRef.current;
+                  pendingRestoreRef.current = null;
+                  if (target === Number.MAX_SAFE_INTEGER) {
+                    listRef.current?.scrollToEnd({ animated: false });
+                  } else {
+                    listRef.current?.scrollToOffset({ offset: target, animated: false });
+                  }
                 }
               }}
               onLayout={(e) => { viewHeightRef.current = e.nativeEvent.layout.height; }}
