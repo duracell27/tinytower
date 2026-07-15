@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
+import { getUserIcon } from '../utils/userIcon';
 
 interface TopBarProps {
   name: string;
@@ -48,7 +50,7 @@ function ProgressRing({ progress, size = 50 }: { progress: number; size?: number
   );
 }
 
-export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins, gems, revenuePerMin, onDevAddGems }: TopBarProps) {
+export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, revenuePerMin, onDevAddGems }: TopBarProps) {
   const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
 
   return (
@@ -62,14 +64,11 @@ export default function TopBar({ name, level, xp, xpForNextLevel, initial, coins
           <View style={styles.avatarSection}>
             <View style={styles.avatarWrapper}>
               <ProgressRing progress={progress} size={50} />
-              <LinearGradient
-                colors={['#74D3C4', '#3FA9A0']}
-                start={{ x: 0.2, y: 0 }}
-                end={{ x: 0.8, y: 1 }}
+              <Image
+                source={getUserIcon(level)}
                 style={styles.avatarInner}
-              >
-                <Text style={styles.avatarText}>{initial}</Text>
-              </LinearGradient>
+                contentFit="cover"
+              />
               <View style={styles.levelBadge}>
                 <Text style={styles.levelText}>{level}</Text>
               </View>
@@ -155,18 +154,9 @@ const styles = StyleSheet.create({
     width: 39,
     height: 39,
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#fff',
-  },
-  avatarText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 21,
-    color: '#fff',
-    textShadowColor: 'rgba(20,90,80,0.4)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    overflow: 'hidden',
   },
   levelBadge: {
     position: 'absolute',
@@ -238,18 +228,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-  coinIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#F2B330',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.55)',
-    shadowColor: 'rgba(180,130,30,1)',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-  },
   coinText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
@@ -269,15 +247,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.16,
     shadowRadius: 3,
     elevation: 2,
-  },
-  gemIcon: {
-    width: 14,
-    height: 14,
-    backgroundColor: '#3FB8D6',
-    borderRadius: 3,
-    transform: [{ rotate: '45deg' }],
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.6)',
   },
   gemText: {
     fontFamily: 'Fredoka_600SemiBold',
