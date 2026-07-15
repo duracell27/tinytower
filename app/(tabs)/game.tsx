@@ -172,6 +172,12 @@ export default function GameScreen() {
     [quickActionMode, floors, workers, now],
   );
 
+  // Count of floors for the FAB badge (only when not yet in a mode)
+  const availableFloorCount = React.useMemo(
+    () => (availableMode !== null ? getFloorsForMode(availableMode, floors, workers, now).length : 0),
+    [availableMode, floors, workers, now],
+  );
+
   // Floors matching the active mode, sorted highest ID first
   const filteredFloors = React.useMemo(
     () => (quickActionMode !== null ? getFloorsForMode(quickActionMode, floors, workers, now) : []),
@@ -440,6 +446,7 @@ export default function GameScreen() {
         <QuickActionFAB
           availableMode={availableMode}
           activeMode={quickActionMode}
+          count={availableFloorCount}
           onPress={handleFABPress}
         />
 

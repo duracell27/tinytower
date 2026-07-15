@@ -1,11 +1,12 @@
 import React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import type { QuickActionMode } from '../utils/quickAction';
 
 interface Props {
   availableMode: QuickActionMode | null;
   activeMode: QuickActionMode | null;
+  count: number;
   onPress: () => void;
 }
 
@@ -19,7 +20,7 @@ const MODE_META: Record<QuickActionMode, {
   hire:    { icon: require('../../assets/img/quicActions/findWorker.png'), glow: '#D96E8A' },
 };
 
-export default function QuickActionFAB({ availableMode, activeMode, onPress }: Props) {
+export default function QuickActionFAB({ availableMode, activeMode, count, onPress }: Props) {
   if (activeMode !== null) return null;
   if (availableMode === null) return null;
 
@@ -40,6 +41,11 @@ export default function QuickActionFAB({ availableMode, activeMode, onPress }: P
       ]}
     >
       <Image source={meta.icon} style={styles.icon} contentFit="contain" />
+      {count > 0 && (
+        <View style={[styles.badge, { backgroundColor: meta.glow }]}>
+          <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -61,5 +67,24 @@ const styles = StyleSheet.create({
   icon: {
     width: 28,
     height: 28,
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#fff',
+  },
+  badgeText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 11,
+    color: '#fff',
+    lineHeight: 13,
   },
 });
