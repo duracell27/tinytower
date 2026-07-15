@@ -44,7 +44,8 @@ type FloorItem =
   | { type: 'hotel' }
   | { type: 'lobby' }
   | { type: 'buyFloor' }
-  | { type: 'underConstruction'; floorId: number; uc: UnderConstructionState };
+  | { type: 'underConstruction'; floorId: number; uc: UnderConstructionState }
+  | { type: 'bottomAnchor' };
 
 
 function formatCoins(n: number): string {
@@ -62,7 +63,7 @@ function formatCoins(n: number): string {
 function keyExtractor(item: FloorItem): string {
   if (item.type === 'production') return `prod-${item.id}`;
   if (item.type === 'underConstruction') return `uc-${item.floorId}`;
-  return item.type;
+  return item.type; // 'hotel' | 'lobby' | 'buyFloor' | 'bottomAnchor' — all unique
 }
 
 export default function GameScreen() {
@@ -160,6 +161,7 @@ export default function GameScreen() {
 
     items.push({ type: 'hotel' });
     items.push({ type: 'lobby' });
+    items.push({ type: 'bottomAnchor' });
     return items;
   }, [underConstruction, floors, nextFloorUnlock, lastSyncAt]);
 
@@ -173,8 +175,18 @@ export default function GameScreen() {
   const viewHeightRef = useRef(0);
   const hasRevealedRef = useRef(false);
   const pendingRestoreRef = useRef<number | null>(null);
+  const floorListRef = useRef(floorList);
+  floorListRef.current = floorList;
   const towerOpacity = useSharedValue(0);
   const towerStyle = useAnimatedStyle(() => ({ opacity: towerOpacity.value }));
+
+  const scrollToBottom = useCallback(() => {
+    listRef.current?.scrollToIndex({
+      index: floorListRef.current.length - 1, // bottomAnchor
+      animated: false,
+      viewPosition: 1, // anchor's bottom edge = viewport bottom
+    });
+  }, []);
 
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
   const [qaBarVisible, setQaBarVisible] = useState(false);
@@ -414,6 +426,9 @@ export default function GameScreen() {
         </View>
       );
     }
+    if (item.type === 'bottomAnchor') {
+      return <View style={styles.bottomAnchor} />;
+    }
     return null;
   }, [balance, now, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
@@ -445,7 +460,7 @@ export default function GameScreen() {
                 if (!hasRevealedRef.current && h > 0 && viewHeightRef.current > 0) {
                   hasRevealedRef.current = true;
                   requestAnimationFrame(() => {
-                    listRef.current?.scrollToEnd({ animated: false });
+                    scrollToBottom();
                     towerOpacity.value = withTiming(1, {
                       duration: 350,
                       easing: ReanimatedEasing.out(ReanimatedEasing.quad),
@@ -456,7 +471,7 @@ export default function GameScreen() {
                   pendingRestoreRef.current = null;
                   requestAnimationFrame(() => {
                     if (target === Number.MAX_SAFE_INTEGER) {
-                      listRef.current?.scrollToEnd({ animated: false });
+                      scrollToBottom();
                     } else {
                       listRef.current?.scrollToOffset({ offset: target, animated: false });
                     }
@@ -554,8 +569,10 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingTop: 150,
-    paddingBottom: 85,
     paddingHorizontal: 14,
+  },
+  bottomAnchor: {
+    height: 85,
   },
   listContentQA: {
     flexGrow: 1,
