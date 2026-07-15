@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing as ReanimatedEasing,
+} from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
@@ -165,6 +171,9 @@ export default function GameScreen() {
   const quickActionModeRef = useRef<QuickActionMode | null>(null);
   const contentHeightRef = useRef(0);
   const viewHeightRef = useRef(0);
+  const hasRevealedRef = useRef(false);
+  const towerOpacity = useSharedValue(0);
+  const towerStyle = useAnimatedStyle(() => ({ opacity: towerOpacity.value }));
 
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
   const [qaBarVisible, setQaBarVisible] = useState(false);
@@ -421,7 +430,7 @@ export default function GameScreen() {
         <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
         <View style={styles.gameArea}>
           <View style={styles.sideLeft} />
-          <View style={styles.towerColumn}>
+          <Animated.View style={[styles.towerColumn, towerStyle]}>
             <FlashList
               ref={listRef}
               data={quickActionMode !== null ? qaItems : floorList}
@@ -432,7 +441,17 @@ export default function GameScreen() {
               contentContainerStyle={quickActionMode !== null ? styles.listContentQA : styles.listContent}
               showsVerticalScrollIndicator={false}
               scrollEventThrottle={100}
-              onContentSizeChange={(_w, h) => { contentHeightRef.current = h; }}
+              onContentSizeChange={(_w, h) => {
+                contentHeightRef.current = h;
+                if (!hasRevealedRef.current && h > 0 && viewHeightRef.current > 0) {
+                  hasRevealedRef.current = true;
+                  listRef.current?.scrollToEnd({ animated: false });
+                  towerOpacity.value = withTiming(1, {
+                    duration: 350,
+                    easing: ReanimatedEasing.out(ReanimatedEasing.quad),
+                  });
+                }
+              }}
               onLayout={(e) => { viewHeightRef.current = e.nativeEvent.layout.height; }}
               onScroll={(e) => {
                 if (quickActionModeRef.current === null) {
@@ -440,7 +459,7 @@ export default function GameScreen() {
                 }
               }}
             />
-          </View>
+          </Animated.View>
           <View style={styles.sideRight} />
         </View>
 
