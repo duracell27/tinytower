@@ -453,7 +453,6 @@ export default function GameScreen() {
               estimatedItemSize={216}
               getItemType={(item) => item.type}
               drawDistance={1500}
-              decelerationRate="fast"
               extraData={listExtraData}
               contentContainerStyle={quickActionMode !== null && qaItems.length > 0 ? styles.listContentQA : styles.listContent}
               showsVerticalScrollIndicator={false}
