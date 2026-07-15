@@ -1,5 +1,13 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { Text, Pressable, StyleSheet } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+  Easing,
+} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { formatNum } from '../utils/format';
@@ -8,31 +16,44 @@ import type { QuickActionMode, FloorActionInfo } from '../utils/quickAction';
 interface Props {
   mode: QuickActionMode;
   info: FloorActionInfo | null;
+  visible: boolean;
+  onHidden: () => void;
   onPress: () => void;
   onExit: () => void;
 }
 
-const MODE_COLORS: Record<QuickActionMode, { colors: [string, string]; shadow: string }> = {
-  collect: { colors: ['#72C24F', '#4A8A2E'], shadow: '#2E6018' },
-  list:    { colors: ['#F2AC40', '#C9760F'], shadow: '#8A4A00' },
-  buy:     { colors: ['#4A90D9', '#2563EB'], shadow: '#1A3E9A' },
-  hire:    { colors: ['#D96E8A', '#B84E6A'], shadow: '#7A2840' },
+const MODE_COLORS: Record<QuickActionMode, { colors: [string, string] }> = {
+  collect: { colors: ['#72C24F', '#4A8A2E'] },
+  list:    { colors: ['#F2AC40', '#C9760F'] },
+  buy:     { colors: ['#4A90D9', '#2563EB'] },
+  hire:    { colors: ['#D96E8A', '#B84E6A'] },
 };
 
-export default function QuickActionBar({ mode, info, onPress, onExit }: Props) {
+export default function QuickActionBar({ mode, info, visible, onHidden, onPress, onExit }: Props) {
   const { t: tContent } = useTranslation('gameContent');
-  const { colors, shadow } = MODE_COLORS[mode];
+  const { colors } = MODE_COLORS[mode];
 
-  const slideY = useRef(new Animated.Value(120)).current;
+  const slideY = useSharedValue(120);
+
   useEffect(() => {
-    Animated.spring(slideY, {
-      toValue: 0,
-      useNativeDriver: true,
-      damping: 14,
-      stiffness: 160,
-      mass: 0.9,
-    }).start();
-  }, [slideY]);
+    if (visible) {
+      slideY.value = withSpring(0, { damping: 14, stiffness: 160, mass: 0.9 });
+    } else {
+      slideY.value = withTiming(
+        120,
+        { duration: 280, easing: Easing.in(Easing.quad) },
+        (finished) => {
+          if (finished) runOnJS(onHidden)();
+        },
+      );
+    }
+  // onHidden identity is stable (wrapped in useCallback in parent)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: slideY.value }],
+  }));
 
   const label = (() => {
     if (!info) return '…';
@@ -53,7 +74,7 @@ export default function QuickActionBar({ mode, info, onPress, onExit }: Props) {
   })();
 
   return (
-    <Animated.View style={[styles.wrapper, { transform: [{ translateY: slideY }] }]}>
+    <Animated.View style={[styles.wrapper, animatedStyle]}>
       <Pressable
         onPress={onExit}
         style={({ pressed }) => [styles.exitBtn, pressed && { opacity: 0.7 }]}
