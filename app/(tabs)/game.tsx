@@ -257,6 +257,11 @@ export default function GameScreen() {
   // Auto-exit when the filtered list empties after the last action
   useEffect(() => {
     if (quickActionMode !== null && filteredFloors.length === 0) {
+      // Restore scroll immediately so floorList appears at the right position
+      // while the bar animates out. Clear qaEnteredRef so the quickActionMode
+      // effect doesn't overwrite pendingRestoreRef 280ms later.
+      pendingRestoreRef.current = savedScrollOffsetRef.current;
+      qaEnteredRef.current = false;
       setQaBarVisible(false);
     }
   }, [quickActionMode, filteredFloors.length]);
