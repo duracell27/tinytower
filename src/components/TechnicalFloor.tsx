@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
+import { useGameClock } from '../hooks/useGameClock';
 import { shadeColor } from '../utils/color';
 
 const HEADER_COLORS: [string, string] = ['#C9637E', '#A8475F'];
@@ -89,11 +90,11 @@ interface LobbyFloorProps {
   visitorCount: number;
   lobbyCapacity: number;
   nextVisitorAt: number;
-  now: number;
   onPress: () => void;
 }
 
-export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, now, onPress }: LobbyFloorProps) {
+export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress }: LobbyFloorProps) {
+  const now = useGameClock(1000);
   const { t } = useTranslation('hotel');
   const isFull = visitorCount >= lobbyCapacity;
   const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));

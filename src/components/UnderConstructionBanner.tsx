@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { createMMKV } from 'react-native-mmkv';
 import { shadeColor } from '../utils/color';
 import { useGameStore } from '../stores/gameStore';
+import { useGameClock } from '../hooks/useGameClock';
 
 const uiStorage = createMMKV({ id: 'ui-prefs' });
 
@@ -30,7 +31,6 @@ const FLOOR_TYPE_COLORS: Record<string, string> = {
 interface UnderConstructionBannerProps {
   floorId: number;
   endsAt: number;
-  now: number;
   requiredTools: { tool: string; count: number }[];
   selectedFloorType: string | null;
   onOpenPicker: () => void;
@@ -50,20 +50,20 @@ function formatCountdown(ms: number): string {
 export default function UnderConstructionBanner({
   floorId,
   endsAt,
-  now,
   requiredTools,
   selectedFloorType,
   onOpenPicker,
   onStartBusiness,
 }: UnderConstructionBannerProps) {
+  const now = useGameClock(1000);
   const tools = useGameStore((s) => s.tools);
   const speedUpConstruction = useGameStore((s) => s.speedUpConstruction);
   const [confirming, setConfirming] = useState(false);
 
-  useEffect(() => { setConfirming(false); }, [floorId, isReady]);
-
   const timeLeft = Math.max(0, endsAt - now);
   const isReady = timeLeft === 0;
+
+  useEffect(() => { setConfirming(false); }, [floorId, isReady]);
 
   const MS_PER_HOUR = 3_600_000;
   const speedUpCost = Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
+import { useGameClock } from '../hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerForSlot, getFloorDiscount, getFloorSpecialistBonus } from '../../shared/engine/workerUtils';
 import { shadeColor } from '../utils/color';
@@ -144,11 +145,11 @@ function Stars({ count, color = '#FFD23E' }: { count: number; color?: string }) 
 interface FloorCardProps {
   floorId: number;
   balance: number;
-  now: number;
   onHireSlot?: (floorId: number, slotIdx: number) => void;
 }
 
-function FloorCardInner({ floorId, balance, now, onHireSlot }: FloorCardProps) {
+function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
+  const now = useGameClock(1000);
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
   const floor = useFloor(floorId);

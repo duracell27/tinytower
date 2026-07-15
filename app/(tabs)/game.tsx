@@ -216,8 +216,8 @@ export default function GameScreen() {
   );
 
   const listExtraData = React.useMemo(
-    () => ({ now, quickActionMode, nextFloorUnlock }),
-    [now, quickActionMode, nextFloorUnlock],
+    () => ({ quickActionMode, nextFloorUnlock }),
+    [quickActionMode, nextFloorUnlock],
   );
 
   // The bottom-most floor (last in sorted-descending list = lowest ID = nearest the bar)
@@ -370,7 +370,6 @@ export default function GameScreen() {
           <UnderConstructionBanner
             floorId={uc.floorId}
             endsAt={uc.startedAt + uc.durationMs}
-            now={now}
             requiredTools={uc.requiredTools}
             selectedFloorType={selType}
             onOpenPicker={() => setPickerOpenFor(uc.floorId)}
@@ -418,7 +417,6 @@ export default function GameScreen() {
             visitorCount={lobbyVisitors.length}
             lobbyCapacity={lobbyCapacity}
             nextVisitorAt={nextVisitorAt}
-            now={now}
             onPress={() => setLobbyOpen(true)}
           />
         </View>
@@ -427,7 +425,7 @@ export default function GameScreen() {
     if (item.type === 'production') {
       return (
         <View style={styles.floorWrapper}>
-          <FloorCard floorId={item.id} balance={balance} now={now} onHireSlot={() => setHotelOpen(true)} />
+          <FloorCard floorId={item.id} balance={balance} onHireSlot={() => setHotelOpen(true)} />
         </View>
       );
     }
@@ -435,7 +433,7 @@ export default function GameScreen() {
       return <View style={styles.bottomAnchor} />;
     }
     return null;
-  }, [balance, now, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
+  }, [balance, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
       showInsufficientResources]);
 

@@ -4,9 +4,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withTiming,
   runOnJS,
-  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -74,9 +72,9 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
     if (visible) {
       slideY.value = withSpring(0, { damping: 14, stiffness: 160, mass: 0.9 });
     } else {
-      slideY.value = withTiming(
+      slideY.value = withSpring(
         120,
-        { duration: 280, easing: Easing.in(Easing.quad) },
+        { damping: 30, stiffness: 300, mass: 0.8 },
         (finished) => {
           if (finished) runOnJS(onHidden)();
         },
