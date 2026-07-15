@@ -45,6 +45,13 @@ export interface InsufficientResourcesPayload {
 
 type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
 
+export interface FailedCommandEntry {
+  id: string;
+  type: string;
+  error: string;
+  timestamp: number;
+}
+
 interface UIState {
   insufficientResources: InsufficientResourcesPayload | null;
   builderToolDrop: ToolKey | null;
@@ -53,6 +60,7 @@ interface UIState {
   xpBonusPercent: number;
   categoryProgress: Record<string, CategoryProgressState>;
   locallyGrantedAchievements: Set<string>;
+  failedCommandLog: FailedCommandEntry[];
 }
 
 interface GameActions {
@@ -80,7 +88,15 @@ interface GameActions {
   selectFloorType: (floorId: number, floorType: string) => void;
   openFloor: (floorId: number, floorType: string) => void;
   setLastSyncAt: (ts: number) => void;
-  hydrate: (state: GameState & Partial<SyncState> & { playerLevel?: number; playerXp?: number }) => void;
+  hydrate: (state: GameState & Partial<SyncState> & {
+    playerLevel?: number;
+    playerXp?: number;
+    achievementQueue?: NewAchievementGrant[];
+    coinBonusPercent?: number;
+    xpBonusPercent?: number;
+    categoryProgress?: Record<string, CategoryProgressState>;
+    dailyTipsRewardClaimed?: boolean;
+  }) => void;
   reconcile: (state: GameState, stateVersion: number, ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   clearAckedCommands: (ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   exchangeGemsForCoins: (gems: number) => void;
@@ -92,6 +108,7 @@ interface GameActions {
   clearBuilderToolDrop: () => void;
   addAchievements: (grants: NewAchievementGrant[]) => void;
   dismissAchievement: () => void;
+  clearFailedCommandLog: () => void;
   reset: () => void;
 }
 
@@ -123,7 +140,16 @@ function executeCommand(
     gameState, command, gameConfig, command.timestamp, store.playerLevel,
     { coinPercent: store.coinBonusPercent, xpPercent: store.xpBonusPercent },
   );
-  if (!result.success) return;
+  if (!result.success) {
+    const curLog = get().failedCommandLog;
+    set({
+      failedCommandLog: [
+        ...curLog.slice(-19),
+        { id: uuid(), type: command.type, error: result.error ?? 'Unknown error', timestamp: Date.now() },
+      ],
+    });
+    return;
+  }
 
   let newQueue = [...result.state.commandQueue, command];
   if (newQueue.length > COMMAND_QUEUE_CAP) {
@@ -223,6 +249,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   coinBonusPercent: 0,
   xpBonusPercent: 0,
   categoryProgress: {},
+  failedCommandLog: [],
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -567,8 +594,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     elevatorFloor: state.elevatorFloor ?? 0,
     dailyTips: state.dailyTips ?? 0,
     dailyGemsCollected: state.dailyGemsCollected ?? 0,
-    dailyTipsStage1Claimed: (state as any).dailyTipsStage1Claimed ?? (state as any).dailyTipsRewardClaimed ?? false,
-    dailyTipsStage2Claimed: (state as any).dailyTipsStage2Claimed ?? false,
+    dailyTipsStage1Claimed: state.dailyTipsStage1Claimed ?? state.dailyTipsRewardClaimed ?? false,
+    dailyTipsStage2Claimed: state.dailyTipsStage2Claimed ?? false,
     lastDailyReset: state.lastDailyReset ?? 0,
     nextVisitorAt: state.nextVisitorAt ?? 0,
     dailyFillLobbyUses: state.dailyFillLobbyUses ?? 0,
@@ -580,10 +607,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     underConstruction: state.underConstruction ?? [],
     openedFloorTypes: state.openedFloorTypes ?? {},
     stats: state.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
-    achievementQueue: (state as any).achievementQueue ?? [],
-    coinBonusPercent: (state as any).coinBonusPercent ?? 0,
-    xpBonusPercent: (state as any).xpBonusPercent ?? 0,
-    categoryProgress: (state as any).categoryProgress ?? {},
+    achievementQueue: state.achievementQueue ?? [],
+    coinBonusPercent: state.coinBonusPercent ?? 0,
+    xpBonusPercent: state.xpBonusPercent ?? 0,
+    categoryProgress: state.categoryProgress ?? {},
   }),
 
   reconcile: (serverState, newVersion, ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
@@ -673,6 +700,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       timestamp: clock.now(),
     });
   },
+
+  clearFailedCommandLog: () => set({ failedCommandLog: [] }),
 }));
 
 export function useBalance(): number {
