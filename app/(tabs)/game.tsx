@@ -433,12 +433,12 @@ export default function GameScreen() {
           <Animated.View style={[styles.towerColumn, towerStyle]}>
             <FlashList
               ref={listRef}
-              data={quickActionMode !== null ? qaItems : floorList}
+              data={quickActionMode !== null && qaItems.length > 0 ? qaItems : floorList}
               renderItem={renderItem}
               keyExtractor={keyExtractor}
               estimatedItemSize={150}
               extraData={listExtraData}
-              contentContainerStyle={quickActionMode !== null ? styles.listContentQA : styles.listContent}
+              contentContainerStyle={quickActionMode !== null && qaItems.length > 0 ? styles.listContentQA : styles.listContent}
               showsVerticalScrollIndicator={false}
               scrollEventThrottle={100}
               onContentSizeChange={(_w, h) => {
