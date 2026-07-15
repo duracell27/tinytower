@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Text, Pressable, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -34,8 +34,13 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   const { colors } = MODE_COLORS[mode];
 
   const slideY = useSharedValue(120);
+  const isMounted = useRef(false);
 
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     if (visible) {
       slideY.value = withSpring(0, { damping: 14, stiffness: 160, mass: 0.9 });
     } else {
@@ -47,7 +52,6 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
         },
       );
     }
-  // onHidden identity is stable (wrapped in useCallback in parent)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
