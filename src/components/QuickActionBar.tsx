@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { formatNum } from '../utils/format';
 import type { QuickActionMode, FloorActionInfo } from '../utils/quickAction';
 
@@ -28,6 +29,35 @@ const MODE_COLORS: Record<QuickActionMode, { colors: [string, string] }> = {
   buy:     { colors: ['#4A90D9', '#2563EB'] },
   hire:    { colors: ['#D96E8A', '#B84E6A'] },
 };
+
+function ModeIcon({ mode }: { mode: QuickActionMode }) {
+  switch (mode) {
+    case 'collect':
+      return <View style={styles.coinCircle} />;
+    case 'list':
+      return (
+        <Svg viewBox="0 0 24 24" width={18} height={18}>
+          <Rect x={4} y={6} width={16} height={13} rx={1.6} fill="#fff" />
+          <Rect x={4} y={6} width={16} height={4} rx={1.6} fill="rgba(0,0,0,0.16)" />
+          <Rect x={11} y={6} width={2} height={13} fill="rgba(0,0,0,0.13)" />
+        </Svg>
+      );
+    case 'buy':
+      return (
+        <Svg viewBox="0 0 24 24" width={16} height={16}>
+          <Path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth={3.2} strokeLinecap="round" />
+        </Svg>
+      );
+    case 'hire':
+      return (
+        <Svg viewBox="0 0 24 24" width={20} height={18} fill="#fff">
+          <Circle cx={9} cy={8} r={3.4} />
+          <Path d="M3 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4z" />
+          <Path d="M19 7.5v6M16 10.5h6" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" />
+        </Svg>
+      );
+  }
+}
 
 export default function QuickActionBar({ mode, info, visible, onHidden, onPress, onExit }: Props) {
   const { t: tContent } = useTranslation('gameContent');
@@ -52,6 +82,11 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
         },
       );
     }
+    return () => {
+      isMounted.current = false;
+    };
+  // onHidden is stable: parent wraps it in useCallback([]) — adding it to deps
+  // would cause the effect to re-run and potentially cancel an in-flight animation.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
@@ -63,17 +98,17 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
     if (!info) return '…';
     switch (info.mode) {
       case 'collect':
-        return `Зібрати монети ($${formatNum(info.totalCoins)})`;
+        return `Collect ($${formatNum(info.totalCoins)})`;
       case 'list':
-        return info.count === 1 ? 'Викласти товар' : `Викласти товар (${info.count} шт)`;
+        return info.count === 1 ? 'List Item' : `List Items (${info.count})`;
       case 'buy': {
         const productName = tContent(`productionTypes.${info.typeId}.displayName`, {
           defaultValue: info.typeId,
         });
-        return `Закупити ${productName} ($${formatNum(info.buyCost)})`;
+        return `Buy ${productName} ($${formatNum(info.buyCost)})`;
       }
       case 'hire':
-        return 'Знайти робітника';
+        return 'Find Worker';
     }
   })();
 
@@ -91,7 +126,10 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
         style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}
       >
         <LinearGradient colors={colors} style={styles.btnGradient}>
-          <Text style={styles.btnLabel} numberOfLines={1}>{label}</Text>
+          <View style={styles.btnContent}>
+            <ModeIcon mode={mode} />
+            <Text style={styles.btnLabel} numberOfLines={1}>{label}</Text>
+          </View>
         </LinearGradient>
       </Pressable>
     </Animated.View>
@@ -145,11 +183,25 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.4)',
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   btnLabel: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 17,
     color: '#fff',
     letterSpacing: 0.3,
+  },
+  coinCircle: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#F2B330',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.6)',
   },
 });

@@ -286,7 +286,7 @@ export default function GameScreen() {
 
   const handleFABPress = useCallback(() => {
     if (quickActionMode !== null) {
-      setQuickActionMode(null);
+      setQaBarVisible(false);
     } else if (availableMode !== null) {
       setQuickActionMode(availableMode);
     }
