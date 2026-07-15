@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, View, StyleSheet, ImageBackground } from 'react-native';
+import { View, StyleSheet, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
@@ -93,6 +93,7 @@ export default function GameScreen() {
   const floors = useGameStore((s) => s.floors);
   const workers = useGameStore((s) => s.workers);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
 
   const revenuePerMin = React.useMemo(
     () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now),
@@ -164,9 +165,9 @@ export default function GameScreen() {
   const quickActionModeRef = useRef<QuickActionMode | null>(null);
   const contentHeightRef = useRef(0);
   const viewHeightRef = useRef(0);
-  const mountAnimRef = useRef<Animated.CompositeAnimation | null>(null);
 
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
+  const [qaBarVisible, setQaBarVisible] = useState(false);
   quickActionModeRef.current = quickActionMode;
 
   // Highest-priority mode currently available — only computed when not already in a mode
@@ -204,9 +205,9 @@ export default function GameScreen() {
   const bottomFloorInfo = React.useMemo(
     () =>
       bottomFloor !== null && quickActionMode !== null
-        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers)
+        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers, coinBonusPercent, openedFloorTypes ?? {})
         : null,
-    [bottomFloor, quickActionMode, now, workers],
+    [bottomFloor, quickActionMode, now, workers, coinBonusPercent, openedFloorTypes],
   );
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -234,43 +235,19 @@ export default function GameScreen() {
   // Auto-exit when the filtered list empties after the last action
   useEffect(() => {
     if (quickActionMode !== null && filteredFloors.length === 0) {
-      setQuickActionMode(null);
+      setQaBarVisible(false);
     }
   }, [quickActionMode, filteredFloors.length]);
 
-  // On QA entry: snap to bottom floor. On QA exit: restore saved position.
-  // Smooth scroll to lobby on first mount — animate over 1.2 s so the user
-  // sees floors gliding past rather than a jarring instant jump.
+  // Show bar when QA mode activates
   useEffect(() => {
-    const id = setTimeout(() => {
-      const maxOffset = Math.max(0, contentHeightRef.current - viewHeightRef.current);
-      if (maxOffset <= 0) {
-        listRef.current?.scrollToEnd({ animated: false });
-        return;
-      }
-      const sv = new Animated.Value(0);
-      const listenerId = sv.addListener(({ value }) => {
-        listRef.current?.scrollToOffset({ offset: value, animated: false });
-      });
-      mountAnimRef.current = Animated.timing(sv, {
-        toValue: maxOffset,
-        duration: 1200,
-        useNativeDriver: false,
-        easing: Easing.out(Easing.cubic),
-      });
-      mountAnimRef.current.start(({ finished }) => {
-        sv.removeListener(listenerId);
-        mountAnimRef.current = null;
-        if (finished) listRef.current?.scrollToEnd({ animated: false });
-      });
-    }, 100);
-    return () => clearTimeout(id);
-  }, []);
+    if (quickActionMode !== null) {
+      setQaBarVisible(true);
+    }
+  }, [quickActionMode]);
 
   useEffect(() => {
     if (quickActionMode !== null) {
-      mountAnimRef.current?.stop();
-      mountAnimRef.current = null;
       qaEnteredRef.current = true;
       const id = setTimeout(() => listRef.current?.scrollToEnd({ animated: false }), 0);
       return () => clearTimeout(id);
@@ -305,6 +282,14 @@ export default function GameScreen() {
       setQuickActionMode(availableMode);
     }
   }, [quickActionMode, availableMode]);
+
+  const handleQaExit = useCallback(() => {
+    setQaBarVisible(false);
+  }, []);
+
+  const handleQaHidden = useCallback(() => {
+    setQuickActionMode(null);
+  }, []);
 
   const handleQuickAction = useCallback(() => {
     if (!quickActionMode || !bottomFloor) return;
@@ -478,12 +463,14 @@ export default function GameScreen() {
           onPress={handleFABPress}
         />
 
-        {quickActionMode !== null && (
+        {(quickActionMode !== null || qaBarVisible) && (
           <QuickActionBar
-            mode={quickActionMode}
+            mode={quickActionMode ?? 'collect'}
             info={bottomFloorInfo}
+            visible={qaBarVisible}
+            onHidden={handleQaHidden}
             onPress={handleQuickAction}
-            onExit={() => setQuickActionMode(null)}
+            onExit={handleQaExit}
           />
         )}
       </ImageBackground>
@@ -541,7 +528,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   listContentQA: {
-    paddingTop: 150,
+    flexGrow: 1,
+    justifyContent: 'flex-end',
     paddingBottom: 140,
     paddingHorizontal: 14,
   },
