@@ -450,7 +450,8 @@ export default function GameScreen() {
               data={quickActionMode !== null && qaItems.length > 0 ? qaItems : floorList}
               renderItem={renderItem}
               keyExtractor={keyExtractor}
-              estimatedItemSize={150}
+              estimatedItemSize={216}
+              getItemType={(item) => item.type}
               extraData={listExtraData}
               contentContainerStyle={quickActionMode !== null && qaItems.length > 0 ? styles.listContentQA : styles.listContent}
               showsVerticalScrollIndicator={false}
