@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
+import { formatNum } from '../../src/utils/format';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -46,19 +47,6 @@ type FloorItem =
   | { type: 'buyFloor' }
   | { type: 'underConstruction'; floorId: number; uc: UnderConstructionState }
   | { type: 'bottomAnchor' };
-
-
-function formatCoins(n: number): string {
-  if (n >= 1000) {
-    const str = String(n);
-    const parts: string[] = [];
-    for (let i = str.length; i > 0; i -= 3) {
-      parts.unshift(str.slice(Math.max(0, i - 3), i));
-    }
-    return parts.join(' ');
-  }
-  return String(n);
-}
 
 function keyExtractor(item: FloorItem): string {
   if (item.type === 'production') return `prod-${item.id}`;
@@ -500,10 +488,10 @@ export default function GameScreen() {
           xp={playerXp}
           xpForNextLevel={xpForLevel(playerLevel)}
           initial={initial}
-          coins={formatCoins(balance)}
+          coins={formatNum(balance)}
           gems={String(gems)}
           revenuePerMin={revenuePerMin}
-          onDevAddGems={() => devAddGems(100)}
+          onDevAddGems={__DEV__ ? () => devAddGems(100) : undefined}
         />
 
         <QuickActionFAB
