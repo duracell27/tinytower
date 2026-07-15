@@ -235,13 +235,6 @@ export default function GameScreen() {
     }
   }, [quickActionMode, filteredFloors.length]);
 
-  // Initial scroll to lobby on mount (replaces initialScrollIndex prop which
-  // re-applies itself every time data changes, causing unwanted lobby jump on exit).
-  useEffect(() => {
-    const id = setTimeout(() => listRef.current?.scrollToEnd({ animated: false }), 0);
-    return () => clearTimeout(id);
-  }, []);
-
   // On QA entry: snap to bottom floor. On QA exit: restore saved position.
   useEffect(() => {
     if (quickActionMode !== null) {
@@ -419,6 +412,7 @@ export default function GameScreen() {
               estimatedItemSize={150}
               extraData={listExtraData}
               contentContainerStyle={quickActionMode !== null ? styles.listContentQA : styles.listContent}
+              initialScrollIndex={Math.max(0, floorList.length - 1)}
               showsVerticalScrollIndicator={false}
               scrollEventThrottle={100}
               onScroll={(e) => {
