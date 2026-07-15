@@ -17,6 +17,7 @@
   "profile": {
     "title": "Profile",
     "guestFallbackName": "Player",
+    "achievements": "Achievements ({{count}})",
     "stats": {
       "level": "Level",
       "xp": "XP"
@@ -25,7 +26,14 @@
       "online": "You're online",
       "pending_one": "{{count}} command not synced",
       "pending_other": "{{count}} commands not synced",
-      "critical": "{{count}} commands not synced · possible data loss"
+      "critical": "{{count}} commands not synced · possible data loss",
+      "pendingDetail_one": "Pending sync · {{count}} command",
+      "pendingDetail_other": "Pending sync · {{count}} commands",
+      "failedCount_one": "Failed commands · {{count}}",
+      "failedCount_other": "Failed commands · {{count}}",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "clear": "Clear"
     },
     "logout": "Log Out"
   },

@@ -1,19 +1,88 @@
-import React, { useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView } from 'react-native';
+import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Polyline } from 'react-native-svg';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../src/i18n';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useGameStore } from '../../src/stores/gameStore';
+import type { FailedCommandEntry } from '../../src/stores/gameStore';
 import { xpForLevel } from '../../shared/engine/xp';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { formatNum } from '../../src/utils/format';
+import { getUserIcon } from '../../src/utils/userIcon';
 import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
+import * as Clipboard from 'expo-clipboard';
+import type { Command } from '../../shared/types';
+
+const COMMAND_LABELS: Record<string, string> = {
+  buy: 'Buy product',
+  list: 'List product',
+  collect: 'Collect revenue',
+  assign_worker: 'Assign worker',
+  fire_worker: 'Fire worker',
+  evict_worker: 'Evict worker',
+  upgrade_to_specialist: 'Upgrade to specialist',
+  fire_and_evict_worker: 'Fire & evict worker',
+  spawn_visitor: 'Spawn visitor',
+  lift_visitor: 'Lift visitor',
+  collect_tip: 'Collect tip',
+  deliver_all: 'Deliver all',
+  upgrade_elevator: 'Upgrade elevator',
+  upgrade_lobby: 'Upgrade lobby',
+  claim_daily_reward: 'Claim daily reward',
+  expand_hotel: 'Expand hotel',
+  fill_lobby: 'Fill lobby',
+  buy_floor: 'Buy floor',
+  open_floor: 'Open floor',
+  exchange_gems: 'Exchange gems',
+  speed_up_construction: 'Speed up construction',
+  speed_up_delivery: 'Speed up delivery',
+  dev_add_gems: 'Dev: add gems',
+  evict_low_level_workers: 'Evict low-level workers',
+};
+
+const FRIENDLY_ERRORS: Record<string, string> = {
+  'Insufficient gems': 'Not enough gems',
+  'Insufficient balance': 'Not enough coins',
+  'Insufficient tools': 'Missing building tools',
+  'Floor not found': 'Floor does not exist',
+  'Floor not under construction': 'Floor is not being built',
+  'Construction already complete': 'Building already finished',
+  'Construction not complete': 'Building not finished yet',
+  'Slot not found': 'Slot not found',
+  'Not delivering': 'Not in delivery state',
+  'No type assigned': 'No product selected',
+  'Delivery already complete': 'Delivery already done',
+  'Floor not available for purchase': 'Floor not available yet',
+  'Floor already under construction': 'Already building this floor',
+  'Floor already exists': 'Floor already built',
+  'Worker not found': 'Worker not found',
+  'Worker already assigned': 'Worker already busy',
+  'Slot already has a worker': 'Slot already occupied',
+  'Worker is not assigned': 'Worker has no assignment',
+  'Cannot fire during active production': 'Production is active',
+  'Cannot evict assigned worker': 'Unassign worker first',
+  'No worker assigned to slot': 'No worker here',
+  'Production not idle': 'Production is busy',
+  'Another delivery in progress on this floor': 'Delivery in progress',
+  'Cannot change production type': 'Cannot change product now',
+  'Unknown production type': 'Unknown product',
+  'All businesses of this type already built': 'All businesses built',
+  'Unknown floor type': 'Unknown floor type',
+};
+
+function commandLabel(type: string) {
+  return COMMAND_LABELS[type] ?? type;
+}
+
+function friendlyError(error: string) {
+  return FRIENDLY_ERRORS[error] ?? error;
+}
 
 function formatSyncTime(ts: number, now: number): string {
   if (ts === 0) return i18n.t('common:relativeTime.never');
@@ -23,6 +92,7 @@ function formatSyncTime(ts: number, now: number): string {
   if (diff < 86_400_000) return i18n.t('common:relativeTime.hoursAgo', { count: Math.floor(diff / 3_600_000) });
   return i18n.t('common:relativeTime.daysAgo', { count: Math.floor(diff / 86_400_000) });
 }
+
 
 function SyncIcon({ color }: { color: string }) {
   const rotation = useSharedValue(0);
@@ -55,6 +125,53 @@ function SyncIcon({ color }: { color: string }) {
   );
 }
 
+function ChevronIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+      <Polyline
+        points={expanded ? '18 15 12 9 6 15' : '6 9 12 15 18 9'}
+        stroke="#9BA3B0"
+        strokeWidth={2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+function groupByType(queue: Command[]): { type: string; count: number }[] {
+  const map = new Map<string, number>();
+  for (const cmd of queue) {
+    map.set(cmd.type, (map.get(cmd.type) ?? 0) + 1);
+  }
+  return Array.from(map.entries()).map(([type, count]) => ({ type, count }));
+}
+
+function buildCopyText(
+  queue: Command[],
+  failLog: FailedCommandEntry[],
+  now: number,
+): string {
+  const lines: string[] = ['=== TinyTower Sync Report ==='];
+  lines.push(`Date: ${new Date(now).toISOString()}`);
+
+  if (queue.length > 0) {
+    lines.push('', `[Pending commands: ${queue.length}]`);
+    for (const { type, count } of groupByType(queue)) {
+      lines.push(`  - ${commandLabel(type)}${count > 1 ? ` ×${count}` : ''}`);
+    }
+  }
+
+  if (failLog.length > 0) {
+    lines.push('', `[Failed commands: ${failLog.length}]`);
+    for (const entry of [...failLog].reverse()) {
+      lines.push(`  - ${commandLabel(entry.type)} → ${friendlyError(entry.error)} (${formatSyncTime(entry.timestamp, now)})`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
 export default function ProfileScreen() {
   const { t } = useTranslation('tabs');
   const player = useAuthStore((s) => s.player);
@@ -63,9 +180,12 @@ export default function ProfileScreen() {
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
   const balance = useGameStore((s) => s.balance);
-  const commandQueueLength = useGameStore((s) => s.commandQueue.length);
+  const commandQueue = useGameStore((s) => s.commandQueue);
+  const commandQueueLength = commandQueue.length;
   const lastSyncAt = useGameStore((s) => s.lastSyncAt);
   const categoryProgress = useGameStore((s) => s.categoryProgress);
+  const failedCommandLog = useGameStore((s) => s.failedCommandLog);
+  const clearFailedCommandLog = useGameStore((s) => s.clearFailedCommandLog);
   const xpNeeded = xpForLevel(playerLevel);
   const totalEarnedLevels = ACHIEVEMENT_CATEGORIES.reduce(
     (sum, cat) => sum + (categoryProgress[cat.key]?.currentLevel ?? 0),
@@ -73,18 +193,35 @@ export default function ProfileScreen() {
   );
   const now = useGameClock(10_000);
 
+  const [syncExpanded, setSyncExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   const syncStatus = commandQueueLength > 2000
     ? 'critical'
     : commandQueueLength > 0
     ? 'pending'
     : 'online';
 
+  const hasExpandContent = commandQueueLength > 0 || failedCommandLog.length > 0;
+
+  useEffect(() => {
+    if (!hasExpandContent) setSyncExpanded(false);
+  }, [hasExpandContent]);
+
   const handleLogout = () => {
     logout();
     router.replace('/');
   };
 
-  const initial = (player?.playerName ?? t('profile.guestFallbackName')).charAt(0).toUpperCase();
+  const handleCopy = async () => {
+    const text = buildCopyText(commandQueue, failedCommandLog, now);
+    await Clipboard.setStringAsync(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const pendingGroups = groupByType(commandQueue);
+  const reversedFailLog = [...failedCommandLog].reverse();
 
   return (
     <ImageBackground
@@ -96,12 +233,11 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.profileRow}>
-            <LinearGradient
-              colors={['#74D3C4', '#3FA9A0']}
+            <Image
+              source={getUserIcon(playerLevel)}
               style={styles.avatar}
-            >
-              <Text style={styles.avatarText}>{initial}</Text>
-            </LinearGradient>
+              contentFit="cover"
+            />
             <View style={styles.profileInfo}>
               <Text style={styles.name}>{player?.playerName ?? t('profile.guestFallbackName')}</Text>
               <Text style={styles.email}>{player?.email ?? ''}</Text>
@@ -142,7 +278,7 @@ export default function ProfileScreen() {
         >
           <Image source={require('../../assets/img/profile/profileAchivments.png')} style={styles.achievementsIcon} />
           <Text style={styles.achievementsButtonText}>
-            Achievements ({totalEarnedLevels})
+            {t('profile.achievements', { count: totalEarnedLevels })}
           </Text>
         </Pressable>
 
@@ -154,28 +290,98 @@ export default function ProfileScreen() {
         </Pressable>
 
         {/* Sync status card */}
-        <View style={styles.syncCard}>
-          <View style={[
-            styles.syncDot,
-            syncStatus === 'online' && styles.syncDotGreen,
-            syncStatus === 'pending' && styles.syncDotYellow,
-            syncStatus === 'critical' && styles.syncDotRed,
-          ]} />
-          <Text style={[
-            styles.syncStatus,
-            syncStatus === 'online' && styles.syncStatusGreen,
-            syncStatus === 'pending' && styles.syncStatusYellow,
-            syncStatus === 'critical' && styles.syncStatusRed,
-          ]}>
-            {syncStatus === 'online' && t('profile.sync.online')}
-            {syncStatus === 'pending' && t('profile.sync.pending', { count: commandQueueLength })}
-            {syncStatus === 'critical' && t('profile.sync.critical', { count: commandQueueLength })}
-          </Text>
-          <View style={styles.syncTimeRow}>
-            <SyncIcon color="#9BA3B0" />
-            <Text style={styles.syncTime}>{formatSyncTime(lastSyncAt, now)}</Text>
+        <Pressable
+          onPress={() => hasExpandContent && setSyncExpanded((v) => !v)}
+          style={({ pressed }) => [styles.syncCard, pressed && hasExpandContent && styles.syncCardPressed]}
+        >
+          <View style={styles.syncRow}>
+            <View style={[
+              styles.syncDot,
+              syncStatus === 'online' && styles.syncDotGreen,
+              syncStatus === 'pending' && styles.syncDotYellow,
+              syncStatus === 'critical' && styles.syncDotRed,
+            ]} />
+            <Text style={[
+              styles.syncStatus,
+              syncStatus === 'online' && styles.syncStatusGreen,
+              syncStatus === 'pending' && styles.syncStatusYellow,
+              syncStatus === 'critical' && styles.syncStatusRed,
+            ]}>
+              {syncStatus === 'online' && t('profile.sync.online')}
+              {syncStatus === 'pending' && t('profile.sync.pending', { count: commandQueueLength })}
+              {syncStatus === 'critical' && t('profile.sync.critical', { count: commandQueueLength })}
+            </Text>
+            <View style={styles.syncTimeRow}>
+              <SyncIcon color="#9BA3B0" />
+              <Text style={styles.syncTime}>{formatSyncTime(lastSyncAt, now)}</Text>
+            </View>
+            {hasExpandContent && (
+              <View style={styles.chevron}>
+                <ChevronIcon expanded={syncExpanded} />
+              </View>
+            )}
           </View>
-        </View>
+
+          {syncExpanded && (
+            <View style={styles.syncDropdown}>
+
+              {/* Pending commands */}
+              {commandQueueLength > 0 && (
+                <View style={styles.dropSection}>
+                  <Text style={styles.dropSectionTitle}>
+                    {t('profile.sync.pendingDetail', { count: commandQueueLength })}
+                  </Text>
+                  {pendingGroups.map(({ type, count }) => (
+                    <View key={type} style={styles.dropRow}>
+                      <Text style={styles.dropRowBullet}>•</Text>
+                      <Text style={styles.dropRowText}>
+                        {commandLabel(type)}{count > 1 ? ` ×${count}` : ''}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Failed command history */}
+              {failedCommandLog.length > 0 && (
+                <View style={styles.dropSection}>
+                  <View style={styles.dropSectionHeader}>
+                    <Text style={styles.dropSectionTitle}>
+                      {t('profile.sync.failedCount', { count: failedCommandLog.length })}
+                    </Text>
+                    <View style={styles.dropActions}>
+                      <Pressable
+                        onPress={handleCopy}
+                        style={({ pressed }) => [styles.dropActionBtn, pressed && styles.dropActionBtnPressed]}
+                      >
+                        <Text style={styles.dropActionText}>{copied ? t('profile.sync.copied') : t('profile.sync.copy')}</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={clearFailedCommandLog}
+                        style={({ pressed }) => [styles.dropActionBtn, styles.dropActionBtnDanger, pressed && styles.dropActionBtnPressed]}
+                      >
+                        <Text style={[styles.dropActionText, styles.dropActionTextDanger]}>{t('profile.sync.clear')}</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                  {reversedFailLog.map((entry) => (
+                    <View key={entry.id} style={styles.dropRow}>
+                      <Text style={styles.dropRowBullet}>•</Text>
+                      <View style={styles.dropRowContent}>
+                        <Text style={styles.dropRowText} numberOfLines={1}>
+                          {commandLabel(entry.type)}
+                          <Text style={styles.dropRowError}> — {friendlyError(entry.error)}</Text>
+                        </Text>
+                        <Text style={styles.dropRowTime}>{formatSyncTime(entry.timestamp, now)}</Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+            </View>
+          )}
+        </Pressable>
       </ScrollView>
     </ImageBackground>
   );
@@ -205,20 +411,14 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
     borderWidth: 3,
     borderColor: '#fff',
+    overflow: 'hidden',
     shadowColor: 'rgba(20,90,80,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 4,
-  },
-  avatarText: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 30,
-    color: '#fff',
   },
   profileRow: {
     flexDirection: 'row',
@@ -309,15 +509,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 18,
     paddingHorizontal: 18,
-    paddingVertical: 13,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    paddingTop: 13,
+    paddingBottom: 13,
     shadowColor: 'rgba(60,80,45,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
+  },
+  syncCardPressed: {
+    opacity: 0.85,
+  },
+  syncRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   syncDot: {
     width: 9,
@@ -346,6 +552,93 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_600SemiBold',
     fontSize: 12,
     color: '#9BA3B0',
+  },
+  chevron: {
+    marginLeft: 4,
+    flexShrink: 0,
+  },
+  syncDropdown: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0EDE5',
+    paddingTop: 12,
+    gap: 12,
+  },
+  dropSection: {
+    gap: 6,
+  },
+  dropSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  dropSectionTitle: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 11,
+    color: '#9BA3B0',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    flex: 1,
+  },
+  dropActions: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  dropActionBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 8,
+    backgroundColor: '#F5F3EC',
+  },
+  dropActionBtnDanger: {
+    backgroundColor: '#FEF1EE',
+  },
+  dropActionBtnPressed: {
+    opacity: 0.7,
+  },
+  dropActionText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 11,
+    color: '#7C8A6E',
+  },
+  dropActionTextDanger: {
+    color: '#C0372A',
+  },
+  dropRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    paddingVertical: 1,
+  },
+  dropRowBullet: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: '#9BA3B0',
+    lineHeight: 20,
+  },
+  dropRowContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  dropRowText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: '#3E4A35',
+    flex: 1,
+  },
+  dropRowError: {
+    color: '#C0372A',
+    fontFamily: 'Nunito_400Regular',
+  },
+  dropRowTime: {
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 11,
+    color: '#9BA3B0',
+    flexShrink: 0,
   },
   achievementsButton: {
     marginHorizontal: 20,
