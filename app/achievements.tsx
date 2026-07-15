@@ -30,7 +30,7 @@ const TIER_IMAGES: ReturnType<typeof require>[] = [
   require('../assets/img/achivment/7TierAchive.png'),
 ];
 
-function formatNum(n: number): string {
+function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${Math.floor(n / 1_000)}K`;
   return String(n);
@@ -118,7 +118,7 @@ export default function AchievementsScreen() {
                       <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
                     </View>
                     <Text style={styles.progressCount}>
-                      {formatNum(relativeProgress)} / {formatNum(relativeMax)}
+                      {formatCompact(relativeProgress)} / {formatCompact(relativeMax)}
                     </Text>
                   </View>
                   <ProgressBar value={relativeProgress} max={relativeMax} />

@@ -13,20 +13,9 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { type LevelUpEvent } from '../../shared/engine/xp';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
+import { formatNum } from '../utils/format';
 
 const { width: SCREEN_W } = Dimensions.get('window');
-
-function formatNumber(n: number): string {
-  if (n >= 1000) {
-    const str = String(n);
-    const parts: string[] = [];
-    for (let i = str.length; i > 0; i -= 3) {
-      parts.unshift(str.slice(Math.max(0, i - 3), i));
-    }
-    return parts.join(' ');
-  }
-  return String(n);
-}
 
 export default function LevelUpModal({ suppressWhileOpen = false }: { suppressWhileOpen?: boolean }) {
   const { t } = useTranslation('hotel');
@@ -94,7 +83,7 @@ export default function LevelUpModal({ suppressWhileOpen = false }: { suppressWh
                 <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
                   <View style={styles.rewardRow}>
                     <CoinIcon size={20} />
-                    <Text style={styles.rewardText}>+{formatNumber(event.coinReward)}</Text>
+                    <Text style={styles.rewardText}>+{formatNum(event.coinReward)}</Text>
                   </View>
                   <View style={styles.rewardRow}>
                     <GemIcon size={16} />

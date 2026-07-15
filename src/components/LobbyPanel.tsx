@@ -30,6 +30,7 @@ import DeliverAllModal, { type DeliverAllSummary } from './DeliverAllModal';
 import WorkerAvatar from './WorkerAvatar';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
+import { formatNum } from '../utils/format';
 
 type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
 const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
@@ -116,17 +117,6 @@ function computeDeliverAllSummary(
   return { guestCount, businessmanCount, delivererCount, sellerCount, builderCount, totalCoins, totalGems, newWorkers };
 }
 
-function formatCoins(n: number): string {
-  if (n >= 1000) {
-    const str = String(n);
-    const parts: string[] = [];
-    for (let i = str.length; i > 0; i -= 3) {
-      parts.unshift(str.slice(Math.max(0, i - 3), i));
-    }
-    return parts.join("'");
-  }
-  return String(n);
-}
 
 function formatShortCoins(n: number): string {
   if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
@@ -669,7 +659,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     {/* Coin chip */}
                     <View style={styles.coinChip}>
                       <CoinIcon size={14} />
-                      <Text style={styles.coinChipText}>{formatCoins(balance)}</Text>
+                      <Text style={styles.coinChipText}>{formatNum(balance)}</Text>
                     </View>
                     {/* Close button */}
                     <Pressable onPress={onClose} style={styles.closeButton}>
@@ -851,7 +841,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={styles.milestone0}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                         <CoinIcon size={11} />
-                        <Text style={styles.milestoneAmount}>{formatCoins(dailyTips)}</Text>
+                        <Text style={styles.milestoneAmount}>{formatNum(dailyTips)}</Text>
                       </View>
                     </View>
                     {/* Stage 1: centered at 50% */}

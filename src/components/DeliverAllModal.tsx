@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
+import { formatNum } from '../utils/format';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -29,17 +30,6 @@ interface DeliverAllModalProps {
   onDismiss: () => void;
 }
 
-function formatNumber(n: number): string {
-  if (n >= 1000) {
-    const str = String(n);
-    const parts: string[] = [];
-    for (let i = str.length; i > 0; i -= 3) {
-      parts.unshift(str.slice(Math.max(0, i - 3), i));
-    }
-    return parts.join(' ');
-  }
-  return String(n);
-}
 
 export default function DeliverAllModal({ visible, summary, onDismiss }: DeliverAllModalProps) {
   const { t } = useTranslation('hotel');
@@ -108,7 +98,7 @@ export default function DeliverAllModal({ visible, summary, onDismiss }: Deliver
               {summary.totalCoins > 0 && (
                 <View style={styles.totalChip}>
                   <CoinIcon size={16} />
-                  <Text style={styles.totalCoinsText}>+{formatNumber(summary.totalCoins)}</Text>
+                  <Text style={styles.totalCoinsText}>+{formatNum(summary.totalCoins)}</Text>
                 </View>
               )}
               {summary.totalGems > 0 && (
