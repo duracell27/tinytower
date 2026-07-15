@@ -10,6 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.duracell27.tinytower-init",
+      "buildNumber": "1",
       "icon": {
         "light": "./assets/img/logoWhite.png",
         "dark": "./assets/img/logoBlack.png",
@@ -17,7 +18,6 @@
       },
       "infoPlist": {
         "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
         }
       }
