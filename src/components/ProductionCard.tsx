@@ -254,7 +254,7 @@ export default function ProductionCard({
   const coinBonusPercent = useGameStore(s => s.coinBonusPercent);
   const specialistBonusPercent = Math.round((specialistBonus ?? 0) * 100);
   const effectiveRevenue = typeConfig
-    ? Math.floor(typeConfig.batchValue * (1 + (coinBonusPercent + specialistBonusPercent) / 100))
+    ? Math.floor(typeConfig.batchValue * (1 + (coinBonusPercent + specialistBonusPercent) / 100) * multiplier)
     : 0;
   const hasMultiplier = multiplier > 1;
 

@@ -89,12 +89,12 @@ describe('getAvailableMode', () => {
   });
 
   it('prioritizes buy over hire', () => {
-    // floor 1 has IDLE (buy) + no worker (hire); floor 2 has selling + no worker (hire only)
     const floors = [
       makeFloor(1, [{ typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 }]),
       makeFloor(2, [{ typeId: REAL_TYPE, stage: 'SELLING', stageStartedAt: now - 100 }]),
     ];
-    expect(getAvailableMode(floors, [], now)).toBe('buy');
+    const workers = [makeWorker('w1', 1, 0)];
+    expect(getAvailableMode(floors, workers, now)).toBe('buy');
   });
 
   it('detects READY_TO_COLLECT derived from an elapsed SELLING timer', () => {
@@ -141,9 +141,15 @@ describe('getFloorsForMode', () => {
     expect(result.map((f) => f.id)).toEqual([5, 3, 1]);
   });
 
-  it('includes buy floors regardless of balance', () => {
+  it('includes buy floors when worker is present', () => {
     const floor = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 }]);
-    expect(getFloorsForMode('buy', [floor], [], now)).toHaveLength(1);
+    const workers = [makeWorker('w1', 1, 0)];
+    expect(getFloorsForMode('buy', [floor], workers, now)).toHaveLength(1);
+  });
+
+  it('excludes buy floors when no worker is assigned', () => {
+    const floor = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 }]);
+    expect(getFloorsForMode('buy', [floor], [], now)).toHaveLength(0);
   });
 
   it('excludes floor from hire mode when all typed slots have workers', () => {
@@ -183,6 +189,23 @@ describe('getFloorActionInfo', () => {
     expect(info).toEqual({ mode: 'collect', totalCoins: tc.batchValue * 2 });
   });
 
+  it('collect — applies coinBonusPercent to reported total', () => {
+    const floor = makeFloor(1, [
+      { typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 },
+    ]);
+    const info = getFloorActionInfo('collect', floor, now, [], 50);
+    expect(info).toEqual({ mode: 'collect', totalCoins: Math.floor(tc.batchValue * 1.5) });
+  });
+
+  it('collect — applies workerMultiplier (2x good mood) to reported total', () => {
+    const floor = makeFloor(1, [
+      { typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 },
+    ]);
+    const worker = makeWorker('w1', 1, 0); // floorType: 'green', dreamJob: REAL_TYPE
+    const info = getFloorActionInfo('collect', floor, now, [worker], 0, { '1': 'green' });
+    expect(info).toEqual({ mode: 'collect', totalCoins: Math.floor(tc.batchValue * 2.0) });
+  });
+
   it('collect — returns null when no slot is ready', () => {
     const floor = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'SELLING', stageStartedAt: now - 100 }]);
     expect(getFloorActionInfo('collect', floor, now, [])).toBeNull();
@@ -201,13 +224,24 @@ describe('getFloorActionInfo', () => {
     expect(getFloorActionInfo('list', floor, now, [])).toEqual({ mode: 'list', count: 2 });
   });
 
-  it('buy — returns highest slotIdx that is IDLE', () => {
+  it('buy — returns highest slotIdx that is IDLE and has a worker', () => {
     const floor = makeFloor(1, [
       { typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 },    // slot 0
       { typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 },    // slot 1
     ]);
-    const info = getFloorActionInfo('buy', floor, now, []);
-    expect(info).toMatchObject({ mode: 'buy', slotIdx: 1, typeId: REAL_TYPE, buyCost: tc.buyCost });
+    const workers = [makeWorker('w0', 1, 0), makeWorker('w1', 1, 1)];
+    const info = getFloorActionInfo('buy', floor, now, workers);
+    expect(info).toMatchObject({ mode: 'buy', slotIdx: 1, typeId: REAL_TYPE });
+  });
+
+  it('buy — skips slot without worker and picks next eligible', () => {
+    const floor = makeFloor(1, [
+      { typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 },    // slot 0 — has worker
+      { typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 },    // slot 1 — no worker
+    ]);
+    const workers = [makeWorker('w0', 1, 0)];
+    const info = getFloorActionInfo('buy', floor, now, workers);
+    expect(info).toMatchObject({ mode: 'buy', slotIdx: 0 });
   });
 
   it('buy — skips non-IDLE slots and picks next eligible', () => {
@@ -215,7 +249,8 @@ describe('getFloorActionInfo', () => {
       { typeId: REAL_TYPE, stage: 'IDLE', stageStartedAt: 0 },      // slot 0
       { typeId: REAL_TYPE, stage: 'SELLING', stageStartedAt: now },  // slot 1 — not IDLE
     ]);
-    const info = getFloorActionInfo('buy', floor, now, []);
+    const workers = [makeWorker('w0', 1, 0)];
+    const info = getFloorActionInfo('buy', floor, now, workers);
     expect(info).toMatchObject({ mode: 'buy', slotIdx: 0 });
   });
 
