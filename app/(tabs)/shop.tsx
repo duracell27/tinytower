@@ -5,22 +5,8 @@ import { useTranslation } from 'react-i18next';
 import TopBar from '../../src/components/TopBar';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
-
-function xpForLevel(level: number): number {
-  return Math.floor(100 * Math.pow(1.5, level - 1));
-}
-
-function formatCoins(n: number): string {
-  if (n >= 1000) {
-    const str = String(n);
-    const parts: string[] = [];
-    for (let i = str.length; i > 0; i -= 3) {
-      parts.unshift(str.slice(Math.max(0, i - 3), i));
-    }
-    return parts.join(' ');
-  }
-  return String(n);
-}
+import { xpForLevel } from '../../shared/engine/xp';
+import { formatNum } from '../../src/utils/format';
 
 export default function ShopScreen() {
   const { t } = useTranslation('tabs');
@@ -30,7 +16,6 @@ export default function ShopScreen() {
   const gems = useGameStore((s) => s.gems);
   const player = useAuthStore((s) => s.player);
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
-  const initial = playerName.charAt(0).toUpperCase();
 
   return (
     <View style={styles.container}>
@@ -51,8 +36,7 @@ export default function ShopScreen() {
           level={playerLevel}
           xp={playerXp}
           xpForNextLevel={xpForLevel(playerLevel)}
-          initial={initial}
-          coins={formatCoins(balance)}
+          coins={formatNum(balance)}
           gems={String(gems)}
         />
       </ImageBackground>
