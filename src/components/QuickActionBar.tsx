@@ -64,11 +64,11 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   const { colors } = MODE_COLORS[mode];
 
   const slideY = useSharedValue(120);
-  const isMounted = useRef(false);
+  const firstRunRef = useRef(true);
 
   useEffect(() => {
-    if (!isMounted.current) {
-      isMounted.current = true;
+    if (firstRunRef.current) {
+      firstRunRef.current = false;
       return;
     }
     if (visible) {
@@ -82,9 +82,6 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
         },
       );
     }
-    return () => {
-      isMounted.current = false;
-    };
   // onHidden is stable: parent wraps it in useCallback([]) — adding it to deps
   // would cause the effect to re-run and potentially cancel an in-flight animation.
   // eslint-disable-next-line react-hooks/exhaustive-deps
