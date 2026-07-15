@@ -16,11 +16,10 @@ export function detectOptimisticGrants(
   const grants: NewAchievementGrant[] = [];
 
   for (const category of ACHIEVEMENT_CATEGORIES) {
-    const delta = newStats[category.stat] - oldStats[category.stat];
-    if (delta <= 0) continue;
+    const oldProgress = oldStats[category.stat];
+    const newProgress = newStats[category.stat];
+    if (newProgress <= oldProgress) continue;
 
-    const oldProgress = categoryProgress[category.key]?.progress ?? 0;
-    const newProgress = oldProgress + delta;
     const claimed = new Set<number>(categoryProgress[category.key]?.claimedLevels ?? []);
 
     for (const { level, threshold, title } of category.levels) {
