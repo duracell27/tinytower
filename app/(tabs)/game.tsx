@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, ImageBackground } from 'react-native';
+import { Animated, Easing, View, StyleSheet, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
@@ -162,6 +162,9 @@ export default function GameScreen() {
   const savedScrollOffsetRef = useRef(Number.MAX_SAFE_INTEGER);
   const qaEnteredRef = useRef(false);
   const quickActionModeRef = useRef<QuickActionMode | null>(null);
+  const contentHeightRef = useRef(0);
+  const viewHeightRef = useRef(0);
+  const mountAnimRef = useRef<Animated.CompositeAnimation | null>(null);
 
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
   quickActionModeRef.current = quickActionMode;
@@ -236,8 +239,38 @@ export default function GameScreen() {
   }, [quickActionMode, filteredFloors.length]);
 
   // On QA entry: snap to bottom floor. On QA exit: restore saved position.
+  // Smooth scroll to lobby on first mount — animate over 1.2 s so the user
+  // sees floors gliding past rather than a jarring instant jump.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      const maxOffset = Math.max(0, contentHeightRef.current - viewHeightRef.current);
+      if (maxOffset <= 0) {
+        listRef.current?.scrollToEnd({ animated: false });
+        return;
+      }
+      const sv = new Animated.Value(0);
+      const listenerId = sv.addListener(({ value }) => {
+        listRef.current?.scrollToOffset({ offset: value, animated: false });
+      });
+      mountAnimRef.current = Animated.timing(sv, {
+        toValue: maxOffset,
+        duration: 1200,
+        useNativeDriver: false,
+        easing: Easing.out(Easing.cubic),
+      });
+      mountAnimRef.current.start(({ finished }) => {
+        sv.removeListener(listenerId);
+        mountAnimRef.current = null;
+        if (finished) listRef.current?.scrollToEnd({ animated: false });
+      });
+    }, 100);
+    return () => clearTimeout(id);
+  }, []);
+
   useEffect(() => {
     if (quickActionMode !== null) {
+      mountAnimRef.current?.stop();
+      mountAnimRef.current = null;
       qaEnteredRef.current = true;
       const id = setTimeout(() => listRef.current?.scrollToEnd({ animated: false }), 0);
       return () => clearTimeout(id);
@@ -412,9 +445,10 @@ export default function GameScreen() {
               estimatedItemSize={150}
               extraData={listExtraData}
               contentContainerStyle={quickActionMode !== null ? styles.listContentQA : styles.listContent}
-              initialScrollIndex={Math.max(0, floorList.length - 1)}
               showsVerticalScrollIndicator={false}
               scrollEventThrottle={100}
+              onContentSizeChange={(_w, h) => { contentHeightRef.current = h; }}
+              onLayout={(e) => { viewHeightRef.current = e.nativeEvent.layout.height; }}
               onScroll={(e) => {
                 if (quickActionModeRef.current === null) {
                   savedScrollOffsetRef.current = e.nativeEvent.contentOffset.y;
