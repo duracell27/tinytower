@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { formatNum } from '../../src/utils/format';
 import Animated, {
   useSharedValue,
@@ -47,12 +48,13 @@ type FloorItem =
   | { type: 'lobby' }
   | { type: 'buyFloor' }
   | { type: 'underConstruction'; floorId: number; uc: UnderConstructionState }
+  | { type: 'collapseDivider'; hiddenCount: number }
   | { type: 'bottomAnchor' };
 
 function keyExtractor(item: FloorItem): string {
   if (item.type === 'production') return `prod-${item.id}`;
   if (item.type === 'underConstruction') return `uc-${item.floorId}`;
-  return item.type; // 'hotel' | 'lobby' | 'buyFloor' | 'bottomAnchor' — all unique
+  return item.type; // 'hotel' | 'lobby' | 'buyFloor' | 'collapseDivider' | 'bottomAnchor' — all unique
 }
 
 export default function GameScreen() {
@@ -125,25 +127,71 @@ export default function GameScreen() {
     };
   }, [floors, underConstruction]);
 
+  const [towerCollapsed, setTowerCollapsed] = useState(true);
+
   const floorList: FloorItem[] = React.useMemo(() => {
     const items: FloorItem[] = [];
     if (nextFloorUnlock && lastSyncAt > 0) {
       items.push({ type: 'buyFloor' });
     }
 
-    // Merge all floors (production + UC) sorted by ID descending so they appear
-    // in the correct tower order (highest floor at top, between buyFloor and hotel).
     const ucById = new Map(underConstruction.map((uc) => [uc.floorId, uc]));
     const allIds = new Set([
       ...floors.map((f) => f.id),
       ...underConstruction.map((uc) => uc.floorId),
     ]);
-    for (const id of [...allIds].sort((a, b) => b - a)) {
-      const uc = ucById.get(id);
-      if (uc) {
-        items.push({ type: 'underConstruction', floorId: id, uc });
+    const sortedIds = [...allIds].sort((a, b) => b - a);
+
+    // Only count open-business (production) floors for the collapse threshold
+    const productionIds = floors.map((f) => f.id).sort((a, b) => b - a);
+    const canCollapse = productionIds.length >= 10;
+
+    if (canCollapse) {
+      const topId = productionIds[0]; // highest open-business floor
+      const aboveTopIds = sortedIds.filter((id) => id > topId);
+      const belowIds = sortedIds.filter((id) => id < topId);
+
+      if (towerCollapsed) {
+        // Collapsed: UC floors above topId → topId → divider
+        for (const id of aboveTopIds) {
+          const uc = ucById.get(id);
+          if (uc) {
+            items.push({ type: 'underConstruction', floorId: id, uc });
+          } else {
+            items.push({ type: 'production', id });
+          }
+        }
+        items.push({ type: 'production', id: topId });
+        items.push({ type: 'collapseDivider', hiddenCount: productionIds.length });
       } else {
-        items.push({ type: 'production', id });
+        // Expanded: UC floors above topId → divider → topId → all remaining floors
+        for (const id of aboveTopIds) {
+          const uc = ucById.get(id);
+          if (uc) {
+            items.push({ type: 'underConstruction', floorId: id, uc });
+          } else {
+            items.push({ type: 'production', id });
+          }
+        }
+        items.push({ type: 'collapseDivider', hiddenCount: 0 });
+        items.push({ type: 'production', id: topId });
+        for (const id of belowIds) {
+          const uc = ucById.get(id);
+          if (uc) {
+            items.push({ type: 'underConstruction', floorId: id, uc });
+          } else {
+            items.push({ type: 'production', id });
+          }
+        }
+      }
+    } else {
+      for (const id of sortedIds) {
+        const uc = ucById.get(id);
+        if (uc) {
+          items.push({ type: 'underConstruction', floorId: id, uc });
+        } else {
+          items.push({ type: 'production', id });
+        }
       }
     }
 
@@ -151,7 +199,7 @@ export default function GameScreen() {
     items.push({ type: 'lobby' });
     items.push({ type: 'bottomAnchor' });
     return items;
-  }, [underConstruction, floors, nextFloorUnlock, lastSyncAt]);
+  }, [underConstruction, floors, nextFloorUnlock, lastSyncAt, towerCollapsed]);
 
   const [hotelOpen, setHotelOpen] = useState(false);
   const [lobbyOpen, setLobbyOpen] = useState(false);
@@ -204,8 +252,8 @@ export default function GameScreen() {
   );
 
   const listExtraData = React.useMemo(
-    () => ({ quickActionMode, nextFloorUnlock }),
-    [quickActionMode, nextFloorUnlock],
+    () => ({ quickActionMode, nextFloorUnlock, towerCollapsed }),
+    [quickActionMode, nextFloorUnlock, towerCollapsed],
   );
 
   // The bottom-most floor (last in sorted-descending list = lowest ID = nearest the bar)
@@ -350,6 +398,15 @@ export default function GameScreen() {
   ]);
 
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
+    if (item.type === 'collapseDivider') {
+      return (
+        <TowerCollapseDiv
+          hiddenCount={item.hiddenCount}
+          collapsed={towerCollapsed}
+          onToggle={() => setTowerCollapsed((c) => !c)}
+        />
+      );
+    }
     if (item.type === 'underConstruction') {
       const { uc } = item;
       const selType = uc.selectedFloorType ?? null;
@@ -423,7 +480,7 @@ export default function GameScreen() {
     return null;
   }, [balance, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
-      showInsufficientResources]);
+      showInsufficientResources, towerCollapsed]);
 
   return (
     <View style={styles.container}>
@@ -538,6 +595,81 @@ export default function GameScreen() {
     </View>
   );
 }
+
+function Chevron({ collapsed }: { collapsed: boolean }) {
+  return (
+    <Svg width={11} height={11} viewBox="0 0 24 24" fill="none">
+      <Path
+        d={collapsed ? 'M6 9l6 6 6-6' : 'M18 15l-6-6-6 6'}
+        stroke="#7A8EAA"
+        strokeWidth={2.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+function TowerCollapseDiv({
+  hiddenCount,
+  collapsed,
+  onToggle,
+}: {
+  hiddenCount: number;
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <View style={divStyles.container}>
+      <View style={divStyles.line} />
+      <Pressable
+        onPress={onToggle}
+        style={({ pressed }) => [divStyles.pill, pressed && divStyles.pillPressed]}
+        hitSlop={10}
+      >
+        <Chevron collapsed={collapsed} />
+        <Text style={divStyles.label}>
+          {collapsed ? `show all ${hiddenCount}` : 'show less'}
+        </Text>
+        <Chevron collapsed={collapsed} />
+      </Pressable>
+      <View style={divStyles.line} />
+    </View>
+  );
+}
+
+const divStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: -7,
+    marginBottom: 6,
+    paddingHorizontal: 6,
+  },
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(80,110,160,0.15)',
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 12,
+    backgroundColor: 'rgba(80,110,160,0.09)',
+    marginHorizontal: 8,
+  },
+  pillPressed: {
+    backgroundColor: 'rgba(80,110,160,0.18)',
+  },
+  label: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 12,
+    color: '#7A8EAA',
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
