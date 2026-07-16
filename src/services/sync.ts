@@ -17,6 +17,17 @@ interface SyncResponse {
   coinBonusPercent: number;
   xpBonusPercent: number;
   categoryProgress: Record<string, CategoryProgressState>;
+  pendingReferralClaims?: Array<{
+    id: string;
+    referredName: string;
+    milestone: 'registered' | 'level30';
+    gems: number;
+  }>;
+  referralPurchaseBonuses?: Array<{
+    referredName: string;
+    bonus: number;
+    purchaseAmount: number;
+  }>;
 }
 
 const SYNC_INTERVAL_MS = 30_000;
@@ -79,6 +90,15 @@ async function doSync(): Promise<void> {
       xpBonusPercent: response.xpBonusPercent ?? 0,
       categoryProgress: mergedCP,
     });
+    if (
+      (response.pendingReferralClaims && response.pendingReferralClaims.length > 0) ||
+      (response.referralPurchaseBonuses && response.referralPurchaseBonuses.length > 0)
+    ) {
+      useGameStore.getState().enqueueReferralNotifications(
+        response.pendingReferralClaims ?? [],
+        response.referralPurchaseBonuses ?? [],
+      );
+    }
     useGameStore.getState().setLastSyncAt(Date.now());
   } catch {
     // Network error — retry next cycle
@@ -121,4 +141,5 @@ export const syncService = {
     appStateSubscription = null;
   },
   syncNow: doSync,
+  triggerSync: () => doSync(),
 };
