@@ -7,7 +7,6 @@ import { BlurView } from 'expo-blur';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useReferralStore, type ReferralEntry } from '../stores/referralStore';
-import { GemIcon } from '../components/CurrencyIcons';
 
 const DEEP_LINK_BASE = 'tinytower://ref?code=';
 
