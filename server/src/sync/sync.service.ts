@@ -20,6 +20,17 @@ export interface SyncResult {
   coinBonusPercent: number;
   xpBonusPercent: number;
   categoryProgress: Record<string, CategoryProgressState>;
+  pendingReferralClaims: Array<{
+    id: string;
+    referredName: string;
+    milestone: 'registered' | 'level30';
+    gems: number;
+  }>;
+  referralPurchaseBonuses: Array<{
+    referredName: string;
+    bonus: number;
+    purchaseAmount: number;
+  }>;
 }
 
 @Injectable()
@@ -117,6 +128,13 @@ export class SyncService {
       balance: baseBalance + xpResult.bonusCoins,
       gems: baseGems + xpResult.bonusGems,
     };
+
+    if (player.playerLevel < 30 && xpResult.playerLevel >= 30) {
+      await this.prisma.referral.updateMany({
+        where: { referredId: playerId, level30ReachedAt: null },
+        data: { level30ReachedAt: new Date() },
+      });
+    }
 
     const currentRevenue = calcRevenuePerMin(
       gameState.floors,
@@ -404,6 +422,56 @@ export class SyncService {
       };
     }
 
+    const REGISTERED_GEMS = 5;
+    const LEVEL30_GEMS = 50;
+
+    const pendingReferrals = await this.prisma.referral.findMany({
+      where: {
+        referrerId: playerId,
+        OR: [
+          { registeredClaimedAt: null },
+          { level30ReachedAt: { not: null }, level30ClaimedAt: null },
+        ],
+      },
+    });
+
+    const pendingReferralClaims: SyncResult['pendingReferralClaims'] = [];
+    for (const r of pendingReferrals) {
+      if (!r.registeredClaimedAt) {
+        pendingReferralClaims.push({
+          id: r.id,
+          referredName: r.referredName,
+          milestone: 'registered',
+          gems: REGISTERED_GEMS,
+        });
+      }
+      if (r.level30ReachedAt && !r.level30ClaimedAt) {
+        pendingReferralClaims.push({
+          id: r.id,
+          referredName: r.referredName,
+          milestone: 'level30',
+          gems: LEVEL30_GEMS,
+        });
+      }
+    }
+
+    const unsyncedBonuses = await this.prisma.referralPurchaseNotification.findMany({
+      where: { referrerId: playerId, syncedAt: null },
+    });
+
+    if (unsyncedBonuses.length > 0) {
+      await this.prisma.referralPurchaseNotification.updateMany({
+        where: { id: { in: unsyncedBonuses.map((n) => n.id) } },
+        data: { syncedAt: new Date() },
+      });
+    }
+
+    const referralPurchaseBonuses = unsyncedBonuses.map((n) => ({
+      referredName: n.referredName,
+      bonus: n.bonus,
+      purchaseAmount: n.purchaseAmount,
+    }));
+
     const finalCoinBonus = gameState.coinBonusPercent + coinBonusDelta;
     const finalXpBonus   = gameState.xpBonusPercent   + xpBonusDelta;
 
@@ -418,6 +486,8 @@ export class SyncService {
       coinBonusPercent: finalCoinBonus,
       xpBonusPercent: finalXpBonus,
       categoryProgress,
+      pendingReferralClaims,
+      referralPurchaseBonuses,
     };
   }
 
