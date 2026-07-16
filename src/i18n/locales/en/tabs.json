@@ -20,7 +20,9 @@
     "achievements": "Achievements ({{count}})",
     "stats": {
       "level": "Level",
-      "xp": "XP"
+      "xp": "XP",
+      "happy": "Happy",
+      "specialists": "Specialists"
     },
     "sync": {
       "online": "You're online",

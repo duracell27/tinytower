@@ -12,6 +12,8 @@ import { useGameStore } from '../../src/stores/gameStore';
 import type { FailedCommandEntry } from '../../src/stores/gameStore';
 import { xpForLevel } from '../../shared/engine/xp';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
+import { gameConfig } from '../../shared/config/gameConfig';
+import { getWorkerMood } from '../../shared/engine/workerUtils';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { formatNum } from '../../src/utils/format';
 import { getUserIcon } from '../../src/utils/userIcon';
@@ -186,7 +188,20 @@ export default function ProfileScreen() {
   const categoryProgress = useGameStore((s) => s.categoryProgress);
   const failedCommandLog = useGameStore((s) => s.failedCommandLog);
   const clearFailedCommandLog = useGameStore((s) => s.clearFailedCommandLog);
+  const workers = useGameStore((s) => s.workers);
+  const floors = useGameStore((s) => s.floors);
+  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
   const xpNeeded = xpForLevel(playerLevel);
+  const totalWorkers = workers.length;
+  const happyCount = workers.filter((w) => {
+    if (w.assignedFloorId === null) return false;
+    const staticFloor = gameConfig.floors.find((f) => f.id === w.assignedFloorId);
+    const floorType = staticFloor ? staticFloor.floorType : (openedFloorTypes[String(w.assignedFloorId)] ?? '');
+    const floor = floors.find((f) => f.id === w.assignedFloorId);
+    const production = floor?.productions[w.assignedSlotIdx!];
+    return getWorkerMood(w, floorType, production?.typeId ?? null) === 'good';
+  }).length;
+  const specialistCount = workers.filter((w) => w.isSpecialist).length;
   const totalEarnedLevels = ACHIEVEMENT_CATEGORIES.reduce(
     (sum, cat) => sum + (categoryProgress[cat.key]?.currentLevel ?? 0),
     0,
@@ -268,6 +283,18 @@ export default function ProfileScreen() {
             <View style={styles.currencyItem}>
               <GemIcon size={16} />
               <Text style={styles.currencyValueGem}>{formatNum(gems)}</Text>
+            </View>
+          </View>
+
+          <View style={styles.workerStatsDivider} />
+          <View style={styles.workerStatsRow}>
+            <View style={styles.workerStatItem}>
+              <Text style={styles.workerStatValue}>{happyCount}/{totalWorkers}</Text>
+              <Text style={styles.workerStatLabel}>{t('profile.stats.happy')}</Text>
+            </View>
+            <View style={styles.workerStatItem}>
+              <Text style={styles.workerStatValue}>{specialistCount}/{totalWorkers}</Text>
+              <Text style={styles.workerStatLabel}>{t('profile.stats.specialists')}</Text>
             </View>
           </View>
         </View>
@@ -502,6 +529,32 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#2592AB',
+  },
+  workerStatsDivider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#E4E1D3',
+    marginTop: 18,
+  },
+  workerStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignSelf: 'stretch',
+    marginTop: 14,
+  },
+  workerStatItem: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  workerStatValue: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 18,
+    color: '#27331F',
+  },
+  workerStatLabel: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 12,
+    color: '#7C8A6E',
   },
   syncCard: {
     marginHorizontal: 20,
