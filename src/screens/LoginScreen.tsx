@@ -62,7 +62,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
   useEffect(() => {
     if (tab === 'register') {
       const pending = authStorage.getString('referral.pendingCode');
-      if (pending) setReferralCode(pending);
+      if (pending && !referralCode) setReferralCode(pending);
     }
   }, [tab, authStorage]);
 
@@ -204,7 +204,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                   <TextInput
                     style={styles.input}
                     placeholder="Реферальний код (необов'язково)"
-                    placeholderTextColor="rgba(255,255,255,0.5)"
+                    placeholderTextColor="#B7B3A2"
                     value={referralCode}
                     onChangeText={(t) => setReferralCode(t.toUpperCase())}
                     autoCapitalize="characters"

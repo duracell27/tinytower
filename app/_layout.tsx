@@ -26,6 +26,7 @@ const authStorage = createMMKV({ id: 'auth' });
 function extractReferralCode(url: string): string | null {
   try {
     const parsed = Linking.parse(url);
+    if (parsed.hostname !== 'ref') return null;   // ← add this line
     const code = parsed.queryParams?.code;
     return typeof code === 'string' && code.length === 6 ? code.toUpperCase() : null;
   } catch {

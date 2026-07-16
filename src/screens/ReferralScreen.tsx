@@ -25,13 +25,13 @@ function MilestoneRow({
 }) {
   return (
     <View style={styles.milestoneRow}>
-      <Text style={styles.milestoneDot}>{claimed ? '✅' : reachable ? '✅' : '⏳'}</Text>
+      <Text style={styles.milestoneDot}>{claimed ? '✅' : '⏳'}</Text>
       <Text style={styles.milestoneLabel}>{label}</Text>
       <View style={{ flex: 1 }} />
       {claimed ? (
         <Text style={styles.milestoneEarned}>+{gems} 💎 Отримано</Text>
       ) : reachable ? (
-        <Text style={styles.milestoneEarned}>+{gems} 💎 Отримано</Text>
+        <Text style={styles.milestonePending}>+{gems} 💎 Очікує</Text>
       ) : currentLevel !== undefined ? (
         <Text style={styles.milestonePending}>{currentLevel} рівень</Text>
       ) : (
