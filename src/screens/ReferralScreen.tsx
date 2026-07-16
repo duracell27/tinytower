@@ -101,12 +101,6 @@ export default function ReferralScreen() {
       resizeMode="cover"
     >
       <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backArrow}>‹</Text>
-        </Pressable>
-        <Text style={styles.headerTitle}>Referrals</Text>
-      </View>
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -114,6 +108,7 @@ export default function ReferralScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <Text style={styles.heading}>Referrals</Text>
           <View style={styles.codeCard}>
             <Text style={styles.codeLabel}>Your code</Text>
             <View style={styles.codeRow}>
@@ -141,6 +136,13 @@ export default function ReferralScreen() {
           )}
         </ScrollView>
       )}
+
+      <Pressable
+        onPress={() => router.back()}
+        style={({ pressed }) => [styles.closeBtn, pressed && styles.closeBtnPressed]}
+      >
+        <Text style={styles.closeBtnText}>✕</Text>
+      </Pressable>
     </ImageBackground>
   );
 }
@@ -148,18 +150,36 @@ export default function ReferralScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 56,
-    paddingHorizontal: 20,
-    paddingBottom: 8,
-    gap: 8,
+  heading: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 28,
+    color: '#27331F',
+    marginBottom: 6,
   },
-  backBtn: { padding: 4, marginRight: 4 },
-  backArrow: { fontSize: 32, color: '#27331F', lineHeight: 36 },
-  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 26, color: '#27331F' },
-  scroll: { paddingHorizontal: 20, paddingBottom: 120, gap: 12, paddingTop: 8 },
+  scroll: { paddingTop: 64, paddingHorizontal: 20, paddingBottom: 120, gap: 12 },
+  closeBtn: {
+    position: 'absolute',
+    bottom: 40,
+    alignSelf: 'center',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#1A1A1A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  closeBtnPressed: { opacity: 0.7 },
+  closeBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 20,
+    color: '#fff',
+    lineHeight: 22,
+  },
   codeCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
