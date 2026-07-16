@@ -52,6 +52,10 @@ export interface FailedCommandEntry {
   timestamp: number;
 }
 
+export type ReferralNotification =
+  | { type: 'claim'; referralId: string; referredName: string; milestone: 'registered' | 'level30'; gems: number }
+  | { type: 'purchase_bonus'; names: string[]; totalBonus: number };
+
 interface UIState {
   insufficientResources: InsufficientResourcesPayload | null;
   builderToolDrop: ToolKey | null;
@@ -61,6 +65,7 @@ interface UIState {
   categoryProgress: Record<string, CategoryProgressState>;
   locallyGrantedAchievements: Set<string>;
   failedCommandLog: FailedCommandEntry[];
+  pendingReferralNotifications: ReferralNotification[];
 }
 
 interface GameActions {
@@ -108,6 +113,11 @@ interface GameActions {
   clearBuilderToolDrop: () => void;
   addAchievements: (grants: NewAchievementGrant[]) => void;
   dismissAchievement: () => void;
+  enqueueReferralNotifications: (
+    claims: Array<{ id: string; referredName: string; milestone: 'registered' | 'level30'; gems: number }>,
+    bonuses: Array<{ referredName: string; bonus: number; purchaseAmount: number }>
+  ) => void;
+  dismissReferralNotification: () => void;
   clearFailedCommandLog: () => void;
   reset: () => void;
 }
@@ -250,6 +260,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   xpBonusPercent: 0,
   categoryProgress: {},
   failedCommandLog: [],
+  pendingReferralNotifications: [],
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -297,6 +308,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
     achievementQueue: cur.achievementQueue.slice(1),
   })),
 
+  enqueueReferralNotifications: (claims, bonuses) => set((cur) => {
+    const newNotifs: ReferralNotification[] = [
+      ...claims.map((c) => ({
+        type: 'claim' as const,
+        referralId: c.id,
+        referredName: c.referredName,
+        milestone: c.milestone,
+        gems: c.gems,
+      })),
+    ];
+    if (bonuses.length > 0) {
+      const names = bonuses.map((b) => b.referredName);
+      const totalBonus = bonuses.reduce((sum, b) => sum + b.bonus, 0);
+      newNotifs.push({ type: 'purchase_bonus', names, totalBonus });
+    }
+    return { pendingReferralNotifications: [...cur.pendingReferralNotifications, ...newNotifs] };
+  }),
+
+  dismissReferralNotification: () => set((cur) => ({
+    pendingReferralNotifications: cur.pendingReferralNotifications.slice(1),
+  })),
+
   reset: () => set({
     ...createInitialState(gameConfig),
     playerLevel: 1,
@@ -312,6 +345,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     xpBonusPercent: 0,
     categoryProgress: {},
     locallyGrantedAchievements: new Set<string>(),
+    pendingReferralNotifications: [],
   }),
 
   buy: (floorId, slotIdx, typeId) => {
