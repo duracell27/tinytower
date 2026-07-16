@@ -6,6 +6,7 @@ import Redis from 'ioredis';
 import { randomUUID } from 'crypto';
 import type { StringValue } from 'ms';
 import { PlayerService } from '../player/player.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { REDIS_CLIENT } from './redis.provider';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
@@ -15,6 +16,7 @@ export class AuthService {
   private readonly refreshTtlSeconds: number;
 
   constructor(
+    private prisma: PrismaService,
     private playerService: PlayerService,
     private jwtService: JwtService,
     private configService: ConfigService,
@@ -33,6 +35,19 @@ export class AuthService {
     const player = await this.playerService.createWithInitialState(
       email, passwordHash, dto.playerName,
     );
+
+    if (dto.referralCode) {
+      const referrer = await this.playerService.findByReferralCode(dto.referralCode);
+      if (referrer && referrer.id !== player.id) {
+        await this.prisma.referral.create({
+          data: {
+            referrerId: referrer.id,
+            referredId: player.id,
+            referredName: player.playerName,
+          },
+        });
+      }
+    }
 
     const tokens = await this.generateTokens(player.id, player.email);
     return {
