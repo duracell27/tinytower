@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Pressable, Modal, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, Modal, StyleSheet, Dimensions, ActivityIndicator, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
@@ -94,7 +94,7 @@ export default function ReferralNotificationModal() {
 
               {isPurchaseModal && (
                 <>
-                  <Text style={styles.emoji}>💎</Text>
+                  <Image source={require('../../assets/img/diamond+percent.png')} style={styles.purchaseIllustration} resizeMode="contain" />
                   <Text style={styles.title}>Referral Bonus!</Text>
                   <Text style={styles.body}>
                     {notification.names.length === 1
@@ -151,6 +151,10 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 40,
+  },
+  purchaseIllustration: {
+    width: 72,
+    height: 72,
   },
   title: {
     fontFamily: 'Fredoka_700Bold',
