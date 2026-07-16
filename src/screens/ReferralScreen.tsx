@@ -29,13 +29,13 @@ function MilestoneRow({
       <Text style={styles.milestoneLabel}>{label}</Text>
       <View style={{ flex: 1 }} />
       {claimed ? (
-        <Text style={styles.milestoneEarned}>+{gems} 💎 Отримано</Text>
+        <Text style={styles.milestoneEarned}>+{gems} 💎 Claimed</Text>
       ) : reachable ? (
-        <Text style={styles.milestonePending}>+{gems} 💎 Очікує</Text>
+        <Text style={styles.milestonePending}>+{gems} 💎 Pending</Text>
       ) : currentLevel !== undefined ? (
-        <Text style={styles.milestonePending}>{currentLevel} рівень</Text>
+        <Text style={styles.milestonePending}>lv {currentLevel}</Text>
       ) : (
-        <Text style={styles.milestonePending}>Не виконано</Text>
+        <Text style={styles.milestonePending}>Not reached</Text>
       )}
     </View>
   );
@@ -46,13 +46,13 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
     <View style={styles.referralCard}>
       <Text style={styles.referralName}>👤 {entry.referredName}</Text>
       <MilestoneRow
-        label="Реєстрація  +5 💎"
+        label="Registration"
         gems={5}
         claimed={!!entry.milestones.registered.claimedAt}
         reachable={false}
       />
       <MilestoneRow
-        label="Рівень 30  +50 💎"
+        label="Level 30"
         gems={50}
         claimed={!!entry.milestones.level30.claimedAt}
         reachable={!!entry.milestones.level30.reachedAt}
@@ -61,7 +61,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
       {entry.gemBonusEarned > 0 && (
         <View style={styles.milestoneRow}>
           <Text style={styles.milestoneDot}>💰</Text>
-          <Text style={styles.milestoneLabel}>Бонус з покупок</Text>
+          <Text style={styles.milestoneLabel}>Purchase bonus</Text>
           <View style={{ flex: 1 }} />
           <Text style={styles.milestoneEarned}>+{entry.gemBonusEarned} 💎</Text>
         </View>
@@ -90,7 +90,7 @@ export default function ReferralScreen() {
   const handleShare = () => {
     if (!shareLink) return;
     Share.share({
-      message: `Грай зі мною у TinyTower! Мій код: ${code}\n${shareLink}`,
+      message: `Play TinyTower with me! My referral code: ${code}\n${shareLink}`,
     });
   };
 
@@ -105,7 +105,7 @@ export default function ReferralScreen() {
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backArrow}>‹</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>Реферали</Text>
+        <Text style={styles.headerTitle}>Referrals</Text>
       </View>
 
       {isLoading ? (
@@ -115,25 +115,25 @@ export default function ReferralScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <View style={styles.codeCard}>
-            <Text style={styles.codeLabel}>Твій код</Text>
+            <Text style={styles.codeLabel}>Your code</Text>
             <View style={styles.codeRow}>
               <Text style={styles.codeText}>{code ?? '------'}</Text>
               <Pressable onPress={handleCopy} style={({ pressed }) => [styles.copyBtn, pressed && { opacity: 0.7 }]}>
-                <Text style={styles.copyBtnText}>{copied ? 'Скопійовано!' : '📋 Копіювати'}</Text>
+                <Text style={styles.copyBtnText}>{copied ? 'Copied!' : 'Copy'}</Text>
               </Pressable>
             </View>
             <Pressable onPress={handleShare} style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.85 }]}>
-              <Text style={styles.shareBtnText}>🔗 Поділитися посиланням</Text>
+              <Text style={styles.shareBtnText}>Share link</Text>
             </Pressable>
           </View>
 
           {referrals.length === 0 ? (
             <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>Ще немає запрошених гравців.{'\n'}Поділись посиланням!</Text>
+              <Text style={styles.emptyText}>No invited players yet.{'\n'}Share your link!</Text>
             </View>
           ) : (
             <>
-              <Text style={styles.sectionTitle}>Запрошені гравці</Text>
+              <Text style={styles.sectionTitle}>Invited players</Text>
               {referrals.map((entry) => (
                 <ReferralCard key={entry.id} entry={entry} />
               ))}

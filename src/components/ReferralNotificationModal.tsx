@@ -37,7 +37,7 @@ export default function ReferralNotificationModal() {
       dismiss();
       syncService.triggerSync();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Помилка. Спробуй ще раз.');
+      setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
     } finally {
       setLoading(false);
     }
@@ -64,12 +64,12 @@ export default function ReferralNotificationModal() {
               {isClaimModal && (
                 <>
                   <Text style={styles.emoji}>🎉</Text>
-                  <Text style={styles.title}>Реферальна нагорода!</Text>
+                  <Text style={styles.title}>Referral Reward!</Text>
                   <Text style={styles.body}>
                     {notification.referredName}{' '}
                     {notification.milestone === 'registered'
-                      ? 'зареєструвався за твоїм посиланням'
-                      : 'досяг 30 рівня'}
+                      ? 'joined via your link'
+                      : 'reached level 30'}
                   </Text>
                   <View style={styles.rewardRow}>
                     <GemIcon size={18} />
@@ -84,7 +84,7 @@ export default function ReferralNotificationModal() {
                     <LinearGradient colors={['#4A9FE0', '#2F7BC0']} style={styles.buttonGradient}>
                       {loading
                         ? <ActivityIndicator color="#fff" />
-                        : <Text style={styles.buttonText}>Отримати {notification.gems} 💎</Text>
+                        : <Text style={styles.buttonText}>Claim {notification.gems} 💎</Text>
                       }
                     </LinearGradient>
                     <View style={styles.buttonShadow} />
@@ -95,11 +95,11 @@ export default function ReferralNotificationModal() {
               {isPurchaseModal && (
                 <>
                   <Text style={styles.emoji}>💎</Text>
-                  <Text style={styles.title}>Бонус від реферала!</Text>
+                  <Text style={styles.title}>Referral Bonus!</Text>
                   <Text style={styles.body}>
                     {notification.names.length === 1
-                      ? `${notification.names[0]} поповнив баланс`
-                      : `${notification.names[0]} та ще ${notification.names.length - 1} гравців поповнили баланс`}
+                      ? `${notification.names[0]} made a purchase`
+                      : `${notification.names[0]} and ${notification.names.length - 1} more players made purchases`}
                   </Text>
                   <View style={styles.rewardRow}>
                     <GemIcon size={18} />
@@ -110,7 +110,7 @@ export default function ReferralNotificationModal() {
                     style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
                   >
                     <LinearGradient colors={['#4A9FE0', '#2F7BC0']} style={styles.buttonGradient}>
-                      <Text style={styles.buttonText}>Чудово!</Text>
+                      <Text style={styles.buttonText}>Awesome!</Text>
                     </LinearGradient>
                     <View style={styles.buttonShadow} />
                   </Pressable>

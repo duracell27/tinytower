@@ -303,7 +303,7 @@ export default function ProfileScreen() {
           onPress={() => router.push('/achievements')}
           style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
         >
-          <Image source={require('../../assets/img/profile/profileAchivments.png')} style={styles.achievementsIcon} />
+          <Image source={require('../../assets/img/profile/achivProfileIcon.png')} style={styles.achievementsIcon} />
           <Text style={styles.achievementsButtonText}>
             {t('profile.achievements', { count: totalEarnedLevels })}
           </Text>
@@ -313,8 +313,8 @@ export default function ProfileScreen() {
           onPress={() => router.push('/referrals')}
           style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
         >
-          <Text style={styles.referralsIcon}>🔗</Text>
-          <Text style={styles.achievementsButtonText}>Реферали</Text>
+          <Image source={require('../../assets/img/profile/ReferralProfileIcon.png')} style={styles.achievementsIcon} />
+          <Text style={styles.achievementsButtonText}>Referrals</Text>
         </Pressable>
 
         <Pressable onPress={handleLogout} style={({ pressed }) => [
@@ -720,13 +720,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#27331F',
-  },
-  referralsIcon: {
-    width: 36,
-    height: 36,
-    fontSize: 24,
-    textAlign: 'center',
-    lineHeight: 36,
   },
   logoutButton: {
     marginHorizontal: 20,
