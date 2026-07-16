@@ -309,6 +309,14 @@ export default function ProfileScreen() {
           </Text>
         </Pressable>
 
+        <Pressable
+          onPress={() => router.push('/referrals')}
+          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
+        >
+          <Text style={styles.referralsIcon}>🔗</Text>
+          <Text style={styles.achievementsButtonText}>Реферали</Text>
+        </Pressable>
+
         <Pressable onPress={handleLogout} style={({ pressed }) => [
           styles.logoutButton,
           pressed && styles.logoutPressed,
@@ -712,6 +720,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#27331F',
+  },
+  referralsIcon: {
+    width: 36,
+    height: 36,
+    fontSize: 24,
+    textAlign: 'center',
+    lineHeight: 36,
   },
   logoutButton: {
     marginHorizontal: 20,
