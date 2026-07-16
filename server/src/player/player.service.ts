@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { gameConfig } from '@shared/config/gameConfig';
 import { generateRandomWorkers } from '@shared/config/workerNames';
 import { generateVisitorAppearance } from '@shared/engine/lobbyUtils';
+
+function generateReferralCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const bytes = randomBytes(6);
+  return Array.from(bytes, (b) => chars[b % chars.length]).join('');
+}
 
 @Injectable()
 export class PlayerService {
@@ -16,8 +23,23 @@ export class PlayerService {
     return this.prisma.player.findUnique({ where: { id } });
   }
 
+  async findByReferralCode(code: string) {
+    return this.prisma.player.findUnique({ where: { referralCode: code } });
+  }
+
   async createWithInitialState(email: string, passwordHash: string, playerName: string) {
     const workers = generateRandomWorkers(5, gameConfig);
+
+    // Generate a unique referral code with up to 5 retry attempts
+    let referralCode: string | undefined;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const candidate = generateReferralCode();
+      const existing = await this.prisma.player.findUnique({ where: { referralCode: candidate } });
+      if (!existing) {
+        referralCode = candidate;
+        break;
+      }
+    }
 
     return this.prisma.$transaction(async (tx) => {
       const player = await tx.player.create({
@@ -27,6 +49,7 @@ export class PlayerService {
           playerName,
           balance: gameConfig.startingBalance,
           openedFloorsCount: gameConfig.floors.length,
+          referralCode,
         },
       });
 
