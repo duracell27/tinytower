@@ -20,6 +20,7 @@ import HotelPanel from '../../src/components/HotelPanel';
 import LobbyPanel from '../../src/components/LobbyPanel';
 import LevelUpModal from '../../src/components/LevelUpModal';
 import AchievementModal from '../../src/components/AchievementModal';
+import ReferralNotificationModal from '../../src/components/ReferralNotificationModal';
 import InsufficientResourcesModal from '../../src/components/InsufficientResourcesModal';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -77,7 +78,6 @@ export default function GameScreen() {
   const spawnVisitor = useGameStore((s) => s.spawnVisitor);
   const player = useAuthStore((s) => s.player);
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
-  const initial = playerName.charAt(0).toUpperCase();
 
   const underConstruction = useGameStore((s) => s.underConstruction);
   const buyFloor = useGameStore((s) => s.buyFloor);
@@ -487,7 +487,6 @@ export default function GameScreen() {
           level={playerLevel}
           xp={playerXp}
           xpForNextLevel={xpForLevel(playerLevel)}
-          initial={initial}
           coins={formatNum(balance)}
           gems={String(gems)}
           revenuePerMin={revenuePerMin}
@@ -534,6 +533,7 @@ export default function GameScreen() {
       ))}
       <LevelUpModal suppressWhileOpen={lobbyOpen || hotelOpen} />
       <AchievementModal />
+      <ReferralNotificationModal />
       {!hotelOpen && !lobbyOpen && <InsufficientResourcesModal />}
     </View>
   );
