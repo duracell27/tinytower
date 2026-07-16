@@ -1,9 +1,16 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
 const REGISTERED_GEMS = 5;
 const LEVEL30_GEMS = 50;
 const PURCHASE_BONUS_PERCENT = 10;
+
+function generateReferralCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const bytes = randomBytes(6);
+  return Array.from(bytes, (b) => chars[b % chars.length]).join('');
+}
 
 @Injectable()
 export class ReferralService {
@@ -16,6 +23,22 @@ export class ReferralService {
     });
     if (!player) throw new NotFoundException('Player not found');
 
+    // Lazy code generation for players who registered before this feature
+    let referralCode = player.referralCode;
+    if (!referralCode) {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const candidate = generateReferralCode();
+        const existing = await this.prisma.player.findUnique({ where: { referralCode: candidate } });
+        if (!existing) { referralCode = candidate; break; }
+      }
+      if (referralCode) {
+        await this.prisma.player.update({
+          where: { id: playerId },
+          data: { referralCode },
+        });
+      }
+    }
+
     const referrals = await this.prisma.referral.findMany({
       where: { referrerId: playerId },
       include: { referred: { select: { playerLevel: true } } },
@@ -23,7 +46,7 @@ export class ReferralService {
     });
 
     return {
-      code: player.referralCode ?? null,
+      code: referralCode ?? null,
       referrals: referrals.map((r) => ({
         id: r.id,
         referredName: r.referredName,
