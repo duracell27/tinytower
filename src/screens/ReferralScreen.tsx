@@ -3,12 +3,18 @@ import {
   View, Text, Pressable, StyleSheet, ScrollView,
   Share, ActivityIndicator, ImageBackground,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useReferralStore, type ReferralEntry } from '../stores/referralStore';
+import { getUserIcon } from '../utils/userIcon';
 
 const DEEP_LINK_BASE = 'tinytower://ref?code=';
+
+const ICON_OK       = require('../../assets/img/OkIcon.png');
+const ICON_CLOCK    = require('../../assets/img/sansClock.png');
+const ICON_GEM_BONUS = require('../../assets/img/diamond+percent.png');
 
 function MilestoneRow({
   label,
@@ -25,7 +31,7 @@ function MilestoneRow({
 }) {
   return (
     <View style={styles.milestoneRow}>
-      <Text style={styles.milestoneDot}>{claimed ? '✅' : '⏳'}</Text>
+      <Image source={claimed ? ICON_OK : ICON_CLOCK} style={styles.milestoneIcon} contentFit="contain" />
       <Text style={styles.milestoneLabel}>{label}</Text>
       <View style={{ flex: 1 }} />
       {claimed ? (
@@ -44,7 +50,10 @@ function MilestoneRow({
 function ReferralCard({ entry }: { entry: ReferralEntry }) {
   return (
     <View style={styles.referralCard}>
-      <Text style={styles.referralName}>👤 {entry.referredName}</Text>
+      <View style={styles.referralNameRow}>
+        <Image source={getUserIcon(entry.referredLevel)} style={styles.referralAvatar} contentFit="cover" />
+        <Text style={styles.referralName}>{entry.referredName}</Text>
+      </View>
       <MilestoneRow
         label="Registration"
         gems={5}
@@ -60,7 +69,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
       />
       {entry.gemBonusEarned > 0 && (
         <View style={styles.milestoneRow}>
-          <Text style={styles.milestoneDot}>💰</Text>
+          <Image source={ICON_GEM_BONUS} style={styles.milestoneIcon} contentFit="contain" />
           <Text style={styles.milestoneLabel}>Purchase bonus</Text>
           <View style={{ flex: 1 }} />
           <Text style={styles.milestoneEarned}>+{entry.gemBonusEarned} 💎</Text>
@@ -215,9 +224,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  referralName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#27331F', marginBottom: 4 },
+  referralNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
+  referralAvatar: { width: 32, height: 32, borderRadius: 16 },
+  referralName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#27331F' },
   milestoneRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  milestoneDot: { fontSize: 14 },
+  milestoneIcon: { width: 18, height: 18 },
   milestoneLabel: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#3E4A35' },
   milestoneEarned: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#3FA535' },
   milestonePending: { fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#9BA3B0' },
