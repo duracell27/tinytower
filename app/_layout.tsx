@@ -18,6 +18,26 @@ import {
 } from '@expo-google-fonts/nunito';
 import { useAuthStore } from '../src/stores/authStore';
 import { setAuthFailureCallback } from '../src/services/api';
+import * as Linking from 'expo-linking';
+import { createMMKV } from 'react-native-mmkv';
+
+const authStorage = createMMKV({ id: 'auth' });
+
+function extractReferralCode(url: string): string | null {
+  try {
+    const parsed = Linking.parse(url);
+    const code = parsed.queryParams?.code;
+    return typeof code === 'string' && code.length === 6 ? code.toUpperCase() : null;
+  } catch {
+    return null;
+  }
+}
+
+function handleReferralLink(url: string | null) {
+  if (!url) return;
+  const code = extractReferralCode(url);
+  if (code) authStorage.set('referral.pendingCode', code);
+}
 
 export default function RootLayout() {
   const router = useRouter();
@@ -39,6 +59,11 @@ export default function RootLayout() {
       useAuthStore.getState().logout();
       router.replace('/');
     });
+    // Handle deep link that opened the app from cold start
+    Linking.getInitialURL().then(handleReferralLink);
+    // Handle deep link while app is already open
+    const sub = Linking.addEventListener('url', ({ url }) => handleReferralLink(url));
+    return () => sub.remove();
   }, [router]);
 
   if (!fontsLoaded) {
