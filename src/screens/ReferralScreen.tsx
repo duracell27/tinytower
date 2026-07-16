@@ -13,7 +13,7 @@ import { getUserIcon } from '../utils/userIcon';
 const DEEP_LINK_BASE = 'tinytower://ref?code=';
 
 const ICON_OK       = require('../../assets/img/OkIcon.png');
-const ICON_CLOCK    = require('../../assets/img/sansClock.png');
+const ICON_CLOCK    = require('../../assets/img/sandClock.png');
 const ICON_GEM_BONUS = require('../../assets/img/diamond+percent.png');
 
 function MilestoneRow({

@@ -11,7 +11,6 @@ interface TopBarProps {
   level: number;
   xp: number;
   xpForNextLevel: number;
-  initial: string;
   coins: string;
   gems: string;
   revenuePerMin?: number;

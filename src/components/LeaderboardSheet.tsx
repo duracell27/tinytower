@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal, Image,
+  View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal,
 } from 'react-native';
+import { Image } from 'expo-image';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
+import { useGameStore } from '../stores/gameStore';
+import { getUserIcon } from '../utils/userIcon';
 import { api, type LeaderboardResponse, type LeaderboardEntry } from '../services/api';
 import { formatNum } from '../utils/format';
 
@@ -16,13 +19,6 @@ const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
 
 type Tab = 'level' | 'floors' | 'revenue';
 
-const AVATAR_COLORS = ['#5B6CF8', '#49AA38', '#E5A72E', '#E05A4A', '#8B5CF6', '#06B6D4'];
-
-function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
 
 const TAB_ACTIVE_COLORS: Record<Tab, string> = {
   level: '#5B6CF8',
@@ -59,6 +55,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const myId = useAuthStore(s => s.player?.id);
+  const myLevel = useGameStore(s => s.playerLevel);
 
   const slideY = useSharedValue(SHEET_HEIGHT);
   const scrimOpacity = useSharedValue(0);
@@ -131,9 +128,11 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         ) : (
           <Text style={styles.rankNum}>#{item.rank}</Text>
         )}
-        <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.playerName) }]}>
-          <Text style={styles.avatarText}>{item.playerName.charAt(0).toUpperCase()}</Text>
-        </View>
+        <Image
+          source={getUserIcon(tab === 'level' ? item.value : 1)}
+          style={styles.avatar}
+          contentFit="cover"
+        />
         <Text style={styles.name} numberOfLines={1}>{item.playerName}</Text>
         <View style={styles.valueBlock}>
           <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
@@ -211,9 +210,11 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         {!loading && !error && data && !isOnPage && (
           <View style={[styles.row, styles.rowMe, styles.pinnedRow]}>
             <Text style={styles.rankNum}>#{data.currentPlayer.rank}</Text>
-            <View style={[styles.avatar, { backgroundColor: '#49AA38' }]}>
-              <Text style={styles.avatarText}>★</Text>
-            </View>
+            <Image
+              source={getUserIcon(myLevel)}
+              style={styles.avatar}
+              contentFit="cover"
+            />
             <Text style={styles.name}>{t('leaderboard.you')}</Text>
             <View style={styles.valueBlock}>
               <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
@@ -334,13 +335,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 16,
-    color: '#fff',
+    overflow: 'hidden',
   },
   name: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2A3344', flex: 1 },
   valueBlock: { alignItems: 'center', gap: 1 },

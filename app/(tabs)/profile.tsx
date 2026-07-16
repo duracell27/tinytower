@@ -289,12 +289,18 @@ export default function ProfileScreen() {
           <View style={styles.workerStatsDivider} />
           <View style={styles.workerStatsRow}>
             <View style={styles.workerStatItem}>
-              <Text style={styles.workerStatValue}>{happyCount}/{totalWorkers}</Text>
-              <Text style={styles.workerStatLabel}>{t('profile.stats.happy')}</Text>
+              <Image source={require('../../assets/img/happyWorker.png')} style={styles.workerStatIcon} contentFit="contain" />
+              <View style={styles.workerStatTextCol}>
+                <Text style={styles.workerStatLabel}>{t('profile.stats.happy')}</Text>
+                <Text style={styles.workerStatValue}>{happyCount}/{totalWorkers}</Text>
+              </View>
             </View>
             <View style={styles.workerStatItem}>
-              <Text style={styles.workerStatValue}>{specialistCount}/{totalWorkers}</Text>
-              <Text style={styles.workerStatLabel}>{t('profile.stats.specialists')}</Text>
+              <Image source={require('../../assets/img/specialistWorker.png')} style={styles.workerStatIcon} contentFit="contain" />
+              <View style={styles.workerStatTextCol}>
+                <Text style={styles.workerStatLabel}>{t('profile.stats.specialists')}</Text>
+                <Text style={styles.workerStatValue}>{specialistCount}/{totalWorkers}</Text>
+              </View>
             </View>
           </View>
         </View>
@@ -551,8 +557,16 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   workerStatItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 10,
+  },
+  workerStatIcon: {
+    width: 36,
+    height: 36,
+  },
+  workerStatTextCol: {
+    gap: 2,
   },
   workerStatValue: {
     fontFamily: 'Fredoka_700Bold',
