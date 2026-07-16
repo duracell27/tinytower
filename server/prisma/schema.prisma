@@ -24,6 +24,10 @@ model Player {
   openedFloorsCount  Int                 @default(0)
   lastSeenAt         DateTime            @default(now())
   createdAt          DateTime            @default(now())
+  referralCode       String?             @unique
+  referrals          Referral[]          @relation("ReferrerReferrals")
+  referredBy         Referral?           @relation("ReferredReferral")
+  purchaseNotifications ReferralPurchaseNotification[]
   floors             Floor[]
   workers            Worker[]
   state              PlayerState?
@@ -144,4 +148,33 @@ model PlayerCategoryProgress {
 
   @@id([playerId, categoryKey])
   @@index([playerId])
+}
+
+model Referral {
+  id                   String    @id @default(uuid())
+  referrerId           String
+  referredId           String    @unique
+  referredName         String
+  createdAt            DateTime  @default(now())
+  registeredClaimedAt  DateTime?
+  level30ReachedAt     DateTime?
+  level30ClaimedAt     DateTime?
+  gemBonusEarned       Int       @default(0)
+  referrer             Player    @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred             Player    @relation("ReferredReferral", fields: [referredId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+}
+
+model ReferralPurchaseNotification {
+  id             String    @id @default(uuid())
+  referrerId     String
+  referredName   String
+  bonus          Int
+  purchaseAmount Int
+  createdAt      DateTime  @default(now())
+  syncedAt       DateTime?
+  referrer       Player    @relation(fields: [referrerId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId, syncedAt])
 }

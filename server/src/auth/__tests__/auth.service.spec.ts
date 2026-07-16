@@ -33,6 +33,7 @@ describe('AuthService', () => {
     openedFloorsCount: 0,
     lastSeenAt: new Date(),
     createdAt: new Date(),
+    referralCode: null,
   };
 
   beforeEach(async () => {
