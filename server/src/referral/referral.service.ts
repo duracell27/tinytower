@@ -45,52 +45,42 @@ export class ReferralService {
     referralId: string,
     milestone: 'registered' | 'level30',
   ) {
-    const referral = await this.prisma.referral.findUnique({
-      where: { id: referralId },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      const referral = await tx.referral.findUnique({ where: { id: referralId } });
 
-    if (!referral || referral.referrerId !== playerId) {
-      throw new NotFoundException('Referral not found');
-    }
-
-    if (milestone === 'registered') {
-      if (referral.registeredClaimedAt) {
-        throw new BadRequestException('Already claimed');
+      if (!referral || referral.referrerId !== playerId) {
+        throw new NotFoundException('Referral not found');
       }
-      await this.prisma.$transaction([
-        this.prisma.referral.update({
+
+      if (milestone === 'registered') {
+        if (referral.registeredClaimedAt) throw new BadRequestException('Already claimed');
+        await tx.referral.update({
           where: { id: referralId },
           data: { registeredClaimedAt: new Date() },
-        }),
-        this.prisma.playerState.update({
+        });
+        await tx.playerState.update({
           where: { playerId },
           data: { gems: { increment: REGISTERED_GEMS } },
-        }),
-      ]);
-      return { gems: REGISTERED_GEMS };
-    }
+        });
+        return { gems: REGISTERED_GEMS };
+      }
 
-    if (milestone === 'level30') {
-      if (!referral.level30ReachedAt) {
-        throw new BadRequestException('Milestone not yet reached');
-      }
-      if (referral.level30ClaimedAt) {
-        throw new BadRequestException('Already claimed');
-      }
-      await this.prisma.$transaction([
-        this.prisma.referral.update({
+      if (milestone === 'level30') {
+        if (!referral.level30ReachedAt) throw new BadRequestException('Milestone not yet reached');
+        if (referral.level30ClaimedAt) throw new BadRequestException('Already claimed');
+        await tx.referral.update({
           where: { id: referralId },
           data: { level30ClaimedAt: new Date() },
-        }),
-        this.prisma.playerState.update({
+        });
+        await tx.playerState.update({
           where: { playerId },
           data: { gems: { increment: LEVEL30_GEMS } },
-        }),
-      ]);
-      return { gems: LEVEL30_GEMS };
-    }
+        });
+        return { gems: LEVEL30_GEMS };
+      }
 
-    throw new BadRequestException('Unknown milestone');
+      throw new BadRequestException('Unknown milestone');
+    });
   }
 
   // Called from gem purchase flow when implemented
