@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
+import { createMMKV } from 'react-native-mmkv';
 import { useAuthStore } from '../stores/authStore';
 
 interface LoginScreenProps {
@@ -54,6 +55,16 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
   const [playerName, setPlayerName] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+
+  const authStorage = React.useMemo(() => createMMKV({ id: 'auth' }), []);
+
+  useEffect(() => {
+    if (tab === 'register') {
+      const pending = authStorage.getString('referral.pendingCode');
+      if (pending) setReferralCode(pending);
+    }
+  }, [tab, authStorage]);
 
   const isLogin = tab === 'login';
   const isLoading = useAuthStore((s) => s.isLoading);
@@ -80,7 +91,12 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
       if (isLogin) {
         await useAuthStore.getState().login(email.trim(), password);
       } else {
-        await useAuthStore.getState().register(email.trim(), password, playerName.trim());
+        await useAuthStore.getState().register(
+          email.trim(),
+          password,
+          playerName.trim(),
+          referralCode.trim() || undefined,
+        );
       }
       onSuccess();
     } catch (e) {
@@ -171,18 +187,32 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
             {/* Player name (register only) */}
             {!isLogin && (
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>{t('login.labels.playerName')}</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder={t('login.placeholders.playerName')}
-                  placeholderTextColor="#B7B3A2"
-                  value={playerName}
-                  onChangeText={setPlayerName}
-                  autoCapitalize="words"
-                  editable={!isLoading}
-                />
-              </View>
+              <>
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.label}>{t('login.labels.playerName')}</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t('login.placeholders.playerName')}
+                    placeholderTextColor="#B7B3A2"
+                    value={playerName}
+                    onChangeText={setPlayerName}
+                    autoCapitalize="words"
+                    editable={!isLoading}
+                  />
+                </View>
+                <View style={styles.fieldGroup}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Реферальний код (необов'язково)"
+                    placeholderTextColor="rgba(255,255,255,0.5)"
+                    value={referralCode}
+                    onChangeText={(t) => setReferralCode(t.toUpperCase())}
+                    autoCapitalize="characters"
+                    maxLength={6}
+                    editable={!isLoading}
+                  />
+                </View>
+              </>
             )}
 
             {/* Email */}
