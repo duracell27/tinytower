@@ -35,9 +35,17 @@ function MilestoneRow({
       <Text style={styles.milestoneLabel}>{label}</Text>
       <View style={{ flex: 1 }} />
       {claimed ? (
-        <Text style={styles.milestoneEarned}>+{gems} 💎 Claimed</Text>
+        <View style={styles.milestoneValueRow}>
+          <Text style={styles.milestoneEarned}>+{gems} </Text>
+          <Image source={require('../../assets/img/diamond.png')} style={styles.diamondIcon} contentFit="contain" />
+          <Text style={styles.milestoneEarned}> Claimed</Text>
+        </View>
       ) : reachable ? (
-        <Text style={styles.milestonePending}>+{gems} 💎 Pending</Text>
+        <View style={styles.milestoneValueRow}>
+          <Text style={styles.milestonePending}>+{gems} </Text>
+          <Image source={require('../../assets/img/diamond.png')} style={styles.diamondIcon} contentFit="contain" />
+          <Text style={styles.milestonePending}> Pending</Text>
+        </View>
       ) : currentLevel !== undefined ? (
         <Text style={styles.milestonePending}>lv {currentLevel}</Text>
       ) : (
@@ -230,6 +238,8 @@ const styles = StyleSheet.create({
   milestoneRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   milestoneIcon: { width: 18, height: 18 },
   milestoneLabel: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#3E4A35' },
+  milestoneValueRow: { flexDirection: 'row', alignItems: 'center' },
+  diamondIcon: { width: 13, height: 13 },
   milestoneEarned: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#3FA535' },
   milestonePending: { fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#9BA3B0' },
   emptyCard: {
