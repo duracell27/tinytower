@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView } from 'expo-glass-effect';
 import { router, usePathname } from 'expo-router';
@@ -93,29 +93,40 @@ export default function BottomNav({ onTowerPress }: BottomNavProps = {}) {
   const isShop = pathname === '/shop';
   const isProfile = pathname === '/profile';
 
+  const navContent = (
+    <>
+      <LinearGradient
+        colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
+        style={styles.sheen}
+      />
+      <View style={styles.content}>
+        <NavItem active={isGame} label={t('labels.tower')} onPress={() => { if (!isGame) router.replace('/game'); else onTowerPress?.(); }}>
+          <TowerIcon active={isGame} />
+        </NavItem>
+        <NavItem active={isCity} label={t('labels.city')} onPress={() => { if (!isCity) router.replace('/city'); }}>
+          <CityIcon active={isCity} />
+        </NavItem>
+        <NavItem active={isShop} label={t('labels.shop')} onPress={() => { if (!isShop) router.replace('/shop'); }}>
+          <ShopIcon active={isShop} />
+        </NavItem>
+        <NavItem active={isProfile} label={t('labels.profile')} onPress={() => { if (!isProfile) router.replace('/profile'); }}>
+          <ProfileIcon active={isProfile} />
+        </NavItem>
+      </View>
+    </>
+  );
+
   return (
     <View style={styles.container}>
-      <GlassView glassEffectStyle="regular" style={styles.glassPanel}>
-        {/* top specular highlight */}
-        <LinearGradient
-          colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
-          style={styles.sheen}
-        />
-        <View style={styles.content}>
-          <NavItem active={isGame} label={t('labels.tower')} onPress={() => { if (!isGame) router.replace('/game'); else onTowerPress?.(); }}>
-            <TowerIcon active={isGame} />
-          </NavItem>
-          <NavItem active={isCity} label={t('labels.city')} onPress={() => { if (!isCity) router.replace('/city'); }}>
-            <CityIcon active={isCity} />
-          </NavItem>
-          <NavItem active={isShop} label={t('labels.shop')} onPress={() => { if (!isShop) router.replace('/shop'); }}>
-            <ShopIcon active={isShop} />
-          </NavItem>
-          <NavItem active={isProfile} label={t('labels.profile')} onPress={() => { if (!isProfile) router.replace('/profile'); }}>
-            <ProfileIcon active={isProfile} />
-          </NavItem>
+      {Platform.OS === 'android' ? (
+        <View style={[styles.glassPanel, styles.androidPanel]}>
+          {navContent}
         </View>
-      </GlassView>
+      ) : (
+        <GlassView glassEffectStyle="regular" style={styles.glassPanel}>
+          {navContent}
+        </GlassView>
+      )}
     </View>
   );
 }
@@ -137,6 +148,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 28,
     elevation: 10,
+  },
+  androidPanel: {
+    backgroundColor: 'rgba(220,237,210,0.92)',
   },
   sheen: {
     position: 'absolute',
