@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { formatNum } from '../utils/format';
 import type { QuickActionMode, FloorActionInfo } from '../utils/quickAction';
+import { GemIcon } from './CurrencyIcons';
 
 interface Props {
   mode: QuickActionMode;
@@ -21,6 +22,7 @@ interface Props {
   onHidden: () => void;
   onPress: () => void;
   onExit: () => void;
+  onBulkAll?: () => void;
 }
 
 const MODE_COLORS: Record<QuickActionMode, { colors: [string, string] }> = {
@@ -59,9 +61,16 @@ function ModeIcon({ mode }: { mode: QuickActionMode }) {
   }
 }
 
-export default function QuickActionBar({ mode, info, visible, onHidden, onPress, onExit }: Props) {
+export default function QuickActionBar({ mode, info, visible, onHidden, onPress, onExit, onBulkAll }: Props) {
   const { t: tContent } = useTranslation('gameContent');
   const { colors } = MODE_COLORS[mode];
+
+  const BULK_LABEL: Partial<Record<QuickActionMode, string>> = {
+    collect: 'Collect all',
+    list: 'Deliver all',
+    buy: 'Buy all',
+  };
+  const bulkLabel = BULK_LABEL[mode];
 
   const slideY = useSharedValue(120);
   const firstRunRef = useRef(true);
@@ -117,6 +126,19 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
       >
         <Text style={styles.exitIcon}>✕</Text>
       </Pressable>
+
+      {onBulkAll && bulkLabel && (
+        <Pressable
+          onPress={onBulkAll}
+          style={({ pressed }) => [styles.bulkBtn, pressed && { opacity: 0.7 }]}
+        >
+          <View style={styles.bulkContent}>
+            <GemIcon size={11} />
+            <Text style={styles.bulkCostText}>1</Text>
+            <Text style={styles.bulkLabelText}>{bulkLabel}</Text>
+          </View>
+        </Pressable>
+      )}
 
       <Pressable
         onPress={onPress}
@@ -200,5 +222,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2B330',
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.6)',
+  },
+  bulkBtn: {
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  bulkContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  bulkCostText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
+    color: '#2592AB',
+  },
+  bulkLabelText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
+    color: '#4A5568',
   },
 });
