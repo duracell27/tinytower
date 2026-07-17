@@ -134,9 +134,12 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
           style={({ pressed }) => [styles.bulkBtn, pressed && { opacity: 0.7 }]}
         >
           <View style={styles.bulkContent}>
-            <GemIcon size={12} />
-            <Text style={styles.bulkCostText}>1</Text>
             <Text style={styles.bulkLabelText}>{bulkLabel}</Text>
+            <View style={styles.bulkCostRow}>
+              <Text style={styles.bulkCostText}>for </Text>
+              <GemIcon size={11} />
+              <Text style={styles.bulkCostText}>1</Text>
+            </View>
           </View>
         </Pressable>
       )}
@@ -189,7 +192,7 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     flex: 1,
-    borderRadius: 18,
+    borderRadius: 27,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.22,
@@ -199,7 +202,7 @@ const styles = StyleSheet.create({
   btnGradient: {
     paddingVertical: 16,
     paddingHorizontal: 24,
-    borderRadius: 18,
+    borderRadius: 27,
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.4)',
     alignItems: 'center',
@@ -225,8 +228,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.6)',
   },
   bulkBtn: {
-    height: 50,
-    borderRadius: 25,
+    height: 54,
+    borderRadius: 27,
     backgroundColor: 'rgba(255,255,255,0.92)',
     paddingHorizontal: 12,
     alignItems: 'center',
@@ -238,13 +241,18 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   bulkContent: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 2,
+  },
+  bulkCostRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   bulkCostText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13,
+    fontSize: 11,
     color: '#2592AB',
   },
   bulkLabelText: {
