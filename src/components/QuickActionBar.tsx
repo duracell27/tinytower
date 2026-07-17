@@ -244,12 +244,12 @@ const styles = StyleSheet.create({
   },
   bulkCostText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13,
+    fontSize: 17,
     color: '#2592AB',
   },
   bulkLabelText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13,
+    fontSize: 17,
     color: '#4A5568',
   },
 });
