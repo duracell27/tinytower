@@ -33,9 +33,9 @@ const MODE_COLORS: Record<QuickActionMode, { colors: [string, string] }> = {
 };
 
 const BULK_LABEL: Partial<Record<QuickActionMode, string>> = {
-  collect: 'Collect all',
-  list: 'Deliver all',
-  buy: 'Buy all',
+  collect: 'All',
+  list: 'All',
+  buy: 'All',
 };
 
 function ModeIcon({ mode }: { mode: QuickActionMode }) {
