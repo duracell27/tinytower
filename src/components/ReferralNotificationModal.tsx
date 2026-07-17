@@ -30,7 +30,7 @@ export default function ReferralNotificationModal() {
     setLoading(true);
     setError('');
     try {
-      await api.post<{ gems: number }>('/referrals/claim', {
+      await api.post('/referrals/claim', {
         referralId: notification.referralId,
         milestone: notification.milestone,
       });
@@ -69,11 +69,25 @@ export default function ReferralNotificationModal() {
                     {notification.referredName}{' '}
                     {notification.milestone === 'registered'
                       ? 'joined via your link'
+                      : notification.milestone === 'level10'
+                      ? 'reached level 10'
                       : 'reached level 30'}
                   </Text>
                   <View style={styles.rewardRow}>
-                    <GemIcon size={18} />
-                    <Text style={styles.rewardText}>+{notification.gems}</Text>
+                    {notification.milestone === 'registered' ? (
+                      <>
+                        <Image
+                          source={require('../../assets/img/coin.png')}
+                          style={{ width: 18, height: 18 }}
+                        />
+                        <Text style={styles.rewardText}>+{(notification as any).coins.toLocaleString()}</Text>
+                      </>
+                    ) : (
+                      <>
+                        <GemIcon size={18} />
+                        <Text style={styles.rewardText}>+{(notification as any).gems}</Text>
+                      </>
+                    )}
                   </View>
                   {error ? <Text style={styles.errorText}>{error}</Text> : null}
                   <Pressable
@@ -82,10 +96,15 @@ export default function ReferralNotificationModal() {
                     style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
                   >
                     <LinearGradient colors={['#4A9FE0', '#2F7BC0']} style={styles.buttonGradient}>
-                      {loading
-                        ? <ActivityIndicator color="#fff" />
-                        : <Text style={styles.buttonText}>Claim {notification.gems} 💎</Text>
-                      }
+                      {loading ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : notification.milestone === 'registered' ? (
+                        <Text style={styles.buttonText}>Claim 10,000 🪙</Text>
+                      ) : notification.milestone === 'level10' ? (
+                        <Text style={styles.buttonText}>Claim 20 💎</Text>
+                      ) : (
+                        <Text style={styles.buttonText}>Claim 50 💎</Text>
+                      )}
                     </LinearGradient>
                     <View style={styles.buttonShadow} />
                   </Pressable>

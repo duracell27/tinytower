@@ -18,17 +18,28 @@ const ICON_GEM_BONUS = require('../../assets/img/diamond+percent.png');
 
 function MilestoneRow({
   label,
-  gems,
+  rewardAmount,
+  rewardType,
   claimed,
   reachable,
   currentLevel,
 }: {
   label: string;
-  gems: number;
+  rewardAmount: number;
+  rewardType: 'gems' | 'coins';
   claimed: boolean;
   reachable: boolean;
   currentLevel?: number;
 }) {
+  const rewardIcon =
+    rewardType === 'coins'
+      ? require('../../assets/img/coin.png')
+      : require('../../assets/img/diamond.png');
+  const rewardLabel =
+    rewardType === 'coins'
+      ? `+${rewardAmount.toLocaleString()}`
+      : `+${rewardAmount}`;
+
   return (
     <View style={styles.milestoneRow}>
       <Image source={claimed ? ICON_OK : ICON_CLOCK} style={styles.milestoneIcon} contentFit="contain" />
@@ -36,14 +47,14 @@ function MilestoneRow({
       <View style={{ flex: 1 }} />
       {claimed ? (
         <View style={styles.milestoneValueRow}>
-          <Text style={styles.milestoneEarned}>+{gems} </Text>
-          <Image source={require('../../assets/img/diamond.png')} style={styles.diamondIcon} contentFit="contain" />
+          <Text style={styles.milestoneEarned}>{rewardLabel} </Text>
+          <Image source={rewardIcon} style={styles.diamondIcon} contentFit="contain" />
           <Text style={styles.milestoneEarned}> Claimed</Text>
         </View>
       ) : reachable ? (
         <View style={styles.milestoneValueRow}>
-          <Text style={styles.milestonePending}>+{gems} </Text>
-          <Image source={require('../../assets/img/diamond.png')} style={styles.diamondIcon} contentFit="contain" />
+          <Text style={styles.milestonePending}>{rewardLabel} </Text>
+          <Image source={rewardIcon} style={styles.diamondIcon} contentFit="contain" />
           <Text style={styles.milestonePending}> Pending</Text>
         </View>
       ) : currentLevel !== undefined ? (
@@ -64,13 +75,23 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
       </View>
       <MilestoneRow
         label="Registration"
-        gems={5}
+        rewardAmount={10000}
+        rewardType="coins"
         claimed={!!entry.milestones.registered.claimedAt}
         reachable={false}
       />
       <MilestoneRow
+        label="Level 10"
+        rewardAmount={20}
+        rewardType="gems"
+        claimed={!!entry.milestones.level10.claimedAt}
+        reachable={!!entry.milestones.level10.reachedAt}
+        currentLevel={entry.milestones.level10.reachedAt ? undefined : entry.referredLevel}
+      />
+      <MilestoneRow
         label="Level 30"
-        gems={50}
+        rewardAmount={50}
+        rewardType="gems"
         claimed={!!entry.milestones.level30.claimedAt}
         reachable={!!entry.milestones.level30.reachedAt}
         currentLevel={entry.milestones.level30.reachedAt ? undefined : entry.referredLevel}
