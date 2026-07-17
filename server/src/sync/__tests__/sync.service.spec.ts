@@ -143,6 +143,14 @@ describe('SyncService', () => {
       playerCategoryProgress: {
         findMany: jest.fn().mockResolvedValue([]),
       },
+      referral: {
+        findMany: jest.fn().mockResolvedValue([]),
+        updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+      },
+      referralPurchaseNotification: {
+        findMany: jest.fn().mockResolvedValue([]),
+        updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+      },
       $transaction: jest.fn(async (fn: (tx: any) => Promise<void>) => {
         await fn(txMock);
       }),
@@ -564,6 +572,31 @@ describe('SyncService', () => {
       const updateCall = txMock.player.update.mock.calls[0][0];
       // All productions are IDLE so calcRevenuePerMin returns 0 < 999
       expect(updateCall.data).not.toHaveProperty('maxRevenuePerMin');
+    });
+
+    it('sets level10ReachedAt when player crosses level 10', async () => {
+      const level9Player = { ...mockPlayer, playerLevel: 9, playerXp: 4991 };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(level9Player)
+        .mockResolvedValueOnce({ ...level9Player, playerLevel: 10 });
+
+      const buyCmd: Command = {
+        id: 'cmd-level10',
+        type: 'buy',
+        floorId: 2,
+        slotIdx: 0,
+        typeId: 'buns',
+        timestamp: Date.now(),
+      };
+
+      await syncService.processSync('player-uuid', [buyCmd], 0);
+
+      expect(prisma.referral.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ referredId: 'player-uuid', level10ReachedAt: null }),
+          data: expect.objectContaining({ level10ReachedAt: expect.any(Date) }),
+        }),
+      );
     });
   });
 });

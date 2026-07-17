@@ -23,8 +23,9 @@ export interface SyncResult {
   pendingReferralClaims: Array<{
     id: string;
     referredName: string;
-    milestone: 'registered' | 'level30';
-    gems: number;
+    milestone: 'registered' | 'level10' | 'level30';
+    gems?: number;
+    coins?: number;
   }>;
   referralPurchaseBonuses: Array<{
     referredName: string;
@@ -133,6 +134,13 @@ export class SyncService {
       await this.prisma.referral.updateMany({
         where: { referredId: playerId, level30ReachedAt: null },
         data: { level30ReachedAt: new Date() },
+      });
+    }
+
+    if (player.playerLevel < 10 && xpResult.playerLevel >= 10) {
+      await this.prisma.referral.updateMany({
+        where: { referredId: playerId, level10ReachedAt: null },
+        data: { level10ReachedAt: new Date() },
       });
     }
 
@@ -422,7 +430,8 @@ export class SyncService {
       };
     }
 
-    const REGISTERED_GEMS = 5;
+    const REGISTERED_COINS = 10_000;
+    const LEVEL10_GEMS = 20;
     const LEVEL30_GEMS = 50;
 
     const pendingReferrals = await this.prisma.referral.findMany({
@@ -430,6 +439,7 @@ export class SyncService {
         referrerId: playerId,
         OR: [
           { registeredClaimedAt: null },
+          { level10ReachedAt: { not: null }, level10ClaimedAt: null },
           { level30ReachedAt: { not: null }, level30ClaimedAt: null },
         ],
       },
@@ -442,7 +452,15 @@ export class SyncService {
           id: r.id,
           referredName: r.referredName,
           milestone: 'registered',
-          gems: REGISTERED_GEMS,
+          coins: REGISTERED_COINS,
+        });
+      }
+      if (r.level10ReachedAt && !r.level10ClaimedAt) {
+        pendingReferralClaims.push({
+          id: r.id,
+          referredName: r.referredName,
+          milestone: 'level10',
+          gems: LEVEL10_GEMS,
         });
       }
       if (r.level30ReachedAt && !r.level30ClaimedAt) {
