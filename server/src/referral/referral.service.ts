@@ -2,7 +2,8 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
-const REGISTERED_GEMS = 5;
+const REGISTERED_COINS = 10_000;
+const LEVEL10_GEMS = 20;
 const LEVEL30_GEMS = 50;
 const PURCHASE_BONUS_PERCENT = 10;
 
@@ -23,7 +24,6 @@ export class ReferralService {
     });
     if (!player) throw new NotFoundException('Player not found');
 
-    // Lazy code generation for players who registered before this feature
     let referralCode = player.referralCode;
     if (!referralCode) {
       for (let attempt = 0; attempt < 5; attempt++) {
@@ -53,6 +53,10 @@ export class ReferralService {
         referredLevel: r.referred.playerLevel,
         milestones: {
           registered: { claimedAt: r.registeredClaimedAt?.toISOString() ?? null },
+          level10: {
+            reachedAt: r.level10ReachedAt?.toISOString() ?? null,
+            claimedAt: r.level10ClaimedAt?.toISOString() ?? null,
+          },
           level30: {
             reachedAt: r.level30ReachedAt?.toISOString() ?? null,
             claimedAt: r.level30ClaimedAt?.toISOString() ?? null,
@@ -66,7 +70,7 @@ export class ReferralService {
   async claimMilestone(
     playerId: string,
     referralId: string,
-    milestone: 'registered' | 'level30',
+    milestone: 'registered' | 'level10' | 'level30',
   ) {
     return this.prisma.$transaction(async (tx) => {
       const referral = await tx.referral.findUnique({ where: { id: referralId } });
@@ -81,11 +85,25 @@ export class ReferralService {
           where: { id: referralId },
           data: { registeredClaimedAt: new Date() },
         });
+        await tx.player.update({
+          where: { id: playerId },
+          data: { balance: { increment: REGISTERED_COINS } },
+        });
+        return { coins: REGISTERED_COINS };
+      }
+
+      if (milestone === 'level10') {
+        if (!referral.level10ReachedAt) throw new BadRequestException('Milestone not yet reached');
+        if (referral.level10ClaimedAt) throw new BadRequestException('Already claimed');
+        await tx.referral.update({
+          where: { id: referralId },
+          data: { level10ClaimedAt: new Date() },
+        });
         await tx.playerState.update({
           where: { playerId },
-          data: { gems: { increment: REGISTERED_GEMS } },
+          data: { gems: { increment: LEVEL10_GEMS } },
         });
-        return { gems: REGISTERED_GEMS };
+        return { gems: LEVEL10_GEMS };
       }
 
       if (milestone === 'level30') {
@@ -106,7 +124,6 @@ export class ReferralService {
     });
   }
 
-  // Called from gem purchase flow when implemented
   async processPurchaseBonus(buyerId: string, purchaseAmount: number) {
     const referral = await this.prisma.referral.findUnique({
       where: { referredId: buyerId },

@@ -1,0 +1,148 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ReferralService } from '../referral.service';
+import { PrismaService } from '../../prisma/prisma.service';
+
+describe('ReferralService', () => {
+  let service: ReferralService;
+  let prisma: Record<string, any>;
+  let txMock: Record<string, any>;
+
+  const REFERRAL_ID = 'ref-uuid';
+  const PLAYER_ID = 'player-uuid';
+  const REFERRED_ID = 'referred-uuid';
+
+  const makeReferral = (overrides = {}) => ({
+    id: REFERRAL_ID,
+    referrerId: PLAYER_ID,
+    referredId: REFERRED_ID,
+    referredName: 'Alice',
+    createdAt: new Date(),
+    registeredClaimedAt: null,
+    level10ReachedAt: null,
+    level10ClaimedAt: null,
+    level30ReachedAt: null,
+    level30ClaimedAt: null,
+    gemBonusEarned: 0,
+    ...overrides,
+  });
+
+  beforeEach(async () => {
+    txMock = {
+      referral: {
+        findUnique: jest.fn(),
+        update: jest.fn().mockResolvedValue({}),
+      },
+      player: {
+        update: jest.fn().mockResolvedValue({}),
+      },
+      playerState: {
+        update: jest.fn().mockResolvedValue({}),
+      },
+    };
+
+    prisma = {
+      player: { findUnique: jest.fn(), update: jest.fn() },
+      referral: { findMany: jest.fn().mockResolvedValue([]) },
+      $transaction: jest.fn(async (fn: (tx: any) => Promise<any>) => fn(txMock)),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ReferralService,
+        { provide: PrismaService, useValue: prisma },
+      ],
+    }).compile();
+
+    service = module.get<ReferralService>(ReferralService);
+  });
+
+  describe('claimMilestone registered', () => {
+    it('gives 10000 coins and marks registeredClaimedAt', async () => {
+      txMock.referral.findUnique.mockResolvedValue(makeReferral());
+
+      const result = await service.claimMilestone(PLAYER_ID, REFERRAL_ID, 'registered');
+
+      expect(result).toEqual({ coins: 10000 });
+      expect(txMock.player.update).toHaveBeenCalledWith({
+        where: { id: PLAYER_ID },
+        data: { balance: { increment: 10000 } },
+      });
+      expect(txMock.referral.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ registeredClaimedAt: expect.any(Date) }) }),
+      );
+    });
+
+    it('throws if already claimed', async () => {
+      txMock.referral.findUnique.mockResolvedValue(makeReferral({ registeredClaimedAt: new Date() }));
+
+      await expect(
+        service.claimMilestone(PLAYER_ID, REFERRAL_ID, 'registered'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('claimMilestone level10', () => {
+    it('gives 20 gems when level10ReachedAt is set', async () => {
+      txMock.referral.findUnique.mockResolvedValue(makeReferral({ level10ReachedAt: new Date() }));
+
+      const result = await service.claimMilestone(PLAYER_ID, REFERRAL_ID, 'level10');
+
+      expect(result).toEqual({ gems: 20 });
+      expect(txMock.playerState.update).toHaveBeenCalledWith({
+        where: { playerId: PLAYER_ID },
+        data: { gems: { increment: 20 } },
+      });
+    });
+
+    it('throws if milestone not yet reached', async () => {
+      txMock.referral.findUnique.mockResolvedValue(makeReferral({ level10ReachedAt: null }));
+
+      await expect(
+        service.claimMilestone(PLAYER_ID, REFERRAL_ID, 'level10'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws if already claimed', async () => {
+      txMock.referral.findUnique.mockResolvedValue(
+        makeReferral({ level10ReachedAt: new Date(), level10ClaimedAt: new Date() }),
+      );
+
+      await expect(
+        service.claimMilestone(PLAYER_ID, REFERRAL_ID, 'level10'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('claimMilestone level30', () => {
+    it('gives 50 gems when level30ReachedAt is set', async () => {
+      txMock.referral.findUnique.mockResolvedValue(makeReferral({ level30ReachedAt: new Date() }));
+
+      const result = await service.claimMilestone(PLAYER_ID, REFERRAL_ID, 'level30');
+
+      expect(result).toEqual({ gems: 50 });
+      expect(txMock.playerState.update).toHaveBeenCalledWith({
+        where: { playerId: PLAYER_ID },
+        data: { gems: { increment: 50 } },
+      });
+    });
+
+    it('throws if milestone not yet reached', async () => {
+      txMock.referral.findUnique.mockResolvedValue(makeReferral({ level30ReachedAt: null }));
+
+      await expect(
+        service.claimMilestone(PLAYER_ID, REFERRAL_ID, 'level30'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('claimMilestone auth', () => {
+    it('throws NotFoundException if referral belongs to different player', async () => {
+      txMock.referral.findUnique.mockResolvedValue(makeReferral({ referrerId: 'other-player' }));
+
+      await expect(
+        service.claimMilestone(PLAYER_ID, REFERRAL_ID, 'registered'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+});

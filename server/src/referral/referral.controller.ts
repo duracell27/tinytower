@@ -7,7 +7,7 @@ import { ReferralService } from './referral.service';
 
 const ClaimSchema = z.object({
   referralId: z.string().uuid(),
-  milestone: z.enum(['registered', 'level30']),
+  milestone: z.enum(['registered', 'level10', 'level30']),
 });
 
 @Controller()
