@@ -373,6 +373,7 @@ export default function GameScreen() {
       case 'collect': collectAll(); break;
       case 'list':    listAll();    break;
       case 'buy':     buyAll();     break;
+      // hire: no bulk action
     }
   }, [quickActionMode, collectAll, listAll, buyAll]);
 

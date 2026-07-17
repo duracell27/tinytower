@@ -1351,7 +1351,7 @@ describe('buy_all command', () => {
     expect(result.error).toBe('Insufficient gems');
   });
 
-  it('skips floor that has an active delivery on another slot', () => {
+  it('skips floor whose slot is already delivering (pre-filter)', () => {
     const state = twoFloorState({
       floors: [
         // floor 1: already delivering (active), so buy is blocked

@@ -32,6 +32,12 @@ const MODE_COLORS: Record<QuickActionMode, { colors: [string, string] }> = {
   hire:    { colors: ['#D96E8A', '#B84E6A'] },
 };
 
+const BULK_LABEL: Partial<Record<QuickActionMode, string>> = {
+  collect: 'Collect all',
+  list: 'Deliver all',
+  buy: 'Buy all',
+};
+
 function ModeIcon({ mode }: { mode: QuickActionMode }) {
   switch (mode) {
     case 'collect':
@@ -65,11 +71,6 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   const { t: tContent } = useTranslation('gameContent');
   const { colors } = MODE_COLORS[mode];
 
-  const BULK_LABEL: Partial<Record<QuickActionMode, string>> = {
-    collect: 'Collect all',
-    list: 'Deliver all',
-    buy: 'Buy all',
-  };
   const bulkLabel = BULK_LABEL[mode];
 
   const slideY = useSharedValue(120);
@@ -133,7 +134,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
           style={({ pressed }) => [styles.bulkBtn, pressed && { opacity: 0.7 }]}
         >
           <View style={styles.bulkContent}>
-            <GemIcon size={11} />
+            <GemIcon size={12} />
             <Text style={styles.bulkCostText}>1</Text>
             <Text style={styles.bulkLabelText}>{bulkLabel}</Text>
           </View>
