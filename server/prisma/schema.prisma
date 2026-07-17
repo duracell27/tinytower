@@ -157,6 +157,8 @@ model Referral {
   referredName         String
   createdAt            DateTime  @default(now())
   registeredClaimedAt  DateTime?
+  level10ReachedAt     DateTime?
+  level10ClaimedAt     DateTime?
   level30ReachedAt     DateTime?
   level30ClaimedAt     DateTime?
   gemBonusEarned       Int       @default(0)
