@@ -55,6 +55,12 @@ export function processCommand(
       return processLobbyCommand(state, command, config, playerLevel);
     case 'dev_add_gems':
       return { success: true, state: { ...state, gems: state.gems + command.amount } };
+    case 'collect_all':
+      return handleCollectAll(state, config, now, bonuses);
+    case 'list_all':
+      return handleListAll(state, config, now);
+    case 'buy_all':
+      return handleBuyAll(state, config, now);
   }
 }
 
@@ -500,6 +506,75 @@ function handleCollect(
       stats: { ...state.stats, totalCollected: state.stats.totalCollected + 1 },
     },
   };
+}
+
+function handleCollectAll(
+  state: GameState,
+  config: GameConfig,
+  now: number,
+  bonuses: { coinPercent: number; xpPercent: number },
+): ProcessResult {
+  if (state.gems < 1) return { success: false, state, error: 'Insufficient gems' };
+  let current: GameState = { ...state, gems: state.gems - 1 };
+  let totalXp = 0;
+  for (let fi = 0; fi < current.floors.length; fi++) {
+    for (let si = 0; si < current.floors[fi].productions.length; si++) {
+      const prod = current.floors[fi].productions[si];
+      const worker = getWorkerForSlot(current.workers, current.floors[fi].id, si);
+      if (!worker) continue;
+      const result = handleCollect(current, config, now, fi, si, prod, worker, bonuses);
+      if (result.success) {
+        totalXp += result.xpGained ?? 0;
+        current = result.state;
+      }
+    }
+  }
+  return { success: true, state: current, xpGained: totalXp };
+}
+
+function handleListAll(
+  state: GameState,
+  config: GameConfig,
+  now: number,
+): ProcessResult {
+  if (state.gems < 1) return { success: false, state, error: 'Insufficient gems' };
+  let current: GameState = { ...state, gems: state.gems - 1 };
+  for (let fi = 0; fi < current.floors.length; fi++) {
+    for (let si = 0; si < current.floors[fi].productions.length; si++) {
+      const prod = current.floors[fi].productions[si];
+      const result = handleList(current, config, now, fi, si, prod);
+      if (result.success) {
+        current = result.state;
+      }
+    }
+  }
+  return { success: true, state: current };
+}
+
+function handleBuyAll(
+  state: GameState,
+  config: GameConfig,
+  now: number,
+): ProcessResult {
+  if (state.gems < 1) return { success: false, state, error: 'Insufficient gems' };
+  let current: GameState = { ...state, gems: state.gems - 1 };
+  for (let fi = 0; fi < current.floors.length; fi++) {
+    for (let si = 0; si < current.floors[fi].productions.length; si++) {
+      const floor = current.floors[fi];
+      const prod = floor.productions[si];
+      if (prod.stage !== 'IDLE' || !prod.typeId) continue;
+      const worker = getWorkerForSlot(current.workers, floor.id, si);
+      if (!worker) continue;
+      const fakeCmd: Extract<Command, { type: 'buy' }> = {
+        id: '', type: 'buy', floorId: floor.id, slotIdx: si, typeId: prod.typeId, timestamp: now,
+      };
+      const result = handleBuy(current, fakeCmd, config, now, fi, si, prod, worker);
+      if (result.success) {
+        current = result.state;
+      }
+    }
+  }
+  return { success: true, state: current };
 }
 
 function handleUpgradeToSpecialist(

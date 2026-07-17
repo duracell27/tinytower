@@ -1182,3 +1182,196 @@ describe('speed_up_delivery command', () => {
     expect(result.state.gems).toBe(4); // 5 - 1
   });
 });
+
+// ── Bulk action helpers ──────────────────────────────────────────────────────
+
+const twoFloorConfig: GameConfig = {
+  ...testConfig,
+  floors: [
+    { id: 1, slots: 1, floorType: 'green', availableTypes: ['coffee_shop'] },
+    { id: 2, slots: 1, floorType: 'green', availableTypes: ['coffee_shop'] },
+  ],
+};
+
+function twoFloorState(overrides?: Partial<GameState>): GameState {
+  return {
+    ...createInitialState(twoFloorConfig),
+    floors: [
+      { id: 1, productions: [{ typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 }] },
+      { id: 2, productions: [{ typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 }] },
+    ],
+    workers: [
+      makeWorker({ id: 'w1', assignedFloorId: 1, assignedSlotIdx: 0 }),
+      makeWorker({ id: 'w2', assignedFloorId: 2, assignedSlotIdx: 0 }),
+    ],
+    gems: 5,
+    balance: 500,
+    ...overrides,
+  };
+}
+
+describe('collect_all command', () => {
+  it('collects from all ready floors and deducts 1 gem', () => {
+    const state = twoFloorState({
+      floors: [
+        { id: 1, productions: [{ typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 }] },
+        { id: 2, productions: [{ typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 }] },
+      ],
+      gems: 3,
+    });
+    const now = 20000; // > sellDuration (10000)
+    const result = processCommand(
+      state,
+      { id: 'x', type: 'collect_all', timestamp: now },
+      twoFloorConfig,
+      now,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(2);
+    expect(result.state.floors[0].productions[0].stage).toBe('IDLE');
+    expect(result.state.floors[1].productions[0].stage).toBe('IDLE');
+    expect(result.state.balance).toBeGreaterThan(state.balance);
+  });
+
+  it('returns error when gems < 1', () => {
+    const state = twoFloorState({ gems: 0 });
+    const result = processCommand(
+      state,
+      { id: 'x', type: 'collect_all', timestamp: 20000 },
+      twoFloorConfig,
+      20000,
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient gems');
+  });
+
+  it('skips slots that are not yet ready to collect', () => {
+    const state = twoFloorState({
+      floors: [
+        { id: 1, productions: [{ typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 }] },
+        { id: 2, productions: [{ typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 0 }] },
+      ],
+      gems: 3,
+    });
+    const now = 20000;
+    const result = processCommand(
+      state,
+      { id: 'x', type: 'collect_all', timestamp: now },
+      twoFloorConfig,
+      now,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(2);
+    expect(result.state.floors[0].productions[0].stage).toBe('IDLE');
+    expect(result.state.floors[1].productions[0].stage).toBe('DELIVERING');
+  });
+});
+
+describe('list_all command', () => {
+  it('lists all ready-to-list floors and deducts 1 gem', () => {
+    const state = twoFloorState({
+      floors: [
+        { id: 1, productions: [{ typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 0 }] },
+        { id: 2, productions: [{ typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 0 }] },
+      ],
+      gems: 3,
+    });
+    const now = 6000; // > deliveryDuration (5000)
+    const result = processCommand(
+      state,
+      { id: 'x', type: 'list_all', timestamp: now },
+      twoFloorConfig,
+      now,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(2);
+    expect(result.state.floors[0].productions[0].stage).toBe('SELLING');
+    expect(result.state.floors[1].productions[0].stage).toBe('SELLING');
+  });
+
+  it('returns error when gems < 1', () => {
+    const state = twoFloorState({ gems: 0 });
+    const result = processCommand(
+      state,
+      { id: 'x', type: 'list_all', timestamp: 6000 },
+      twoFloorConfig,
+      6000,
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient gems');
+  });
+
+  it('skips floors whose delivery is not yet complete', () => {
+    const state = twoFloorState({
+      floors: [
+        { id: 1, productions: [{ typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 0 }] },
+        { id: 2, productions: [{ typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 4000 }] },
+      ],
+      gems: 3,
+    });
+    const now = 6000; // floor 1: 6000-0=6000 > 5000 ✓; floor 2: 6000-4000=2000 < 5000 ✗
+    const result = processCommand(
+      state,
+      { id: 'x', type: 'list_all', timestamp: now },
+      twoFloorConfig,
+      now,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.floors[0].productions[0].stage).toBe('SELLING');
+    expect(result.state.floors[1].productions[0].stage).toBe('DELIVERING');
+  });
+});
+
+describe('buy_all command', () => {
+  it('buys all eligible idle slots and deducts 1 gem', () => {
+    const state = twoFloorState({ balance: 1000, gems: 3 });
+    const now = 1000;
+    const result = processCommand(
+      state,
+      { id: 'x', type: 'buy_all', timestamp: now },
+      twoFloorConfig,
+      now,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(2);
+    expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING');
+    expect(result.state.floors[1].productions[0].stage).toBe('DELIVERING');
+    expect(result.state.balance).toBe(1000 - 9 * 2); // 2 × effective cost 9 (buyCost 10, 5% level-5 discount)
+  });
+
+  it('returns error when gems < 1', () => {
+    const state = twoFloorState({ gems: 0, balance: 1000 });
+    const result = processCommand(
+      state,
+      { id: 'x', type: 'buy_all', timestamp: 1000 },
+      twoFloorConfig,
+      1000,
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient gems');
+  });
+
+  it('skips floor that has an active delivery on another slot', () => {
+    const state = twoFloorState({
+      floors: [
+        // floor 1: already delivering (active), so buy is blocked
+        { id: 1, productions: [{ typeId: 'coffee_shop', stage: 'DELIVERING', stageStartedAt: 0 }] },
+        // floor 2: idle, eligible
+        { id: 2, productions: [{ typeId: 'coffee_shop', stage: 'IDLE', stageStartedAt: 0 }] },
+      ],
+      balance: 1000,
+      gems: 3,
+    });
+    const now = 1000; // 1000 - 0 = 1000 < deliveryDuration 5000 → active delivery on floor 1
+    const result = processCommand(
+      state,
+      { id: 'x', type: 'buy_all', timestamp: now },
+      twoFloorConfig,
+      now,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(2);
+    expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING'); // unchanged
+    expect(result.state.floors[1].productions[0].stage).toBe('DELIVERING'); // bought
+  });
+});
