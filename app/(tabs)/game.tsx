@@ -276,6 +276,18 @@ export default function GameScreen() {
     return () => syncService.stop();
   }, [isAuthenticated]);
 
+  // When starting in collapsed mode, FlashList never fires onContentSizeChange,
+  // so we reveal the tower here instead.
+  useEffect(() => {
+    if (towerCollapsed && floors.length >= 10 && !hasRevealedRef.current) {
+      hasRevealedRef.current = true;
+      towerOpacity.value = withTiming(1, {
+        duration: 350,
+        easing: ReanimatedEasing.out(ReanimatedEasing.quad),
+      });
+    }
+  }, [towerCollapsed, floors.length, towerOpacity]);
+
   useEffect(() => {
     if (now <= 0) return;
     let s = useGameStore.getState();
@@ -493,48 +505,62 @@ export default function GameScreen() {
         <View style={styles.gameArea}>
           <View style={styles.sideLeft} />
           <Animated.View style={[styles.towerColumn, towerStyle]}>
-            <FlashList
-              ref={listRef}
-              data={quickActionMode !== null && qaItems.length > 0 ? qaItems : floorList}
-              renderItem={renderItem}
-              keyExtractor={keyExtractor}
-              estimatedItemSize={216}
-              getItemType={(item) => item.type}
-              drawDistance={1500}
-              extraData={listExtraData}
-              contentContainerStyle={quickActionMode !== null && qaItems.length > 0 ? styles.listContentQA : styles.listContent}
-              showsVerticalScrollIndicator={false}
-              scrollEventThrottle={100}
-              onContentSizeChange={(_w, h) => {
-                contentHeightRef.current = h;
-                if (!hasRevealedRef.current && h > 0 && viewHeightRef.current > 0) {
-                  hasRevealedRef.current = true;
-                  requestAnimationFrame(() => {
-                    scrollToBottom();
-                    towerOpacity.value = withTiming(1, {
-                      duration: 350,
-                      easing: ReanimatedEasing.out(ReanimatedEasing.quad),
-                    });
-                  });
-                } else if (pendingRestoreRef.current !== null) {
-                  const target = pendingRestoreRef.current;
-                  pendingRestoreRef.current = null;
-                  requestAnimationFrame(() => {
-                    if (target === Number.MAX_SAFE_INTEGER) {
+            {towerCollapsed && floors.length >= 10 && quickActionMode === null ? (
+              <View style={styles.collapsedContainer}>
+                {floorList
+                  .filter((item) => item.type !== 'bottomAnchor')
+                  .map((item) => (
+                    <View key={keyExtractor(item)}>{renderItem({ item })}</View>
+                  ))}
+              </View>
+            ) : (
+              <FlashList
+                ref={listRef}
+                data={quickActionMode !== null && qaItems.length > 0 ? qaItems : floorList}
+                renderItem={renderItem}
+                keyExtractor={keyExtractor}
+                estimatedItemSize={216}
+                getItemType={(item) => item.type}
+                drawDistance={1500}
+                extraData={listExtraData}
+                contentContainerStyle={
+                  quickActionMode !== null && qaItems.length > 0
+                    ? styles.listContentQA
+                    : styles.listContent
+                }
+                showsVerticalScrollIndicator={false}
+                scrollEventThrottle={100}
+                onContentSizeChange={(_w, h) => {
+                  contentHeightRef.current = h;
+                  if (!hasRevealedRef.current && h > 0 && viewHeightRef.current > 0) {
+                    hasRevealedRef.current = true;
+                    requestAnimationFrame(() => {
                       scrollToBottom();
-                    } else {
-                      listRef.current?.scrollToOffset({ offset: target, animated: false });
-                    }
-                  });
-                }
-              }}
-              onLayout={(e) => { viewHeightRef.current = e.nativeEvent.layout.height; }}
-              onScroll={(e) => {
-                if (quickActionModeRef.current === null) {
-                  savedScrollOffsetRef.current = e.nativeEvent.contentOffset.y;
-                }
-              }}
-            />
+                      towerOpacity.value = withTiming(1, {
+                        duration: 350,
+                        easing: ReanimatedEasing.out(ReanimatedEasing.quad),
+                      });
+                    });
+                  } else if (pendingRestoreRef.current !== null) {
+                    const target = pendingRestoreRef.current;
+                    pendingRestoreRef.current = null;
+                    requestAnimationFrame(() => {
+                      if (target === Number.MAX_SAFE_INTEGER) {
+                        scrollToBottom();
+                      } else {
+                        listRef.current?.scrollToOffset({ offset: target, animated: false });
+                      }
+                    });
+                  }
+                }}
+                onLayout={(e) => { viewHeightRef.current = e.nativeEvent.layout.height; }}
+                onScroll={(e) => {
+                  if (quickActionModeRef.current === null) {
+                    savedScrollOffsetRef.current = e.nativeEvent.contentOffset.y;
+                  }
+                }}
+              />
+            )}
           </Animated.View>
           <View style={styles.sideRight} />
         </View>
@@ -704,6 +730,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     paddingBottom: 140,
     paddingHorizontal: 14,
+  },
+  collapsedContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 14,
+    paddingBottom: 90,
   },
   floorWrapper: {
     marginBottom: 13,
