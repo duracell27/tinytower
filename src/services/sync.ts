@@ -20,8 +20,9 @@ interface SyncResponse {
   pendingReferralClaims?: Array<{
     id: string;
     referredName: string;
-    milestone: 'registered' | 'level30';
-    gems: number;
+    milestone: 'registered' | 'level10' | 'level30';
+    gems?: number;
+    coins?: number;
   }>;
   referralPurchaseBonuses?: Array<{
     referredName: string;

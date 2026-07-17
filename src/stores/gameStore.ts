@@ -53,7 +53,8 @@ export interface FailedCommandEntry {
 }
 
 export type ReferralNotification =
-  | { type: 'claim'; referralId: string; referredName: string; milestone: 'registered' | 'level30'; gems: number }
+  | { type: 'claim'; referralId: string; referredName: string; milestone: 'registered'; coins: number }
+  | { type: 'claim'; referralId: string; referredName: string; milestone: 'level10' | 'level30'; gems: number }
   | { type: 'purchase_bonus'; names: string[]; totalBonus: number };
 
 interface UIState {
@@ -117,7 +118,7 @@ interface GameActions {
   addAchievements: (grants: NewAchievementGrant[]) => void;
   dismissAchievement: () => void;
   enqueueReferralNotifications: (
-    claims: Array<{ id: string; referredName: string; milestone: 'registered' | 'level30'; gems: number }>,
+    claims: Array<{ id: string; referredName: string; milestone: 'registered' | 'level10' | 'level30'; gems?: number; coins?: number }>,
     bonuses: Array<{ referredName: string; bonus: number; purchaseAmount: number }>
   ) => void;
   dismissReferralNotification: () => void;
@@ -313,13 +314,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   enqueueReferralNotifications: (claims, bonuses) => set((cur) => {
     const newNotifs: ReferralNotification[] = [
-      ...claims.map((c) => ({
-        type: 'claim' as const,
-        referralId: c.id,
-        referredName: c.referredName,
-        milestone: c.milestone,
-        gems: c.gems,
-      })),
+      ...claims.map((c): ReferralNotification => {
+        if (c.milestone === 'registered') {
+          return {
+            type: 'claim',
+            referralId: c.id,
+            referredName: c.referredName,
+            milestone: 'registered',
+            coins: c.coins ?? 0,
+          };
+        }
+        return {
+          type: 'claim',
+          referralId: c.id,
+          referredName: c.referredName,
+          milestone: c.milestone as 'level10' | 'level30',
+          gems: c.gems ?? 0,
+        };
+      }),
     ];
     if (bonuses.length > 0) {
       const names = bonuses.map((b) => b.referredName);

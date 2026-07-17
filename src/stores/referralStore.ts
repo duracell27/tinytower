@@ -7,6 +7,7 @@ export interface ReferralEntry {
   referredLevel: number;
   milestones: {
     registered: { claimedAt: string | null };
+    level10: { reachedAt: string | null; claimedAt: string | null };
     level30: { reachedAt: string | null; claimedAt: string | null };
   };
   gemBonusEarned: number;
