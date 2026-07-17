@@ -81,6 +81,9 @@ interface GameActions {
   liftVisitor: () => void;
   collectTip: () => void;
   deliverAll: () => void;
+  collectAll: () => void;
+  listAll: () => void;
+  buyAll: () => void;
   fillLobby: () => void;
   upgradeElevator: () => void;
   upgradeLobby: () => void;
@@ -547,6 +550,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
       timestamp: clock.now(),
       builderTools,
     });
+  },
+
+  collectAll: () => {
+    const state = get();
+    if (state.gems < 1) {
+      state.showInsufficientResources({ currency: 'gems', need: 1, have: state.gems });
+      return;
+    }
+    executeCommand(get, set, { id: uuid(), type: 'collect_all', timestamp: clock.now() });
+  },
+
+  listAll: () => {
+    const state = get();
+    if (state.gems < 1) {
+      state.showInsufficientResources({ currency: 'gems', need: 1, have: state.gems });
+      return;
+    }
+    executeCommand(get, set, { id: uuid(), type: 'list_all', timestamp: clock.now() });
+  },
+
+  buyAll: () => {
+    const state = get();
+    if (state.gems < 1) {
+      state.showInsufficientResources({ currency: 'gems', need: 1, have: state.gems });
+      return;
+    }
+    executeCommand(get, set, { id: uuid(), type: 'buy_all', timestamp: clock.now() });
   },
 
   fillLobby: () => {
