@@ -69,6 +69,9 @@ export default function GameScreen() {
   const storeCollect = useGameStore((s) => s.collect);
   const storeList = useGameStore((s) => s.list);
   const storeBuy = useGameStore((s) => s.buy);
+  const collectAll = useGameStore((s) => s.collectAll);
+  const listAll = useGameStore((s) => s.listAll);
+  const buyAll = useGameStore((s) => s.buyAll);
   const lastSyncAt = useGameStore((s) => s.lastSyncAt);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
@@ -364,6 +367,15 @@ export default function GameScreen() {
     setQuickActionMode(null);
   }, []);
 
+  const handleBulkAll = useCallback(() => {
+    if (!quickActionMode) return;
+    switch (quickActionMode) {
+      case 'collect': collectAll(); break;
+      case 'list':    listAll();    break;
+      case 'buy':     buyAll();     break;
+    }
+  }, [quickActionMode, collectAll, listAll, buyAll]);
+
   const handleQuickAction = useCallback(() => {
     if (!quickActionMode || !bottomFloor) return;
 
@@ -591,6 +603,7 @@ export default function GameScreen() {
             onHidden={handleQaHidden}
             onPress={handleQuickAction}
             onExit={handleQaExit}
+            onBulkAll={handleBulkAll}
           />
         )}
       </ImageBackground>
