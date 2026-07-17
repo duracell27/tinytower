@@ -1,11 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-
-const REGISTERED_COINS = 10_000;
-const LEVEL10_GEMS = 20;
-const LEVEL30_GEMS = 50;
-const PURCHASE_BONUS_PERCENT = 10;
+import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS, PURCHASE_BONUS_PERCENT } from './referral-constants';
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

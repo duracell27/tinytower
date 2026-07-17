@@ -8,6 +8,7 @@ import { calcRevenuePerMin } from '@shared/engine/ratingUtils';
 import type { GameState, Command, Floor, Production, Worker } from '@shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '@shared/types/achievements';
 import { AchievementService } from '../achievement/achievement.service';
+import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS } from '../referral/referral-constants';
 
 export interface SyncResult {
   state: GameState;
@@ -429,10 +430,6 @@ export class SyncService {
         claimedLevels: row.claimedLevels as number[],
       };
     }
-
-    const REGISTERED_COINS = 10_000;
-    const LEVEL10_GEMS = 20;
-    const LEVEL30_GEMS = 50;
 
     const pendingReferrals = await this.prisma.referral.findMany({
       where: {

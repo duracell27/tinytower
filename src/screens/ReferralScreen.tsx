@@ -78,7 +78,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
         rewardAmount={10000}
         rewardType="coins"
         claimed={!!entry.milestones.registered.claimedAt}
-        reachable={false}
+        reachable={!entry.milestones.registered.claimedAt}
       />
       <MilestoneRow
         label="Level 10"

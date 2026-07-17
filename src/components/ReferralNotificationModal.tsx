@@ -80,12 +80,12 @@ export default function ReferralNotificationModal() {
                           source={require('../../assets/img/coin.png')}
                           style={{ width: 18, height: 18 }}
                         />
-                        <Text style={styles.rewardText}>+{(notification as any).coins.toLocaleString()}</Text>
+                        <Text style={styles.rewardText}>+{notification.coins.toLocaleString()}</Text>
                       </>
                     ) : (
                       <>
                         <GemIcon size={18} />
-                        <Text style={styles.rewardText}>+{(notification as any).gems}</Text>
+                        <Text style={styles.rewardText}>+{notification.gems}</Text>
                       </>
                     )}
                   </View>
@@ -99,11 +99,11 @@ export default function ReferralNotificationModal() {
                       {loading ? (
                         <ActivityIndicator color="#fff" />
                       ) : notification.milestone === 'registered' ? (
-                        <Text style={styles.buttonText}>Claim 10,000 🪙</Text>
+                        <Text style={styles.buttonText}>Claim {notification.coins.toLocaleString()} 🪙</Text>
                       ) : notification.milestone === 'level10' ? (
-                        <Text style={styles.buttonText}>Claim 20 💎</Text>
+                        <Text style={styles.buttonText}>Claim {notification.gems} 💎</Text>
                       ) : (
-                        <Text style={styles.buttonText}>Claim 50 💎</Text>
+                        <Text style={styles.buttonText}>Claim {notification.gems} 💎</Text>
                       )}
                     </LinearGradient>
                     <View style={styles.buttonShadow} />
