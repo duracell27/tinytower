@@ -50,11 +50,7 @@ describe('AuthService', () => {
         AuthService,
         {
           provide: PrismaService,
-          useValue: {
-            referral: {
-              create: jest.fn(),
-            },
-          },
+          useValue: {},
         },
         {
           provide: PlayerService,
