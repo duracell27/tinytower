@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
-  Share, ActivityIndicator, ImageBackground,
+  Share, ActivityIndicator, TextInput, ImageBackground,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
+import { createMMKV } from 'react-native-mmkv';
 import { useReferralStore, type ReferralEntry } from '../stores/referralStore';
 import { getUserIcon } from '../utils/userIcon';
 
@@ -109,11 +110,16 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
 }
 
 export default function ReferralScreen() {
-  const { code, referrals, isLoading, fetchReferral } = useReferralStore();
+  const { code, referrals, isLoading, hasUsedCode, isApplying, fetchReferral, applyReferralCode } = useReferralStore();
   const [copied, setCopied] = React.useState(false);
+  const [inputCode, setInputCode] = React.useState('');
+  const [applyError, setApplyError] = React.useState('');
 
   useEffect(() => {
     fetchReferral();
+    const authStorage = createMMKV({ id: 'auth' });
+    const pending = authStorage.getString('referral.pendingCode');
+    if (pending) setInputCode(pending);
   }, []);
 
   const shareLink = code ? `${DEEP_LINK_BASE}${code}` : '';
@@ -132,6 +138,16 @@ export default function ReferralScreen() {
     });
   };
 
+  const handleApplyCode = async () => {
+    setApplyError('');
+    try {
+      await applyReferralCode(inputCode);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Невірний код або вже використаний';
+      setApplyError(msg);
+    }
+  };
+
   return (
     <ImageBackground
       source={require('../../assets/welcome-bg.png')}
@@ -147,6 +163,41 @@ export default function ReferralScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <Text style={styles.heading}>Referrals</Text>
+
+          {hasUsedCode === false && (
+            <View style={styles.applyCard}>
+              <Text style={styles.applyLabel}>У вас є реферальний код?</Text>
+              <View style={styles.applyRow}>
+                <TextInput
+                  style={styles.applyInput}
+                  value={inputCode}
+                  onChangeText={(t) => { setInputCode(t.toUpperCase()); setApplyError(''); }}
+                  autoCapitalize="characters"
+                  maxLength={6}
+                  placeholder="XXXXXX"
+                  placeholderTextColor="#B7B3A2"
+                  editable={!isApplying}
+                />
+                <Pressable
+                  onPress={handleApplyCode}
+                  style={({ pressed }) => [
+                    styles.applyBtn,
+                    (isApplying || inputCode.length < 6) && styles.applyBtnDisabled,
+                    pressed && { opacity: 0.75 },
+                  ]}
+                  disabled={isApplying || inputCode.length < 6}
+                >
+                  {isApplying ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.applyBtnText}>Застосувати</Text>
+                  )}
+                </Pressable>
+              </View>
+              {applyError ? <Text style={styles.applyError}>{applyError}</Text> : null}
+            </View>
+          )}
+
           <View style={styles.codeCard}>
             <Text style={styles.codeLabel}>Your code</Text>
             <View style={styles.codeRow}>
@@ -275,4 +326,60 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   emptyText: { fontFamily: 'Nunito_600SemiBold', fontSize: 14, color: '#9BA3B0', textAlign: 'center', lineHeight: 22 },
+  applyCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    gap: 10,
+    shadowColor: 'rgba(60,80,45,1)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  applyLabel: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: '#5A6650',
+  },
+  applyRow: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  applyInput: {
+    flex: 1,
+    height: 48,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#E4E1D3',
+    backgroundColor: '#FBFAF5',
+    paddingHorizontal: 14,
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 20,
+    color: '#1A3D6B',
+    letterSpacing: 3,
+  },
+  applyBtn: {
+    height: 48,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: '#3FA535',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 110,
+  },
+  applyBtnDisabled: {
+    opacity: 0.45,
+  },
+  applyBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
+    color: '#fff',
+  },
+  applyError: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 12,
+    color: '#C62828',
+  },
 });
