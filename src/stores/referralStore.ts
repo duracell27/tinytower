@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createMMKV } from 'react-native-mmkv';
 import { api } from '../services/api';
+import { syncService } from '../services/sync';
 import { useGameStore } from './gameStore';
 
 const authStorage = createMMKV({ id: 'auth' });
@@ -63,6 +64,7 @@ export const useReferralStore = create<ReferralState>((set) => ({
         coins: data.coins,
         gems: data.gems,
       });
+      syncService.triggerSync();
       set({ hasUsedCode: true, isApplying: false });
     } catch (e) {
       set({ isApplying: false });
