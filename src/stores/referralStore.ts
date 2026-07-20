@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createMMKV } from 'react-native-mmkv';
 import { api } from '../services/api';
+import { useGameStore } from './gameStore';
 
 const authStorage = createMMKV({ id: 'auth' });
 
@@ -52,8 +53,16 @@ export const useReferralStore = create<ReferralState>((set) => ({
   applyReferralCode: async (code) => {
     set({ isApplying: true });
     try {
-      await api.post('/referrals/apply-code', { code });
+      const data = await api.post<{ ok: true; coins: number; gems: number }>(
+        '/referrals/apply-code',
+        { code },
+      );
       authStorage.remove('referral.pendingCode');
+      useGameStore.getState().pushReferralNotification({
+        type: 'referred_bonus',
+        coins: data.coins,
+        gems: data.gems,
+      });
       set({ hasUsedCode: true, isApplying: false });
     } catch (e) {
       set({ isApplying: false });
