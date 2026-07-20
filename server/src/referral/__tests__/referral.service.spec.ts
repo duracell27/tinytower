@@ -32,6 +32,7 @@ describe('ReferralService', () => {
       referral: {
         findUnique: jest.fn(),
         update: jest.fn().mockResolvedValue({}),
+        create: jest.fn().mockResolvedValue({}),
       },
       player: {
         update: jest.fn().mockResolvedValue({}),
@@ -176,22 +177,38 @@ describe('ReferralService', () => {
     const REFERRER_ID = 'referrer-uuid';
     const CODE = 'ABC123';
 
-    it('creates a referral record and returns { ok: true }', async () => {
+    it('creates referral in tx, grants reward, returns { ok, coins, gems }', async () => {
+      const LEVEL = 15;
       prisma.player.findUnique
-        .mockResolvedValueOnce({ id: REFERRER_ID }) // referrer by code
-        .mockResolvedValueOnce({ playerName: 'TestPlayer' }); // current player
+        .mockResolvedValueOnce({ id: REFERRER_ID })
+        .mockResolvedValueOnce({ playerName: 'TestPlayer', playerLevel: LEVEL });
       prisma.referral.findUnique.mockResolvedValue(null);
 
       const result = await service.applyReferralCode(PLAYER_ID, CODE);
 
-      expect(result).toEqual({ ok: true });
-      expect(prisma.referral.create).toHaveBeenCalledWith({
-        data: {
-          referrerId: REFERRER_ID,
-          referredId: PLAYER_ID,
-          referredName: 'TestPlayer',
-        },
+      expect(result).toEqual({ ok: true, coins: 15_000, gems: 15 });
+      expect(txMock.referral.create).toHaveBeenCalledWith({
+        data: { referrerId: REFERRER_ID, referredId: PLAYER_ID, referredName: 'TestPlayer' },
       });
+      expect(txMock.player.update).toHaveBeenCalledWith({
+        where: { id: PLAYER_ID },
+        data: { balance: { increment: 15_000 } },
+      });
+      expect(txMock.playerState.update).toHaveBeenCalledWith({
+        where: { playerId: PLAYER_ID },
+        data: { gems: { increment: 15 } },
+      });
+    });
+
+    it('applies gems floor of 20 for low-level players', async () => {
+      prisma.player.findUnique
+        .mockResolvedValueOnce({ id: REFERRER_ID })
+        .mockResolvedValueOnce({ playerName: 'Newbie', playerLevel: 5 });
+      prisma.referral.findUnique.mockResolvedValue(null);
+
+      const result = await service.applyReferralCode(PLAYER_ID, CODE);
+
+      expect(result).toEqual({ ok: true, coins: 5_000, gems: 20 });
     });
 
     it('throws BadRequestException if code does not exist', async () => {
@@ -216,9 +233,9 @@ describe('ReferralService', () => {
     it('throws BadRequestException if DB unique constraint fires (race condition)', async () => {
       prisma.player.findUnique
         .mockResolvedValueOnce({ id: REFERRER_ID })
-        .mockResolvedValueOnce({ playerName: 'TestPlayer' });
+        .mockResolvedValueOnce({ playerName: 'TestPlayer', playerLevel: 10 });
       prisma.referral.findUnique.mockResolvedValue(null);
-      prisma.referral.create.mockRejectedValue({ code: 'P2002' });
+      txMock.referral.create.mockRejectedValue({ code: 'P2002' });
 
       await expect(service.applyReferralCode(PLAYER_ID, CODE)).rejects.toThrow(BadRequestException);
     });

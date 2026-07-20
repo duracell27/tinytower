@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS, PURCHASE_BONUS_PERCENT } from './referral-constants';
+import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS, PURCHASE_BONUS_PERCENT, REFERRED_COINS_PER_LEVEL, REFERRED_GEMS_MIN } from './referral-constants';
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -137,24 +137,37 @@ export class ReferralService {
 
     const player = await this.prisma.player.findUnique({
       where: { id: playerId },
-      select: { playerName: true },
+      select: { playerName: true, playerLevel: true },
     });
     if (!player) throw new NotFoundException('Player not found');
 
-    try {
-      await this.prisma.referral.create({
-        data: {
-          referrerId: referrer.id,
-          referredId: playerId,
-          referredName: player.playerName,
-        },
-      });
-    } catch (e: any) {
-      if (e?.code === 'P2002') throw new BadRequestException('Referral code already used');
-      throw e;
-    }
+    const coins = player.playerLevel * REFERRED_COINS_PER_LEVEL;
+    const gems = player.playerLevel < 10 ? REFERRED_GEMS_MIN : player.playerLevel;
 
-    return { ok: true as const };
+    await this.prisma.$transaction(async (tx) => {
+      try {
+        await tx.referral.create({
+          data: {
+            referrerId: referrer.id,
+            referredId: playerId,
+            referredName: player.playerName,
+          },
+        });
+      } catch (e: any) {
+        if (e?.code === 'P2002') throw new BadRequestException('Referral code already used');
+        throw e;
+      }
+      await tx.player.update({
+        where: { id: playerId },
+        data: { balance: { increment: coins } },
+      });
+      await tx.playerState.update({
+        where: { playerId },
+        data: { gems: { increment: gems } },
+      });
+    });
+
+    return { ok: true as const, coins, gems };
   }
 
   async processPurchaseBonus(buyerId: string, purchaseAmount: number) {
