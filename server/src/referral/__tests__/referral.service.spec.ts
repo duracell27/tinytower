@@ -43,7 +43,11 @@ describe('ReferralService', () => {
 
     prisma = {
       player: { findUnique: jest.fn(), update: jest.fn() },
-      referral: { findMany: jest.fn().mockResolvedValue([]) },
+      referral: {
+        findMany: jest.fn().mockResolvedValue([]),
+        findUnique: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue({}),
+      },
       $transaction: jest.fn(async (fn: (tx: any) => Promise<any>) => fn(txMock)),
     };
 
@@ -143,6 +147,70 @@ describe('ReferralService', () => {
       await expect(
         service.claimMilestone(PLAYER_ID, REFERRAL_ID, 'registered'),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getPlayerReferral hasUsedCode', () => {
+    it('returns hasUsedCode: true when referral with referredId exists', async () => {
+      prisma.player.findUnique.mockResolvedValue({ referralCode: 'ABC123' });
+      prisma.referral.findUnique.mockResolvedValue({ id: 'some-ref' });
+      prisma.referral.findMany.mockResolvedValue([]);
+
+      const result = await service.getPlayerReferral(PLAYER_ID);
+
+      expect(result.hasUsedCode).toBe(true);
+    });
+
+    it('returns hasUsedCode: false when no referral with referredId', async () => {
+      prisma.player.findUnique.mockResolvedValue({ referralCode: 'ABC123' });
+      prisma.referral.findUnique.mockResolvedValue(null);
+      prisma.referral.findMany.mockResolvedValue([]);
+
+      const result = await service.getPlayerReferral(PLAYER_ID);
+
+      expect(result.hasUsedCode).toBe(false);
+    });
+  });
+
+  describe('applyReferralCode', () => {
+    const REFERRER_ID = 'referrer-uuid';
+    const CODE = 'ABC123';
+
+    it('creates a referral record and returns { ok: true }', async () => {
+      prisma.player.findUnique
+        .mockResolvedValueOnce({ id: REFERRER_ID }) // referrer by code
+        .mockResolvedValueOnce({ playerName: 'TestPlayer' }); // current player
+      prisma.referral.findUnique.mockResolvedValue(null);
+
+      const result = await service.applyReferralCode(PLAYER_ID, CODE);
+
+      expect(result).toEqual({ ok: true });
+      expect(prisma.referral.create).toHaveBeenCalledWith({
+        data: {
+          referrerId: REFERRER_ID,
+          referredId: PLAYER_ID,
+          referredName: 'TestPlayer',
+        },
+      });
+    });
+
+    it('throws BadRequestException if code does not exist', async () => {
+      prisma.player.findUnique.mockResolvedValue(null);
+
+      await expect(service.applyReferralCode(PLAYER_ID, CODE)).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException if player uses their own code', async () => {
+      prisma.player.findUnique.mockResolvedValue({ id: PLAYER_ID });
+
+      await expect(service.applyReferralCode(PLAYER_ID, CODE)).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException if referral code already used', async () => {
+      prisma.player.findUnique.mockResolvedValue({ id: REFERRER_ID });
+      prisma.referral.findUnique.mockResolvedValue(makeReferral());
+
+      await expect(service.applyReferralCode(PLAYER_ID, CODE)).rejects.toThrow(BadRequestException);
     });
   });
 });

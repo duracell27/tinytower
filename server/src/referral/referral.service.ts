@@ -35,14 +35,18 @@ export class ReferralService {
       }
     }
 
-    const referrals = await this.prisma.referral.findMany({
-      where: { referrerId: playerId },
-      include: { referred: { select: { playerLevel: true } } },
-      orderBy: { createdAt: 'asc' },
-    });
+    const [referrals, usedReferral] = await Promise.all([
+      this.prisma.referral.findMany({
+        where: { referrerId: playerId },
+        include: { referred: { select: { playerLevel: true } } },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.prisma.referral.findUnique({ where: { referredId: playerId } }),
+    ]);
 
     return {
       code: referralCode ?? null,
+      hasUsedCode: usedReferral !== null,
       referrals: referrals.map((r) => ({
         id: r.id,
         referredName: r.referredName,
@@ -118,6 +122,34 @@ export class ReferralService {
 
       throw new BadRequestException('Unknown milestone');
     });
+  }
+
+  async applyReferralCode(playerId: string, code: string) {
+    const referrer = await this.prisma.player.findUnique({
+      where: { referralCode: code },
+      select: { id: true },
+    });
+    if (!referrer) throw new BadRequestException('Invalid referral code');
+    if (referrer.id === playerId) throw new BadRequestException('Cannot use your own referral code');
+
+    const existing = await this.prisma.referral.findUnique({ where: { referredId: playerId } });
+    if (existing) throw new BadRequestException('Referral code already used');
+
+    const player = await this.prisma.player.findUnique({
+      where: { id: playerId },
+      select: { playerName: true },
+    });
+    if (!player) throw new NotFoundException('Player not found');
+
+    await this.prisma.referral.create({
+      data: {
+        referrerId: referrer.id,
+        referredId: playerId,
+        referredName: player.playerName,
+      },
+    });
+
+    return { ok: true as const };
   }
 
   async processPurchaseBonus(buyerId: string, purchaseAmount: number) {

@@ -10,6 +10,10 @@ const ClaimSchema = z.object({
   milestone: z.enum(['registered', 'level10', 'level30']),
 });
 
+const ApplyCodeSchema = z.object({
+  code: z.string().regex(/^[A-Z0-9]{6}$/),
+});
+
 @Controller()
 export class ReferralController {
   constructor(private referralService: ReferralService) {}
@@ -33,5 +37,16 @@ export class ReferralController {
       result.data.referralId,
       result.data.milestone,
     );
+  }
+
+  @Post('referrals/apply-code')
+  @UseGuards(JwtAuthGuard)
+  async applyReferralCode(
+    @Req() req: { user: { playerId: string } },
+    @Body() body: unknown,
+  ) {
+    const result = ApplyCodeSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues);
+    return this.referralService.applyReferralCode(req.user.playerId, result.data.code);
   }
 }
