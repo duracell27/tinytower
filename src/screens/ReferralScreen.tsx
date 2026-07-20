@@ -12,6 +12,7 @@ import { useReferralStore, type ReferralEntry } from '../stores/referralStore';
 import { getUserIcon } from '../utils/userIcon';
 
 const DEEP_LINK_BASE = 'tinytower://ref?code=';
+const authStorage = createMMKV({ id: 'auth' });
 
 const ICON_OK       = require('../../assets/img/OkIcon.png');
 const ICON_CLOCK    = require('../../assets/img/sandClock.png');
@@ -117,7 +118,6 @@ export default function ReferralScreen() {
 
   useEffect(() => {
     fetchReferral();
-    const authStorage = createMMKV({ id: 'auth' });
     const pending = authStorage.getString('referral.pendingCode');
     if (pending) setInputCode(pending);
   }, []);
@@ -143,7 +143,7 @@ export default function ReferralScreen() {
     try {
       await applyReferralCode(inputCode);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Невірний код або вже використаний';
+      const msg = e instanceof Error ? e.message : 'Invalid or already used code';
       setApplyError(msg);
     }
   };
@@ -166,7 +166,7 @@ export default function ReferralScreen() {
 
           {hasUsedCode === false && (
             <View style={styles.applyCard}>
-              <Text style={styles.applyLabel}>У вас є реферальний код?</Text>
+              <Text style={styles.applyLabel}>Have a referral code?</Text>
               <View style={styles.applyRow}>
                 <TextInput
                   style={styles.applyInput}
@@ -190,7 +190,7 @@ export default function ReferralScreen() {
                   {isApplying ? (
                     <ActivityIndicator size="small" color="#fff" />
                   ) : (
-                    <Text style={styles.applyBtnText}>Застосувати</Text>
+                    <Text style={styles.applyBtnText}>Apply</Text>
                   )}
                 </Pressable>
               </View>

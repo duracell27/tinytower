@@ -46,7 +46,7 @@ export class ReferralController {
     @Body() body: unknown,
   ) {
     const result = ApplyCodeSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException('Invalid referral code format');
     return this.referralService.applyReferralCode(req.user.playerId, result.data.code);
   }
 }
