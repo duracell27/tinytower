@@ -55,7 +55,8 @@ export interface FailedCommandEntry {
 export type ReferralNotification =
   | { type: 'claim'; referralId: string; referredName: string; milestone: 'registered'; coins: number }
   | { type: 'claim'; referralId: string; referredName: string; milestone: 'level10' | 'level30'; gems: number }
-  | { type: 'purchase_bonus'; names: string[]; totalBonus: number };
+  | { type: 'purchase_bonus'; names: string[]; totalBonus: number }
+  | { type: 'referred_bonus'; coins: number; gems: number };
 
 interface UIState {
   insufficientResources: InsufficientResourcesPayload | null;
@@ -121,6 +122,7 @@ interface GameActions {
     claims: Array<{ id: string; referredName: string; milestone: 'registered' | 'level10' | 'level30'; gems?: number; coins?: number }>,
     bonuses: Array<{ referredName: string; bonus: number; purchaseAmount: number }>
   ) => void;
+  pushReferralNotification: (notification: ReferralNotification) => void;
   dismissReferralNotification: () => void;
   clearFailedCommandLog: () => void;
   reset: () => void;
@@ -340,6 +342,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
     return { pendingReferralNotifications: [...cur.pendingReferralNotifications, ...newNotifs] };
   }),
+
+  pushReferralNotification: (notification) => set((cur) => ({
+    pendingReferralNotifications: [...cur.pendingReferralNotifications, notification],
+  })),
 
   dismissReferralNotification: () => set((cur) => ({
     pendingReferralNotifications: cur.pendingReferralNotifications.slice(1),
