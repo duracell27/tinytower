@@ -177,7 +177,7 @@ describe('ReferralService', () => {
     const REFERRER_ID = 'referrer-uuid';
     const CODE = 'ABC123';
 
-    it('creates referral in tx, grants reward, returns { ok, coins, gems }', async () => {
+    it('grants reward at level below floor (gems clamped to 20)', async () => {
       const LEVEL = 15;
       prisma.player.findUnique
         .mockResolvedValueOnce({ id: REFERRER_ID })
@@ -209,6 +209,22 @@ describe('ReferralService', () => {
       const result = await service.applyReferralCode(PLAYER_ID, CODE);
 
       expect(result).toEqual({ ok: true, coins: 5_000, gems: 20 });
+    });
+
+    it('grants reward at level above floor (gems = playerLevel)', async () => {
+      const LEVEL = 25;
+      prisma.player.findUnique
+        .mockResolvedValueOnce({ id: REFERRER_ID })
+        .mockResolvedValueOnce({ playerName: 'Veteran', playerLevel: LEVEL });
+      prisma.referral.findUnique.mockResolvedValue(null);
+
+      const result = await service.applyReferralCode(PLAYER_ID, CODE);
+
+      expect(result).toEqual({ ok: true, coins: 25_000, gems: 25 });
+      expect(txMock.playerState.update).toHaveBeenCalledWith({
+        where: { playerId: PLAYER_ID },
+        data: { gems: { increment: 25 } },
+      });
     });
 
     it('throws BadRequestException if code does not exist', async () => {
