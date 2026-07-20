@@ -36,7 +36,7 @@ interface AuthState {
 }
 
 interface AuthActions {
-  register: (email: string, password: string, playerName: string, referralCode?: string) => Promise<void>;
+  register: (email: string, password: string, playerName: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   quickLogin: (password: string) => Promise<void>;
   logout: () => void;
@@ -69,21 +69,20 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   isGuest: false,
   isLoading: false,
 
-  register: async (email, password, playerName, referralCode) => {
+  register: async (email, password, playerName) => {
     set({ isLoading: true });
     try {
       const data = await api.post<{
         accessToken: string;
         refreshToken: string;
         player: PlayerInfo;
-      }>('/auth/register', { email, password, playerName, ...(referralCode ? { referralCode } : {}) });
+      }>('/auth/register', { email, password, playerName });
 
       api.setTokens(data.accessToken, data.refreshToken);
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
       setupUserPersistence(data.player.id);
-      getStorage().remove('referral.pendingCode');
     } catch (e) {
       set({ isLoading: false });
       throw e;
