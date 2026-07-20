@@ -212,5 +212,15 @@ describe('ReferralService', () => {
 
       await expect(service.applyReferralCode(PLAYER_ID, CODE)).rejects.toThrow(BadRequestException);
     });
+
+    it('throws BadRequestException if DB unique constraint fires (race condition)', async () => {
+      prisma.player.findUnique
+        .mockResolvedValueOnce({ id: REFERRER_ID })
+        .mockResolvedValueOnce({ playerName: 'TestPlayer' });
+      prisma.referral.findUnique.mockResolvedValue(null);
+      prisma.referral.create.mockRejectedValue({ code: 'P2002' });
+
+      await expect(service.applyReferralCode(PLAYER_ID, CODE)).rejects.toThrow(BadRequestException);
+    });
   });
 });

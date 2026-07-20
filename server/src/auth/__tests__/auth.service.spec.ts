@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from '../auth.service';
 import { PlayerService } from '../../player/player.service';
-import { PrismaService } from '../../prisma/prisma.service';
 import { REDIS_CLIENT } from '../redis.provider';
 import * as bcrypt from 'bcrypt';
 
@@ -48,10 +47,6 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        {
-          provide: PrismaService,
-          useValue: {},
-        },
         {
           provide: PlayerService,
           useValue: {

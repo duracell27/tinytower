@@ -6,7 +6,6 @@ import Redis from 'ioredis';
 import { randomUUID } from 'crypto';
 import type { StringValue } from 'ms';
 import { PlayerService } from '../player/player.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { REDIS_CLIENT } from './redis.provider';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
@@ -16,7 +15,6 @@ export class AuthService {
   private readonly refreshTtlSeconds: number;
 
   constructor(
-    private prisma: PrismaService,
     private playerService: PlayerService,
     private jwtService: JwtService,
     private configService: ConfigService,

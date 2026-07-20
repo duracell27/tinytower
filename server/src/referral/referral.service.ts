@@ -141,13 +141,18 @@ export class ReferralService {
     });
     if (!player) throw new NotFoundException('Player not found');
 
-    await this.prisma.referral.create({
-      data: {
-        referrerId: referrer.id,
-        referredId: playerId,
-        referredName: player.playerName,
-      },
-    });
+    try {
+      await this.prisma.referral.create({
+        data: {
+          referrerId: referrer.id,
+          referredId: playerId,
+          referredName: player.playerName,
+        },
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2002') throw new BadRequestException('Referral code already used');
+      throw e;
+    }
 
     return { ok: true as const };
   }
