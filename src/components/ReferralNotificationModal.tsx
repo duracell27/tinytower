@@ -45,6 +45,7 @@ export default function ReferralNotificationModal() {
 
   const isClaimModal = notification?.type === 'claim';
   const isPurchaseModal = notification?.type === 'purchase_bonus';
+  const isReferredBonusModal = notification?.type === 'referred_bonus';
 
   return (
     <Modal
@@ -59,7 +60,10 @@ export default function ReferralNotificationModal() {
 
         {notification && (
           <Animated.View style={[styles.card, cardStyle]}>
-            <LinearGradient colors={['#E8F4FF', '#D0E8FF']} style={styles.cardGradient}>
+            <LinearGradient
+              colors={isReferredBonusModal ? ['#E8FFF0', '#D0F5DC'] : ['#E8F4FF', '#D0E8FF']}
+              style={styles.cardGradient}
+            >
 
               {isClaimModal && (
                 <>
@@ -136,6 +140,40 @@ export default function ReferralNotificationModal() {
                 </>
               )}
 
+              {notification?.type === 'referred_bonus' && (
+                <>
+                  <Image
+                    source={require('../../assets/img/confetti.png')}
+                    style={styles.confettiIcon}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.title}>Welcome Bonus!</Text>
+                  <Text style={styles.body}>You used a referral code</Text>
+                  <View style={styles.referredRewardRow}>
+                    <View style={styles.rewardRow}>
+                      <Image
+                        source={require('../../assets/img/coin.png')}
+                        style={{ width: 18, height: 18 }}
+                      />
+                      <Text style={styles.rewardText}>+{notification.coins.toLocaleString()}</Text>
+                    </View>
+                    <View style={styles.rewardRow}>
+                      <GemIcon size={18} />
+                      <Text style={styles.rewardText}>+{notification.gems}</Text>
+                    </View>
+                  </View>
+                  <Pressable
+                    onPress={dismiss}
+                    style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+                  >
+                    <LinearGradient colors={['#3FA535', '#2D7A25']} style={styles.buttonGradient}>
+                      <Text style={styles.buttonText}>Awesome!</Text>
+                    </LinearGradient>
+                    <View style={styles.buttonShadow} />
+                  </Pressable>
+                </>
+              )}
+
             </LinearGradient>
           </Animated.View>
         )}
@@ -174,6 +212,14 @@ const styles = StyleSheet.create({
   purchaseIllustration: {
     width: 72,
     height: 72,
+  },
+  confettiIcon: {
+    width: 72,
+    height: 72,
+  },
+  referredRewardRow: {
+    flexDirection: 'row',
+    gap: 10,
   },
   title: {
     fontFamily: 'Fredoka_700Bold',
