@@ -4,7 +4,6 @@ export const RegisterSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   playerName: z.string().min(1).max(30),
-  referralCode: z.string().length(6).toUpperCase().optional(),
 });
 
 export type RegisterDto = z.infer<typeof RegisterSchema>;

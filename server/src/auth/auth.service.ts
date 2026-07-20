@@ -36,19 +36,6 @@ export class AuthService {
       email, passwordHash, dto.playerName,
     );
 
-    if (dto.referralCode) {
-      const referrer = await this.playerService.findByReferralCode(dto.referralCode);
-      if (referrer && referrer.id !== player.id) {
-        await this.prisma.referral.create({
-          data: {
-            referrerId: referrer.id,
-            referredId: player.id,
-            referredName: player.playerName,
-          },
-        });
-      }
-    }
-
     const tokens = await this.generateTokens(player.id, player.email);
     return {
       ...tokens,
