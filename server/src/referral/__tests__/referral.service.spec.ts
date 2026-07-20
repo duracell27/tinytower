@@ -186,7 +186,7 @@ describe('ReferralService', () => {
 
       const result = await service.applyReferralCode(PLAYER_ID, CODE);
 
-      expect(result).toEqual({ ok: true, coins: 15_000, gems: 15 });
+      expect(result).toEqual({ ok: true, coins: 15_000, gems: 20 });
       expect(txMock.referral.create).toHaveBeenCalledWith({
         data: { referrerId: REFERRER_ID, referredId: PLAYER_ID, referredName: 'TestPlayer' },
       });
@@ -196,7 +196,7 @@ describe('ReferralService', () => {
       });
       expect(txMock.playerState.update).toHaveBeenCalledWith({
         where: { playerId: PLAYER_ID },
-        data: { gems: { increment: 15 } },
+        data: { gems: { increment: 20 } },
       });
     });
 

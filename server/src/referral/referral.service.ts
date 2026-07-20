@@ -142,7 +142,7 @@ export class ReferralService {
     if (!player) throw new NotFoundException('Player not found');
 
     const coins = player.playerLevel * REFERRED_COINS_PER_LEVEL;
-    const gems = player.playerLevel < 10 ? REFERRED_GEMS_MIN : player.playerLevel;
+    const gems = Math.max(player.playerLevel, REFERRED_GEMS_MIN);
 
     await this.prisma.$transaction(async (tx) => {
       try {
