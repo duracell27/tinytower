@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, HttpException } from '@nestjs/common';
 import { ChatService } from '../chat.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -46,6 +47,39 @@ describe('ChatService', () => {
           createdAt: true,
         },
       });
+    });
+  });
+
+  describe('sendMessage', () => {
+    const playerId = 'player-1';
+    const playerName = 'Alice';
+
+    it('creates and returns the message', async () => {
+      const created = { id: 'new-id', playerId, playerName, body: 'Hello world', createdAt: new Date() };
+      prisma.chatMessage.findFirst.mockResolvedValue(null);
+      prisma.chatMessage.create.mockResolvedValue(created);
+
+      const result = await chatService.sendMessage(playerId, playerName, 'Hello world');
+      expect(result).toEqual(created);
+      expect(prisma.chatMessage.create).toHaveBeenCalledWith({
+        data: { playerId, playerName, body: 'Hello world' },
+      });
+    });
+
+    it('throws BadRequestException when body exceeds 300 chars', async () => {
+      await expect(
+        chatService.sendMessage(playerId, playerName, 'a'.repeat(301)),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.chatMessage.create).not.toHaveBeenCalled();
+    });
+
+    it('throws 429 when player posts within 3 seconds', async () => {
+      prisma.chatMessage.findFirst.mockResolvedValue({
+        id: 'prev', createdAt: new Date(Date.now() - 1000), // 1 s ago
+      });
+      await expect(
+        chatService.sendMessage(playerId, playerName, 'spam'),
+      ).rejects.toBeInstanceOf(HttpException);
     });
   });
 });
