@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, Pressable, FlatList, Alert, Modal,
-  StyleSheet, Dimensions,
+  StyleSheet, Dimensions, TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Polygon } from 'react-native-svg';
@@ -26,6 +26,8 @@ const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
 const DISMISS_THRESHOLD = 120;
 const SHEET_TIMING = { duration: 420, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const SCRIM_TIMING = { duration: 400, easing: Easing.linear };
+const SEARCH_BAR_HEIGHT = 56;
+const SEARCH_SCROLL_OFFSET = SEARCH_BAR_HEIGHT + 14;
 
 type Tab = 'unsatisfied' | 'mid' | 'happy' | 'specialists';
 const TABS: Tab[] = ['unsatisfied', 'mid', 'happy', 'specialists'];
@@ -97,6 +99,40 @@ function categorizeWorkers(
   return result;
 }
 
+function matchesSearch(
+  worker: Worker,
+  query: string,
+  floors: Floor[],
+  openedFloorTypes: Record<string, string>,
+): boolean {
+  const q = query.toLowerCase().trim();
+  if (!q) return true;
+  if (worker.name.toLowerCase().includes(q)) return true;
+  if (worker.assignedFloorId === null) {
+    for (const ft of Object.values(gameConfig.floorTypes)) {
+      const biz = ft.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
+      if (biz && biz.name.toLowerCase().includes(q)) return true;
+    }
+    if (worker.dreamJob.toLowerCase().includes(q)) return true;
+  } else {
+    const floorType =
+      openedFloorTypes[String(worker.assignedFloorId)] ??
+      gameConfig.floors.find((f) => f.id === worker.assignedFloorId)?.floorType;
+    if (floorType) {
+      const ft = gameConfig.floorTypes[floorType as keyof typeof gameConfig.floorTypes];
+      if (ft) {
+        for (const biz of ft.businesses) {
+          if (biz.name.toLowerCase().includes(q)) return true;
+        }
+      }
+    }
+    const floor = floors.find((f) => f.id === worker.assignedFloorId);
+    const typeId = floor?.productions[worker.assignedSlotIdx!]?.typeId;
+    if (typeId && typeId.toLowerCase().includes(q)) return true;
+  }
+  return false;
+}
+
 function formatTimeShort(ms: number): string {
   const totalSec = Math.ceil(ms / 1000);
   if (totalSec < 60) return `${totalSec}s`;
@@ -113,6 +149,8 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('unsatisfied');
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const flatListRef = useRef<FlatList<Worker>>(null);
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -130,7 +168,14 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
 
   useEffect(() => {
     setExpandedWorkerId(null);
-    if (!visible) clearInsufficientResources();
+    if (!visible) {
+      clearInsufficientResources();
+      setSearchQuery('');
+    } else {
+      setTimeout(() => {
+        flatListRef.current?.scrollToOffset({ offset: SEARCH_SCROLL_OFFSET, animated: false });
+      }, 50);
+    }
   }, [visible, clearInsufficientResources]);
 
   useEffect(() => {
@@ -161,6 +206,12 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
         scrimOpacity.value = withTiming(1, { duration: 200 });
       }
     });
+
+  useEffect(() => {
+    setSearchQuery('');
+    setExpandedWorkerId(null);
+    flatListRef.current?.scrollToOffset({ offset: SEARCH_SCROLL_OFFSET, animated: false });
+  }, [activeTab]);
 
   const scrimStyle = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
@@ -230,6 +281,13 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
     activeTab === 'happy'
       ? [...categorized.happy, ...categorized.specialists]
       : categorized[activeTab];
+
+  const filteredWorkers = React.useMemo(
+    () => searchQuery.trim()
+      ? currentWorkers.filter((w) => matchesSearch(w, searchQuery, floors, openedFloorTypes))
+      : currentWorkers,
+    [currentWorkers, searchQuery, floors, openedFloorTypes],
+  );
 
   const renderItem = useCallback(
     ({ item: worker }: { item: Worker }) => {
@@ -373,15 +431,57 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
           </GestureDetector>
 
           <FlatList
-            data={currentWorkers}
+            ref={flatListRef}
+            data={filteredWorkers}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             style={styles.list}
+            keyboardShouldPersistTaps="handled"
+            ListHeaderComponent={
+              <View style={styles.searchWrap}>
+                <View style={styles.searchRow}>
+                  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                      stroke="#9098A6"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                  <TextInput
+                    style={styles.searchInput}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    placeholder={t('workersPanel.searchPlaceholder')}
+                    placeholderTextColor="#B0B6C2"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType="search"
+                  />
+                  {searchQuery.length > 0 && (
+                    <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                      <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                        <Path
+                          d="M18 6L6 18M6 6l12 12"
+                          stroke="#9098A6"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </Svg>
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+            }
             ListEmptyComponent={
               <View style={styles.emptyWrap}>
-                <Text style={styles.emptyText}>—</Text>
+                <Text style={styles.emptyText}>
+                  {searchQuery.trim() ? t('workersPanel.searchEmpty') : '—'}
+                </Text>
               </View>
             }
           />
@@ -487,4 +587,27 @@ const styles = StyleSheet.create({
   listContent: { padding: 14, gap: 10, paddingBottom: 40 },
   emptyWrap: { alignItems: 'center', paddingTop: 60 },
   emptyText: { fontFamily: 'Fredoka_500Medium', fontSize: 16, color: '#B0B6C2' },
+  searchWrap: {
+    height: SEARCH_BAR_HEIGHT,
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(40,60,90,0.08)',
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 15,
+    color: '#2A3344',
+    paddingVertical: 0,
+  },
 });

@@ -133,6 +133,8 @@
     "fireBlockedTitle": "Cannot Fire",
     "fireBlockedDelivering": "{{name}} is delivering, {{time}} remaining.",
     "fireBlockedSelling": "{{name}} is selling, {{time}} remaining.",
+    "searchPlaceholder": "Name, floor, production…",
+    "searchEmpty": "No workers found",
     "fireHotelFullTitle": "Hotel is full",
     "fireHotelFullMessage": "{{name}} will permanently leave the skyscraper.",
     "fireHotelFullConfirm": "Confirm",
