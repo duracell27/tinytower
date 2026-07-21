@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View, Text, FlatList, TextInput, Pressable,
   StyleSheet, KeyboardAvoidingView, Platform, Alert,
@@ -16,6 +16,9 @@ export default function ChatScreen() {
   const player = useAuthStore((s) => s.player);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [inputText, setInputText] = useState('');
+
+  // store delivers ascending; reverse + inverted renders newest at bottom
+  const reversed = useMemo(() => [...messages].reverse(), [messages]);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,7 +53,7 @@ export default function ChatScreen() {
       keyboardVerticalOffset={90}
     >
       <FlatList
-        data={[...messages].reverse()}
+        data={reversed}
         keyExtractor={(m) => m.id}
         inverted
         renderItem={({ item }) => (
