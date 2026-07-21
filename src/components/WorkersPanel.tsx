@@ -71,6 +71,12 @@ function resolveFloorName(
   return business?.name ?? tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
 }
 
+function resolveWorkerTab(mood: string, workerLevel: number): Tab {
+  if (mood === 'good' && workerLevel === 9) return 'specialists';
+  if (mood === 'good') return 'happy';
+  return 'mid';
+}
+
 function categorizeWorkers(
   workers: Worker[],
   floors: Floor[],
@@ -88,13 +94,8 @@ function categorizeWorkers(
     const production = floor?.productions[worker.assignedSlotIdx!];
     const mood = getWorkerMood(worker, floorType, production?.typeId ?? null);
 
-    if (mood === 'good' && worker.level === 9) {
-      result.specialists.push(worker);
-    } else if (mood === 'good') {
-      result.happy.push(worker);
-    } else {
-      result.mid.push(worker);
-    }
+    const tab = resolveWorkerTab(mood, worker.level);
+    result[tab].push(worker);
   }
 
   return result;
@@ -175,6 +176,7 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
     if (!visible) {
       clearInsufficientResources();
       setSearchQuery('');
+      setPendingFocusId(null);
     } else {
       pendingScrollReset.current = true;
     }
@@ -218,17 +220,17 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
   useEffect(() => {
     if (!visible || !targetWorkerId) return;
     const worker = workers.find((w) => w.id === targetWorkerId);
-    if (!worker || worker.assignedFloorId === null) return;
+    if (!worker || worker.assignedFloorId === null) {
+      useGameStore.getState().clearPendingWorkerFocus();
+      return;
+    }
 
     const floorType = resolveFloorType(openedFloorTypes, worker.assignedFloorId);
     const floor = floors.find((f) => f.id === worker.assignedFloorId);
     const production = floor?.productions[worker.assignedSlotIdx!];
     const mood = getWorkerMood(worker, floorType, production?.typeId ?? null);
 
-    let targetTab: Tab;
-    if (mood === 'good' && worker.level === 9) targetTab = 'specialists';
-    else if (mood === 'good') targetTab = 'happy';
-    else targetTab = 'mid';
+    const targetTab = resolveWorkerTab(mood, worker.level);
 
     setPendingFocusId(targetWorkerId);
     setActiveTab(targetTab);

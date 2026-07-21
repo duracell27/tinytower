@@ -444,6 +444,8 @@ export default function ProductionCard({
           <Pressable
             style={({ pressed }) => [styles.workerBadgeColumn, pressed && { opacity: 0.7 }]}
             hitSlop={6}
+            accessibilityLabel={`View ${worker.name} in My Workers`}
+            accessibilityRole="button"
             onPress={() => {
               useGameStore.getState().setPendingWorkerFocus(worker.id);
               router.navigate('/(tabs)/menu');
