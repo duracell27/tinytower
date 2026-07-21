@@ -26,7 +26,12 @@
       "other": "Other Type · 1x"
     },
     "empty": "All slots are taken",
-    "assign": "Assign"
+    "assign": "Assign",
+    "replace": "Replace",
+    "occupiedSection": "Can Replace",
+    "replaceBlockedTitle": "Cannot Replace",
+    "replaceBlockedDelivering": "{{name}} is delivering, {{time}} remaining.",
+    "replaceBlockedSelling": "{{name}} is selling, {{time}} remaining."
   },
   "productionCard": {
     "time": {

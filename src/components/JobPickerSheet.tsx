@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Modal,
   StyleSheet,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
@@ -20,7 +21,9 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerForSlot } from '../../shared/engine/workerUtils';
+import { clock } from '../services/clock';
 import { FLOOR_TYPE_SCHEMES } from './FloorCard';
+import { getProductionTimeRemaining } from './WorkerJobCard';
 import WorkerAvatar from './WorkerAvatar';
 import type { Worker } from '../../shared/types';
 
@@ -39,12 +42,25 @@ interface SlotItem {
   slotIdx: number;
   typeId: string;
   matchLevel: 'dream' | 'match' | 'other';
+  occupant: Worker | null;
+  floorName?: string;
 }
 
 interface FloorSection {
   floorId: number;
   floorType: string;
   data: SlotItem[];
+  isOccupied?: boolean;
+}
+
+function formatTimeShort(ms: number): string {
+  const totalSec = Math.ceil(ms / 1000);
+  if (totalSec < 60) return `${totalSec}s`;
+  const totalMin = Math.floor(totalSec / 60);
+  if (totalMin < 60) return `${totalMin}m`;
+  const hours = Math.floor(totalMin / 60);
+  const min = totalMin % 60;
+  return `${hours}h ${min}m`;
 }
 
 const MATCH_BADGE_STYLES = {
@@ -86,34 +102,49 @@ export default function JobPickerSheet({
   const sections = useMemo((): FloorSection[] => {
     if (!worker) return [];
 
+    const occupiedSlots: SlotItem[] = [];
     const result: FloorSection[] = [];
+
+    const resolveFloorDisplayName = (floorId: number, floorType: string, firstTypeId?: string | null): string => {
+      const ftBusinesses = gameConfig.floorTypes[floorType as keyof typeof gameConfig.floorTypes]?.businesses ?? [];
+      if (firstTypeId) {
+        const biz = ftBusinesses.find((b) => b.dreamJobs.includes(firstTypeId));
+        if (biz) return biz.name;
+      }
+      return `Floor ${floorId}`;
+    };
 
     // Process static floors
     for (const floorConfig of gameConfig.floors) {
       const slots: SlotItem[] = [];
       for (let slotIdx = 0; slotIdx < floorConfig.slots; slotIdx++) {
         const assigned = getWorkerForSlot(workers, floorConfig.id, slotIdx);
-        if (assigned && assigned.id !== worker.id) continue;
+        if (assigned && assigned.id === worker.id) continue;
         const typeId = floorConfig.availableTypes[slotIdx];
         if (!typeId) continue;
         let matchLevel: SlotItem['matchLevel'] = 'other';
         if (floorConfig.floorType === worker.floorType) {
           matchLevel = typeId === worker.dreamJob ? 'dream' : 'match';
         }
-        slots.push({ floorId: floorConfig.id, slotIdx, typeId, matchLevel });
+        if (assigned) {
+          if (matchLevel === 'dream' || matchLevel === 'match') {
+            occupiedSlots.push({
+              floorId: floorConfig.id, slotIdx, typeId, matchLevel, occupant: assigned,
+              floorName: resolveFloorDisplayName(floorConfig.id, floorConfig.floorType, typeId),
+            });
+          }
+          continue;
+        }
+        slots.push({ floorId: floorConfig.id, slotIdx, typeId, matchLevel, occupant: null });
       }
       if (slots.length > 0) {
-        result.push({
-          floorId: floorConfig.id,
-          floorType: floorConfig.floorType,
-          data: slots,
-        });
+        result.push({ floorId: floorConfig.id, floorType: floorConfig.floorType, data: slots });
       }
     }
 
     // Process dynamic floors (floor 5+)
     for (const storeFloor of storeFloors) {
-      if (gameConfig.floors.some((f) => f.id === storeFloor.id)) continue; // skip static
+      if (gameConfig.floors.some((f) => f.id === storeFloor.id)) continue;
       const floorType = openedFloorTypes[String(storeFloor.id)];
       if (!floorType) continue;
       if (!gameConfig.floorTypes[floorType]) continue;
@@ -121,20 +152,25 @@ export default function JobPickerSheet({
       const slots: SlotItem[] = [];
       for (let slotIdx = 0; slotIdx < storeFloor.productions.length; slotIdx++) {
         const assigned = getWorkerForSlot(workers, storeFloor.id, slotIdx);
-        if (assigned && assigned.id !== worker.id) continue;
+        if (assigned && assigned.id === worker.id) continue;
         const typeId = storeFloor.productions[slotIdx]?.typeId ?? null;
         let matchLevel: SlotItem['matchLevel'] = 'other';
         if (floorType === worker.floorType) {
           matchLevel = typeId === worker.dreamJob ? 'dream' : 'match';
         }
-        slots.push({ floorId: storeFloor.id, slotIdx, typeId: typeId ?? '', matchLevel });
+        if (assigned) {
+          if (matchLevel === 'dream' || matchLevel === 'match') {
+            occupiedSlots.push({
+              floorId: storeFloor.id, slotIdx, typeId: typeId ?? '', matchLevel, occupant: assigned,
+              floorName: resolveFloorDisplayName(storeFloor.id, floorType, typeId),
+            });
+          }
+          continue;
+        }
+        slots.push({ floorId: storeFloor.id, slotIdx, typeId: typeId ?? '', matchLevel, occupant: null });
       }
       if (slots.length > 0) {
-        result.push({
-          floorId: storeFloor.id,
-          floorType,
-          data: slots,
-        });
+        result.push({ floorId: storeFloor.id, floorType, data: slots });
       }
     }
 
@@ -145,8 +181,21 @@ export default function JobPickerSheet({
       return aMatch - bMatch;
     });
 
+    // Sort occupied: dream first, then match
+    occupiedSlots.sort((a, b) => {
+      const order = { dream: 0, match: 1, other: 2 };
+      return order[a.matchLevel] - order[b.matchLevel];
+    });
+
+    if (occupiedSlots.length > 0) {
+      result.unshift({ floorId: -1, floorType: '', data: occupiedSlots, isOccupied: true });
+    }
+
     return result;
   }, [workers, worker, storeFloors, openedFloorTypes]);
+
+  const { t } = useTranslation('hotel');
+  const { t: tContent } = useTranslation('gameContent');
 
   const handleAssign = (floorId: number, slotIdx: number) => {
     if (!worker) return;
@@ -154,8 +203,33 @@ export default function JobPickerSheet({
     onClose();
   };
 
-  const { t } = useTranslation('hotel');
-  const { t: tContent } = useTranslation('gameContent');
+  const handleReplace = useCallback(
+    (floorId: number, slotIdx: number, occupantId: string) => {
+      if (!worker) return;
+      const floor = storeFloors.find((f) => f.id === floorId);
+      if (!floor) return;
+      const occupant = workers.find((w) => w.id === occupantId);
+      if (!occupant) return;
+
+      const production = floor.productions[occupant.assignedSlotIdx!];
+      const stage = production?.stage;
+      if (stage === 'DELIVERING' || stage === 'SELLING') {
+        const active = getProductionTimeRemaining(floor, occupant.assignedSlotIdx!, clock.now());
+        if (active && active.remainingMs > 0) {
+          const msg = active.stage === 'DELIVERING'
+            ? t('jobPicker.replaceBlockedDelivering', { name: occupant.name, time: formatTimeShort(active.remainingMs) })
+            : t('jobPicker.replaceBlockedSelling', { name: occupant.name, time: formatTimeShort(active.remainingMs) });
+          Alert.alert(t('jobPicker.replaceBlockedTitle'), msg, [{ text: 'OK' }]);
+          return;
+        }
+      }
+
+      useGameStore.getState().fireWorker(occupantId);
+      useGameStore.getState().assignWorker(worker.id, floorId, slotIdx);
+      onClose();
+    },
+    [worker, storeFloors, workers, t, onClose],
+  );
   const ft = worker ? gameConfig.floorTypes[worker.floorType as keyof typeof gameConfig.floorTypes] : null;
   const accent = ft?.accent ?? '#888';
   const category = tContent(`floorTypes.${worker?.floorType ?? ''}.category`, {
@@ -241,7 +315,7 @@ export default function JobPickerSheet({
               <SectionHeader section={section} />
             )}
             renderItem={({ item }) => (
-              <SlotRow item={item} onAssign={handleAssign} />
+              <SlotRow item={item} onAssign={handleAssign} onReplace={handleReplace} />
             )}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
@@ -271,7 +345,19 @@ function resolveSectionName(
 }
 
 function SectionHeader({ section }: { section: FloorSection }) {
+  const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
+
+  if (section.isOccupied) {
+    return (
+      <View style={sectionStyles.container}>
+        <View style={[sectionStyles.header, { backgroundColor: '#7A8596' }]}>
+          <Text style={sectionStyles.floorName}>{t('jobPicker.occupiedSection')}</Text>
+        </View>
+      </View>
+    );
+  }
+
   const scheme = FLOOR_TYPE_SCHEMES[section.floorType];
   const headerColor = scheme?.color ?? '#888';
   const floorName = resolveSectionName(section, tContent);
@@ -291,9 +377,11 @@ function SectionHeader({ section }: { section: FloorSection }) {
 function SlotRow({
   item,
   onAssign,
+  onReplace,
 }: {
   item: SlotItem;
   onAssign: (floorId: number, slotIdx: number) => void;
+  onReplace: (floorId: number, slotIdx: number, occupantId: string) => void;
 }) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
@@ -302,6 +390,42 @@ function SlotRow({
   });
   const badgeStyle = MATCH_BADGE_STYLES[item.matchLevel];
   const badgeLabel = t(`jobPicker.matchBadges.${item.matchLevel}`);
+
+  if (item.occupant) {
+    return (
+      <View style={slotStyles.row}>
+        <View style={slotStyles.occupiedInfo}>
+          <Text style={slotStyles.productName} numberOfLines={1}>
+            {productName}
+          </Text>
+          <Text style={slotStyles.occupantText} numberOfLines={1}>
+            {item.floorName ? `${item.floorName} · ` : ''}{item.occupant.name}
+          </Text>
+        </View>
+
+        <View style={[slotStyles.badge, { backgroundColor: badgeStyle.bg }]}>
+          <Text style={[slotStyles.badgeText, { color: badgeStyle.text }]}>
+            {badgeLabel}
+          </Text>
+        </View>
+
+        <Pressable
+          onPress={() => onReplace(item.floorId, item.slotIdx, item.occupant!.id)}
+          style={({ pressed }) => [
+            slotStyles.assignButton,
+            pressed && slotStyles.assignButtonPressed,
+          ]}
+        >
+          <LinearGradient
+            colors={['#E0813C', '#C4621C']}
+            style={slotStyles.assignButtonGradient}
+          >
+            <Text style={slotStyles.assignButtonText}>{t('jobPicker.replace')}</Text>
+          </LinearGradient>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={slotStyles.row}>
@@ -536,5 +660,16 @@ const slotStyles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
+  },
+  occupiedInfo: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  occupantText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 11,
+    color: '#9098A6',
+    textTransform: 'capitalize',
   },
 });
