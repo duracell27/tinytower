@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, UseGuards, Req, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, UseGuards, Req, BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AdminGuard } from './admin.guard';
 import { ChatService } from './chat.service';
 
 const SendMessageSchema = z.object({
@@ -33,5 +34,11 @@ export class ChatController {
       parsed.data.body,
     );
     return { message };
+  }
+
+  @Delete('messages/:id')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async deleteMessage(@Param('id') id: string) {
+    return this.chatService.deleteMessage(id);
   }
 }

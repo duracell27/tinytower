@@ -40,4 +40,12 @@ export class ChatService {
       data: { playerId, playerName, body },
     });
   }
+
+  async deleteMessage(id: string): Promise<{ success: true }> {
+    await this.prisma.chatMessage.updateMany({
+      where: { id, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
+    return { success: true };
+  }
 }

@@ -82,4 +82,16 @@ describe('ChatService', () => {
       ).rejects.toBeInstanceOf(HttpException);
     });
   });
+
+  describe('deleteMessage', () => {
+    it('soft-deletes the message and returns success', async () => {
+      prisma.chatMessage.updateMany.mockResolvedValue({ count: 1 });
+      const result = await chatService.deleteMessage('msg-1');
+      expect(result).toEqual({ success: true });
+      expect(prisma.chatMessage.updateMany).toHaveBeenCalledWith({
+        where: { id: 'msg-1', deletedAt: null },
+        data: { deletedAt: expect.any(Date) },
+      });
+    });
+  });
 });
