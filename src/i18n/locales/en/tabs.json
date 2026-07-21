@@ -10,7 +10,10 @@
   "chat": {
     "placeholder": "Write a message...",
     "empty": "No messages yet. Say hi!",
-    "guestBanner": "Log in to chat with other players"
+    "guestBanner": "Log in to chat with other players",
+    "cooldown": "Please wait before sending another message",
+    "sendError": "Failed to send message",
+    "deleteError": "Failed to delete message"
   },
   "city": {
     "title": "City",

@@ -34,7 +34,7 @@ export default function ChatScreen() {
     try {
       await sendMessage(body, player.playerName);
     } catch (e) {
-      Alert.alert('', (e as Error).message);
+      Alert.alert(t('chat.sendError'), (e as Error).message);
     }
   };
 
@@ -42,7 +42,7 @@ export default function ChatScreen() {
     try {
       await deleteMessage(id);
     } catch (e) {
-      Alert.alert('', (e as Error).message);
+      Alert.alert(t('chat.deleteError'), (e as Error).message);
     }
   };
 

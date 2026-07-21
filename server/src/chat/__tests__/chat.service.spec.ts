@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, HttpException } from '@nestjs/common';
+import { BadRequestException, HttpException, NotFoundException } from '@nestjs/common';
 import { ChatService } from '../chat.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -14,11 +14,14 @@ describe('ChatService', () => {
 
   beforeEach(async () => {
     prisma = {
+      player: {
+        findUnique: jest.fn().mockResolvedValue({ playerName: 'Alice' }),
+      },
       chatMessage: {
         findMany: jest.fn().mockResolvedValue(mockMessages),
         create:   jest.fn(),
         findFirst: jest.fn(),
-        updateMany: jest.fn(),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         deleteMany: jest.fn(),
       },
     };
@@ -52,46 +55,62 @@ describe('ChatService', () => {
 
   describe('sendMessage', () => {
     const playerId = 'player-1';
-    const playerName = 'Alice';
 
     it('creates and returns the message', async () => {
-      const created = { id: 'new-id', playerId, playerName, body: 'Hello world', createdAt: new Date() };
+      const created = { id: 'new-id', playerId, playerName: 'Alice', body: 'Hello world', createdAt: new Date() };
       prisma.chatMessage.findFirst.mockResolvedValue(null);
       prisma.chatMessage.create.mockResolvedValue(created);
 
-      const result = await chatService.sendMessage(playerId, playerName, 'Hello world');
+      const result = await chatService.sendMessage(playerId, 'Hello world');
       expect(result).toEqual(created);
       expect(prisma.chatMessage.create).toHaveBeenCalledWith({
-        data: { playerId, playerName, body: 'Hello world' },
+        data: { playerId, playerName: 'Alice', body: 'Hello world' },
+        select: { id: true, playerId: true, playerName: true, body: true, createdAt: true },
       });
     });
 
     it('throws BadRequestException when body exceeds 300 chars', async () => {
       await expect(
-        chatService.sendMessage(playerId, playerName, 'a'.repeat(301)),
+        chatService.sendMessage(playerId, 'a'.repeat(301)),
       ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.chatMessage.create).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when player does not exist', async () => {
+      prisma.player.findUnique.mockResolvedValue(null);
+      prisma.chatMessage.findFirst.mockResolvedValue(null);
+      await expect(
+        chatService.sendMessage(playerId, 'Hello'),
+      ).rejects.toBeInstanceOf(NotFoundException);
       expect(prisma.chatMessage.create).not.toHaveBeenCalled();
     });
 
     it('throws 429 when player posts within 3 seconds', async () => {
       prisma.chatMessage.findFirst.mockResolvedValue({
-        id: 'prev', createdAt: new Date(Date.now() - 1000), // 1 s ago
+        id: 'prev', createdAt: new Date(Date.now() - 1000),
       });
-      await expect(
-        chatService.sendMessage(playerId, playerName, 'spam'),
-      ).rejects.toBeInstanceOf(HttpException);
+      const err = await chatService.sendMessage(playerId, 'spam').catch(e => e);
+      expect(err).toBeInstanceOf(HttpException);
+      expect(err.getStatus()).toBe(429);
+      expect(err.getResponse()).toBe('Chat cooldown: please wait before sending another message');
     });
   });
 
   describe('deleteMessage', () => {
     it('soft-deletes the message and returns success', async () => {
-      prisma.chatMessage.updateMany.mockResolvedValue({ count: 1 });
       const result = await chatService.deleteMessage('msg-1');
       expect(result).toEqual({ success: true });
       expect(prisma.chatMessage.updateMany).toHaveBeenCalledWith({
         where: { id: 'msg-1', deletedAt: null },
         data: { deletedAt: expect.any(Date) },
       });
+    });
+
+    it('throws NotFoundException when message does not exist or already deleted', async () => {
+      prisma.chatMessage.updateMany.mockResolvedValue({ count: 0 });
+      await expect(
+        chatService.deleteMessage('nonexistent-id'),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 

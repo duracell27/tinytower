@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, BadRequestException, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -21,10 +21,16 @@ export class ChatService {
     });
   }
 
-  async sendMessage(playerId: string, playerName: string, body: string) {
+  async sendMessage(playerId: string, body: string) {
     if (body.length > 300) {
       throw new BadRequestException('Message exceeds 300 characters');
     }
+
+    const player = await this.prisma.player.findUnique({
+      where: { id: playerId },
+      select: { playerName: true },
+    });
+    if (!player) throw new NotFoundException('Player not found');
 
     const cooldownCutoff = new Date(Date.now() - 3000);
     const recent = await this.prisma.chatMessage.findFirst({
@@ -32,21 +38,23 @@ export class ChatService {
     });
     if (recent) {
       throw new HttpException(
-        'Зачекайте перед наступним повідомленням',
+        'Chat cooldown: please wait before sending another message',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
 
     return this.prisma.chatMessage.create({
-      data: { playerId, playerName, body },
+      data: { playerId, playerName: player.playerName, body },
+      select: { id: true, playerId: true, playerName: true, body: true, createdAt: true },
     });
   }
 
   async deleteMessage(id: string): Promise<{ success: true }> {
-    await this.prisma.chatMessage.updateMany({
+    const result = await this.prisma.chatMessage.updateMany({
       where: { id, deletedAt: null },
       data: { deletedAt: new Date() },
     });
+    if (result.count === 0) throw new NotFoundException('Message not found or already deleted');
     return { success: true };
   }
 
