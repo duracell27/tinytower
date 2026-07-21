@@ -151,6 +151,7 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const flatListRef = useRef<FlatList<Worker>>(null);
+  const pendingScrollReset = useRef(false);
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -172,9 +173,7 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
       clearInsufficientResources();
       setSearchQuery('');
     } else {
-      setTimeout(() => {
-        flatListRef.current?.scrollToOffset({ offset: SEARCH_SCROLL_OFFSET, animated: false });
-      }, 50);
+      pendingScrollReset.current = true;
     }
   }, [visible, clearInsufficientResources]);
 
@@ -210,7 +209,7 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
   useEffect(() => {
     setSearchQuery('');
     setExpandedWorkerId(null);
-    flatListRef.current?.scrollToOffset({ offset: SEARCH_SCROLL_OFFSET, animated: false });
+    pendingScrollReset.current = true;
   }, [activeTab]);
 
   const scrimStyle = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
@@ -439,6 +438,12 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
             showsVerticalScrollIndicator={false}
             style={styles.list}
             keyboardShouldPersistTaps="handled"
+            onContentSizeChange={() => {
+              if (pendingScrollReset.current) {
+                pendingScrollReset.current = false;
+                flatListRef.current?.scrollToOffset({ offset: SEARCH_SCROLL_OFFSET, animated: false });
+              }
+            }}
             ListHeaderComponent={
               <View style={styles.searchWrap}>
                 <View style={styles.searchRow}>
