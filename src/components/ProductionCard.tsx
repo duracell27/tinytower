@@ -2,6 +2,7 @@ import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing } from 'react-native-reanimated';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -200,6 +201,8 @@ export default function ProductionCard({
   deliveryLockMs,
   gems,
 }: ProductionCardProps) {
+  const router = useRouter();
+
   const typeConfig = production.typeId
     ? gameConfig.productionTypes[production.typeId] ?? null
     : null;
@@ -438,7 +441,14 @@ export default function ProductionCard({
         )}
         {/* Worker mini-indicator */}
         {worker && (
-          <View style={styles.workerBadgeColumn}>
+          <Pressable
+            style={({ pressed }) => [styles.workerBadgeColumn, pressed && { opacity: 0.7 }]}
+            hitSlop={6}
+            onPress={() => {
+              useGameStore.getState().setPendingWorkerFocus(worker.id);
+              router.navigate('/(tabs)/menu');
+            }}
+          >
             <View style={[styles.workerBadge, worker.isSpecialist && { borderColor: '#F5C842' }]}>
               <WorkerAvatar worker={worker} size={24} />
             </View>
@@ -450,7 +460,7 @@ export default function ProductionCard({
                 <Text style={styles.bonusBubbleText}>×{multiplier}</Text>
               </View>
             )}
-          </View>
+          </Pressable>
         )}
       </View>
 
