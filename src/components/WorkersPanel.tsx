@@ -42,6 +42,7 @@ const TAB_COLORS: Record<Tab, string> = {
 interface WorkersPanelProps {
   visible: boolean;
   onClose: () => void;
+  targetWorkerId?: string | null;
 }
 
 interface CategorizedWorkers {
@@ -143,7 +144,7 @@ function formatTimeShort(ms: number): string {
   return `${hours}h ${min}m`;
 }
 
-export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
+export default function WorkersPanel({ visible, onClose, targetWorkerId }: WorkersPanelProps) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
   const [activeTab, setActiveTab] = useState<Tab>('unsatisfied');
@@ -151,6 +152,7 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [listHeight, setListHeight] = useState(0);
+  const [pendingFocusId, setPendingFocusId] = useState<string | null>(null);
   const flatListRef = useRef<FlatList<Worker>>(null);
   const pendingScrollReset = useRef(false);
 
@@ -212,6 +214,25 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
     setExpandedWorkerId(null);
     pendingScrollReset.current = true;
   }, [activeTab]);
+
+  useEffect(() => {
+    if (!visible || !targetWorkerId) return;
+    const worker = workers.find((w) => w.id === targetWorkerId);
+    if (!worker || worker.assignedFloorId === null) return;
+
+    const floorType = resolveFloorType(openedFloorTypes, worker.assignedFloorId);
+    const floor = floors.find((f) => f.id === worker.assignedFloorId);
+    const production = floor?.productions[worker.assignedSlotIdx!];
+    const mood = getWorkerMood(worker, floorType, production?.typeId ?? null);
+
+    let targetTab: Tab;
+    if (mood === 'good' && worker.level === 9) targetTab = 'specialists';
+    else if (mood === 'good') targetTab = 'happy';
+    else targetTab = 'mid';
+
+    setPendingFocusId(targetWorkerId);
+    setActiveTab(targetTab);
+  }, [visible, targetWorkerId]);
 
   const scrimStyle = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
@@ -288,6 +309,20 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
       : currentWorkers,
     [currentWorkers, searchQuery, floors, openedFloorTypes],
   );
+
+  useEffect(() => {
+    if (!pendingFocusId) return;
+    const idx = filteredWorkers.findIndex((w) => w.id === pendingFocusId);
+    if (idx < 0) return;
+
+    setPendingFocusId(null);
+    pendingScrollReset.current = false;
+    setExpandedWorkerId(pendingFocusId);
+    useGameStore.getState().clearPendingWorkerFocus();
+    requestAnimationFrame(() => {
+      flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.2 });
+    });
+  }, [pendingFocusId, filteredWorkers]);
 
   const renderItem = useCallback(
     ({ item: worker }: { item: Worker }) => {
@@ -445,6 +480,12 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
                 pendingScrollReset.current = false;
                 flatListRef.current?.scrollToOffset({ offset: SEARCH_SCROLL_OFFSET, animated: false });
               }
+            }}
+            onScrollToIndexFailed={(info) => {
+              flatListRef.current?.scrollToOffset({
+                offset: info.averageItemLength * info.index,
+                animated: true,
+              });
             }}
             ListHeaderComponent={
               <View style={styles.searchWrap}>
