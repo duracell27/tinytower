@@ -94,4 +94,23 @@ describe('ChatService', () => {
       });
     });
   });
+
+  describe('cleanupOldMessages', () => {
+    it('hard-deletes messages older than 24 hours', async () => {
+      prisma.chatMessage.deleteMany.mockResolvedValue({ count: 3 });
+      await chatService.cleanupOldMessages();
+      expect(prisma.chatMessage.deleteMany).toHaveBeenCalledWith({
+        where: {
+          createdAt: { lt: expect.any(Date) },
+        },
+      });
+      const callArg = prisma.chatMessage.deleteMany.mock.calls[0][0] as {
+        where: { createdAt: { lt: Date } };
+      };
+      const cutoff = callArg.where.createdAt.lt;
+      const diffMs = Date.now() - cutoff.getTime();
+      expect(diffMs).toBeGreaterThanOrEqual(24 * 60 * 60 * 1000 - 1000);
+      expect(diffMs).toBeLessThan(24 * 60 * 60 * 1000 + 1000);
+    });
+  });
 });

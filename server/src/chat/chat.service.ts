@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -47,5 +48,11 @@ export class ChatService {
       data: { deletedAt: new Date() },
     });
     return { success: true };
+  }
+
+  @Cron('0 */15 * * * *')
+  async cleanupOldMessages() {
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    await this.prisma.chatMessage.deleteMany({ where: { createdAt: { lt: cutoff } } });
   }
 }
