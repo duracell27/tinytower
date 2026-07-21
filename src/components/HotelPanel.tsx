@@ -3,6 +3,7 @@ import {
   View,
   Text,
   Pressable,
+  ScrollView,
   FlatList,
   Alert,
   Modal,
@@ -10,6 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle,
@@ -26,7 +28,8 @@ import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
 import { getHotelExpansionCost } from '../../shared/engine/lobbyCommands';
 import { gameConfig } from '../../shared/config/gameConfig';
-import type { Worker } from '../../shared/types';
+import type { Worker, Floor } from '../../shared/types';
+import { isBetterCandidate } from '../utils/workerCandidate';
 import { GemIcon } from './CurrencyIcons';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
 
@@ -52,6 +55,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const { t: tContent } = useTranslation('gameContent');
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
+  const [infoVisible, setInfoVisible] = useState(false);
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -69,6 +73,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const unemployedWorkers = workers
     .filter((w: Worker) => w.assignedFloorId === null)
     .sort((a, b) => a.id.localeCompare(b.id));
+  const assignedWorkers = workers.filter((w: Worker) => w.assignedFloorId !== null);
   const occupiedSeats = unemployedWorkers.length;
   const freeSeats = Math.max(0, hotelCapacity - occupiedSeats);
   const expansionCost = getHotelExpansionCost(hotelCapacity);
@@ -188,6 +193,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           worker={item.worker}
           expanded={expandedWorkerId === item.worker.id}
           dreamFloorName={dreamFloorName}
+          isBetterCandidate={isBetterCandidate(item.worker, assignedWorkers, floors, openedFloorTypes ?? {})}
           onToggle={() =>
             setExpandedWorkerId((prev) => (prev === item.worker.id ? null : item.worker.id))
           }
@@ -206,7 +212,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
         </View>
       );
     },
-    [expandedWorkerId, handleEvict, handleFindJob, expansionCost, handleExpandHotel, evictLowLevelWorkers, handleEvictLowLevel, t],
+    [expandedWorkerId, handleEvict, handleFindJob, expansionCost, handleExpandHotel, evictLowLevelWorkers, handleEvictLowLevel, t, assignedWorkers, floors, openedFloorTypes],
   );
 
   const keyExtractor = useCallback((item: ListItem) => {
@@ -252,7 +258,14 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                       <Rect x={13} y={15} width={4} height={4} rx={0.5} stroke="#fff" strokeWidth={1.5} />
                     </Svg>
                     <View>
-                      <Text style={styles.titleText}>{t('hotelPanel.title')}</Text>
+                      <Pressable onPress={() => setInfoVisible(true)} style={styles.titleNameRow}>
+                        <Text style={styles.titleText}>{t('hotelPanel.title')}</Text>
+                        <Image
+                          source={require('../../assets/img/InformationIcon.png')}
+                          style={styles.infoIcon}
+                          contentFit="contain"
+                        />
+                      </Pressable>
                       <Text style={styles.subtitleText}>{t('hotelPanel.subtitle')}</Text>
                     </View>
                   </View>
@@ -273,15 +286,17 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
 
                 {/* Stats row */}
                 <View style={styles.statsRow}>
-                  <View style={styles.statPill}>
-                    <Text style={styles.statLabel}>{t('hotelPanel.seats')}</Text>
-                    <Text style={styles.statValue}>{hotelCapacity}</Text>
-                  </View>
-                  <View style={styles.statPill}>
-                    <Text style={styles.statLabel}>{t('hotelPanel.free')}</Text>
-                    <Text style={styles.statValue}>
-                      {freeSeats > 0 ? freeSeats : 0}
-                    </Text>
+                  <View style={styles.statPills}>
+                    <View style={styles.statPill}>
+                      <Text style={styles.statLabel}>{t('hotelPanel.seats')}</Text>
+                      <Text style={styles.statValue}>{hotelCapacity}</Text>
+                    </View>
+                    <View style={styles.statPill}>
+                      <Text style={styles.statLabel}>{t('hotelPanel.free')}</Text>
+                      <Text style={styles.statValue}>
+                        {freeSeats > 0 ? freeSeats : 0}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </LinearGradient>
@@ -304,6 +319,57 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
             worker={pickerWorker}
             onClose={() => setPickerWorker(null)}
           />
+
+          {/* Hotel info overlay */}
+          {infoVisible && (
+            <View style={styles.infoOverlayScrim}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
+              <View style={styles.infoCard}>
+                <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.infoCardHeader}>
+                  <Text style={styles.infoCardTitle}>About the Hotel</Text>
+                  <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
+                    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                      <Path d="M18 6L6 18M6 6l12 12" stroke="rgba(255,255,255,0.85)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+                    </Svg>
+                  </Pressable>
+                </LinearGradient>
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <View style={styles.infoCardBody}>
+                    <InfoSection
+                      icon={require('../../assets/img/hotel.png')}
+                      title="The Hotel"
+                      text="The hotel is where your workers live when they're not assigned to a floor. They wait here until you send them to work."
+                    />
+                    <InfoSection
+                      icon={require('../../assets/img/menu/workers.png')}
+                      title="Seats & Free"
+                      text="Seats — total number of rooms available. Free — how many rooms are vacant. When the hotel is full, no new workers will appear."
+                    />
+                    <InfoSection
+                      icon={require('../../assets/img/specialistWorker.png')}
+                      title="Worker Level"
+                      text="Level (1–9) determines how fast a worker produces goods on a floor. Higher level means faster production."
+                    />
+                    <InfoSection
+                      icon={require('../../assets/img/happyWorker.png')}
+                      title="Dream Job"
+                      text="Every worker has an ideal job. Assigning them to a floor with that production type gives a speed bonus."
+                    />
+                    <InfoSection
+                      icon={require('../../assets/img/greenArrowUp.png')}
+                      title="Green Arrow"
+                      text="This worker is a better candidate for their floor than whoever is currently assigned there — either by type match or higher level."
+                    />
+                    <InfoSection
+                      icon={require('../../assets/img/quicActions/findWorker.png')}
+                      title="Find Job / Evict"
+                      text="Find Job opens the floor picker to assign this worker. Evict permanently removes them from the hotel."
+                    />
+                  </View>
+                </ScrollView>
+              </View>
+            </View>
+          )}
         </Animated.View>
 
         <InsufficientResourcesModal asOverlay />
@@ -311,6 +377,49 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
     </Modal>
   );
 }
+
+
+function InfoSection({ icon, title, text }: { icon: number; title: string; text: string }) {
+  return (
+    <View style={infoStyles.section}>
+      <Image source={icon} style={infoStyles.sectionIcon} contentFit="contain" />
+      <View style={infoStyles.sectionBody}>
+        <Text style={infoStyles.sectionTitle}>{title}</Text>
+        <Text style={infoStyles.sectionText}>{text}</Text>
+      </View>
+    </View>
+  );
+}
+
+const infoStyles = StyleSheet.create({
+  section: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(201,99,126,0.35)',
+  },
+  sectionIcon: {
+    width: 24,
+    height: 24,
+    marginTop: 1,
+  },
+  sectionBody: {
+    flex: 1,
+    gap: 2,
+  },
+  sectionTitle: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13.5,
+    color: '#2A3344',
+  },
+  sectionText: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 12.5,
+    color: '#6A7485',
+    lineHeight: 18,
+  },
+});
 
 function EmptySlotCard({ t }: { t: (key: string) => string }) {
   return (
@@ -599,9 +708,54 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
     paddingHorizontal: 18,
     marginTop: 12,
+  },
+  statPills: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  titleNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  infoIcon: {
+    width: 18,
+    height: 18,
+    opacity: 0.85,
+  },
+  infoOverlayScrim: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(18,26,44,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  infoCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    overflow: 'hidden',
+    maxHeight: SCREEN_HEIGHT * 0.75,
+  },
+  infoCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingVertical: 13,
+  },
+  infoCardTitle: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 17,
+    color: '#fff',
+    letterSpacing: 0.4,
+  },
+  infoCardBody: {
+    padding: 18,
+    paddingTop: 4,
   },
   statPill: {
     flexDirection: 'row',

@@ -1,11 +1,14 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  withSpring,
+  withSequence,
   Easing,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +20,7 @@ interface WorkerCardProps {
   worker: Worker;
   expanded: boolean;
   dreamFloorName?: string;
+  isBetterCandidate?: boolean;
   onToggle: () => void;
   onFindJob: () => void;
   onEvict: () => void;
@@ -28,6 +32,7 @@ export default function WorkerCard({
   worker,
   expanded,
   dreamFloorName,
+  isBetterCandidate = false,
   onToggle,
   onFindJob,
   onEvict,
@@ -52,11 +57,25 @@ export default function WorkerCard({
 
   const expandAnim = useSharedValue(expanded ? 1 : 0);
   const chevronAnim = useSharedValue(expanded ? 1 : 0);
+  const arrowBounce = useSharedValue(0);
 
   React.useEffect(() => {
     expandAnim.value = withTiming(expanded ? 1 : 0, TIMING_CONFIG);
     chevronAnim.value = withTiming(expanded ? 1 : 0, TIMING_CONFIG);
   }, [expanded]);
+
+  React.useEffect(() => {
+    if (!isBetterCandidate) return;
+    const trigger = () => {
+      arrowBounce.value = withSequence(
+        withTiming(-5, { duration: 120, easing: Easing.out(Easing.quad) }),
+        withSpring(0, { damping: 12, stiffness: 300 }),
+      );
+    };
+    trigger();
+    const id = setInterval(trigger, 7000);
+    return () => clearInterval(id);
+  }, [isBetterCandidate]);
 
   const expandedStyle = useAnimatedStyle(() => ({
     maxHeight: expandAnim.value * 440,
@@ -67,7 +86,10 @@ export default function WorkerCard({
     transform: [{ rotate: `${chevronAnim.value * 90}deg` }],
   }));
 
-  const isUnemployed = worker.assignedFloorId === null;
+  const arrowStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: arrowBounce.value }],
+  }));
+
   const statusText = worker.female ? t('workerCard.unemployedFemale') : t('workerCard.unemployedMale');
 
   return (
@@ -89,10 +111,14 @@ export default function WorkerCard({
             <Text style={styles.nameText} numberOfLines={1}>
               {worker.name}
             </Text>
-            {isUnemployed && (
-              <View style={styles.moodDotOuter}>
-                <View style={styles.moodDotInner} />
-              </View>
+            {isBetterCandidate && (
+              <Animated.View style={arrowStyle}>
+                <Image
+                  source={require('../../assets/img/greenArrowUp.png')}
+                  style={styles.upgradeBadge}
+                  contentFit="contain"
+                />
+              </Animated.View>
             )}
           </View>
 
@@ -276,6 +302,10 @@ const styles = StyleSheet.create({
     height: 9,
     borderRadius: 5,
     backgroundColor: '#E05A4A',
+  },
+  upgradeBadge: {
+    width: 12,
+    height: 12,
   },
   detailRow: {
     flexDirection: 'row',

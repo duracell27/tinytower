@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, LayoutChangeEvent } from 'react-native';
+import { useNavigation } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { formatNum } from '../../src/utils/format';
 import Animated, {
@@ -41,6 +42,7 @@ import {
   type QuickActionMode,
 } from '../../src/utils/quickAction';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
+import { hasAnyBetterCandidate } from '../../src/utils/workerCandidate';
 
 type FloorItem =
   | { type: 'production'; id: number }
@@ -98,6 +100,11 @@ export default function GameScreen() {
   const revenuePerMin = React.useMemo(
     () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now),
     [floors, workers, openedFloorTypes, now],
+  );
+
+  const hasBetterWorker = React.useMemo(
+    () => hasAnyBetterCandidate(workers, floors, openedFloorTypes ?? {}),
+    [workers, floors, openedFloorTypes],
   );
 
   const exhaustedByFloor = React.useMemo(() => {
@@ -207,6 +214,9 @@ export default function GameScreen() {
   const [hotelOpen, setHotelOpen] = useState(false);
   const [lobbyOpen, setLobbyOpen] = useState(false);
   const listRef = useRef<FlashList<FloorItem>>(null);
+  const collapsedScrollRef = useRef<ScrollView>(null);
+  const hotelCardYRef = useRef(0);
+  const lastTabPressRef = useRef(0);
   const savedScrollOffsetRef = useRef(Number.MAX_SAFE_INTEGER);
   const qaEnteredRef = useRef(false);
   const quickActionModeRef = useRef<QuickActionMode | null>(null);
@@ -227,9 +237,32 @@ export default function GameScreen() {
     });
   }, []);
 
+  const scrollToHotel = useCallback(() => {
+    if (towerCollapsed && floors.length >= 10 && quickActionModeRef.current === null) {
+      collapsedScrollRef.current?.scrollTo({ y: hotelCardYRef.current, animated: true });
+    } else {
+      const idx = floorListRef.current.findIndex((i) => i.type === 'hotel');
+      if (idx >= 0) {
+        listRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0 });
+      }
+    }
+  }, [towerCollapsed, floors.length]);
+
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
   const [qaBarVisible, setQaBarVisible] = useState(false);
   quickActionModeRef.current = quickActionMode;
+
+  const navigation = useNavigation();
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('tabPress' as any, () => {
+      const now = Date.now();
+      if (now - lastTabPressRef.current < 400) {
+        scrollToHotel();
+      }
+      lastTabPressRef.current = now;
+    });
+    return unsubscribe;
+  }, [navigation, scrollToHotel]);
 
   // Highest-priority mode currently available — only computed when not already in a mode
   const availableMode = React.useMemo(
@@ -282,7 +315,7 @@ export default function GameScreen() {
   // When starting in collapsed mode, FlashList never fires onContentSizeChange,
   // so we reveal the tower here instead.
   useEffect(() => {
-    if (towerCollapsed && floors.length >= 10 && !hasRevealedRef.current) {
+    if (towerCollapsed && floors.length >= 10 && (!hasRevealedRef.current || towerOpacity.value === 0)) {
       hasRevealedRef.current = true;
       towerOpacity.value = withTiming(1, {
         duration: 350,
@@ -476,7 +509,7 @@ export default function GameScreen() {
     if (item.type === 'hotel') {
       return (
         <View style={styles.floorWrapper}>
-          <HotelFloor hotelOccupied={hotelOccupied} hotelTotal={hotelTotal} onPress={() => setHotelOpen(true)} />
+          <HotelFloor hotelOccupied={hotelOccupied} hotelTotal={hotelTotal} hasBetterWorker={hasBetterWorker} onPress={() => setHotelOpen(true)} />
         </View>
       );
     }
@@ -519,13 +552,24 @@ export default function GameScreen() {
           <View style={styles.sideLeft} />
           <Animated.View style={[styles.towerColumn, towerStyle]}>
             {towerCollapsed && floors.length >= 10 && quickActionMode === null ? (
-              <View style={styles.collapsedContainer}>
+              <ScrollView
+                ref={collapsedScrollRef}
+                style={styles.collapsedScroll}
+                contentContainerStyle={styles.collapsedContainer}
+                alwaysBounceVertical
+                showsVerticalScrollIndicator={false}
+              >
                 {floorList
                   .filter((item) => item.type !== 'bottomAnchor')
                   .map((item) => (
-                    <View key={keyExtractor(item)}>{renderItem({ item })}</View>
+                    <View
+                      key={keyExtractor(item)}
+                      onLayout={item.type === 'hotel' ? (e: LayoutChangeEvent) => { hotelCardYRef.current = e.nativeEvent.layout.y; } : undefined}
+                    >
+                      {renderItem({ item })}
+                    </View>
                   ))}
-              </View>
+              </ScrollView>
             ) : (
               <FlashList
                 ref={listRef}
@@ -545,7 +589,7 @@ export default function GameScreen() {
                 scrollEventThrottle={100}
                 onContentSizeChange={(_w, h) => {
                   contentHeightRef.current = h;
-                  if (!hasRevealedRef.current && h > 0 && viewHeightRef.current > 0) {
+                  if ((!hasRevealedRef.current || towerOpacity.value === 0) && h > 0 && viewHeightRef.current > 0) {
                     hasRevealedRef.current = true;
                     requestAnimationFrame(() => {
                       scrollToBottom();
@@ -745,8 +789,11 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
     paddingHorizontal: 14,
   },
-  collapsedContainer: {
+  collapsedScroll: {
     flex: 1,
+  },
+  collapsedContainer: {
+    flexGrow: 1,
     justifyContent: 'flex-end',
     paddingHorizontal: 14,
     paddingBottom: 90,

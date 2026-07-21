@@ -5,8 +5,10 @@
   },
   "stats": {
     "waiting": "Waiting",
-    "newGuest": "New guest in",
-    "full": "Full"
+    "newGuest": "Next guest",
+    "full": "Full",
+    "coins": "Coins",
+    "gems": "Gems"
   },
   "roles": {
     "guest": "Guest",

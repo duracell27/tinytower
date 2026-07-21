@@ -8,6 +8,8 @@ import { BlurView } from 'expo-blur';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { createMMKV } from 'react-native-mmkv';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Svg, { Path } from 'react-native-svg';
 import { useReferralStore, type ReferralEntry } from '../stores/referralStore';
 import { getUserIcon } from '../utils/userIcon';
 
@@ -115,11 +117,26 @@ export default function ReferralScreen() {
   const [copied, setCopied] = React.useState(false);
   const [inputCode, setInputCode] = React.useState('');
   const [applyError, setApplyError] = React.useState('');
+  const [codeExpanded, setCodeExpanded] = React.useState(false);
+  const chevronRotation = useSharedValue(0);
+  const chevronStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${chevronRotation.value}deg` }],
+  }));
+
+  const handleToggle = () => {
+    const next = !codeExpanded;
+    setCodeExpanded(next);
+    chevronRotation.value = withTiming(next ? 180 : 0, { duration: 200 });
+  };
 
   useEffect(() => {
     fetchReferral();
     const pending = authStorage.getString('referral.pendingCode');
-    if (pending) setInputCode(pending);
+    if (pending) {
+      setInputCode(pending);
+      setCodeExpanded(true);
+      chevronRotation.value = 180;
+    }
   }, []);
 
   const shareLink = code ? `${DEEP_LINK_BASE}${code}` : '';
@@ -166,35 +183,55 @@ export default function ReferralScreen() {
 
           {hasUsedCode === false && (
             <View style={styles.applyCard}>
-              <Text style={styles.applyLabel}>Have a referral code?</Text>
-              <View style={styles.applyRow}>
-                <TextInput
-                  style={styles.applyInput}
-                  value={inputCode}
-                  onChangeText={(t) => { setInputCode(t.toUpperCase()); setApplyError(''); }}
-                  autoCapitalize="characters"
-                  maxLength={6}
-                  placeholder="XXXXXX"
-                  placeholderTextColor="#B7B3A2"
-                  editable={!isApplying}
-                />
-                <Pressable
-                  onPress={handleApplyCode}
-                  style={({ pressed }) => [
-                    styles.applyBtn,
-                    (isApplying || inputCode.length < 6) && styles.applyBtnDisabled,
-                    pressed && { opacity: 0.75 },
-                  ]}
-                  disabled={isApplying || inputCode.length < 6}
-                >
-                  {isApplying ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                  ) : (
-                    <Text style={styles.applyBtnText}>Apply</Text>
-                  )}
-                </Pressable>
-              </View>
-              {applyError ? <Text style={styles.applyError}>{applyError}</Text> : null}
+              <Pressable
+                onPress={handleToggle}
+                style={styles.applyHeader}
+              >
+                <Text style={styles.applyLabel}>Have a referral code?</Text>
+                <Animated.View style={chevronStyle}>
+                  <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
+                    <Path
+                      d="M3 5.5L8 10.5L13 5.5"
+                      stroke="#9BA3B0"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </Animated.View>
+              </Pressable>
+              {codeExpanded && (
+                <>
+                  <View style={styles.applyRow}>
+                    <TextInput
+                      style={styles.applyInput}
+                      value={inputCode}
+                      onChangeText={(t) => { setInputCode(t.toUpperCase()); setApplyError(''); }}
+                      autoCapitalize="characters"
+                      maxLength={6}
+                      placeholder="XXXXXX"
+                      placeholderTextColor="#B7B3A2"
+                      editable={!isApplying}
+                    />
+                    <Pressable
+                      onPress={handleApplyCode}
+                      style={({ pressed }) => [
+                        styles.applyBtn,
+                        (isApplying || inputCode.length < 6) && styles.applyBtnDisabled,
+                        pressed && { opacity: 0.75 },
+                      ]}
+                      disabled={isApplying || inputCode.length < 6}
+                    >
+                      {isApplying ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <Text style={styles.applyBtnText}>Apply</Text>
+                      )}
+                    </Pressable>
+                  </View>
+                  {applyError ? <Text style={styles.applyError}>{applyError}</Text> : null}
+                </>
+              )}
             </View>
           )}
 
@@ -336,6 +373,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 4,
+  },
+  applyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   applyLabel: {
     fontFamily: 'Nunito_600SemiBold',

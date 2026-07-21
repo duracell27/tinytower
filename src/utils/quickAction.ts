@@ -7,7 +7,7 @@ export type QuickActionMode = 'collect' | 'list' | 'buy' | 'hire';
 
 export type FloorActionInfo =
   | { mode: 'collect'; totalCoins: number }
-  | { mode: 'list'; count: number }
+  | { mode: 'list'; count: number; typeId?: string }
   | { mode: 'buy'; slotIdx: number; typeId: string; buyCost: number }
   | { mode: 'hire' };
 
@@ -100,10 +100,12 @@ export function getFloorActionInfo(
     }
 
     case 'list': {
-      const count = floor.productions.filter(
+      const ready = floor.productions.filter(
         (prod) => prod.typeId !== null && derivedStage(prod, now) === 'READY_TO_LIST',
-      ).length;
-      return count > 0 ? { mode: 'list', count } : null;
+      );
+      if (ready.length === 0) return null;
+      const typeId = ready.length === 1 ? ready[0].typeId ?? undefined : undefined;
+      return { mode: 'list', count: ready.length, typeId };
     }
 
     case 'buy': {

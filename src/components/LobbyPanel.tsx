@@ -395,6 +395,19 @@ interface LobbyPanelProps {
   onOpenHotel?: () => void;
 }
 
+function InfoSection({ icon, title, text }: { icon: ReturnType<typeof require>; title: string; text: string }) {
+  return (
+    <View style={infoStyles.section}>
+      <Image source={icon} style={infoStyles.icon} contentFit="contain" />
+      <View style={infoStyles.textCol}>
+        <Text style={infoStyles.sectionTitle}>{title}</Text>
+        <Text style={infoStyles.sectionText}>{text}</Text>
+      </View>
+    </View>
+  );
+}
+
+
 export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanelProps) {
   const { t } = useTranslation('lobby');
   const { t: tContent } = useTranslation('gameContent');
@@ -402,6 +415,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const [deliverSummary, setDeliverSummary] = useState<DeliverAllSummary | null>(null);
   const [newWorkerPopup, setNewWorkerPopup] = useState<Worker | null>(null);
   const [hotelFullNotice, setHotelFullNotice] = useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
 
   const {
     lobbyVisitors,
@@ -650,17 +664,19 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <ElevatorIcon size={20} />
                     </View>
                     <View>
-                      <Text style={styles.titleText}>{t('header.title')}</Text>
+                      <Pressable onPress={() => setInfoVisible(true)} style={styles.titleNameRow}>
+                        <Text style={styles.titleText}>{t('header.title')}</Text>
+                        <Image
+                          source={require('../../assets/img/InformationIcon.png')}
+                          style={styles.infoIcon}
+                          contentFit="contain"
+                        />
+                      </Pressable>
                       <Text style={styles.subtitleText}>{t('header.subtitle')}</Text>
                     </View>
                   </View>
 
                   <View style={styles.headerRight}>
-                    {/* Coin chip */}
-                    <View style={styles.coinChip}>
-                      <CoinIcon size={14} />
-                      <Text style={styles.coinChipText}>{formatNum(balance)}</Text>
-                    </View>
                     {/* Close button */}
                     <Pressable onPress={onClose} style={styles.closeButton}>
                       <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
@@ -678,15 +694,31 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                 {/* Stat tiles */}
                 <View style={styles.statsRow}>
-                  <View style={styles.statTile}>
-                    <PersonIcon size={14} />
-                    <Text style={styles.statLabel}>{t('stats.waiting')}</Text>
-                    <Text style={styles.statValue}>{lobbyVisitors.length} / {lobbyCapacity}</Text>
+                  {/* Left: coins + gems */}
+                  <View style={styles.statCol}>
+                    <View style={styles.statPill}>
+                      <CoinIcon size={13} />
+                      <Text style={styles.statLabel}>{t('stats.coins')}</Text>
+                      <Text style={styles.statValue}>{formatNum(balance)}</Text>
+                    </View>
+                    <View style={styles.statPill}>
+                      <GemIcon size={13} />
+                      <Text style={styles.statLabel}>{t('stats.gems')}</Text>
+                      <Text style={styles.statValue}>{gems}</Text>
+                    </View>
                   </View>
-                  <View style={styles.statTile}>
-                    <ClockIcon size={14} />
-                    <Text style={styles.statLabel}>{t('stats.newGuest')}</Text>
-                    <Text style={[styles.statValue, { fontVariant: ['tabular-nums'] as any }]}>{timerText}</Text>
+                  {/* Right: next guest + waiting */}
+                  <View style={styles.statCol}>
+                    <View style={styles.statPill}>
+                      <ClockIcon size={13} />
+                      <Text style={styles.statLabel}>{t('stats.newGuest')}</Text>
+                      <Text style={[styles.statValue, { fontVariant: ['tabular-nums'] as any }]}>{timerText}</Text>
+                    </View>
+                    <View style={styles.statPill}>
+                      <PersonIcon size={13} />
+                      <Text style={styles.statLabel}>{t('stats.waiting')}</Text>
+                      <Text style={styles.statValue}>{lobbyVisitors.length}/{lobbyCapacity}</Text>
+                    </View>
                   </View>
                 </View>
               </LinearGradient>
@@ -1201,6 +1233,57 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         />
 
         <InsufficientResourcesModal asOverlay />
+
+        {/* Lobby info popup */}
+        {infoVisible && (
+          <View style={infoStyles.scrim}>
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
+            <View style={infoStyles.card}>
+              <LinearGradient colors={['#C9637E', '#A8475F']} style={infoStyles.cardHeader}>
+                <Text style={infoStyles.cardTitle}>About the Lobby</Text>
+                <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
+                  <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                    <Path d="M18 6L6 18M6 6l12 12" stroke="rgba(255,255,255,0.85)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+                  </Svg>
+                </Pressable>
+              </LinearGradient>
+              <ScrollView style={infoStyles.scroll} showsVerticalScrollIndicator={false}>
+                <View style={infoStyles.cardBody}>
+                  <InfoSection
+                    icon={require('../../assets/img/reception.png')}
+                    title="Lobby"
+                    text="The lobby is your tower's entrance. Visitors arrive here and you use the elevator to guide them to their destinations."
+                  />
+                  <InfoSection
+                    icon={require('../../assets/img/lift/visitor.png')}
+                    title="Guests"
+                    text="Guests head to floor 1 (Hotel) and check in as new workers. Guide them up to grow your team."
+                  />
+                  <InfoSection
+                    icon={require('../../assets/img/lift/businessman.png')}
+                    title="Businessmen"
+                    text="Businessmen pay in gems — one gem per visit, up to your daily limit. Lift them to any floor to collect."
+                  />
+                  <InfoSection
+                    icon={require('../../assets/img/lift/delivery.png')}
+                    title="Deliverers & Sellers"
+                    text="Deliverers and sellers visit production floors to bring supplies or buyers. Lift them to earn coin tips."
+                  />
+                  <InfoSection
+                    icon={require('../../assets/img/coin.png')}
+                    title="Daily Tips"
+                    text="Every coin tip you collect counts toward your daily tip goal. Reach the two milestones to earn gem rewards."
+                  />
+                  <InfoSection
+                    icon={require('../../assets/img/quicActions/deliver.png')}
+                    title="Deliver All"
+                    text="Spend 1 gem to instantly deliver all waiting visitors at once — great when the lobby is packed."
+                  />
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        )}
       </GestureHandlerRootView>
     </Modal>
     </>
@@ -1402,15 +1485,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     marginTop: 12,
   },
-  statTile: {
+  statCol: {
     flex: 1,
+    flexDirection: 'column',
+    gap: 5,
+  },
+  statPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     backgroundColor: 'rgba(255,255,255,0.13)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
   },
   statLabel: {
     fontFamily: 'Fredoka_500Medium',
@@ -1419,7 +1506,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 15,
+    fontSize: 14,
     color: '#fff',
     marginLeft: 'auto',
   },
@@ -1947,5 +2034,77 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     justifyContent: 'center',
+  },
+  titleNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  infoIcon: {
+    width: 18,
+    height: 18,
+    opacity: 0.85,
+  },
+});
+
+const infoStyles = StyleSheet.create({
+  scrim: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(18,26,44,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  card: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    overflow: 'hidden',
+    maxHeight: SCREEN_HEIGHT * 0.75,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingVertical: 13,
+  },
+  cardTitle: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 17,
+    color: '#fff',
+    letterSpacing: 0.4,
+  },
+  scroll: {},
+  cardBody: {
+    padding: 18,
+    paddingTop: 4,
+  },
+  section: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(201,99,126,0.35)',
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    marginTop: 1,
+  },
+  textCol: {
+    flex: 1,
+    gap: 2,
+  },
+  sectionTitle: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13.5,
+    color: '#2A3344',
+  },
+  sectionText: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 12.5,
+    color: '#6A7485',
+    lineHeight: 18,
   },
 });

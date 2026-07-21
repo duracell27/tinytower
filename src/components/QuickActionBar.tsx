@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { formatNum } from '../utils/format';
 import type { QuickActionMode, FloorActionInfo } from '../utils/quickAction';
-import { GemIcon } from './CurrencyIcons';
+import { GemIcon, CoinIcon } from './CurrencyIcons';
 
 interface Props {
   mode: QuickActionMode;
@@ -101,19 +101,27 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
     transform: [{ translateY: slideY.value }],
   }));
 
+  const collectAmount = info?.mode === 'collect' ? formatNum(info.totalCoins) : null;
+
+  const buyInfo = info?.mode === 'buy' ? {
+    name: `Buy ${tContent(`productionTypes.${info.typeId}.displayName`, { defaultValue: info.typeId })}`,
+    amount: formatNum(info.buyCost),
+  } : null;
+
   const label = (() => {
     if (!info) return '…';
     switch (info.mode) {
       case 'collect':
-        return `Collect ($${formatNum(info.totalCoins)})`;
-      case 'list':
+        return 'Collect';
+      case 'list': {
+        if (info.count === 1 && info.typeId) {
+          const name = tContent(`productionTypes.${info.typeId}.displayName`, { defaultValue: info.typeId });
+          return `List ${name}`;
+        }
         return info.count === 1 ? 'List Item' : `List Items (${info.count})`;
-      case 'buy': {
-        const productName = tContent(`productionTypes.${info.typeId}.displayName`, {
-          defaultValue: info.typeId,
-        });
-        return `Buy ${productName} ($${formatNum(info.buyCost)})`;
       }
+      case 'buy':
+        return buyInfo!.name;
       case 'hire':
         return 'Find Worker';
     }
@@ -147,8 +155,24 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
       >
         <LinearGradient colors={colors} style={styles.btnGradient}>
           <View style={styles.btnContent}>
-            <ModeIcon mode={mode} />
-            <Text style={styles.btnLabel} numberOfLines={1}>{label}</Text>
+            {mode === 'collect' ? (
+              <>
+                <Text style={styles.btnLabel}>{label}</Text>
+                <CoinIcon size={18} />
+                <Text style={styles.btnLabel}>{collectAmount ?? '…'}</Text>
+              </>
+            ) : mode === 'buy' && buyInfo ? (
+              <>
+                <Text style={[styles.btnLabel, styles.btnLabelFlex]} numberOfLines={1}>{label}</Text>
+                <CoinIcon size={18} />
+                <Text style={styles.btnLabel}>{buyInfo.amount}</Text>
+              </>
+            ) : (
+              <>
+                <ModeIcon mode={mode} />
+                <Text style={styles.btnLabel} numberOfLines={1}>{label}</Text>
+              </>
+            )}
           </View>
         </LinearGradient>
       </Pressable>
@@ -215,6 +239,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#fff',
     letterSpacing: 0.3,
+  },
+  btnLabelFlex: {
+    flexShrink: 1,
+    minWidth: 0,
   },
   coinCircle: {
     width: 16,

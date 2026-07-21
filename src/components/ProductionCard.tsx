@@ -123,9 +123,7 @@ function StageIcon({ stage }: { stage: EffectiveStage }) {
         </Svg>
       );
     case 'READY_TO_COLLECT':
-      return (
-        <View style={iconStyles.coinCircle} />
-      );
+      return <CoinIcon size={16} />;
     default:
       return null;
   }

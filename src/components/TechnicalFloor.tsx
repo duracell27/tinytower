@@ -33,10 +33,11 @@ function PersonMiniIcon() {
 interface HotelFloorProps {
   hotelOccupied: number;
   hotelTotal: number;
+  hasBetterWorker?: boolean;
   onPress?: () => void;
 }
 
-export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorProps) {
+export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false, onPress }: HotelFloorProps) {
   const { t } = useTranslation('hotel');
   const hasVacancy = hotelOccupied < hotelTotal;
 
@@ -79,6 +80,16 @@ export function HotelFloor({ hotelOccupied, hotelTotal, onPress }: HotelFloorPro
                 </Text>
               </View>
             </View>
+            {hasBetterWorker && (
+              <View style={styles.betterWorkerPill}>
+                <Image
+                  source={require('../../assets/img/greenArrowUp.png')}
+                  style={styles.betterWorkerIcon}
+                  contentFit="contain"
+                />
+                <Text style={styles.betterWorkerText}>Better worker available</Text>
+              </View>
+            )}
           </View>
         </View>
       </View>
@@ -135,8 +146,10 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
               </View>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.visitorLabel}>{t('technicalFloor.lobby.newGuest')}</Text>
-              <Text style={styles.timerText}>{timerText}</Text>
+              <Text style={styles.visitorLabel}>
+                {t('technicalFloor.lobby.newGuest')}{' '}
+                <Text style={styles.timerText}>{timerText}</Text>
+              </Text>
             </View>
           </View>
         </View>
@@ -270,6 +283,25 @@ const styles = StyleSheet.create({
   statusText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 11.5,
+  },
+  betterWorkerPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: 'rgba(91,166,60,0.12)',
+    alignSelf: 'flex-start',
+  },
+  betterWorkerIcon: {
+    width: 13,
+    height: 13,
+  },
+  betterWorkerText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 11.5,
+    color: '#3C7A2A',
   },
   occupancyRight: {
     alignItems: 'flex-end',
