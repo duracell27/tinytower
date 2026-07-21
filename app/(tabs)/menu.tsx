@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
+import { useGameStore } from '../../src/stores/gameStore';
 import WarehouseSheet from '../../src/components/WarehouseSheet';
 import WorkersPanel from '../../src/components/WorkersPanel';
 import LeaderboardSheet from '../../src/components/LeaderboardSheet';
@@ -12,6 +13,13 @@ export default function MenuScreen() {
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [workersOpen, setWorkersOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const pendingWorkerFocus = useGameStore((s) => s.pendingWorkerFocus);
+
+  useEffect(() => {
+    if (pendingWorkerFocus) {
+      setWorkersOpen(true);
+    }
+  }, [pendingWorkerFocus]);
 
   return (
     <ImageBackground
@@ -52,7 +60,11 @@ export default function MenuScreen() {
       </View>
 
       <WarehouseSheet visible={inventoryOpen} onClose={() => setInventoryOpen(false)} />
-      <WorkersPanel visible={workersOpen} onClose={() => setWorkersOpen(false)} />
+      <WorkersPanel
+        visible={workersOpen}
+        onClose={() => setWorkersOpen(false)}
+        targetWorkerId={pendingWorkerFocus}
+      />
       <LeaderboardSheet visible={leaderboardOpen} onClose={() => setLeaderboardOpen(false)} />
     </ImageBackground>
   );
