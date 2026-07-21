@@ -150,6 +150,7 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [listHeight, setListHeight] = useState(0);
   const flatListRef = useRef<FlatList<Worker>>(null);
   const pendingScrollReset = useRef(false);
 
@@ -434,9 +435,10 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
             data={filteredWorkers}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={[styles.listContent, listHeight > 0 && { minHeight: listHeight + SEARCH_SCROLL_OFFSET }]}
             showsVerticalScrollIndicator={false}
             style={styles.list}
+            onLayout={(e) => setListHeight(e.nativeEvent.layout.height)}
             keyboardShouldPersistTaps="handled"
             onContentSizeChange={() => {
               if (pendingScrollReset.current) {
