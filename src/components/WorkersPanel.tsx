@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood, SPECIALIST_UPGRADE_COST } from '../../shared/engine/workerUtils';
+import { isBetterCandidate } from '../utils/workerCandidate';
 import { clock } from '../services/clock';
 import WorkerCard from './WorkerCard';
 import WorkerJobCard, { getProductionTimeRemaining } from './WorkerJobCard';
@@ -220,6 +221,11 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
     [gems, upgradeToSpecialist, showInsufficientResources],
   );
 
+  const assignedWorkers = React.useMemo(
+    () => workers.filter((w) => w.assignedFloorId !== null),
+    [workers],
+  );
+
   const currentWorkers =
     activeTab === 'happy'
       ? [...categorized.happy, ...categorized.specialists]
@@ -239,6 +245,7 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
               }
               return undefined;
             })()}
+            isBetterCandidate={isBetterCandidate(worker, assignedWorkers, floors, openedFloorTypes)}
             onToggle={() => setExpandedWorkerId((p) => (p === worker.id ? null : worker.id))}
             onFindJob={() => setPickerWorker(worker)}
             onEvict={() => {
@@ -284,7 +291,7 @@ export default function WorkersPanel({ visible, onClose }: WorkersPanelProps) {
         />
       );
     },
-    [activeTab, expandedWorkerId, floors, openedFloorTypes, handleFireFromJob, handleTrain, t, tContent],
+    [activeTab, expandedWorkerId, assignedWorkers, floors, openedFloorTypes, handleFireFromJob, handleTrain, t, tContent],
   );
 
   return (
