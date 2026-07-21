@@ -34,10 +34,10 @@ export class AuthService {
       email, passwordHash, dto.playerName,
     );
 
-    const tokens = await this.generateTokens(player.id, player.email);
+    const tokens = await this.generateTokens(player.id, player.email, player.isAdmin);
     return {
       ...tokens,
-      player: { id: player.id, email: player.email, playerName: player.playerName },
+      player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin },
     };
   }
 
@@ -48,10 +48,10 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, player.passwordHash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
-    const tokens = await this.generateTokens(player.id, player.email);
+    const tokens = await this.generateTokens(player.id, player.email, player.isAdmin);
     return {
       ...tokens,
-      player: { id: player.id, email: player.email, playerName: player.playerName },
+      player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin },
     };
   }
 
@@ -74,7 +74,7 @@ export class AuthService {
     const player = await this.playerService.findById(payload.sub);
     if (!player) throw new UnauthorizedException('Player not found');
 
-    return this.generateTokens(player.id, player.email);
+    return this.generateTokens(player.id, player.email, player.isAdmin);
   }
 
   async logout(playerId: string) {
@@ -82,14 +82,14 @@ export class AuthService {
     if (keys.length > 0) await this.redis.del(...keys);
   }
 
-  private async generateTokens(playerId: string, email: string) {
+  private async generateTokens(playerId: string, email: string, isAdmin: boolean) {
     const jti = randomUUID();
 
     const accessTtl = (this.configService.get<string>('JWT_ACCESS_TTL') || '15m') as StringValue;
     const refreshTtl = (this.configService.get<string>('JWT_REFRESH_TTL') || '30d') as StringValue;
 
     const accessToken = this.jwtService.sign(
-      { sub: playerId, email },
+      { sub: playerId, email, isAdmin },
       { expiresIn: accessTtl },
     );
 

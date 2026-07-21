@@ -25,6 +25,7 @@ interface PlayerInfo {
   id: string;
   email: string;
   playerName: string;
+  isAdmin?: boolean;
 }
 
 interface AuthState {

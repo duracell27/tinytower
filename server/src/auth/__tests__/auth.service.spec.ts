@@ -34,6 +34,7 @@ describe('AuthService', () => {
     lastSeenAt: new Date(),
     createdAt: new Date(),
     referralCode: null,
+    isAdmin: false,
   };
 
   beforeEach(async () => {
@@ -109,6 +110,7 @@ describe('AuthService', () => {
         id: 'player-uuid',
         email: 'test@test.com',
         playerName: 'TestPlayer',
+        isAdmin: false,
       });
       expect(playerService.createWithInitialState).toHaveBeenCalledWith(
         'test@test.com', 'hashed-password', 'TestPlayer',

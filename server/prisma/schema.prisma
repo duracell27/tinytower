@@ -34,6 +34,8 @@ model Player {
   floorConstructions FloorConstruction[]
   floorTypes         PlayerFloorType[]
   categoryProgress   PlayerCategoryProgress[]
+  isAdmin      Boolean     @default(false)
+  chatMessages ChatMessage[]
 }
 
 model PlayerState {
@@ -179,4 +181,16 @@ model ReferralPurchaseNotification {
   referrer       Player    @relation(fields: [referrerId], references: [id], onDelete: Cascade)
 
   @@index([referrerId, syncedAt])
+}
+
+model ChatMessage {
+  id         String    @id @default(uuid())
+  playerId   String
+  playerName String
+  body       String    @db.VarChar(300)
+  createdAt  DateTime  @default(now())
+  deletedAt  DateTime?
+  player     Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
 }
