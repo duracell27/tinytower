@@ -3,8 +3,14 @@
     "tower": "Tower",
     "city": "City",
     "menu": "Menu",
+    "chat": "Chat",
     "shop": "Shop",
     "profile": "Profile"
+  },
+  "chat": {
+    "placeholder": "Write a message...",
+    "empty": "No messages yet. Say hi!",
+    "guestBanner": "Log in to chat with other players"
   },
   "city": {
     "title": "City",
