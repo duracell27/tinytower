@@ -34,6 +34,7 @@ describe('fetchMessages', () => {
     await act(async () => { await useChatStore.getState().fetchMessages(); });
     expect(useChatStore.getState().messages).toEqual([]);
     expect(useChatStore.getState().error).toBeNull();
+    expect(useChatStore.getState().isLoading).toBe(false);
   });
 });
 
@@ -65,6 +66,8 @@ describe('deleteMessage', () => {
     mockApi.delete.mockResolvedValue({ success: true });
     mockApi.get.mockResolvedValue({ messages: [] });
     await act(async () => { await useChatStore.getState().deleteMessage('m1'); });
+    const remaining = useChatStore.getState().messages;
+    expect(remaining.find((m) => m.id === 'm1')).toBeUndefined();
     expect(mockApi.delete).toHaveBeenCalledWith('/chat/messages/m1');
   });
 });

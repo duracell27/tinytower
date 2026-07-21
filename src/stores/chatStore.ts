@@ -33,11 +33,14 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   error: null,
 
   fetchMessages: async () => {
+    set({ isLoading: true });
     try {
       const data = await api.get<{ messages: ChatMessage[] }>('/chat/messages');
       set({ messages: data.messages });
     } catch {
       // silent — keep last known messages, polling continues
+    } finally {
+      set({ isLoading: false });
     }
   },
 
@@ -65,6 +68,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   },
 
   startPolling: () => {
+    if (pollingInterval !== null) clearInterval(pollingInterval);
     void get().fetchMessages();
     pollingInterval = setInterval(() => void get().fetchMessages(), 5000);
   },
