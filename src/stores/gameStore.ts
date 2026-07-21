@@ -68,6 +68,7 @@ interface UIState {
   locallyGrantedAchievements: Set<string>;
   failedCommandLog: FailedCommandEntry[];
   pendingReferralNotifications: ReferralNotification[];
+  pendingWorkerFocus: string | null;
 }
 
 interface GameActions {
@@ -124,6 +125,8 @@ interface GameActions {
   ) => void;
   pushReferralNotification: (notification: ReferralNotification) => void;
   dismissReferralNotification: () => void;
+  setPendingWorkerFocus: (workerId: string) => void;
+  clearPendingWorkerFocus: () => void;
   clearFailedCommandLog: () => void;
   reset: () => void;
 }
@@ -267,6 +270,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   categoryProgress: {},
   failedCommandLog: [],
   pendingReferralNotifications: [],
+  pendingWorkerFocus: null,
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -304,6 +308,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   showInsufficientResources: (payload) => set({ insufficientResources: payload }),
   clearInsufficientResources: () => set({ insufficientResources: null }),
+  setPendingWorkerFocus: (workerId) => set({ pendingWorkerFocus: workerId }),
+  clearPendingWorkerFocus: () => set({ pendingWorkerFocus: null }),
   clearBuilderToolDrop: () => set({ builderToolDrop: null }),
 
   addAchievements: (grants) => set((cur) => ({
@@ -367,6 +373,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     categoryProgress: {},
     locallyGrantedAchievements: new Set<string>(),
     pendingReferralNotifications: [],
+    pendingWorkerFocus: null,
   }),
 
   buy: (floorId, slotIdx, typeId) => {
