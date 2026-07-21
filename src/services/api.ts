@@ -69,7 +69,7 @@ async function refreshTokens(): Promise<boolean> {
 }
 
 async function request<T>(
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'DELETE',
   path: string,
   body?: unknown,
   retry = true,
@@ -104,6 +104,7 @@ async function request<T>(
 export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
+  delete: <T>(path: string) => request<T>('DELETE', path),
   leaderboard: (tab: 'level' | 'floors' | 'revenue', page: number) =>
     request<LeaderboardResponse>('GET', `/leaderboard?tab=${tab}&page=${page}`),
   setTokens,

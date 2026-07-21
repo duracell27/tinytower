@@ -1,0 +1,70 @@
+import { act } from 'react';
+import { useChatStore } from '../chatStore';
+import { api } from '../../services/api';
+
+jest.mock('../../services/api', () => ({
+  api: {
+    get: jest.fn(),
+    post: jest.fn(),
+    delete: jest.fn(),
+  },
+}));
+
+const mockApi = api as jest.Mocked<typeof api>;
+
+const mockMessages = [
+  { id: 'm1', playerId: 'p1', playerName: 'Alice', body: 'Hello', createdAt: '2026-07-21T10:00:00Z' },
+  { id: 'm2', playerId: 'p2', playerName: 'Bob',   body: 'Hi',    createdAt: '2026-07-21T10:01:00Z' },
+];
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  useChatStore.setState({ messages: [], isLoading: false, isSending: false, error: null });
+});
+
+describe('fetchMessages', () => {
+  it('populates messages from API response', async () => {
+    mockApi.get.mockResolvedValue({ messages: mockMessages });
+    await act(async () => { await useChatStore.getState().fetchMessages(); });
+    expect(useChatStore.getState().messages).toEqual(mockMessages);
+  });
+
+  it('silently ignores network errors', async () => {
+    mockApi.get.mockRejectedValue(new Error('network'));
+    await act(async () => { await useChatStore.getState().fetchMessages(); });
+    expect(useChatStore.getState().messages).toEqual([]);
+    expect(useChatStore.getState().error).toBeNull();
+  });
+});
+
+describe('sendMessage', () => {
+  it('calls API post and then refreshes messages', async () => {
+    mockApi.post.mockResolvedValue({});
+    mockApi.get.mockResolvedValue({ messages: mockMessages });
+    await act(async () => {
+      await useChatStore.getState().sendMessage('Hello world', 'Alice');
+    });
+    expect(mockApi.post).toHaveBeenCalledWith('/chat/messages', { body: 'Hello world', playerName: 'Alice' });
+    expect(useChatStore.getState().isSending).toBe(false);
+    expect(useChatStore.getState().messages).toEqual(mockMessages);
+  });
+
+  it('sets error on failure', async () => {
+    mockApi.post.mockRejectedValue(new Error('Cooldown'));
+    await act(async () => {
+      await useChatStore.getState().sendMessage('spam', 'Alice').catch(() => {});
+    });
+    expect(useChatStore.getState().error).toBe('Cooldown');
+    expect(useChatStore.getState().isSending).toBe(false);
+  });
+});
+
+describe('deleteMessage', () => {
+  it('removes message optimistically before API call', async () => {
+    useChatStore.setState({ messages: mockMessages });
+    mockApi.delete.mockResolvedValue({ success: true });
+    mockApi.get.mockResolvedValue({ messages: [] });
+    await act(async () => { await useChatStore.getState().deleteMessage('m1'); });
+    expect(mockApi.delete).toHaveBeenCalledWith('/chat/messages/m1');
+  });
+});
