@@ -127,7 +127,7 @@ export default function JobPickerSheet({
           matchLevel = typeId === worker.dreamJob ? 'dream' : 'match';
         }
         if (assigned) {
-          if (matchLevel === 'dream' || matchLevel === 'match') {
+          if (matchLevel === 'dream') {
             occupiedSlots.push({
               floorId: floorConfig.id, slotIdx, typeId, matchLevel, occupant: assigned,
               floorName: resolveFloorDisplayName(floorConfig.id, floorConfig.floorType, typeId),
