@@ -16,6 +16,7 @@ interface ChatState {
   isLoading: boolean;
   isSending: boolean;
   error: string | null;
+  activeCountry: string | undefined;
 }
 
 interface ChatActions {
@@ -33,13 +34,17 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   isLoading: false,
   isSending: false,
   error: null,
+  activeCountry: undefined,
 
   fetchMessages: async (country?: string) => {
     set({ isLoading: true });
     try {
       const params = country ? `?country=${encodeURIComponent(country)}` : '';
       const data = await api.get<{ messages: ChatMessage[] }>(`/chat/messages${params}`);
-      set({ messages: data.messages });
+      // Discard stale response if channel changed while request was in flight
+      if (get().activeCountry === country) {
+        set({ messages: data.messages });
+      }
     } catch {
       // silent — keep last known messages, polling continues
     } finally {
@@ -72,6 +77,8 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
 
   startPolling: (country?: string) => {
     if (pollingInterval !== null) clearInterval(pollingInterval);
+    // Set channel + clear stale messages before fetching
+    set({ activeCountry: country, messages: [] });
     void get().fetchMessages(country);
     pollingInterval = setInterval(() => void get().fetchMessages(country), 5000);
   },

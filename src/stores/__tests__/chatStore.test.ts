@@ -19,7 +19,7 @@ const mockMessages = [
 
 beforeEach(() => {
   jest.clearAllMocks();
-  useChatStore.setState({ messages: [], isLoading: false, isSending: false, error: null });
+  useChatStore.setState({ messages: [], isLoading: false, isSending: false, error: null, activeCountry: undefined });
 });
 
 describe('fetchMessages', () => {
@@ -40,6 +40,8 @@ describe('fetchMessages', () => {
 
 describe('sendMessage', () => {
   it('calls API post and then refreshes messages', async () => {
+    // Simulate startPolling('UA') having been called (sets activeCountry before send)
+    useChatStore.setState({ activeCountry: 'UA' });
     mockApi.post.mockResolvedValue({});
     mockApi.get.mockResolvedValue({ messages: mockMessages });
     await act(async () => {

@@ -72,34 +72,37 @@ export default function ChatScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-          <Text style={styles.backIcon}>‹</Text>
-        </Pressable>
-        <Text style={styles.headerTitle}>{t('chat.title')}</Text>
-        <View style={styles.backBtn} />
-      </View>
+    <View style={styles.container}>
+      {/* White top area: safe area + header + tab pills */}
+      <View style={[styles.topBar, { paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
+            <Text style={styles.backIcon}>‹</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>{t('chat.title')}</Text>
+          <View style={styles.backBtn} />
+        </View>
 
-      <View style={styles.tabs}>
-        <Pressable
-          style={[styles.tab, channel === 'global' && styles.tabActive]}
-          onPress={() => setChannel('global')}
-        >
-          <Text style={[styles.tabText, channel === 'global' && styles.tabTextActive]}>
-            {t('chat.global')}
-          </Text>
-        </Pressable>
-        {countryCode && (
+        <View style={styles.pills}>
           <Pressable
-            style={[styles.tab, channel === 'country' && styles.tabActive]}
-            onPress={() => setChannel('country')}
+            style={[styles.pill, channel === 'global' && styles.pillActive]}
+            onPress={() => setChannel('global')}
           >
-            <Text style={[styles.tabText, channel === 'country' && styles.tabTextActive]}>
-              {regionToFlag(countryCode)} {countryCode}
+            <Text style={[styles.pillText, channel === 'global' && styles.pillTextActive]}>
+              {t('chat.global')}
             </Text>
           </Pressable>
-        )}
+          {countryCode && (
+            <Pressable
+              style={[styles.pill, channel === 'country' && styles.pillActive]}
+              onPress={() => setChannel('country')}
+            >
+              <Text style={[styles.pillText, channel === 'country' && styles.pillTextActive]}>
+                {regionToFlag(countryCode)} {countryCode}
+              </Text>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       <KeyboardAvoidingView
@@ -161,14 +164,16 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F4F7F0' },
   flex: { flex: 1 },
+  topBar: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e8e8e8',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
   },
   backBtn: { width: 36, alignItems: 'center' },
   backIcon: { fontSize: 32, color: '#3C9A34', lineHeight: 36 },
@@ -179,23 +184,23 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#2A3344',
   },
-  tabs: {
+  pills: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
     paddingHorizontal: 16,
+    paddingBottom: 12,
     gap: 8,
   },
-  tab: {
-    paddingVertical: 10,
+  pill: {
+    paddingVertical: 6,
     paddingHorizontal: 16,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    borderRadius: 20,
+    backgroundColor: '#F4F7F0',
   },
-  tabActive: { borderBottomColor: '#3C9A34' },
-  tabText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#999' },
-  tabTextActive: { color: '#3C9A34' },
+  pillActive: {
+    backgroundColor: '#3C9A34',
+  },
+  pillText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#888' },
+  pillTextActive: { color: '#fff' },
   list: { paddingVertical: 12 },
   empty: { alignItems: 'center', paddingTop: 60 },
   emptyText: { fontFamily: 'Nunito_400Regular', color: '#aaa', fontSize: 15 },
