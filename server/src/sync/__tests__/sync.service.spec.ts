@@ -664,5 +664,29 @@ describe('SyncService', () => {
       expect(result.state.balance).toBe(100); // no change
       expect(result.state.gems).toBe(20);     // no change
     });
+
+    it('should not grant daily login reward when concurrent sync already claimed within transaction', async () => {
+      const playerWithNoState = {
+        ...mockPlayer,
+        state: null,
+      };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithNoState)
+        .mockResolvedValueOnce({ ...playerWithNoState, stateVersion: 1 });
+
+      // Pre-tx check: state is null → shouldCheckLoginReward = true (enters tx guard)
+      // In-tx check: findUnique returns already-claimed (simulates concurrent sync having committed first)
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      txMock.playerState.findUnique.mockResolvedValueOnce({
+        lastDailyLoginClaimedAt: BigInt(todayMidnight.getTime() + 1000),
+      });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.dailyLoginReward).toBeNull();
+      expect(result.state.balance).toBe(100);
+      expect(result.state.gems).toBe(20);
+    });
   });
 });
