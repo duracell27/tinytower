@@ -8,7 +8,7 @@ export class ChatService {
 
   async fetchMessages(country?: string) {
     return this.prisma.chatMessage.findMany({
-      where: { deletedAt: null, ...(country ? { country } : {}) },
+      where: { deletedAt: null, country: country ?? null },
       orderBy: { createdAt: 'asc' },
       take: 100,
       select: {

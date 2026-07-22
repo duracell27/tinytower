@@ -83,6 +83,7 @@ export default function ChatScreen() {
           <View style={styles.backBtn} />
         </View>
 
+        <View style={styles.divider} />
         <View style={styles.pills}>
           <Pressable
             style={[styles.pill, channel === 'global' && styles.pillActive]}
@@ -168,6 +169,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e8e8e8',
+    paddingBottom: 2,
+  },
+  divider: {
+    height: 3,
+    backgroundColor: '#3C9A34',
+    marginHorizontal: 16,
+    borderRadius: 2,
+    marginBottom: 10,
   },
   header: {
     flexDirection: 'row',
@@ -191,15 +200,23 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   pill: {
-    paddingVertical: 6,
+    height: 32,
     paddingHorizontal: 16,
-    borderRadius: 20,
+    borderRadius: 16,
     backgroundColor: '#F4F7F0',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   pillActive: {
     backgroundColor: '#3C9A34',
   },
-  pillText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#888' },
+  pillText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: '#888',
+    lineHeight: 18,
+    includeFontPadding: false,
+  },
   pillTextActive: { color: '#fff' },
   list: { paddingVertical: 12 },
   empty: { alignItems: 'center', paddingTop: 60 },
