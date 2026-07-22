@@ -60,6 +60,7 @@
     "subtitle": "Residents · job search",
     "seats": "Seats",
     "free": "Free",
+    "best": "Best",
     "evictConfirm": {
       "title": "Evict worker?",
       "message": "{{name}} will be evicted from the hotel",
@@ -101,6 +102,11 @@
     "buyer": { "title": "Shopaholic" },
     "lister": { "title": "Merchant" },
     "seller": { "title": "Sales Star" }
+  },
+  "dailyLoginReward": {
+    "title": "Daily Reward",
+    "subtitle": "Here's your reward for today!",
+    "claim": "Collect"
   },
   "levelUp": {
     "title": "New Level!",

@@ -20,6 +20,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { setAuthFailureCallback } from '../src/services/api';
 import * as Linking from 'expo-linking';
 import { createMMKV } from 'react-native-mmkv';
+import DailyLoginRewardModal from '../src/components/DailyLoginRewardModal';
 
 const authStorage = createMMKV({ id: 'auth' });
 
@@ -86,6 +87,7 @@ export default function RootLayout() {
         <Stack.Screen name="chat-screen" options={{ animation: 'slide_from_bottom' }} />
         <Stack.Screen name="forum-screen" options={{ animation: 'slide_from_bottom' }} />
       </Stack>
+      <DailyLoginRewardModal />
     </GestureHandlerRootView>
   );
 }

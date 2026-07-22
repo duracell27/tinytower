@@ -1,0 +1,200 @@
+import React, { useCallback } from 'react';
+import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  withDelay,
+  Easing,
+} from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
+import { useGameStore } from '../stores/gameStore';
+import { CoinIcon, GemIcon } from './CurrencyIcons';
+import { formatNum } from '../utils/format';
+
+const { width: SCREEN_W } = Dimensions.get('window');
+
+export default function DailyLoginRewardModal() {
+  const { t } = useTranslation('hotel');
+  const reward = useGameStore((s) => s.pendingDailyLoginReward);
+  const dismiss = useGameStore((s) => s.dismissDailyLoginReward);
+
+  const scale = useSharedValue(0.5);
+  const rewardsOpacity = useSharedValue(0);
+  const rewardsY = useSharedValue(20);
+
+  const triggerAnimations = useCallback(() => {
+    scale.value = 0.5;
+    rewardsOpacity.value = 0;
+    rewardsY.value = 20;
+    scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
+    rewardsOpacity.value = withDelay(250, withTiming(1, { duration: 250 }));
+    rewardsY.value = withDelay(250, withTiming(0, { duration: 300, easing: Easing.out(Easing.back(1.3)) }));
+  }, []);
+
+  const cardStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const rewardsStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: rewardsY.value }],
+    opacity: rewardsOpacity.value,
+  }));
+
+  return (
+    <Modal
+      visible={!!reward}
+      transparent
+      animationType="fade"
+      onRequestClose={dismiss}
+      onShow={triggerAnimations}
+    >
+      <View style={styles.scrim}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
+
+        {reward && (
+          <Animated.View style={[styles.card, cardStyle]}>
+            <LinearGradient colors={['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
+              <View style={styles.starsRow}>
+                <Text style={[styles.starText, styles.starSmall]}>★</Text>
+                <Text style={[styles.starText, styles.starLarge]}>★</Text>
+                <Text style={[styles.starText, styles.starSmall]}>★</Text>
+              </View>
+
+              <Text style={styles.title}>{t('dailyLoginReward.title')}</Text>
+              <Text style={styles.subtitle}>{t('dailyLoginReward.subtitle')}</Text>
+
+              <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
+                <View style={styles.rewardRow}>
+                  <CoinIcon size={20} />
+                  <Text style={styles.rewardText}>+{formatNum(reward.coins)}</Text>
+                </View>
+                <View style={styles.rewardRow}>
+                  <GemIcon size={16} />
+                  <Text style={styles.rewardTextGem}>+{reward.gems}</Text>
+                </View>
+              </Animated.View>
+
+              <Pressable
+                onPress={dismiss}
+                style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+              >
+                <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.buttonGradient}>
+                  <Text style={styles.buttonText}>{t('dailyLoginReward.claim')}</Text>
+                </LinearGradient>
+                <View style={styles.buttonShadow} />
+              </Pressable>
+            </LinearGradient>
+          </Animated.View>
+        )}
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  scrim: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  card: {
+    width: SCREEN_W * 0.78,
+    borderRadius: 28,
+    overflow: 'hidden',
+    shadowColor: 'rgba(120,100,20,1)',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 30,
+    elevation: 12,
+  },
+  cardGradient: {
+    alignItems: 'center',
+    paddingTop: 28,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+  },
+  starText: {
+    color: '#F2B330',
+    textShadowColor: 'rgba(180,130,30,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  starSmall: { fontSize: 22 },
+  starLarge: { fontSize: 34 },
+  title: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 24,
+    color: '#3D6B1E',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 14,
+    color: '#7C9A5E',
+    marginBottom: 20,
+  },
+  rewardsContainer: {
+    flexDirection: 'row',
+    gap: 20,
+    marginBottom: 22,
+  },
+  rewardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fff',
+    paddingVertical: 6,
+    paddingLeft: 8,
+    paddingRight: 14,
+    borderRadius: 14,
+    shadowColor: 'rgba(100,90,40,1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  rewardText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 16,
+    color: '#C28A22',
+  },
+  rewardTextGem: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 16,
+    color: '#2592AB',
+  },
+  button: {
+    width: '100%',
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  buttonPressed: { opacity: 0.85 },
+  buttonGradient: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    zIndex: 1,
+  },
+  buttonText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 18,
+    color: '#fff',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  buttonShadow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: 'rgba(40,90,25,0.35)',
+  },
+});
