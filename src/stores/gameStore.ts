@@ -69,6 +69,7 @@ interface UIState {
   failedCommandLog: FailedCommandEntry[];
   pendingReferralNotifications: ReferralNotification[];
   pendingWorkerFocus: string | null;
+  pendingDailyLoginReward: { coins: number; gems: number } | null;
 }
 
 interface GameActions {
@@ -127,6 +128,8 @@ interface GameActions {
   dismissReferralNotification: () => void;
   setPendingWorkerFocus: (workerId: string) => void;
   clearPendingWorkerFocus: () => void;
+  setDailyLoginReward: (reward: { coins: number; gems: number }) => void;
+  dismissDailyLoginReward: () => void;
   clearFailedCommandLog: () => void;
   reset: () => void;
 }
@@ -271,6 +274,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   failedCommandLog: [],
   pendingReferralNotifications: [],
   pendingWorkerFocus: null,
+  pendingDailyLoginReward: null,
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -310,6 +314,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   clearInsufficientResources: () => set({ insufficientResources: null }),
   setPendingWorkerFocus: (workerId) => set({ pendingWorkerFocus: workerId }),
   clearPendingWorkerFocus: () => set({ pendingWorkerFocus: null }),
+  setDailyLoginReward: (reward) => set({ pendingDailyLoginReward: reward }),
+  dismissDailyLoginReward: () => set({ pendingDailyLoginReward: null }),
   clearBuilderToolDrop: () => set({ builderToolDrop: null }),
 
   addAchievements: (grants) => set((cur) => ({
@@ -374,6 +380,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     locallyGrantedAchievements: new Set<string>(),
     pendingReferralNotifications: [],
     pendingWorkerFocus: null,
+    pendingDailyLoginReward: null,
   }),
 
   buy: (floorId, slotIdx, typeId) => {
