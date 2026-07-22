@@ -104,6 +104,7 @@ export default function ChatScreen() {
             </Pressable>
           )}
         </View>
+        <View style={styles.divider} />
       </View>
 
       <KeyboardAvoidingView
@@ -167,16 +168,13 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   topBar: {
     backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
-    paddingBottom: 2,
   },
   divider: {
     height: 3,
     backgroundColor: '#3C9A34',
     marginHorizontal: 16,
     borderRadius: 2,
-    marginBottom: 10,
+    marginVertical: 10,
   },
   header: {
     flexDirection: 'row',
