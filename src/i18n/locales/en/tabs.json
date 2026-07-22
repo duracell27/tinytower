@@ -56,7 +56,11 @@
     "warehouseTitle": "Warehouse",
     "workers": "My Workers",
     "leaderboard": "Leaderboard",
-    "chat": "Chat"
+    "chat": "Chat",
+    "forum": "Forum"
+  },
+  "forum": {
+    "comingSoon": "Coming soon"
   },
   "game": {
     "buyFloor": "Buy floor {{number}}"

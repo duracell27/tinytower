@@ -61,10 +61,21 @@ export default function MenuScreen() {
         </Pressable>
 
         <Pressable style={styles.menuItem} onPress={() => router.push('/chat')}>
-          <View style={styles.chatIconBox}>
-            <Text style={styles.chatIconEmoji}>💬</Text>
-          </View>
+          <Image
+            source={require('../../assets/img/menu/chat.png')}
+            style={{ width: 56, height: 56 }}
+            contentFit="contain"
+          />
           <Text style={styles.menuLabel}>{t('menu.chat')}</Text>
+        </Pressable>
+
+        <Pressable style={styles.menuItem} onPress={() => router.push('/forum')}>
+          <Image
+            source={require('../../assets/img/menu/friends.png')}
+            style={{ width: 56, height: 56 }}
+            contentFit="contain"
+          />
+          <Text style={styles.menuLabel}>{t('menu.forum')}</Text>
         </Pressable>
       </View>
 
@@ -112,14 +123,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 17,
     color: '#2A3344',
-  },
-  chatIconBox: {
-    width: 56,
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chatIconEmoji: {
-    fontSize: 38,
   },
 });
