@@ -60,7 +60,7 @@ export default function MenuScreen() {
           <Text style={styles.menuLabel}>{t('menu.leaderboard')}</Text>
         </Pressable>
 
-        <Pressable style={styles.menuItem} onPress={() => router.push('/chat')}>
+        <Pressable style={styles.menuItem} onPress={() => router.push('/chat-screen')}>
           <Image
             source={require('../../assets/img/menu/chat.png')}
             style={{ width: 56, height: 56 }}
@@ -69,7 +69,7 @@ export default function MenuScreen() {
           <Text style={styles.menuLabel}>{t('menu.chat')}</Text>
         </Pressable>
 
-        <Pressable style={styles.menuItem} onPress={() => router.push('/forum')}>
+        <Pressable style={styles.menuItem} onPress={() => router.push('/forum-screen')}>
           <Image
             source={require('../../assets/img/menu/forum.png')}
             style={{ width: 56, height: 56 }}

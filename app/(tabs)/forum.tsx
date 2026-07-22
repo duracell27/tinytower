@@ -1,5 +1,6 @@
-import { Redirect } from 'expo-router';
+import { View } from 'react-native';
 
-export default function ForumTabRedirect() {
-  return <Redirect href="/forum" />;
+// Route stub — actual forum screen is at app/forum-screen.tsx
+export default function ForumTabStub() {
+  return <View />;
 }

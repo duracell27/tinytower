@@ -1,5 +1,6 @@
-import { Redirect } from 'expo-router';
+import { View } from 'react-native';
 
-export default function ChatTabRedirect() {
-  return <Redirect href="/chat" />;
+// Route stub — actual chat screen is at app/chat-screen.tsx
+export default function ChatTabStub() {
+  return <View />;
 }
