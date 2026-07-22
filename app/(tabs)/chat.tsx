@@ -77,7 +77,7 @@ export default function ChatScreen() {
       />
 
       {isAuthenticated ? (
-        <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+        <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom + 8, 16) }]}>
           <TextInput
             style={styles.input}
             value={inputText}
@@ -87,7 +87,6 @@ export default function ChatScreen() {
             multiline
             maxLength={300}
           />
-          <Text style={styles.counter}>{inputText.length}/300</Text>
           <Pressable
             style={[styles.sendBtn, (!inputText.trim() || isSending) && styles.sendBtnDisabled]}
             onPress={handleSend}
@@ -131,7 +130,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1a1a1a',
   },
-  counter: { fontFamily: 'Nunito_400Regular', fontSize: 11, color: '#aaa', alignSelf: 'flex-end', marginBottom: 8 },
   sendBtn: {
     width: 40,
     height: 40,
