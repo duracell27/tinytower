@@ -44,7 +44,7 @@ export default function MenuScreen() {
 
         <Pressable style={styles.menuItem} onPress={() => setWorkersOpen(true)}>
           <Image
-            source={require('../../assets/img/menu/workers.png')}
+            source={require('../../assets/img/menu/myWorkers.png')}
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
@@ -71,7 +71,7 @@ export default function MenuScreen() {
 
         <Pressable style={styles.menuItem} onPress={() => router.push('/forum')}>
           <Image
-            source={require('../../assets/img/menu/friends.png')}
+            source={require('../../assets/img/menu/forum.png')}
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
