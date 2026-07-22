@@ -83,6 +83,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
         <Stack.Screen name="achievements" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="referrals" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="chat" options={{ animation: 'slide_from_bottom' }} />
       </Stack>
     </GestureHandlerRootView>
   );

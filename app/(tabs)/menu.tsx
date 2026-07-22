@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import { useGameStore } from '../../src/stores/gameStore';
 import WarehouseSheet from '../../src/components/WarehouseSheet';
 import WorkersPanel from '../../src/components/WorkersPanel';
@@ -10,6 +11,7 @@ import LeaderboardSheet from '../../src/components/LeaderboardSheet';
 
 export default function MenuScreen() {
   const { t } = useTranslation('tabs');
+  const router = useRouter();
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [workersOpen, setWorkersOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
@@ -57,6 +59,13 @@ export default function MenuScreen() {
           />
           <Text style={styles.menuLabel}>{t('menu.leaderboard')}</Text>
         </Pressable>
+
+        <Pressable style={styles.menuItem} onPress={() => router.push('/chat')}>
+          <View style={styles.chatIconBox}>
+            <Text style={styles.chatIconEmoji}>💬</Text>
+          </View>
+          <Text style={styles.menuLabel}>{t('menu.chat')}</Text>
+        </Pressable>
       </View>
 
       <WarehouseSheet visible={inventoryOpen} onClose={() => setInventoryOpen(false)} />
@@ -103,5 +112,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 17,
     color: '#2A3344',
+  },
+  chatIconBox: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chatIconEmoji: {
+    fontSize: 38,
   },
 });

@@ -21,11 +21,6 @@ export default function TabsLayout() {
         <NativeTabs.Trigger.Label>{t('labels.menu')}</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="chat">
-        <NativeTabs.Trigger.Icon sf="bubble.left.and.bubble.right.fill" />
-        <NativeTabs.Trigger.Label>{t('labels.chat')}</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-
       <NativeTabs.Trigger name="shop">
         <NativeTabs.Trigger.Icon sf="bag.fill" />
         <NativeTabs.Trigger.Label>{t('labels.shop')}</NativeTabs.Trigger.Label>

@@ -13,8 +13,8 @@ jest.mock('../../services/api', () => ({
 const mockApi = api as jest.Mocked<typeof api>;
 
 const mockMessages = [
-  { id: 'm1', playerId: 'p1', playerName: 'Alice', playerLevel: 5,  body: 'Hello', createdAt: '2026-07-21T10:00:00Z' },
-  { id: 'm2', playerId: 'p2', playerName: 'Bob',   playerLevel: 12, body: 'Hi',    createdAt: '2026-07-21T10:01:00Z' },
+  { id: 'm1', playerId: 'p1', playerName: 'Alice', playerLevel: 5,  country: null, body: 'Hello', createdAt: '2026-07-21T10:00:00Z' },
+  { id: 'm2', playerId: 'p2', playerName: 'Bob',   playerLevel: 12, country: 'UA', body: 'Hi',    createdAt: '2026-07-21T10:01:00Z' },
 ];
 
 beforeEach(() => {
@@ -43,9 +43,9 @@ describe('sendMessage', () => {
     mockApi.post.mockResolvedValue({});
     mockApi.get.mockResolvedValue({ messages: mockMessages });
     await act(async () => {
-      await useChatStore.getState().sendMessage('Hello world', 'Alice', 5);
+      await useChatStore.getState().sendMessage('Hello world', 'Alice', 5, 'UA');
     });
-    expect(mockApi.post).toHaveBeenCalledWith('/chat/messages', { body: 'Hello world', playerLevel: 5 });
+    expect(mockApi.post).toHaveBeenCalledWith('/chat/messages', { body: 'Hello world', playerLevel: 5, country: 'UA' });
     expect(useChatStore.getState().isSending).toBe(false);
     expect(useChatStore.getState().messages).toEqual(mockMessages);
   });
@@ -53,7 +53,7 @@ describe('sendMessage', () => {
   it('sets error on failure', async () => {
     mockApi.post.mockRejectedValue(new Error('Cooldown'));
     await act(async () => {
-      await useChatStore.getState().sendMessage('spam', 'Alice', 1).catch(() => {});
+      await useChatStore.getState().sendMessage('spam', 'Alice', 1, undefined).catch(() => {});
     });
     expect(useChatStore.getState().error).toBe('Cooldown');
     expect(useChatStore.getState().isSending).toBe(false);

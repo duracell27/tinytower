@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards, Req, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards, Req, BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
@@ -7,6 +7,7 @@ import { ChatService } from './chat.service';
 const SendMessageSchema = z.object({
   body: z.string().min(1).max(300),
   playerLevel: z.number().int().min(1).max(200).default(1),
+  country: z.string().length(2).toUpperCase().optional(),
 });
 
 @Controller('chat')
@@ -14,8 +15,8 @@ export class ChatController {
   constructor(private chatService: ChatService) {}
 
   @Get('messages')
-  async getMessages() {
-    const messages = await this.chatService.fetchMessages();
+  async getMessages(@Query('country') country?: string) {
+    const messages = await this.chatService.fetchMessages(country);
     return { messages };
   }
 
@@ -32,6 +33,7 @@ export class ChatController {
       req.user.playerId,
       parsed.data.body,
       parsed.data.playerLevel,
+      parsed.data.country,
     );
     return { message };
   }

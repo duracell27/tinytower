@@ -188,10 +188,12 @@ model ChatMessage {
   playerId    String
   playerName  String
   playerLevel Int       @default(1)
+  country     String?
   body        String    @db.VarChar(300)
   createdAt   DateTime  @default(now())
   deletedAt   DateTime?
   player      Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
+  @@index([country, createdAt])
 }

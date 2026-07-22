@@ -6,9 +6,9 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ChatService {
   constructor(private prisma: PrismaService) {}
 
-  async fetchMessages() {
+  async fetchMessages(country?: string) {
     return this.prisma.chatMessage.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, ...(country ? { country } : {}) },
       orderBy: { createdAt: 'asc' },
       take: 100,
       select: {
@@ -16,13 +16,14 @@ export class ChatService {
         playerId: true,
         playerName: true,
         playerLevel: true,
+        country: true,
         body: true,
         createdAt: true,
       },
     });
   }
 
-  async sendMessage(playerId: string, body: string, playerLevel = 1) {
+  async sendMessage(playerId: string, body: string, playerLevel = 1, country?: string) {
     if (body.length > 300) {
       throw new BadRequestException('Message exceeds 300 characters');
     }
@@ -45,8 +46,8 @@ export class ChatService {
     }
 
     return this.prisma.chatMessage.create({
-      data: { playerId, playerName: player.playerName, playerLevel, body },
-      select: { id: true, playerId: true, playerName: true, playerLevel: true, body: true, createdAt: true },
+      data: { playerId, playerName: player.playerName, playerLevel, body, country: country ?? null },
+      select: { id: true, playerId: true, playerName: true, playerLevel: true, country: true, body: true, createdAt: true },
     });
   }
 

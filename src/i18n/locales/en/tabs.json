@@ -8,6 +8,8 @@
     "profile": "Profile"
   },
   "chat": {
+    "title": "Chat",
+    "global": "Global",
     "placeholder": "Write a message...",
     "empty": "No messages yet. Say hi!",
     "guestBanner": "Log in to chat with other players",
@@ -53,7 +55,8 @@
     "inventory": "Inventory",
     "warehouseTitle": "Warehouse",
     "workers": "My Workers",
-    "leaderboard": "Leaderboard"
+    "leaderboard": "Leaderboard",
+    "chat": "Chat"
   },
   "game": {
     "buyFloor": "Buy floor {{number}}"

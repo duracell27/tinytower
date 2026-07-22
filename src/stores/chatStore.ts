@@ -6,6 +6,7 @@ export interface ChatMessage {
   playerId: string;
   playerName: string;
   playerLevel: number;
+  country?: string | null;
   body: string;
   createdAt: string;
 }
@@ -18,10 +19,10 @@ interface ChatState {
 }
 
 interface ChatActions {
-  fetchMessages: () => Promise<void>;
-  sendMessage: (body: string, playerName: string, playerLevel: number) => Promise<void>;
+  fetchMessages: (country?: string) => Promise<void>;
+  sendMessage: (body: string, playerName: string, playerLevel: number, country?: string) => Promise<void>;
   deleteMessage: (id: string) => Promise<void>;
-  startPolling: () => void;
+  startPolling: (country?: string) => void;
   stopPolling: () => void;
 }
 
@@ -33,10 +34,11 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   isSending: false,
   error: null,
 
-  fetchMessages: async () => {
+  fetchMessages: async (country?: string) => {
     set({ isLoading: true });
     try {
-      const data = await api.get<{ messages: ChatMessage[] }>('/chat/messages');
+      const params = country ? `?country=${encodeURIComponent(country)}` : '';
+      const data = await api.get<{ messages: ChatMessage[] }>(`/chat/messages${params}`);
       set({ messages: data.messages });
     } catch {
       // silent — keep last known messages, polling continues
@@ -45,11 +47,11 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     }
   },
 
-  sendMessage: async (body: string, playerName: string, playerLevel: number) => {
+  sendMessage: async (body: string, playerName: string, playerLevel: number, country?: string) => {
     set({ isSending: true, error: null });
     try {
-      await api.post('/chat/messages', { body, playerLevel });
-      await get().fetchMessages();
+      await api.post('/chat/messages', { body, playerLevel, ...(country ? { country } : {}) });
+      await get().fetchMessages(country);
     } catch (e) {
       set({ error: (e as Error).message });
       throw e;
@@ -68,10 +70,10 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     }
   },
 
-  startPolling: () => {
+  startPolling: (country?: string) => {
     if (pollingInterval !== null) clearInterval(pollingInterval);
-    void get().fetchMessages();
-    pollingInterval = setInterval(() => void get().fetchMessages(), 5000);
+    void get().fetchMessages(country);
+    pollingInterval = setInterval(() => void get().fetchMessages(country), 5000);
   },
 
   stopPolling: () => {
