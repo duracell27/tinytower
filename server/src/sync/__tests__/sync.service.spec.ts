@@ -127,7 +127,11 @@ describe('SyncService', () => {
       },
       // Returns empty array so locked values match player.playerLevel/playerXp (no recompute branch)
       $queryRaw: jest.fn().mockResolvedValue([]),
-      playerState: { upsert: jest.fn().mockResolvedValue({}), update: jest.fn().mockResolvedValue({}) },
+      playerState: {
+        upsert: jest.fn().mockResolvedValue({}),
+        update: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn().mockResolvedValue({ lastDailyLoginClaimedAt: BigInt(Date.now()) }),
+      },
       floorConstruction: { deleteMany: jest.fn().mockResolvedValue({}), upsert: jest.fn().mockResolvedValue({}) },
       playerFloorType: { upsert: jest.fn().mockResolvedValue({}), deleteMany: jest.fn().mockResolvedValue({}) },
       floor: { create: jest.fn().mockResolvedValue({}) },
@@ -597,6 +601,68 @@ describe('SyncService', () => {
           data: expect.objectContaining({ level10ReachedAt: expect.any(Date) }),
         }),
       );
+    });
+
+    it('should grant daily login reward when lastDailyLoginClaimedAt is 0', async () => {
+      const playerWithNoState = {
+        ...mockPlayer,
+        state: null,
+      };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithNoState)
+        .mockResolvedValueOnce({ ...playerWithNoState, stateVersion: 1 });
+
+      // Override txMock: simulate no prior claim
+      txMock.playerState.findUnique.mockResolvedValueOnce({ lastDailyLoginClaimedAt: BigInt(0) });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      const expectedCoins = mockFloors.length * 3000; // 5 floors × 3000 = 15000
+      expect(result.dailyLoginReward).toEqual({ coins: expectedCoins, gems: 3 });
+      expect(result.state.balance).toBe(100 + expectedCoins);
+      expect(result.state.gems).toBe(20 + 3); // default gems + 3
+    });
+
+    it('should not grant daily login reward when already claimed today', async () => {
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const claimedAt = BigInt(todayMidnight.getTime() + 1000); // claimed after midnight = today
+
+      const playerWithTodayClaim = {
+        ...mockPlayer,
+        state: {
+          playerId: 'player-uuid',
+          gems: 20,
+          lobbyCapacity: 10,
+          hotelCapacity: 10,
+          elevatorLevel: 1,
+          elevatorFloor: 0,
+          dailyTips: 0,
+          dailyGemsCollected: 0,
+          dailyTipsRewardClaimed: false,
+          dailyTipsStage2Claimed: false,
+          dailyFillLobbyUses: 0,
+          lastDailyLoginClaimedAt: claimedAt,
+          lastDailyReset: BigInt(0),
+          coinBonusPercent: 0,
+          xpBonusPercent: 0,
+          nextVisitorAt: BigInt(0),
+          briks: 1,
+          glass: 1,
+          nails: 1,
+          screw: 1,
+          lobbyVisitors: [],
+        },
+      };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithTodayClaim)
+        .mockResolvedValueOnce({ ...playerWithTodayClaim, stateVersion: 1 });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.dailyLoginReward).toBeNull();
+      expect(result.state.balance).toBe(100); // no change
+      expect(result.state.gems).toBe(20);     // no change
     });
   });
 });

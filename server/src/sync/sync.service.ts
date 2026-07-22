@@ -21,6 +21,7 @@ export interface SyncResult {
   coinBonusPercent: number;
   xpBonusPercent: number;
   categoryProgress: Record<string, CategoryProgressState>;
+  dailyLoginReward: { coins: number; gems: number } | null;
   pendingReferralClaims: Array<{
     id: string;
     referredName: string;
@@ -92,6 +93,15 @@ export class SyncService {
     const acceptedCommands: Command[] = [];
     let totalXpGained = 0;
 
+    const todayMidnight = (() => {
+      const d = new Date(serverNow);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime();
+    })();
+    const shouldCheckLoginReward =
+      Number(player.state?.lastDailyLoginClaimedAt ?? 0) < todayMidnight;
+    let dailyLoginReward: { coins: number; gems: number } | null = null;
+
     for (const command of newCommands) {
       const prevBalance = gameState.balance;
       const result = processCommand(
@@ -159,7 +169,7 @@ export class SyncService {
     let coinBonusDelta = 0;
     let xpBonusDelta = 0;
 
-    if (acceptedCommands.length > 0 || newCommands.length === 0) {
+    if (acceptedCommands.length > 0 || newCommands.length === 0 || shouldCheckLoginReward) {
       await this.prisma.$transaction(async (tx) => {
         // Re-read playerLevel/playerXp under a row lock to prevent concurrent-sync races.
         // If another request committed a level change between our initial read and now,
@@ -183,6 +193,22 @@ export class SyncService {
             balance: baseBalance + xpResult.bonusCoins,
             gems: baseGems + xpResult.bonusGems,
           };
+        }
+        // Daily login reward — re-read under the Player FOR UPDATE lock to deduplicate
+        if (shouldCheckLoginReward) {
+          const currentState = await tx.playerState.findUnique({
+            where: { playerId },
+            select: { lastDailyLoginClaimedAt: true },
+          });
+          if (Number(currentState?.lastDailyLoginClaimedAt ?? 0) < todayMidnight) {
+            const loginCoins = player.floors.length * 3000;
+            gameState = {
+              ...gameState,
+              balance: gameState.balance + loginCoins,
+              gems: gameState.gems + 3,
+            };
+            dailyLoginReward = { coins: loginCoins, gems: 3 };
+          }
         }
         // Compute final stats using locked player values + deltas to avoid stale reads under concurrency
         const finalStats = {
@@ -262,6 +288,7 @@ export class SyncService {
             nails: gameState.tools.nails,
             screw: gameState.tools.screw,
             lobbyVisitors: gameState.lobbyVisitors,
+            ...(dailyLoginReward ? { lastDailyLoginClaimedAt: BigInt(serverNow) } : {}),
           },
           update: {
             gems: gameState.gems,
@@ -281,6 +308,7 @@ export class SyncService {
             nails: gameState.tools.nails,
             screw: gameState.tools.screw,
             lobbyVisitors: gameState.lobbyVisitors,
+            ...(dailyLoginReward ? { lastDailyLoginClaimedAt: BigInt(serverNow) } : {}),
           },
         });
 
@@ -501,6 +529,7 @@ export class SyncService {
       coinBonusPercent: finalCoinBonus,
       xpBonusPercent: finalXpBonus,
       categoryProgress,
+      dailyLoginReward,
       pendingReferralClaims,
       referralPurchaseBonuses,
     };
