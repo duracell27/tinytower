@@ -3,6 +3,7 @@ import {
   View, Text, FlatList, TextInput, Pressable,
   StyleSheet, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '../../src/stores/chatStore';
@@ -16,6 +17,7 @@ export default function ChatScreen() {
   const player = useAuthStore((s) => s.player);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [inputText, setInputText] = useState('');
+  const insets = useSafeAreaInsets();
 
   // store delivers ascending; reverse + inverted renders newest at bottom
   const reversed = useMemo(() => [...messages].reverse(), [messages]);
@@ -75,7 +77,7 @@ export default function ChatScreen() {
       />
 
       {isAuthenticated ? (
-        <View style={styles.inputBar}>
+        <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
           <TextInput
             style={styles.input}
             value={inputText}
@@ -95,7 +97,7 @@ export default function ChatScreen() {
           </Pressable>
         </View>
       ) : (
-        <View style={styles.guestBanner}>
+        <View style={[styles.guestBanner, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <Text style={styles.guestText}>{t('chat.guestBanner')}</Text>
         </View>
       )}
@@ -112,7 +114,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: 8,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#e8e8e8',
