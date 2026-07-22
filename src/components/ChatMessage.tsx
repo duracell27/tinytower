@@ -25,20 +25,16 @@ function avatarColor(name: string): string {
 
 export default function ChatMessage({ message, isOwn, isAdmin, onDelete }: Props) {
   return (
-    <View style={[styles.row, isOwn && styles.rowOwn]}>
-      {!isOwn && (
-        <View style={[styles.avatar, { backgroundColor: avatarColor(message.playerName) }]}>
-          <Text style={styles.avatarText}>{message.playerName[0]?.toUpperCase()}</Text>
-        </View>
-      )}
+    <View style={styles.row}>
+      <View style={[styles.avatar, { backgroundColor: avatarColor(message.playerName) }]}>
+        <Text style={styles.avatarText}>{message.playerName[0]?.toUpperCase()}</Text>
+      </View>
       <View style={[styles.bubble, isOwn ? styles.bubbleOwn : styles.bubbleOther]}>
-        {!isOwn && (
-          <Text style={styles.name}>{message.playerName}</Text>
-        )}
+        <Text style={[styles.name, isOwn && styles.nameOwn]}>{message.playerName}</Text>
         <Text style={[styles.body, isOwn && styles.bodyOwn]}>{message.body}</Text>
         <View style={styles.footer}>
           <Text style={[styles.time, isOwn && styles.timeOwn]}>{formatTime(message.createdAt)}</Text>
-          {isAdmin && !isOwn && onDelete && (
+          {isAdmin && onDelete && (
             <Pressable onPress={() => onDelete(message.id)} style={styles.deleteBtn} hitSlop={8}>
               <Text style={styles.deleteIcon}>🗑</Text>
             </Pressable>
@@ -55,9 +51,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginVertical: 4,
     paddingHorizontal: 12,
-  },
-  rowOwn: {
-    flexDirection: 'row-reverse',
   },
   avatar: {
     width: 32,
@@ -96,6 +89,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#3C9A34',
     marginBottom: 2,
+  },
+  nameOwn: {
+    color: 'rgba(255,255,255,0.85)',
   },
   body: {
     fontFamily: 'Nunito_400Regular',
