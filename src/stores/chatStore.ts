@@ -5,6 +5,7 @@ export interface ChatMessage {
   id: string;
   playerId: string;
   playerName: string;
+  playerLevel: number;
   body: string;
   createdAt: string;
 }
@@ -18,7 +19,7 @@ interface ChatState {
 
 interface ChatActions {
   fetchMessages: () => Promise<void>;
-  sendMessage: (body: string, playerName: string) => Promise<void>;
+  sendMessage: (body: string, playerName: string, playerLevel: number) => Promise<void>;
   deleteMessage: (id: string) => Promise<void>;
   startPolling: () => void;
   stopPolling: () => void;
@@ -44,10 +45,10 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     }
   },
 
-  sendMessage: async (body: string, playerName: string) => {
+  sendMessage: async (body: string, playerName: string, playerLevel: number) => {
     set({ isSending: true, error: null });
     try {
-      await api.post('/chat/messages', { body, playerName });
+      await api.post('/chat/messages', { body, playerLevel });
       await get().fetchMessages();
     } catch (e) {
       set({ error: (e as Error).message });

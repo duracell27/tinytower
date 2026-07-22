@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import type { ChatMessage as ChatMessageType } from '../stores/chatStore';
+import { getUserIcon } from '../utils/userIcon';
 
 interface Props {
   message: ChatMessageType;
@@ -16,23 +18,17 @@ function formatTime(iso: string): string {
   return `${Math.floor(diff / 3600)}h`;
 }
 
-function avatarColor(name: string): string {
-  const colors = ['#E57373', '#64B5F6', '#81C784', '#FFB74D', '#BA68C8', '#4DB6AC'];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return colors[Math.abs(hash) % colors.length];
-}
-
 export default function ChatMessage({ message, isOwn, isAdmin, onDelete }: Props) {
   return (
     <View style={styles.row}>
-      <View style={[styles.avatar, { backgroundColor: avatarColor(message.playerName) }]}>
-        <Text style={styles.avatarText}>{message.playerName[0]?.toUpperCase()}</Text>
-      </View>
+      <Image
+        source={getUserIcon(message.playerLevel)}
+        style={styles.avatar}
+        contentFit="cover"
+      />
       <View style={[styles.bubble, isOwn ? styles.bubbleOwn : styles.bubbleOther]}>
-        <Text style={[styles.name, isOwn && styles.nameOwn]}>{message.playerName}</Text>
-        <Text style={[styles.body, isOwn && styles.bodyOwn]}>{message.body}</Text>
-        <View style={styles.footer}>
+        <View style={styles.header}>
+          <Text style={[styles.name, isOwn && styles.nameOwn]}>{message.playerName}</Text>
           <Text style={[styles.time, isOwn && styles.timeOwn]}>{formatTime(message.createdAt)}</Text>
           {isAdmin && onDelete && (
             <Pressable onPress={() => onDelete(message.id)} style={styles.deleteBtn} hitSlop={8}>
@@ -40,6 +36,7 @@ export default function ChatMessage({ message, isOwn, isAdmin, onDelete }: Props
             </Pressable>
           )}
         </View>
+        <Text style={[styles.body, isOwn && styles.bodyOwn]}>{message.body}</Text>
       </View>
     </View>
   );
@@ -48,32 +45,27 @@ export default function ChatMessage({ message, isOwn, isAdmin, onDelete }: Props
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     marginVertical: 4,
     paddingHorizontal: 12,
   },
   avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     marginRight: 8,
-  },
-  avatarText: {
-    color: '#fff',
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 14,
+    marginTop: 2,
+    backgroundColor: '#e8e8e8',
   },
   bubble: {
-    maxWidth: '72%',
+    flex: 1,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   bubbleOwn: {
     backgroundColor: '#3C9A34',
-    borderBottomRightRadius: 4,
+    borderBottomLeftRadius: 4,
   },
   bubbleOther: {
     backgroundColor: '#fff',
@@ -84,14 +76,34 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 3,
+  },
   name: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 12,
+    fontSize: 13,
     color: '#3C9A34',
-    marginBottom: 2,
   },
   nameOwn: {
-    color: 'rgba(255,255,255,0.85)',
+    color: 'rgba(255,255,255,0.9)',
+  },
+  time: {
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 11,
+    color: '#aaa',
+  },
+  timeOwn: {
+    color: 'rgba(255,255,255,0.6)',
+  },
+  deleteBtn: {
+    marginLeft: 'auto',
+    padding: 2,
+  },
+  deleteIcon: {
+    fontSize: 13,
   },
   body: {
     fontFamily: 'Nunito_400Regular',
@@ -100,26 +112,5 @@ const styles = StyleSheet.create({
   },
   bodyOwn: {
     color: '#fff',
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    marginTop: 4,
-    gap: 6,
-  },
-  time: {
-    fontFamily: 'Nunito_400Regular',
-    fontSize: 11,
-    color: '#999',
-  },
-  timeOwn: {
-    color: 'rgba(255,255,255,0.7)',
-  },
-  deleteBtn: {
-    padding: 2,
-  },
-  deleteIcon: {
-    fontSize: 13,
   },
 });

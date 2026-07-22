@@ -15,13 +15,14 @@ export class ChatService {
         id: true,
         playerId: true,
         playerName: true,
+        playerLevel: true,
         body: true,
         createdAt: true,
       },
     });
   }
 
-  async sendMessage(playerId: string, body: string) {
+  async sendMessage(playerId: string, body: string, playerLevel = 1) {
     if (body.length > 300) {
       throw new BadRequestException('Message exceeds 300 characters');
     }
@@ -44,8 +45,8 @@ export class ChatService {
     }
 
     return this.prisma.chatMessage.create({
-      data: { playerId, playerName: player.playerName, body },
-      select: { id: true, playerId: true, playerName: true, body: true, createdAt: true },
+      data: { playerId, playerName: player.playerName, playerLevel, body },
+      select: { id: true, playerId: true, playerName: true, playerLevel: true, body: true, createdAt: true },
     });
   }
 

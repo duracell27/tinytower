@@ -6,6 +6,7 @@ import { ChatService } from './chat.service';
 
 const SendMessageSchema = z.object({
   body: z.string().min(1).max(300),
+  playerLevel: z.number().int().min(1).max(200).default(1),
 });
 
 @Controller('chat')
@@ -30,6 +31,7 @@ export class ChatController {
     const message = await this.chatService.sendMessage(
       req.user.playerId,
       parsed.data.body,
+      parsed.data.playerLevel,
     );
     return { message };
   }

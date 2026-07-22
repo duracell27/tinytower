@@ -8,6 +8,7 @@ import { useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '../../src/stores/chatStore';
 import { useAuthStore } from '../../src/stores/authStore';
+import { useGameStore } from '../../src/stores/gameStore';
 import ChatMessage from '../../src/components/ChatMessage';
 
 export default function ChatScreen() {
@@ -16,6 +17,7 @@ export default function ChatScreen() {
     useChatStore();
   const player = useAuthStore((s) => s.player);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const playerLevel = useGameStore((s) => s.playerLevel);
   const [inputText, setInputText] = useState('');
   const insets = useSafeAreaInsets();
 
@@ -34,7 +36,7 @@ export default function ChatScreen() {
     if (!body || isSending || !player) return;
     setInputText('');
     try {
-      await sendMessage(body, player.playerName);
+      await sendMessage(body, player.playerName, playerLevel);
     } catch (e) {
       Alert.alert(t('chat.sendError'), (e as Error).message);
     }
