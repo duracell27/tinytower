@@ -17,6 +17,7 @@ interface SyncResponse {
   coinBonusPercent: number;
   xpBonusPercent: number;
   categoryProgress: Record<string, CategoryProgressState>;
+  dailyLoginReward?: { coins: number; gems: number } | null;
   pendingReferralClaims?: Array<{
     id: string;
     referredName: string;
@@ -99,6 +100,9 @@ async function doSync(): Promise<void> {
         response.pendingReferralClaims ?? [],
         response.referralPurchaseBonuses ?? [],
       );
+    }
+    if (response.dailyLoginReward) {
+      useGameStore.getState().setDailyLoginReward(response.dailyLoginReward);
     }
     useGameStore.getState().setLastSyncAt(Date.now());
   } catch {
