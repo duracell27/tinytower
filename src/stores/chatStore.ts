@@ -43,7 +43,11 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       const data = await api.get<{ messages: ChatMessage[] }>(`/chat/messages${params}`);
       // Discard stale response if channel changed while request was in flight
       if (get().activeCountry === country) {
-        set({ messages: data.messages });
+        // Client-side guard: filter by channel in case server returns unexpected data
+        const filtered = country
+          ? data.messages.filter((m) => m.country === country)
+          : data.messages.filter((m) => !m.country);
+        set({ messages: filtered });
       }
     } catch {
       // silent — keep last known messages, polling continues

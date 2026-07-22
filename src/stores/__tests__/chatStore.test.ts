@@ -23,10 +23,18 @@ beforeEach(() => {
 });
 
 describe('fetchMessages', () => {
-  it('populates messages from API response', async () => {
+  it('populates messages from API response (global: filters to country=null only)', async () => {
     mockApi.get.mockResolvedValue({ messages: mockMessages });
     await act(async () => { await useChatStore.getState().fetchMessages(); });
-    expect(useChatStore.getState().messages).toEqual(mockMessages);
+    // global channel strips country-tagged messages client-side
+    expect(useChatStore.getState().messages).toEqual([mockMessages[0]]);
+  });
+
+  it('populates messages for country channel', async () => {
+    useChatStore.setState({ activeCountry: 'UA' });
+    mockApi.get.mockResolvedValue({ messages: mockMessages });
+    await act(async () => { await useChatStore.getState().fetchMessages('UA'); });
+    expect(useChatStore.getState().messages).toEqual([mockMessages[1]]);
   });
 
   it('silently ignores network errors', async () => {
@@ -49,7 +57,8 @@ describe('sendMessage', () => {
     });
     expect(mockApi.post).toHaveBeenCalledWith('/chat/messages', { body: 'Hello world', playerLevel: 5, country: 'UA' });
     expect(useChatStore.getState().isSending).toBe(false);
-    expect(useChatStore.getState().messages).toEqual(mockMessages);
+    // client-side filter: UA channel returns only country='UA' messages
+    expect(useChatStore.getState().messages).toEqual([mockMessages[1]]);
   });
 
   it('sets error on failure', async () => {
