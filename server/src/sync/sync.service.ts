@@ -257,7 +257,7 @@ export class SyncService {
             totalCollected:        { increment: collectCount },
             totalPassengersLifted: { increment: passengersCount },
             stateVersion: {
-              increment: (acceptedCommands.length > 0 || allNewGrants.length > 0) ? 1 : 0,
+              increment: (acceptedCommands.length > 0 || allNewGrants.length > 0 || !!dailyLoginReward) ? 1 : 0,
             },
             lastSeenAt: new Date(serverNow),
             openedFloorsCount: currentOpenedFloors,
