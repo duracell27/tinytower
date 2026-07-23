@@ -576,11 +576,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const builders = state.lobbyVisitors.filter((v) => v.role === 'builder');
     const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
     const builderTools = builders.map(() => TOOLS[Math.floor(Math.random() * TOOLS.length)]);
+
+    // Pre-generate workers for each guest heading to floor 1 so the server uses
+    // the same worker IDs instead of generating its own (which would cause mismatch
+    // on reconcile, resulting in "Worker not found" and incorrect over-capacity display).
+    let hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
+    const preGeneratedWorkers: ReturnType<typeof generateRandomWorkers>[0][] = [];
+    for (const visitor of state.lobbyVisitors) {
+      if ((visitor.role ?? 'guest') === 'guest' && visitor.targetFloor === 1 && hotelOccupied < state.hotelCapacity) {
+        preGeneratedWorkers.push(generateRandomWorkers(1, gameConfig, undefined, visitor.pendingFloorType)[0]);
+        hotelOccupied++;
+      }
+    }
+
     executeCommand(get, set, {
       id: uuid(),
       type: 'deliver_all',
       timestamp: clock.now(),
       builderTools,
+      ...(preGeneratedWorkers.length > 0 && { preGeneratedWorkers }),
     });
   },
 
@@ -712,8 +726,50 @@ export const useGameStore = create<GameStore>((set, get) => ({
   reconcile: (serverState, newVersion, ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
     balance: serverState.balance,
     gems: serverState.gems,
-    workers: serverState.workers,
-    hotelCapacity: serverState.hotelCapacity,
+    workers: (() => {
+      // Re-apply pending worker commands over server state to preserve optimistic effects.
+      // Without this, a stale sync response (stateVersion bumped by lobby visitors while
+      // a hire was in-flight) triggers a reconcile that rolls back the optimistic hire,
+      // causing the "better candidate" badge to flicker incorrectly.
+      const pendingWorkerCmds = cur.commandQueue.filter(
+        (cmd) => !sentIds.has(cmd.id) &&
+          (cmd.type === 'assign_worker' || cmd.type === 'fire_worker' ||
+           cmd.type === 'evict_worker' || cmd.type === 'fire_and_evict_worker' ||
+           cmd.type === 'evict_low_level_workers'),
+      );
+      if (pendingWorkerCmds.length === 0) return serverState.workers;
+      let workers = serverState.workers;
+      let floors = serverState.floors;
+      for (const cmd of pendingWorkerCmds) {
+        const result = processCommand(
+          { ...serverState, workers, floors, commandQueue: [] },
+          cmd, gameConfig, cmd.timestamp,
+        );
+        if (result.success) {
+          workers = result.state.workers;
+          floors = result.state.floors;
+        }
+      }
+      // Guard against over-capacity: server may have generated workers to fill hotel
+      // slots it thought were free (visitor lifts run before the fire_worker commands
+      // reach the server). Re-applying those fires above can push unemployed count
+      // above hotelCapacity. Trim excess server-generated workers (those absent from
+      // the pre-reconcile local state) so the occupancy display stays within bounds.
+      const cap = serverState.hotelCapacity;
+      const unemployed = workers.filter((w) => w.assignedFloorId === null);
+      if (unemployed.length > cap) {
+        const localIds = new Set(cur.workers.map((w) => w.id));
+        const assigned = workers.filter((w) => w.assignedFloorId !== null);
+        const localUnemployed = unemployed.filter((w) => localIds.has(w.id));
+        const serverNew = unemployed.filter((w) => !localIds.has(w.id));
+        const keepCount = Math.max(0, cap - localUnemployed.length);
+        workers = [...localUnemployed, ...serverNew.slice(0, keepCount), ...assigned];
+      }
+      return workers;
+    })(),
+    hotelCapacity: serverState.hotelCapacity + cur.commandQueue.filter(
+      (cmd) => !sentIds.has(cmd.id) && cmd.type === 'expand_hotel',
+    ).length,
     lobbyVisitors: serverState.lobbyVisitors,
     lobbyCapacity: serverState.lobbyCapacity,
     elevatorLevel: serverState.elevatorLevel,

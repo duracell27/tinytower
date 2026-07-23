@@ -536,7 +536,7 @@ export default function GameScreen() {
       return <View style={styles.bottomAnchor} />;
     }
     return null;
-  }, [balance, hotelOccupied, hotelTotal, lobbyVisitors.length, nextVisitorAt,
+  }, [balance, hotelOccupied, hotelTotal, hasBetterWorker, lobbyVisitors.length, nextVisitorAt,
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
       showInsufficientResources, towerCollapsed]);
 

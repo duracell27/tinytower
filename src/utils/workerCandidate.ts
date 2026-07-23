@@ -19,7 +19,7 @@ export function isBetterCandidate(
       const assigned = assignedWorkers.find(
         (w) => w.assignedFloorId === floor.id && w.assignedSlotIdx === slotIdx,
       );
-      if (!assigned) return true;
+      if (!assigned) continue;
 
       const hotelMatchesFloor = hotelWorker.floorType === floorType;
       const assignedMatchesFloor = assigned.floorType === floorType;

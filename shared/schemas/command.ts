@@ -98,6 +98,15 @@ export const CollectTipCommandSchema = TimestampedBaseSchema.extend({
 export const DeliverAllCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('deliver_all'),
   builderTools: z.array(ToolKeySchema).optional(),
+  preGeneratedWorkers: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    female: z.boolean(),
+    floorType: z.string(),
+    dreamJob: z.string(),
+    level: z.number().int().min(1).max(9),
+    hairColor: z.string(),
+  })).optional(),
 });
 
 export const UpgradeElevatorCommandSchema = TimestampedBaseSchema.extend({

@@ -244,12 +244,15 @@ function handleDeliverAll(
   }
   const passengersDelivered = state.lobbyVisitors.length;
   const builderTools = command.builderTools ?? [];
+  const preGeneratedWorkers = command.preGeneratedWorkers ?? [];
   let builderIdx = 0;
+  let workerIdx = 0;
   let newState = { ...state, gems: state.gems - 1 };
   for (const visitor of state.lobbyVisitors) {
     const isBuilder = (visitor.role ?? 'guest') === 'builder';
     const tool = isBuilder ? builderTools[builderIdx++] : undefined;
-    newState = applyVisitorEffect(newState, visitor, config, playerLevel, undefined, tool);
+    const preWorker = (!isBuilder && visitor.targetFloor === 1) ? preGeneratedWorkers[workerIdx++] : undefined;
+    newState = applyVisitorEffect(newState, visitor, config, playerLevel, preWorker, tool);
   }
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
   const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
