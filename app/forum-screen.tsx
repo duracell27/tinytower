@@ -1,13 +1,26 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import ForumCategoryCard from '../src/components/ForumCategoryCard';
+import { useForumStore, type ForumCategory } from '../src/stores/forumStore';
+import { useAuthStore } from '../src/stores/authStore';
+
+const CATEGORIES: ForumCategory[] = ['NEWS', 'HELP', 'GENERAL', 'CITIES', 'PURCHASES'];
 
 export default function ForumScreen() {
   const router = useRouter();
   const { t } = useTranslation('tabs');
   const insets = useSafeAreaInsets();
+  const { fetchUnreadCounts, unreadCounts } = useForumStore();
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isAuthenticated) void fetchUnreadCounts();
+    }, [isAuthenticated, fetchUnreadCounts]),
+  );
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -19,10 +32,20 @@ export default function ForumScreen() {
         <View style={styles.backBtn} />
       </View>
 
-      <View style={styles.empty}>
-        <Text style={styles.emptyEmoji}>🏗️</Text>
-        <Text style={styles.emptyText}>{t('forum.comingSoon')}</Text>
-      </View>
+      <FlatList
+        data={CATEGORIES}
+        keyExtractor={c => c}
+        renderItem={({ item }) => (
+          <ForumCategoryCard
+            category={item}
+            label={t(`forum.categories.${item}`)}
+            description={t(`forum.categoryDescriptions.${item}`)}
+            unreadCount={unreadCounts[item] ?? 0}
+            onPress={() => router.push({ pathname: '/forum-category', params: { category: item } })}
+          />
+        )}
+        contentContainerStyle={styles.list}
+      />
     </View>
   );
 }
@@ -47,7 +70,5 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#2A3344',
   },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-  emptyEmoji: { fontSize: 56 },
-  emptyText: { fontFamily: 'Nunito_600SemiBold', fontSize: 16, color: '#aaa' },
+  list: { paddingVertical: 12 },
 });
