@@ -251,7 +251,7 @@ function handleDeliverAll(
   for (const visitor of state.lobbyVisitors) {
     const isBuilder = (visitor.role ?? 'guest') === 'builder';
     const tool = isBuilder ? builderTools[builderIdx++] : undefined;
-    const preWorker = (!isBuilder && visitor.targetFloor === 1) ? preGeneratedWorkers[workerIdx++] : undefined;
+    const preWorker = ((visitor.role ?? 'guest') === 'guest' && visitor.targetFloor === 1) ? preGeneratedWorkers[workerIdx++] : undefined;
     newState = applyVisitorEffect(newState, visitor, config, playerLevel, preWorker, tool);
   }
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
