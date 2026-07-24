@@ -109,6 +109,11 @@ describe('ForumService', () => {
         .rejects.toBeInstanceOf(BadRequestException);
     });
 
+    it('throws BadRequestException when body exceeds 5000 chars', async () => {
+      await expect(service.createPost('p1', 'GENERAL', 'Title', 'x'.repeat(5001), false))
+        .rejects.toBeInstanceOf(BadRequestException);
+    });
+
     it('throws 429 when player posts within 60 seconds', async () => {
       prisma.forumPost.findFirst.mockResolvedValue({ id: 'prev', createdAt: new Date(Date.now() - 5000) });
       const err = await service.createPost('p1', 'GENERAL', 'T', 'B', false).catch(e => e);
@@ -263,6 +268,13 @@ describe('ForumService', () => {
       await expect(service.createComment('p1', 'post-1', 'x'.repeat(1001)))
         .rejects.toBeInstanceOf(BadRequestException);
     });
+
+    it('throws NotFoundException when player not found', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ isClosed: false });
+      prisma.player.findUnique.mockResolvedValue(null);
+      await expect(service.createComment('ghost', 'post-1', 'Hello'))
+        .rejects.toBeInstanceOf(NotFoundException);
+    });
   });
 
   describe('deleteComment', () => {
@@ -275,6 +287,76 @@ describe('ForumService', () => {
     it('throws ForbiddenException when non-owner tries to delete', async () => {
       prisma.forumComment.findFirst.mockResolvedValue({ playerId: 'p1', postId: 'post-1' });
       await expect(service.deleteComment('c1', 'attacker', false)).rejects.toBeInstanceOf(ForbiddenException);
+    });
+  });
+
+  describe('getPost', () => {
+    it('returns post with isUnread=true when no read record exists and commentCount > 0', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ ...basePost, commentCount: 2 });
+      prisma.forumPostRead.findUnique.mockResolvedValue(null);
+      const result = await service.getPost('post-1', 'p1');
+      expect(result.isUnread).toBe(true);
+    });
+
+    it('returns post with isUnread=false when read record matches commentCount', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ ...basePost, commentCount: 3 });
+      prisma.forumPostRead.findUnique.mockResolvedValue({ lastSeenCommentCount: 3 });
+      const result = await service.getPost('post-1', 'p1');
+      expect(result.isUnread).toBe(false);
+    });
+
+    it('throws NotFoundException when post does not exist', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue(null);
+      await expect(service.getPost('missing', 'p1')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('getComments', () => {
+    it('returns comments with hasMore=true when more pages remain', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ id: 'post-1' });
+      prisma.forumComment.count.mockResolvedValue(25);
+      const commentList = Array(20).fill({ id: 'c1', body: 'hi', postId: 'post-1', playerId: 'p1', playerName: 'Alice', playerLevel: 10, createdAt: new Date(), updatedAt: new Date() });
+      prisma.forumComment.findMany.mockResolvedValue(commentList);
+      const result = await service.getComments('post-1', 1, 20);
+      expect(result.comments).toHaveLength(20);
+      expect(result.total).toBe(25);
+      expect(result.page).toBe(1);
+      expect(result.hasMore).toBe(true);
+    });
+
+    it('returns hasMore=false when on the last page', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ id: 'post-1' });
+      prisma.forumComment.count.mockResolvedValue(5);
+      const commentList = Array(5).fill({ id: 'c1', body: 'hi', postId: 'post-1', playerId: 'p1', playerName: 'Alice', playerLevel: 10, createdAt: new Date(), updatedAt: new Date() });
+      prisma.forumComment.findMany.mockResolvedValue(commentList);
+      const result = await service.getComments('post-1', 1, 20);
+      expect(result.hasMore).toBe(false);
+    });
+
+    it('throws NotFoundException when post does not exist', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue(null);
+      await expect(service.getComments('missing', 1, 20)).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('updateComment', () => {
+    it('updates comment body and returns updated comment', async () => {
+      const updatedComment = { id: 'c1', body: 'updated', postId: 'post-1', playerId: 'p1', playerName: 'Alice', playerLevel: 10, createdAt: new Date(), updatedAt: new Date() };
+      prisma.forumComment.findFirst.mockResolvedValue({ playerId: 'p1' });
+      prisma.forumComment.update.mockResolvedValue(updatedComment);
+      const result = await service.updateComment('c1', 'updated', 'p1', false);
+      expect(result).toEqual(updatedComment);
+      expect(prisma.forumComment.update).toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when comment does not exist', async () => {
+      prisma.forumComment.findFirst.mockResolvedValue(null);
+      await expect(service.updateComment('missing', 'body', 'p1', false)).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws ForbiddenException when caller is not author and not admin', async () => {
+      prisma.forumComment.findFirst.mockResolvedValue({ playerId: 'p1' });
+      await expect(service.updateComment('c1', 'body', 'attacker', false)).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 });

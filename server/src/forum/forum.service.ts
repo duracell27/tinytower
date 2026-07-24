@@ -67,7 +67,9 @@ export class ForumService {
 
   async createPost(playerId: string, category: ForumCategory, title: string, body: string, isAdmin: boolean) {
     if (category === 'NEWS' && !isAdmin) throw new ForbiddenException('Only admins can post in News');
+    if (!title.trim().length) throw new BadRequestException('Title cannot be empty');
     if (title.length > 200) throw new BadRequestException('Title exceeds 200 characters');
+    if (!body.trim().length) throw new BadRequestException('Body cannot be empty');
     if (body.length > 5000) throw new BadRequestException('Body exceeds 5000 characters');
 
     const player = await this.prisma.player.findUnique({ where: { id: playerId }, select: { playerName: true, playerLevel: true } });
@@ -95,7 +97,9 @@ export class ForumService {
     const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null }, select: { playerId: true } });
     if (!post) throw new NotFoundException('Post not found');
     if (!isAdmin && post.playerId !== requesterId) throw new ForbiddenException('You can only edit your own posts');
+    if (!title.trim().length) throw new BadRequestException('Title cannot be empty');
     if (title.length > 200) throw new BadRequestException('Title exceeds 200 characters');
+    if (!body.trim().length) throw new BadRequestException('Body cannot be empty');
     if (body.length > 5000) throw new BadRequestException('Body exceeds 5000 characters');
     const updated = await this.prisma.forumPost.update({ where: { id }, data: { title, body }, select: POST_SELECT });
     const read = await this.prisma.forumPostRead.findUnique({ where: { playerId_postId: { playerId: requesterId, postId: id } } });
@@ -155,6 +159,7 @@ export class ForumService {
   }
 
   async createComment(playerId: string, postId: string, body: string) {
+    if (!body.trim().length) throw new BadRequestException('Body cannot be empty');
     if (body.length > 1000) throw new BadRequestException('Comment exceeds 1000 characters');
     const post = await this.prisma.forumPost.findFirst({ where: { id: postId, deletedAt: null }, select: { isClosed: true } });
     if (!post) throw new NotFoundException('Post not found');
@@ -175,6 +180,7 @@ export class ForumService {
   }
 
   async updateComment(id: string, body: string, requesterId: string, isAdmin: boolean) {
+    if (!body.trim().length) throw new BadRequestException('Body cannot be empty');
     if (body.length > 1000) throw new BadRequestException('Comment exceeds 1000 characters');
     const comment = await this.prisma.forumComment.findFirst({ where: { id, deletedAt: null }, select: { playerId: true } });
     if (!comment) throw new NotFoundException('Comment not found');
