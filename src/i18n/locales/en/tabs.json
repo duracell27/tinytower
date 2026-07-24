@@ -15,7 +15,26 @@
     "guestBanner": "Log in to chat with other players",
     "cooldown": "Please wait before sending another message",
     "sendError": "Failed to send message",
-    "deleteError": "Failed to delete message"
+    "editError": "Failed to edit message",
+    "deleteError": "Failed to delete message",
+    "deleteConfirm": "Delete message?",
+    "deleteConfirmBody": "This will permanently remove your message.",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "editing": "Editing message",
+    "actionEdit": "Edit",
+    "actionDelete": "Delete",
+    "infoTitle": "How Chat Works",
+    "infoGlobalTitle": "Global",
+    "infoGlobal": "Visible to all players around the world, regardless of country.",
+    "infoCountryTitle": "Country",
+    "infoCountry": "Only players from your country see these messages. Your country is detected automatically from your device.",
+    "infoEditTitle": "Edit & Delete",
+    "infoEdit": "Long press any of your messages to edit or delete it.",
+    "infoCooldownTitle": "Cooldown",
+    "infoCooldown": "You can send one message every 3 seconds.",
+    "infoExpiryTitle": "Message Expiry",
+    "infoExpiry": "All messages are automatically deleted after 24 hours."
   },
   "city": {
     "title": "City",
@@ -60,7 +79,39 @@
     "forum": "Forum"
   },
   "forum": {
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "title": "Forum",
+    "newPost": "New Post",
+    "editPost": "Edit Post",
+    "noPostsYet": "No posts yet. Be the first!",
+    "loadMore": "Load more",
+    "sendError": "Failed to send",
+    "deleteConfirm": "Delete?",
+    "deleteConfirmPost": "This will permanently remove your post and all its comments.",
+    "deleteConfirmComment": "This will permanently remove your comment.",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "actionEdit": "Edit",
+    "actionDelete": "Delete",
+    "editing": "Editing",
+    "closedBanner": "This topic is closed — no new comments.",
+    "guestBanner": "Log in to participate in the forum",
+    "commentPlaceholder": "Write a comment...",
+    "submit": "Submit",
+    "categories": {
+      "NEWS": "News",
+      "HELP": "Game Help",
+      "GENERAL": "General",
+      "CITIES": "Cities",
+      "PURCHASES": "Purchases"
+    },
+    "categoryDescriptions": {
+      "NEWS": "Game updates & announcements",
+      "HELP": "Questions & guides",
+      "GENERAL": "Talk about anything",
+      "CITIES": "Find players, promote cities",
+      "PURCHASES": "Help with in-game currency"
+    }
   },
   "game": {
     "buyFloor": "Buy floor {{number}}"
