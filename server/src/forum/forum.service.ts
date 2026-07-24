@@ -85,46 +85,49 @@ export class ForumService {
   }
 
   async getPost(id: string, playerId: string) {
-    const post = await this.prisma.forumPost.findUnique({ where: { id, deletedAt: null }, select: POST_SELECT });
+    const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null }, select: POST_SELECT });
     if (!post) throw new NotFoundException('Post not found');
     const read = await this.prisma.forumPostRead.findUnique({ where: { playerId_postId: { playerId, postId: id } } });
     return { ...post, isUnread: (read?.lastSeenCommentCount ?? -1) < post.commentCount };
   }
 
   async updatePost(id: string, title: string, body: string, requesterId: string, isAdmin: boolean) {
-    const post = await this.prisma.forumPost.findUnique({ where: { id, deletedAt: null }, select: { playerId: true } });
+    const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null }, select: { playerId: true } });
     if (!post) throw new NotFoundException('Post not found');
     if (!isAdmin && post.playerId !== requesterId) throw new ForbiddenException('You can only edit your own posts');
     if (title.length > 200) throw new BadRequestException('Title exceeds 200 characters');
     if (body.length > 5000) throw new BadRequestException('Body exceeds 5000 characters');
     const updated = await this.prisma.forumPost.update({ where: { id }, data: { title, body }, select: POST_SELECT });
-    return { ...updated, isUnread: false };
+    const read = await this.prisma.forumPostRead.findUnique({ where: { playerId_postId: { playerId: requesterId, postId: id } } });
+    return { ...updated, isUnread: (read?.lastSeenCommentCount ?? -1) < updated.commentCount };
   }
 
   async deletePost(id: string, requesterId: string, isAdmin: boolean): Promise<{ success: true }> {
-    const post = await this.prisma.forumPost.findUnique({ where: { id, deletedAt: null }, select: { playerId: true } });
+    const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null }, select: { playerId: true } });
     if (!post) throw new NotFoundException('Post not found');
     if (!isAdmin && post.playerId !== requesterId) throw new ForbiddenException('You can only delete your own posts');
     await this.prisma.forumPost.update({ where: { id }, data: { deletedAt: new Date() } });
     return { success: true };
   }
 
-  async pinPost(id: string, isPinned: boolean) {
-    const post = await this.prisma.forumPost.findUnique({ where: { id, deletedAt: null } });
+  async pinPost(id: string, isPinned: boolean, callerPlayerId: string) {
+    const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null }, select: { id: true } });
     if (!post) throw new NotFoundException('Post not found');
     const updated = await this.prisma.forumPost.update({ where: { id }, data: { isPinned }, select: POST_SELECT });
-    return { ...updated, isUnread: false };
+    const read = await this.prisma.forumPostRead.findUnique({ where: { playerId_postId: { playerId: callerPlayerId, postId: id } } });
+    return { ...updated, isUnread: (read?.lastSeenCommentCount ?? -1) < updated.commentCount };
   }
 
-  async closePost(id: string, isClosed: boolean) {
-    const post = await this.prisma.forumPost.findUnique({ where: { id, deletedAt: null } });
+  async closePost(id: string, isClosed: boolean, callerPlayerId: string) {
+    const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null }, select: { id: true } });
     if (!post) throw new NotFoundException('Post not found');
     const updated = await this.prisma.forumPost.update({ where: { id }, data: { isClosed }, select: POST_SELECT });
-    return { ...updated, isUnread: false };
+    const read = await this.prisma.forumPostRead.findUnique({ where: { playerId_postId: { playerId: callerPlayerId, postId: id } } });
+    return { ...updated, isUnread: (read?.lastSeenCommentCount ?? -1) < updated.commentCount };
   }
 
   async markRead(playerId: string, postId: string): Promise<{ success: true }> {
-    const post = await this.prisma.forumPost.findUnique({ where: { id: postId, deletedAt: null }, select: { commentCount: true } });
+    const post = await this.prisma.forumPost.findFirst({ where: { id: postId, deletedAt: null }, select: { commentCount: true } });
     if (!post) throw new NotFoundException('Post not found');
     await this.prisma.forumPostRead.upsert({
       where: { playerId_postId: { playerId, postId } },
@@ -135,7 +138,7 @@ export class ForumService {
   }
 
   async getComments(postId: string, page: number, limit: number) {
-    const post = await this.prisma.forumPost.findUnique({ where: { id: postId, deletedAt: null } });
+    const post = await this.prisma.forumPost.findFirst({ where: { id: postId, deletedAt: null } });
     if (!post) throw new NotFoundException('Post not found');
     const skip = (page - 1) * limit;
     const [total, comments] = await Promise.all([
@@ -153,7 +156,7 @@ export class ForumService {
 
   async createComment(playerId: string, postId: string, body: string) {
     if (body.length > 1000) throw new BadRequestException('Comment exceeds 1000 characters');
-    const post = await this.prisma.forumPost.findUnique({ where: { id: postId, deletedAt: null }, select: { isClosed: true } });
+    const post = await this.prisma.forumPost.findFirst({ where: { id: postId, deletedAt: null }, select: { isClosed: true } });
     if (!post) throw new NotFoundException('Post not found');
     if (post.isClosed) throw new ForbiddenException('Topic is closed');
 
@@ -161,7 +164,7 @@ export class ForumService {
     if (!player) throw new NotFoundException('Player not found');
 
     const cooldownCutoff = new Date(Date.now() - 10 * 1000);
-    const recent = await this.prisma.forumComment.findFirst({ where: { playerId, postId, createdAt: { gte: cooldownCutoff }, deletedAt: null } });
+    const recent = await this.prisma.forumComment.findFirst({ where: { playerId, createdAt: { gte: cooldownCutoff }, deletedAt: null } });
     if (recent) throw new HttpException('Comment cooldown: please wait before commenting again', HttpStatus.TOO_MANY_REQUESTS);
 
     const [comment] = await this.prisma.$transaction([
@@ -173,14 +176,14 @@ export class ForumService {
 
   async updateComment(id: string, body: string, requesterId: string, isAdmin: boolean) {
     if (body.length > 1000) throw new BadRequestException('Comment exceeds 1000 characters');
-    const comment = await this.prisma.forumComment.findUnique({ where: { id, deletedAt: null }, select: { playerId: true } });
+    const comment = await this.prisma.forumComment.findFirst({ where: { id, deletedAt: null }, select: { playerId: true } });
     if (!comment) throw new NotFoundException('Comment not found');
     if (!isAdmin && comment.playerId !== requesterId) throw new ForbiddenException('You can only edit your own comments');
     return this.prisma.forumComment.update({ where: { id }, data: { body }, select: COMMENT_SELECT });
   }
 
   async deleteComment(id: string, requesterId: string, isAdmin: boolean): Promise<{ success: true }> {
-    const comment = await this.prisma.forumComment.findUnique({ where: { id, deletedAt: null }, select: { playerId: true, postId: true } });
+    const comment = await this.prisma.forumComment.findFirst({ where: { id, deletedAt: null }, select: { playerId: true, postId: true } });
     if (!comment) throw new NotFoundException('Comment not found');
     if (!isAdmin && comment.playerId !== requesterId) throw new ForbiddenException('You can only delete your own comments');
     await this.prisma.$transaction([

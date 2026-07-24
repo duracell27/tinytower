@@ -123,9 +123,40 @@ describe('ForumService', () => {
     });
   });
 
+  describe('updatePost', () => {
+    it('owner can update their post and gets actual isUnread state', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ playerId: 'p1' });
+      prisma.forumPost.update.mockResolvedValue({ ...basePost, title: 'New Title' });
+      prisma.forumPostRead.findUnique.mockResolvedValue({ lastSeenCommentCount: 0 });
+      const result = await service.updatePost('post-1', 'New Title', 'Body text', 'p1', false);
+      expect(result.title).toBe('New Title');
+      expect(result.isUnread).toBe(false);
+    });
+
+    it('returns isUnread=true when no read record exists', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ playerId: 'p1' });
+      prisma.forumPost.update.mockResolvedValue({ ...basePost, commentCount: 1 });
+      prisma.forumPostRead.findUnique.mockResolvedValue(null);
+      const result = await service.updatePost('post-1', 'T', 'B', 'p1', false);
+      expect(result.isUnread).toBe(true);
+    });
+
+    it('throws ForbiddenException when non-owner tries to update', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ playerId: 'other' });
+      await expect(service.updatePost('post-1', 'T', 'B', 'attacker', false))
+        .rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('throws NotFoundException when post not found', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue(null);
+      await expect(service.updatePost('missing', 'T', 'B', 'p1', false))
+        .rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
   describe('deletePost', () => {
     it('owner can soft-delete their own post', async () => {
-      prisma.forumPost.findUnique.mockResolvedValue({ playerId: 'p1' });
+      prisma.forumPost.findFirst.mockResolvedValue({ playerId: 'p1' });
       const result = await service.deletePost('post-1', 'p1', false);
       expect(result).toEqual({ success: true });
       expect(prisma.forumPost.update).toHaveBeenCalledWith({
@@ -135,19 +166,67 @@ describe('ForumService', () => {
     });
 
     it('admin can delete any post', async () => {
-      prisma.forumPost.findUnique.mockResolvedValue({ playerId: 'other' });
+      prisma.forumPost.findFirst.mockResolvedValue({ playerId: 'other' });
       await expect(service.deletePost('post-1', 'admin', true)).resolves.toEqual({ success: true });
     });
 
     it('throws ForbiddenException when non-owner tries to delete', async () => {
-      prisma.forumPost.findUnique.mockResolvedValue({ playerId: 'p1' });
+      prisma.forumPost.findFirst.mockResolvedValue({ playerId: 'p1' });
       await expect(service.deletePost('post-1', 'attacker', false)).rejects.toBeInstanceOf(ForbiddenException);
+    });
+  });
+
+  describe('pinPost', () => {
+    it('pins a post and returns actual isUnread state (read record exists)', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ id: 'post-1' });
+      prisma.forumPost.update.mockResolvedValue({ ...basePost, isPinned: true });
+      prisma.forumPostRead.findUnique.mockResolvedValue({ lastSeenCommentCount: 0 });
+      const result = await service.pinPost('post-1', true, 'p1');
+      expect(result.isPinned).toBe(true);
+      expect(result.isUnread).toBe(false);
+    });
+
+    it('returns isUnread=true when no read record exists and commentCount > 0', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ id: 'post-1' });
+      prisma.forumPost.update.mockResolvedValue({ ...basePost, isPinned: true, commentCount: 1 });
+      prisma.forumPostRead.findUnique.mockResolvedValue(null);
+      const result = await service.pinPost('post-1', true, 'p1');
+      expect(result.isUnread).toBe(true);
+    });
+
+    it('throws NotFoundException when post not found', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue(null);
+      await expect(service.pinPost('missing', true, 'p1')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('closePost', () => {
+    it('closes a post and returns actual isUnread state (read record exists)', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ id: 'post-1' });
+      prisma.forumPost.update.mockResolvedValue({ ...basePost, isClosed: true });
+      prisma.forumPostRead.findUnique.mockResolvedValue({ lastSeenCommentCount: 0 });
+      const result = await service.closePost('post-1', true, 'p1');
+      expect(result.isClosed).toBe(true);
+      expect(result.isUnread).toBe(false);
+    });
+
+    it('returns isUnread=true when no read record and commentCount > 0', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ id: 'post-1' });
+      prisma.forumPost.update.mockResolvedValue({ ...basePost, isClosed: true, commentCount: 3 });
+      prisma.forumPostRead.findUnique.mockResolvedValue(null);
+      const result = await service.closePost('post-1', true, 'p1');
+      expect(result.isUnread).toBe(true);
+    });
+
+    it('throws NotFoundException when post not found', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue(null);
+      await expect(service.closePost('missing', true, 'p1')).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
   describe('markRead', () => {
     it('upserts ForumPostRead with current commentCount', async () => {
-      prisma.forumPost.findUnique.mockResolvedValue({ commentCount: 7 });
+      prisma.forumPost.findFirst.mockResolvedValue({ commentCount: 7 });
       await service.markRead('player-1', 'post-1');
       expect(prisma.forumPostRead.upsert).toHaveBeenCalledWith({
         where: { playerId_postId: { playerId: 'player-1', postId: 'post-1' } },
@@ -159,27 +238,28 @@ describe('ForumService', () => {
 
   describe('createComment', () => {
     it('creates comment and increments commentCount in transaction', async () => {
-      prisma.forumPost.findUnique.mockResolvedValue({ isClosed: false });
+      prisma.forumPost.findFirst.mockResolvedValue({ isClosed: false });
       await service.createComment('p1', 'post-1', 'Great post!');
       expect(prisma.$transaction).toHaveBeenCalled();
     });
 
     it('throws ForbiddenException when post is closed', async () => {
-      prisma.forumPost.findUnique.mockResolvedValue({ isClosed: true });
+      prisma.forumPost.findFirst.mockResolvedValue({ isClosed: true });
       await expect(service.createComment('p1', 'post-1', 'oops'))
         .rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('throws 429 when player comments within 10 seconds', async () => {
-      prisma.forumPost.findUnique.mockResolvedValue({ isClosed: false });
+      prisma.forumPost.findFirst.mockResolvedValue({ isClosed: false });
       prisma.forumComment.findFirst.mockResolvedValue({ id: 'prev', createdAt: new Date() });
       const err = await service.createComment('p1', 'post-1', 'spam').catch(e => e);
       expect(err).toBeInstanceOf(HttpException);
       expect(err.getStatus()).toBe(429);
+      expect(prisma.$transaction).not.toHaveBeenCalled();
     });
 
     it('throws BadRequestException when comment exceeds 1000 chars', async () => {
-      prisma.forumPost.findUnique.mockResolvedValue({ isClosed: false });
+      prisma.forumPost.findFirst.mockResolvedValue({ isClosed: false });
       await expect(service.createComment('p1', 'post-1', 'x'.repeat(1001)))
         .rejects.toBeInstanceOf(BadRequestException);
     });
@@ -187,13 +267,13 @@ describe('ForumService', () => {
 
   describe('deleteComment', () => {
     it('owner can soft-delete and decrements commentCount', async () => {
-      prisma.forumComment.findUnique.mockResolvedValue({ playerId: 'p1', postId: 'post-1' });
+      prisma.forumComment.findFirst.mockResolvedValue({ playerId: 'p1', postId: 'post-1' });
       await service.deleteComment('c1', 'p1', false);
       expect(prisma.$transaction).toHaveBeenCalled();
     });
 
     it('throws ForbiddenException when non-owner tries to delete', async () => {
-      prisma.forumComment.findUnique.mockResolvedValue({ playerId: 'p1', postId: 'post-1' });
+      prisma.forumComment.findFirst.mockResolvedValue({ playerId: 'p1', postId: 'post-1' });
       await expect(service.deleteComment('c1', 'attacker', false)).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
