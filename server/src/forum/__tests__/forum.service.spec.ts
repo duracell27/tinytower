@@ -92,6 +92,11 @@ describe('ForumService', () => {
       const result = await service.createPost('p1', 'GENERAL', 'Title', 'Body text', false);
       expect(prisma.forumPost.create).toHaveBeenCalled();
       expect(result.isUnread).toBe(false);
+      expect(prisma.forumPostRead.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({ lastSeenCommentCount: 0 }),
+        }),
+      );
     });
 
     it('throws 403 when non-admin tries to post in NEWS', async () => {
