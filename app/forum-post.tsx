@@ -196,6 +196,13 @@ export default function ForumPostScreen() {
               onLongPress={handleLongPressComment}
             />
           )}
+          ListEmptyComponent={
+            commentsLoading ? (
+              <View style={styles.empty}>
+                <Text style={styles.emptyText}>Loading...</Text>
+              </View>
+            ) : null
+          }
           ListFooterComponent={
             commentsHasMore ? (
               <Pressable style={styles.loadMore} onPress={() => void fetchComments(postId)}>
@@ -408,4 +415,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_400Regular', fontSize: 15, color: '#1a1a1a',
     borderWidth: 1, borderColor: '#e8e8e8', minHeight: 200,
   },
+  empty: { alignItems: 'center', paddingTop: 40 },
+  emptyText: { fontFamily: 'Nunito_400Regular', color: '#aaa', fontSize: 15 },
 });
