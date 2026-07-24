@@ -126,6 +126,16 @@ describe('ForumService', () => {
       await expect(service.createPost('ghost', 'GENERAL', 'T', 'B', false))
         .rejects.toBeInstanceOf(NotFoundException);
     });
+
+    it('throws BadRequestException when title is empty', async () => {
+      await expect(service.createPost('p1', 'GENERAL', '', 'valid body', false))
+        .rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('throws BadRequestException when body is empty', async () => {
+      await expect(service.createPost('p1', 'GENERAL', 'valid title', '', false))
+        .rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 
   describe('updatePost', () => {
@@ -274,6 +284,11 @@ describe('ForumService', () => {
       prisma.player.findUnique.mockResolvedValue(null);
       await expect(service.createComment('ghost', 'post-1', 'Hello'))
         .rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws BadRequestException when body is empty', async () => {
+      await expect(service.createComment('p1', 'post-1', ''))
+        .rejects.toBeInstanceOf(BadRequestException);
     });
   });
 

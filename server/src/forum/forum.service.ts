@@ -83,6 +83,11 @@ export class ForumService {
       data: { playerId, playerName: player.playerName, playerLevel: player.playerLevel, category, title, body },
       select: POST_SELECT,
     });
+    await this.prisma.forumPostRead.upsert({
+      where: { playerId_postId: { playerId, postId: post.id } },
+      create: { playerId, postId: post.id, lastSeenCommentCount: 0 },
+      update: { lastSeenCommentCount: 0 },
+    });
     return { ...post, isUnread: false };
   }
 
