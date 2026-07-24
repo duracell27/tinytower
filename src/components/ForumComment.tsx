@@ -25,7 +25,7 @@ export default function ForumComment({ comment, isOwn, isAdmin, onLongPress }: P
     <View style={styles.row}>
       <Image source={getUserIcon(comment.playerLevel)} style={styles.avatar} contentFit="cover" />
       <Pressable
-        onLongPress={canInteract && onLongPress ? () => onLongPress(comment.id, comment.body, isOwn) : undefined}
+        onLongPress={canInteract && onLongPress ? () => onLongPress(comment.id, comment.body, isOwn || isAdmin) : undefined}
         delayLongPress={350}
         style={styles.bubble}
       >

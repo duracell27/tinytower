@@ -151,7 +151,10 @@ export const useForumStore = create<ForumState & ForumActions>((set, get) => ({
   pinPost: async (id, isPinned) => {
     try {
       const data = await api.patch<{ post: ForumPost }>(`/forum/posts/${id}/pin`, { isPinned });
-      set(s => ({ posts: s.posts.map(p => p.id === id ? data.post : p) }));
+      set(s => ({
+        posts: s.posts.map(p => p.id === id ? data.post : p),
+        activePost: s.activePost?.id === id ? data.post : s.activePost,
+      }));
     } catch (e) {
       set({ error: (e as Error).message });
       throw e;
@@ -219,6 +222,7 @@ export const useForumStore = create<ForumState & ForumActions>((set, get) => ({
     try {
       await api.post(`/forum/posts/${postId}/comments`, { body });
       await get().fetchComments(postId, true);
+      await get().fetchPost(postId);
     } catch (e) {
       set({ error: (e as Error).message });
       throw e;

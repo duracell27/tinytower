@@ -133,7 +133,7 @@ export default function ForumPostScreen() {
         </View>
         {canModifyPost && (
           <Pressable
-            onPress={() => setSelectedItem({ id: postId, body: activePost.body, isOwn: isPostOwn, type: 'post' })}
+            onPress={() => setSelectedItem({ id: postId, body: activePost.body, isOwn: isPostOwn || isAdmin, type: 'post' })}
             style={styles.postMenuBtn}
             hitSlop={8}
           >
@@ -199,7 +199,7 @@ export default function ForumPostScreen() {
           ListEmptyComponent={
             commentsLoading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyText}>Loading...</Text>
+                <Text style={styles.emptyText}>{t('forum.loading')}</Text>
               </View>
             ) : null
           }

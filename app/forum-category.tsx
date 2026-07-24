@@ -80,7 +80,7 @@ export default function ForumCategoryScreen() {
         )}
         refreshControl={
           <RefreshControl
-            refreshing={postsLoading && posts.length === 0}
+            refreshing={postsLoading}
             onRefresh={() => void fetchPosts(cat, true)}
             tintColor="#3C9A34"
           />

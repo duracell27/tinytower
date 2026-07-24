@@ -49,7 +49,7 @@ describe('ForumService', () => {
   });
 
   describe('getUnreadCounts', () => {
-    it('returns zero counts when player has no read records', async () => {
+    it('marks all posts unread when player has no read records', async () => {
       prisma.forumPost.findMany.mockResolvedValue([
         { id: 'p1', category: 'GENERAL', commentCount: 2 },
         { id: 'p2', category: 'NEWS', commentCount: 1 },

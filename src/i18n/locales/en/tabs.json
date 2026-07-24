@@ -85,6 +85,7 @@
     "editPost": "Edit Post",
     "noPostsYet": "No posts yet. Be the first!",
     "loadMore": "Load more",
+    "loading": "Loading...",
     "sendError": "Failed to send",
     "deleteConfirm": "Delete?",
     "deleteConfirmPost": "This will permanently remove your post and all its comments.",
