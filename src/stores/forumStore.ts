@@ -38,6 +38,7 @@ interface ForumState {
   postsPage: number;
   postsHasMore: boolean;
   postsLoading: boolean;
+  postsCategory: ForumCategory | null;
   activePost: ForumPost | null;
   comments: ForumComment[];
   commentsPage: number;
@@ -50,6 +51,7 @@ interface ForumState {
 
 interface ForumActions {
   fetchPosts(category: ForumCategory, reset?: boolean): Promise<void>;
+  loadMorePosts(category: ForumCategory): Promise<void>;
   createPost(category: ForumCategory, title: string, body: string): Promise<void>;
   updatePost(id: string, title: string, body: string): Promise<void>;
   deletePost(id: string): Promise<void>;
@@ -58,9 +60,10 @@ interface ForumActions {
   fetchPost(id: string): Promise<void>;
   markRead(postId: string): Promise<void>;
   fetchComments(postId: string, reset?: boolean): Promise<void>;
+  loadMoreComments(postId: string): Promise<void>;
   createComment(postId: string, body: string): Promise<void>;
   updateComment(id: string, body: string): Promise<void>;
-  deleteComment(id: string, postId: string): Promise<void>;
+  deleteComment(id: string): Promise<void>;
   fetchUnreadCounts(): Promise<void>;
 }
 
@@ -71,6 +74,7 @@ export const useForumStore = create<ForumState & ForumActions>((set, get) => ({
   postsPage: 1,
   postsHasMore: false,
   postsLoading: false,
+  postsCategory: null,
   activePost: null,
   comments: [],
   commentsPage: 1,
@@ -83,6 +87,7 @@ export const useForumStore = create<ForumState & ForumActions>((set, get) => ({
   fetchPosts: async (category, reset = false) => {
     const page = reset ? 1 : get().postsPage;
     if (!reset && !get().postsHasMore && page > 1) return;
+    if (reset) set({ postsCategory: category });
     set({ postsLoading: true });
     try {
       const data = await api.get<PostsResponse>(`/forum/posts?category=${category}&page=${page}&limit=20`);
@@ -96,6 +101,10 @@ export const useForumStore = create<ForumState & ForumActions>((set, get) => ({
     } finally {
       set({ postsLoading: false });
     }
+  },
+
+  loadMorePosts: async (category) => {
+    return get().fetchPosts(category, false);
   },
 
   createPost: async (category, title, body) => {
@@ -132,6 +141,8 @@ export const useForumStore = create<ForumState & ForumActions>((set, get) => ({
     try {
       await api.delete(`/forum/posts/${id}`);
     } catch (e) {
+      const cat = get().postsCategory;
+      if (cat) await get().fetchPosts(cat, true);
       set({ error: (e as Error).message });
       throw e;
     }
@@ -181,6 +192,10 @@ export const useForumStore = create<ForumState & ForumActions>((set, get) => ({
     }
   },
 
+  loadMoreComments: async (postId) => {
+    return get().fetchComments(postId, false);
+  },
+
   fetchComments: async (postId, reset = false) => {
     const page = reset ? 1 : get().commentsPage;
     if (!reset && !get().commentsHasMore && page > 1) return;
@@ -202,11 +217,8 @@ export const useForumStore = create<ForumState & ForumActions>((set, get) => ({
   createComment: async (postId, body) => {
     set({ isSending: true, error: null });
     try {
-      const data = await api.post<{ comment: ForumComment }>(`/forum/posts/${postId}/comments`, { body });
-      set(s => ({
-        comments: [...s.comments, data.comment],
-        activePost: s.activePost ? { ...s.activePost, commentCount: s.activePost.commentCount + 1 } : null,
-      }));
+      await api.post(`/forum/posts/${postId}/comments`, { body });
+      await get().fetchComments(postId, true);
     } catch (e) {
       set({ error: (e as Error).message });
       throw e;
@@ -228,16 +240,16 @@ export const useForumStore = create<ForumState & ForumActions>((set, get) => ({
     }
   },
 
-  deleteComment: async (id, postId) => {
+  deleteComment: async (id) => {
     set(s => ({
       comments: s.comments.filter(c => c.id !== id),
-      activePost: s.activePost?.id === postId
-        ? { ...s.activePost, commentCount: Math.max(0, s.activePost.commentCount - 1) }
-        : s.activePost,
+      activePost: s.activePost ? { ...s.activePost, commentCount: Math.max(0, s.activePost.commentCount - 1) } : null,
     }));
     try {
       await api.delete(`/forum/comments/${id}`);
     } catch (e) {
+      const postId = get().activePost?.id;
+      if (postId) await get().fetchComments(postId, true);
       set({ error: (e as Error).message });
       throw e;
     }
