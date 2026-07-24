@@ -3,7 +3,6 @@ import {
   Query, UseGuards, Req, BadRequestException,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { ForumCategory } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
 import { ForumService } from './forum.service';
