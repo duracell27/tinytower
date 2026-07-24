@@ -9,6 +9,7 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { AchievementModule } from './achievement/achievement.module';
 import { ReferralModule } from './referral/referral.module';
 import { ChatModule } from './chat/chat.module';
+import { ForumModule } from './forum/forum.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ChatModule } from './chat/chat.module';
     AchievementModule,
     ReferralModule,
     ChatModule,
+    ForumModule,
   ],
 })
 export class AppModule {}
