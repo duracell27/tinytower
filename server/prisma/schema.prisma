@@ -36,6 +36,9 @@ model Player {
   categoryProgress   PlayerCategoryProgress[]
   isAdmin      Boolean     @default(false)
   chatMessages ChatMessage[]
+  forumPosts      ForumPost[]
+  forumComments   ForumComment[]
+  forumPostReads  ForumPostRead[]
 }
 
 model PlayerState {
@@ -197,4 +200,60 @@ model ChatMessage {
 
   @@index([createdAt])
   @@index([country, createdAt])
+}
+
+enum ForumCategory {
+  NEWS
+  HELP
+  GENERAL
+  CITIES
+  PURCHASES
+}
+
+model ForumPost {
+  id           String          @id @default(uuid())
+  playerId     String
+  playerName   String
+  playerLevel  Int
+  category     ForumCategory
+  title        String          @db.VarChar(200)
+  body         String          @db.VarChar(5000)
+  isPinned     Boolean         @default(false)
+  isClosed     Boolean         @default(false)
+  commentCount Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  deletedAt    DateTime?
+  player       Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  comments     ForumComment[]
+  reads        ForumPostRead[]
+
+  @@index([category, isPinned, createdAt])
+  @@index([deletedAt])
+}
+
+model ForumComment {
+  id          String    @id @default(uuid())
+  postId      String
+  playerId    String
+  playerName  String
+  playerLevel Int
+  body        String    @db.VarChar(1000)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  player      Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+}
+
+model ForumPostRead {
+  playerId             String
+  postId               String
+  lastSeenCommentCount Int       @default(0)
+  post                 ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  player               Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@id([playerId, postId])
 }
