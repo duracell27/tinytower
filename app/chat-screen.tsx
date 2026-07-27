@@ -1,8 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
-  View, Text, FlatList, TextInput, Pressable,
+  View, Text, FlatList, TextInput, Pressable, Modal, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -13,15 +15,28 @@ import { useGameStore } from '../src/stores/gameStore';
 import ChatMessage from '../src/components/ChatMessage';
 
 type Channel = 'global' | 'country';
+type SelectedMessage = { id: string; body: string; isOwn: boolean };
 
 const regionToFlag = (code: string) =>
   code.toUpperCase().replace(/./g, (c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65));
+
+function InfoSection({ emoji, title, text }: { emoji: string; title: string; text: string }) {
+  return (
+    <View style={infoStyles.section}>
+      <Text style={infoStyles.sectionEmoji}>{emoji}</Text>
+      <View style={infoStyles.sectionBody}>
+        <Text style={infoStyles.sectionTitle}>{title}</Text>
+        <Text style={infoStyles.sectionText}>{text}</Text>
+      </View>
+    </View>
+  );
+}
 
 export default function ChatScreen() {
   const router = useRouter();
   const { t } = useTranslation('tabs');
   const insets = useSafeAreaInsets();
-  const { messages, isLoading, isSending, sendMessage, deleteMessage, startPolling, stopPolling } =
+  const { messages, isLoading, isSending, sendMessage, editMessage, deleteMessage, startPolling, stopPolling } =
     useChatStore();
   const player = useAuthStore((s) => s.player);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -29,26 +44,19 @@ export default function ChatScreen() {
 
   const [inputText, setInputText] = useState('');
   const [channel, setChannel] = useState<Channel>('global');
-  const [isFocused, setIsFocused] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
+  const [infoVisible, setInfoVisible] = useState(false);
 
   const countryCode = getLocales()[0]?.regionCode ?? null;
   const activeCountry = channel === 'country' ? (countryCode ?? undefined) : undefined;
 
   useFocusEffect(
     useCallback(() => {
-      setIsFocused(true);
-      return () => {
-        setIsFocused(false);
-        stopPolling();
-      };
-    }, [stopPolling]),
-  );
-
-  useEffect(() => {
-    if (isFocused) {
       startPolling(activeCountry);
-    }
-  }, [isFocused, channel]);
+      return () => stopPolling();
+    }, [activeCountry, startPolling, stopPolling]),
+  );
 
   const reversed = useMemo(() => [...messages].reverse(), [messages]);
 
@@ -56,31 +64,75 @@ export default function ChatScreen() {
     const body = inputText.trim();
     if (!body || isSending || !player) return;
     setInputText('');
-    try {
-      await sendMessage(body, player.playerName, playerLevel, activeCountry);
-    } catch (e) {
-      Alert.alert(t('chat.sendError'), (e as Error).message);
+    if (editingId) {
+      const id = editingId;
+      setEditingId(null);
+      try {
+        await editMessage(id, body, activeCountry);
+      } catch (e) {
+        Alert.alert(t('chat.editError'), (e as Error).message);
+      }
+    } else {
+      try {
+        await sendMessage(body, player.playerName, playerLevel, activeCountry);
+      } catch (e) {
+        Alert.alert(t('chat.sendError'), (e as Error).message);
+      }
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteMessage(id);
-    } catch (e) {
-      Alert.alert(t('chat.deleteError'), (e as Error).message);
-    }
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setInputText('');
+  };
+
+  const handleLongPress = (id: string, body: string, isOwn: boolean) => {
+    setSelectedMessage({ id, body, isOwn });
+  };
+
+  const handleActionEdit = () => {
+    if (!selectedMessage) return;
+    setSelectedMessage(null);
+    setEditingId(selectedMessage.id);
+    setInputText(selectedMessage.body);
+  };
+
+  const handleActionDelete = () => {
+    if (!selectedMessage) return;
+    const { id } = selectedMessage;
+    setSelectedMessage(null);
+    Alert.alert(t('chat.deleteConfirm'), t('chat.deleteConfirmBody'), [
+      { text: t('chat.cancel'), style: 'cancel' },
+      {
+        text: t('chat.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteMessage(id);
+          } catch (e) {
+            Alert.alert(t('chat.deleteError'), (e as Error).message);
+          }
+        },
+      },
+    ]);
   };
 
   return (
     <View style={styles.container}>
-      {/* White top area: safe area + header + tab pills */}
+      {/* White top area */}
       <View style={[styles.topBar, { paddingTop: insets.top }]}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
+          <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
             <Text style={styles.backIcon}>‹</Text>
           </Pressable>
           <Text style={styles.headerTitle}>{t('chat.title')}</Text>
-          <View style={styles.backBtn} />
+          <Pressable onPress={() => setInfoVisible(true)} style={styles.headerBtn} hitSlop={8}>
+            <Image
+              source={require('../assets/img/InformationIcon.png')}
+              style={styles.infoIconImg}
+              contentFit="contain"
+            />
+          </Pressable>
         </View>
 
         <View style={styles.divider} />
@@ -121,7 +173,7 @@ export default function ChatScreen() {
               message={item}
               isOwn={item.playerId === player?.id}
               isAdmin={player?.isAdmin === true}
-              onDelete={handleDelete}
+              onLongPress={handleLongPress}
             />
           )}
           contentContainerStyle={styles.list}
@@ -135,23 +187,37 @@ export default function ChatScreen() {
         />
 
         {isAuthenticated ? (
-          <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom + 8, 16) }]}>
-            <TextInput
-              style={styles.input}
-              value={inputText}
-              onChangeText={(v) => setInputText(v.slice(0, 300))}
-              placeholder={t('chat.placeholder')}
-              placeholderTextColor="#aaa"
-              multiline
-              maxLength={300}
-            />
-            <Pressable
-              style={[styles.sendBtn, (!inputText.trim() || isSending) && styles.sendBtnDisabled]}
-              onPress={handleSend}
-              disabled={!inputText.trim() || isSending}
-            >
-              <Text style={styles.sendIcon}>➤</Text>
-            </Pressable>
+          <View>
+            {editingId && (
+              <View style={styles.editBanner}>
+                <Text style={styles.editBannerText}>{t('chat.editing')}</Text>
+                <Pressable onPress={handleCancelEdit} hitSlop={8}>
+                  <Text style={styles.editBannerCancel}>✕</Text>
+                </Pressable>
+              </View>
+            )}
+            <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom + 8, 16) }]}>
+              <TextInput
+                style={styles.input}
+                value={inputText}
+                onChangeText={(v) => setInputText(v.slice(0, 300))}
+                placeholder={t('chat.placeholder')}
+                placeholderTextColor="#aaa"
+                multiline
+                maxLength={300}
+              />
+              <Pressable
+                style={[
+                  styles.sendBtn,
+                  editingId && styles.sendBtnEdit,
+                  (!inputText.trim() || isSending) && styles.sendBtnDisabled,
+                ]}
+                onPress={handleSend}
+                disabled={!inputText.trim() || isSending}
+              >
+                <Text style={styles.sendIcon}>{editingId ? '✓' : '➤'}</Text>
+              </Pressable>
+            </View>
           </View>
         ) : (
           <View style={[styles.guestBanner, { paddingBottom: Math.max(insets.bottom, 16) }]}>
@@ -159,19 +225,100 @@ export default function ChatScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      {/* Info overlay — hotel-style, absolutely positioned inside the screen */}
+      {infoVisible && (
+        <View style={styles.infoScrim}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
+          <View style={styles.infoCard}>
+            <LinearGradient colors={['#4BAD42', '#2E8528']} style={styles.infoCardHeader}>
+              <Text style={styles.infoCardTitle}>{t('chat.infoTitle')}</Text>
+              <Pressable onPress={() => setInfoVisible(false)} style={styles.infoCardClose} hitSlop={10}>
+                <Text style={styles.infoCardCloseText}>✕</Text>
+              </Pressable>
+            </LinearGradient>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.infoCardBody}>
+                <InfoSection emoji="🌍" title={t('chat.infoGlobalTitle')} text={t('chat.infoGlobal')} />
+                <InfoSection emoji="🏳️" title={t('chat.infoCountryTitle')} text={t('chat.infoCountry')} />
+                <InfoSection emoji="✏️" title={t('chat.infoEditTitle')} text={t('chat.infoEdit')} />
+                <InfoSection emoji="⏱" title={t('chat.infoCooldownTitle')} text={t('chat.infoCooldown')} />
+                <InfoSection emoji="⏳" title={t('chat.infoExpiryTitle')} text={t('chat.infoExpiry')} />
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      )}
+
+      {/* Action sheet modal on long press */}
+      <Modal
+        visible={!!selectedMessage}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedMessage(null)}
+      >
+        <Pressable style={styles.overlay} onPress={() => setSelectedMessage(null)}>
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            {selectedMessage?.isOwn && (
+              <Pressable style={styles.sheetItem} onPress={handleActionEdit}>
+                <Image source={require('../assets/img/edit.png')} style={styles.sheetItemIcon} contentFit="contain" />
+                <Text style={styles.sheetItemText}>{t('chat.actionEdit')}</Text>
+              </Pressable>
+            )}
+            <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
+              <Image source={require('../assets/img/delete.png')} style={styles.sheetItemIcon} contentFit="contain" />
+              <Text style={[styles.sheetItemText, styles.sheetItemDanger]}>{t('chat.actionDelete')}</Text>
+            </Pressable>
+            <View style={styles.sheetDivider} />
+            <Pressable style={styles.sheetItem} onPress={() => setSelectedMessage(null)}>
+              <Text style={[styles.sheetItemText, styles.sheetItemCancel]}>{t('chat.cancel')}</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
 
+const infoStyles = StyleSheet.create({
+  section: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(60,154,52,0.18)',
+  },
+  sectionEmoji: {
+    fontSize: 22,
+    lineHeight: 28,
+    width: 28,
+    textAlign: 'center',
+  },
+  sectionBody: {
+    flex: 1,
+    gap: 2,
+  },
+  sectionTitle: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: '#2A3344',
+  },
+  sectionText: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 13,
+    color: '#6A7485',
+    lineHeight: 19,
+  },
+});
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F4F7F0' },
   flex: { flex: 1 },
-  topBar: {
-    backgroundColor: '#fff',
-  },
+  topBar: { backgroundColor: '#fff' },
   divider: {
-    height: 3,
+    height: 1,
     backgroundColor: '#3C9A34',
+    opacity: 0.9,
     marginHorizontal: 16,
     borderRadius: 2,
     marginVertical: 10,
@@ -182,8 +329,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  backBtn: { width: 36, alignItems: 'center' },
+  headerBtn: { width: 36, alignItems: 'center', justifyContent: 'center' },
   backIcon: { fontSize: 32, color: '#3C9A34', lineHeight: 36 },
+  infoIconImg: { width: 22, height: 22, opacity: 0.85 },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
@@ -194,7 +342,6 @@ const styles = StyleSheet.create({
   pills: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingBottom: 12,
     gap: 8,
   },
   pill: {
@@ -205,9 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  pillActive: {
-    backgroundColor: '#3C9A34',
-  },
+  pillActive: { backgroundColor: '#3C9A34' },
   pillText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
@@ -248,8 +393,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  sendBtnEdit: { backgroundColor: '#2A7A22' },
   sendBtnDisabled: { backgroundColor: '#ccc' },
   sendIcon: { color: '#fff', fontSize: 16 },
+  editBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EAF5E9',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#3C9A34',
+  },
+  editBannerText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: '#3C9A34',
+  },
+  editBannerCancel: {
+    fontSize: 16,
+    color: '#3C9A34',
+    fontWeight: '600',
+  },
   guestBanner: {
     padding: 16,
     backgroundColor: '#fff',
@@ -258,4 +424,88 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   guestText: { fontFamily: 'Nunito_600SemiBold', color: '#999', fontSize: 14 },
+
+  // Info overlay (hotel-style)
+  infoScrim: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(18,26,44,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  infoCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  infoCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingVertical: 13,
+  },
+  infoCardTitle: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 17,
+    color: '#fff',
+    letterSpacing: 0.4,
+  },
+  infoCardClose: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoCardCloseText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  infoCardBody: {
+    padding: 18,
+    paddingTop: 6,
+  },
+
+  // Action sheet
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 8,
+    paddingHorizontal: 8,
+  },
+  sheetItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  sheetItemIcon: { width: 24, height: 24 },
+  sheetItemText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 17,
+    color: '#2A3344',
+  },
+  sheetItemDanger: { color: '#E53935' },
+  sheetItemCancel: {
+    color: '#888',
+    textAlign: 'center',
+    flex: 1,
+  },
+  sheetDivider: {
+    height: 1,
+    backgroundColor: '#f0f0f0',
+    marginHorizontal: 8,
+  },
 });

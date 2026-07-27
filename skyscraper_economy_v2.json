@@ -1,0 +1,2161 @@
+{
+  "meta": {
+    "version": 2,
+    "note": "Rebuilt economy. Purchase values are FULL price (discount removed). Coins are BASE values (x1.2 / x2 multipliers ignored). Missing floors are omitted and will be generated later on request.",
+    "units": {
+      "purchase": "coins (full price, no discount)",
+      "delivery": "seconds",
+      "sale": "seconds",
+      "coins": "coins (base revenue)"
+    },
+    "formulas": {
+      "balanceRule": "From floor 3 onward both purchase and coins are fixed ratios of delivery time. purchase = delivery * [1/6, 0.26667, 0.48333]; coins = delivery * [0.26667, 0.35167, 0.53167]. Floors 1-2 are hand-tuned for early game.",
+      "slotRates": {
+        "1": 0.26667,
+        "2": 0.35167,
+        "3": 0.53167
+      },
+      "exception": "Floor 1 slot 1 is a deliberately weakened starter product (rate 0.152)",
+      "purchaseRates": {
+        "1": 0.16667,
+        "2": 0.26667,
+        "3": 0.48333
+      },
+      "exactRates": {
+        "purchase/delivery": [
+          "1/6",
+          "4/15",
+          "29/60"
+        ],
+        "coins/delivery": [
+          "4/15",
+          "0.352",
+          "319/600"
+        ],
+        "note": "slot3 delivery is always divisible by 600; generated floors follow this"
+      }
+    }
+  },
+  "floorCategories": [
+    {
+      "id": "products",
+      "name": "Products",
+      "color": "#4CAF50",
+      "colorName": "green",
+      "clickSpeed": "fastest",
+      "floors": [
+        {
+          "floorId": 1,
+          "name": "Confectionery",
+          "purchaseDiscount": 0.25,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Buns",
+              "purchase": 10,
+              "delivery": 105,
+              "sale": 300,
+              "coins": 16,
+              "coinsPerDeliverySecond": 0.15238
+            },
+            {
+              "slot": 2,
+              "name": "Pastries",
+              "purchase": 15,
+              "delivery": 180,
+              "sale": 720,
+              "coins": 63,
+              "coinsPerDeliverySecond": 0.35
+            },
+            {
+              "slot": 3,
+              "name": "Cakes",
+              "purchase": 20,
+              "delivery": 600,
+              "sale": 1440,
+              "coins": 318,
+              "coinsPerDeliverySecond": 0.53
+            }
+          ]
+        },
+        {
+          "floorId": 2,
+          "name": "Burger Joint",
+          "purchaseDiscount": 0.13,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Burgers",
+              "purchase": 30,
+              "delivery": 180,
+              "sale": 360,
+              "coins": 48,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Fries",
+              "purchase": 100,
+              "delivery": 600,
+              "sale": 1200,
+              "coins": 211,
+              "coinsPerDeliverySecond": 0.35167
+            },
+            {
+              "slot": 3,
+              "name": "Drinks",
+              "purchase": 400,
+              "delivery": 1800,
+              "sale": 3600,
+              "coins": 957,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 3,
+          "name": "Cheese Dairy",
+          "purchaseDiscount": 0.17,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Milk",
+              "purchase": 50,
+              "delivery": 300,
+              "sale": 600,
+              "coins": 80,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Cheese",
+              "purchase": 255,
+              "delivery": 960,
+              "sale": 1920,
+              "coins": 338,
+              "coinsPerDeliverySecond": 0.35208
+            },
+            {
+              "slot": 3,
+              "name": "Yogurt",
+              "purchase": 1450,
+              "delivery": 3000,
+              "sale": 6000,
+              "coins": 1595,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 4,
+          "name": "Farm Market",
+          "purchaseDiscount": 0.18,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Greens",
+              "purchase": 70,
+              "delivery": 420,
+              "sale": 1008,
+              "coins": 111,
+              "coinsPerDeliverySecond": 0.26429
+            },
+            {
+              "slot": 2,
+              "name": "Tomatoes",
+              "purchase": 352,
+              "delivery": 1320,
+              "sale": 2640,
+              "coins": 465,
+              "coinsPerDeliverySecond": 0.35227
+            },
+            {
+              "slot": 3,
+              "name": "Fruits",
+              "purchase": 1740,
+              "delivery": 3600,
+              "sale": 7200,
+              "coins": 1914,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 5,
+          "name": "Spice Shop",
+          "purchaseDiscount": 0.17,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Salt",
+              "purchase": 90,
+              "delivery": 540,
+              "sale": 1296,
+              "coins": 143,
+              "coinsPerDeliverySecond": 0.26481
+            },
+            {
+              "slot": 2,
+              "name": "Pepper",
+              "purchase": 432,
+              "delivery": 1620,
+              "sale": 3240,
+              "coins": 570,
+              "coinsPerDeliverySecond": 0.35185
+            },
+            {
+              "slot": 3,
+              "name": "Cinnamon",
+              "purchase": 2320,
+              "delivery": 4800,
+              "sale": 9600,
+              "coins": 2552,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 6,
+          "name": "Seafood Market",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Shrimp",
+              "purchase": 100,
+              "delivery": 600,
+              "sale": 1440,
+              "coins": 160,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Salmon",
+              "purchase": 480,
+              "delivery": 1800,
+              "sale": 3600,
+              "coins": 634,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Caviar",
+              "purchase": 2610,
+              "delivery": 5400,
+              "sale": 10800,
+              "coins": 2871,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 7,
+          "name": "Honey Farm",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Honeycomb",
+              "purchase": 110,
+              "delivery": 660,
+              "sale": 1584,
+              "coins": 176,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Honey",
+              "purchase": 544,
+              "delivery": 2040,
+              "sale": 4080,
+              "coins": 718,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Royal Jelly",
+              "purchase": 2900,
+              "delivery": 6000,
+              "sale": 12000,
+              "coins": 3190,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 8,
+          "name": "Chocolate Factory",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Cocoa",
+              "purchase": 120,
+              "delivery": 720,
+              "sale": 1728,
+              "coins": 192,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Chocolate Bars",
+              "purchase": 608,
+              "delivery": 2280,
+              "sale": 4560,
+              "coins": 803,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Truffles",
+              "purchase": 3190,
+              "delivery": 6600,
+              "sale": 13200,
+              "coins": 3509,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 9,
+          "name": "Grocery",
+          "purchaseDiscount": 0.22,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Sugar",
+              "purchase": 140,
+              "delivery": 840,
+              "sale": 2016,
+              "coins": 223,
+              "coinsPerDeliverySecond": 0.26548
+            },
+            {
+              "slot": 2,
+              "name": "Spaghetti",
+              "purchase": 672,
+              "delivery": 2520,
+              "sale": 6000,
+              "coins": 886,
+              "coinsPerDeliverySecond": 0.35159
+            },
+            {
+              "slot": 3,
+              "name": "Cereal",
+              "purchase": 3480,
+              "delivery": 7200,
+              "sale": 14400,
+              "coins": 3828,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 10,
+          "name": "Ice Cream Parlor",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Popsicles",
+              "purchase": 150,
+              "delivery": 900,
+              "sale": 2160,
+              "coins": 240,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Sundaes",
+              "purchase": 736,
+              "delivery": 2760,
+              "sale": 5520,
+              "coins": 972,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Gelato",
+              "purchase": 3770,
+              "delivery": 7800,
+              "sale": 15600,
+              "coins": 4147,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 11,
+          "name": "Juice Factory",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Lemonade",
+              "purchase": 160,
+              "delivery": 960,
+              "sale": 2304,
+              "coins": 256,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Apple Juice",
+              "purchase": 800,
+              "delivery": 3000,
+              "sale": 6000,
+              "coins": 1056,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Smoothies",
+              "purchase": 4060,
+              "delivery": 8400,
+              "sale": 16800,
+              "coins": 4466,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 12,
+          "name": "Winery",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Grapes",
+              "purchase": 170,
+              "delivery": 1020,
+              "sale": 2448,
+              "coins": 272,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Table Wine",
+              "purchase": 864,
+              "delivery": 3240,
+              "sale": 6480,
+              "coins": 1140,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Vintage Wine",
+              "purchase": 4350,
+              "delivery": 9000,
+              "sale": 18000,
+              "coins": 4785,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "service",
+      "name": "Service",
+      "color": "#2196F3",
+      "colorName": "blue",
+      "clickSpeed": "fast",
+      "floors": [
+        {
+          "floorId": 1,
+          "name": "Banking",
+          "purchaseDiscount": 0.2,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Cards",
+              "purchase": 20,
+              "delivery": 120,
+              "sale": 480,
+              "coins": 32,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Loans",
+              "purchase": 25,
+              "delivery": 300,
+              "sale": 1200,
+              "coins": 106,
+              "coinsPerDeliverySecond": 0.35333
+            },
+            {
+              "slot": 3,
+              "name": "Accounts",
+              "purchase": 30,
+              "delivery": 900,
+              "sale": 1800,
+              "coins": 479,
+              "coinsPerDeliverySecond": 0.53222
+            }
+          ]
+        },
+        {
+          "floorId": 2,
+          "name": "Rental",
+          "purchaseDiscount": 0.16,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Scooters",
+              "purchase": 40,
+              "delivery": 300,
+              "sale": 1200,
+              "coins": 80,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Consoles",
+              "purchase": 150,
+              "delivery": 900,
+              "sale": 3600,
+              "coins": 317,
+              "coinsPerDeliverySecond": 0.35222
+            },
+            {
+              "slot": 3,
+              "name": "Tools",
+              "purchase": 800,
+              "delivery": 3000,
+              "sale": 6000,
+              "coins": 1595,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 3,
+          "name": "Dental Clinic",
+          "purchaseDiscount": 0.11,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Fillings",
+              "purchase": 80,
+              "delivery": 480,
+              "sale": 1920,
+              "coins": 128,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Cleaning",
+              "purchase": 400,
+              "delivery": 1500,
+              "sale": 3600,
+              "coins": 527,
+              "coinsPerDeliverySecond": 0.35133
+            },
+            {
+              "slot": 3,
+              "name": "Braces",
+              "purchase": 1740,
+              "delivery": 3600,
+              "sale": 7200,
+              "coins": 1914,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 4,
+          "name": "Post Office",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Stamps",
+              "purchase": 100,
+              "delivery": 600,
+              "sale": 2400,
+              "coins": 160,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Parcels",
+              "purchase": 480,
+              "delivery": 1800,
+              "sale": 4320,
+              "coins": 634,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Express Delivery",
+              "purchase": 2320,
+              "delivery": 4800,
+              "sale": 9600,
+              "coins": 2552,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 5,
+          "name": "Photo Studio",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Passport Photos",
+              "purchase": 120,
+              "delivery": 720,
+              "sale": 2880,
+              "coins": 192,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Portraits",
+              "purchase": 560,
+              "delivery": 2100,
+              "sale": 5040,
+              "coins": 739,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Wedding Shoots",
+              "purchase": 2900,
+              "delivery": 6000,
+              "sale": 12000,
+              "coins": 3190,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 6,
+          "name": "IT Studio",
+          "purchaseDiscount": 0.18,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Websites",
+              "purchase": 150,
+              "delivery": 900,
+              "sale": 3600,
+              "coins": 240,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Apps",
+              "purchase": 640,
+              "delivery": 2400,
+              "sale": 5760,
+              "coins": 845,
+              "coinsPerDeliverySecond": 0.35208
+            },
+            {
+              "slot": 3,
+              "name": "Design",
+              "purchase": 3480,
+              "delivery": 7200,
+              "sale": 14400,
+              "coins": 3828,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 7,
+          "name": "Car Wash",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Exterior Wash",
+              "purchase": 160,
+              "delivery": 960,
+              "sale": 2304,
+              "coins": 256,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Interior Cleaning",
+              "purchase": 720,
+              "delivery": 2700,
+              "sale": 6480,
+              "coins": 950,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Polishing",
+              "purchase": 4060,
+              "delivery": 8400,
+              "sale": 16800,
+              "coins": 4466,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 8,
+          "name": "Copy Center",
+          "purchaseDiscount": 0.21,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Scanning",
+              "purchase": 170,
+              "delivery": 1020,
+              "sale": 2448,
+              "coins": 271,
+              "coinsPerDeliverySecond": 0.26569
+            },
+            {
+              "slot": 2,
+              "name": "Printing",
+              "purchase": 800,
+              "delivery": 3000,
+              "sale": 6000,
+              "coins": 1056,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Copying",
+              "purchase": 4350,
+              "delivery": 9000,
+              "sale": 18000,
+              "coins": 4785,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 9,
+          "name": "Veterinary Clinic",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Checkups",
+              "purchase": 180,
+              "delivery": 1080,
+              "sale": 2592,
+              "coins": 288,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Vaccinations",
+              "purchase": 880,
+              "delivery": 3300,
+              "sale": 6600,
+              "coins": 1162,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Surgeries",
+              "purchase": 4640,
+              "delivery": 9600,
+              "sale": 19200,
+              "coins": 5104,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 10,
+          "name": "Gym",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Day Passes",
+              "purchase": 190,
+              "delivery": 1140,
+              "sale": 2736,
+              "coins": 304,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Personal Training",
+              "purchase": 960,
+              "delivery": 3600,
+              "sale": 7200,
+              "coins": 1267,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Memberships",
+              "purchase": 4930,
+              "delivery": 10200,
+              "sale": 20400,
+              "coins": 5423,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 11,
+          "name": "Beauty Salon",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Manicures",
+              "purchase": 200,
+              "delivery": 1200,
+              "sale": 2880,
+              "coins": 320,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Facials",
+              "purchase": 1040,
+              "delivery": 3900,
+              "sale": 7800,
+              "coins": 1373,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Makeup",
+              "purchase": 5220,
+              "delivery": 10800,
+              "sale": 21600,
+              "coins": 5742,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 12,
+          "name": "Insurance Agency",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Travel Insurance",
+              "purchase": 210,
+              "delivery": 1260,
+              "sale": 3024,
+              "coins": 336,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Car Insurance",
+              "purchase": 1120,
+              "delivery": 4200,
+              "sale": 8400,
+              "coins": 1478,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Life Insurance",
+              "purchase": 5510,
+              "delivery": 11400,
+              "sale": 22800,
+              "coins": 6061,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rest",
+      "name": "Rest",
+      "color": "#FFC107",
+      "colorName": "yellow",
+      "clickSpeed": "medium",
+      "floors": [
+        {
+          "floorId": 1,
+          "name": "Exhibition",
+          "purchaseDiscount": 0.16,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Paintings",
+              "purchase": 30,
+              "delivery": 180,
+              "sale": 720,
+              "coins": 48,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Sculptures",
+              "purchase": 40,
+              "delivery": 420,
+              "sale": 840,
+              "coins": 148,
+              "coinsPerDeliverySecond": 0.35238
+            },
+            {
+              "slot": 3,
+              "name": "Gallery",
+              "purchase": 50,
+              "delivery": 1200,
+              "sale": 2400,
+              "coins": 638,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 2,
+          "name": "Karting",
+          "purchaseDiscount": 0.16,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Karts",
+              "purchase": 60,
+              "delivery": 360,
+              "sale": 864,
+              "coins": 95,
+              "coinsPerDeliverySecond": 0.26389
+            },
+            {
+              "slot": 2,
+              "name": "Helmets",
+              "purchase": 120,
+              "delivery": 1080,
+              "sale": 2160,
+              "coins": 380,
+              "coinsPerDeliverySecond": 0.35185
+            },
+            {
+              "slot": 3,
+              "name": "Track",
+              "purchase": 900,
+              "delivery": 3000,
+              "sale": 6000,
+              "coins": 1595,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 3,
+          "name": "Lounge",
+          "purchaseDiscount": 0.11,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Cocktails",
+              "purchase": 100,
+              "delivery": 600,
+              "sale": 2400,
+              "coins": 160,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Hookahs",
+              "purchase": 480,
+              "delivery": 1800,
+              "sale": 3600,
+              "coins": 634,
+              "coinsPerDeliverySecond": 0.35222
+            },
+            {
+              "slot": 3,
+              "name": "Pizza",
+              "purchase": 2320,
+              "delivery": 4800,
+              "sale": 9600,
+              "coins": 2552,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 4,
+          "name": "Cinema",
+          "purchaseDiscount": 0.19,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Tickets",
+              "purchase": 120,
+              "delivery": 720,
+              "sale": 1728,
+              "coins": 191,
+              "coinsPerDeliverySecond": 0.26528
+            },
+            {
+              "slot": 2,
+              "name": "Popcorn",
+              "purchase": 576,
+              "delivery": 2160,
+              "sale": 5160,
+              "coins": 760,
+              "coinsPerDeliverySecond": 0.35185
+            },
+            {
+              "slot": 3,
+              "name": "Cola",
+              "purchase": 3190,
+              "delivery": 6600,
+              "sale": 13200,
+              "coins": 3509,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 5,
+          "name": "Bowling Club",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Bowling Shoes",
+              "purchase": 150,
+              "delivery": 900,
+              "sale": 2160,
+              "coins": 240,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Bowling Balls",
+              "purchase": 704,
+              "delivery": 2640,
+              "sale": 5280,
+              "coins": 929,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Tournaments",
+              "purchase": 3770,
+              "delivery": 7800,
+              "sale": 15600,
+              "coins": 4147,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 6,
+          "name": "Water Park",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Inflatable Rings",
+              "purchase": 170,
+              "delivery": 1020,
+              "sale": 2448,
+              "coins": 272,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Water Slides",
+              "purchase": 832,
+              "delivery": 3120,
+              "sale": 6240,
+              "coins": 1098,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Cabanas",
+              "purchase": 4350,
+              "delivery": 9000,
+              "sale": 18000,
+              "coins": 4785,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 7,
+          "name": "Pizzeria",
+          "purchaseDiscount": 0.14,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Pepperoni",
+              "purchase": 200,
+              "delivery": 1200,
+              "sale": 2880,
+              "coins": 320,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Margherita",
+              "purchase": 960,
+              "delivery": 3600,
+              "sale": 7200,
+              "coins": 1267,
+              "coinsPerDeliverySecond": 0.35194
+            },
+            {
+              "slot": 3,
+              "name": "Four Cheese",
+              "purchase": 4930,
+              "delivery": 10200,
+              "sale": 20400,
+              "coins": 5423,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 8,
+          "name": "Arcade",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Tokens",
+              "purchase": 220,
+              "delivery": 1320,
+              "sale": 3168,
+              "coins": 352,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Air Hockey",
+              "purchase": 1088,
+              "delivery": 4080,
+              "sale": 8160,
+              "coins": 1436,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Racing Simulators",
+              "purchase": 5510,
+              "delivery": 11400,
+              "sale": 22800,
+              "coins": 6061,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 9,
+          "name": "Concert Hall",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Posters",
+              "purchase": 240,
+              "delivery": 1440,
+              "sale": 3456,
+              "coins": 384,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Front Row Seats",
+              "purchase": 1216,
+              "delivery": 4560,
+              "sale": 9120,
+              "coins": 1605,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Backstage Passes",
+              "purchase": 6090,
+              "delivery": 12600,
+              "sale": 25200,
+              "coins": 6699,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 10,
+          "name": "Amusement Park",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Carousels",
+              "purchase": 260,
+              "delivery": 1560,
+              "sale": 3744,
+              "coins": 416,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Ferris Wheel",
+              "purchase": 1344,
+              "delivery": 5040,
+              "sale": 10080,
+              "coins": 1774,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Roller Coasters",
+              "purchase": 6670,
+              "delivery": 13800,
+              "sale": 27600,
+              "coins": 7337,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 11,
+          "name": "Casino",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Slot Machines",
+              "purchase": 280,
+              "delivery": 1680,
+              "sale": 4032,
+              "coins": 448,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Roulette",
+              "purchase": 1472,
+              "delivery": 5520,
+              "sale": 11040,
+              "coins": 1943,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Poker Tables",
+              "purchase": 7250,
+              "delivery": 15000,
+              "sale": 30000,
+              "coins": 7975,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 12,
+          "name": "Theater",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Playbills",
+              "purchase": 300,
+              "delivery": 1800,
+              "sale": 4320,
+              "coins": 480,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Evening Shows",
+              "purchase": 1600,
+              "delivery": 6000,
+              "sale": 12000,
+              "coins": 2112,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Private Boxes",
+              "purchase": 7830,
+              "delivery": 16200,
+              "sale": 32400,
+              "coins": 8613,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fashion",
+      "name": "Fashion",
+      "color": "#9C27B0",
+      "colorName": "purple",
+      "clickSpeed": "slow",
+      "floors": [
+        {
+          "floorId": 1,
+          "name": "Sneaker Store",
+          "purchaseDiscount": 0.22,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Canvas Shoes",
+              "purchase": 40,
+              "delivery": 300,
+              "sale": 1200,
+              "coins": 80,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Sneakers",
+              "purchase": 50,
+              "delivery": 600,
+              "sale": 1200,
+              "coins": 211,
+              "coinsPerDeliverySecond": 0.35167
+            },
+            {
+              "slot": 3,
+              "name": "Custom Sneakers",
+              "purchase": 60,
+              "delivery": 1800,
+              "sale": 3600,
+              "coins": 957,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 2,
+          "name": "Clothing Store",
+          "purchaseDiscount": 0.11,
+          "products": [
+            {
+              "slot": 1,
+              "name": "T-Shirts",
+              "purchase": 70,
+              "delivery": 420,
+              "sale": 1008,
+              "coins": 111,
+              "coinsPerDeliverySecond": 0.26429
+            },
+            {
+              "slot": 2,
+              "name": "Pants",
+              "purchase": 300,
+              "delivery": 1200,
+              "sale": 2400,
+              "coins": 422,
+              "coinsPerDeliverySecond": 0.35167
+            },
+            {
+              "slot": 3,
+              "name": "Jackets",
+              "purchase": 1000,
+              "delivery": 3600,
+              "sale": 7200,
+              "coins": 1914,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 3,
+          "name": "Merch Shop",
+          "purchaseDiscount": 0.13,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Hoodies",
+              "purchase": 120,
+              "delivery": 720,
+              "sale": 2880,
+              "coins": 192,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Sweatshirts",
+              "purchase": 640,
+              "delivery": 2400,
+              "sale": 5760,
+              "coins": 845,
+              "coinsPerDeliverySecond": 0.35208
+            },
+            {
+              "slot": 3,
+              "name": "Caps",
+              "purchase": 3190,
+              "delivery": 6600,
+              "sale": 13200,
+              "coins": 3509,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 4,
+          "name": "Accessories",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Belts",
+              "purchase": 160,
+              "delivery": 960,
+              "sale": 2304,
+              "coins": 256,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Scarves",
+              "purchase": 800,
+              "delivery": 3000,
+              "sale": 6000,
+              "coins": 1056,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Handbags",
+              "purchase": 4350,
+              "delivery": 9000,
+              "sale": 18000,
+              "coins": 4785,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 5,
+          "name": "Pajamas",
+          "purchaseDiscount": 0.14,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Robes",
+              "purchase": 200,
+              "delivery": 1200,
+              "sale": 2880,
+              "coins": 320,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Kigurumi",
+              "purchase": 960,
+              "delivery": 3600,
+              "sale": 7200,
+              "coins": 1267,
+              "coinsPerDeliverySecond": 0.35194
+            },
+            {
+              "slot": 3,
+              "name": "Socks",
+              "purchase": 5220,
+              "delivery": 10800,
+              "sale": 21600,
+              "coins": 5742,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 6,
+          "name": "Formal Wear",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Bow Ties",
+              "purchase": 240,
+              "delivery": 1440,
+              "sale": 3456,
+              "coins": 384,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Suits",
+              "purchase": 1120,
+              "delivery": 4200,
+              "sale": 8400,
+              "coins": 1478,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Evening Gowns",
+              "purchase": 6090,
+              "delivery": 12600,
+              "sale": 25200,
+              "coins": 6699,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 7,
+          "name": "Sportswear",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Leggings",
+              "purchase": 280,
+              "delivery": 1680,
+              "sale": 4032,
+              "coins": 448,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Tracksuits",
+              "purchase": 1280,
+              "delivery": 4800,
+              "sale": 9600,
+              "coins": 1690,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Running Shoes",
+              "purchase": 6960,
+              "delivery": 14400,
+              "sale": 28800,
+              "coins": 7656,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 8,
+          "name": "Outerwear",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Vests",
+              "purchase": 320,
+              "delivery": 1920,
+              "sale": 4608,
+              "coins": 512,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Raincoats",
+              "purchase": 1440,
+              "delivery": 5400,
+              "sale": 10800,
+              "coins": 1901,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Fur Coats",
+              "purchase": 7830,
+              "delivery": 16200,
+              "sale": 32400,
+              "coins": 8613,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 9,
+          "name": "Bridal Salon",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Veils",
+              "purchase": 360,
+              "delivery": 2160,
+              "sale": 5184,
+              "coins": 576,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Tuxedos",
+              "purchase": 1600,
+              "delivery": 6000,
+              "sale": 12000,
+              "coins": 2112,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Bridal Gowns",
+              "purchase": 8700,
+              "delivery": 18000,
+              "sale": 36000,
+              "coins": 9570,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 10,
+          "name": "Jeans Shop",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Denim Shorts",
+              "purchase": 400,
+              "delivery": 2400,
+              "sale": 5760,
+              "coins": 640,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Jeans",
+              "purchase": 1760,
+              "delivery": 6600,
+              "sale": 13200,
+              "coins": 2323,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Denim Jackets",
+              "purchase": 9570,
+              "delivery": 19800,
+              "sale": 39600,
+              "coins": 10527,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 11,
+          "name": "Jewelry",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Rings",
+              "purchase": 440,
+              "delivery": 2640,
+              "sale": 6336,
+              "coins": 704,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Necklaces",
+              "purchase": 1920,
+              "delivery": 7200,
+              "sale": 14400,
+              "coins": 2534,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Diamonds",
+              "purchase": 10440,
+              "delivery": 21600,
+              "sale": 43200,
+              "coins": 11484,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 12,
+          "name": "Perfumery",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Body Sprays",
+              "purchase": 480,
+              "delivery": 2880,
+              "sale": 6912,
+              "coins": 768,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Perfumes",
+              "purchase": 2080,
+              "delivery": 7800,
+              "sale": 15600,
+              "coins": 2746,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Luxury Fragrances",
+              "purchase": 11310,
+              "delivery": 23400,
+              "sale": 46800,
+              "coins": 12441,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "electronics",
+      "name": "Electronics",
+      "color": "#F44336",
+      "colorName": "red",
+      "clickSpeed": "slowest",
+      "floors": [
+        {
+          "floorId": 1,
+          "name": "Smartphones",
+          "purchaseDiscount": 0.18,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Phones",
+              "purchase": 60,
+              "delivery": 420,
+              "sale": 1680,
+              "coins": 112,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Cases",
+              "purchase": 70,
+              "delivery": 1200,
+              "sale": 2400,
+              "coins": 422,
+              "coinsPerDeliverySecond": 0.35167
+            },
+            {
+              "slot": 3,
+              "name": "Screen Protectors",
+              "purchase": 80,
+              "delivery": 3600,
+              "sale": 7200,
+              "coins": 1914,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 2,
+          "name": "Computers",
+          "purchaseDiscount": 0.1,
+          "products": [
+            {
+              "slot": 1,
+              "name": "PCs",
+              "purchase": 100,
+              "delivery": 900,
+              "sale": 2160,
+              "coins": 240,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Laptops",
+              "purchase": 400,
+              "delivery": 2700,
+              "sale": 6480,
+              "coins": 950,
+              "coinsPerDeliverySecond": 0.35185
+            },
+            {
+              "slot": 3,
+              "name": "Monitors",
+              "purchase": 1500,
+              "delivery": 7200,
+              "sale": 17280,
+              "coins": 3827,
+              "coinsPerDeliverySecond": 0.53153
+            }
+          ]
+        },
+        {
+          "floorId": 3,
+          "name": "Robotics",
+          "purchaseDiscount": 0.12,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Robots",
+              "purchase": 200,
+              "delivery": 1200,
+              "sale": 4800,
+              "coins": 320,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Drones",
+              "purchase": 960,
+              "delivery": 3600,
+              "sale": 8640,
+              "coins": 1266,
+              "coinsPerDeliverySecond": 0.35167
+            },
+            {
+              "slot": 3,
+              "name": "Spare Parts",
+              "purchase": 5220,
+              "delivery": 10800,
+              "sale": 25920,
+              "coins": 5741,
+              "coinsPerDeliverySecond": 0.53157
+            }
+          ]
+        },
+        {
+          "floorId": 4,
+          "name": "Gaming Gear",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Gamepads",
+              "purchase": 250,
+              "delivery": 1500,
+              "sale": 3600,
+              "coins": 400,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Keyboards",
+              "purchase": 1200,
+              "delivery": 4500,
+              "sale": 10800,
+              "coins": 1584,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Gaming Chairs",
+              "purchase": 6960,
+              "delivery": 14400,
+              "sale": 28800,
+              "coins": 7656,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 5,
+          "name": "Watches",
+          "purchaseDiscount": 0.08,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Smartwatches",
+              "purchase": 300,
+              "delivery": 1800,
+              "sale": 4320,
+              "coins": 480,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Fitness Bands",
+              "purchase": 1440,
+              "delivery": 5400,
+              "sale": 12960,
+              "coins": 1900,
+              "coinsPerDeliverySecond": 0.35185
+            },
+            {
+              "slot": 3,
+              "name": "Straps",
+              "purchase": 8410,
+              "delivery": 17400,
+              "sale": 34800,
+              "coins": 9251,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 6,
+          "name": "Camera Store",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Tripods",
+              "purchase": 350,
+              "delivery": 2100,
+              "sale": 5040,
+              "coins": 560,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Cameras",
+              "purchase": 1680,
+              "delivery": 6300,
+              "sale": 15120,
+              "coins": 2218,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Lenses",
+              "purchase": 9570,
+              "delivery": 19800,
+              "sale": 39600,
+              "coins": 10527,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 7,
+          "name": "Network Store",
+          "purchaseDiscount": 0.13,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Cable",
+              "purchase": 400,
+              "delivery": 2400,
+              "sale": 5760,
+              "coins": 640,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Twisted pair",
+              "purchase": 1920,
+              "delivery": 7200,
+              "sale": 17280,
+              "coins": 2533,
+              "coinsPerDeliverySecond": 0.35181
+            },
+            {
+              "slot": 3,
+              "name": "Optical fiber",
+              "purchase": 10440,
+              "delivery": 21600,
+              "sale": 43200,
+              "coins": 11484,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 8,
+          "name": "Smart Home",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Smart Bulbs",
+              "purchase": 450,
+              "delivery": 2700,
+              "sale": 6480,
+              "coins": 720,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Smart Locks",
+              "purchase": 2160,
+              "delivery": 8100,
+              "sale": 19440,
+              "coins": 2851,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Home Assistants",
+              "purchase": 11310,
+              "delivery": 23400,
+              "sale": 46800,
+              "coins": 12441,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 9,
+          "name": "Data Center",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Hard Drives",
+              "purchase": 500,
+              "delivery": 3000,
+              "sale": 7200,
+              "coins": 800,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Servers",
+              "purchase": 2400,
+              "delivery": 9000,
+              "sale": 21600,
+              "coins": 3168,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Supercomputers",
+              "purchase": 12180,
+              "delivery": 25200,
+              "sale": 50400,
+              "coins": 13398,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 10,
+          "name": "TV Store",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "LED TVs",
+              "purchase": 550,
+              "delivery": 3300,
+              "sale": 7920,
+              "coins": 880,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "OLED TVs",
+              "purchase": 2640,
+              "delivery": 9900,
+              "sale": 23760,
+              "coins": 3485,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Home Theaters",
+              "purchase": 13050,
+              "delivery": 27000,
+              "sale": 54000,
+              "coins": 14355,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 11,
+          "name": "Audio Store",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Earbuds",
+              "purchase": 600,
+              "delivery": 3600,
+              "sale": 8640,
+              "coins": 960,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Headphones",
+              "purchase": 2880,
+              "delivery": 10800,
+              "sale": 25920,
+              "coins": 3802,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Speakers",
+              "purchase": 13920,
+              "delivery": 28800,
+              "sale": 57600,
+              "coins": 15312,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        },
+        {
+          "floorId": 12,
+          "name": "Space Tech",
+          "purchaseDiscount": null,
+          "generated": true,
+          "products": [
+            {
+              "slot": 1,
+              "name": "Telescopes",
+              "purchase": 650,
+              "delivery": 3900,
+              "sale": 9360,
+              "coins": 1040,
+              "coinsPerDeliverySecond": 0.26667
+            },
+            {
+              "slot": 2,
+              "name": "Satellites",
+              "purchase": 3120,
+              "delivery": 11700,
+              "sale": 28080,
+              "coins": 4118,
+              "coinsPerDeliverySecond": 0.352
+            },
+            {
+              "slot": 3,
+              "name": "Rockets",
+              "purchase": 14790,
+              "delivery": 30600,
+              "sale": 61200,
+              "coins": 16269,
+              "coinsPerDeliverySecond": 0.53167
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

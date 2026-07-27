@@ -19,9 +19,15 @@ export function isBetterCandidate(
       const assigned = assignedWorkers.find(
         (w) => w.assignedFloorId === floor.id && w.assignedSlotIdx === slotIdx,
       );
-      if (!assigned) continue;
 
       const hotelMatchesFloor = hotelWorker.floorType === floorType;
+
+      // Empty slot that matches this worker's floorType and dreamJob → ideal candidate
+      if (!assigned) {
+        if (hotelMatchesFloor) return true;
+        continue;
+      }
+
       const assignedMatchesFloor = assigned.floorType === floorType;
       if (hotelMatchesFloor && !assignedMatchesFloor) return true;
       if (hotelMatchesFloor && assignedMatchesFloor && hotelWorker.level > assigned.level) return true;

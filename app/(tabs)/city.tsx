@@ -20,7 +20,7 @@ export default function CityScreen() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require('../../assets/welcome-bg.png')}
+        source={require('../../assets/img/backgroung/bg15.png')}
         style={styles.background}
         resizeMode="cover"
       >

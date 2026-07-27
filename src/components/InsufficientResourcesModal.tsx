@@ -97,7 +97,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: Props 
 
             {/* Icon */}
             <View style={styles.iconWrap}>
-              {isCoins && <View style={styles.coinLarge} />}
+              {isCoins && <Image source={require('../../assets/img/coin.png')} style={styles.coinLarge} contentFit="contain" />}
               {isGems && <View style={styles.gemLarge} />}
               {isTools && (
                 <View style={styles.toolIconRow}>
@@ -289,16 +289,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   coinLarge: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#F2B330',
-    borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.55)',
-    shadowColor: 'rgba(180,130,30,1)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    width: 48,
+    height: 48,
   },
   gemLarge: {
     width: 32,

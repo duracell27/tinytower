@@ -28,12 +28,22 @@ export default function ForumCategoryScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newBody, setNewBody] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       void fetchPosts(cat, true);
     }, [cat, fetchPosts]),
   );
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchPosts(cat, true);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [cat, fetchPosts]);
 
   const handleSubmit = async () => {
     if (!newTitle.trim() || !newBody.trim() || isSending) return;
@@ -80,8 +90,8 @@ export default function ForumCategoryScreen() {
         )}
         refreshControl={
           <RefreshControl
-            refreshing={postsLoading}
-            onRefresh={() => void fetchPosts(cat, true)}
+            refreshing={isRefreshing}
+            onRefresh={() => void handleRefresh()}
             tintColor="#3C9A34"
           />
         }

@@ -15,7 +15,7 @@ const BusinessSchema = z.object({
 export const FloorTypeConfigSchema = z.object({
   shirtColor: z.string(),
   accent: z.string(),
-  businesses: z.array(BusinessSchema).min(1).max(3),
+  businesses: z.array(BusinessSchema).min(1).max(12),
 });
 
 export const FloorConfigSchema = z.object({
@@ -30,7 +30,7 @@ export const FloorUnlockConfigSchema = z.object({
   price: z.number().int().positive(),
   currency: z.enum(['coins', 'gems']),
   constructionDurationMs: z.number().positive(),
-  requiredToolSlots: z.number().int().min(1).max(4),
+  requiredToolSlots: z.number().int().min(1).max(6),
   requiredToolCount: z.number().int().positive(),
 });
 

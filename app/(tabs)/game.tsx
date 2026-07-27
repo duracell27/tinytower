@@ -9,9 +9,8 @@ import Animated, {
   withTiming,
   Easing as ReanimatedEasing,
 } from 'react-native-reanimated';
-import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import TopBar from '../../src/components/TopBar';
 import FloorCard from '../../src/components/FloorCard';
 import BuyFloorBanner from '../../src/components/BuyFloorBanner';
@@ -221,21 +220,20 @@ export default function GameScreen() {
 
   const [hotelOpen, setHotelOpen] = useState(false);
   const [lobbyOpen, setLobbyOpen] = useState(false);
-  const listRef = useRef<FlashList<FloorItem>>(null);
+  const listRef = useRef<FlashListRef<FloorItem>>(null);
+  const qaListRef = useRef<FlashListRef<FloorItem>>(null);
   const collapsedScrollRef = useRef<ScrollView>(null);
   const hotelCardYRef = useRef(0);
   const lastTabPressRef = useRef(0);
-  const savedScrollOffsetRef = useRef(Number.MAX_SAFE_INTEGER);
-  const qaEnteredRef = useRef(false);
   const quickActionModeRef = useRef<QuickActionMode | null>(null);
-  const contentHeightRef = useRef(0);
   const viewHeightRef = useRef(0);
   const hasRevealedRef = useRef(false);
-  const pendingRestoreRef = useRef<number | null>(null);
   const floorListRef = useRef(floorList);
   floorListRef.current = floorList;
   const towerOpacity = useSharedValue(0);
   const towerStyle = useAnimatedStyle(() => ({ opacity: towerOpacity.value }));
+  const qaOverlayOpacity = useSharedValue(0);
+  const qaOverlayStyle = useAnimatedStyle(() => ({ opacity: qaOverlayOpacity.value }));
 
   const scrollToBottom = useCallback(() => {
     listRef.current?.scrollToIndex({
@@ -246,7 +244,7 @@ export default function GameScreen() {
   }, []);
 
   const scrollToHotel = useCallback(() => {
-    if (towerCollapsed && floors.length >= 10 && quickActionModeRef.current === null) {
+    if (towerCollapsed && floors.length >= 10) {
       collapsedScrollRef.current?.scrollTo({ y: hotelCardYRef.current, animated: true });
     } else {
       const idx = floorListRef.current.findIndex((i) => i.type === 'hotel');
@@ -284,20 +282,22 @@ export default function GameScreen() {
     [availableMode, floors, workers, now],
   );
 
-  // Floors matching the active mode, sorted highest ID first
+  // Always compute QA floors — even before the mode is activated — so the overlay
+  // is pre-rendered and pre-scrolled in the background before the user opens it.
+  const precomputedMode = quickActionMode ?? availableMode;
   const filteredFloors = React.useMemo(
-    () => (quickActionMode !== null ? getFloorsForMode(quickActionMode, floors, workers, now) : []),
-    [quickActionMode, floors, workers, now],
+    () => (precomputedMode !== null ? getFloorsForMode(precomputedMode, floors, workers, now) : []),
+    [precomputedMode, floors, workers, now],
   );
 
   const qaItems = React.useMemo(
-    () => filteredFloors.map((f) => ({ type: 'production' as const, id: f.id })),
+    (): FloorItem[] => filteredFloors.map((f) => ({ type: 'production' as const, id: f.id })),
     [filteredFloors],
   );
 
   const listExtraData = React.useMemo(
-    () => ({ quickActionMode, nextFloorUnlock, towerCollapsed }),
-    [quickActionMode, nextFloorUnlock, towerCollapsed],
+    () => ({ nextFloorUnlock, towerCollapsed }),
+    [nextFloorUnlock, towerCollapsed],
   );
 
   // The bottom-most floor (last in sorted-descending list = lowest ID = nearest the bar)
@@ -349,11 +349,6 @@ export default function GameScreen() {
   // Auto-exit when the filtered list empties after the last action
   useEffect(() => {
     if (quickActionMode !== null && filteredFloors.length === 0) {
-      // Restore scroll immediately so floorList appears at the right position
-      // while the bar animates out. Clear qaEnteredRef so the quickActionMode
-      // effect doesn't overwrite pendingRestoreRef 280ms later.
-      pendingRestoreRef.current = savedScrollOffsetRef.current;
-      qaEnteredRef.current = false;
       setQaBarVisible(false);
     }
   }, [quickActionMode, filteredFloors.length]);
@@ -365,15 +360,28 @@ export default function GameScreen() {
     }
   }, [quickActionMode]);
 
+  // Stable key: only changes when the set of floor IDs changes, not on every `now` tick.
+  const qaItemKey = qaItems.map((i) => (i.type === 'production' ? i.id : i.type)).join(',');
+
+  // Keep the QA overlay pre-scrolled to the bottom at all times — even while hidden —
+  // so it is already in the correct position when it becomes visible.
   useEffect(() => {
-    if (quickActionMode !== null) {
-      qaEnteredRef.current = true;
-      const id = setTimeout(() => listRef.current?.scrollToEnd({ animated: false }), 0);
-      return () => clearTimeout(id);
-    } else if (qaEnteredRef.current) {
-      pendingRestoreRef.current = savedScrollOffsetRef.current;
+    if (qaItems.length === 0) return;
+    const handle = requestAnimationFrame(() => {
+      qaListRef.current?.scrollToEnd({ animated: false });
+    });
+    return () => cancelAnimationFrame(handle);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qaItemKey]);
+
+  // Fade the QA overlay in/out in sync with the bar animation.
+  useEffect(() => {
+    if (qaBarVisible) {
+      qaOverlayOpacity.value = withTiming(1, { duration: 220, easing: ReanimatedEasing.out(ReanimatedEasing.quad) });
+    } else {
+      qaOverlayOpacity.value = withTiming(0, { duration: 380, easing: ReanimatedEasing.in(ReanimatedEasing.quad) });
     }
-  }, [quickActionMode]);
+  }, [qaBarVisible, qaOverlayOpacity]);
 
   const resolveFloorName = useCallback(
     (floorId: number, floor: { productions: { typeId: string | null }[] }): string => {
@@ -551,15 +559,14 @@ export default function GameScreen() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require('../../assets/welcome-bg.png')}
+        source={require('../../assets/img/backgroung/bg15.png')}
         style={styles.background}
         resizeMode="cover"
       >
-        <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
         <View style={styles.gameArea}>
           <View style={styles.sideLeft} />
           <Animated.View style={[styles.towerColumn, towerStyle]}>
-            {towerCollapsed && floors.length >= 10 && quickActionMode === null ? (
+            {towerCollapsed && floors.length >= 10 ? (
               <ScrollView
                 ref={collapsedScrollRef}
                 style={styles.collapsedScroll}
@@ -580,24 +587,18 @@ export default function GameScreen() {
               </ScrollView>
             ) : (
               <FlashList
-                ref={listRef}
-                data={quickActionMode !== null && qaItems.length > 0 ? qaItems : floorList}
+                ref={listRef as any}
+                data={floorList}
                 renderItem={renderItem}
                 keyExtractor={keyExtractor}
                 estimatedItemSize={216}
                 getItemType={(item) => item.type}
                 drawDistance={1500}
                 extraData={listExtraData}
-                contentContainerStyle={
-                  quickActionMode !== null && qaItems.length > 0
-                    ? styles.listContentQA
-                    : styles.listContent
-                }
+                contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}
-                scrollEventThrottle={100}
                 onContentSizeChange={(_w, h) => {
-                  contentHeightRef.current = h;
-                  if ((!hasRevealedRef.current || towerOpacity.value === 0) && h > 0 && viewHeightRef.current > 0) {
+                  if (!hasRevealedRef.current && h > 0 && viewHeightRef.current > 0) {
                     hasRevealedRef.current = true;
                     requestAnimationFrame(() => {
                       scrollToBottom();
@@ -606,26 +607,29 @@ export default function GameScreen() {
                         easing: ReanimatedEasing.out(ReanimatedEasing.quad),
                       });
                     });
-                  } else if (pendingRestoreRef.current !== null) {
-                    const target = pendingRestoreRef.current;
-                    pendingRestoreRef.current = null;
-                    requestAnimationFrame(() => {
-                      if (target === Number.MAX_SAFE_INTEGER) {
-                        scrollToBottom();
-                      } else {
-                        listRef.current?.scrollToOffset({ offset: target, animated: false });
-                      }
-                    });
                   }
                 }}
                 onLayout={(e) => { viewHeightRef.current = e.nativeEvent.layout.height; }}
-                onScroll={(e) => {
-                  if (quickActionModeRef.current === null) {
-                    savedScrollOffsetRef.current = e.nativeEvent.contentOffset.y;
-                  }
-                }}
               />
             )}
+
+            {/* QA overlay — always mounted so floors are pre-rendered in the background.
+                Fades in/out over the tower; the list is kept scrolled to bottom at all times. */}
+            <Animated.View
+              style={[styles.qaOverlay, qaOverlayStyle]}
+              pointerEvents={quickActionMode !== null ? 'box-none' : 'none'}
+            >
+              <FlashList
+                ref={qaListRef as any}
+                data={qaItems}
+                renderItem={renderItem}
+                keyExtractor={keyExtractor}
+                estimatedItemSize={216}
+                getItemType={(item) => item.type}
+                contentContainerStyle={styles.listContentQA}
+                showsVerticalScrollIndicator={false}
+              />
+            </Animated.View>
           </Animated.View>
           <View style={styles.sideRight} />
         </View>
@@ -807,8 +811,17 @@ const styles = StyleSheet.create({
   collapsedContainer: {
     flexGrow: 1,
     justifyContent: 'flex-end',
+    paddingTop: 150,
     paddingHorizontal: 14,
     paddingBottom: 90,
+  },
+  qaOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#DCEFF6',
   },
   floorWrapper: {
     marginBottom: 13,

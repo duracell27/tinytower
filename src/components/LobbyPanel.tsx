@@ -469,6 +469,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const stage1Reward = gameConfig.lobbyConfig.dailyTipsStage1Reward;
   const stage2Reward = gameConfig.lobbyConfig.dailyTipsStage2Reward;
   const tipsProgress = Math.min(1, dailyTips / stage2Target);
+  const stage1Pct = `${(stage1Target / stage2Target) * 100}%`;
   const stage1Ready = dailyTips >= stage1Target && !dailyTipsStage1Claimed;
   const stage2Ready = dailyTips >= stage2Target && !dailyTipsStage2Claimed;
 
@@ -876,8 +877,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         <Text style={styles.milestoneAmount}>{formatNum(dailyTips)}</Text>
                       </View>
                     </View>
-                    {/* Stage 1: centered at 50% */}
-                    <View style={styles.milestone50}>
+                    {/* Stage 1: centered at stage1/stage2 position */}
+                    <View style={[styles.milestone50, { left: stage1Pct as any }]}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                         <CoinIcon size={11} />
                         <Text style={styles.milestoneAmount}>
@@ -904,12 +905,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       end={{ x: 1, y: 0 }}
                       style={[styles.progressFill, { width: `${tipsProgress * 100}%` as any }]}
                     />
-                    <View style={styles.stageDivider} pointerEvents="none" />
+                    <View style={[styles.stageDivider, { left: stage1Pct as any }]} pointerEvents="none" />
                   </View>
 
                   {/* Labels below bar */}
                   <View style={styles.milestoneBelowRow}>
-                    <View style={styles.milestone50}>
+                    <View style={[styles.milestone50, { left: stage1Pct as any }]}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                         <Text style={styles.milestoneReward}>+{stage1Reward}</Text>
                         <GemIcon size={10} />

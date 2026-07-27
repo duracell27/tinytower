@@ -92,7 +92,7 @@
       "name": "Lobby",
       "tag": "SERVICE",
       "waiting": "Waiting",
-      "newGuest": "New guest in",
+      "newGuest": "New guest in:nf",
       "full": "Full"
     }
   },

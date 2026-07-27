@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
 import { getUserIcon } from '../utils/userIcon';
 import { formatNum } from '../utils/format';
+import { fetchGlobalStats, type GlobalStats } from '../services/api';
 
 interface WelcomeScreenProps {
   onPlay: () => void;
@@ -54,11 +55,19 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
   // Case 3: first time / no account
   const hasLastAccount = !isAuthenticated && lastPlayer !== null;
   const isFirstTime = !isAuthenticated && lastPlayer === null;
-  const showChips = isAuthenticated || hasLastAccount;
+  const showChips = isAuthenticated;
 
   const activePlayerName = isAuthenticated
     ? (player?.playerName ?? lastPlayer?.playerName ?? '')
     : (lastPlayer?.playerName ?? '');
+
+  const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      fetchGlobalStats().then(setGlobalStats).catch(() => {});
+    }
+  }, [isAuthenticated]);
 
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [password, setPassword] = useState('');
@@ -150,7 +159,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         </View>
       </View>
 
-      {/* Stat chips — only when there's a known account */}
+      {/* Personal stat chips — only for authenticated player */}
       {showChips && (
         <View style={styles.chipsContainer}>
           <View style={styles.chip}>
@@ -170,6 +179,37 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
             <View>
               <Text style={styles.chipValue}>{floorCount}</Text>
               <Text style={styles.floorsLabel}>{t('welcome.chips.floorsLabel')}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Global stat chips — shown when not authenticated */}
+      {!isAuthenticated && (
+        <View style={styles.chipsContainer}>
+          <View style={styles.chip}>
+            <Text style={styles.chipStatEmoji}>👥</Text>
+            <View>
+              <Text style={styles.chipValue}>{globalStats ? formatNum(globalStats.players) : '—'}</Text>
+              <Text style={styles.floorsLabel}>{t('welcome.chips.playersLabel')}</Text>
+            </View>
+          </View>
+          <View style={styles.chip}>
+            <View style={styles.floorsIconWrap}>
+              {(['#6FBF46', '#8FD86A', '#6FBF46'] as const).map((c, i) => (
+                <View key={i} style={[styles.floorBar, { backgroundColor: c }]} />
+              ))}
+            </View>
+            <View>
+              <Text style={styles.chipValue}>{globalStats ? formatNum(globalStats.floors) : '—'}</Text>
+              <Text style={styles.floorsLabel}>{t('welcome.chips.floorsLabel')}</Text>
+            </View>
+          </View>
+          <View style={styles.chip}>
+            <Text style={styles.chipStatEmoji}>🏙️</Text>
+            <View>
+              <Text style={styles.chipValue}>{globalStats ? formatNum(globalStats.cities) : '—'}</Text>
+              <Text style={styles.floorsLabel}>{t('welcome.chips.citiesLabel')}</Text>
             </View>
           </View>
         </View>
@@ -473,6 +513,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9A9684',
     marginTop: 3,
+  },
+  chipStatEmoji: {
+    fontSize: 28,
+    lineHeight: 40,
+    width: 40,
+    textAlign: 'center',
   },
 
   /* Continue button (case 1 & 2) */

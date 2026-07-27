@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -51,12 +51,28 @@ export class ChatService {
     });
   }
 
-  async deleteMessage(id: string): Promise<{ success: true }> {
-    const result = await this.prisma.chatMessage.updateMany({
+  async updateMessage(id: string, body: string, requesterId: string) {
+    const message = await this.prisma.chatMessage.findUnique({
       where: { id, deletedAt: null },
-      data: { deletedAt: new Date() },
+      select: { playerId: true },
     });
-    if (result.count === 0) throw new NotFoundException('Message not found or already deleted');
+    if (!message) throw new NotFoundException('Message not found');
+    if (message.playerId !== requesterId) throw new ForbiddenException('You can only edit your own messages');
+    return this.prisma.chatMessage.update({
+      where: { id },
+      data: { body },
+      select: { id: true, playerId: true, playerName: true, playerLevel: true, country: true, body: true, createdAt: true },
+    });
+  }
+
+  async deleteMessage(id: string, requesterId: string, isAdmin: boolean): Promise<{ success: true }> {
+    const message = await this.prisma.chatMessage.findUnique({
+      where: { id, deletedAt: null },
+      select: { playerId: true },
+    });
+    if (!message) throw new NotFoundException('Message not found or already deleted');
+    if (!isAdmin && message.playerId !== requesterId) throw new ForbiddenException('You can only delete your own messages');
+    await this.prisma.chatMessage.update({ where: { id }, data: { deletedAt: new Date() } });
     return { success: true };
   }
 

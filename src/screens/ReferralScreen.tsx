@@ -167,7 +167,7 @@ export default function ReferralScreen() {
 
   return (
     <ImageBackground
-      source={require('../../assets/welcome-bg.png')}
+      source={require('../../assets/img/backgroung/bg15.png')}
       style={styles.container}
       resizeMode="cover"
     >

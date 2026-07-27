@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { GlassView } from 'expo-glass-effect';
 import Svg, { Circle } from 'react-native-svg';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { getUserIcon } from '../utils/userIcon';
@@ -52,49 +53,61 @@ function ProgressRing({ progress, size = 50 }: { progress: number; size?: number
 export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, revenuePerMin, onDevAddGems }: TopBarProps) {
   const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.glassPanel}>
-        <LinearGradient
-          colors={['rgba(255,255,255,0.45)', 'transparent']}
-          style={styles.sheen}
-        />
-        <View style={styles.content}>
-          <View style={styles.avatarSection}>
-            <View style={styles.avatarWrapper}>
-              <ProgressRing progress={progress} size={50} />
-              <Image
-                source={getUserIcon(level)}
-                style={styles.avatarInner}
-                contentFit="cover"
-              />
-              <View style={styles.levelBadge}>
-                <Text style={styles.levelText}>{level}</Text>
-              </View>
-            </View>
-            <View style={styles.nameColumn}>
-              <Text style={styles.nameText}>{name}</Text>
-              {revenuePerMin !== undefined && (
-                <View style={styles.revenuePill}>
-                  <CoinIcon size={12} />
-                  <Text style={styles.revenuePillText}>{revenuePerMin} /min</Text>
-                </View>
-              )}
+  const panelContent = (
+    <>
+      <LinearGradient
+        colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
+        style={styles.sheen}
+      />
+      <View style={styles.content}>
+        <View style={styles.avatarSection}>
+          <View style={styles.avatarWrapper}>
+            <ProgressRing progress={progress} size={50} />
+            <Image
+              source={getUserIcon(level)}
+              style={styles.avatarInner}
+              contentFit="cover"
+            />
+            <View style={styles.levelBadge}>
+              <Text style={styles.levelText}>{level}</Text>
             </View>
           </View>
-
-          <View style={styles.currencySection}>
-            <View style={styles.coinBadge}>
-              <CoinIcon size={18} />
-              <Text style={styles.coinText}>{coins}</Text>
-            </View>
-            <Pressable style={styles.gemBadge} onLongPress={onDevAddGems} delayLongPress={800}>
-              <GemIcon size={14} />
-              <Text style={styles.gemText}>{gems}</Text>
-            </Pressable>
+          <View style={styles.nameColumn}>
+            <Text style={styles.nameText}>{name}</Text>
+            {revenuePerMin !== undefined && (
+              <View style={styles.revenuePill}>
+                <CoinIcon size={12} />
+                <Text style={styles.revenuePillText}>{revenuePerMin} /min</Text>
+              </View>
+            )}
           </View>
         </View>
+
+        <View style={styles.currencySection}>
+          <View style={styles.coinBadge}>
+            <CoinIcon size={18} />
+            <Text style={styles.coinText}>{coins}</Text>
+          </View>
+          <Pressable style={styles.gemBadge} onLongPress={onDevAddGems} delayLongPress={800}>
+            <GemIcon size={14} />
+            <Text style={styles.gemText}>{gems}</Text>
+          </Pressable>
+        </View>
       </View>
+    </>
+  );
+
+  return (
+    <View style={styles.container}>
+      {Platform.OS === 'android' ? (
+        <View style={[styles.glassPanel, styles.androidPanel]}>
+          {panelContent}
+        </View>
+      ) : (
+        <GlassView glassEffectStyle="regular" style={styles.glassPanel}>
+          {panelContent}
+        </GlassView>
+      )}
     </View>
   );
 }
@@ -109,23 +122,26 @@ const styles = StyleSheet.create({
   },
   glassPanel: {
     borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.82)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.85)',
-    overflow: 'hidden',
-    shadowColor: 'rgba(70,90,55,1)',
+    borderColor: 'rgba(255,255,255,0.7)',
+    shadowColor: 'rgba(40,70,35,1)',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 22,
+    shadowOpacity: 0.18,
+    shadowRadius: 28,
     elevation: 8,
+  },
+  androidPanel: {
+    backgroundColor: 'rgba(220,237,210,0.92)',
   },
   sheen: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: '50%',
+    height: '45%',
     zIndex: 1,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   content: {
     flexDirection: 'row',

@@ -178,6 +178,7 @@ export default function ProfileScreen() {
   const { t } = useTranslation('tabs');
   const { t: tHotel } = useTranslation('hotel');
   const player = useAuthStore((s) => s.player);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useAuthStore((s) => s.logout);
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
@@ -241,7 +242,7 @@ export default function ProfileScreen() {
 
   return (
     <ImageBackground
-      source={require('../../assets/welcome-bg.png')}
+      source={require('../../assets/img/backgroung/bg15.png')}
       style={styles.container}
       resizeMode="cover"
     >
@@ -276,34 +277,38 @@ export default function ProfileScreen() {
             <View style={[styles.xpBarFill, { width: `${Math.min((playerXp / xpNeeded) * 100, 100)}%` }]} />
           </View>
 
-          <View style={styles.currencyRow}>
-            <View style={styles.currencyItem}>
-              <CoinIcon size={18} />
-              <Text style={styles.currencyValue}>{formatNum(balance)}</Text>
-            </View>
-            <View style={styles.currencyItem}>
-              <GemIcon size={16} />
-              <Text style={styles.currencyValueGem}>{formatNum(gems)}</Text>
-            </View>
-          </View>
+          {isAuthenticated && (
+            <>
+              <View style={styles.currencyRow}>
+                <View style={styles.currencyItem}>
+                  <CoinIcon size={18} />
+                  <Text style={styles.currencyValue}>{formatNum(balance)}</Text>
+                </View>
+                <View style={styles.currencyItem}>
+                  <GemIcon size={16} />
+                  <Text style={styles.currencyValueGem}>{formatNum(gems)}</Text>
+                </View>
+              </View>
 
-          <View style={styles.workerStatsDivider} />
-          <View style={styles.workerStatsRow}>
-            <View style={styles.workerStatItem}>
-              <Image source={require('../../assets/img/happyWorker.png')} style={styles.workerStatIcon} contentFit="contain" />
-              <View style={styles.workerStatTextCol}>
-                <Text style={styles.workerStatLabel}>{t('profile.stats.happy')}</Text>
-                <Text style={styles.workerStatValue}>{happyCount}/{totalWorkers}</Text>
+              <View style={styles.workerStatsDivider} />
+              <View style={styles.workerStatsRow}>
+                <View style={styles.workerStatItem}>
+                  <Image source={require('../../assets/img/happyWorker.png')} style={styles.workerStatIcon} contentFit="contain" />
+                  <View style={styles.workerStatTextCol}>
+                    <Text style={styles.workerStatLabel}>{t('profile.stats.happy')}</Text>
+                    <Text style={styles.workerStatValue}>{happyCount}/{totalWorkers}</Text>
+                  </View>
+                </View>
+                <View style={styles.workerStatItem}>
+                  <Image source={require('../../assets/img/specialistWorker.png')} style={styles.workerStatIcon} contentFit="contain" />
+                  <View style={styles.workerStatTextCol}>
+                    <Text style={styles.workerStatLabel}>{t('profile.stats.specialists')}</Text>
+                    <Text style={styles.workerStatValue}>{specialistCount}/{totalWorkers}</Text>
+                  </View>
+                </View>
               </View>
-            </View>
-            <View style={styles.workerStatItem}>
-              <Image source={require('../../assets/img/specialistWorker.png')} style={styles.workerStatIcon} contentFit="contain" />
-              <View style={styles.workerStatTextCol}>
-                <Text style={styles.workerStatLabel}>{t('profile.stats.specialists')}</Text>
-                <Text style={styles.workerStatValue}>{specialistCount}/{totalWorkers}</Text>
-              </View>
-            </View>
-          </View>
+            </>
+          )}
         </View>
 
         <Pressable

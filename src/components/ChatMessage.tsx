@@ -8,7 +8,7 @@ interface Props {
   message: ChatMessageType;
   isOwn: boolean;
   isAdmin: boolean;
-  onDelete?: (id: string) => void;
+  onLongPress?: (id: string, body: string, isOwn: boolean) => void;
 }
 
 function formatTime(iso: string): string {
@@ -18,7 +18,9 @@ function formatTime(iso: string): string {
   return `${Math.floor(diff / 3600)}h`;
 }
 
-export default function ChatMessage({ message, isOwn, isAdmin, onDelete }: Props) {
+export default function ChatMessage({ message, isOwn, isAdmin, onLongPress }: Props) {
+  const canInteract = isOwn || isAdmin;
+
   return (
     <View style={styles.row}>
       <Image
@@ -26,18 +28,17 @@ export default function ChatMessage({ message, isOwn, isAdmin, onDelete }: Props
         style={styles.avatar}
         contentFit="cover"
       />
-      <View style={[styles.bubble, isOwn ? styles.bubbleOwn : styles.bubbleOther]}>
+      <Pressable
+        onLongPress={canInteract && onLongPress ? () => onLongPress(message.id, message.body, isOwn) : undefined}
+        delayLongPress={350}
+        style={[styles.bubble, isOwn ? styles.bubbleOwn : styles.bubbleOther]}
+      >
         <View style={styles.header}>
           <Text style={[styles.name, isOwn && styles.nameOwn]}>{message.playerName}</Text>
           <Text style={[styles.time, isOwn && styles.timeOwn]}>{formatTime(message.createdAt)}</Text>
-          {isAdmin && onDelete && (
-            <Pressable onPress={() => onDelete(message.id)} style={styles.deleteBtn} hitSlop={8}>
-              <Text style={styles.deleteIcon}>🗑</Text>
-            </Pressable>
-          )}
         </View>
         <Text style={[styles.body, isOwn && styles.bodyOwn]}>{message.body}</Text>
-      </View>
+      </Pressable>
     </View>
   );
 }
@@ -58,7 +59,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#e8e8e8',
   },
   bubble: {
-    flex: 1,
+    flexShrink: 1,
+    alignSelf: 'flex-start',
+    maxWidth: '85%',
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -97,13 +100,6 @@ const styles = StyleSheet.create({
   },
   timeOwn: {
     color: 'rgba(255,255,255,0.6)',
-  },
-  deleteBtn: {
-    marginLeft: 'auto',
-    padding: 2,
-  },
-  deleteIcon: {
-    fontSize: 13,
   },
   body: {
     fontFamily: 'Nunito_400Regular',

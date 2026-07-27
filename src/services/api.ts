@@ -101,9 +101,22 @@ async function request<T>(
   return res.json();
 }
 
+export interface GlobalStats {
+  players: number;
+  floors: number;
+  cities: number;
+}
+
+export async function fetchGlobalStats(): Promise<GlobalStats> {
+  const res = await fetch(`${API_BASE_URL}/stats`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
 export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
+  patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, body),
   delete: <T>(path: string) => request<T>('DELETE', path),
   leaderboard: (tab: 'level' | 'floors' | 'revenue', page: number) =>
     request<LeaderboardResponse>('GET', `/leaderboard?tab=${tab}&page=${page}`),

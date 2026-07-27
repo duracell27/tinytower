@@ -16,43 +16,42 @@ interface ChatState {
   isLoading: boolean;
   isSending: boolean;
   error: string | null;
-  activeCountry: string | undefined;
 }
 
 interface ChatActions {
   fetchMessages: (country?: string) => Promise<void>;
   sendMessage: (body: string, playerName: string, playerLevel: number, country?: string) => Promise<void>;
+  editMessage: (id: string, newBody: string, country?: string) => Promise<void>;
   deleteMessage: (id: string) => Promise<void>;
   startPolling: (country?: string) => void;
   stopPolling: () => void;
 }
 
 let pollingInterval: ReturnType<typeof setInterval> | null = null;
+// Monotonic counter to discard responses from superseded requests
+let currentRequestId = 0;
 
 export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   messages: [],
   isLoading: false,
   isSending: false,
   error: null,
-  activeCountry: undefined,
 
   fetchMessages: async (country?: string) => {
+    const myId = ++currentRequestId;
     set({ isLoading: true });
     try {
       const params = country ? `?country=${encodeURIComponent(country)}` : '';
       const data = await api.get<{ messages: ChatMessage[] }>(`/chat/messages${params}`);
-      // Discard stale response if channel changed while request was in flight
-      if (get().activeCountry === country) {
-        // Client-side guard: filter by channel in case server returns unexpected data
-        const filtered = country
-          ? data.messages.filter((m) => m.country === country)
-          : data.messages.filter((m) => !m.country);
-        set({ messages: filtered });
+      if (currentRequestId === myId) {
+        set({ messages: data.messages });
       }
     } catch {
       // silent — keep last known messages, polling continues
     } finally {
-      set({ isLoading: false });
+      if (currentRequestId === myId) {
+        set({ isLoading: false });
+      }
     }
   },
 
@@ -62,6 +61,21 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       await api.post('/chat/messages', { body, playerLevel, ...(country ? { country } : {}) });
       await get().fetchMessages(country);
     } catch (e) {
+      set({ error: (e as Error).message });
+      throw e;
+    } finally {
+      set({ isSending: false });
+    }
+  },
+
+  editMessage: async (id: string, newBody: string, country?: string) => {
+    set({ isSending: true, error: null });
+    // Optimistic update
+    set((s) => ({ messages: s.messages.map((m) => m.id === id ? { ...m, body: newBody } : m) }));
+    try {
+      await api.patch(`/chat/messages/${id}`, { body: newBody });
+    } catch (e) {
+      await get().fetchMessages(country); // revert on error
       set({ error: (e as Error).message });
       throw e;
     } finally {
@@ -81,8 +95,8 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
 
   startPolling: (country?: string) => {
     if (pollingInterval !== null) clearInterval(pollingInterval);
-    // Set channel + clear stale messages before fetching
-    set({ activeCountry: country, messages: [] });
+    currentRequestId++; // invalidate any in-flight request from the previous channel
+    set({ messages: [] });
     void get().fetchMessages(country);
     pollingInterval = setInterval(() => void get().fetchMessages(country), 5000);
   },

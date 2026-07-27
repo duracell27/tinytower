@@ -10,6 +10,7 @@ import { AchievementModule } from './achievement/achievement.module';
 import { ReferralModule } from './referral/referral.module';
 import { ChatModule } from './chat/chat.module';
 import { ForumModule } from './forum/forum.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ForumModule } from './forum/forum.module';
     ReferralModule,
     ChatModule,
     ForumModule,
+    StatsModule,
   ],
 })
 export class AppModule {}

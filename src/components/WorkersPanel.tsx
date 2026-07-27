@@ -321,9 +321,9 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
     pendingScrollReset.current = false;
     setExpandedWorkerId(pendingFocusId);
     useGameStore.getState().clearPendingWorkerFocus();
-    requestAnimationFrame(() => {
-      flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.2 });
-    });
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 1 });
+    }, 320);
   }, [pendingFocusId, filteredWorkers]);
 
   const renderItem = useCallback(

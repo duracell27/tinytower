@@ -5,8 +5,8 @@ describe('gameConfig', () => {
     expect(gameConfig.floors).toHaveLength(2);
   });
 
-  it('has 45 production types', () => {
-    expect(Object.keys(gameConfig.productionTypes)).toHaveLength(45);
+  it('has 180 production types', () => {
+    expect(Object.keys(gameConfig.productionTypes)).toHaveLength(180);
     // Green / Products
     expect(gameConfig.productionTypes).toHaveProperty('buns');
     expect(gameConfig.productionTypes).toHaveProperty('pastries');
@@ -68,9 +68,9 @@ describe('gameConfig', () => {
     expect(gameConfig.floorTypes).toHaveProperty('red');
   });
 
-  it('each floor type has 3 businesses', () => {
+  it('each floor type has 12 businesses', () => {
     for (const [, ft] of Object.entries(gameConfig.floorTypes)) {
-      expect(ft.businesses).toHaveLength(3);
+      expect(ft.businesses).toHaveLength(12);
     }
   });
 
@@ -98,8 +98,8 @@ describe('gameConfig', () => {
     expect(gameConfig.hotelCapacity).toBe(10);
   });
 
-  it('has 12 floor unlocks (floors 4–15)', () => {
-    expect(gameConfig.floorUnlocks).toHaveLength(12);
+  it('has 97 floor unlocks (floors 4–100)', () => {
+    expect(gameConfig.floorUnlocks).toHaveLength(97);
   });
 
   it('floor 4 costs 300 coins, 1 tool slot', () => {

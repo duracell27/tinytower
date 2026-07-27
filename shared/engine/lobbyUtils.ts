@@ -26,7 +26,7 @@ export function getDailyTipsTargets(
   config: GameConfig,
 ): { stage1: number; stage2: number } {
   const stage1 = Math.round(config.lobbyConfig.dailyTipsBaseTarget * Math.sqrt(elevatorLevel));
-  return { stage1, stage2: stage1 * 2 };
+  return { stage1, stage2: stage1 * 3 };
 }
 
 export function calculateElevatorUpgradeCost(currentLevel: number): number {

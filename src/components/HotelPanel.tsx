@@ -76,6 +76,9 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const assignedWorkers = workers.filter((w: Worker) => w.assignedFloorId !== null);
   const occupiedSeats = unemployedWorkers.length;
   const freeSeats = Math.max(0, hotelCapacity - occupiedSeats);
+  const betterCandidateCount = unemployedWorkers.filter((w) =>
+    isBetterCandidate(w, assignedWorkers, floors, openedFloorTypes ?? {}),
+  ).length;
   const expansionCost = getHotelExpansionCost(hotelCapacity);
   const hasLowLevelWorkers = unemployedWorkers.some((w: Worker) => w.level < 9);
 
@@ -297,6 +300,12 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                         {freeSeats > 0 ? freeSeats : 0}
                       </Text>
                     </View>
+                    {betterCandidateCount > 0 && (
+                      <View style={styles.statPill}>
+                        <Text style={styles.statLabel}>{t('hotelPanel.best')}</Text>
+                        <Text style={styles.statValue}>{betterCandidateCount}</Text>
+                      </View>
+                    )}
                   </View>
                 </View>
               </LinearGradient>
@@ -341,7 +350,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                       text="The hotel is where your workers live when they're not assigned to a floor. They wait here until you send them to work."
                     />
                     <InfoSection
-                      icon={require('../../assets/img/menu/workers.png')}
+                      icon={require('../../assets/img/menu/myWorkers.png')}
                       title="Seats & Free"
                       text="Seats — total number of rooms available. Free — how many rooms are vacant. When the hotel is full, no new workers will appear."
                     />

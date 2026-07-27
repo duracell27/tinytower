@@ -12,29 +12,27 @@ jest.mock('../../services/api', () => ({
 
 const mockApi = api as jest.Mocked<typeof api>;
 
-const mockMessages = [
-  { id: 'm1', playerId: 'p1', playerName: 'Alice', playerLevel: 5,  country: null, body: 'Hello', createdAt: '2026-07-21T10:00:00Z' },
-  { id: 'm2', playerId: 'p2', playerName: 'Bob',   playerLevel: 12, country: 'UA', body: 'Hi',    createdAt: '2026-07-21T10:01:00Z' },
-];
+const globalMessage = { id: 'm1', playerId: 'p1', playerName: 'Alice', playerLevel: 5,  country: null, body: 'Hello', createdAt: '2026-07-21T10:00:00Z' };
+const uaMessage    = { id: 'm2', playerId: 'p2', playerName: 'Bob',   playerLevel: 12, country: 'UA', body: 'Hi',    createdAt: '2026-07-21T10:01:00Z' };
 
 beforeEach(() => {
   jest.clearAllMocks();
-  useChatStore.setState({ messages: [], isLoading: false, isSending: false, error: null, activeCountry: undefined });
+  useChatStore.setState({ messages: [], isLoading: false, isSending: false, error: null });
 });
 
 describe('fetchMessages', () => {
-  it('populates messages from API response (global: filters to country=null only)', async () => {
-    mockApi.get.mockResolvedValue({ messages: mockMessages });
+  it('stores messages returned by server for global channel', async () => {
+    // Server returns only null-country messages for global (no ?country param)
+    mockApi.get.mockResolvedValue({ messages: [globalMessage] });
     await act(async () => { await useChatStore.getState().fetchMessages(); });
-    // global channel strips country-tagged messages client-side
-    expect(useChatStore.getState().messages).toEqual([mockMessages[0]]);
+    expect(useChatStore.getState().messages).toEqual([globalMessage]);
   });
 
-  it('populates messages for country channel', async () => {
-    useChatStore.setState({ activeCountry: 'UA' });
-    mockApi.get.mockResolvedValue({ messages: mockMessages });
+  it('stores messages returned by server for country channel', async () => {
+    // Server returns only country-tagged messages for ?country=UA
+    mockApi.get.mockResolvedValue({ messages: [uaMessage] });
     await act(async () => { await useChatStore.getState().fetchMessages('UA'); });
-    expect(useChatStore.getState().messages).toEqual([mockMessages[1]]);
+    expect(useChatStore.getState().messages).toEqual([uaMessage]);
   });
 
   it('silently ignores network errors', async () => {
@@ -47,18 +45,25 @@ describe('fetchMessages', () => {
 });
 
 describe('sendMessage', () => {
-  it('calls API post and then refreshes messages', async () => {
-    // Simulate startPolling('UA') having been called (sets activeCountry before send)
-    useChatStore.setState({ activeCountry: 'UA' });
+  it('calls API post with country and refreshes messages', async () => {
     mockApi.post.mockResolvedValue({});
-    mockApi.get.mockResolvedValue({ messages: mockMessages });
+    mockApi.get.mockResolvedValue({ messages: [uaMessage] });
     await act(async () => {
-      await useChatStore.getState().sendMessage('Hello world', 'Alice', 5, 'UA');
+      await useChatStore.getState().sendMessage('Hi', 'Bob', 12, 'UA');
     });
-    expect(mockApi.post).toHaveBeenCalledWith('/chat/messages', { body: 'Hello world', playerLevel: 5, country: 'UA' });
+    expect(mockApi.post).toHaveBeenCalledWith('/chat/messages', { body: 'Hi', playerLevel: 12, country: 'UA' });
     expect(useChatStore.getState().isSending).toBe(false);
-    // client-side filter: UA channel returns only country='UA' messages
-    expect(useChatStore.getState().messages).toEqual([mockMessages[1]]);
+    expect(useChatStore.getState().messages).toEqual([uaMessage]);
+  });
+
+  it('calls API post without country for global channel', async () => {
+    mockApi.post.mockResolvedValue({});
+    mockApi.get.mockResolvedValue({ messages: [globalMessage] });
+    await act(async () => {
+      await useChatStore.getState().sendMessage('Hello', 'Alice', 5, undefined);
+    });
+    expect(mockApi.post).toHaveBeenCalledWith('/chat/messages', { body: 'Hello', playerLevel: 5 });
+    expect(useChatStore.getState().messages).toEqual([globalMessage]);
   });
 
   it('sets error on failure', async () => {
@@ -73,7 +78,7 @@ describe('sendMessage', () => {
 
 describe('deleteMessage', () => {
   it('removes message optimistically before API call', async () => {
-    useChatStore.setState({ messages: mockMessages });
+    useChatStore.setState({ messages: [globalMessage, uaMessage] });
     mockApi.delete.mockResolvedValue({ success: true });
     mockApi.get.mockResolvedValue({ messages: [] });
     await act(async () => { await useChatStore.getState().deleteMessage('m1'); });
