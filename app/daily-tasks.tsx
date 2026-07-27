@@ -12,7 +12,6 @@ import {
   DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress,
 } from '../shared/config/dailyTasksConfig';
 import { formatNum } from '../src/utils/format';
-import type { GameState } from '../shared/types';
 
 const TOKEN_COLORS: Record<string, string> = {
   green: '#3FA535', blue: '#3376E5', yellow: '#E5A72E', purple: '#9A6FD0', red: '#E05A4A',
@@ -50,9 +49,12 @@ function ProgressBar({ value, max }: { value: number; max: number }) {
 
 export default function DailyTasksScreen() {
   const { t } = useTranslation('hotel');
-  const state = useGameStore((s) => s);
-  const claimDailyTask = useGameStore((s) => s.claimDailyTask);
-  const playerLevel = useGameStore((s) => s.playerLevel);
+  const tokens             = useGameStore((s) => s.tokens);
+  const dailyTasks         = useGameStore((s) => s.dailyTasks);
+  const lastDailyReset     = useGameStore((s) => s.lastDailyReset);
+  const dailyGemsCollected = useGameStore((s) => s.dailyGemsCollected);
+  const claimDailyTask     = useGameStore((s) => s.claimDailyTask);
+  const playerLevel        = useGameStore((s) => s.playerLevel);
 
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -60,7 +62,7 @@ export default function DailyTasksScreen() {
     return () => clearInterval(id);
   }, []);
 
-  const resetAt = state.lastDailyReset + 24 * 60 * 60 * 1000;
+  const resetAt = lastDailyReset + 24 * 60 * 60 * 1000;
   const msUntilReset = resetAt - now;
 
   const handleClaim = useCallback((taskKey: string) => {
@@ -87,7 +89,7 @@ export default function DailyTasksScreen() {
             <View key={color} style={styles.tokenChip}>
               <Image source={TOKEN_ICONS[color]} style={styles.tokenIcon} contentFit="contain" />
               <Text style={[styles.tokenCount, { color: TOKEN_COLORS[color] }]}>
-                {state.tokens[color]}
+                {tokens[color]}
               </Text>
             </View>
           ))}
@@ -99,18 +101,18 @@ export default function DailyTasksScreen() {
         </Text>
 
         {/* Double reward banner */}
-        {state.dailyTasks.doubleRewardActive && (
+        {dailyTasks.doubleRewardActive && (
           <View style={styles.doubleBanner}>
             <Text style={styles.doubleBannerText}>{t('dailyTasks.doubleReward')}</Text>
           </View>
         )}
 
         {/* Task cards */}
-        {DAILY_TASKS.map((task) => {
-          const progress = getTaskProgress(state as unknown as GameState, task);
+        {DAILY_TASKS.filter((task) => !task.hidden).map((task) => {
+          const progress = getTaskProgress({ dailyGemsCollected, dailyTasks }, task);
           const completed = progress >= task.threshold;
-          const claimed = state.dailyTasks.claimed.includes(task.key);
-          const coins = task.rewards.baseCoins * multiplier * (state.dailyTasks.doubleRewardActive ? 2 : 1);
+          const claimed = dailyTasks.claimed.includes(task.key);
+          const coins = task.rewards.baseCoins * multiplier * (dailyTasks.doubleRewardActive ? 2 : 1);
 
           return (
             <View key={task.key} style={[styles.card, claimed && styles.cardClaimed]}>
@@ -145,7 +147,7 @@ export default function DailyTasksScreen() {
                   {task.rewards.hasMaterials && (
                     <View style={styles.rewardChip}>
                       <Text style={styles.rewardMat}>
-                        +{matCount * (state.dailyTasks.doubleRewardActive ? 2 : 1)} 🧱
+                        +{matCount * (dailyTasks.doubleRewardActive ? 2 : 1)} 🧱
                       </Text>
                     </View>
                   )}

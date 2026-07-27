@@ -686,6 +686,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     })(),
     floors: serverState.floors,
     stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
+    tokens:     serverState.tokens     ?? cur.tokens,
+    dailyTasks: serverState.dailyTasks ?? cur.dailyTasks,
     locallyGrantedAchievements: new Set<string>(),
   })),
 
