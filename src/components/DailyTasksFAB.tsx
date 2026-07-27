@@ -15,18 +15,10 @@ export default function DailyTasksFAB({ unclaimedCount, hasQuickAction }: Props)
 
   const handlePress = () => router.push('/daily-tasks');
 
-  if (hasQuickAction) {
-    return (
-      <View style={styles.badge} pointerEvents="none">
-        <Text style={styles.badgeText}>{unclaimedCount}</Text>
-      </View>
-    );
-  }
-
   return (
     <Pressable
       onPress={handlePress}
-      style={({ pressed }) => [styles.fab, pressed && { opacity: 0.82 }]}
+      style={({ pressed }) => [styles.fab, hasQuickAction && styles.fabAbove, pressed && { opacity: 0.82 }]}
     >
       <Image source={DAILY_ICON} style={styles.icon} contentFit="contain" />
       <View style={styles.fabBadge}>
@@ -55,21 +47,10 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 14,
   },
-  icon: { width: 28, height: 28 },
-  badge: {
-    position: 'absolute',
-    right: 16,
-    bottom: 144,
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#3FA535',
-    paddingHorizontal: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#fff',
+  fabAbove: {
+    bottom: 158, // 96 (QuickActionFAB bottom) + 54 (FAB height) + 8 (gap)
   },
+  icon: { width: 28, height: 28 },
   fabBadge: {
     position: 'absolute',
     top: -4,
