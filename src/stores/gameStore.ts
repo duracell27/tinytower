@@ -10,6 +10,7 @@ import type { GameState, Command, Floor, Worker, ToolsState } from '../../shared
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
+import { DAILY_TASKS } from '../../shared/config/dailyTasksConfig';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -82,6 +83,7 @@ interface GameActions {
   expandHotel: () => void;
   evictLowLevelWorkers: () => void;
   claimDailyReward: (stage: 1 | 2) => void;
+  claimDailyTask: (taskKey: string) => void;
   dismissLevelUp: () => void;
   setToolInventory: (tools: ToolsState) => void;
   buyFloor: (floorId: number) => void;
@@ -124,14 +126,14 @@ function executeCommand(
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent,
+    coinBonusPercent, xpBonusPercent, tokens, dailyTasks,
   } = store;
   let gameState: GameState = {
     balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent,
+    coinBonusPercent, xpBonusPercent, tokens, dailyTasks,
   };
   // Use real wall-clock time so daily reset fires even when spawn_visitor
   // timestamps are from yesterday (catch-up cadence).
@@ -220,6 +222,8 @@ function executeCommand(
     underConstruction: result.state.underConstruction,
     openedFloorTypes: result.state.openedFloorTypes,
     stats: result.state.stats,
+    tokens: result.state.tokens,
+    dailyTasks: result.state.dailyTasks,
     playerXp: xpResult.playerXp,
     playerLevel: xpResult.playerLevel,
     levelUpQueue: [...store.levelUpQueue, ...levelUps],
@@ -312,6 +316,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     xpBonusPercent: 0,
     categoryProgress: {},
     locallyGrantedAchievements: new Set<string>(),
+    tokens: { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+    dailyTasks: { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
   }),
 
   buy: (floorId, slotIdx, typeId) => {
@@ -573,6 +579,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
+  claimDailyTask: (taskKey) => {
+    const COLORS = ['green', 'blue', 'yellow', 'purple', 'red'] as const;
+    const MATERIAL_TYPES = ['briks', 'glass', 'nails', 'screw'] as const;
+    const taskConfig = DAILY_TASKS.find((t) => t.key === taskKey);
+    const tokenCount = Math.floor(Math.random() * 5) + 1;
+    const tokenColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const materialType = taskConfig?.rewards.hasMaterials
+      ? MATERIAL_TYPES[Math.floor(Math.random() * MATERIAL_TYPES.length)]
+      : undefined;
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'claim_daily_task',
+      taskKey,
+      tokenCount,
+      tokenColor,
+      materialType,
+      timestamp: clock.now(),
+    });
+  },
+
   dismissLevelUp: () => {
     set((state) => ({ levelUpQueue: state.levelUpQueue.slice(1) }));
   },
@@ -611,6 +637,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     coinBonusPercent: state.coinBonusPercent ?? 0,
     xpBonusPercent: state.xpBonusPercent ?? 0,
     categoryProgress: state.categoryProgress ?? {},
+    tokens: state.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+    dailyTasks: state.dailyTasks ?? { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
   }),
 
   reconcile: (serverState, newVersion, ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
