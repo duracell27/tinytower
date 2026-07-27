@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { ProductionStageSchema, ProductionSchema } from '../schemas/production';
-import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, UpgradeToSpecialistCommandSchema, FireAndEvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema, ExpandHotelCommandSchema, BuyFloorCommandSchema, OpenFloorCommandSchema, SpeedUpDeliveryCommandSchema, EvictLowLevelWorkersCommandSchema } from '../schemas/command';
+import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, UpgradeToSpecialistCommandSchema, FireAndEvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema, ExpandHotelCommandSchema, BuyFloorCommandSchema, OpenFloorCommandSchema, SpeedUpDeliveryCommandSchema, EvictLowLevelWorkersCommandSchema, ClaimDailyTaskCommandSchema } from '../schemas/command';
 import { GameConfigSchema, FloorConfigSchema, ProductionTypeConfigSchema, FloorTypeConfigSchema, LobbyConfigSchema, FloorUnlockConfigSchema } from '../schemas/gameConfig';
-import { GameStateSchema, UnderConstructionSchema, ToolsSchema, StatsSchema } from '../schemas/gameState';
+import { GameStateSchema, UnderConstructionSchema, ToolsSchema, StatsSchema, TokensSchema, DailyTaskProgressSchema, DailyTasksSchema } from '../schemas/gameState';
 import { WorkerSchema } from '../schemas/worker';
 import { VisitorSchema, VisitorRoleSchema } from '../schemas/visitor';
 
@@ -29,6 +29,7 @@ export type BuyFloorCommand = z.infer<typeof BuyFloorCommandSchema>;
 export type OpenFloorCommand = z.infer<typeof OpenFloorCommandSchema>;
 export type SpeedUpDeliveryCommand = z.infer<typeof SpeedUpDeliveryCommandSchema>;
 export type EvictLowLevelWorkersCommand = z.infer<typeof EvictLowLevelWorkersCommandSchema>;
+export type ClaimDailyTaskCommand = z.infer<typeof ClaimDailyTaskCommandSchema>;
 export type FloorUnlockConfig = z.infer<typeof FloorUnlockConfigSchema>;
 export type UnderConstructionState = z.infer<typeof UnderConstructionSchema>;
 export type ToolsState = z.infer<typeof ToolsSchema>;
@@ -42,6 +43,9 @@ export type Worker = z.infer<typeof WorkerSchema>;
 export type Visitor = z.infer<typeof VisitorSchema>;
 export type VisitorRole = z.infer<typeof VisitorRoleSchema>;
 export type Stats = z.infer<typeof StatsSchema>;
+export type Tokens            = z.infer<typeof TokensSchema>;
+export type DailyTaskProgress = z.infer<typeof DailyTaskProgressSchema>;
+export type DailyTasks        = z.infer<typeof DailyTasksSchema>;
 export interface Floor {
   id: number;
   productions: Production[];
