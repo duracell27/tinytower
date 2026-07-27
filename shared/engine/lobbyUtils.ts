@@ -1,5 +1,6 @@
 import type { GameState, GameConfig, Visitor, VisitorRole } from '../types';
 import { HAIR_COLORS } from '../config/workerNames';
+import { DAILY_TASKS, getTaskProgress } from '../config/dailyTasksConfig';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -57,6 +58,10 @@ export function checkDailyReset(state: GameState, commandTimestamp: number): Gam
 
   const nextMidnight = state.lastDailyReset + 24 * 60 * 60 * 1000;
   if (commandTimestamp >= nextMidnight) {
+    const completedCount = DAILY_TASKS.filter(
+      (task) => getTaskProgress(state, task) >= task.threshold,
+    ).length;
+
     return {
       ...state,
       dailyTips: 0,
@@ -65,6 +70,14 @@ export function checkDailyReset(state: GameState, commandTimestamp: number): Gam
       dailyTipsStage2Claimed: false,
       dailyFillLobbyUses: 0,
       lastDailyReset: getMidnightBefore(commandTimestamp),
+      dailyTasks: {
+        progress: {
+          visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
+          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0,
+        },
+        claimed: [],
+        doubleRewardActive: completedCount >= 7,
+      },
     };
   }
 

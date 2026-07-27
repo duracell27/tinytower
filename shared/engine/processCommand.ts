@@ -1,6 +1,7 @@
 import type { GameState, Command, GameConfig, Worker } from '../types';
 import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getFloorSpecialistBonus, getWorkerMood, SPECIALIST_UPGRADE_COST } from './workerUtils';
 import { processLobbyCommand } from './lobbyCommands';
+import { DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress } from '../config/dailyTasksConfig';
 
 export interface ProcessResult {
   success: boolean;
@@ -61,6 +62,8 @@ export function processCommand(
       return handleListAll(state, config, now);
     case 'buy_all':
       return handleBuyAll(state, config, now);
+    case 'claim_daily_task':
+      return handleClaimDailyTask(state, command, playerLevel);
   }
 }
 
@@ -238,6 +241,10 @@ function handleOpenFloor(
         [String(command.floorId)]: command.floorType,
       },
       underConstruction: state.underConstruction.filter((u) => u.floorId !== command.floorId),
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: { ...state.dailyTasks.progress, floorsBuilt: state.dailyTasks.progress.floorsBuilt + 1 },
+      },
     },
   };
 }
@@ -320,6 +327,57 @@ function handleEvictWorker(
     state: {
       ...state,
       workers: state.workers.filter((w) => w.id !== command.workerId),
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: { ...state.dailyTasks.progress, residentsEvicted: state.dailyTasks.progress.residentsEvicted + 1 },
+      },
+    },
+  };
+}
+
+function handleClaimDailyTask(
+  state: GameState,
+  command: Extract<Command, { type: 'claim_daily_task' }>,
+  playerLevel: number,
+): ProcessResult {
+  const taskConfig = DAILY_TASKS.find((t) => t.key === command.taskKey);
+  if (!taskConfig) return { success: false, state, error: 'Unknown task' };
+  if (state.dailyTasks.claimed.includes(command.taskKey)) {
+    return { success: false, state, error: 'Already claimed' };
+  }
+
+  const progress = getTaskProgress(state, taskConfig);
+  if (progress < taskConfig.threshold) {
+    return { success: false, state, error: 'Task not complete' };
+  }
+
+  const multiplier = getCoinMultiplier(playerLevel);
+  const doubleMultiplier = state.dailyTasks.doubleRewardActive ? 2 : 1;
+  const coins = taskConfig.rewards.baseCoins * multiplier * doubleMultiplier;
+
+  let tools = state.tools;
+  if (taskConfig.rewards.hasMaterials && command.materialType) {
+    const matCount = getMaterialCount(playerLevel) * doubleMultiplier;
+    tools = { ...tools, [command.materialType]: (tools[command.materialType] ?? 0) + matCount };
+  }
+
+  const tokens = {
+    ...state.tokens,
+    [command.tokenColor]: state.tokens[command.tokenColor] + command.tokenCount,
+  };
+
+  return {
+    success: true,
+    state: {
+      ...state,
+      balance: state.balance + coins,
+      gems: state.gems + taskConfig.rewards.gems,
+      tools,
+      tokens,
+      dailyTasks: {
+        ...state.dailyTasks,
+        claimed: [...state.dailyTasks.claimed, command.taskKey],
+      },
     },
   };
 }
@@ -419,6 +477,10 @@ function handleBuy(
         stageStartedAt: now,
       }),
       stats: { ...state.stats, totalBought: state.stats.totalBought + 1 },
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: { ...state.dailyTasks.progress, goodsBought: state.dailyTasks.progress.goodsBought + 1 },
+      },
     },
   };
 }
@@ -454,6 +516,10 @@ function handleList(
         stageStartedAt: now,
       }),
       stats: { ...state.stats, totalListed: state.stats.totalListed + 1 },
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: { ...state.dailyTasks.progress, goodsListed: state.dailyTasks.progress.goodsListed + 1 },
+      },
     },
   };
 }
@@ -504,6 +570,10 @@ function handleCollect(
         stageStartedAt: 0,
       }),
       stats: { ...state.stats, totalCollected: state.stats.totalCollected + 1 },
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: { ...state.dailyTasks.progress, goodsCollected: state.dailyTasks.progress.goodsCollected + 1 },
+      },
     },
   };
 }

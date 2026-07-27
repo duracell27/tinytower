@@ -86,6 +86,7 @@ export default function RootLayout() {
         <Stack.Screen name="referrals" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="chat-screen" options={{ animation: 'slide_from_bottom' }} />
         <Stack.Screen name="forum-screen" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="daily-tasks" options={{ animation: 'slide_from_right' }} />
       </Stack>
       <DailyLoginRewardModal />
     </GestureHandlerRootView>

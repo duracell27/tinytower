@@ -187,6 +187,14 @@ export const BuyAllCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('buy_all'),
 });
 
+export const ClaimDailyTaskCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('claim_daily_task'),
+  taskKey: z.string(),
+  tokenCount: z.number().int().min(1).max(5),
+  tokenColor: z.enum(['green', 'blue', 'yellow', 'purple', 'red']),
+  materialType: z.enum(['briks', 'glass', 'nails', 'screw']).optional(),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -215,4 +223,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   CollectAllCommandSchema,
   ListAllCommandSchema,
   BuyAllCommandSchema,
+  ClaimDailyTaskCommandSchema,
 ]);

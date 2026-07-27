@@ -119,6 +119,7 @@ function applyVisitorEffect(
   const tip = calculateTip(role, targetFloor, state.elevatorLevel, config);
   let { balance, gems, dailyTips, dailyGemsCollected, workers, floors } = state;
   let tools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 };
+  const workersBefore = workers.length;
 
   if (role === 'businessman') {
     const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel;
@@ -148,6 +149,8 @@ function applyVisitorEffect(
     }
     // Hotel full → worker leaves, no effect beyond the tip
   }
+
+  const residentsGained = workers.length - workersBefore;
 
   if (role === 'deliverer') {
     const floorIdx = floors.findIndex((f) => f.id === targetFloor);
@@ -197,7 +200,17 @@ function applyVisitorEffect(
     }
   }
 
-  return { ...state, balance, gems, dailyTips, dailyGemsCollected, workers, floors, tools };
+  return {
+    ...state,
+    balance, gems, dailyTips, dailyGemsCollected, workers, floors, tools,
+    dailyTasks: residentsGained > 0 ? {
+      ...state.dailyTasks,
+      progress: {
+        ...state.dailyTasks.progress,
+        residentsAdded: state.dailyTasks.progress.residentsAdded + residentsGained,
+      },
+    } : state.dailyTasks,
+  };
 }
 
 function handleCollectTip(
@@ -225,6 +238,13 @@ function handleCollectTip(
     elevatorFloor: 0,
     nextVisitorAt,
     stats: { ...newState.stats, totalPassengersLifted: newState.stats.totalPassengersLifted + 1 },
+    dailyTasks: {
+      ...newState.dailyTasks,
+      progress: {
+        ...newState.dailyTasks.progress,
+        visitorsLifted: newState.dailyTasks.progress.visitorsLifted + 1,
+      },
+    },
   };
   return { success: true, state: newState };
 }
@@ -264,6 +284,13 @@ function handleDeliverAll(
     elevatorFloor: 0,
     nextVisitorAt,
     stats: { ...newState.stats, totalPassengersLifted: newState.stats.totalPassengersLifted + passengersDelivered },
+    dailyTasks: {
+      ...newState.dailyTasks,
+      progress: {
+        ...newState.dailyTasks.progress,
+        visitorsLifted: newState.dailyTasks.progress.visitorsLifted + passengersDelivered,
+      },
+    },
   };
   return { success: true, state: newState };
 }

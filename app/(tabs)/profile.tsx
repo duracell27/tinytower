@@ -176,6 +176,7 @@ function buildCopyText(
 
 export default function ProfileScreen() {
   const { t } = useTranslation('tabs');
+  const { t: tHotel } = useTranslation('hotel');
   const player = useAuthStore((s) => s.player);
   const logout = useAuthStore((s) => s.logout);
   const playerLevel = useGameStore((s) => s.playerLevel);
@@ -321,6 +322,14 @@ export default function ProfileScreen() {
         >
           <Image source={require('../../assets/img/profile/ReferralProfileIcon.png')} style={styles.achievementsIcon} />
           <Text style={styles.achievementsButtonText}>Referrals</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push('/daily-tasks')}
+          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
+        >
+          <Image source={require('../../assets/img/dayliQuests.png')} style={styles.achievementsIcon} />
+          <Text style={styles.achievementsButtonText}>{tHotel('dailyTasks.title')}</Text>
         </Pressable>
 
         <Pressable onPress={handleLogout} style={({ pressed }) => [

@@ -63,6 +63,14 @@ model PlayerState {
   nails                  Int     @default(1)
   screw                  Int     @default(1)
   lobbyVisitors          Json    @default("[]")
+  tokenGreen             Int     @default(0)
+  tokenBlue              Int     @default(0)
+  tokenYellow            Int     @default(0)
+  tokenPurple            Int     @default(0)
+  tokenRed               Int     @default(0)
+  dailyTasksProgress     Json    @default("{}")
+  dailyTasksClaimed      Json    @default("[]")
+  dailyTasksDoubleReward Boolean @default(false)
   player                 Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }
 

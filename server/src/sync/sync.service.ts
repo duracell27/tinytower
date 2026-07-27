@@ -289,6 +289,14 @@ export class SyncService {
             screw: gameState.tools.screw,
             lobbyVisitors: gameState.lobbyVisitors,
             ...(dailyLoginReward ? { lastDailyLoginClaimedAt: BigInt(serverNow) } : {}),
+            tokenGreen:             gameState.tokens.green,
+            tokenBlue:              gameState.tokens.blue,
+            tokenYellow:            gameState.tokens.yellow,
+            tokenPurple:            gameState.tokens.purple,
+            tokenRed:               gameState.tokens.red,
+            dailyTasksProgress:     gameState.dailyTasks.progress,
+            dailyTasksClaimed:      gameState.dailyTasks.claimed,
+            dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
           },
           update: {
             gems: gameState.gems,
@@ -309,6 +317,14 @@ export class SyncService {
             screw: gameState.tools.screw,
             lobbyVisitors: gameState.lobbyVisitors,
             ...(dailyLoginReward ? { lastDailyLoginClaimedAt: BigInt(serverNow) } : {}),
+            tokenGreen:             gameState.tokens.green,
+            tokenBlue:              gameState.tokens.blue,
+            tokenYellow:            gameState.tokens.yellow,
+            tokenPurple:            gameState.tokens.purple,
+            tokenRed:               gameState.tokens.red,
+            dailyTasksProgress:     gameState.dailyTasks.progress,
+            dailyTasksClaimed:      gameState.dailyTasks.claimed,
+            dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
           },
         });
 
@@ -604,6 +620,21 @@ export class SyncService {
       coinBonusPercent: s?.coinBonusPercent ?? 0,
       xpBonusPercent:   s?.xpBonusPercent   ?? 0,
       dailyFillLobbyUses: s?.dailyFillLobbyUses ?? 0,
+      tokens: {
+        green:  s?.tokenGreen  ?? 0,
+        blue:   s?.tokenBlue   ?? 0,
+        yellow: s?.tokenYellow ?? 0,
+        purple: s?.tokenPurple ?? 0,
+        red:    s?.tokenRed    ?? 0,
+      },
+      dailyTasks: {
+        progress: (s?.dailyTasksProgress as GameState['dailyTasks']['progress']) ?? {
+          visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
+          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0,
+        },
+        claimed: (s?.dailyTasksClaimed as string[]) ?? [],
+        doubleRewardActive: s?.dailyTasksDoubleReward ?? false,
+      },
     };
   }
 }
