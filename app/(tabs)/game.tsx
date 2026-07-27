@@ -32,6 +32,8 @@ import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import type { UnderConstructionState } from '../../shared/types';
 import QuickActionFAB from '../../src/components/QuickActionFAB';
 import QuickActionBar from '../../src/components/QuickActionBar';
+import DailyTasksFAB from '../../src/components/DailyTasksFAB';
+import { DAILY_TASKS, getTaskProgress } from '../../shared/config/dailyTasksConfig';
 import {
   getAvailableMode,
   getFloorsForMode,
@@ -61,6 +63,12 @@ export default function GameScreen() {
   const now = useGameClock(1000);
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
+  const unclaimedDailyTasksCount = useGameStore((s) =>
+    DAILY_TASKS.filter((task) => {
+      const progress = getTaskProgress(s, task);
+      return progress >= task.threshold && !s.dailyTasks.claimed.includes(task.key);
+    }).length,
+  );
   const gems = useGameStore((s) => s.gems);
   const devAddGems = useGameStore((s) => s.devAddGems);
   const storeCollect = useGameStore((s) => s.collect);
@@ -499,6 +507,10 @@ export default function GameScreen() {
           activeMode={quickActionMode}
           count={availableFloorCount}
           onPress={handleFABPress}
+        />
+        <DailyTasksFAB
+          unclaimedCount={unclaimedDailyTasksCount}
+          hasQuickAction={availableMode !== null}
         />
 
         {(quickActionMode !== null || qaBarVisible) && (

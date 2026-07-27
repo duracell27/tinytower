@@ -282,6 +282,14 @@ export default function ProfileScreen() {
           </Text>
         </Pressable>
 
+        <Pressable
+          onPress={() => router.push('/daily-tasks')}
+          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
+        >
+          <Image source={require('../../assets/img/dayliQuests.png')} style={styles.achievementsIcon} />
+          <Text style={styles.achievementsButtonText}>Daily Tasks</Text>
+        </Pressable>
+
         <Pressable onPress={handleLogout} style={({ pressed }) => [
           styles.logoutButton,
           pressed && styles.logoutPressed,
