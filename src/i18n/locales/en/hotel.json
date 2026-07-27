@@ -114,6 +114,14 @@
     },
     "done": "Done"
   },
+  "dailyTasks": {
+    "title": "Daily Tasks",
+    "resetsIn": "Resets in {{time}}",
+    "doubleReward": "⚡ Double rewards active today!",
+    "collect": "Collect",
+    "progress": "{{current}} of {{total}}",
+    "tokens": "Tokens"
+  },
   "workersPanel": {
     "title": "My Workers",
     "subtitle": "All employees",
