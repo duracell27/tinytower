@@ -1,6 +1,7 @@
 import type { GameState, Command, GameConfig, Worker } from '../types';
 import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getFloorSpecialistBonus, getWorkerMood, SPECIALIST_UPGRADE_COST } from './workerUtils';
 import { processLobbyCommand } from './lobbyCommands';
+import { DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress } from '../config/dailyTasksConfig';
 
 export interface ProcessResult {
   success: boolean;
@@ -56,8 +57,7 @@ export function processCommand(
     case 'dev_add_gems':
       return { success: true, state: { ...state, gems: state.gems + command.amount } };
     case 'claim_daily_task':
-      // TODO: implemented in Task 2
-      return { success: false, state, error: 'not implemented' };
+      return handleClaimDailyTask(state, command, playerLevel);
   }
 }
 
@@ -324,6 +324,53 @@ function handleEvictWorker(
       dailyTasks: {
         ...state.dailyTasks,
         progress: { ...state.dailyTasks.progress, residentsEvicted: state.dailyTasks.progress.residentsEvicted + 1 },
+      },
+    },
+  };
+}
+
+function handleClaimDailyTask(
+  state: GameState,
+  command: Extract<Command, { type: 'claim_daily_task' }>,
+  playerLevel: number,
+): ProcessResult {
+  const taskConfig = DAILY_TASKS.find((t) => t.key === command.taskKey);
+  if (!taskConfig) return { success: false, state, error: 'Unknown task' };
+  if (state.dailyTasks.claimed.includes(command.taskKey)) {
+    return { success: false, state, error: 'Already claimed' };
+  }
+
+  const progress = getTaskProgress(state, taskConfig);
+  if (progress < taskConfig.threshold) {
+    return { success: false, state, error: 'Task not complete' };
+  }
+
+  const multiplier = getCoinMultiplier(playerLevel);
+  const doubleMultiplier = state.dailyTasks.doubleRewardActive ? 2 : 1;
+  const coins = taskConfig.rewards.baseCoins * multiplier * doubleMultiplier;
+
+  let tools = state.tools;
+  if (taskConfig.rewards.hasMaterials && command.materialType) {
+    const matCount = getMaterialCount(playerLevel) * doubleMultiplier;
+    tools = { ...tools, [command.materialType]: (tools[command.materialType] ?? 0) + matCount };
+  }
+
+  const tokens = {
+    ...state.tokens,
+    [command.tokenColor]: state.tokens[command.tokenColor] + command.tokenCount,
+  };
+
+  return {
+    success: true,
+    state: {
+      ...state,
+      balance: state.balance + coins,
+      gems: state.gems + taskConfig.rewards.gems,
+      tools,
+      tokens,
+      dailyTasks: {
+        ...state.dailyTasks,
+        claimed: [...state.dailyTasks.claimed, command.taskKey],
       },
     },
   };

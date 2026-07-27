@@ -108,3 +108,87 @@ describe('progress tracking', () => {
     expect(result.state.dailyTasks.progress.residentsEvicted).toBe(1);
   });
 });
+
+describe('claim_daily_task', () => {
+  const baseCmd = {
+    id: 'c1', type: 'claim_daily_task' as const, timestamp: Date.now(),
+    taskKey: 'transporter', tokenCount: 3, tokenColor: 'green' as const,
+  };
+
+  function stateWithProgress(visitorsLifted: number) {
+    return makeState({
+      balance: 0, gems: 0,
+      tokens: { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+      dailyTasks: {
+        progress: { visitorsLifted, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
+          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
+        claimed: [],
+        doubleRewardActive: false,
+      },
+    });
+  }
+
+  it('fails when progress not reached', () => {
+    const result = processCommand(stateWithProgress(50), baseCmd, gameConfig, Date.now(), 1);
+    expect(result.success).toBe(false);
+  });
+
+  it('fails when already claimed', () => {
+    const state = { ...stateWithProgress(100), dailyTasks: { ...stateWithProgress(100).dailyTasks, claimed: ['transporter'] } };
+    const result = processCommand(state, baseCmd, gameConfig, Date.now(), 1);
+    expect(result.success).toBe(false);
+  });
+
+  it('adds coins (baseCoins × multiplier) to balance', () => {
+    // transporter baseCoins=1300, level 1 → multiplier 1 → +1300
+    const result = processCommand(stateWithProgress(100), baseCmd, gameConfig, Date.now(), 1);
+    expect(result.success).toBe(true);
+    expect(result.state.balance).toBe(1300);
+  });
+
+  it('adds fixed gems regardless of level', () => {
+    const result = processCommand(stateWithProgress(100), baseCmd, gameConfig, Date.now(), 25);
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(1); // transporter gems = 1
+  });
+
+  it('doubles coins when doubleRewardActive', () => {
+    const state = { ...stateWithProgress(100), dailyTasks: { ...stateWithProgress(100).dailyTasks, doubleRewardActive: true } };
+    const result = processCommand(state, baseCmd, gameConfig, Date.now(), 1);
+    expect(result.state.balance).toBe(2600); // 1300 × 2
+  });
+
+  it('does NOT double gems when doubleRewardActive', () => {
+    const state = { ...stateWithProgress(100), dailyTasks: { ...stateWithProgress(100).dailyTasks, doubleRewardActive: true } };
+    const result = processCommand(state, baseCmd, gameConfig, Date.now(), 1);
+    expect(result.state.gems).toBe(1); // still 1
+  });
+
+  it('adds tokens of specified color and count', () => {
+    const result = processCommand(stateWithProgress(100), baseCmd, gameConfig, Date.now(), 1);
+    expect(result.state.tokens.green).toBe(3);
+  });
+
+  it('marks task as claimed', () => {
+    const result = processCommand(stateWithProgress(100), baseCmd, gameConfig, Date.now(), 1);
+    expect(result.state.dailyTasks.claimed).toContain('transporter');
+  });
+
+  it('adds materials for build_floor task', () => {
+    const stateWithFloor = makeState({
+      tokens: { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+      tools: { briks: 0, glass: 0, nails: 0, screw: 0 },
+      dailyTasks: {
+        progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
+          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 1, residentsEvicted: 0, goodsListed: 0 },
+        claimed: [],
+        doubleRewardActive: false,
+      },
+    });
+    const buildCmd = { ...baseCmd, taskKey: 'build_floor', materialType: 'briks' as const };
+    // level 1 → getMaterialCount(1) = 2
+    const result = processCommand(stateWithFloor, buildCmd, gameConfig, Date.now(), 1);
+    expect(result.success).toBe(true);
+    expect(result.state.tools.briks).toBe(2);
+  });
+});
