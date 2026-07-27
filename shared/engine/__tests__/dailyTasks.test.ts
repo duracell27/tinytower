@@ -1,0 +1,110 @@
+import { checkDailyReset } from '../lobbyUtils';
+import { processCommand } from '../processCommand';
+import { gameConfig, createInitialState } from '../../config/gameConfig';
+import type { GameState } from '../../types';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function makeState(overrides = {}): GameState {
+  return {
+    ...createInitialState(gameConfig),
+    lastDailyReset: 1000,
+    ...overrides,
+  } as GameState;
+}
+
+describe('checkDailyReset — dailyTasks', () => {
+  it('resets progress and claimed at midnight', () => {
+    const state = makeState({
+      dailyTasks: {
+        progress: { visitorsLifted: 50, vipsLifted: 0, goodsBought: 30, residentsAdded: 0,
+          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
+        claimed: ['transporter'],
+        doubleRewardActive: false,
+      },
+    });
+    const next = checkDailyReset(state, 1000 + DAY_MS + 1);
+    expect(next.dailyTasks.progress.visitorsLifted).toBe(0);
+    expect(next.dailyTasks.progress.goodsBought).toBe(0);
+    expect(next.dailyTasks.claimed).toEqual([]);
+  });
+
+  it('sets doubleRewardActive when 7+ tasks were completed', () => {
+    // Complete 7 tasks: visitorsLifted >=100, goodsBought >=50, goodsListed >=100,
+    // goodsCollected >=150, floorsBuilt >=1, residentsEvicted >=15, residentsAdded >=25
+    const state = makeState({
+      dailyTasks: {
+        progress: { visitorsLifted: 100, vipsLifted: 0, goodsBought: 50, residentsAdded: 25,
+          gemsPurchased: 0, goodsCollected: 150, floorsBuilt: 1, residentsEvicted: 15, goodsListed: 100 },
+        claimed: [],
+        doubleRewardActive: false,
+      },
+    });
+    const next = checkDailyReset(state, 1000 + DAY_MS + 1);
+    expect(next.dailyTasks.doubleRewardActive).toBe(true);
+  });
+
+  it('does not set doubleRewardActive when fewer than 7 tasks completed', () => {
+    const state = makeState({
+      dailyTasks: {
+        progress: { visitorsLifted: 100, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
+          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
+        claimed: [],
+        doubleRewardActive: false,
+      },
+    });
+    const next = checkDailyReset(state, 1000 + DAY_MS + 1);
+    expect(next.dailyTasks.doubleRewardActive).toBe(false);
+  });
+
+  it('does not reset if not past midnight', () => {
+    const base = createInitialState(gameConfig);
+    const state = makeState({
+      dailyTasks: {
+        ...base.dailyTasks,
+        progress: { ...base.dailyTasks.progress, visitorsLifted: 42 },
+      },
+    });
+    const next = checkDailyReset(state, 1000 + 100);
+    expect(next.dailyTasks.progress.visitorsLifted).toBe(42);
+  });
+});
+
+describe('progress tracking', () => {
+  it('increments goodsBought on buy command', () => {
+    const baseState = createInitialState(gameConfig);
+    const floor = baseState.floors[0];
+    // Assign a worker to slot 0 so the buy command can proceed
+    const state: GameState = {
+      ...baseState,
+      balance: 999999,
+      workers: [
+        {
+          id: 'w-test', name: 'Test Worker', female: false,
+          floorType: 'green', dreamJob: 'buns', level: 5, hairColor: '#5C3A22',
+          assignedFloorId: floor.id, assignedSlotIdx: 0, isSpecialist: false,
+        },
+        ...baseState.workers,
+      ],
+    };
+    const cmd = {
+      id: '1', type: 'buy' as const,
+      floorId: floor.id, slotIdx: 0,
+      typeId: floor.productions[0].typeId!,
+      timestamp: Date.now(),
+    };
+    const result = processCommand(state, cmd, gameConfig, Date.now());
+    expect(result.success).toBe(true);
+    expect(result.state.dailyTasks.progress.goodsBought).toBe(1);
+  });
+
+  it('increments residentsEvicted on evict_worker', () => {
+    const state = makeState();
+    const hotelWorker = state.workers.find(w => w.assignedFloorId === null);
+    if (!hotelWorker) throw new Error('No hotel worker in initial state');
+    const cmd = { id: '2', type: 'evict_worker' as const, workerId: hotelWorker.id, timestamp: Date.now() };
+    const result = processCommand(state, cmd, gameConfig, Date.now());
+    expect(result.success).toBe(true);
+    expect(result.state.dailyTasks.progress.residentsEvicted).toBe(1);
+  });
+});

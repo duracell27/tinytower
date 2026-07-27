@@ -235,6 +235,10 @@ function handleOpenFloor(
         [String(command.floorId)]: command.floorType,
       },
       underConstruction: state.underConstruction.filter((u) => u.floorId !== command.floorId),
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: { ...state.dailyTasks.progress, floorsBuilt: state.dailyTasks.progress.floorsBuilt + 1 },
+      },
     },
   };
 }
@@ -317,6 +321,10 @@ function handleEvictWorker(
     state: {
       ...state,
       workers: state.workers.filter((w) => w.id !== command.workerId),
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: { ...state.dailyTasks.progress, residentsEvicted: state.dailyTasks.progress.residentsEvicted + 1 },
+      },
     },
   };
 }
@@ -416,6 +424,10 @@ function handleBuy(
         stageStartedAt: now,
       }),
       stats: { ...state.stats, totalBought: state.stats.totalBought + 1 },
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: { ...state.dailyTasks.progress, goodsBought: state.dailyTasks.progress.goodsBought + 1 },
+      },
     },
   };
 }
@@ -451,6 +463,10 @@ function handleList(
         stageStartedAt: now,
       }),
       stats: { ...state.stats, totalListed: state.stats.totalListed + 1 },
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: { ...state.dailyTasks.progress, goodsListed: state.dailyTasks.progress.goodsListed + 1 },
+      },
     },
   };
 }
@@ -501,6 +517,10 @@ function handleCollect(
         stageStartedAt: 0,
       }),
       stats: { ...state.stats, totalCollected: state.stats.totalCollected + 1 },
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: { ...state.dailyTasks.progress, goodsCollected: state.dailyTasks.progress.goodsCollected + 1 },
+      },
     },
   };
 }
