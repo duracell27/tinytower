@@ -55,6 +55,9 @@ export function processCommand(
       return processLobbyCommand(state, command, config, playerLevel);
     case 'dev_add_gems':
       return { success: true, state: { ...state, gems: state.gems + command.amount } };
+    case 'claim_daily_task':
+      // TODO: implemented in Task 2
+      return { success: false, state, error: 'not implemented' };
   }
 }
 

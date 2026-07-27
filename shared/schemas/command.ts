@@ -166,6 +166,14 @@ export const EvictLowLevelWorkersCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('evict_low_level_workers'),
 });
 
+export const ClaimDailyTaskCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('claim_daily_task'),
+  taskKey: z.string(),
+  tokenCount: z.number().int().min(1).max(5),
+  tokenColor: z.enum(['green', 'blue', 'yellow', 'purple', 'red']),
+  materialType: z.enum(['briks', 'glass', 'nails', 'screw']).optional(),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -191,4 +199,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   SpeedUpDeliveryCommandSchema,
   DevAddGemsCommandSchema,
   EvictLowLevelWorkersCommandSchema,
+  ClaimDailyTaskCommandSchema,
 ]);

@@ -31,6 +31,35 @@ export const StatsSchema = z.object({
   totalPassengersLifted: z.number().int().nonnegative().default(0),
 });
 
+export const TokensSchema = z.object({
+  green:  z.number().int().nonnegative().default(0),
+  blue:   z.number().int().nonnegative().default(0),
+  yellow: z.number().int().nonnegative().default(0),
+  purple: z.number().int().nonnegative().default(0),
+  red:    z.number().int().nonnegative().default(0),
+});
+
+export const DailyTaskProgressSchema = z.object({
+  visitorsLifted:   z.number().int().nonnegative().default(0),
+  vipsLifted:       z.number().int().nonnegative().default(0),
+  goodsBought:      z.number().int().nonnegative().default(0),
+  residentsAdded:   z.number().int().nonnegative().default(0),
+  gemsPurchased:    z.number().int().nonnegative().default(0),
+  goodsCollected:   z.number().int().nonnegative().default(0),
+  floorsBuilt:      z.number().int().nonnegative().default(0),
+  residentsEvicted: z.number().int().nonnegative().default(0),
+  goodsListed:      z.number().int().nonnegative().default(0),
+});
+
+export const DailyTasksSchema = z.object({
+  progress:           DailyTaskProgressSchema.default({
+    visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
+    gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0,
+  }),
+  claimed:            z.array(z.string()).default([]),
+  doubleRewardActive: z.boolean().default(false),
+});
+
 export const FloorStateSchema = z.object({
   id: z.number().int(),
   productions: z.array(ProductionSchema).min(1).max(3),
@@ -60,4 +89,13 @@ export const GameStateSchema = z.object({
   stats: StatsSchema.default({ totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 }),
   coinBonusPercent: z.number().int().nonnegative().default(0),
   xpBonusPercent:   z.number().int().nonnegative().default(0),
+  tokens:     TokensSchema.default({ green: 0, blue: 0, yellow: 0, purple: 0, red: 0 }),
+  dailyTasks: DailyTasksSchema.default({
+    progress: {
+      visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
+      gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0,
+    },
+    claimed: [],
+    doubleRewardActive: false,
+  }),
 });
