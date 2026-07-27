@@ -41,11 +41,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.9)',
-    shadowColor: '#3FA535',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.95,
-    shadowRadius: 16,
-    elevation: 14,
   },
   fabAbove: {
     bottom: 158, // 96 (QuickActionFAB bottom) + 54 (FAB height) + 8 (gap)
