@@ -31,6 +31,8 @@ export const WORKER_NAME_POOLS: Record<SupportedWorkerLocale, WorkerNamePool> = 
 
 const DEFAULT_WORKER_LOCALE: SupportedWorkerLocale = 'en';
 
+export const WORKER_LOOKAHEAD = 4;
+
 export const HAIR_COLORS = [
   '#5C3A22', '#E0A93C', '#C9923A', '#4A3322',
   '#6B4A2E', '#7A5430', '#D8A24A', '#B5763A',
@@ -41,6 +43,7 @@ export function generateRandomWorkers(
   config: GameConfig,
   locale: SupportedWorkerLocale = DEFAULT_WORKER_LOCALE,
   floorTypeOverride?: string,
+  maxBusinessIndex?: number,
 ): Worker[] {
   const floorTypeKeys = Object.keys(config.floorTypes);
   const workers: Worker[] = [];
@@ -60,7 +63,10 @@ export function generateRandomWorkers(
       ? floorTypeOverride
       : floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)];
     const ftConfig = config.floorTypes[floorType];
-    const business = ftConfig.businesses[Math.floor(Math.random() * ftConfig.businesses.length)];
+    const businessPool = maxBusinessIndex !== undefined
+      ? ftConfig.businesses.slice(0, maxBusinessIndex + 1)
+      : ftConfig.businesses;
+    const business = businessPool[Math.floor(Math.random() * businessPool.length)];
     const dreamJob = business.dreamJobs[Math.floor(Math.random() * business.dreamJobs.length)];
 
     workers.push({
