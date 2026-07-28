@@ -1,7 +1,36 @@
 import { GameConfigSchema } from '../schemas/gameConfig';
-import type { GameConfig, GameState, Floor } from '../types';
-import { generateRandomWorkers } from './workerNames';
+import type { GameConfig, GameState, Floor, Worker } from '../types';
+import { generateRandomWorkers, HAIR_COLORS, WORKER_NAME_POOLS } from './workerNames';
 import { generateVisitorAppearance } from '../engine/lobbyUtils';
+
+function uuidv4(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
+function makeStartingWorker(
+  floorType: string,
+  dreamJob: string,
+  assignedFloorId: number,
+  assignedSlotIdx: number,
+): Worker {
+  const female = Math.random() < 0.5;
+  const pool = female ? WORKER_NAME_POOLS.en.female : WORKER_NAME_POOLS.en.male;
+  return {
+    id: uuidv4(),
+    name: pool[Math.floor(Math.random() * pool.length)],
+    female,
+    floorType,
+    dreamJob,
+    level: 1 + Math.floor(Math.random() * 9),
+    hairColor: HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)],
+    assignedFloorId,
+    assignedSlotIdx,
+    isSpecialist: false,
+  };
+}
 
 const rawConfig = {
   floorTypes: {
@@ -484,7 +513,12 @@ export function createInitialState(config: GameConfig): GameState {
       })),
     })),
     commandQueue: [],
-    workers: generateRandomWorkers(5, config),
+    workers: [
+      makeStartingWorker('green', 'pastries', 2, 1),
+      makeStartingWorker('green', 'cakes',    2, 2),
+      makeStartingWorker('blue',  'accounts', 3, 2),
+      ...generateRandomWorkers(5, config),
+    ],
     hotelCapacity: config.hotelCapacity,
     lobbyVisitors: Array.from({ length: config.lobbyConfig.defaultLobbyCapacity }, () => generateVisitorAppearance()),
     lobbyCapacity: config.lobbyConfig.defaultLobbyCapacity,

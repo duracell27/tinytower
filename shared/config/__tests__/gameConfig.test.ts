@@ -180,16 +180,20 @@ describe('createInitialState', () => {
     expect(state.commandQueue).toHaveLength(0);
   });
 
-  it('workers array starts with 5 hotel workers', () => {
+  it('workers array starts with 3 placed + 5 hotel workers', () => {
     const state = createInitialState(gameConfig);
-    expect(state.workers).toHaveLength(5);
+    expect(state.workers).toHaveLength(8);
+    expect(state.workers.filter((w) => w.assignedFloorId !== null)).toHaveLength(3);
+    expect(state.workers.filter((w) => w.assignedFloorId === null)).toHaveLength(5);
   });
 
-  it('initial workers are unassigned', () => {
+  it('starting placed workers are at their dream jobs', () => {
     const state = createInitialState(gameConfig);
-    for (const w of state.workers) {
-      expect(w.assignedFloorId).toBeNull();
-      expect(w.assignedSlotIdx).toBeNull();
+    const placed = state.workers.filter((w) => w.assignedFloorId !== null);
+    for (const w of placed) {
+      const floor = state.floors.find((f) => f.id === w.assignedFloorId);
+      const typeId = floor?.productions[w.assignedSlotIdx!]?.typeId;
+      expect(w.dreamJob).toBe(typeId);
     }
   });
 
