@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View, Text, FlatList, TextInput, Pressable, Modal, ScrollView,
-  StyleSheet, KeyboardAvoidingView, Platform, Alert,
+  StyleSheet, KeyboardAvoidingView, Platform, Alert, Keyboard,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
@@ -43,6 +43,7 @@ export default function ChatScreen() {
   const playerLevel = useGameStore((s) => s.playerLevel);
 
   const [inputText, setInputText] = useState('');
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [channel, setChannel] = useState<Channel>('global');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
@@ -57,6 +58,12 @@ export default function ChatScreen() {
       return () => stopPolling();
     }, [activeCountry, startPolling, stopPolling]),
   );
+
+  React.useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardWillShow', () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener('keyboardWillHide', () => setKeyboardVisible(false));
+    return () => { showSub.remove(); hideSub.remove(); };
+  }, []);
 
   const reversed = useMemo(() => [...messages].reverse(), [messages]);
 
@@ -162,7 +169,7 @@ export default function ChatScreen() {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={insets.top + 100}
+        keyboardVerticalOffset={0}
       >
         <FlatList
           data={reversed}
@@ -196,7 +203,7 @@ export default function ChatScreen() {
                 </Pressable>
               </View>
             )}
-            <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom + 8, 16) }]}>
+            <View style={[styles.inputBar, { paddingBottom: keyboardVisible ? 8 : Math.max(insets.bottom + 8, 16) }]}>
               <TextInput
                 style={styles.input}
                 value={inputText}
@@ -206,17 +213,23 @@ export default function ChatScreen() {
                 multiline
                 maxLength={300}
               />
-              <Pressable
-                style={[
-                  styles.sendBtn,
-                  editingId && styles.sendBtnEdit,
-                  (!inputText.trim() || isSending) && styles.sendBtnDisabled,
-                ]}
-                onPress={handleSend}
-                disabled={!inputText.trim() || isSending}
-              >
-                <Text style={styles.sendIcon}>{editingId ? '✓' : '➤'}</Text>
-              </Pressable>
+              {keyboardVisible && !inputText.trim() ? (
+                <Pressable style={styles.sendBtn} onPress={() => Keyboard.dismiss()}>
+                  <Text style={styles.sendIcon}>↓</Text>
+                </Pressable>
+              ) : (
+                <Pressable
+                  style={[
+                    styles.sendBtn,
+                    editingId && styles.sendBtnEdit,
+                    (!inputText.trim() || isSending) && styles.sendBtnDisabled,
+                  ]}
+                  onPress={handleSend}
+                  disabled={!inputText.trim() || isSending}
+                >
+                  <Text style={styles.sendIcon}>{editingId ? '✓' : '➤'}</Text>
+                </Pressable>
+              )}
             </View>
           </View>
         ) : (

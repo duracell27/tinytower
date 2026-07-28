@@ -98,8 +98,14 @@ export class SyncService {
       d.setHours(0, 0, 0, 0);
       return d.getTime();
     })();
+    const registrationMidnight = (() => {
+      const d = new Date(player.createdAt);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime();
+    })();
     const shouldCheckLoginReward =
-      Number(player.state?.lastDailyLoginClaimedAt ?? 0) < todayMidnight;
+      Number(player.state?.lastDailyLoginClaimedAt ?? 0) < todayMidnight &&
+      registrationMidnight < todayMidnight;
     let dailyLoginReward: { coins: number; gems: number } | null = null;
 
     for (const command of newCommands) {
@@ -208,6 +214,13 @@ export class SyncService {
               gems: gameState.gems + 3,
             };
             dailyLoginReward = { coins: loginCoins, gems: 3 };
+            const loginXpResult = applyXpGain(xpResult.playerLevel, xpResult.playerXp, loginCoins);
+            gameState = {
+              ...gameState,
+              balance: gameState.balance + loginXpResult.bonusCoins,
+              gems: gameState.gems + loginXpResult.bonusGems,
+            };
+            xpResult = loginXpResult;
           }
         }
         // Compute final stats using locked player values + deltas to avoid stale reads under concurrency

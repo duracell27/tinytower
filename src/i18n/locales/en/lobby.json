@@ -28,7 +28,7 @@
     "subtitle": "New visitors will arrive soon"
   },
   "actions": {
-    "raiseToFloor": "Raise to floor {{floor}}",
+    "raiseToFloor": "Ride to floor {{floor}}",
     "checkIntoHotel": "Check into hotel",
     "collect": "Collect",
     "collectTip": "Collect Tip",

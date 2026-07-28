@@ -105,7 +105,7 @@ describe('SyncService', () => {
     maxRevenuePerMin: 0,
     openedFloorsCount: 0,
     lastSeenAt: new Date(Date.now() - 60000),
-    createdAt: new Date(),
+    createdAt: new Date(Date.now() - 86_400_000), // yesterday
     floors: mockFloors,
     workers: mockWorkers,
     state: null,
@@ -618,9 +618,12 @@ describe('SyncService', () => {
       const result = await syncService.processSync('player-uuid', [], 0);
 
       const expectedCoins = mockFloors.length * 3000; // 5 floors × 3000 = 15000
+      // 15 000 XP from login coins: level 1 → 10 (bonus +5 400 coins, +54 gems)
+      const expectedLevelUpCoins = 5400;
+      const expectedLevelUpGems = 54;
       expect(result.dailyLoginReward).toEqual({ coins: expectedCoins, gems: 3 });
-      expect(result.state.balance).toBe(100 + expectedCoins);
-      expect(result.state.gems).toBe(20 + 3); // default gems + 3
+      expect(result.state.balance).toBe(100 + expectedCoins + expectedLevelUpCoins);
+      expect(result.state.gems).toBe(20 + 3 + expectedLevelUpGems);
     });
 
     it('should not grant daily login reward when already claimed today', async () => {
@@ -663,6 +666,23 @@ describe('SyncService', () => {
       expect(result.dailyLoginReward).toBeNull();
       expect(result.state.balance).toBe(100); // no change
       expect(result.state.gems).toBe(20);     // no change
+    });
+
+    it('should not grant daily login reward on the registration day', async () => {
+      const playerRegisteredToday = {
+        ...mockPlayer,
+        createdAt: new Date(), // registered today
+        state: null,
+      };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerRegisteredToday)
+        .mockResolvedValueOnce({ ...playerRegisteredToday, stateVersion: 0 });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.dailyLoginReward).toBeNull();
+      expect(result.state.balance).toBe(100);
+      expect(result.state.gems).toBe(20);
     });
 
     it('should not grant daily login reward when concurrent sync already claimed within transaction', async () => {

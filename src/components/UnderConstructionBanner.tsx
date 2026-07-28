@@ -150,6 +150,12 @@ export default function UnderConstructionBanner({
           })}
         </View>
 
+        {!canStart && (
+          <Text style={styles.materialsHint}>
+            🛗 Ride the elevator — the builder delivers materials to your warehouse
+          </Text>
+        )}
+
         {/* Start button — full width below tools */}
         <Pressable
           onPress={canStart ? onStartBusiness : undefined}
@@ -332,6 +338,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9BA3B0',
     lineHeight: 16,
+  },
+  materialsHint: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 12,
+    color: '#9BA3B0',
+    lineHeight: 17,
+    textAlign: 'center',
+    marginTop: 10,
   },
   toolsRow: {
     flexDirection: 'row',
