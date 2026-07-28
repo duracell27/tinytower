@@ -11,25 +11,24 @@ interface Props {
   onPress: () => void;
 }
 
-const CATEGORY_EMOJI: Record<ForumCategory, string> = {
-  NEWS: '📢',
-  HELP: '❓',
-  GENERAL: '💬',
-  CITIES: '🏙️',
-  PURCHASES: '💎',
+const CATEGORY_ICONS: Record<ForumCategory, ReturnType<typeof require>> = {
+  NEWS:      require('../../assets/img/forum/forumCatNews.png'),
+  HELP:      require('../../assets/img/forum/forumCatHelp.png'),
+  GENERAL:   require('../../assets/img/forum/forumCatGeneral.png'),
+  CITIES:    require('../../assets/img/forum/forumCatCities.png'),
+  PURCHASES: require('../../assets/img/forum/forumCatPurchases.png'),
 };
 
 export default function ForumCategoryCard({ category, label, description, unreadCount, onPress }: Props) {
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <Image
-        source={require('../../assets/img/forum/folderwithdocs.png')}
+        source={CATEGORY_ICONS[category]}
         style={styles.folderIcon}
         contentFit="contain"
       />
       <View style={styles.info}>
         <View style={styles.titleRow}>
-          <Text style={styles.emoji}>{CATEGORY_EMOJI[category]}</Text>
           <Text style={styles.label}>{label}</Text>
         </View>
         <Text style={styles.description} numberOfLines={1}>{description}</Text>
@@ -63,7 +62,6 @@ const styles = StyleSheet.create({
   folderIcon: { width: 44, height: 44 },
   info: { flex: 1, gap: 2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  emoji: { fontSize: 16 },
   label: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2A3344' },
   description: { fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#888' },
   badge: {

@@ -10,7 +10,7 @@ import type { GameState, Command, Floor, Worker, ToolsState } from '../../shared
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
-import { DAILY_TASKS } from '../../shared/config/dailyTasksConfig';
+import { DAILY_TASKS, getCoinMultiplier, getMaterialCount } from '../../shared/config/dailyTasksConfig';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -95,7 +95,7 @@ interface GameActions {
   expandHotel: () => void;
   evictLowLevelWorkers: () => void;
   claimDailyReward: (stage: 1 | 2) => void;
-  claimDailyTask: (taskKey: string) => void;
+  claimDailyTask: (taskKey: string) => { coins: number; gems: number; tokenCount: number; tokenColor: string; matCount?: number; materialType?: string } | null;
   dismissLevelUp: () => void;
   setToolInventory: (tools: ToolsState) => void;
   buyFloor: (floorId: number) => void;
@@ -160,6 +160,22 @@ function executeCommand(
   // Use real wall-clock time so daily reset fires even when spawn_visitor
   // timestamps are from yesterday (catch-up cadence).
   gameState = checkDailyReset(gameState, clock.now());
+  // If a daily reset just fired, re-apply any claim_daily_task commands that were
+  // dispatched today (timestamp >= new lastDailyReset) so they survive the reset.
+  if (gameState.lastDailyReset !== lastDailyReset) {
+    const todaysClaims = commandQueue
+      .filter((cmd) => cmd.type === 'claim_daily_task' && cmd.timestamp >= gameState.lastDailyReset)
+      .map((cmd) => (cmd as Extract<typeof cmd, { type: 'claim_daily_task' }>).taskKey);
+    if (todaysClaims.length > 0) {
+      gameState = {
+        ...gameState,
+        dailyTasks: {
+          ...gameState.dailyTasks,
+          claimed: [...new Set([...gameState.dailyTasks.claimed, ...todaysClaims])],
+        },
+      };
+    }
+  }
   const result = processCommand(
     gameState, command, gameConfig, command.timestamp, store.playerLevel,
     { coinPercent: store.coinBonusPercent, xpPercent: store.xpBonusPercent },
@@ -693,10 +709,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const COLORS = ['green', 'blue', 'yellow', 'purple', 'red'] as const;
     const MATERIAL_TYPES = ['briks', 'glass', 'nails', 'screw'] as const;
     const taskConfig = DAILY_TASKS.find((t) => t.key === taskKey);
+    if (!taskConfig) return null;
+    const state = get();
     const tokenCount = Math.floor(Math.random() * 5) + 1;
     const tokenColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-    const materialType = taskConfig?.rewards.hasMaterials
-      ? MATERIAL_TYPES[Math.floor(Math.random() * MATERIAL_TYPES.length)]
+    const materialType = taskConfig.rewards.hasMaterials
+      ? (state.dailyTasks.dailyMaterialType ?? MATERIAL_TYPES[Math.floor(Math.random() * MATERIAL_TYPES.length)])
+      : undefined;
+    const multiplier = getCoinMultiplier(state.playerLevel);
+    const doubleMultiplier = state.dailyTasks.doubleRewardActive ? 2 : 1;
+    const coins = taskConfig.rewards.baseCoins * multiplier * doubleMultiplier;
+    const matCount = taskConfig.rewards.hasMaterials
+      ? getMaterialCount(state.playerLevel) * doubleMultiplier
       : undefined;
     executeCommand(get, set, {
       id: uuid(),
@@ -707,6 +731,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       materialType,
       timestamp: clock.now(),
     });
+    return { coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount, materialType };
   },
 
   dismissLevelUp: () => {
@@ -763,7 +788,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         (cmd) => !sentIds.has(cmd.id) &&
           (cmd.type === 'assign_worker' || cmd.type === 'fire_worker' ||
            cmd.type === 'evict_worker' || cmd.type === 'fire_and_evict_worker' ||
-           cmd.type === 'evict_low_level_workers'),
+           cmd.type === 'evict_low_level_workers' || cmd.type === 'upgrade_to_specialist'),
       );
       if (pendingWorkerCmds.length === 0) return serverState.workers;
       let workers = serverState.workers;
@@ -839,7 +864,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     floors: serverState.floors,
     stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     tokens:     serverState.tokens     ?? cur.tokens,
-    dailyTasks: serverState.dailyTasks ?? cur.dailyTasks,
+    dailyTasks: (() => {
+      const base = serverState.dailyTasks ?? cur.dailyTasks;
+      const pendingClaims = cur.commandQueue
+        .filter((cmd) => !sentIds.has(cmd.id) && cmd.type === 'claim_daily_task')
+        .map((cmd) => (cmd as Extract<typeof cmd, { type: 'claim_daily_task' }>).taskKey);
+      if (pendingClaims.length === 0) return base;
+      return { ...base, claimed: [...new Set([...base.claimed, ...pendingClaims])] };
+    })(),
     locallyGrantedAchievements: new Set<string>(),
   })),
 

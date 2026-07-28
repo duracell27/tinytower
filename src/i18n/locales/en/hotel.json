@@ -129,9 +129,11 @@
     "title": "Daily Tasks",
     "resetsIn": "Resets in {{time}}",
     "doubleReward": "⚡ Double rewards active today!",
+    "doubleRewardHint": "Complete 7 tasks today to earn ×2 rewards tomorrow!",
     "collect": "Collect",
     "progress": "{{current}} of {{total}}",
-    "tokens": "Tokens"
+    "tokens": "Tokens",
+    "completedToday": "{{done}} / 7 tasks completed today"
   },
   "workersPanel": {
     "title": "My Workers",

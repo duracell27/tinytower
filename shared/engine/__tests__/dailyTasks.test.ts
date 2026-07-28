@@ -29,14 +29,13 @@ describe('checkDailyReset — dailyTasks', () => {
     expect(next.dailyTasks.claimed).toEqual([]);
   });
 
-  it('sets doubleRewardActive when 7+ tasks were completed', () => {
-    // Complete 7 tasks: visitorsLifted >=100, goodsBought >=50, goodsListed >=100,
-    // goodsCollected >=150, floorsBuilt >=1, residentsEvicted >=15, residentsAdded >=25
+  it('sets doubleRewardActive when 7+ visible tasks were claimed', () => {
     const state = makeState({
       dailyTasks: {
-        progress: { visitorsLifted: 100, vipsLifted: 0, goodsBought: 50, residentsAdded: 25,
-          gemsPurchased: 0, goodsCollected: 150, floorsBuilt: 1, residentsEvicted: 15, goodsListed: 100 },
-        claimed: [],
+        progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
+          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
+        claimed: ['transporter', 'vip_transporter', 'wholesale', 'new_residents',
+          'easy_money', 'money_collector', 'build_floor'],
         doubleRewardActive: false,
       },
     });
@@ -44,12 +43,26 @@ describe('checkDailyReset — dailyTasks', () => {
     expect(next.dailyTasks.doubleRewardActive).toBe(true);
   });
 
-  it('does not set doubleRewardActive when fewer than 7 tasks completed', () => {
+  it('does not set doubleRewardActive when fewer than 7 tasks claimed', () => {
     const state = makeState({
       dailyTasks: {
-        progress: { visitorsLifted: 100, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
+        progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
           gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
-        claimed: [],
+        claimed: ['transporter', 'vip_transporter', 'wholesale'],
+        doubleRewardActive: false,
+      },
+    });
+    const next = checkDailyReset(state, 1000 + DAY_MS + 1);
+    expect(next.dailyTasks.doubleRewardActive).toBe(false);
+  });
+
+  it('does not count hidden IAP tasks towards double reward', () => {
+    const state = makeState({
+      dailyTasks: {
+        progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
+          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
+        claimed: ['transporter', 'vip_transporter', 'wholesale', 'new_residents',
+          'easy_money', 'money_collector', 'investor'],
         doubleRewardActive: false,
       },
     });

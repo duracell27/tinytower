@@ -361,12 +361,22 @@ function handleEvictLowLevelWorkers(state: GameState): ProcessResult {
   if (state.gems < 1) {
     return { success: false, state, error: 'Not enough gems' };
   }
+  const evictedCount = state.workers.filter(
+    w => w.level !== 9 && w.assignedFloorId === null,
+  ).length;
   return {
     success: true,
     state: {
       ...state,
       gems: state.gems - 1,
       workers: state.workers.filter(w => w.level === 9 || w.assignedFloorId !== null),
+      dailyTasks: {
+        ...state.dailyTasks,
+        progress: {
+          ...state.dailyTasks.progress,
+          residentsEvicted: state.dailyTasks.progress.residentsEvicted + evictedCount,
+        },
+      },
     },
   };
 }

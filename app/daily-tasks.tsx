@@ -1,34 +1,58 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, Pressable, ImageBackground,
+  View, Text, ScrollView, StyleSheet, Pressable, ImageBackground, Modal, Dimensions,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withTiming, withDelay, withSpring, Easing,
+} from 'react-native-reanimated';
 import { useGameStore } from '../src/stores/gameStore';
 import {
   DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress,
 } from '../shared/config/dailyTasksConfig';
 import { formatNum } from '../src/utils/format';
 
+const { width: SCREEN_W } = Dimensions.get('window');
+
 const TOKEN_COLORS: Record<string, string> = {
   green: '#3FA535', blue: '#3376E5', yellow: '#E5A72E', purple: '#9A6FD0', red: '#E05A4A',
 };
 
-// TODO: replace with actual token icons once assets/img/tokens/ directory is populated
-const TOKEN_ICON_PLACEHOLDER = require('../assets/img/diamond.png');
+const TASK_ICONS: Partial<Record<string, ReturnType<typeof require>>> = {
+  transporter:     require('../assets/img/daily/dailytransporter.png'),
+  vip_transporter: require('../assets/img/daily/dailyvip_transporte.png'),
+  wholesale:       require('../assets/img/daily/dailywholesale.png'),
+  new_residents:   require('../assets/img/daily/dailynew_residents.png'),
+  easy_money:      require('../assets/img/daily/dailyeasy_money.png'),
+  money_collector: require('../assets/img/daily/dailymoney_collector.png'),
+  build_floor:     require('../assets/img/daily/dailybuild_floor.png'),
+  hasta_la_vista:  require('../assets/img/daily/dailyhasta_la_vista.png'),
+  goods_to_sell:   require('../assets/img/daily/dailygoods_to_sell.png'),
+  investor:        require('../assets/img/daily/dailyinvestor.png'),
+  major_investor:  require('../assets/img/daily/dailymajor_investor.png'),
+};
+
 const TOKEN_ICONS: Record<string, ReturnType<typeof require>> = {
-  green:  TOKEN_ICON_PLACEHOLDER,
-  blue:   TOKEN_ICON_PLACEHOLDER,
-  yellow: TOKEN_ICON_PLACEHOLDER,
-  purple: TOKEN_ICON_PLACEHOLDER,
-  red:    TOKEN_ICON_PLACEHOLDER,
+  green:  require('../assets/img/tokens/tokenGreen.png'),
+  blue:   require('../assets/img/tokens/tokenBlue.png'),
+  yellow: require('../assets/img/tokens/tokenYellow.png'),
+  purple: require('../assets/img/tokens/tokenViolet.png'),
+  red:    require('../assets/img/tokens/tokenRed.png'),
 };
 
 const DIAMOND_ICON = require('../assets/img/diamond.png');
-const COIN_ICON = require('../assets/img/coin.png');
+const COIN_ICON    = require('../assets/img/coin.png');
+
+const MATERIAL_ICONS: Record<string, ReturnType<typeof require>> = {
+  briks: require('../assets/img/tools/briks.png'),
+  glass: require('../assets/img/tools/glass.png'),
+  nails: require('../assets/img/tools/nails.png'),
+  screw: require('../assets/img/tools/screw.png'),
+};
 
 function formatCountdown(ms: number): string {
   if (ms <= 0) return '0h 0m';
@@ -38,12 +62,99 @@ function formatCountdown(ms: number): string {
   return `${h}h ${m}m`;
 }
 
+type RewardData = {
+  taskTitle: string;
+  coins: number;
+  gems: number;
+  tokenCount: number;
+  tokenColor: string;
+  matCount?: number;
+  materialType?: string;
+};
+
 function ProgressBar({ value, max }: { value: number; max: number }) {
   const pct = Math.min(value / max, 1);
   return (
     <View style={styles.barBg}>
       <View style={[styles.barFill, { width: `${pct * 100}%` }]} />
     </View>
+  );
+}
+
+function TaskRewardModal({ reward, onDismiss }: { reward: RewardData | null; onDismiss: () => void }) {
+  const scale        = useSharedValue(0.6);
+  const rewardsOpacity = useSharedValue(0);
+  const rewardsY     = useSharedValue(16);
+
+  const cardStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const rewardsStyle = useAnimatedStyle(() => ({
+    opacity: rewardsOpacity.value,
+    transform: [{ translateY: rewardsY.value }],
+  }));
+
+  const runIn = useCallback(() => {
+    scale.value = 0.6;
+    rewardsOpacity.value = 0;
+    rewardsY.value = 16;
+    scale.value = withSpring(1, { damping: 14, stiffness: 180 });
+    rewardsOpacity.value = withDelay(220, withTiming(1, { duration: 260 }));
+    rewardsY.value = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.back(1.2)) }));
+  }, [scale, rewardsOpacity, rewardsY]);
+
+  if (!reward) return null;
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onDismiss} onShow={runIn}>
+      <View style={modal.scrim}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
+
+        <Animated.View style={[modal.card, cardStyle]}>
+          <LinearGradient colors={['#F0FBE8', '#E2F5D0']} style={modal.cardInner}>
+            <View style={modal.starsRow}>
+              <Text style={[modal.star, modal.starSm]}>★</Text>
+              <Text style={[modal.star, modal.starLg]}>★</Text>
+              <Text style={[modal.star, modal.starSm]}>★</Text>
+            </View>
+
+            <Text style={modal.title}>Task Complete!</Text>
+            <Text style={modal.subtitle} numberOfLines={1}>{reward.taskTitle}</Text>
+
+            <Animated.View style={[modal.chipsWrap, rewardsStyle]}>
+              <View style={modal.chip}>
+                <Image source={COIN_ICON} style={modal.chipIcon} contentFit="contain" />
+                <Text style={modal.chipCoins}>+{formatNum(reward.coins)}</Text>
+              </View>
+              <View style={modal.chip}>
+                <Image source={DIAMOND_ICON} style={modal.chipIcon} contentFit="contain" />
+                <Text style={modal.chipGems}>+{reward.gems}</Text>
+              </View>
+              <View style={modal.chip}>
+                <Image source={TOKEN_ICONS[reward.tokenColor]} style={modal.chipIcon} contentFit="contain" />
+                <Text style={[modal.chipToken, { color: TOKEN_COLORS[reward.tokenColor] }]}>
+                  +{reward.tokenCount}
+                </Text>
+              </View>
+              {reward.matCount != null && reward.materialType && (
+                <View style={modal.chip}>
+                  <Image source={MATERIAL_ICONS[reward.materialType]} style={modal.chipIcon} contentFit="contain" />
+                  <Text style={modal.chipMat}>+{reward.matCount}</Text>
+                </View>
+              )}
+            </Animated.View>
+
+            <Pressable
+              onPress={onDismiss}
+              style={({ pressed }) => [modal.btn, pressed && { opacity: 0.85 }]}
+            >
+              <LinearGradient colors={['#74D44F', '#5BA63C']} style={modal.btnGradient}>
+                <Text style={modal.btnText}>Awesome!</Text>
+              </LinearGradient>
+              <View style={modal.btnShadow} />
+            </Pressable>
+          </LinearGradient>
+        </Animated.View>
+      </View>
+    </Modal>
   );
 }
 
@@ -62,19 +173,32 @@ export default function DailyTasksScreen() {
     return () => clearInterval(id);
   }, []);
 
-  const resetAt = lastDailyReset + 24 * 60 * 60 * 1000;
+  const resetAt     = lastDailyReset + 24 * 60 * 60 * 1000;
   const msUntilReset = resetAt - now;
 
-  const handleClaim = useCallback((taskKey: string) => {
-    claimDailyTask(taskKey);
+  const [reward, setReward] = useState<RewardData | null>(null);
+
+  const handleClaim = useCallback((taskKey: string, taskTitle: string) => {
+    const result = claimDailyTask(taskKey);
+    if (result) {
+      setReward({
+        taskTitle,
+        coins: result.coins,
+        gems: result.gems,
+        tokenCount: result.tokenCount,
+        tokenColor: result.tokenColor,
+        matCount: result.matCount,
+        materialType: result.materialType,
+      });
+    }
   }, [claimDailyTask]);
 
   const multiplier = getCoinMultiplier(playerLevel);
-  const matCount = getMaterialCount(playerLevel);
+  const matCount   = getMaterialCount(playerLevel);
 
   return (
     <ImageBackground
-      source={require('../assets/welcome-bg.png')}
+      source={require('../assets/img/backgroung/bg15.png')}
       style={styles.container}
       resizeMode="cover"
     >
@@ -83,7 +207,6 @@ export default function DailyTasksScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Text style={styles.heading}>{t('dailyTasks.title')}</Text>
 
-        {/* Token balance */}
         <View style={styles.tokenRow}>
           {(['green', 'blue', 'yellow', 'purple', 'red'] as const).map((color) => (
             <View key={color} style={styles.tokenChip}>
@@ -95,31 +218,53 @@ export default function DailyTasksScreen() {
           ))}
         </View>
 
-        {/* Timer */}
-        <Text style={styles.timer}>
-          {t('dailyTasks.resetsIn', { time: formatCountdown(msUntilReset) })}
-        </Text>
+        {(() => {
+          const visibleTasks = DAILY_TASKS.filter((task) => !task.hidden);
+          const claimedCount = visibleTasks.filter((t) => dailyTasks.claimed.includes(t.key)).length;
+          return (
+            <View style={[styles.doubleBanner, dailyTasks.doubleRewardActive && styles.doubleBannerActive]}>
+              <Text style={[styles.doubleBannerText, dailyTasks.doubleRewardActive && styles.doubleBannerTextActive]}>
+                {dailyTasks.doubleRewardActive
+                  ? t('dailyTasks.doubleReward')
+                  : t('dailyTasks.doubleRewardHint')}
+              </Text>
+              <View style={styles.completionBarBg}>
+                <View style={[styles.completionBarFill, { width: `${Math.min(claimedCount / 7, 1) * 100}%` }]} />
+              </View>
+              <Text style={styles.completionText}>
+                {t('dailyTasks.completedToday', { done: claimedCount })}
+              </Text>
+            </View>
+          );
+        })()}
 
-        {/* Double reward banner */}
-        {dailyTasks.doubleRewardActive && (
-          <View style={styles.doubleBanner}>
-            <Text style={styles.doubleBannerText}>{t('dailyTasks.doubleReward')}</Text>
-          </View>
-        )}
-
-        {/* Task cards */}
-        {DAILY_TASKS.filter((task) => !task.hidden).map((task) => {
-          const progress = getTaskProgress({ dailyGemsCollected, dailyTasks }, task);
+        {[...DAILY_TASKS.filter((task) => !task.hidden)].sort((a, b) => {
+          const claimedA = dailyTasks.claimed.includes(a.key);
+          const claimedB = dailyTasks.claimed.includes(b.key);
+          if (claimedA !== claimedB) return claimedA ? 1 : -1;
+          const pctA = getTaskProgress({ dailyGemsCollected, dailyTasks }, a) / a.threshold;
+          const pctB = getTaskProgress({ dailyGemsCollected, dailyTasks }, b) / b.threshold;
+          return pctB - pctA;
+        }).map((task) => {
+          const progress  = getTaskProgress({ dailyGemsCollected, dailyTasks }, task);
           const completed = progress >= task.threshold;
-          const claimed = dailyTasks.claimed.includes(task.key);
-          const coins = task.rewards.baseCoins * multiplier * (dailyTasks.doubleRewardActive ? 2 : 1);
+          const claimed   = dailyTasks.claimed.includes(task.key);
+          const coins     = task.rewards.baseCoins * multiplier * (dailyTasks.doubleRewardActive ? 2 : 1);
 
           return (
             <View key={task.key} style={[styles.card, claimed && styles.cardClaimed]}>
               <View style={styles.cardHeader}>
-                <Text style={[styles.cardTitle, claimed && styles.cardTitleClaimed]}>
-                  {task.title}
-                </Text>
+                {TASK_ICONS[task.key] && (
+                  <Image source={TASK_ICONS[task.key]!} style={styles.taskIcon} contentFit="contain" />
+                )}
+                <View style={styles.cardTitleBlock}>
+                  <Text style={[styles.cardTitle, claimed && styles.cardTitleClaimed]}>
+                    {task.title}
+                  </Text>
+                  <Text style={[styles.cardDesc, claimed && styles.cardDescClaimed]}>
+                    {task.description}
+                  </Text>
+                </View>
                 {claimed && <Text style={styles.claimedCheck}>✓</Text>}
               </View>
 
@@ -144,22 +289,24 @@ export default function DailyTasksScreen() {
                     <Image source={DIAMOND_ICON} style={styles.rewardIcon} contentFit="contain" />
                     <Text style={styles.rewardGems}>+{task.rewards.gems}</Text>
                   </View>
-                  {task.rewards.hasMaterials && (
+                  {task.rewards.hasMaterials && dailyTasks.dailyMaterialType && (
                     <View style={styles.rewardChip}>
+                      <Image
+                        source={MATERIAL_ICONS[dailyTasks.dailyMaterialType]}
+                        style={styles.rewardIcon}
+                        contentFit="contain"
+                      />
                       <Text style={styles.rewardMat}>
-                        +{matCount * (dailyTasks.doubleRewardActive ? 2 : 1)} 🧱
+                        +{matCount * (dailyTasks.doubleRewardActive ? 2 : 1)}
                       </Text>
                     </View>
                   )}
-                  <View style={styles.rewardChip}>
-                    <Text style={styles.rewardToken}>+1–5 🎲</Text>
-                  </View>
                 </View>
               )}
 
               {completed && !claimed && (
                 <Pressable
-                  onPress={() => handleClaim(task.key)}
+                  onPress={() => handleClaim(task.key, task.title)}
                   style={({ pressed }) => [styles.collectBtn, pressed && { opacity: 0.8 }]}
                 >
                   <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.collectGradient}>
@@ -170,6 +317,10 @@ export default function DailyTasksScreen() {
             </View>
           );
         })}
+
+        <Text style={styles.timer}>
+          {t('dailyTasks.resetsIn', { time: formatCountdown(msUntilReset) })}
+        </Text>
       </ScrollView>
 
       <Pressable
@@ -178,6 +329,8 @@ export default function DailyTasksScreen() {
       >
         <Text style={styles.closeBtnText}>✕</Text>
       </Pressable>
+
+      <TaskRewardModal reward={reward} onDismiss={() => setReward(null)} />
     </ImageBackground>
   );
 }
@@ -187,22 +340,32 @@ const styles = StyleSheet.create({
   scroll: { paddingTop: 64, paddingHorizontal: 16, paddingBottom: 120, gap: 12 },
   heading: { fontFamily: 'Fredoka_700Bold', fontSize: 28, color: '#27331F', marginBottom: 4 },
 
-  tokenRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 4 },
+  tokenRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 4, justifyContent: 'center' },
   tokenChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },
   tokenIcon: { width: 18, height: 18 },
   tokenCount: { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
 
-  timer: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', marginBottom: 4 },
+  timer: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', marginBottom: 4, textAlign: 'center' },
 
-  doubleBanner: { backgroundColor: '#FFF4D6', borderRadius: 14, padding: 10, alignItems: 'center', marginBottom: 4 },
-  doubleBannerText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#B07A00' },
+  completionText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', textAlign: 'center' },
+  completionBarBg: { alignSelf: 'stretch', height: 6, borderRadius: 3, backgroundColor: 'rgba(63,165,53,0.2)', overflow: 'hidden' },
+  completionBarFill: { height: '100%', borderRadius: 3, backgroundColor: '#3FA535' },
+
+  doubleBanner: { backgroundColor: 'rgba(255,255,255,0.55)', borderRadius: 14, padding: 12, alignItems: 'center', gap: 8, marginBottom: 4 },
+  doubleBannerActive: { backgroundColor: '#FFF4D6' },
+  doubleBannerText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', textAlign: 'center' },
+  doubleBannerTextActive: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#B07A00' },
 
   card: { backgroundColor: '#fff', borderRadius: 20, padding: 16, gap: 10, shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
   cardClaimed: { opacity: 0.55 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardTitle: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#27331F', flex: 1 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  taskIcon: { width: 36, height: 36, borderRadius: 8 },
+  cardTitleBlock: { flex: 1, gap: 2 },
+  cardTitle: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#27331F' },
   cardTitleClaimed: { color: '#9BA3B0' },
   claimedCheck: { fontSize: 18, color: '#3FA535' },
+  cardDesc: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#7C8A6E' },
+  cardDescClaimed: { color: '#B0B8C0' },
 
   barBg: { height: 7, borderRadius: 4, backgroundColor: 'rgba(63,165,53,0.15)', overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 4, backgroundColor: '#3FA535' },
@@ -210,13 +373,12 @@ const styles = StyleSheet.create({
   progressRow: { alignItems: 'flex-end' },
   progressText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#7C8A6E' },
 
-  rewardRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  rewardRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'center' },
   rewardChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F4F8F2', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4 },
   rewardIcon: { width: 14, height: 14 },
   rewardCoins: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#C28A22' },
-  rewardGems: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#2592AB' },
-  rewardMat: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#6B7A5E' },
-  rewardToken: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#7A6B9E' },
+  rewardGems:  { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#2592AB' },
+  rewardMat:   { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#6B7A5E' },
 
   collectBtn: { borderRadius: 12, overflow: 'hidden' },
   collectGradient: { alignItems: 'center', paddingVertical: 10 },
@@ -224,4 +386,45 @@ const styles = StyleSheet.create({
 
   closeBtn: { position: 'absolute', bottom: 40, alignSelf: 'center', width: 56, height: 56, borderRadius: 28, backgroundColor: '#1A1A1A', alignItems: 'center', justifyContent: 'center' },
   closeBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 20, color: '#fff', lineHeight: 22 },
+});
+
+const modal = StyleSheet.create({
+  scrim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center' },
+  card: {
+    width: SCREEN_W * 0.82,
+    borderRadius: 28,
+    overflow: 'hidden',
+    shadowColor: 'rgba(40,80,20,1)',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.28,
+    shadowRadius: 28,
+    elevation: 14,
+  },
+  cardInner: { alignItems: 'center', paddingTop: 28, paddingBottom: 24, paddingHorizontal: 24 },
+
+  starsRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
+  star: { color: '#F2B330', textShadowColor: 'rgba(180,130,30,0.5)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
+  starSm: { fontSize: 22 },
+  starLg: { fontSize: 34 },
+
+  title:    { fontFamily: 'Fredoka_700Bold', fontSize: 24, color: '#27631E', marginBottom: 2 },
+  subtitle: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#6A8A5A', marginBottom: 20, textAlign: 'center' },
+
+  chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 22 },
+  chip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#fff', paddingVertical: 8, paddingLeft: 10, paddingRight: 14,
+    borderRadius: 16,
+    shadowColor: 'rgba(80,100,60,1)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2,
+  },
+  chipIcon:  { width: 22, height: 22 },
+  chipCoins: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#C28A22' },
+  chipGems:  { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#2592AB' },
+  chipToken: { fontFamily: 'Fredoka_700Bold', fontSize: 17 },
+  chipMat:   { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#6B7A5E' },
+
+  btn: { width: '100%', borderRadius: 14, overflow: 'hidden' },
+  btnGradient: { alignItems: 'center', justifyContent: 'center', paddingVertical: 13, zIndex: 1 },
+  btnText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#fff', textShadowColor: 'rgba(0,0,0,0.18)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
+  btnShadow: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, backgroundColor: 'rgba(40,90,25,0.32)' },
 });

@@ -58,6 +58,7 @@ export const DailyTasksSchema = z.object({
   }),
   claimed:            z.array(z.string()).default([]),
   doubleRewardActive: z.boolean().default(false),
+  dailyMaterialType:  z.enum(['briks', 'glass', 'nails', 'screw']).optional(),
 });
 
 export const FloorStateSchema = z.object({

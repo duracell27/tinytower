@@ -465,13 +465,16 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const timerText = isFull ? t('stats.full') : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
   // Daily tips
+  const lastDailyReset = useGameStore((s) => s.lastDailyReset);
+  const resetPending = now >= lastDailyReset + 24 * 60 * 60 * 1000;
   const { stage1: stage1Target, stage2: stage2Target } = getDailyTipsTargets(elevatorLevel, gameConfig);
   const stage1Reward = gameConfig.lobbyConfig.dailyTipsStage1Reward;
   const stage2Reward = gameConfig.lobbyConfig.dailyTipsStage2Reward;
-  const tipsProgress = Math.min(1, dailyTips / stage2Target);
+  const effectiveDailyTips = resetPending ? 0 : dailyTips;
+  const tipsProgress = Math.min(1, effectiveDailyTips / stage2Target);
   const stage1Pct = `${(stage1Target / stage2Target) * 100}%`;
-  const stage1Ready = dailyTips >= stage1Target && !dailyTipsStage1Claimed;
-  const stage2Ready = dailyTips >= stage2Target && !dailyTipsStage2Claimed;
+  const stage1Ready = effectiveDailyTips >= stage1Target && !dailyTipsStage1Claimed;
+  const stage2Ready = effectiveDailyTips >= stage2Target && !dailyTipsStage2Claimed;
 
   // Upgrade costs
   const elevatorUpgradeCost = calculateElevatorUpgradeCost(elevatorLevel);
@@ -874,7 +877,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={styles.milestone0}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                         <CoinIcon size={11} />
-                        <Text style={styles.milestoneAmount}>{formatNum(dailyTips)}</Text>
+                        <Text style={styles.milestoneAmount}>{formatNum(effectiveDailyTips)}</Text>
                       </View>
                     </View>
                     {/* Stage 1: centered at stage1/stage2 position */}

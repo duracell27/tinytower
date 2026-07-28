@@ -651,10 +651,9 @@ export default function GameScreen() {
           count={availableFloorCount}
           onPress={handleFABPress}
         />
-        <DailyTasksFAB
-          unclaimedCount={unclaimedDailyTasksCount}
-          hasQuickAction={availableMode !== null}
-        />
+        {quickActionMode === null && !qaBarVisible && (
+          <DailyTasksFAB unclaimedCount={unclaimedDailyTasksCount} hasQuickAction={availableMode !== null} />
+        )}
 
         {(quickActionMode !== null || qaBarVisible) && (
           <QuickActionBar

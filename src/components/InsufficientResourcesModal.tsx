@@ -44,6 +44,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: Props 
   const payload = useGameStore((s) => s.insufficientResources);
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
   const exchangeGemsForCoins = useGameStore((s) => s.exchangeGemsForCoins);
+  const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const gems = useGameStore((s) => s.gems);
 
   const visible = payload !== null;
@@ -81,7 +82,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: Props 
 
   const deficit = payload.need - payload.have;
   const gemsNeeded = isCoins ? Math.ceil(deficit / COINS_PER_GEM) : 0;
-  const canExchange = isCoins && gemsNeeded > 0 && gems >= gemsNeeded;
+  const canExchange = isCoins && gemsNeeded > 0;
 
   const handleShop = () => {
     clearInsufficientResources();
@@ -176,8 +177,12 @@ export default function InsufficientResourcesModal({ asOverlay = false }: Props 
             {canExchange && (
               <Pressable
                 onPress={() => {
-                  exchangeGemsForCoins(gemsNeeded);
-                  clearInsufficientResources();
+                  if (gems >= gemsNeeded) {
+                    exchangeGemsForCoins(gemsNeeded);
+                    clearInsufficientResources();
+                  } else {
+                    showInsufficientResources({ currency: 'gems', need: gemsNeeded, have: gems });
+                  }
                 }}
                 style={({ pressed }) => [styles.shopBtn, pressed && { opacity: 0.85 }]}
               >

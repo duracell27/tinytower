@@ -10,6 +10,7 @@ export type DailyTaskProgressKey = keyof GameState['dailyTasks']['progress'];
 export type DailyTaskConfig = {
   key: DailyTaskKey;
   title: string;
+  description: string;
   progressSource: DailyTaskProgressKey | 'dailyGemsCollected';
   threshold: number;
   hidden?: boolean;
@@ -21,17 +22,17 @@ export type DailyTaskConfig = {
 };
 
 export const DAILY_TASKS: DailyTaskConfig[] = [
-  { key: 'transporter',     title: 'Transporter',            progressSource: 'visitorsLifted',    threshold: 100,  rewards: { baseCoins: 1300, gems: 1,   hasMaterials: false } },
-  { key: 'vip_transporter', title: 'VIP-Transporter',        progressSource: 'vipsLifted',         threshold: 10,   rewards: { baseCoins: 1600, gems: 2,   hasMaterials: false } },
-  { key: 'wholesale',       title: 'Wholesale purchase',     progressSource: 'goodsBought',        threshold: 50,   rewards: { baseCoins: 1100, gems: 1,   hasMaterials: false } },
-  { key: 'new_residents',   title: 'New residents',          progressSource: 'residentsAdded',     threshold: 25,   rewards: { baseCoins: 1600, gems: 1,   hasMaterials: false } },
-  { key: 'easy_money',      title: 'Easy money',             progressSource: 'dailyGemsCollected', threshold: 10,   rewards: { baseCoins: 1300, gems: 1,   hasMaterials: false } },
-  { key: 'investor',        title: 'Investor',               progressSource: 'gemsPurchased',      threshold: 200,  hidden: true, rewards: { baseCoins: 1300, gems: 100, hasMaterials: false } },
-  { key: 'money_collector', title: 'Money Collector',        progressSource: 'goodsCollected',     threshold: 150,  rewards: { baseCoins: 1100, gems: 1,   hasMaterials: false } },
-  { key: 'build_floor',     title: 'Higher and higher!',     progressSource: 'floorsBuilt',        threshold: 1,    rewards: { baseCoins: 1600, gems: 5,   hasMaterials: true  } },
-  { key: 'major_investor',  title: 'Major investor',         progressSource: 'gemsPurchased',      threshold: 1000, hidden: true, rewards: { baseCoins: 3200, gems: 200, hasMaterials: false } },
-  { key: 'hasta_la_vista',  title: 'Hasta la vista, Baby!', progressSource: 'residentsEvicted',   threshold: 15,   rewards: { baseCoins: 1300, gems: 1,   hasMaterials: false } },
-  { key: 'goods_to_sell',   title: 'Goods to sell',         progressSource: 'goodsListed',        threshold: 100,  rewards: { baseCoins: 1100, gems: 1,   hasMaterials: false } },
+  { key: 'transporter',     title: 'Transporter',            description: 'Lift 100 visitors in the elevator',        progressSource: 'visitorsLifted',    threshold: 100,  rewards: { baseCoins: 1300, gems: 1,   hasMaterials: false } },
+  { key: 'vip_transporter', title: 'VIP-Transporter',        description: 'Lift 10 VIP guests in the elevator',       progressSource: 'vipsLifted',         threshold: 10,   rewards: { baseCoins: 1600, gems: 2,   hasMaterials: false } },
+  { key: 'wholesale',       title: 'Wholesale purchase',     description: 'Buy 50 products in the market',            progressSource: 'goodsBought',        threshold: 50,   rewards: { baseCoins: 1100, gems: 1,   hasMaterials: false } },
+  { key: 'new_residents',   title: 'New residents',          description: 'Welcome 25 new residents to your hotel',   progressSource: 'residentsAdded',     threshold: 25,   rewards: { baseCoins: 1600, gems: 1,   hasMaterials: false } },
+  { key: 'easy_money',      title: 'Easy money',             description: 'Collect 10 gems from elevator visitors',   progressSource: 'dailyGemsCollected', threshold: 10,   rewards: { baseCoins: 1300, gems: 1,   hasMaterials: false } },
+  { key: 'investor',        title: 'Investor',               description: 'Purchase 200 gems in the store',           progressSource: 'gemsPurchased',      threshold: 200,  hidden: true, rewards: { baseCoins: 1300, gems: 100, hasMaterials: false } },
+  { key: 'money_collector', title: 'Money Collector',        description: 'Collect 150 products from your businesses', progressSource: 'goodsCollected',    threshold: 150,  rewards: { baseCoins: 1100, gems: 1,   hasMaterials: false } },
+  { key: 'build_floor',     title: 'Higher and higher!',     description: 'Build 1 new floor in your hotel',          progressSource: 'floorsBuilt',        threshold: 1,    rewards: { baseCoins: 1600, gems: 5,   hasMaterials: true  } },
+  { key: 'major_investor',  title: 'Major investor',         description: 'Purchase 1,000 gems in the store',         progressSource: 'gemsPurchased',      threshold: 1000, hidden: true, rewards: { baseCoins: 3200, gems: 200, hasMaterials: false } },
+  { key: 'hasta_la_vista',  title: 'Hasta la vista, Baby!', description: 'Evict 15 residents from your hotel',       progressSource: 'residentsEvicted',   threshold: 15,   rewards: { baseCoins: 1300, gems: 1,   hasMaterials: false } },
+  { key: 'goods_to_sell',   title: 'Goods to sell',         description: 'List 100 products for sale',               progressSource: 'goodsListed',        threshold: 100,  rewards: { baseCoins: 1100, gems: 1,   hasMaterials: false } },
 ];
 
 export function getCoinMultiplier(playerLevel: number): number {

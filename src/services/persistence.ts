@@ -61,6 +61,12 @@ export function loadGameState(): PersistedGameState | null {
           : [],
       openedFloorTypes: parsed.openedFloorTypes ?? {},
       stats: parsed.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
+      tokens: parsed.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+      dailyTasks: parsed.dailyTasks ?? {
+        progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
+        claimed: [],
+        doubleRewardActive: false,
+      },
     };
     const result = GameStateSchema.safeParse(withDefaults);
     if (result.success) {
@@ -70,7 +76,7 @@ export function loadGameState(): PersistedGameState | null {
         stateVersion: typeof parsed.stateVersion === 'number' ? parsed.stateVersion : 0,
         playerLevel: typeof parsed.playerLevel === 'number' ? parsed.playerLevel : 1,
         playerXp: typeof parsed.playerXp === 'number' ? parsed.playerXp : 0,
-        achievementQueue: Array.isArray(parsed.achievementQueue) ? parsed.achievementQueue : [],
+        achievementQueue: [],
         categoryProgress: (parsed.categoryProgress && typeof parsed.categoryProgress === 'object') ? parsed.categoryProgress : {},
       };
     }
@@ -112,8 +118,13 @@ export function saveGameState(state: PersistedGameState): void {
     stats: state.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     coinBonusPercent: state.coinBonusPercent ?? 0,
     xpBonusPercent: state.xpBonusPercent ?? 0,
-    achievementQueue: state.achievementQueue ?? [],
     categoryProgress: state.categoryProgress ?? {},
+    tokens: state.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+    dailyTasks: state.dailyTasks ?? {
+      progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
+      claimed: [],
+      doubleRewardActive: false,
+    },
   }));
 }
 

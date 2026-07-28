@@ -12,6 +12,7 @@ import { useGameStore } from '../../src/stores/gameStore';
 import type { FailedCommandEntry } from '../../src/stores/gameStore';
 import { xpForLevel } from '../../shared/engine/xp';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
+import { DAILY_TASKS } from '../../shared/config/dailyTasksConfig';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
 import { useGameClock } from '../../src/hooks/useGameClock';
@@ -191,6 +192,7 @@ export default function ProfileScreen() {
   const failedCommandLog = useGameStore((s) => s.failedCommandLog);
   const clearFailedCommandLog = useGameStore((s) => s.clearFailedCommandLog);
   const workers = useGameStore((s) => s.workers);
+  const dailyTasks = useGameStore((s) => s.dailyTasks);
   const floors = useGameStore((s) => s.floors);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
   const xpNeeded = xpForLevel(playerLevel);
@@ -334,7 +336,12 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/dayliQuests.png')} style={styles.achievementsIcon} />
-          <Text style={styles.achievementsButtonText}>{tHotel('dailyTasks.title')}</Text>
+          <Text style={styles.achievementsButtonText}>
+            {tHotel('dailyTasks.title')}{' '}
+            <Text style={styles.achievementsButtonSubText}>
+              ({dailyTasks.claimed.filter(k => DAILY_TASKS.find(t => t.key === k && !t.hidden)).length}/{DAILY_TASKS.filter(t => !t.hidden).length})
+            </Text>
+          </Text>
         </Pressable>
 
         <Pressable onPress={handleLogout} style={({ pressed }) => [
@@ -748,6 +755,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#27331F',
+  },
+  achievementsButtonSubText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 14,
+    color: '#9BA3B0',
   },
   logoutButton: {
     marginHorizontal: 20,
