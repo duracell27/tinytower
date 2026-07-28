@@ -759,7 +759,7 @@ const styles = StyleSheet.create({
   achievementsButtonSubText: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 14,
-    color: '#9BA3B0',
+    color: '#27331F',
   },
   logoutButton: {
     marginHorizontal: 20,
