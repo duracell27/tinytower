@@ -3,7 +3,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { generateRandomVisitorRole, generateVisitorAppearance, getFillLobbyCost, checkDailyReset } from '../../shared/engine/lobbyUtils';
-import { generateRandomWorkers } from '../../shared/config/workerNames';
+import { generateRandomWorkers, WORKER_LOOKAHEAD } from '../../shared/config/workerNames';
+import { getBuiltFloorCountForType } from '../../shared/engine/workerUtils';
 import { applyXpGain, xpForCommand, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
 import type { GameState, Command, Floor, Worker, ToolsState } from '../../shared/types';
@@ -572,7 +573,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (role === 'guest' && targetFloor === 1) {
       const hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
       if (hotelOccupied < state.hotelCapacity) {
-        newWorker = generateRandomWorkers(1, gameConfig, undefined, active?.pendingFloorType)[0];
+        const pendingFloorType = active?.pendingFloorType;
+        let maxBizIdx: number | undefined;
+        if (pendingFloorType && gameConfig.floorTypes[pendingFloorType]) {
+          const builtCount = getBuiltFloorCountForType(
+            pendingFloorType, state.floors, state.openedFloorTypes ?? {}, gameConfig,
+          );
+          maxBizIdx = Math.min(
+            builtCount + WORKER_LOOKAHEAD - 1,
+            gameConfig.floorTypes[pendingFloorType].businesses.length - 1,
+          );
+        }
+        newWorker = generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0];
       }
     }
 
@@ -606,7 +618,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const preGeneratedWorkers: ReturnType<typeof generateRandomWorkers>[0][] = [];
     for (const visitor of state.lobbyVisitors) {
       if ((visitor.role ?? 'guest') === 'guest' && visitor.targetFloor === 1 && hotelOccupied < state.hotelCapacity) {
-        preGeneratedWorkers.push(generateRandomWorkers(1, gameConfig, undefined, visitor.pendingFloorType)[0]);
+        const pendingFloorType = visitor.pendingFloorType;
+        let maxBizIdx: number | undefined;
+        if (pendingFloorType && gameConfig.floorTypes[pendingFloorType]) {
+          const builtCount = getBuiltFloorCountForType(
+            pendingFloorType, state.floors, state.openedFloorTypes ?? {}, gameConfig,
+          );
+          maxBizIdx = Math.min(
+            builtCount + WORKER_LOOKAHEAD - 1,
+            gameConfig.floorTypes[pendingFloorType].businesses.length - 1,
+          );
+        }
+        preGeneratedWorkers.push(
+          generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0],
+        );
         hotelOccupied++;
       }
     }
