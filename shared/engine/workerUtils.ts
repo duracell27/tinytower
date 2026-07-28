@@ -1,4 +1,4 @@
-import type { Worker } from '../types';
+import type { Worker, Floor, GameConfig } from '../types';
 
 export const SPECIALIST_UPGRADE_COST = 10;
 
@@ -51,4 +51,20 @@ export function getFloorSpecialistBonus(workers: Worker[], floorId: number): num
     (w) => w.assignedFloorId === floorId && w.isSpecialist,
   ).length;
   return count * 0.09;
+}
+
+export function getBuiltFloorCountForType(
+  floorType: string,
+  floors: Floor[],
+  openedFloorTypes: Record<string, string>,
+  config: GameConfig,
+): number {
+  let count = 0;
+  for (const floor of floors) {
+    const ft =
+      config.floors.find((f) => f.id === floor.id)?.floorType ??
+      openedFloorTypes[String(floor.id)];
+    if (ft === floorType) count++;
+  }
+  return count;
 }

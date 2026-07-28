@@ -129,3 +129,59 @@ describe('getFloorSpecialistBonus', () => {
     expect(getFloorSpecialistBonus(workers, 1)).toBe(0);
   });
 });
+
+import { getBuiltFloorCountForType } from '../workerUtils';
+import type { Floor, GameConfig } from '../../types';
+
+const miniConfig = {
+  floorTypes: {
+    green: { shirtColor: '#0', accent: '#0', businesses: [] },
+    blue:  { shirtColor: '#0', accent: '#0', businesses: [] },
+  },
+  floors: [
+    { id: 1, slots: 1, floorType: 'green', availableTypes: [] },
+    { id: 2, slots: 1, floorType: 'blue',  availableTypes: [] },
+  ],
+  productionTypes: {},
+  startingBalance: 0,
+  hotelCapacity: 0,
+  lobbyConfig: {} as any,
+  floorUnlocks: [],
+} as unknown as GameConfig;
+
+function makeFloor(id: number): Floor {
+  return { id, productions: [] };
+}
+
+describe('getBuiltFloorCountForType', () => {
+  it('returns 0 when no floors exist', () => {
+    expect(getBuiltFloorCountForType('green', [], {}, miniConfig)).toBe(0);
+  });
+
+  it('counts static floors of matching type', () => {
+    const floors = [makeFloor(1), makeFloor(2)];
+    // floor 1 is green (from miniConfig.floors), floor 2 is blue
+    expect(getBuiltFloorCountForType('green', floors, {}, miniConfig)).toBe(1);
+    expect(getBuiltFloorCountForType('blue',  floors, {}, miniConfig)).toBe(1);
+  });
+
+  it('counts dynamic floors via openedFloorTypes', () => {
+    const floors = [makeFloor(1), makeFloor(5), makeFloor(6)];
+    const openedFloorTypes = { '5': 'green', '6': 'green' };
+    // floor 1 static green + floors 5,6 dynamic green = 3
+    expect(getBuiltFloorCountForType('green', floors, openedFloorTypes, miniConfig)).toBe(3);
+  });
+
+  it('ignores floors of a different type', () => {
+    const floors = [makeFloor(2)]; // blue
+    expect(getBuiltFloorCountForType('green', floors, {}, miniConfig)).toBe(0);
+  });
+
+  it('static type takes precedence over openedFloorTypes for same id', () => {
+    // floor 1 is green in config; even if openedFloorTypes says blue, config wins
+    const floors = [makeFloor(1)];
+    const openedFloorTypes = { '1': 'blue' };
+    expect(getBuiltFloorCountForType('green', floors, openedFloorTypes, miniConfig)).toBe(1);
+    expect(getBuiltFloorCountForType('blue',  floors, openedFloorTypes, miniConfig)).toBe(0);
+  });
+});
