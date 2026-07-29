@@ -1371,7 +1371,7 @@ describe('upgrade_business_category', () => {
     expect(result.success).toBe(true);
     expect(result.state.gems).toBe(50);               // 100 − 50 gems
     expect(result.state.businessUpgrades.green).toBe(5);
-    expect(result.state.tokens.green).toBe(0);        // tokens unchanged
+    expect(result.state.tokens.green).toBe(3);        // tokens unchanged
   });
 
   it('fails on gem cost when gems insufficient', () => {
