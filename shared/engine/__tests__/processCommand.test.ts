@@ -1322,6 +1322,114 @@ describe('list_all command', () => {
   });
 });
 
+describe('upgrade_business_category', () => {
+  it('upgrades from level 0 to 1, deducts coins and tokens', () => {
+    const state = makeState({ balance: 10_000, tokens: { green: 5, blue: 0, yellow: 0, purple: 0, red: 0 } });
+    const result = processCommand(
+      state,
+      { id: 'u1', type: 'upgrade_business_category', floorType: 'green', timestamp: 1000 },
+      testConfig, 1000,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.balance).toBe(9_000);         // 10_000 − 1_000
+    expect(result.state.tokens.green).toBe(2);         // 5 − 3
+    expect(result.state.businessUpgrades.green).toBe(1);
+  });
+
+  it('fails when balance is insufficient for coin cost', () => {
+    const state = makeState({ balance: 500, tokens: { green: 10, blue: 0, yellow: 0, purple: 0, red: 0 } });
+    const result = processCommand(
+      state,
+      { id: 'u2', type: 'upgrade_business_category', floorType: 'green', timestamp: 1000 },
+      testConfig, 1000,
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient balance');
+  });
+
+  it('fails when token balance is insufficient', () => {
+    const state = makeState({ balance: 10_000, tokens: { green: 1, blue: 0, yellow: 0, purple: 0, red: 0 } });
+    const result = processCommand(
+      state,
+      { id: 'u3', type: 'upgrade_business_category', floorType: 'green', timestamp: 1000 },
+      testConfig, 1000,
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient tokens');
+  });
+
+  it('level 5 upgrade costs gems (no tokens)', () => {
+    const state = makeState({
+      gems: 100,
+      businessUpgrades: { green: 4, blue: 0, yellow: 0, purple: 0, red: 0 },
+    });
+    const result = processCommand(
+      state,
+      { id: 'u4', type: 'upgrade_business_category', floorType: 'green', timestamp: 1000 },
+      testConfig, 1000,
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(50);               // 100 − 50 gems
+    expect(result.state.businessUpgrades.green).toBe(5);
+    expect(result.state.tokens.green).toBe(0);        // tokens unchanged
+  });
+
+  it('fails on gem cost when gems insufficient', () => {
+    const state = makeState({
+      gems: 10,
+      businessUpgrades: { green: 4, blue: 0, yellow: 0, purple: 0, red: 0 },
+    });
+    const result = processCommand(
+      state,
+      { id: 'u5', type: 'upgrade_business_category', floorType: 'green', timestamp: 1000 },
+      testConfig, 1000,
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient gems');
+  });
+
+  it('fails when already at max level 40', () => {
+    const state = makeState({
+      businessUpgrades: { green: 40, blue: 0, yellow: 0, purple: 0, red: 0 },
+    });
+    const result = processCommand(
+      state,
+      { id: 'u6', type: 'upgrade_business_category', floorType: 'green', timestamp: 1000 },
+      testConfig, 1000,
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Max level reached');
+  });
+
+  it('category bonus applies to collect revenue on matching floor type', () => {
+    // Level 2 on green = +10% profit
+    const state: GameState = {
+      ...stateWithWorker(),
+      balance: 0,
+      businessUpgrades: { green: 2, blue: 0, yellow: 0, purple: 0, red: 0 },
+      floors: [{
+        id: 1,
+        productions: [{
+          typeId: 'coffee_shop',
+          stage: 'SELLING',
+          stageStartedAt: 0,
+        }],
+      }],
+    };
+    const result = processCommand(
+      state,
+      { id: 'c1', type: 'collect', floorId: 1, slotIdx: 0, timestamp: 20_000 },
+      testConfig, 20_000,
+    );
+    expect(result.success).toBe(true);
+    // batchValue=25, workerMultiplier for dream job = 2x, categoryBonus=10%
+    // revenue = floor(25 * 1.10 * 2) = floor(55) = 55
+    expect(result.state.balance).toBeGreaterThan(0);
+    // Without bonus: floor(25 * 1.0 * 2) = 50. With +10%: floor(25 * 1.1 * 2) = 55
+    expect(result.state.balance).toBe(55);
+  });
+});
+
 describe('buy_all command', () => {
   it('buys all eligible idle slots and deducts 1 gem', () => {
     const state = twoFloorState({ balance: 1000, gems: 3 });

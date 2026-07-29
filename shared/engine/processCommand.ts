@@ -2,6 +2,7 @@ import type { GameState, Command, GameConfig, Worker } from '../types';
 import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getFloorSpecialistBonus, getWorkerMood, SPECIALIST_UPGRADE_COST } from './workerUtils';
 import { processLobbyCommand } from './lobbyCommands';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress } from '../config/dailyTasksConfig';
+import { BUSINESS_UPGRADE_COSTS } from '../config/businessUpgradeCosts';
 
 export interface ProcessResult {
   success: boolean;
@@ -553,8 +554,9 @@ function handleCollect(
   const floorType = resolveFloorType(state, config, floorId);
   const workerMultiplier = getRevenueMultiplier(worker, floorType, production.typeId);
   const specialistBonusPercent = Math.round(getFloorSpecialistBonus(state.workers, floorId) * 100);
+  const categoryBonus = (state.businessUpgrades?.[floorType as keyof typeof state.businessUpgrades] ?? 0) * 5;
 
-  const coinMultiplier = 1 + (bonuses.coinPercent + specialistBonusPercent) / 100;
+  const coinMultiplier = 1 + (bonuses.coinPercent + specialistBonusPercent + categoryBonus) / 100;
   const revenue = Math.floor(typeConfig.batchValue * coinMultiplier * workerMultiplier);
 
   const xpMultiplier = 1 + bonuses.xpPercent / 100;
@@ -718,9 +720,41 @@ function handleUpgradeBusinessCategory(
   state: GameState,
   command: Extract<Command, { type: 'upgrade_business_category' }>,
 ): ProcessResult {
-  // Placeholder implementation for Task 1
-  // Actual logic will be implemented in Task 2
-  return { success: false, state, error: 'not implemented' };
+  const { floorType } = command;
+  const currentLevel = state.businessUpgrades?.[floorType] ?? 0;
+  if (currentLevel >= 40) {
+    return { success: false, state, error: 'Max level reached' };
+  }
+  const cost = BUSINESS_UPGRADE_COSTS[currentLevel];
+  const upgradedBusinessUpgrades = {
+    ...(state.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 }),
+    [floorType]: currentLevel + 1,
+  };
+  if (cost.kind === 'gems') {
+    if (state.gems < cost.gems) {
+      return { success: false, state, error: 'Insufficient gems' };
+    }
+    return {
+      success: true,
+      state: { ...state, gems: state.gems - cost.gems, businessUpgrades: upgradedBusinessUpgrades },
+    };
+  }
+  if (state.balance < cost.coins) {
+    return { success: false, state, error: 'Insufficient balance' };
+  }
+  const tokenBalance = state.tokens?.[floorType] ?? 0;
+  if (tokenBalance < cost.tokens) {
+    return { success: false, state, error: 'Insufficient tokens' };
+  }
+  return {
+    success: true,
+    state: {
+      ...state,
+      balance: state.balance - cost.coins,
+      tokens: { ...state.tokens, [floorType]: tokenBalance - cost.tokens },
+      businessUpgrades: upgradedBusinessUpgrades,
+    },
+  };
 }
 
 function updateProduction(
