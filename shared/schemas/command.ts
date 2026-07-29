@@ -195,6 +195,11 @@ export const ClaimDailyTaskCommandSchema = TimestampedBaseSchema.extend({
   materialType: z.enum(['briks', 'glass', 'nails', 'screw']).optional(),
 });
 
+export const UpgradeBusinessCategoryCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('upgrade_business_category'),
+  floorType: z.enum(['green', 'blue', 'yellow', 'purple', 'red']),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -224,4 +229,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   ListAllCommandSchema,
   BuyAllCommandSchema,
   ClaimDailyTaskCommandSchema,
+  UpgradeBusinessCategoryCommandSchema,
 ]);

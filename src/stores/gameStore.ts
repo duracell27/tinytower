@@ -149,14 +149,14 @@ function executeCommand(
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent, tokens, dailyTasks,
+    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks,
   } = store;
   let gameState: GameState = {
     balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent, tokens, dailyTasks,
+    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks,
   };
   // Use real wall-clock time so daily reset fires even when spawn_visitor
   // timestamps are from yesterday (catch-up cadence).

@@ -64,6 +64,8 @@ export function processCommand(
       return handleBuyAll(state, config, now);
     case 'claim_daily_task':
       return handleClaimDailyTask(state, command, playerLevel);
+    case 'upgrade_business_category':
+      return handleUpgradeBusinessCategory(state, command);
   }
 }
 
@@ -710,6 +712,15 @@ function handleFireAndEvictWorker(
       workers: state.workers.filter((w) => w.id !== command.workerId),
     },
   };
+}
+
+function handleUpgradeBusinessCategory(
+  state: GameState,
+  command: Extract<Command, { type: 'upgrade_business_category' }>,
+): ProcessResult {
+  // Placeholder implementation for Task 1
+  // Actual logic will be implemented in Task 2
+  return { success: true, state };
 }
 
 function updateProduction(

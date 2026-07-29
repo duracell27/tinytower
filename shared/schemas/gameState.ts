@@ -39,6 +39,14 @@ export const TokensSchema = z.object({
   red:    z.number().int().nonnegative().default(0),
 });
 
+export const BusinessUpgradesSchema = z.object({
+  green:  z.number().int().min(0).max(40).default(0),
+  blue:   z.number().int().min(0).max(40).default(0),
+  yellow: z.number().int().min(0).max(40).default(0),
+  purple: z.number().int().min(0).max(40).default(0),
+  red:    z.number().int().min(0).max(40).default(0),
+});
+
 export const DailyTaskProgressSchema = z.object({
   visitorsLifted:   z.number().int().nonnegative().default(0),
   vipsLifted:       z.number().int().nonnegative().default(0),
@@ -91,6 +99,7 @@ export const GameStateSchema = z.object({
   coinBonusPercent: z.number().int().nonnegative().default(0),
   xpBonusPercent:   z.number().int().nonnegative().default(0),
   tokens:     TokensSchema.default({ green: 0, blue: 0, yellow: 0, purple: 0, red: 0 }),
+  businessUpgrades: BusinessUpgradesSchema.default({ green: 0, blue: 0, yellow: 0, purple: 0, red: 0 }),
   dailyTasks: DailyTasksSchema.default({
     progress: {
       visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
