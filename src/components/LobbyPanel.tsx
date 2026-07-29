@@ -26,7 +26,8 @@ import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, 
 import { gameConfig } from '../../shared/config/gameConfig';
 import type { Visitor, VisitorRole, Worker } from '../../shared/types';
 import { Image } from 'expo-image';
-import DeliverAllModal, { type DeliverAllSummary } from './DeliverAllModal';
+import DeliverAllModal from './DeliverAllModal';
+import type { DeliverAllSummary } from '../stores/gameStore';
 import WorkerAvatar from './WorkerAvatar';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
