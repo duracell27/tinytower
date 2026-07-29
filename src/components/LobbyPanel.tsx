@@ -396,6 +396,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
   const builderToolDrop = useGameStore((s) => s.builderToolDrop);
   const clearBuilderToolDrop = useGameStore((s) => s.clearBuilderToolDrop);
+  const clearPendingDeliverAll = useGameStore((s) => s.clearPendingDeliverAll);
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -443,8 +444,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       setHotelFullNotice(false);
       setNewWorkerPopup(null);
       clearBuilderToolDrop();
+      clearPendingDeliverAll();
     }
-  }, [visible, clearBuilderToolDrop]);
+  }, [visible, clearBuilderToolDrop, clearPendingDeliverAll]);
 
   useEffect(() => {
     if (visible) {

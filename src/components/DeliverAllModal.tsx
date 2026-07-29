@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Dimensions, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -45,69 +45,71 @@ export default function DeliverAllModal({ visible, summary, onDismiss }: Deliver
   if (!visible || !summary) return null;
 
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
-        <Animated.View style={[styles.card, cardStyle]}>
-          <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={styles.cardGradient}>
-            <Text style={styles.title}>{t('deliverAll.title')}</Text>
+    <Modal visible transparent animationType="none" onRequestClose={onDismiss}>
+      <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
+          <Animated.View style={[styles.card, cardStyle]}>
+            <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={styles.cardGradient}>
+              <Text style={styles.title}>{t('deliverAll.title')}</Text>
 
-            {summary.guestCount > 0 && (
-              <View style={styles.row}>
-                <Text style={styles.rowLabel}>{t('deliverAll.rows.guests', { count: summary.guestCount })}</Text>
-              </View>
-            )}
-            {summary.businessmanCount > 0 && (
-              <View style={styles.row}>
-                <Text style={styles.rowLabel}>{t('deliverAll.rows.businessmen', { count: summary.businessmanCount })}</Text>
-              </View>
-            )}
-            {summary.delivererCount > 0 && (
-              <View style={styles.row}>
-                <Text style={styles.rowLabel}>{t('deliverAll.rows.deliverers', { count: summary.delivererCount })}</Text>
-              </View>
-            )}
-            {summary.sellerCount > 0 && (
-              <View style={styles.row}>
-                <Text style={styles.rowLabel}>{t('deliverAll.rows.sellers', { count: summary.sellerCount })}</Text>
-              </View>
-            )}
-            {summary.builderCount > 0 && (
-              <View style={styles.row}>
-                <Text style={styles.rowLabel}>{t('deliverAll.rows.builders', { count: summary.builderCount })}</Text>
-              </View>
-            )}
-            {summary.newWorkers > 0 && (
-              <View style={styles.row}>
-                <Text style={styles.rowLabel}>{t('deliverAll.rows.newWorkers', { count: summary.newWorkers })}</Text>
-              </View>
-            )}
-
-            <View style={styles.divider} />
-
-            <View style={styles.totalRow}>
-              {summary.totalCoins > 0 && (
-                <View style={styles.totalChip}>
-                  <CoinIcon size={16} />
-                  <Text style={styles.totalCoinsText}>+{formatNum(summary.totalCoins)}</Text>
+              {summary.guestCount > 0 && (
+                <View style={styles.row}>
+                  <Text style={styles.rowLabel}>{t('deliverAll.rows.guests', { count: summary.guestCount })}</Text>
                 </View>
               )}
-              {summary.totalGems > 0 && (
-                <View style={styles.totalChip}>
-                  <GemIcon size={14} />
-                  <Text style={styles.totalGemsText}>+{summary.totalGems}</Text>
+              {summary.businessmanCount > 0 && (
+                <View style={styles.row}>
+                  <Text style={styles.rowLabel}>{t('deliverAll.rows.businessmen', { count: summary.businessmanCount })}</Text>
                 </View>
               )}
-            </View>
+              {summary.delivererCount > 0 && (
+                <View style={styles.row}>
+                  <Text style={styles.rowLabel}>{t('deliverAll.rows.deliverers', { count: summary.delivererCount })}</Text>
+                </View>
+              )}
+              {summary.sellerCount > 0 && (
+                <View style={styles.row}>
+                  <Text style={styles.rowLabel}>{t('deliverAll.rows.sellers', { count: summary.sellerCount })}</Text>
+                </View>
+              )}
+              {summary.builderCount > 0 && (
+                <View style={styles.row}>
+                  <Text style={styles.rowLabel}>{t('deliverAll.rows.builders', { count: summary.builderCount })}</Text>
+                </View>
+              )}
+              {summary.newWorkers > 0 && (
+                <View style={styles.row}>
+                  <Text style={styles.rowLabel}>{t('deliverAll.rows.newWorkers', { count: summary.newWorkers })}</Text>
+                </View>
+              )}
 
-            <Pressable onPress={onDismiss} style={({ pressed }) => [styles.button, pressed && { opacity: 0.85 }]}>
-              <LinearGradient colors={['#6C7C92', '#56657C']} style={styles.buttonGradient}>
-                <Text style={styles.buttonText}>{t('deliverAll.done')}</Text>
-              </LinearGradient>
-              <View style={styles.buttonShadow} />
-            </Pressable>
-          </LinearGradient>
-        </Animated.View>
-    </Animated.View>
+              <View style={styles.divider} />
+
+              <View style={styles.totalRow}>
+                {summary.totalCoins > 0 && (
+                  <View style={styles.totalChip}>
+                    <CoinIcon size={16} />
+                    <Text style={styles.totalCoinsText}>+{formatNum(summary.totalCoins)}</Text>
+                  </View>
+                )}
+                {summary.totalGems > 0 && (
+                  <View style={styles.totalChip}>
+                    <GemIcon size={14} />
+                    <Text style={styles.totalGemsText}>+{summary.totalGems}</Text>
+                  </View>
+                )}
+              </View>
+
+              <Pressable onPress={onDismiss} style={({ pressed }) => [styles.button, pressed && { opacity: 0.85 }]}>
+                <LinearGradient colors={['#6C7C92', '#56657C']} style={styles.buttonGradient}>
+                  <Text style={styles.buttonText}>{t('deliverAll.done')}</Text>
+                </LinearGradient>
+                <View style={styles.buttonShadow} />
+              </Pressable>
+            </LinearGradient>
+          </Animated.View>
+      </Animated.View>
+    </Modal>
   );
 }
 
