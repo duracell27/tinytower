@@ -11,7 +11,7 @@ model Player {
   id                 String              @id @default(uuid())
   email              String              @unique
   passwordHash       String
-  playerName         String
+  playerName         String              @unique
   balance            Int                 @default(100)
   stateVersion       Int                 @default(0)
   playerLevel        Int                 @default(1)

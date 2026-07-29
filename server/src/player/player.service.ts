@@ -21,6 +21,10 @@ export class PlayerService {
     return this.prisma.player.findUnique({ where: { id } });
   }
 
+  async findByPlayerName(playerName: string) {
+    return this.prisma.player.findFirst({ where: { playerName: { equals: playerName, mode: 'insensitive' } } });
+  }
+
   async findByReferralCode(code: string) {
     return this.prisma.player.findUnique({ where: { referralCode: code } });
   }

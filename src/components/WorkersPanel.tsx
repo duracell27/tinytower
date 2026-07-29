@@ -18,6 +18,7 @@ import { clock } from '../services/clock';
 import WorkerCard from './WorkerCard';
 import WorkerJobCard, { getProductionTimeRemaining } from './WorkerJobCard';
 import JobPickerSheet from './JobPickerSheet';
+import InsufficientResourcesModal from './InsufficientResourcesModal';
 import type { Worker, Floor } from '../../shared/types';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -542,6 +543,7 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
           />
 
         </Animated.View>
+        <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
   );

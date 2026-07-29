@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ImageBackground, Image, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { InfoSection } from '../src/components/InfoSection';
 import { useGameStore } from '../src/stores/gameStore';
 import {
   ACHIEVEMENT_CATEGORIES,
@@ -60,6 +62,7 @@ function ProgressBar({ value, max }: { value: number; max: number }) {
 
 export default function AchievementsScreen() {
   const categoryProgress = useGameStore(s => s.categoryProgress);
+  const [infoVisible, setInfoVisible] = useState(false);
 
   return (
     <ImageBackground
@@ -73,7 +76,15 @@ export default function AchievementsScreen() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.heading}>Achievements</Text>
+        <View style={styles.headingRow}>
+          <Text style={styles.heading}>Achievements</Text>
+          <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
+            <Image
+              source={require('../assets/img/InformationIcon.png')}
+              style={styles.infoIcon}
+            />
+          </Pressable>
+        </View>
 
         {ACHIEVEMENT_CATEGORIES.map(category => {
           const prog = categoryProgress[category.key] ?? { progress: 0, currentLevel: 0, claimedLevels: [] };
@@ -152,6 +163,41 @@ export default function AchievementsScreen() {
       >
         <Text style={styles.closeBtnText}>✕</Text>
       </Pressable>
+
+      {infoVisible && (
+        <View style={styles.infoOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
+          <View style={styles.infoCard}>
+            <LinearGradient colors={['#5B8CD6', '#3A6BB5']} style={styles.infoCardHeader}>
+              <Text style={styles.infoCardTitle}>Achievements</Text>
+              <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
+                <Text style={styles.infoCardClose}>✕</Text>
+              </Pressable>
+            </LinearGradient>
+            <View style={styles.infoCardBody}>
+              <InfoSection
+                icon={require('../assets/img/achivment/1TierAchive.png')}
+                title="Achievement Ranks"
+                text="Each category has 7 ranks to unlock by reaching in-game milestones — buying goods, lifting visitors, collecting revenue, and more."
+                accentColor="rgba(90,140,214,0.25)"
+              />
+              <InfoSection
+                icon={require('../assets/img/diamond.png')}
+                title="Gem Rewards"
+                text="Completing each rank earns gems. Higher ranks give more gems per completion."
+                accentColor="rgba(90,140,214,0.25)"
+              />
+              <InfoSection
+                icon={require('../assets/img/greenArrowUp.png')}
+                title="Income & XP Bonuses"
+                text="Some ranks also grant a permanent income or XP bonus that applies to all future earnings."
+                accentColor="rgba(90,140,214,0.25)"
+                isLast
+              />
+            </View>
+          </View>
+        </View>
+      )}
     </ImageBackground>
   );
 }
@@ -164,11 +210,56 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
     gap: 14,
   },
+  headingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
   heading: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 28,
     color: '#27331F',
-    marginBottom: 6,
+  },
+  infoIcon: {
+    width: 20,
+    height: 20,
+    opacity: 0.8,
+  },
+  infoOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(18,26,44,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  infoCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  infoCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingVertical: 13,
+  },
+  infoCardTitle: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 17,
+    color: '#fff',
+  },
+  infoCardClose: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 16,
+    fontFamily: 'Fredoka_600SemiBold',
+  },
+  infoCardBody: {
+    paddingHorizontal: 14,
+    paddingTop: 4,
+    paddingBottom: 8,
   },
 
   // Card

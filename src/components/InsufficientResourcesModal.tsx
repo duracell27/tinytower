@@ -35,7 +35,7 @@ function GemIcon() {
   return <Image source={require('../../assets/img/diamond.png')} style={{ width: 16, height: 16 }} contentFit="contain" />;
 }
 
-export default function InsufficientResourcesModal() {
+export default function InsufficientResourcesModal({ asOverlay = false }: { asOverlay?: boolean }) {
   const { t } = useTranslation('common');
   const payload = useGameStore((s) => s.insufficientResources);
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
@@ -222,6 +222,10 @@ export default function InsufficientResourcesModal() {
         </Animated.View>
       </Animated.View>
   );
+
+  if (asOverlay) {
+    return <View style={StyleSheet.absoluteFill}>{inner}</View>;
+  }
 
   return (
     <Modal transparent animationType="none" onRequestClose={clearInsufficientResources}>

@@ -5,6 +5,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { InfoSection } from '../src/components/InfoSection';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../src/stores/gameStore';
@@ -80,6 +81,7 @@ export default function DailyTasksScreen() {
     const id = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(id);
   }, []);
+  const [infoVisible, setInfoVisible] = useState(false);
 
   const resetAt     = lastDailyReset + 24 * 60 * 60 * 1000;
   const msUntilReset = resetAt - now;
@@ -100,7 +102,15 @@ export default function DailyTasksScreen() {
       <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.heading}>{t('dailyTasks.title')}</Text>
+        <View style={styles.headingRow}>
+          <Text style={styles.heading}>{t('dailyTasks.title')}</Text>
+          <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
+            <Image
+              source={require('../assets/img/InformationIcon.png')}
+              style={styles.infoIcon}
+            />
+          </Pressable>
+        </View>
 
         <View style={styles.tokenRow}>
           {(['green', 'blue', 'yellow', 'purple', 'red'] as const).map((color) => (
@@ -225,6 +235,46 @@ export default function DailyTasksScreen() {
         <Text style={styles.closeBtnText}>✕</Text>
       </Pressable>
 
+      {infoVisible && (
+        <View style={styles.infoOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
+          <View style={styles.infoCard}>
+            <LinearGradient colors={['#E5A72E', '#C48A18']} style={styles.infoCardHeader}>
+              <Text style={styles.infoCardTitle}>{t('dailyTasks.title')}</Text>
+              <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
+                <Text style={styles.infoCardClose}>✕</Text>
+              </Pressable>
+            </LinearGradient>
+            <View style={styles.infoCardBody}>
+              <InfoSection
+                icon={require('../assets/img/daily/dailytransporter.png')}
+                title="Daily Challenges"
+                text="Complete 9 tasks each day: buy, list, and collect goods, lift visitors and VIPs, add residents, spend gems, and more."
+                accentColor="rgba(229,167,46,0.3)"
+              />
+              <InfoSection
+                icon={require('../assets/img/coin.png')}
+                title="Rewards"
+                text="Each completed task gives coins and building materials (bricks, glass, nails, screws)."
+                accentColor="rgba(229,167,46,0.3)"
+              />
+              <InfoSection
+                icon={require('../assets/img/tokens/tokenGreen.png')}
+                title="Tokens"
+                text="Tasks also reward coloured tokens used to upgrade your business categories in My Business."
+                accentColor="rgba(229,167,46,0.3)"
+              />
+              <InfoSection
+                icon={require('../assets/img/diamond.png')}
+                title="×2 Bonus Day"
+                text="Complete 7 tasks to unlock double rewards for the following day. Resets at midnight."
+                accentColor="rgba(229,167,46,0.3)"
+                isLast
+              />
+            </View>
+          </View>
+        </View>
+      )}
     </ImageBackground>
   );
 }
@@ -232,7 +282,24 @@ export default function DailyTasksScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { paddingTop: 64, paddingHorizontal: 16, paddingBottom: 120, gap: 12 },
-  heading: { fontFamily: 'Fredoka_700Bold', fontSize: 28, color: '#27331F', marginBottom: 4 },
+  headingRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  heading: { fontFamily: 'Fredoka_700Bold', fontSize: 28, color: '#27331F' },
+  infoIcon: { width: 20, height: 20, opacity: 0.8 },
+  infoOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(18,26,44,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  infoCard: { width: '100%', backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden' },
+  infoCardHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 18, paddingVertical: 13,
+  },
+  infoCardTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#fff' },
+  infoCardClose: { color: 'rgba(255,255,255,0.85)', fontSize: 16, fontFamily: 'Fredoka_600SemiBold' },
+  infoCardBody: { paddingHorizontal: 14, paddingTop: 4, paddingBottom: 8 },
 
   tokenRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 4, justifyContent: 'center' },
   tokenChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },

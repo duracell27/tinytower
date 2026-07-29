@@ -29,6 +29,8 @@ import { Image } from 'expo-image';
 import WorkerAvatar from './WorkerAvatar';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
+import InsufficientResourcesModal from './InsufficientResourcesModal';
+import DeliverAllModal from './DeliverAllModal';
 
 type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
 const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
@@ -394,8 +396,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const claimDailyReward = useGameStore((s) => s.claimDailyReward);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
+  const insufficientResources = useGameStore((s) => s.insufficientResources);
   const builderToolDrop = useGameStore((s) => s.builderToolDrop);
   const clearBuilderToolDrop = useGameStore((s) => s.clearBuilderToolDrop);
+  const pendingDeliverAll = useGameStore((s) => s.pendingDeliverAll);
   const clearPendingDeliverAll = useGameStore((s) => s.clearPendingDeliverAll);
 
   const scrimOpacity = useSharedValue(0);
@@ -458,8 +462,15 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     }
   }, [visible]);
 
+  // Disable pan-to-dismiss while any overlay popup is active; otherwise the pan
+  // gesture competes with the popup's Pressable scrim and produces unpredictable
+  // touch behaviour on iOS (feels like "interface blocked").
+  const hasActivePopup =
+    !!hotelFullNotice || !!newWorkerPopup || !!builderToolDrop ||
+    !!pendingDeliverAll || infoVisible || !!insufficientResources;
+
   const panGesture = Gesture.Pan()
-    .enabled(visible)
+    .enabled(visible && !hasActivePopup)
     .onUpdate((e) => {
       if (e.translationY > 0) {
         translateY.value = e.translationY;
@@ -486,7 +497,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   }));
 
   useEffect(() => {
-    if (!visible) clearInsufficientResources();
+    // Clear stale insufficientResources on both open and close — prevents a stale
+    // overlay set outside the panel from appearing when the panel is opened.
+    clearInsufficientResources();
   }, [visible, clearInsufficientResources]);
 
   // Ref to suppress new-worker popup during deliverAll (which shows its own summary instead)
@@ -1177,6 +1190,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
           </Pressable>
         )}
 
+        {/* Deliver All summary popup — View overlay inside this Modal (original design) */}
+        <DeliverAllModal
+          asOverlay
+          visible={!!pendingDeliverAll}
+          summary={pendingDeliverAll}
+          onDismiss={clearPendingDeliverAll}
+        />
+
         {/* Lobby info popup */}
         {infoVisible && (
           <View style={infoStyles.scrim}>
@@ -1227,6 +1248,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             </View>
           </View>
         )}
+        <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
     </>

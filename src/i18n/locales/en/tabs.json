@@ -54,6 +54,24 @@
       "happy": "Happy",
       "specialists": "Specialists"
     },
+    "menuInfo": {
+      "achievements": {
+        "title": "Achievements",
+        "description": "Track your progress across all achievement categories. Each level you complete earns gems and a permanent income or XP bonus."
+      },
+      "referrals": {
+        "title": "Referrals",
+        "description": "Invite friends to play. You earn rewards when they register, reach level 10, or level 30, and a bonus whenever referred players make in-game purchases."
+      },
+      "myBusiness": {
+        "title": "My Business",
+        "description": "View your unlocked floor types and upgrade their revenue bonus by spending tokens. Each upgrade adds +5% to earnings for that business category."
+      },
+      "dailyTasks": {
+        "title": "Daily Tasks",
+        "description": "Complete 9 daily challenges — buy, list, collect goods, lift visitors, and more — to earn coins, building materials, and tokens. Resets every day at midnight."
+      }
+    },
     "sync": {
       "online": "You're online",
       "pending_one": "{{count}} command not synced",

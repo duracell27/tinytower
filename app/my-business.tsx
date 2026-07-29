@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, ImageBackground } from 'react-native';
 import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import { InfoSection } from '../src/components/InfoSection';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../src/stores/gameStore';
@@ -45,6 +47,7 @@ export default function MyBusinessScreen() {
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const floors           = useGameStore((s) => s.floors);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const [infoVisible, setInfoVisible] = useState(false);
 
   return (
     <ImageBackground
@@ -57,6 +60,13 @@ export default function MyBusinessScreen() {
 
         <View style={styles.header}>
           <Text style={styles.title}>{tHotel('myBusiness.title')}</Text>
+          <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
+            <Image
+              source={require('../assets/img/InformationIcon.png')}
+              style={styles.infoIcon}
+              contentFit="contain"
+            />
+          </Pressable>
         </View>
 
         <Text style={styles.subtitle}>{tHotel('myBusiness.subtitle')}</Text>
@@ -122,6 +132,47 @@ export default function MyBusinessScreen() {
       >
         <Text style={styles.closeBtnText}>✕</Text>
       </Pressable>
+
+      {infoVisible && (
+        <View style={styles.infoOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
+          <View style={styles.infoCard}>
+            <LinearGradient colors={['#3FA535', '#2C7A25']} style={styles.infoCardHeader}>
+              <Text style={styles.infoCardTitle}>{tHotel('myBusiness.title')}</Text>
+              <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
+                <Text style={styles.infoCardClose}>✕</Text>
+              </Pressable>
+            </LinearGradient>
+            <View style={styles.infoCardBody}>
+              <InfoSection
+                icon={require('../assets/img/profile/myBusiness.png')}
+                title="Business Categories"
+                text="Each floor type (green, blue, yellow, purple, red) is a category. Upgrade them to boost earnings on all floors of that type."
+                accentColor="rgba(63,165,53,0.25)"
+              />
+              <InfoSection
+                icon={require('../assets/img/tokens/tokenGreen.png')}
+                title="Tokens"
+                text="Spend coloured tokens to upgrade a category. Each token colour matches a specific floor type. Tokens are earned from daily tasks."
+                accentColor="rgba(63,165,53,0.25)"
+              />
+              <InfoSection
+                icon={require('../assets/img/diamond+percent.png')}
+                title="+5% Per Level"
+                text="Each upgrade adds +5% to coins earned when collecting goods from that floor type."
+                accentColor="rgba(63,165,53,0.25)"
+              />
+              <InfoSection
+                icon={require('../assets/img/achivment/7TierAchive.png')}
+                title="Maximum Level"
+                text="Each category can be upgraded up to level 40, for a maximum bonus of +200%."
+                accentColor="rgba(63,165,53,0.25)"
+                isLast
+              />
+            </View>
+          </View>
+        </View>
+      )}
     </ImageBackground>
   );
 }
@@ -130,6 +181,22 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { paddingBottom: 120 },
   header: { flexDirection: 'row', alignItems: 'center', marginTop: 60, marginHorizontal: 20, gap: 12 },
+  infoIcon: { width: 20, height: 20, opacity: 0.8 },
+  infoOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(18,26,44,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  infoCard: { width: '100%', backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden' },
+  infoCardHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 18, paddingVertical: 13,
+  },
+  infoCardTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#fff' },
+  infoCardClose: { color: 'rgba(255,255,255,0.85)', fontSize: 16, fontFamily: 'Fredoka_600SemiBold' },
+  infoCardBody: { paddingHorizontal: 14, paddingTop: 4, paddingBottom: 8 },
   backBtn: { padding: 4 },
   backText: { fontSize: 28, color: '#27331F', fontFamily: 'Fredoka_600SemiBold', lineHeight: 32 },
   title: { fontFamily: 'Fredoka_700Bold', fontSize: 24, color: '#27331F' },

@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
   Share, ActivityIndicator, TextInput, ImageBackground,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { InfoSection } from '../components/InfoSection';
 import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import * as Clipboard from 'expo-clipboard';
@@ -118,6 +120,7 @@ export default function ReferralScreen() {
   const [inputCode, setInputCode] = React.useState('');
   const [applyError, setApplyError] = React.useState('');
   const [codeExpanded, setCodeExpanded] = React.useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
   const chevronRotation = useSharedValue(0);
   const chevronStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${chevronRotation.value}deg` }],
@@ -179,7 +182,16 @@ export default function ReferralScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={styles.heading}>Referrals</Text>
+          <View style={styles.headingRow}>
+            <Text style={styles.heading}>Referrals</Text>
+            <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
+              <Image
+                source={require('../../assets/img/InformationIcon.png')}
+                style={styles.infoIcon}
+                contentFit="contain"
+              />
+            </Pressable>
+          </View>
 
           {hasUsedCode === false && (
             <View style={styles.applyCard}>
@@ -269,6 +281,47 @@ export default function ReferralScreen() {
       >
         <Text style={styles.closeBtnText}>✕</Text>
       </Pressable>
+
+      {infoVisible && (
+        <View style={styles.infoOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
+          <View style={styles.infoCard}>
+            <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.infoCardHeader}>
+              <Text style={styles.infoCardTitle}>Referrals</Text>
+              <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
+                <Text style={styles.infoCardClose}>✕</Text>
+              </Pressable>
+            </LinearGradient>
+            <View style={styles.infoCardBody}>
+              <InfoSection
+                icon={require('../../assets/img/profile/ReferralProfileIcon.png')}
+                title="Your Referral Code"
+                text="Share your unique code or link with friends. They enter it when registering to link you as their referrer."
+                accentColor="rgba(201,99,126,0.3)"
+              />
+              <InfoSection
+                icon={require('../../assets/img/OkIcon.png')}
+                title="Milestone Rewards"
+                text="Earn coins when your friend registers, and gems when they reach level 10 or level 30."
+                accentColor="rgba(201,99,126,0.3)"
+              />
+              <InfoSection
+                icon={require('../../assets/img/diamond+percent.png')}
+                title="Purchase Bonus"
+                text="You receive a gem bonus whenever a player you referred makes an in-game purchase."
+                accentColor="rgba(201,99,126,0.3)"
+              />
+              <InfoSection
+                icon={require('../../assets/img/sandClock.png')}
+                title="Have a Referral Code?"
+                text="If someone shared a code with you, tap the section below to enter it — both players receive a bonus."
+                accentColor="rgba(201,99,126,0.3)"
+                isLast
+              />
+            </View>
+          </View>
+        </View>
+      )}
     </ImageBackground>
   );
 }
@@ -276,12 +329,28 @@ export default function ReferralScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  headingRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
   heading: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 28,
     color: '#27331F',
-    marginBottom: 6,
   },
+  infoIcon: { width: 20, height: 20, opacity: 0.8 },
+  infoOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(18,26,44,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  infoCard: { width: '100%', backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden' },
+  infoCardHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 18, paddingVertical: 13,
+  },
+  infoCardTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#fff' },
+  infoCardClose: { color: 'rgba(255,255,255,0.85)', fontSize: 16, fontFamily: 'Fredoka_600SemiBold' },
+  infoCardBody: { paddingHorizontal: 14, paddingTop: 4, paddingBottom: 8 },
   scroll: { paddingTop: 64, paddingHorizontal: 20, paddingBottom: 120, gap: 12 },
   closeBtn: {
     position: 'absolute',

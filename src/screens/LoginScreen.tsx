@@ -54,6 +54,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
   const [playerName, setPlayerName] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const isLogin = tab === 'login';
   const isLoading = useAuthStore((s) => s.isLoading);
@@ -68,6 +69,11 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
     if (!isLogin && !playerName.trim()) {
       setError(t('login.errors.enterPlayerName'));
+      return;
+    }
+
+    if (!isLogin && !termsAccepted) {
+      setError(t('login.errors.acceptTerms'));
       return;
     }
 
@@ -96,6 +102,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
   const handleTabSwitch = (newTab: 'login' | 'register') => {
     setTab(newTab);
     setError('');
+    setTermsAccepted(false);
   };
 
   return (
@@ -236,9 +243,12 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                 </Pressable>
               </View>
             ) : (
-              <View style={styles.checkboxRow}>
-                <View style={styles.checkbox}>
-                  <View style={styles.checkmark} />
+              <Pressable
+                onPress={() => setTermsAccepted(!termsAccepted)}
+                style={styles.checkboxRow}
+              >
+                <View style={[styles.checkbox, !termsAccepted && styles.checkboxUnchecked]}>
+                  {termsAccepted && <View style={styles.checkmark} />}
                 </View>
                 <Text style={styles.checkboxText}>
                   {t('login.terms.accept')}
@@ -246,7 +256,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                   {t('login.terms.and')}
                   <Text style={styles.checkboxLink}>{t('login.terms.privacyPolicy')}</Text>
                 </Text>
-              </View>
+              </Pressable>
             )}
 
             {/* Submit button */}
@@ -501,6 +511,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 0,
     elevation: 2,
+  },
+  checkboxUnchecked: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#D0CCC0',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   checkmark: {
     width: 5,

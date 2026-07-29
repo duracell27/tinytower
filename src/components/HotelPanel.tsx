@@ -30,6 +30,7 @@ import { getHotelExpansionCost } from '../../shared/engine/lobbyCommands';
 import { gameConfig } from '../../shared/config/gameConfig';
 import type { Worker, Floor } from '../../shared/types';
 import { isBetterCandidate } from '../utils/workerCandidate';
+import InsufficientResourcesModal from './InsufficientResourcesModal';
 import { GemIcon } from './CurrencyIcons';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -380,6 +381,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           )}
         </Animated.View>
 
+        <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
   );

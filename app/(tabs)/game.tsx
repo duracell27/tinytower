@@ -102,8 +102,8 @@ export default function GameScreen() {
   const businessUpgrades  = useGameStore((s) => s.businessUpgrades);
 
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now),
-    [floors, workers, openedFloorTypes, now],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent],
   );
 
   const hasBetterWorker = React.useMemo(

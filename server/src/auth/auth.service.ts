@@ -29,6 +29,9 @@ export class AuthService {
     const existing = await this.playerService.findByEmail(email);
     if (existing) throw new ConflictException('Email already registered');
 
+    const nameTaken = await this.playerService.findByPlayerName(dto.playerName.trim());
+    if (nameTaken) throw new ConflictException('Player name already taken');
+
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const player = await this.playerService.createWithInitialState(
       email, passwordHash, dto.playerName,

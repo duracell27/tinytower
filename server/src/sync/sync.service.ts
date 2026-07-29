@@ -369,6 +369,9 @@ export class SyncService {
               selectedFloorType: uc.selectedFloorType ?? null,
             },
             update: {
+              startedAt: BigInt(uc.startedAt),
+              durationMs: uc.durationMs,
+              requiredTools: uc.requiredTools,
               selectedFloorType: uc.selectedFloorType ?? null,
             },
           });

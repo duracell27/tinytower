@@ -7,13 +7,8 @@ import DailyLoginRewardModal from './DailyLoginRewardModal';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
 import TokenInsufficientModal from './TokenInsufficientModal';
 import TaskRewardModal from './TaskRewardModal';
-import DeliverAllModal from './DeliverAllModal';
-import { useGameStore } from '../stores/gameStore';
 
 export default function GlobalOverlay() {
-  const pendingDeliverAll      = useGameStore((s) => s.pendingDeliverAll);
-  const clearPendingDeliverAll = useGameStore((s) => s.clearPendingDeliverAll);
-
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <AchievementModal />
@@ -23,11 +18,6 @@ export default function GlobalOverlay() {
       <InsufficientResourcesModal />
       <TokenInsufficientModal />
       <TaskRewardModal />
-      <DeliverAllModal
-        visible={pendingDeliverAll !== null}
-        summary={pendingDeliverAll}
-        onDismiss={clearPendingDeliverAll}
-      />
     </View>
   );
 }

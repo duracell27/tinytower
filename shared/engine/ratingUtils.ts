@@ -7,12 +7,16 @@ export function calcRevenuePerMin(
   openedFloorTypes: Record<string, string>,
   config: GameConfig,
   now: number,
+  businessUpgrades?: Record<string, number>,
+  coinBonusPercent?: number,
 ): number {
   let total = 0;
   for (const floor of floors) {
     const floorConfig = config.floors.find((f) => f.id === floor.id);
     const floorType = floorConfig?.floorType ?? openedFloorTypes[String(floor.id)] ?? null;
-    const specialistBonus = getFloorSpecialistBonus(workers, floor.id);
+    const specialistBonusPercent = Math.round(getFloorSpecialistBonus(workers, floor.id) * 100);
+    const categoryBonus = floorType ? (businessUpgrades?.[floorType] ?? 0) * 5 : 0;
+    const coinMultiplier = 1 + ((coinBonusPercent ?? 0) + specialistBonusPercent + categoryBonus) / 100;
 
     floor.productions.forEach((production, slotIdx) => {
       if (production.stage !== 'SELLING' || !production.typeId) return;
@@ -25,7 +29,7 @@ export function calcRevenuePerMin(
         ? getRevenueMultiplier(worker, floorType, production.typeId)
         : 1;
 
-      const effectiveRevenue = Math.floor(typeConfig.batchValue * multiplier * (1 + specialistBonus));
+      const effectiveRevenue = Math.floor(typeConfig.batchValue * coinMultiplier * multiplier);
       const sellDurationMinutes = typeConfig.sellDuration / 60_000;
       total += Math.floor(effectiveRevenue / sellDurationMinutes);
     });

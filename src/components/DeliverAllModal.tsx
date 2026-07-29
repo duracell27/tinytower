@@ -18,10 +18,11 @@ interface DeliverAllModalProps {
   visible: boolean;
   summary: DeliverAllSummary | null;
   onDismiss: () => void;
+  asOverlay?: boolean;
 }
 
 
-export default function DeliverAllModal({ visible, summary, onDismiss }: DeliverAllModalProps) {
+export default function DeliverAllModal({ visible, summary, onDismiss, asOverlay = false }: DeliverAllModalProps) {
   const { t } = useTranslation('hotel');
   const scale = useSharedValue(0.5);
   const opacity = useSharedValue(0);
@@ -44,11 +45,10 @@ export default function DeliverAllModal({ visible, summary, onDismiss }: Deliver
 
   if (!visible || !summary) return null;
 
-  return (
-    <Modal visible transparent animationType="none" onRequestClose={onDismiss}>
-      <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
-          <Animated.View style={[styles.card, cardStyle]}>
+  const inner = (
+    <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]}>
+      <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
+        <Animated.View style={[styles.card, cardStyle]}>
             <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={styles.cardGradient}>
               <Text style={styles.title}>{t('deliverAll.title')}</Text>
 
@@ -109,6 +109,14 @@ export default function DeliverAllModal({ visible, summary, onDismiss }: Deliver
             </LinearGradient>
           </Animated.View>
       </Animated.View>
+  );
+
+  if (asOverlay) {
+    return <View style={StyleSheet.absoluteFill}>{inner}</View>;
+  }
+  return (
+    <Modal visible transparent animationType="none" onRequestClose={onDismiss}>
+      {inner}
     </Modal>
   );
 }
