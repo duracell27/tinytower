@@ -94,7 +94,7 @@ export default function TokenInsufficientModal() {
             </View>
 
             <Pressable
-              onPress={() => { clearTokenInsufficient(); router.replace('/shop'); }}
+              onPress={() => { router.replace('/shop'); clearTokenInsufficient(); }}
               style={({ pressed }) => [styles.shopBtn, pressed && { opacity: 0.85 }]}
             >
               <LinearGradient colors={['#52A6E2', '#3B8BCB']} style={styles.shopBtnGradient}>
