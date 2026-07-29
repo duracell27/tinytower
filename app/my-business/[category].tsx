@@ -10,7 +10,6 @@ import { useGameStore } from '../../src/stores/gameStore';
 import { BUSINESS_UPGRADE_COSTS } from '../../shared/config/businessUpgradeCosts';
 import { formatNum } from '../../src/utils/format';
 import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
-import InsufficientResourcesModal from '../../src/components/InsufficientResourcesModal';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -237,7 +236,6 @@ export default function BusinessCategoryScreen() {
           </Animated.View>
         </Animated.View>
       </Modal>
-      <InsufficientResourcesModal asOverlay />
     </ImageBackground>
   );
 }

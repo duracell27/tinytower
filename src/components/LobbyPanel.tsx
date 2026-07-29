@@ -26,11 +26,8 @@ import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, 
 import { gameConfig } from '../../shared/config/gameConfig';
 import type { Visitor, VisitorRole, Worker } from '../../shared/types';
 import { Image } from 'expo-image';
-import DeliverAllModal from './DeliverAllModal';
-import type { DeliverAllSummary } from '../stores/gameStore';
 import WorkerAvatar from './WorkerAvatar';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
-import InsufficientResourcesModal from './InsufficientResourcesModal';
 import { formatNum } from '../utils/format';
 
 type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
@@ -70,54 +67,6 @@ const ROLE_COLORS: Record<string, string> = {
   seller: '#4E9A2E',
   builder: '#E67E22',
 };
-
-function computeDeliverAllSummary(
-  visitors: Visitor[],
-  elevatorLevel: number,
-  dailyGemsCollected: number,
-  playerLevel: number,
-): DeliverAllSummary {
-  let guestCount = 0, businessmanCount = 0, delivererCount = 0, sellerCount = 0, builderCount = 0;
-  let totalCoins = 0, totalGems = 0, newWorkers = 0;
-  let gemsCollected = dailyGemsCollected;
-  const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
-
-  for (const v of visitors) {
-    // role/targetFloor are undefined for unlifted visitors — treat as guest for summary
-    const role = v.role ?? 'guest';
-    const targetFloor = v.targetFloor ?? 1;
-    switch (role) {
-      case 'guest':
-        guestCount++;
-        totalCoins += calculateTip('guest', targetFloor, elevatorLevel, gameConfig);
-        if (targetFloor === 1) newWorkers++;
-        break;
-      case 'businessman':
-        businessmanCount++;
-        if (gemsCollected < gemLimit) {
-          totalGems++;
-          gemsCollected++;
-        } else {
-          totalCoins += calculateTip('businessman', targetFloor, elevatorLevel, gameConfig);
-        }
-        break;
-      case 'deliverer':
-        delivererCount++;
-        totalCoins += calculateTip('deliverer', targetFloor, elevatorLevel, gameConfig);
-        break;
-      case 'seller':
-        sellerCount++;
-        totalCoins += calculateTip('seller', targetFloor, elevatorLevel, gameConfig);
-        break;
-      case 'builder':
-        builderCount++;
-        break;
-    }
-  }
-
-  return { guestCount, businessmanCount, delivererCount, sellerCount, builderCount, totalCoins, totalGems, newWorkers };
-}
-
 
 function formatShortCoins(n: number): string {
   if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
@@ -413,7 +362,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const { t } = useTranslation('lobby');
   const { t: tContent } = useTranslation('gameContent');
   const [view, setView] = useState<'operate' | 'upgrade'>('operate');
-  const [deliverSummary, setDeliverSummary] = useState<DeliverAllSummary | null>(null);
   const [newWorkerPopup, setNewWorkerPopup] = useState<Worker | null>(null);
   const [hotelFullNotice, setHotelFullNotice] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
@@ -495,7 +443,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       setHotelFullNotice(false);
       setNewWorkerPopup(null);
       clearBuilderToolDrop();
-      setDeliverSummary(null);
     }
   }, [visible, clearBuilderToolDrop]);
 
@@ -853,11 +800,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         showInsufficientResources({ currency: 'gems', need: 1, have: gems });
                         return;
                       }
-                      const summary = computeDeliverAllSummary(lobbyVisitors, elevatorLevel, dailyGemsCollected, playerLevel);
                       suppressNewWorkerPopup.current = true;
                       deliverAll();
                       suppressNewWorkerPopup.current = false;
-                      setDeliverSummary(summary);
                     }}
                     style={({ pressed }) => [styles.deliverAllCard, pressed && { opacity: 0.8 }]}
                   >
@@ -1229,15 +1174,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             </Pressable>
           </Pressable>
         )}
-
-        {/* Deliver-all summary overlay — rendered inside Modal to avoid nested-Modal issues */}
-        <DeliverAllModal
-          visible={deliverSummary !== null}
-          summary={deliverSummary}
-          onDismiss={() => setDeliverSummary(null)}
-        />
-
-        <InsufficientResourcesModal asOverlay />
 
         {/* Lobby info popup */}
         {infoVisible && (

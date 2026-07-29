@@ -31,7 +31,6 @@ import { gameConfig } from '../../shared/config/gameConfig';
 import type { Worker, Floor } from '../../shared/types';
 import { isBetterCandidate } from '../utils/workerCandidate';
 import { GemIcon } from './CurrencyIcons';
-import InsufficientResourcesModal from './InsufficientResourcesModal';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
@@ -381,7 +380,6 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           )}
         </Animated.View>
 
-        <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
   );
