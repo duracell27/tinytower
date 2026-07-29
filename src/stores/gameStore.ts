@@ -103,6 +103,7 @@ interface GameActions {
   selectFloorType: (floorId: number, floorType: string) => void;
   openFloor: (floorId: number, floorType: string) => void;
   setLastSyncAt: (ts: number) => void;
+  upgradeBusinessCategory: (floorType: 'green' | 'blue' | 'yellow' | 'purple' | 'red') => void;
   hydrate: (state: GameState & Partial<SyncState> & {
     playerLevel?: number;
     playerXp?: number;
@@ -262,6 +263,7 @@ function executeCommand(
     openedFloorTypes: result.state.openedFloorTypes,
     stats: result.state.stats,
     tokens: result.state.tokens,
+    businessUpgrades: result.state.businessUpgrades,
     dailyTasks: result.state.dailyTasks,
     playerXp: xpResult.playerXp,
     playerLevel: xpResult.playerLevel,
@@ -302,6 +304,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   devAddGems: (amount) => {
     executeCommand(get, set, { id: uuid(), type: 'dev_add_gems', amount, timestamp: clock.now() });
+  },
+  upgradeBusinessCategory: (floorType) => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'upgrade_business_category',
+      floorType,
+      timestamp: clock.now(),
+    });
   },
   speedUpConstruction: (floorId) => {
     const state = get();
@@ -798,6 +808,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     xpBonusPercent: state.xpBonusPercent ?? 0,
     categoryProgress: state.categoryProgress ?? {},
     tokens: state.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+    businessUpgrades: state.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     dailyTasks: state.dailyTasks ?? { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
   }),
 
@@ -889,6 +900,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     floors: serverState.floors,
     stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     tokens:     serverState.tokens     ?? cur.tokens,
+    businessUpgrades: serverState.businessUpgrades ?? cur.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     dailyTasks: (() => {
       const base = serverState.dailyTasks ?? cur.dailyTasks;
       const pendingClaims = cur.commandQueue
