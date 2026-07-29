@@ -720,7 +720,7 @@ function handleUpgradeBusinessCategory(
 ): ProcessResult {
   // Placeholder implementation for Task 1
   // Actual logic will be implemented in Task 2
-  return { success: true, state };
+  return { success: false, state, error: 'not implemented' };
 }
 
 function updateProduction(
