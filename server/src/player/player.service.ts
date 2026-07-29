@@ -94,7 +94,15 @@ export class PlayerService {
         () => generateVisitorAppearance(),
       );
       await tx.playerState.create({
-        data: { playerId: player.id, lobbyVisitors: initialVisitors },
+        data: {
+          playerId: player.id,
+          lobbyVisitors: initialVisitors,
+          tokenGreen:  3,
+          tokenBlue:   3,
+          tokenYellow: 3,
+          tokenPurple: 3,
+          tokenRed:    3,
+        },
       });
 
       return player;

@@ -1361,6 +1361,7 @@ describe('upgrade_business_category', () => {
   it('level 5 upgrade costs gems (no tokens)', () => {
     const state = makeState({
       gems: 100,
+      tokens: { green: 10, blue: 0, yellow: 0, purple: 0, red: 0 },
       businessUpgrades: { green: 4, blue: 0, yellow: 0, purple: 0, red: 0 },
     });
     const result = processCommand(
@@ -1371,7 +1372,7 @@ describe('upgrade_business_category', () => {
     expect(result.success).toBe(true);
     expect(result.state.gems).toBe(50);               // 100 − 50 gems
     expect(result.state.businessUpgrades.green).toBe(5);
-    expect(result.state.tokens.green).toBe(3);        // tokens unchanged
+    expect(result.state.tokens.green).toBe(10);       // tokens unchanged
   });
 
   it('fails on gem cost when gems insufficient', () => {

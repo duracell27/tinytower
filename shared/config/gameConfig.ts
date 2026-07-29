@@ -542,7 +542,7 @@ export function createInitialState(config: GameConfig): GameState {
     },
     coinBonusPercent: 0,
     xpBonusPercent: 0,
-    tokens: { green: 3, blue: 3, yellow: 3, purple: 3, red: 3 },
+    tokens: { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     businessUpgrades: { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     dailyTasks: {
       progress: {

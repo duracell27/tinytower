@@ -171,11 +171,7 @@
     "floorCount_one": "{{count}} floor",
     "floorCount_other": "{{count}} floors",
     "level": "Level {{level}}",
-    "noBonus": "+0% Profit",
-    "costCoins": "{{coins}} coins",
-    "costTokens": "{{tokens}} tokens",
     "costGems": "{{gems}} gems",
-    "tokenBalance": "{{count}} tokens",
     "categories": {
       "green": "Quality",
       "blue": "Service",

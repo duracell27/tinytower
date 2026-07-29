@@ -80,7 +80,7 @@ export default function MyBusinessScreen() {
 
                 <View style={styles.cardRow}>
                   <Text style={styles.meta}>{tHotel('myBusiness.floorCount', { count })}</Text>
-                  <Text style={styles.meta}>{tHotel('myBusiness.tokenBalance', { count: tokenBal })} {tHotel(`myBusiness.tokenLabels.${ft}`)}</Text>
+                  <Text style={styles.meta}>{tokenBal} {tHotel(`myBusiness.tokenLabels.${ft}`)}</Text>
                 </View>
               </View>
             </Pressable>

@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "PlayerState" ADD COLUMN "businessUpgradeGreen" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "PlayerState" ADD COLUMN "businessUpgradeBlue" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "PlayerState" ADD COLUMN "businessUpgradeYellow" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "PlayerState" ADD COLUMN "businessUpgradePurple" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "PlayerState" ADD COLUMN "businessUpgradeRed" INTEGER NOT NULL DEFAULT 0;
