@@ -332,6 +332,14 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Pressable
+          onPress={() => router.push('/my-business')}
+          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
+        >
+          <Image source={require('../../assets/img/profile/achivProfileIcon.png')} style={styles.achievementsIcon} />
+          <Text style={styles.achievementsButtonText}>{tHotel('myBusiness.title')}</Text>
+        </Pressable>
+
+        <Pressable
           onPress={() => router.push('/daily-tasks')}
           style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
         >
