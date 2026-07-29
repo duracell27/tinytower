@@ -1,17 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground, Modal, Dimensions } from 'react-native';
+import React from 'react';
+import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
 import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import { useGameStore } from '../../src/stores/gameStore';
 import { BUSINESS_UPGRADE_COSTS } from '../../shared/config/businessUpgradeCosts';
 import { formatNum } from '../../src/utils/format';
 import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
-
-const { width: SCREEN_W } = Dimensions.get('window');
 
 type FloorType = 'green' | 'blue' | 'yellow' | 'purple' | 'red';
 const VALID_TYPES = new Set<string>(['green', 'blue', 'yellow', 'purple', 'red']);
@@ -43,26 +39,7 @@ export default function BusinessCategoryScreen() {
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const upgradeBusinessCategory  = useGameStore((s) => s.upgradeBusinessCategory);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
-
-  const [tokenModal, setTokenModal] = useState<{ have: number; need: number } | null>(null);
-  const tokenModalScale   = useSharedValue(0.5);
-  const tokenModalOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    if (tokenModal) {
-      tokenModalOpacity.value = withTiming(1, { duration: 200 });
-      tokenModalScale.value   = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
-    } else {
-      tokenModalOpacity.value = 0;
-      tokenModalScale.value   = 0.5;
-    }
-  }, [tokenModal]);
-
-  const tokenScrimStyle = useAnimatedStyle(() => ({ opacity: tokenModalOpacity.value }));
-  const tokenCardStyle  = useAnimatedStyle(() => ({
-    transform: [{ scale: tokenModalScale.value }],
-    opacity: tokenModalOpacity.value,
-  }));
+  const showTokenInsufficient     = useGameStore((s) => s.showTokenInsufficient);
 
   const level    = businessUpgrades?.[ft] ?? 0;
   const tokenBal = tokens?.[ft] ?? 0;
@@ -85,7 +62,7 @@ export default function BusinessCategoryScreen() {
         return;
       }
       if (tokenBal < nextCost.tokens) {
-        setTokenModal({ have: tokenBal, need: nextCost.tokens });
+        showTokenInsufficient({ floorType: ft, have: tokenBal, need: nextCost.tokens });
         return;
       }
     }
@@ -176,66 +153,6 @@ export default function BusinessCategoryScreen() {
         <Text style={styles.closeBtnText}>✕</Text>
       </Pressable>
 
-      {/* Token insufficient modal */}
-      <Modal visible={tokenModal !== null} transparent animationType="none" onRequestClose={() => setTokenModal(null)}>
-        <Animated.View style={[modal.scrim, tokenScrimStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setTokenModal(null)} />
-          <Animated.View style={[modal.card, tokenCardStyle]}>
-            <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={modal.cardGradient}>
-
-              <View style={modal.iconWrap}>
-                <Image source={TOKEN_ICONS[ft]} style={modal.tokenImg} contentFit="contain" />
-              </View>
-
-              <Text style={modal.title}>{tHotel('myBusiness.notEnoughTokens')}</Text>
-
-              {tokenModal && (
-                <View style={modal.deficitCard}>
-                  <View style={modal.deficitRow}>
-                    <View style={modal.deficitCell}>
-                      <Text style={modal.deficitLabel}>{tHotel('myBusiness.have')}</Text>
-                      <View style={modal.deficitValueRow}>
-                        <Image source={TOKEN_ICONS[ft]} style={modal.deficitIcon} contentFit="contain" />
-                        <Text style={[modal.deficitValue, { color }]}>{formatNum(tokenModal.have)}</Text>
-                      </View>
-                    </View>
-                    <Text style={modal.arrow}>→</Text>
-                    <View style={modal.deficitCell}>
-                      <Text style={modal.deficitLabel}>{tHotel('myBusiness.need')}</Text>
-                      <View style={modal.deficitValueRow}>
-                        <Image source={TOKEN_ICONS[ft]} style={modal.deficitIcon} contentFit="contain" />
-                        <Text style={[modal.deficitValue, { color }]}>{formatNum(tokenModal.need)}</Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={modal.missingRow}>
-                    <Text style={modal.missingLabel}>{tHotel('myBusiness.missing')}:</Text>
-                    <View style={modal.deficitValueRow}>
-                      <Image source={TOKEN_ICONS[ft]} style={modal.deficitIcon} contentFit="contain" />
-                      <Text style={modal.missingValue}>{formatNum(tokenModal.need - tokenModal.have)}</Text>
-                    </View>
-                  </View>
-                </View>
-              )}
-
-              <Pressable
-                onPress={() => { setTokenModal(null); router.replace('/shop'); }}
-                style={({ pressed }) => [modal.shopBtn, pressed && { opacity: 0.85 }]}
-              >
-                <LinearGradient colors={['#52A6E2', '#3B8BCB']} style={modal.shopBtnGradient}>
-                  <Text style={modal.shopBtnText}>{tHotel('myBusiness.goToShop')}</Text>
-                </LinearGradient>
-                <View style={modal.shopBtnShadow} />
-              </Pressable>
-
-              <Pressable onPress={() => setTokenModal(null)} style={modal.closeBtn}>
-                <Text style={modal.closeBtnText}>{tHotel('myBusiness.cancel')}</Text>
-              </Pressable>
-
-            </LinearGradient>
-          </Animated.View>
-        </Animated.View>
-      </Modal>
     </ImageBackground>
   );
 }
@@ -291,41 +208,3 @@ const styles = StyleSheet.create({
   closeBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 20, color: '#fff', lineHeight: 22 },
 });
 
-const modal = StyleSheet.create({
-  scrim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center' },
-  card: {
-    width: SCREEN_W * 0.82, borderRadius: 28, overflow: 'hidden',
-    shadowColor: 'rgba(30,50,80,1)', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.28, shadowRadius: 30, elevation: 12,
-  },
-  cardGradient: { alignItems: 'center', paddingTop: 28, paddingBottom: 20, paddingHorizontal: 22, gap: 12 },
-  iconWrap: {
-    width: 72, height: 72, borderRadius: 36, backgroundColor: '#EEF1F6',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 2,
-  },
-  tokenImg: { width: 44, height: 44 },
-  title: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#2A3344', textAlign: 'center' },
-  deficitCard: {
-    width: '100%', backgroundColor: '#fff', borderRadius: 16,
-    paddingVertical: 14, paddingHorizontal: 18, gap: 10,
-    shadowColor: 'rgba(40,60,90,1)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 5, elevation: 2,
-  },
-  deficitRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  deficitCell: { alignItems: 'center', gap: 4, flex: 1 },
-  deficitLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 12, color: '#9BA3B0' },
-  deficitValueRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  deficitIcon: { width: 16, height: 16 },
-  deficitValue: { fontFamily: 'Fredoka_700Bold', fontSize: 18 },
-  arrow: { fontFamily: 'Fredoka_500Medium', fontSize: 18, color: '#C5CAD4', marginHorizontal: 4 },
-  missingRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: '#FEF3F2', borderRadius: 10, paddingVertical: 8, paddingHorizontal: 14,
-  },
-  missingLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#D9534F' },
-  missingValue: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#D9534F' },
-  shopBtn: { width: '100%', borderRadius: 14, overflow: 'hidden', position: 'relative' },
-  shopBtnGradient: { alignItems: 'center', justifyContent: 'center', paddingVertical: 13, borderRadius: 14, zIndex: 1 },
-  shopBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#fff', textShadowColor: 'rgba(0,0,0,0.15)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 1 },
-  shopBtnShadow: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, backgroundColor: '#2E72A8', borderBottomLeftRadius: 14, borderBottomRightRadius: 14 },
-  closeBtn: { paddingVertical: 6 },
-  closeBtnText: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#9BA3B0' },
-});

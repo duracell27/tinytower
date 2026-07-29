@@ -1,22 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, Pressable, ImageBackground, Modal, Dimensions,
+  View, Text, ScrollView, StyleSheet, Pressable, ImageBackground,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import Animated, {
-  useSharedValue, useAnimatedStyle, withTiming, withDelay, withSpring, Easing,
-} from 'react-native-reanimated';
 import { useGameStore } from '../src/stores/gameStore';
 import {
   DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress,
 } from '../shared/config/dailyTasksConfig';
 import { formatNum } from '../src/utils/format';
-
-const { width: SCREEN_W } = Dimensions.get('window');
 
 const TOKEN_COLORS: Record<string, string> = {
   green: '#3FA535', blue: '#3376E5', yellow: '#E5A72E', purple: '#9A6FD0', red: '#E05A4A',
@@ -62,99 +57,12 @@ function formatCountdown(ms: number): string {
   return `${h}h ${m}m`;
 }
 
-type RewardData = {
-  taskTitle: string;
-  coins: number;
-  gems: number;
-  tokenCount: number;
-  tokenColor: string;
-  matCount?: number;
-  materialType?: string;
-};
-
 function ProgressBar({ value, max }: { value: number; max: number }) {
   const pct = Math.min(value / max, 1);
   return (
     <View style={styles.barBg}>
       <View style={[styles.barFill, { width: `${pct * 100}%` }]} />
     </View>
-  );
-}
-
-function TaskRewardModal({ reward, onDismiss }: { reward: RewardData | null; onDismiss: () => void }) {
-  const scale        = useSharedValue(0.6);
-  const rewardsOpacity = useSharedValue(0);
-  const rewardsY     = useSharedValue(16);
-
-  const cardStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const rewardsStyle = useAnimatedStyle(() => ({
-    opacity: rewardsOpacity.value,
-    transform: [{ translateY: rewardsY.value }],
-  }));
-
-  const runIn = useCallback(() => {
-    scale.value = 0.6;
-    rewardsOpacity.value = 0;
-    rewardsY.value = 16;
-    scale.value = withSpring(1, { damping: 14, stiffness: 180 });
-    rewardsOpacity.value = withDelay(220, withTiming(1, { duration: 260 }));
-    rewardsY.value = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.back(1.2)) }));
-  }, [scale, rewardsOpacity, rewardsY]);
-
-  if (!reward) return null;
-
-  return (
-    <Modal visible transparent animationType="fade" onRequestClose={onDismiss} onShow={runIn}>
-      <View style={modal.scrim}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
-
-        <Animated.View style={[modal.card, cardStyle]}>
-          <LinearGradient colors={['#F0FBE8', '#E2F5D0']} style={modal.cardInner}>
-            <View style={modal.starsRow}>
-              <Text style={[modal.star, modal.starSm]}>★</Text>
-              <Text style={[modal.star, modal.starLg]}>★</Text>
-              <Text style={[modal.star, modal.starSm]}>★</Text>
-            </View>
-
-            <Text style={modal.title}>Task Complete!</Text>
-            <Text style={modal.subtitle} numberOfLines={1}>{reward.taskTitle}</Text>
-
-            <Animated.View style={[modal.chipsWrap, rewardsStyle]}>
-              <View style={modal.chip}>
-                <Image source={COIN_ICON} style={modal.chipIcon} contentFit="contain" />
-                <Text style={modal.chipCoins}>+{formatNum(reward.coins)}</Text>
-              </View>
-              <View style={modal.chip}>
-                <Image source={DIAMOND_ICON} style={modal.chipIcon} contentFit="contain" />
-                <Text style={modal.chipGems}>+{reward.gems}</Text>
-              </View>
-              <View style={modal.chip}>
-                <Image source={TOKEN_ICONS[reward.tokenColor]} style={modal.chipIcon} contentFit="contain" />
-                <Text style={[modal.chipToken, { color: TOKEN_COLORS[reward.tokenColor] }]}>
-                  +{reward.tokenCount}
-                </Text>
-              </View>
-              {reward.matCount != null && reward.materialType && (
-                <View style={modal.chip}>
-                  <Image source={MATERIAL_ICONS[reward.materialType]} style={modal.chipIcon} contentFit="contain" />
-                  <Text style={modal.chipMat}>+{reward.matCount}</Text>
-                </View>
-              )}
-            </Animated.View>
-
-            <Pressable
-              onPress={onDismiss}
-              style={({ pressed }) => [modal.btn, pressed && { opacity: 0.85 }]}
-            >
-              <LinearGradient colors={['#74D44F', '#5BA63C']} style={modal.btnGradient}>
-                <Text style={modal.btnText}>Awesome!</Text>
-              </LinearGradient>
-              <View style={modal.btnShadow} />
-            </Pressable>
-          </LinearGradient>
-        </Animated.View>
-      </View>
-    </Modal>
   );
 }
 
@@ -176,21 +84,8 @@ export default function DailyTasksScreen() {
   const resetAt     = lastDailyReset + 24 * 60 * 60 * 1000;
   const msUntilReset = resetAt - now;
 
-  const [reward, setReward] = useState<RewardData | null>(null);
-
   const handleClaim = useCallback((taskKey: string, taskTitle: string) => {
-    const result = claimDailyTask(taskKey);
-    if (result) {
-      setReward({
-        taskTitle,
-        coins: result.coins,
-        gems: result.gems,
-        tokenCount: result.tokenCount,
-        tokenColor: result.tokenColor,
-        matCount: result.matCount,
-        materialType: result.materialType,
-      });
-    }
+    claimDailyTask(taskKey, taskTitle);
   }, [claimDailyTask]);
 
   const multiplier = getCoinMultiplier(playerLevel);
@@ -330,7 +225,6 @@ export default function DailyTasksScreen() {
         <Text style={styles.closeBtnText}>✕</Text>
       </Pressable>
 
-      <TaskRewardModal reward={reward} onDismiss={() => setReward(null)} />
     </ImageBackground>
   );
 }
@@ -388,43 +282,3 @@ const styles = StyleSheet.create({
   closeBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 20, color: '#fff', lineHeight: 22 },
 });
 
-const modal = StyleSheet.create({
-  scrim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center' },
-  card: {
-    width: SCREEN_W * 0.82,
-    borderRadius: 28,
-    overflow: 'hidden',
-    shadowColor: 'rgba(40,80,20,1)',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.28,
-    shadowRadius: 28,
-    elevation: 14,
-  },
-  cardInner: { alignItems: 'center', paddingTop: 28, paddingBottom: 24, paddingHorizontal: 24 },
-
-  starsRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
-  star: { color: '#F2B330', textShadowColor: 'rgba(180,130,30,0.5)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
-  starSm: { fontSize: 22 },
-  starLg: { fontSize: 34 },
-
-  title:    { fontFamily: 'Fredoka_700Bold', fontSize: 24, color: '#27631E', marginBottom: 2 },
-  subtitle: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#6A8A5A', marginBottom: 20, textAlign: 'center' },
-
-  chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 22 },
-  chip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#fff', paddingVertical: 8, paddingLeft: 10, paddingRight: 14,
-    borderRadius: 16,
-    shadowColor: 'rgba(80,100,60,1)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2,
-  },
-  chipIcon:  { width: 22, height: 22 },
-  chipCoins: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#C28A22' },
-  chipGems:  { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#2592AB' },
-  chipToken: { fontFamily: 'Fredoka_700Bold', fontSize: 17 },
-  chipMat:   { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#6B7A5E' },
-
-  btn: { width: '100%', borderRadius: 14, overflow: 'hidden' },
-  btnGradient: { alignItems: 'center', justifyContent: 'center', paddingVertical: 13, zIndex: 1 },
-  btnText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#fff', textShadowColor: 'rgba(0,0,0,0.18)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
-  btnShadow: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, backgroundColor: 'rgba(40,90,25,0.32)' },
-});
