@@ -10,19 +10,9 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
+import type { DeliverAllSummary } from '../stores/gameStore';
 
 const { width: SCREEN_W } = Dimensions.get('window');
-
-export interface DeliverAllSummary {
-  guestCount: number;
-  businessmanCount: number;
-  delivererCount: number;
-  sellerCount: number;
-  builderCount: number;
-  totalCoins: number;
-  totalGems: number;
-  newWorkers: number;
-}
 
 interface DeliverAllModalProps {
   visible: boolean;

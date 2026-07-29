@@ -2,12 +2,12 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
-import { generateRandomVisitorRole, generateVisitorAppearance, getFillLobbyCost, checkDailyReset } from '../../shared/engine/lobbyUtils';
+import { generateRandomVisitorRole, generateVisitorAppearance, getFillLobbyCost, checkDailyReset, calculateTip } from '../../shared/engine/lobbyUtils';
 import { generateRandomWorkers, WORKER_LOOKAHEAD } from '../../shared/config/workerNames';
 import { getBuiltFloorCountForType } from '../../shared/engine/workerUtils';
 import { applyXpGain, xpForCommand, type LevelUpEvent } from '../../shared/engine/xp';
 import { clock } from '../services/clock';
-import type { GameState, Command, Floor, Worker, ToolsState } from '../../shared/types';
+import type { GameState, Command, Floor, Worker, ToolsState, Visitor } from '../../shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
@@ -18,6 +18,52 @@ function uuid(): string {
     const r = (Math.random() * 16) | 0;
     return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
   });
+}
+
+function computeDeliverAllSummary(
+  visitors: Visitor[],
+  elevatorLevel: number,
+  dailyGemsCollected: number,
+  playerLevel: number,
+): DeliverAllSummary {
+  let guestCount = 0, businessmanCount = 0, delivererCount = 0, sellerCount = 0, builderCount = 0;
+  let totalCoins = 0, totalGems = 0, newWorkers = 0;
+  let gemsCollected = dailyGemsCollected;
+  const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
+
+  for (const v of visitors) {
+    const role = v.role ?? 'guest';
+    const targetFloor = v.targetFloor ?? 1;
+    switch (role) {
+      case 'guest':
+        guestCount++;
+        totalCoins += calculateTip('guest', targetFloor, elevatorLevel, gameConfig);
+        if (targetFloor === 1) newWorkers++;
+        break;
+      case 'businessman':
+        businessmanCount++;
+        if (gemsCollected < gemLimit) {
+          totalGems++;
+          gemsCollected++;
+        } else {
+          totalCoins += calculateTip('businessman', targetFloor, elevatorLevel, gameConfig);
+        }
+        break;
+      case 'deliverer':
+        delivererCount++;
+        totalCoins += calculateTip('deliverer', targetFloor, elevatorLevel, gameConfig);
+        break;
+      case 'seller':
+        sellerCount++;
+        totalCoins += calculateTip('seller', targetFloor, elevatorLevel, gameConfig);
+        break;
+      case 'builder':
+        builderCount++;
+        break;
+    }
+  }
+
+  return { guestCount, businessmanCount, delivererCount, sellerCount, builderCount, totalCoins, totalGems, newWorkers };
 }
 
 const COMMAND_QUEUE_CAP = 10_000;
@@ -54,6 +100,27 @@ export interface FailedCommandEntry {
   timestamp: number;
 }
 
+export type DeliverAllSummary = {
+  guestCount: number;
+  businessmanCount: number;
+  delivererCount: number;
+  sellerCount: number;
+  builderCount: number;
+  totalCoins: number;
+  totalGems: number;
+  newWorkers: number;
+};
+
+export type PendingTaskReward = {
+  taskTitle: string;
+  coins: number;
+  gems: number;
+  tokenCount: number;
+  tokenColor: string;
+  matCount?: number;
+  materialType?: string;
+};
+
 export type ReferralNotification =
   | { type: 'claim'; referralId: string; referredName: string; milestone: 'registered'; coins: number }
   | { type: 'claim'; referralId: string; referredName: string; milestone: 'level10' | 'level30'; gems: number }
@@ -72,6 +139,9 @@ interface UIState {
   pendingReferralNotifications: ReferralNotification[];
   pendingWorkerFocus: string | null;
   pendingDailyLoginReward: { coins: number; gems: number } | null;
+  tokenInsufficient: { floorType: 'green' | 'blue' | 'yellow' | 'purple' | 'red'; have: number; need: number } | null;
+  pendingTaskReward: PendingTaskReward | null;
+  pendingDeliverAll: DeliverAllSummary | null;
 }
 
 interface GameActions {
@@ -96,7 +166,7 @@ interface GameActions {
   expandHotel: () => void;
   evictLowLevelWorkers: () => void;
   claimDailyReward: (stage: 1 | 2) => void;
-  claimDailyTask: (taskKey: string) => { coins: number; gems: number; tokenCount: number; tokenColor: string; matCount?: number; materialType?: string } | null;
+  claimDailyTask: (taskKey: string, taskTitle: string) => void;
   dismissLevelUp: () => void;
   setToolInventory: (tools: ToolsState) => void;
   buyFloor: (floorId: number) => void;
@@ -135,6 +205,12 @@ interface GameActions {
   setDailyLoginReward: (reward: { coins: number; gems: number }) => void;
   dismissDailyLoginReward: () => void;
   clearFailedCommandLog: () => void;
+  showTokenInsufficient: (payload: { floorType: 'green' | 'blue' | 'yellow' | 'purple' | 'red'; have: number; need: number }) => void;
+  clearTokenInsufficient: () => void;
+  setTaskReward: (payload: PendingTaskReward) => void;
+  clearTaskReward: () => void;
+  setPendingDeliverAll: (summary: DeliverAllSummary) => void;
+  clearPendingDeliverAll: () => void;
   reset: () => void;
 }
 
@@ -298,6 +374,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   pendingReferralNotifications: [],
   pendingWorkerFocus: null,
   pendingDailyLoginReward: null,
+  tokenInsufficient: null,
+  pendingTaskReward: null,
+  pendingDeliverAll: null,
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -343,6 +422,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   showInsufficientResources: (payload) => set({ insufficientResources: payload }),
   clearInsufficientResources: () => set({ insufficientResources: null }),
+  showTokenInsufficient: (payload) => set({ tokenInsufficient: payload }),
+  clearTokenInsufficient: () => set({ tokenInsufficient: null }),
+  setTaskReward: (payload) => set({ pendingTaskReward: payload }),
+  clearTaskReward: () => set({ pendingTaskReward: null }),
+  setPendingDeliverAll: (summary) => set({ pendingDeliverAll: summary }),
+  clearPendingDeliverAll: () => set({ pendingDeliverAll: null }),
   setPendingWorkerFocus: (workerId) => set({ pendingWorkerFocus: workerId }),
   clearPendingWorkerFocus: () => set({ pendingWorkerFocus: null }),
   setDailyLoginReward: (reward) => set({ pendingDailyLoginReward: reward }),
@@ -653,6 +738,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
       builderTools,
       ...(preGeneratedWorkers.length > 0 && { preGeneratedWorkers }),
     });
+    const summary = computeDeliverAllSummary(
+      state.lobbyVisitors,
+      state.elevatorLevel,
+      state.dailyGemsCollected,
+      state.playerLevel,
+    );
+    set({ pendingDeliverAll: summary });
   },
 
   collectAll: () => {
@@ -740,11 +832,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
-  claimDailyTask: (taskKey) => {
+  claimDailyTask: (taskKey, taskTitle) => {
     const COLORS = ['green', 'blue', 'yellow', 'purple', 'red'] as const;
     const MATERIAL_TYPES = ['briks', 'glass', 'nails', 'screw'] as const;
     const taskConfig = DAILY_TASKS.find((t) => t.key === taskKey);
-    if (!taskConfig) return null;
+    if (!taskConfig) return;
     const state = get();
     const tokenCount = Math.floor(Math.random() * 5) + 1;
     const tokenColor = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -766,7 +858,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       materialType,
       timestamp: clock.now(),
     });
-    return { coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount, materialType };
+    set({ pendingTaskReward: { taskTitle, coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount, materialType } });
   },
 
   dismissLevelUp: () => {
