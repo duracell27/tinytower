@@ -161,5 +161,34 @@
       "skill": "Skill",
       "floor": "Floor {{id}}"
     }
+  },
+  "myBusiness": {
+    "title": "My Business",
+    "subtitle": "Upgrade categories to increase profit on floors",
+    "upgrade": "Upgrade",
+    "maxLevel": "Max level",
+    "profitBonus": "+{{percent}}% Profit",
+    "floorCount_one": "{{count}} floor",
+    "floorCount_other": "{{count}} floors",
+    "level": "Level {{level}}",
+    "noBonus": "+0% Profit",
+    "costCoins": "{{coins}} coins",
+    "costTokens": "{{tokens}} tokens",
+    "costGems": "{{gems}} gems",
+    "tokenBalance": "{{count}} tokens",
+    "categories": {
+      "green": "Quality",
+      "blue": "Service",
+      "yellow": "Entertainment",
+      "purple": "Exclusiveness",
+      "red": "Warranty"
+    },
+    "tokenLabels": {
+      "green": "Food tokens",
+      "blue": "Service tokens",
+      "yellow": "Entertainment tokens",
+      "purple": "Fashion tokens",
+      "red": "Tech tokens"
+    }
   }
 }
