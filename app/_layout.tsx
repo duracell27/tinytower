@@ -20,7 +20,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { setAuthFailureCallback } from '../src/services/api';
 import * as Linking from 'expo-linking';
 import { createMMKV } from 'react-native-mmkv';
-import DailyLoginRewardModal from '../src/components/DailyLoginRewardModal';
+import GlobalOverlay from '../src/components/GlobalOverlay';
 
 const authStorage = createMMKV({ id: 'auth' });
 
@@ -90,7 +90,7 @@ export default function RootLayout() {
         <Stack.Screen name="my-business" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="my-business/[category]" options={{ headerShown: false }} />
       </Stack>
-      <DailyLoginRewardModal />
+      <GlobalOverlay />
     </GestureHandlerRootView>
   );
 }
