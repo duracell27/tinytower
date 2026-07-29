@@ -59,7 +59,14 @@ export default function BusinessCategoryScreen() {
     for (const [idStr, type] of Object.entries(openedFloorTypes)) {
       if (type === ft) {
         const id = Number(idStr);
-        const tier = Object.entries(openedFloorTypes).filter(([, t]) => t === ft).map(([k]) => Number(k)).sort((a, b) => a - b).indexOf(id);
+        const staticOffset = gameConfig.floors.filter(
+          (f) => f.floorType === ft && floors.some((sf) => sf.id === f.id)
+        ).length;
+        const tier = staticOffset + Object.entries(openedFloorTypes)
+          .filter(([, t]) => t === ft)
+          .map(([k]) => Number(k))
+          .sort((a, b) => a - b)
+          .indexOf(id);
         const businesses = gameConfig.floorTypes[ft]?.businesses ?? [];
         result.push({ id, name: businesses[tier]?.name ?? `Floor ${id}` });
       }
