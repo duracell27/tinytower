@@ -17,7 +17,7 @@ import { formatNum } from '../utils/format';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-export default function LevelUpModal({ suppressWhileOpen = false }: { suppressWhileOpen?: boolean }) {
+export default function LevelUpModal() {
   const { t } = useTranslation('hotel');
   const event = useGameStore((s) => s.levelUpQueue[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissLevelUp);
@@ -52,7 +52,7 @@ export default function LevelUpModal({ suppressWhileOpen = false }: { suppressWh
 
   return (
     <Modal
-      visible={!!event && !suppressWhileOpen}
+      visible={!!event}
       transparent
       animationType="fade"
       onRequestClose={dismiss}

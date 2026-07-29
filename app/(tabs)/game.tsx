@@ -19,10 +19,6 @@ import BusinessTypePickerSheet from '../../src/components/BusinessTypePickerShee
 import { HotelFloor, LobbyFloor } from '../../src/components/TechnicalFloor';
 import HotelPanel from '../../src/components/HotelPanel';
 import LobbyPanel from '../../src/components/LobbyPanel';
-import LevelUpModal from '../../src/components/LevelUpModal';
-import AchievementModal from '../../src/components/AchievementModal';
-import ReferralNotificationModal from '../../src/components/ReferralNotificationModal';
-import InsufficientResourcesModal from '../../src/components/InsufficientResourcesModal';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useGameClock } from '../../src/hooks/useGameClock';
@@ -688,10 +684,6 @@ export default function GameScreen() {
           exhaustedTypes={exhaustedByFloor.get(uc.floorId)}
         />
       ))}
-      <LevelUpModal suppressWhileOpen={lobbyOpen || hotelOpen} />
-      <AchievementModal />
-      <ReferralNotificationModal />
-      {!hotelOpen && !lobbyOpen && <InsufficientResourcesModal />}
     </View>
   );
 }

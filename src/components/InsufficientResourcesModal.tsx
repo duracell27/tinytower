@@ -35,11 +35,7 @@ function GemIcon() {
   return <Image source={require('../../assets/img/diamond.png')} style={{ width: 16, height: 16 }} contentFit="contain" />;
 }
 
-interface Props {
-  asOverlay?: boolean;
-}
-
-export default function InsufficientResourcesModal({ asOverlay = false }: Props = {}) {
+export default function InsufficientResourcesModal() {
   const { t } = useTranslation('common');
   const payload = useGameStore((s) => s.insufficientResources);
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
@@ -90,7 +86,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: Props 
   };
 
   const inner = (
-    <Animated.View style={asOverlay ? [StyleSheet.absoluteFill, styles.overlayScrim, scrimStyle] : [styles.scrim, scrimStyle]}>
+    <Animated.View style={[styles.scrim, scrimStyle]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={clearInsufficientResources} />
 
         <Animated.View style={[styles.card, cardStyle]}>
@@ -227,7 +223,6 @@ export default function InsufficientResourcesModal({ asOverlay = false }: Props 
       </Animated.View>
   );
 
-  if (asOverlay) return inner;
   return (
     <Modal transparent animationType="none" onRequestClose={clearInsufficientResources}>
       {inner}
@@ -258,11 +253,6 @@ const icons = StyleSheet.create({
 const styles = StyleSheet.create({
   scrim: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  overlayScrim: {
     backgroundColor: 'rgba(0,0,0,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
