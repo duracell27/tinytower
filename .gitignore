@@ -41,7 +41,6 @@ yarn-error.*
 /ios
 /android
 
-/docs/*
-!/docs/superpowers/
+docs/
 
 docker-compose.yml
