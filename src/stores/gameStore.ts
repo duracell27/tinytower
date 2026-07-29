@@ -881,10 +881,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return Math.max(playerXp ?? 0, cur.playerXp);
     })(),
     tools: serverState.tools ?? cur.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
-    underConstruction: (serverState.underConstruction ?? []).map((uc) => {
-      const local = cur.underConstruction.find((u) => u.floorId === uc.floorId);
-      return local?.selectedFloorType ? { ...uc, selectedFloorType: local.selectedFloorType } : uc;
-    }),
+    underConstruction: (() => {
+      const pendingOpenFloorIds = new Set<number>();
+      for (const cmd of cur.commandQueue) {
+        if (!sentIds.has(cmd.id) && cmd.type === 'open_floor') {
+          pendingOpenFloorIds.add(cmd.floorId);
+        }
+      }
+      return (serverState.underConstruction ?? [])
+        .filter((uc) => !pendingOpenFloorIds.has(uc.floorId))
+        .map((uc) => {
+          const local = cur.underConstruction.find((u) => u.floorId === uc.floorId);
+          return local?.selectedFloorType ? { ...uc, selectedFloorType: local.selectedFloorType } : uc;
+        });
+    })(),
     openedFloorTypes: (() => {
       const base = serverState.openedFloorTypes ?? {};
       // Pending open_floor commands (not in this sync batch) must survive reconcile so
@@ -897,7 +907,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
       return { ...base, ...extra };
     })(),
-    floors: serverState.floors,
+    floors: (() => {
+      const base = serverState.floors;
+      const extra: typeof base = [];
+      for (const cmd of cur.commandQueue) {
+        if (!sentIds.has(cmd.id) && cmd.type === 'open_floor') {
+          const f = cur.floors.find((fl) => fl.id === cmd.floorId);
+          if (f && !base.some((b) => b.id === cmd.floorId)) extra.push(f);
+        }
+      }
+      return extra.length > 0 ? [...base, ...extra] : base;
+    })(),
     stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     tokens:     serverState.tokens     ?? cur.tokens,
     businessUpgrades: serverState.businessUpgrades ?? cur.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },

@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { gameConfig } from '@shared/config/gameConfig';
-import { generateRandomWorkers } from '@shared/config/workerNames';
-import { generateVisitorAppearance } from '@shared/engine/lobbyUtils';
+import { gameConfig, createInitialState } from '@shared/config/gameConfig';
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -28,7 +26,7 @@ export class PlayerService {
   }
 
   async createWithInitialState(email: string, passwordHash: string, playerName: string) {
-    const workers = generateRandomWorkers(5, gameConfig);
+    const initial = createInitialState(gameConfig);
 
     // Generate a unique referral code with up to 5 retry attempts
     let referralCode: string | undefined;
@@ -47,32 +45,29 @@ export class PlayerService {
           email,
           passwordHash,
           playerName,
-          balance: gameConfig.startingBalance,
-          openedFloorsCount: gameConfig.floors.length,
+          balance: initial.balance,
+          openedFloorsCount: initial.floors.length,
           referralCode,
         },
       });
 
-      for (const floorConfig of gameConfig.floors) {
+      for (const floorState of initial.floors) {
         const floor = await tx.floor.create({
-          data: {
-            playerId: player.id,
-            floorId: floorConfig.id,
-          },
+          data: { playerId: player.id, floorId: floorState.id },
         });
 
-        const productions = floorConfig.availableTypes.map((typeId, i) => ({
-          floorDbId: floor.id,
-          slotIdx: i,
-          typeId,
-          stage: 'IDLE',
-          stageStartedAt: BigInt(0),
-        }));
-
-        await tx.production.createMany({ data: productions });
+        await tx.production.createMany({
+          data: floorState.productions.map((prod, i) => ({
+            floorDbId: floor.id,
+            slotIdx: i,
+            typeId: prod.typeId,
+            stage: prod.stage,
+            stageStartedAt: BigInt(prod.stageStartedAt),
+          })),
+        });
       }
 
-      for (const w of workers) {
+      for (const w of initial.workers) {
         await tx.worker.create({
           data: {
             id: w.id,
@@ -89,19 +84,15 @@ export class PlayerService {
         });
       }
 
-      const initialVisitors = Array.from(
-        { length: gameConfig.lobbyConfig.defaultLobbyCapacity },
-        () => generateVisitorAppearance(),
-      );
       await tx.playerState.create({
         data: {
           playerId: player.id,
-          lobbyVisitors: initialVisitors,
-          tokenGreen:  3,
-          tokenBlue:   3,
-          tokenYellow: 3,
-          tokenPurple: 3,
-          tokenRed:    3,
+          lobbyVisitors: initial.lobbyVisitors,
+          tokenGreen:  initial.tokens.green,
+          tokenBlue:   initial.tokens.blue,
+          tokenYellow: initial.tokens.yellow,
+          tokenPurple: initial.tokens.purple,
+          tokenRed:    initial.tokens.red,
         },
       });
 

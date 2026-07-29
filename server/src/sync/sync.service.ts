@@ -3,7 +3,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { processCommand } from '@shared/engine/processCommand';
 import { checkDailyReset } from '@shared/engine/lobbyUtils';
 import { xpForCommand, applyXpGain } from '@shared/engine/xp';
-import { gameConfig } from '@shared/config/gameConfig';
+import { gameConfig, createInitialState } from '@shared/config/gameConfig';
+
+const defaultDailyProgress = createInitialState(gameConfig).dailyTasks.progress;
 import { calcRevenuePerMin } from '@shared/engine/ratingUtils';
 import type { GameState, Command, Floor, Production, Worker } from '@shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '@shared/types/achievements';
@@ -658,10 +660,10 @@ export class SyncService {
         red:    s?.businessUpgradeRed    ?? 0,
       },
       dailyTasks: {
-        progress: (s?.dailyTasksProgress as GameState['dailyTasks']['progress']) ?? {
-          visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
-          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0,
-        },
+        progress: {
+          ...defaultDailyProgress,
+          ...(s?.dailyTasksProgress as object ?? {}),
+        } as GameState['dailyTasks']['progress'],
         claimed: (s?.dailyTasksClaimed as string[]) ?? [],
         doubleRewardActive: s?.dailyTasksDoubleReward ?? false,
       },
