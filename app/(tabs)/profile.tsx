@@ -335,7 +335,7 @@ export default function ProfileScreen() {
           onPress={() => router.push('/my-business')}
           style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
         >
-          <Image source={require('../../assets/img/profile/achivProfileIcon.png')} style={styles.achievementsIcon} />
+          <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
           <Text style={styles.achievementsButtonText}>{tHotel('myBusiness.title')}</Text>
         </Pressable>
 
@@ -343,7 +343,7 @@ export default function ProfileScreen() {
           onPress={() => router.push('/daily-tasks')}
           style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
         >
-          <Image source={require('../../assets/img/dayliQuests.png')} style={styles.achievementsIcon} />
+          <Image source={require('../../assets/img/profile/dayliQuests.png')} style={styles.achievementsIcon} />
           <Text style={styles.achievementsButtonText}>
             {tHotel('dailyTasks.title')}{' '}
             <Text style={styles.achievementsButtonSubText}>
@@ -765,7 +765,7 @@ const styles = StyleSheet.create({
     color: '#27331F',
   },
   achievementsButtonSubText: {
-    fontFamily: 'Fredoka_500Medium',
+    fontFamily: 'Fredoka_700Bold',
     fontSize: 14,
     color: '#27331F',
   },

@@ -80,13 +80,15 @@ export function getFloorActionInfo(
   workers: Worker[],
   coinBonusPercent = 0,
   openedFloorTypes: Record<string, string> = {},
+  businessUpgrades: Record<string, number> = {},
 ): FloorActionInfo | null {
   switch (mode) {
     case 'collect': {
       const specialistBonusPercent = Math.round(getFloorSpecialistBonus(workers, floor.id) * 100);
-      const coinMultiplier = 1 + (coinBonusPercent + specialistBonusPercent) / 100;
       const staticFloorType = gameConfig.floors.find((f) => f.id === floor.id)?.floorType;
       const floorType = staticFloorType ?? openedFloorTypes[String(floor.id)] ?? '';
+      const categoryBonus = (businessUpgrades[floorType] ?? 0) * 5;
+      const coinMultiplier = 1 + (coinBonusPercent + specialistBonusPercent + categoryBonus) / 100;
       const totalCoins = floor.productions.reduce((sum, prod, slotIdx) => {
         if (!prod.typeId) return sum;
         const tc = gameConfig.productionTypes[prod.typeId];

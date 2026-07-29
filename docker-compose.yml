@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: tinytower
       POSTGRES_PASSWORD: tinytower
     ports:
-      - "5432:5432"
+      - "5435:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 

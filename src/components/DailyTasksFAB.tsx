@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 
-const DAILY_ICON = require('../../assets/img/dayliQuests.png');
+const DAILY_ICON = require('../../assets/img/profile/dayliQuests.png');
 
 interface Props {
   unclaimedCount: number;

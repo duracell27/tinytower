@@ -101,8 +101,9 @@ export default function GameScreen() {
 
   const floors = useGameStore((s) => s.floors);
   const workers = useGameStore((s) => s.workers);
-  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
-  const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
+  const openedFloorTypes  = useGameStore((s) => s.openedFloorTypes);
+  const coinBonusPercent  = useGameStore((s) => s.coinBonusPercent);
+  const businessUpgrades  = useGameStore((s) => s.businessUpgrades);
 
   const revenuePerMin = React.useMemo(
     () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now),
@@ -307,9 +308,9 @@ export default function GameScreen() {
   const bottomFloorInfo = React.useMemo(
     () =>
       bottomFloor !== null && quickActionMode !== null
-        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers, coinBonusPercent, openedFloorTypes ?? {})
+        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers, coinBonusPercent, openedFloorTypes ?? {}, businessUpgrades ?? {})
         : null,
-    [bottomFloor, quickActionMode, now, workers, coinBonusPercent, openedFloorTypes],
+    [bottomFloor, quickActionMode, now, workers, coinBonusPercent, openedFloorTypes, businessUpgrades],
   );
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);

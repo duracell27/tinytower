@@ -185,6 +185,12 @@
       "yellow": "Entertainment tokens",
       "purple": "Fashion tokens",
       "red": "Tech tokens"
-    }
+    },
+    "notEnoughTokens": "Not enough tokens",
+    "goToShop": "Go to Shop",
+    "cancel": "Cancel",
+    "have": "Have",
+    "need": "Need",
+    "missing": "Missing"
   }
 }
