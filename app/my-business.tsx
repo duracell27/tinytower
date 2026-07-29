@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../src/stores/gameStore';
 import { gameConfig } from '../shared/config/gameConfig';
-import { BUSINESS_UPGRADE_COSTS } from '../shared/config/businessUpgradeCosts';
+import { getBuiltFloorCountForType } from '../shared/engine/workerUtils';
 import { formatNum } from '../src/utils/format';
 import { CoinIcon, GemIcon } from '../src/components/CurrencyIcons';
 
@@ -28,12 +28,6 @@ export default function MyBusinessScreen() {
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const floors        = useGameStore((s) => s.floors);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
-
-  function floorCountForType(ft: FloorType): number {
-    const staticCount = gameConfig.floors.filter((f) => f.floorType === ft && floors.some((sf) => sf.id === f.id)).length;
-    const dynamicCount = Object.entries(openedFloorTypes).filter(([, t]) => t === ft).length;
-    return staticCount + dynamicCount;
-  }
 
   return (
     <ImageBackground
@@ -62,8 +56,7 @@ export default function MyBusinessScreen() {
         {FLOOR_TYPES.map((ft) => {
           const level = businessUpgrades?.[ft] ?? 0;
           const tokenBal = tokens?.[ft] ?? 0;
-          const count = floorCountForType(ft);
-          const nextCost = level < 40 ? BUSINESS_UPGRADE_COSTS[level] : null;
+          const count = getBuiltFloorCountForType(ft, floors, openedFloorTypes, gameConfig);
           const color = TYPE_COLORS[ft];
 
           return (
