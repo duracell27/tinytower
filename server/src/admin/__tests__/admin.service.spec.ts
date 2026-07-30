@@ -135,4 +135,44 @@ describe('AdminService', () => {
       await expect(service.deleteWorker('player-1', 'w-1')).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('getCommandLogs', () => {
+    it('returns paginated logs with playerName joined', async () => {
+      prisma.commandLog.findMany.mockResolvedValue([
+        {
+          id: 'cmd-1',
+          playerId: 'player-1',
+          type: 'buy',
+          floorId: 2,
+          slotIdx: 0,
+          typeId: 'coffee',
+          workerId: null,
+          timestamp: BigInt(1700000000000),
+          processedAt: new Date(),
+        },
+      ]);
+      prisma.commandLog.count.mockResolvedValue(1);
+      prisma.player.findMany.mockResolvedValue([{ id: 'player-1', playerName: 'TestPlayer' }]);
+
+      const result = await service.getCommandLogs(1, 50);
+
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].playerName).toBe('TestPlayer');
+      expect(result.data[0].timestamp).toBe('1700000000000');
+    });
+
+    it('filters by playerId and type when provided', async () => {
+      prisma.commandLog.findMany.mockResolvedValue([]);
+      prisma.commandLog.count.mockResolvedValue(0);
+      prisma.player.findMany.mockResolvedValue([]);
+
+      await service.getCommandLogs(1, 50, 'player-1', 'buy');
+
+      expect(prisma.commandLog.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { playerId: 'player-1', type: 'buy' },
+        }),
+      );
+    });
+  });
 });

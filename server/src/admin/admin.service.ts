@@ -190,4 +190,48 @@ export class AdminService {
     await this.prisma.player.delete({ where: { id } });
     return { ok: true };
   }
+
+  async getCommandLogs(page: number, limit: number, playerId?: string, type?: string) {
+    const where = {
+      ...(playerId ? { playerId } : {}),
+      ...(type ? { type } : {}),
+    };
+
+    const [logs, total] = await Promise.all([
+      this.prisma.commandLog.findMany({
+        where,
+        orderBy: { processedAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.commandLog.count({ where }),
+    ]);
+
+    const playerIds = [...new Set(logs.map((l) => l.playerId))];
+    const players = playerIds.length
+      ? await this.prisma.player.findMany({
+          where: { id: { in: playerIds } },
+          select: { id: true, playerName: true },
+        })
+      : [];
+    const playerMap = Object.fromEntries(players.map((p) => [p.id, p.playerName]));
+
+    return {
+      data: logs.map((l) => ({
+        id: l.id,
+        playerId: l.playerId,
+        playerName: playerMap[l.playerId] ?? 'Unknown',
+        type: l.type,
+        floorId: l.floorId,
+        slotIdx: l.slotIdx,
+        typeId: l.typeId,
+        workerId: l.workerId,
+        timestamp: l.timestamp.toString(),
+        processedAt: l.processedAt,
+      })),
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
 }

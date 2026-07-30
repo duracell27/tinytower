@@ -96,4 +96,14 @@ export class AdminController {
   deletePlayer(@Param('id') id: string) {
     return this.adminService.deletePlayer(id);
   }
+
+  @Get('commands')
+  getCommandLogs(
+    @Query('page') page = '1',
+    @Query('limit') limit = '50',
+    @Query('playerId') playerId?: string,
+    @Query('type') type?: string,
+  ) {
+    return this.adminService.getCommandLogs(+page, +limit, playerId, type);
+  }
 }
