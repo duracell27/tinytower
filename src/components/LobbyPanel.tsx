@@ -365,7 +365,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const { t: tContent } = useTranslation('gameContent');
   const [view, setView] = useState<'operate' | 'upgrade'>('operate');
   const [newWorkerPopup, setNewWorkerPopup] = useState<Worker | null>(null);
-  const [hotelFullNotice, setHotelFullNotice] = useState(false);
+  const showHotelFullNotice = useGameStore((s) => s.showHotelFullNotice);
   const [infoVisible, setInfoVisible] = useState(false);
 
   const {
@@ -445,7 +445,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   useEffect(() => {
     setView('operate');
     if (!visible) {
-      setHotelFullNotice(false);
       setNewWorkerPopup(null);
       clearBuilderToolDrop();
       clearPendingDeliverAll();
@@ -466,7 +465,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   // gesture competes with the popup's Pressable scrim and produces unpredictable
   // touch behaviour on iOS (feels like "interface blocked").
   const hasActivePopup =
-    !!hotelFullNotice || !!newWorkerPopup || !!builderToolDrop ||
+    !!newWorkerPopup || !!builderToolDrop ||
     !!pendingDeliverAll || infoVisible || !!insufficientResources;
 
   const panGesture = Gesture.Pan()
@@ -529,7 +528,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     collectTip();
 
     if (isHotelFull) {
-      setHotelFullNotice(true);
+      showHotelFullNotice();
     }
   }, [collectTip]);
 
@@ -1098,37 +1097,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             )}
           </ScrollView>
         </Animated.View>
-
-        {/* Hotel full notice — View overlay inside Modal (no nested Modal = no navigation freeze) */}
-        {hotelFullNotice && (
-          <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setHotelFullNotice(false)}>
-            <Pressable style={popupStyles.card} onPress={() => {}}>
-              <View style={popupStyles.avatarWrap}>
-                <HotelIcon size={32} color="#A8475F" />
-              </View>
-              <View style={popupStyles.info}>
-                <Text style={popupStyles.title}>{t('hotelFullPopup.title')}</Text>
-                <Text style={popupStyles.subtitle}>{t('hotelFullPopup.subtitle')}</Text>
-              </View>
-              <Pressable
-                onPress={() => {
-                  setHotelFullNotice(false);
-                  onClose();
-                  onOpenHotel?.();
-                }}
-                style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
-              >
-                <LinearGradient colors={['#C9637E', '#A8475F']} style={popupStyles.findJobGradient}>
-                  <HotelIcon size={16} color="#fff" />
-                  <Text style={popupStyles.findJobText}>{t('hotelFullPopup.goToHotel')}</Text>
-                </LinearGradient>
-              </Pressable>
-              <Pressable onPress={() => setHotelFullNotice(false)} style={popupStyles.dismissBtn}>
-                <Text style={popupStyles.dismissText}>{t('hotelFullPopup.dismiss')}</Text>
-              </Pressable>
-            </Pressable>
-          </Pressable>
-        )}
 
         {/* New worker popup — View overlay inside Modal */}
         {newWorkerPopup && (

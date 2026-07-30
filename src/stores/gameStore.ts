@@ -142,7 +142,10 @@ interface UIState {
   tokenInsufficient: { floorType: 'green' | 'blue' | 'yellow' | 'purple' | 'red'; have: number; need: number } | null;
   pendingTaskReward: PendingTaskReward | null;
   pendingDeliverAll: DeliverAllSummary | null;
+  hotelFullNotice: boolean;
+  pendingOpenHotel: boolean;
 }
+
 
 interface GameActions {
   buy: (floorId: number, slotIdx: number, typeId: string) => void;
@@ -211,6 +214,9 @@ interface GameActions {
   clearTaskReward: () => void;
   setPendingDeliverAll: (summary: DeliverAllSummary) => void;
   clearPendingDeliverAll: () => void;
+  showHotelFullNotice: () => void;
+  dismissHotelFullNotice: () => void;
+  clearPendingOpenHotel: () => void;
   reset: () => void;
 }
 
@@ -377,6 +383,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   tokenInsufficient: null,
   pendingTaskReward: null,
   pendingDeliverAll: null,
+  hotelFullNotice: false,
+  pendingOpenHotel: false,
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -428,6 +436,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   clearTaskReward: () => set({ pendingTaskReward: null }),
   setPendingDeliverAll: (summary) => set({ pendingDeliverAll: summary }),
   clearPendingDeliverAll: () => set({ pendingDeliverAll: null }),
+  showHotelFullNotice: () => set({ hotelFullNotice: true }),
+  dismissHotelFullNotice: () => set({ hotelFullNotice: false }),
+  clearPendingOpenHotel: () => set({ pendingOpenHotel: false }),
   setPendingWorkerFocus: (workerId) => set({ pendingWorkerFocus: workerId }),
   clearPendingWorkerFocus: () => set({ pendingWorkerFocus: null }),
   setDailyLoginReward: (reward) => set({ pendingDailyLoginReward: reward }),
@@ -497,6 +508,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     pendingReferralNotifications: [],
     pendingWorkerFocus: null,
     pendingDailyLoginReward: null,
+    hotelFullNotice: false,
+    pendingOpenHotel: false,
     tokens: { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     dailyTasks: { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
   }),
@@ -916,7 +929,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         (cmd) => !sentIds.has(cmd.id) &&
           (cmd.type === 'assign_worker' || cmd.type === 'fire_worker' ||
            cmd.type === 'evict_worker' || cmd.type === 'fire_and_evict_worker' ||
-           cmd.type === 'evict_low_level_workers' || cmd.type === 'upgrade_to_specialist'),
+           cmd.type === 'evict_low_level_workers' || cmd.type === 'upgrade_to_specialist' ||
+           cmd.type === 'deliver_all'),
       );
       if (pendingWorkerCmds.length === 0) return serverState.workers;
       let workers = serverState.workers;

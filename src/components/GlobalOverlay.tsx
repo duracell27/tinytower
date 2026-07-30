@@ -7,6 +7,7 @@ import DailyLoginRewardModal from './DailyLoginRewardModal';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
 import TokenInsufficientModal from './TokenInsufficientModal';
 import TaskRewardModal from './TaskRewardModal';
+import HotelFullNoticeModal from './HotelFullNoticeModal';
 
 export default function GlobalOverlay() {
   return (
@@ -18,6 +19,7 @@ export default function GlobalOverlay() {
       <InsufficientResourcesModal />
       <TokenInsufficientModal />
       <TaskRewardModal />
+      <HotelFullNoticeModal />
     </View>
   );
 }

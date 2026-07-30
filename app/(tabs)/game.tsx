@@ -78,6 +78,8 @@ export default function GameScreen() {
   const listAll = useGameStore((s) => s.listAll);
   const buyAll = useGameStore((s) => s.buyAll);
   const lastSyncAt = useGameStore((s) => s.lastSyncAt);
+  const pendingOpenHotel = useGameStore((s) => s.pendingOpenHotel);
+  const clearPendingOpenHotel = useGameStore((s) => s.clearPendingOpenHotel);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const hotelCapacity = useGameStore((s) => s.hotelCapacity);
   const hotelOccupied = useGameStore((s) => s.workers.filter(w => w.assignedFloorId === null).length);
@@ -395,6 +397,14 @@ export default function GameScreen() {
       qaOverlayOpacity.value = withTiming(0, { duration: 380, easing: ReanimatedEasing.in(ReanimatedEasing.quad) });
     }
   }, [qaBarVisible, qaOverlayOpacity]);
+
+  useEffect(() => {
+    if (pendingOpenHotel) {
+      setLobbyOpen(false);
+      setHotelOpen(true);
+      clearPendingOpenHotel();
+    }
+  }, [pendingOpenHotel, clearPendingOpenHotel]);
 
   const resolveFloorName = useCallback(
     (floorId: number, floor: { productions: { typeId: string | null }[] }): string => {
