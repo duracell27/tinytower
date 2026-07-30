@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { AdminService } from '../admin.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -87,6 +88,51 @@ describe('AdminService', () => {
           },
         }),
       );
+    });
+  });
+
+  describe('getPlayer', () => {
+    it('throws NotFoundException for unknown id', async () => {
+      prisma.player.findUnique.mockResolvedValue(null);
+      await expect(service.getPlayer('bad-id')).rejects.toThrow(NotFoundException);
+    });
+
+    it('maps token fields from state', async () => {
+      prisma.player.findUnique.mockResolvedValue({
+        ...mockPlayer,
+        playerXp: 0,
+        state: {
+          gems: 5, briks: 1, glass: 2, nails: 3, screw: 4,
+          tokenGreen: 10, tokenBlue: 20, tokenYellow: 30, tokenPurple: 40, tokenRed: 50,
+          lobbyCapacity: 10, hotelCapacity: 10, elevatorLevel: 1,
+        },
+        workers: [],
+        floors: [],
+        floorTypes: [],
+      });
+      const result = await service.getPlayer('player-1');
+      expect(result.tokens).toEqual({ green: 10, blue: 20, yellow: 30, purple: 40, red: 50 });
+    });
+  });
+
+  describe('deletePlayer', () => {
+    it('throws NotFoundException when player does not exist', async () => {
+      prisma.player.findUnique.mockResolvedValue(null);
+      await expect(service.deletePlayer('bad-id')).rejects.toThrow(NotFoundException);
+    });
+
+    it('calls prisma.player.delete with correct id', async () => {
+      prisma.player.findUnique.mockResolvedValue(mockPlayer);
+      prisma.player.delete.mockResolvedValue(mockPlayer);
+      await service.deletePlayer('player-1');
+      expect(prisma.player.delete).toHaveBeenCalledWith({ where: { id: 'player-1' } });
+    });
+  });
+
+  describe('deleteWorker', () => {
+    it('throws NotFoundException when worker not found for player', async () => {
+      prisma.worker.findFirst.mockResolvedValue(null);
+      await expect(service.deleteWorker('player-1', 'w-1')).rejects.toThrow(NotFoundException);
     });
   });
 });
