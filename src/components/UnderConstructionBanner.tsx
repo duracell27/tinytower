@@ -201,10 +201,10 @@ export default function UnderConstructionBanner({
                 style={styles.confirmBtn}
                 hitSlop={8}
               >
-                <Text style={styles.confirmBtnText}>✓</Text>
+                <Image source={require('../../assets/img/OkIcon.png')} style={styles.confirmBtnIcon} contentFit="contain" />
               </Pressable>
               <Pressable onPress={() => setConfirming(false)} style={styles.cancelBtn} hitSlop={8}>
-                <Text style={styles.cancelBtnText}>✗</Text>
+                <Image source={require('../../assets/img/CancellIcon.png')} style={styles.confirmBtnIcon} contentFit="contain" />
               </Pressable>
             </View>
           ) : (
@@ -483,26 +483,14 @@ const styles = StyleSheet.create({
     color: BANNER_COLOR,
   },
   confirmBtn: {
-    backgroundColor: '#49AA38',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  confirmBtnText: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 13,
-    color: '#fff',
+    padding: 2,
   },
   cancelBtn: {
-    backgroundColor: '#D9534F',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    padding: 2,
   },
-  cancelBtnText: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 13,
-    color: '#fff',
+  confirmBtnIcon: {
+    width: 32,
+    height: 32,
   },
   openBtn: {
     borderRadius: 11,

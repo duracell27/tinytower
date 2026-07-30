@@ -133,7 +133,10 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
           style={styles.avatar}
           contentFit="cover"
         />
-        <Text style={styles.name} numberOfLines={1}>{item.playerName}</Text>
+        <View style={styles.nameBlock}>
+          <Text style={styles.name} numberOfLines={1}>{item.playerName}</Text>
+          <Text style={styles.cityText} numberOfLines={1}>{item.city ?? 'no city'}</Text>
+        </View>
         <View style={styles.valueBlock}>
           <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
           <Text style={[styles.valueBig, { color: accent }]}>{formatValue(item.value)}</Text>
@@ -215,7 +218,10 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
               style={styles.avatar}
               contentFit="cover"
             />
-            <Text style={styles.name}>{t('leaderboard.you')}</Text>
+            <View style={styles.nameBlock}>
+              <Text style={styles.name}>{t('leaderboard.you')}</Text>
+              <Text style={styles.cityText}>no city</Text>
+            </View>
             <View style={styles.valueBlock}>
               <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
               <Text style={[styles.valueBig, { color: TAB_ACTIVE_COLORS[tab] }]}>
@@ -337,7 +343,9 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
   },
-  name: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2A3344', flex: 1 },
+  nameBlock: { flex: 1, gap: 1 },
+  name: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2A3344' },
+  cityText: { fontFamily: 'Fredoka_400Regular', fontSize: 11, color: '#9CA3AF' },
   valueBlock: { alignItems: 'center', gap: 1 },
   valueLabel: {
     fontFamily: 'Fredoka_600SemiBold',

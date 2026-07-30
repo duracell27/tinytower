@@ -1,5 +1,18 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForumCategory } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+
+const FORUM_POST_SELECT = {
+  id: true, playerId: true, playerName: true, playerLevel: true,
+  category: true, title: true, body: true,
+  isPinned: true, isClosed: true, commentCount: true,
+  createdAt: true, updatedAt: true,
+} as const;
+
+const FORUM_COMMENT_SELECT = {
+  id: true, postId: true, playerId: true, playerName: true,
+  playerLevel: true, body: true, createdAt: true, updatedAt: true,
+} as const;
 
 @Injectable()
 export class AdminService {
@@ -193,6 +206,75 @@ export class AdminService {
     const player = await this.prisma.player.findUnique({ where: { id } });
     if (!player) throw new NotFoundException('Player not found');
     await this.prisma.player.delete({ where: { id } });
+    return { ok: true };
+  }
+
+  async getForumPosts(category: ForumCategory, page: number, limit: number) {
+    const [total, posts] = await Promise.all([
+      this.prisma.forumPost.count({ where: { category, deletedAt: null } }),
+      this.prisma.forumPost.findMany({
+        where: { category, deletedAt: null },
+        orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
+        skip: (page - 1) * limit,
+        take: limit,
+        select: FORUM_POST_SELECT,
+      }),
+    ]);
+    return { data: posts, total, page, totalPages: Math.ceil(total / limit) };
+  }
+
+  async createForumPost(playerId: string, category: ForumCategory, title: string, body: string) {
+    const player = await this.prisma.player.findUnique({ where: { id: playerId }, select: { playerName: true, playerLevel: true } });
+    if (!player) throw new NotFoundException('Player not found');
+    return this.prisma.forumPost.create({
+      data: { playerId, playerName: player.playerName, playerLevel: player.playerLevel, category, title, body },
+      select: FORUM_POST_SELECT,
+    });
+  }
+
+  async pinForumPost(id: string, isPinned: boolean) {
+    const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null } });
+    if (!post) throw new NotFoundException('Post not found');
+    return this.prisma.forumPost.update({ where: { id }, data: { isPinned }, select: FORUM_POST_SELECT });
+  }
+
+  async closeForumPost(id: string, isClosed: boolean) {
+    const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null } });
+    if (!post) throw new NotFoundException('Post not found');
+    return this.prisma.forumPost.update({ where: { id }, data: { isClosed }, select: FORUM_POST_SELECT });
+  }
+
+  async deleteForumPost(id: string) {
+    const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null } });
+    if (!post) throw new NotFoundException('Post not found');
+    await this.prisma.forumPost.update({ where: { id }, data: { deletedAt: new Date() } });
+    return { ok: true };
+  }
+
+  async getForumComments(postId: string, page: number, limit: number) {
+    const post = await this.prisma.forumPost.findFirst({ where: { id: postId, deletedAt: null } });
+    if (!post) throw new NotFoundException('Post not found');
+    const skip = (page - 1) * limit;
+    const [total, comments] = await Promise.all([
+      this.prisma.forumComment.count({ where: { postId, deletedAt: null } }),
+      this.prisma.forumComment.findMany({
+        where: { postId, deletedAt: null },
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take: limit,
+        select: FORUM_COMMENT_SELECT,
+      }),
+    ]);
+    return { data: comments, total, page, totalPages: Math.ceil(total / limit) };
+  }
+
+  async deleteForumComment(id: string) {
+    const comment = await this.prisma.forumComment.findFirst({ where: { id, deletedAt: null }, select: { playerId: true, postId: true } });
+    if (!comment) throw new NotFoundException('Comment not found');
+    await this.prisma.$transaction([
+      this.prisma.forumComment.update({ where: { id }, data: { deletedAt: new Date() } }),
+      this.prisma.forumPost.update({ where: { id: comment.postId }, data: { commentCount: { decrement: 1 } } }),
+    ]);
     return { ok: true };
   }
 

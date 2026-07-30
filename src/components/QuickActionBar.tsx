@@ -79,6 +79,11 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   useEffect(() => {
     if (firstRunRef.current) {
       firstRunRef.current = false;
+      // If mounted already-visible (race: stale onHidden fired during a new session),
+      // still animate in so the bar doesn't stay frozen off-screen at slideY=120.
+      if (visible) {
+        slideY.value = withSpring(0, { damping: 14, stiffness: 160, mass: 0.9 });
+      }
       return;
     }
     if (visible) {

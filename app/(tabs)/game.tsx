@@ -254,6 +254,10 @@ export default function GameScreen() {
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
   const [qaBarVisible, setQaBarVisible] = useState(false);
   quickActionModeRef.current = quickActionMode;
+  const qaBarVisibleRef = useRef(false);
+  qaBarVisibleRef.current = qaBarVisible;
+  // Tracks intentional ✕ exits so the defensive restore effect doesn't override them.
+  const qaExitRequestedRef = useRef(false);
 
   const navigation = useNavigation();
   useEffect(() => {
@@ -357,6 +361,18 @@ export default function GameScreen() {
     }
   }, [quickActionMode]);
 
+  // Defensive restore: if the bar was spuriously hidden (not by ✕ and not by
+  // auto-exit) while QA mode is active and floors remain — bring it back.
+  useEffect(() => {
+    if (qaBarVisible) {
+      qaExitRequestedRef.current = false; // reset on any re-show
+      return;
+    }
+    if (quickActionMode !== null && filteredFloors.length > 0 && !qaExitRequestedRef.current) {
+      setQaBarVisible(true);
+    }
+  }, [quickActionMode, filteredFloors.length, qaBarVisible]);
+
   // Stable key: only changes when the set of floor IDs changes, not on every `now` tick.
   const qaItemKey = qaItems.map((i) => (i.type === 'production' ? i.id : i.type)).join(',');
 
@@ -406,11 +422,17 @@ export default function GameScreen() {
   }, [quickActionMode, availableMode]);
 
   const handleQaExit = useCallback(() => {
+    qaExitRequestedRef.current = true;
     setQaBarVisible(false);
   }, []);
 
   const handleQaHidden = useCallback(() => {
-    setQuickActionMode(null);
+    // Guard against stale animation callbacks firing during a new QA session.
+    // If qaBarVisible is true, the user re-entered QA mode before the old
+    // slide-out animation finished — don't reset the active mode.
+    if (!qaBarVisibleRef.current) {
+      setQuickActionMode(null);
+    }
   }, []);
 
   const handleBulkAll = useCallback(() => {
@@ -424,49 +446,65 @@ export default function GameScreen() {
   }, [quickActionMode, collectAll, listAll, buyAll]);
 
   const handleQuickAction = useCallback(() => {
-    if (!quickActionMode || !bottomFloor) return;
+    if (!quickActionMode) return;
+
+    // Read live state to avoid stale-closure issues during rapid clicking.
+    // The 1-second game clock can lag real time by up to 999ms, causing floors
+    // that are actually ready to be missed. Date.now() + fresh store data fix both.
+    const liveNow = Date.now();
+    const { floors: liveFloors, workers: liveWorkers, balance: liveBalance,
+      coinBonusPercent: liveCoinBonus, openedFloorTypes: liveOpenedTypes,
+      businessUpgrades: liveUpgrades } = useGameStore.getState();
+
+    const liveFilteredFloors = getFloorsForMode(quickActionMode, liveFloors, liveWorkers, liveNow);
+    const liveBottomFloor = liveFilteredFloors.length > 0
+      ? liveFilteredFloors[liveFilteredFloors.length - 1]
+      : null;
+
+    if (!liveBottomFloor) return;
 
     if (quickActionMode === 'collect') {
-      bottomFloor.productions.forEach((prod, slotIdx) => {
+      liveBottomFloor.productions.forEach((prod, slotIdx) => {
         if (!prod.typeId) return;
         const tc = gameConfig.productionTypes[prod.typeId];
         if (!tc) return;
-        if (getProductionStatus(prod, tc, now, balance).effectiveStage === 'READY_TO_COLLECT') {
-          storeCollect(bottomFloor.id, slotIdx);
+        if (getProductionStatus(prod, tc, liveNow, liveBalance).effectiveStage === 'READY_TO_COLLECT') {
+          storeCollect(liveBottomFloor.id, slotIdx);
         }
       });
       return;
     }
 
     if (quickActionMode === 'list') {
-      bottomFloor.productions.forEach((prod, slotIdx) => {
+      liveBottomFloor.productions.forEach((prod, slotIdx) => {
         if (!prod.typeId) return;
         const tc = gameConfig.productionTypes[prod.typeId];
         if (!tc) return;
-        if (getProductionStatus(prod, tc, now, balance).effectiveStage === 'READY_TO_LIST') {
-          storeList(bottomFloor.id, slotIdx);
+        if (getProductionStatus(prod, tc, liveNow, liveBalance).effectiveStage === 'READY_TO_LIST') {
+          storeList(liveBottomFloor.id, slotIdx);
         }
       });
       return;
     }
 
     if (quickActionMode === 'buy') {
-      if (!bottomFloorInfo || bottomFloorInfo.mode !== 'buy') return;
-      if (balance < bottomFloorInfo.buyCost) {
-        showInsufficientResources({ currency: 'coins', need: bottomFloorInfo.buyCost, have: balance });
+      const liveBuyInfo = getFloorActionInfo(
+        'buy', liveBottomFloor, liveNow, liveWorkers,
+        liveCoinBonus, liveOpenedTypes ?? {}, liveUpgrades ?? {},
+      );
+      if (!liveBuyInfo || liveBuyInfo.mode !== 'buy') return;
+      if (liveBalance < liveBuyInfo.buyCost) {
+        showInsufficientResources({ currency: 'coins', need: liveBuyInfo.buyCost, have: liveBalance });
         return;
       }
-      storeBuy(bottomFloor.id, bottomFloorInfo.slotIdx, bottomFloorInfo.typeId);
+      storeBuy(liveBottomFloor.id, liveBuyInfo.slotIdx, liveBuyInfo.typeId);
       return;
     }
 
     if (quickActionMode === 'hire') {
       setHotelOpen(true);
     }
-  }, [
-    quickActionMode, bottomFloor, bottomFloorInfo, now, balance,
-    storeCollect, storeList, storeBuy, showInsufficientResources,
-  ]);
+  }, [quickActionMode, storeCollect, storeList, storeBuy, showInsufficientResources]);
 
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
     if (item.type === 'collapseDivider') {
@@ -616,16 +654,22 @@ export default function GameScreen() {
               style={[styles.qaOverlay, qaOverlayStyle]}
               pointerEvents={quickActionMode !== null ? 'box-none' : 'none'}
             >
-              <FlashList
-                ref={qaListRef as any}
-                data={qaItems}
-                renderItem={renderItem}
-                keyExtractor={keyExtractor}
-                estimatedItemSize={216}
-                getItemType={(item) => item.type}
-                contentContainerStyle={styles.listContentQA}
-                showsVerticalScrollIndicator={false}
-              />
+              <ImageBackground
+                source={require('../../assets/img/backgroung/bg15.png')}
+                style={{ flex: 1 }}
+                resizeMode="cover"
+              >
+                <FlashList
+                  ref={qaListRef as any}
+                  data={qaItems}
+                  renderItem={renderItem}
+                  keyExtractor={keyExtractor}
+                  estimatedItemSize={216}
+                  getItemType={(item) => item.type}
+                  contentContainerStyle={styles.listContentQA}
+                  showsVerticalScrollIndicator={false}
+                />
+              </ImageBackground>
             </Animated.View>
           </Animated.View>
           <View style={styles.sideRight} />
@@ -813,7 +857,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#DCEFF6',
   },
   floorWrapper: {
     marginBottom: 13,

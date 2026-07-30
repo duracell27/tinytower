@@ -1,11 +1,25 @@
 import {
-  Controller, Get, Patch, Delete, Query, Param,
-  UseGuards, Body, BadRequestException,
+  Controller, Get, Post, Patch, Delete, Query, Param,
+  UseGuards, Body, BadRequestException, Req,
 } from '@nestjs/common';
 import { z } from 'zod';
+import { ForumCategory } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
 import { AdminService } from './admin.service';
+
+type AuthReq = { user: { playerId: string; isAdmin: boolean } };
+
+const FORUM_CATEGORIES = ['NEWS', 'HELP', 'GENERAL', 'CITIES', 'PURCHASES'] as const;
+
+const CreateForumPostSchema = z.object({
+  category: z.enum(FORUM_CATEGORIES),
+  title: z.string().min(1).max(200),
+  body: z.string().min(1).max(5000),
+});
+
+const ForumPinSchema = z.object({ isPinned: z.boolean() });
+const ForumCloseSchema = z.object({ isClosed: z.boolean() });
 
 const UpdateInfoSchema = z.object({
   playerName: z.string().min(3).max(30).optional(),
@@ -105,5 +119,55 @@ export class AdminController {
     @Query('type') type?: string,
   ) {
     return this.adminService.getCommandLogs(Math.max(1, +page || 1), Math.min(Math.max(1, +limit || 50), 200), playerId, type);
+  }
+
+  @Get('forum/posts')
+  getForumPosts(
+    @Query('category') category: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    if (!FORUM_CATEGORIES.includes(category as any)) throw new BadRequestException('Invalid category');
+    return this.adminService.getForumPosts(category as ForumCategory, Math.max(1, +page || 1), Math.min(Math.max(1, +limit || 20), 100));
+  }
+
+  @Post('forum/posts')
+  async createForumPost(@Req() req: AuthReq, @Body() body: unknown) {
+    const result = CreateForumPostSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues);
+    return this.adminService.createForumPost(req.user.playerId, result.data.category as ForumCategory, result.data.title, result.data.body);
+  }
+
+  @Patch('forum/posts/:id/pin')
+  pinForumPost(@Param('id') id: string, @Body() body: unknown) {
+    const result = ForumPinSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues);
+    return this.adminService.pinForumPost(id, result.data.isPinned);
+  }
+
+  @Patch('forum/posts/:id/close')
+  closeForumPost(@Param('id') id: string, @Body() body: unknown) {
+    const result = ForumCloseSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues);
+    return this.adminService.closeForumPost(id, result.data.isClosed);
+  }
+
+  @Delete('forum/posts/:id')
+  deleteForumPost(@Param('id') id: string) {
+    return this.adminService.deleteForumPost(id);
+  }
+
+  @Get('forum/posts/:id/comments')
+  getForumComments(
+    @Param('id') id: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '50',
+  ) {
+    return this.adminService.getForumComments(id, Math.max(1, +page || 1), Math.min(Math.max(1, +limit || 50), 100));
+  }
+
+  @Delete('forum/comments/:id')
+  deleteForumComment(@Param('id') id: string) {
+    return this.adminService.deleteForumComment(id);
   }
 }

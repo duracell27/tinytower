@@ -4,6 +4,7 @@ import { LoginPage } from './pages/LoginPage';
 import { PlayersPage } from './pages/PlayersPage';
 import { PlayerDetailPage } from './pages/PlayerDetailPage';
 import { CommandLogsPage } from './pages/CommandLogsPage';
+import { ForumPage } from './pages/ForumPage';
 
 export function App() {
   return (
@@ -31,6 +32,14 @@ export function App() {
           element={
             <ProtectedRoute>
               <CommandLogsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/forum"
+          element={
+            <ProtectedRoute>
+              <ForumPage />
             </ProtectedRoute>
           }
         />

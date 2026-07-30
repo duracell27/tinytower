@@ -9,6 +9,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navLinks = [
     { to: '/players', label: 'Players' },
     { to: '/commands', label: 'Command Logs' },
+    { to: '/forum', label: 'Forum' },
   ];
 
   return (

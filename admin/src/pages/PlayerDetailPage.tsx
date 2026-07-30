@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -22,14 +22,15 @@ function Field({ label, error, children }: { label: string; error?: string; chil
   );
 }
 
-function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
+const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  ({ className, ...props }, ref) => (
     <input
       {...props}
+      ref={ref}
       className={cn('w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500', className)}
     />
-  );
-}
+  ),
+);
 
 function SaveButton({ loading }: { loading: boolean }) {
   return (
@@ -57,7 +58,7 @@ function InfoTab({ player, playerId }: { player: PlayerDetail; playerId: string 
   const qc = useQueryClient();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<InfoForm>({
     resolver: zodResolver(InfoSchema),
-    defaultValues: {
+    values: {
       playerName: player.playerName,
       email: player.email,
       playerLevel: player.playerLevel,
@@ -110,7 +111,7 @@ function EconomyTab({ player, playerId }: { player: PlayerDetail; playerId: stri
   const qc = useQueryClient();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<EconomyForm>({
     resolver: zodResolver(EconomySchema),
-    defaultValues: { balance: player.balance, gems: player.gems },
+    values: { balance: player.balance, gems: player.gems },
   });
 
   const onSubmit = async (data: EconomyForm) => {
@@ -149,7 +150,7 @@ function MaterialsTab({ player, playerId }: { player: PlayerDetail; playerId: st
   const qc = useQueryClient();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<MaterialsForm>({
     resolver: zodResolver(MaterialsSchema),
-    defaultValues: player.tools,
+    values: player.tools,
   });
 
   const onSubmit = async (data: MaterialsForm) => {
@@ -188,7 +189,7 @@ function TokensTab({ player, playerId }: { player: PlayerDetail; playerId: strin
   const qc = useQueryClient();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<TokensForm>({
     resolver: zodResolver(TokensSchema),
-    defaultValues: player.tokens,
+    values: player.tokens,
   });
 
   const onSubmit = async (data: TokensForm) => {
@@ -382,7 +383,7 @@ export function PlayerDetailPage() {
 
   return (
     <Layout>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <button onClick={() => navigate('/players')} className="text-sm text-gray-500 hover:text-blue-600 mb-1">
             ← Players
@@ -398,6 +399,24 @@ export function PlayerDetailPage() {
         </button>
       </div>
 
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {[
+          { label: 'Coins', value: player.balance.toLocaleString() },
+          { label: 'Gems', value: player.gems.toLocaleString() },
+          { label: 'XP', value: player.playerXp.toLocaleString() },
+          { label: 'Workers', value: player.workers.length },
+          { label: 'Floors', value: player.floors.length },
+          { label: 'Briks', value: player.tools.briks },
+          { label: 'Glass', value: player.tools.glass },
+          { label: 'Nails / Screws', value: `${player.tools.nails} / ${player.tools.screw}` },
+        ].map((s) => (
+          <div key={s.label} className="bg-white border rounded-lg px-4 py-3">
+            <p className="text-xs text-gray-500 mb-0.5">{s.label}</p>
+            <p className="text-sm font-semibold text-gray-800">{s.value}</p>
+          </div>
+        ))}
+      </div>
+
       <Tabs.Root defaultValue="info">
         <Tabs.List className="flex gap-1 border-b mb-6">
           {TAB_ITEMS.map((tab) => (
@@ -410,12 +429,12 @@ export function PlayerDetailPage() {
             </Tabs.Trigger>
           ))}
         </Tabs.List>
-        <Tabs.Content value="info"><InfoTab player={player} playerId={id!} /></Tabs.Content>
-        <Tabs.Content value="economy"><EconomyTab player={player} playerId={id!} /></Tabs.Content>
-        <Tabs.Content value="materials"><MaterialsTab player={player} playerId={id!} /></Tabs.Content>
-        <Tabs.Content value="tokens"><TokensTab player={player} playerId={id!} /></Tabs.Content>
-        <Tabs.Content value="workers"><WorkersTab workers={player.workers} playerId={id!} /></Tabs.Content>
-        <Tabs.Content value="floors"><FloorsTab floors={player.floors} playerId={id!} /></Tabs.Content>
+        <Tabs.Content value="info" forceMount className="data-[state=inactive]:hidden"><InfoTab player={player} playerId={id!} /></Tabs.Content>
+        <Tabs.Content value="economy" forceMount className="data-[state=inactive]:hidden"><EconomyTab player={player} playerId={id!} /></Tabs.Content>
+        <Tabs.Content value="materials" forceMount className="data-[state=inactive]:hidden"><MaterialsTab player={player} playerId={id!} /></Tabs.Content>
+        <Tabs.Content value="tokens" forceMount className="data-[state=inactive]:hidden"><TokensTab player={player} playerId={id!} /></Tabs.Content>
+        <Tabs.Content value="workers" forceMount className="data-[state=inactive]:hidden"><WorkersTab workers={player.workers} playerId={id!} /></Tabs.Content>
+        <Tabs.Content value="floors" forceMount className="data-[state=inactive]:hidden"><FloorsTab floors={player.floors} playerId={id!} /></Tabs.Content>
       </Tabs.Root>
 
       <ConfirmDialog

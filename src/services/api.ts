@@ -4,6 +4,7 @@ export interface LeaderboardEntry {
   rank: number;
   playerId: string;
   playerName: string;
+  city?: string;
   value: number;
 }
 
