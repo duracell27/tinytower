@@ -11,6 +11,7 @@ import { ReferralModule } from './referral/referral.module';
 import { ChatModule } from './chat/chat.module';
 import { ForumModule } from './forum/forum.module';
 import { StatsModule } from './stats/stats.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { StatsModule } from './stats/stats.module';
     ChatModule,
     ForumModule,
     StatsModule,
+    AdminModule,
   ],
 })
 export class AppModule {}
