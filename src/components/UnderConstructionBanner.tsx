@@ -195,7 +195,12 @@ export default function UnderConstructionBanner({
         {!isReady ? (
           confirming ? (
             <View style={styles.confirmRow}>
-              <Text style={styles.confirmLabel}>⚡ {speedUpCost}💎?</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Image source={require('../../assets/img/speedUp.png')} style={{ width: 14, height: 14 }} contentFit="contain" />
+                <Text style={styles.confirmLabel}>{speedUpCost}</Text>
+                <Image source={require('../../assets/img/diamond.png')} style={{ width: 14, height: 14 }} contentFit="contain" />
+                <Text style={styles.confirmLabel}>?</Text>
+              </View>
               <Pressable
                 onPress={() => { speedUpConstruction(floorId); setConfirming(false); }}
                 style={styles.confirmBtn}
@@ -219,12 +224,8 @@ export default function UnderConstructionBanner({
                 style={styles.speedUpBtn}
                 hitSlop={6}
               >
-                <Text style={styles.speedUpIcon}>⚡</Text>
-                <Image
-                  source={require('../../assets/img/diamond.png')}
-                  style={{ width: 13, height: 13 }}
-                  contentFit="contain"
-                />
+                <Image source={require('../../assets/img/speedUp.png')} style={{ width: 13, height: 13 }} contentFit="contain" />
+                <Image source={require('../../assets/img/diamond.png')} style={{ width: 13, height: 13 }} contentFit="contain" />
                 <Text style={styles.speedUpCost}>{speedUpCost}</Text>
               </Pressable>
             </View>
@@ -463,9 +464,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1.5,
     borderColor: '#2592AB',
-  },
-  speedUpIcon: {
-    fontSize: 13,
   },
   speedUpCost: {
     fontFamily: 'Fredoka_700Bold',
