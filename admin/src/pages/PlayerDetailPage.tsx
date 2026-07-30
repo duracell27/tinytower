@@ -47,7 +47,7 @@ function SaveButton({ loading }: { loading: boolean }) {
 const InfoSchema = z.object({
   playerName: z.string().min(3).max(30),
   email: z.string().email(),
-  playerLevel: z.coerce.number().int().positive(),
+  playerLevel: z.coerce.number().int().nonnegative(),
   playerXp: z.coerce.number().int().nonnegative(),
   isAdmin: z.boolean(),
 });
