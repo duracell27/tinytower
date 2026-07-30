@@ -46,7 +46,7 @@ export class AdminController {
     @Query('limit') limit = '20',
     @Query('search') search?: string,
   ) {
-    return this.adminService.getPlayers(+page, +limit, search);
+    return this.adminService.getPlayers(Math.max(1, +page || 1), Math.min(Math.max(1, +limit || 20), 200), search);
   }
 
   @Get('players/:id')
@@ -104,6 +104,6 @@ export class AdminController {
     @Query('playerId') playerId?: string,
     @Query('type') type?: string,
   ) {
-    return this.adminService.getCommandLogs(+page, +limit, playerId, type);
+    return this.adminService.getCommandLogs(Math.max(1, +page || 1), Math.min(Math.max(1, +limit || 50), 200), playerId, type);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -117,11 +117,16 @@ export class AdminService {
   ) {
     const player = await this.prisma.player.findUnique({ where: { id } });
     if (!player) throw new NotFoundException('Player not found');
-    return this.prisma.player.update({
-      where: { id },
-      data: dto,
-      select: { id: true, playerName: true, email: true, isAdmin: true, playerLevel: true, playerXp: true },
-    });
+    try {
+      return await this.prisma.player.update({
+        where: { id },
+        data: dto,
+        select: { id: true, playerName: true, email: true, isAdmin: true, playerLevel: true, playerXp: true },
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2002') throw new ConflictException('Player name or email already taken');
+      throw e;
+    }
   }
 
   async updatePlayerEconomy(id: string, dto: { balance?: number; gems?: number }) {
