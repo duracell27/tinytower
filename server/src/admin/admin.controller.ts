@@ -11,7 +11,7 @@ const UpdateInfoSchema = z.object({
   playerName: z.string().min(3).max(30).optional(),
   email: z.string().email().optional(),
   isAdmin: z.boolean().optional(),
-  playerLevel: z.number().int().positive().optional(),
+  playerLevel: z.number().int().nonnegative().optional(),
   playerXp: z.number().int().nonnegative().optional(),
 });
 
