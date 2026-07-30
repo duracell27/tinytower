@@ -213,14 +213,136 @@ function TokensTab({ player, playerId }: { player: PlayerDetail; playerId: strin
   );
 }
 
-// --- Workers Tab (placeholder for Task 8) ---
+// --- Workers Tab ---
 function WorkersTab({ workers, playerId }: { workers: WorkerItem[]; playerId: string }) {
-  return <p className="text-gray-400 text-sm">Workers tab — implemented in Task 8</p>;
+  const qc = useQueryClient();
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: (workerId: string) =>
+      api.delete<{ ok: true }>(`/admin/players/${playerId}/workers/${workerId}`),
+    onSuccess: () => {
+      toast.success('Worker removed');
+      setConfirmId(null);
+      qc.invalidateQueries({ queryKey: ['admin-player', playerId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  if (workers.length === 0) return <p className="text-gray-400 text-sm">No workers</p>;
+
+  return (
+    <>
+      <div className="rounded-md border bg-white overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b bg-gray-50">
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Name</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Level</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Floor Type</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Dream Job</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Specialist</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Assigned Floor</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {workers.map((w) => (
+              <tr key={w.id} className="border-b last:border-0">
+                <td className="px-4 py-3">{w.name}</td>
+                <td className="px-4 py-3">{w.level}</td>
+                <td className="px-4 py-3">{w.floorType}</td>
+                <td className="px-4 py-3">{w.dreamJob}</td>
+                <td className="px-4 py-3">{w.isSpecialist ? '✓' : ''}</td>
+                <td className="px-4 py-3">{w.assignedFloorId ?? '—'}</td>
+                <td className="px-4 py-3">
+                  <button
+                    onClick={() => setConfirmId(w.id)}
+                    className="px-2 py-1 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100"
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <ConfirmDialog
+        open={!!confirmId}
+        onOpenChange={(o) => !o && setConfirmId(null)}
+        title="Remove worker"
+        description="Permanently remove this worker?"
+        onConfirm={() => confirmId && deleteMutation.mutate(confirmId)}
+        loading={deleteMutation.isPending}
+      />
+    </>
+  );
 }
 
-// --- Floors Tab (placeholder for Task 8) ---
+// --- Floors Tab ---
 function FloorsTab({ floors, playerId }: { floors: FloorItem[]; playerId: string }) {
-  return <p className="text-gray-400 text-sm">Floors tab — implemented in Task 8</p>;
+  const qc = useQueryClient();
+  const [confirmId, setConfirmId] = useState<number | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: (floorId: number) =>
+      api.delete<{ ok: true }>(`/admin/players/${playerId}/floors/${floorId}`),
+    onSuccess: () => {
+      toast.success('Floor removed');
+      setConfirmId(null);
+      qc.invalidateQueries({ queryKey: ['admin-player', playerId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  if (floors.length === 0) return <p className="text-gray-400 text-sm">No floors</p>;
+
+  return (
+    <>
+      <div className="rounded-md border bg-white overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b bg-gray-50">
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Floor ID</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Type</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Productions</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Slots</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {floors.map((f) => (
+              <tr key={f.floorId} className="border-b last:border-0">
+                <td className="px-4 py-3">{f.floorId}</td>
+                <td className="px-4 py-3">{f.floorType ?? '—'}</td>
+                <td className="px-4 py-3">{f.productions.length}</td>
+                <td className="px-4 py-3 text-xs text-gray-500">
+                  {f.productions.map((p) => `${p.slotIdx}:${p.stage}`).join(', ')}
+                </td>
+                <td className="px-4 py-3">
+                  <button
+                    onClick={() => setConfirmId(f.floorId)}
+                    className="px-2 py-1 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100"
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <ConfirmDialog
+        open={confirmId !== null}
+        onOpenChange={(o) => !o && setConfirmId(null)}
+        title="Remove floor"
+        description={`Permanently remove floor ${confirmId}? This also removes all its productions and floor type.`}
+        onConfirm={() => confirmId !== null && deleteMutation.mutate(confirmId)}
+        loading={deleteMutation.isPending}
+      />
+    </>
+  );
 }
 
 // --- Main Page ---
