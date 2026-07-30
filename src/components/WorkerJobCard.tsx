@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Polygon } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -45,16 +46,11 @@ function formatTime(ms: number): string {
 
 function StarIcon({ filled }: { filled: boolean }) {
   return (
-    <Svg width={18} height={18} viewBox="0 0 24 24">
-      <Polygon
-        points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-        fill={filled ? '#F5C842' : 'none'}
-        stroke={filled ? '#E0A800' : '#B0B6C2'}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
+    <Image
+      source={filled ? require('../../assets/img/starFull.png') : require('../../assets/img/starEmpty.png')}
+      style={{ width: 14, height: 14 }}
+      contentFit="contain"
+    />
   );
 }
 
@@ -152,9 +148,6 @@ export default function WorkerJobCard({
         <View style={styles.infoColumn}>
           <View style={styles.nameRow}>
             <Text style={styles.nameText} numberOfLines={1}>{worker.name}</Text>
-            <View style={[styles.moodDotOuter, { backgroundColor: isMidTab ? 'rgba(229,167,46,0.24)' : 'rgba(73,170,56,0.24)' }]}>
-              <View style={[styles.moodDotInner, { backgroundColor: isMidTab ? '#E5A72E' : '#49AA38' }]} />
-            </View>
           </View>
           {isMidTab && (
             <View style={styles.iconRow}>
@@ -259,7 +252,7 @@ const styles = StyleSheet.create({
   starBadge: {
     position: 'absolute',
     bottom: -2,
-    right: -2,
+    right: 6,
     backgroundColor: '#fff',
     borderRadius: 12,
   },
@@ -267,18 +260,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-  },
-  moodDotOuter: {
-    width: 15,
-    height: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  moodDotInner: {
-    width: 9,
-    height: 9,
-    borderRadius: 5,
   },
   infoColumn: {
     flex: 1,

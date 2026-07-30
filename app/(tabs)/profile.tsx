@@ -16,7 +16,7 @@ import { DAILY_TASKS } from '../../shared/config/dailyTasksConfig';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
 import { useGameClock } from '../../src/hooks/useGameClock';
-import { formatNum } from '../../src/utils/format';
+import { formatNum, formatCompact } from '../../src/utils/format';
 import { getUserIcon } from '../../src/utils/userIcon';
 import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
 import * as Clipboard from 'expo-clipboard';
@@ -265,13 +265,17 @@ export default function ProfileScreen() {
 
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{playerLevel}</Text>
-              <Text style={styles.statLabel}>{t('profile.stats.level')}</Text>
+              <View style={styles.statValueRow}>
+                <Text style={styles.statValue}>{playerLevel}</Text>
+                <Image source={require('../../assets/img/lvlIcon.png')} style={styles.statIcon} contentFit="contain" />
+              </View>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItemXp}>
-              <Text style={styles.statValue}>{formatNum(playerXp)}/{formatNum(xpNeeded)}</Text>
-              <Text style={styles.statLabel}>{t('profile.stats.xp')}</Text>
+              <View style={styles.statValueRow}>
+                <Text style={styles.statValue}>{formatCompact(playerXp)} / {formatCompact(xpNeeded)}</Text>
+                <Image source={require('../../assets/img/xpIcon.png')} style={styles.statIcon} contentFit="contain" />
+              </View>
             </View>
           </View>
 
@@ -295,7 +299,7 @@ export default function ProfileScreen() {
               <View style={styles.workerStatsDivider} />
               <View style={styles.workerStatsRow}>
                 <View style={styles.workerStatItem}>
-                  <Image source={require('../../assets/img/happyWorker.png')} style={styles.workerStatIcon} contentFit="contain" />
+                  <Image source={require('../../assets/img/happySmile.png')} style={styles.workerStatIcon} contentFit="contain" />
                   <View style={styles.workerStatTextCol}>
                     <Text style={styles.workerStatLabel}>{t('profile.stats.happy')}</Text>
                     <Text style={styles.workerStatValue}>{happyCount}/{totalWorkers}</Text>
@@ -469,7 +473,9 @@ const styles = StyleSheet.create({
     marginTop: 60,
     backgroundColor: '#fff',
     borderRadius: 24,
-    padding: 28,
+    paddingHorizontal: 15,
+    paddingTop: 28,
+    paddingBottom: 18,
     alignItems: 'center',
     shadowColor: 'rgba(60,80,45,1)',
     shadowOffset: { width: 0, height: 4 },
@@ -512,8 +518,8 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    marginTop: 24,
-    gap: 24,
+    marginTop: 16,
+    gap: 18,
     alignItems: 'center',
   },
   statItem: {
@@ -525,9 +531,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
+  statIcon: {
+    width: 28,
+    height: 28,
+  },
+  statValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   statValue: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 24,
+    fontSize: 18,
     color: '#27331F',
   },
   statLabel: {
@@ -537,7 +552,7 @@ const styles = StyleSheet.create({
   },
   statDivider: {
     width: 1,
-    height: 36,
+    height: 28,
     backgroundColor: '#E4E1D3',
   },
   xpBarContainer: {
@@ -545,7 +560,7 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: 'rgba(60,120,40,0.12)',
-    marginTop: 18,
+    marginTop: 12,
     overflow: 'hidden',
   },
   xpBarFill: {
@@ -556,7 +571,7 @@ const styles = StyleSheet.create({
   currencyRow: {
     flexDirection: 'row',
     gap: 20,
-    marginTop: 18,
+    marginTop: 12,
   },
   currencyItem: {
     flexDirection: 'row',
@@ -564,26 +579,26 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   currencyValue: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 16,
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 18,
     color: '#C28A22',
   },
   currencyValueGem: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 16,
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 18,
     color: '#2592AB',
   },
   workerStatsDivider: {
     width: '100%',
     height: 1,
     backgroundColor: '#E4E1D3',
-    marginTop: 18,
+    marginTop: 12,
   },
   workerStatsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignSelf: 'stretch',
-    marginTop: 14,
+    marginTop: 10,
   },
   workerStatItem: {
     flexDirection: 'row',
@@ -612,7 +627,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     backgroundColor: '#fff',
     borderRadius: 18,
-    paddingHorizontal: 18,
+    paddingHorizontal: 14,
     paddingTop: 13,
     paddingBottom: 13,
     shadowColor: 'rgba(60,80,45,1)',
@@ -749,7 +764,9 @@ const styles = StyleSheet.create({
     marginTop: 14,
     backgroundColor: '#fff',
     borderRadius: 18,
-    padding: 8,
+    paddingVertical: 8,
+    paddingLeft: 15,
+    paddingRight: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,

@@ -303,7 +303,9 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
   const currentWorkers =
     activeTab === 'happy'
       ? [...categorized.happy, ...categorized.specialists]
-      : categorized[activeTab];
+      : activeTab === 'specialists'
+        ? [...categorized.specialists].sort((a, b) => Number(a.isSpecialist) - Number(b.isSpecialist))
+        : categorized[activeTab];
 
   const filteredWorkers = React.useMemo(
     () => searchQuery.trim()
@@ -655,7 +657,6 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontFamily: 'Fredoka_500Medium',
     fontSize: 15,
     color: '#2A3344',
     paddingVertical: 0,

@@ -360,7 +360,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                       text="Level (1–9) determines how fast a worker produces goods on a floor. Higher level means faster production."
                     />
                     <InfoSection
-                      icon={require('../../assets/img/happyWorker.png')}
+                      icon={require('../../assets/img/happySmile.png')}
                       title="Dream Job"
                       text="Every worker has an ideal job. Assigning them to a floor with that production type gives a speed bonus."
                     />

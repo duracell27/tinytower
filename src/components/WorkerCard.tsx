@@ -111,7 +111,7 @@ export default function WorkerCard({
             <Text style={styles.nameText} numberOfLines={1}>
               {worker.name}
             </Text>
-            {isBetterCandidate && (
+{isBetterCandidate && (
               <Animated.View style={arrowStyle}>
                 <Image
                   source={require('../../assets/img/greenArrowUp.png')}
@@ -288,20 +288,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#2A3344',
     textTransform: 'capitalize',
-  },
-  moodDotOuter: {
-    width: 15,
-    height: 15,
-    borderRadius: 8,
-    backgroundColor: 'rgba(224,90,74,0.24)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  moodDotInner: {
-    width: 9,
-    height: 9,
-    borderRadius: 5,
-    backgroundColor: '#E05A4A',
   },
   upgradeBadge: {
     width: 12,
