@@ -57,12 +57,21 @@ export function processCommand(
       return processLobbyCommand(state, command, config, playerLevel);
     case 'dev_add_gems':
       return { success: true, state: { ...state, gems: state.gems + command.amount } };
-    case 'shop_purchase':
+    case 'shop_purchase': {
+      const newDailyTasks = command.gems > 0
+        ? {
+            ...state.dailyTasks,
+            progress: {
+              ...state.dailyTasks.progress,
+              gemsPurchased: state.dailyTasks.progress.gemsPurchased + command.gems,
+            },
+          }
+        : state.dailyTasks;
       return {
         success: true,
         state: {
           ...state,
-          gems: state.gems + command.gems,
+          gems:   state.gems + command.gems,
           tools: {
             briks:  (state.tools.briks  ?? 0) + (command.tools.briks  ?? 0),
             glass:  (state.tools.glass  ?? 0) + (command.tools.glass  ?? 0),
@@ -78,8 +87,10 @@ export function processCommand(
             purple: (state.tokens.purple ?? 0) + (command.tokens.purple ?? 0),
             red:    (state.tokens.red    ?? 0) + (command.tokens.red    ?? 0),
           },
+          dailyTasks: newDailyTasks,
         },
       };
+    }
     case 'collect_all':
       return handleCollectAll(state, config, now, bonuses);
     case 'list_all':

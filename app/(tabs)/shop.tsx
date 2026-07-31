@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, ImageBackground,
 } from 'react-native';
@@ -93,6 +93,14 @@ function PackCard({ pack, onBuy, buying, disabled }: {
       {/* Image */}
       <Image source={pack.image} style={isMaterial ? pc.imgMat : pc.img} contentFit="contain" />
 
+      {/* Gem count for diamond packs */}
+      {pack.section === 'diamonds' && pack.rewards.gems != null && (
+        <View style={pc.gemCount}>
+          <Image source={DIAMOND_ICON} style={pc.gemCountIcon} contentFit="contain" />
+          <Text style={pc.gemCountText}>{pack.rewards.gems.toLocaleString()}</Text>
+        </View>
+      )}
+
       {/* Name */}
       <Text style={pc.name}>{pack.name}</Text>
 
@@ -147,6 +155,9 @@ const pc = StyleSheet.create({
   btnInner:   { flexDirection: 'row', alignItems: 'center', gap: 4 },
   gemInBtn:   { width: 14, height: 14 },
   btnText:    { fontFamily: 'Fredoka_700Bold', fontSize: 14, color: '#FFF' },
+  gemCount:     { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  gemCountIcon: { width: 18, height: 18 },
+  gemCountText: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#2D1A4E' },
 });
 
 function SectionHeader({ title }: { title: string }) {
@@ -175,6 +186,12 @@ export default function ShopScreen() {
 
   const [buyingId, setBuyingId] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const handleBuy = (pack: ShopPack) => {
     if (buyingId) return;
@@ -246,6 +263,6 @@ const styles = StyleSheet.create({
   container:     { flex: 1 },
   background:    { flex: 1, backgroundColor: '#DCEFF6' },
   scroll:        { flex: 1 },
-  scrollContent: { paddingTop: 8, paddingBottom: 20 },
+  scrollContent: { paddingTop: 130, paddingBottom: 20 },
   row:           { flexDirection: 'row', gap: 12, paddingHorizontal: 16, paddingBottom: 8 },
 });

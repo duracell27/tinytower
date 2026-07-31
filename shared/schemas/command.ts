@@ -181,14 +181,14 @@ export const ShopPurchaseCommandSchema = TimestampedBaseSchema.extend({
     screw:  z.number().int().nonnegative().default(0),
     wood:   z.number().int().nonnegative().default(0),
     cement: z.number().int().nonnegative().default(0),
-  }).default({}),
+  }).default({ briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 }),
   tokens: z.object({
     green:  z.number().int().nonnegative().default(0),
     blue:   z.number().int().nonnegative().default(0),
     yellow: z.number().int().nonnegative().default(0),
     purple: z.number().int().nonnegative().default(0),
     red:    z.number().int().nonnegative().default(0),
-  }).default({}),
+  }).default({ green: 0, blue: 0, yellow: 0, purple: 0, red: 0 }),
 });
 
 export const EvictLowLevelWorkersCommandSchema = TimestampedBaseSchema.extend({
