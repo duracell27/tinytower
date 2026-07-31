@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import TopBar from '../../src/components/TopBar';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
@@ -90,8 +91,14 @@ function PackCard({ pack, onBuy, buying, disabled }: {
         </View>
       )}
 
-      {/* Image */}
-      <Image source={pack.image} style={isMaterial ? pc.imgMat : pc.img} contentFit="contain" />
+      {/* Image — with optional gradient background for transparent icons */}
+      {pack.imageBg ? (
+        <LinearGradient colors={pack.imageBg} style={pc.imgBg}>
+          <Image source={pack.image} style={pc.imgBgImg} contentFit="contain" />
+        </LinearGradient>
+      ) : (
+        <Image source={pack.image} style={isMaterial ? pc.imgMat : pc.img} contentFit="contain" />
+      )}
 
       {/* Gem count for diamond packs */}
       {pack.section === 'diamonds' && pack.rewards.gems != null && (
@@ -145,6 +152,8 @@ const pc = StyleSheet.create({
   badgePop:   { backgroundColor: '#3FA535' },
   badgeText:  { fontFamily: 'Fredoka_700Bold', fontSize: 10, color: '#FFF' },
   img:        { width: 80, height: 80 },
+  imgBg:      { width: 108, height: 108, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  imgBgImg:   { width: 96, height: 96 },
   imgMat:     { width: 56, height: 56 },
   name:       { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#2D1A4E', textAlign: 'center' },
   bonus:      { fontFamily: 'Fredoka_500Medium', fontSize: 12, color: '#9A6FD0' },
