@@ -1,0 +1,114 @@
+import React, { useCallback } from 'react';
+import { View, Text, Pressable, StyleSheet, Modal, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withSpring, withDelay, withTiming, Easing,
+} from 'react-native-reanimated';
+import { useGameStore } from '../stores/gameStore';
+
+const { width: SCREEN_W } = Dimensions.get('window');
+
+const DIAMOND_ICON = require('../../assets/img/diamond.png');
+const TOKEN_ICONS: Record<string, ReturnType<typeof require>> = {
+  green:  require('../../assets/img/tokens/tokenGreen.png'),
+  blue:   require('../../assets/img/tokens/tokenBlue.png'),
+  yellow: require('../../assets/img/tokens/tokenYellow.png'),
+  purple: require('../../assets/img/tokens/tokenViolet.png'),
+  red:    require('../../assets/img/tokens/tokenRed.png'),
+};
+const TOOL_ICONS: Record<string, ReturnType<typeof require>> = {
+  briks:  require('../../assets/img/tools/briks.png'),
+  glass:  require('../../assets/img/tools/glass.png'),
+  nails:  require('../../assets/img/tools/nails.png'),
+  screw:  require('../../assets/img/tools/screw.png'),
+  wood:   require('../../assets/img/tools/wood.png'),
+  cement: require('../../assets/img/tools/cement.png'),
+};
+
+export default function PurchaseSuccessModal() {
+  const payload = useGameStore((s) => s.pendingPurchaseSuccess);
+  const clear   = useGameStore((s) => s.clearPurchaseSuccess);
+
+  const scale   = useSharedValue(0.6);
+  const bodyOp  = useSharedValue(0);
+  const bodyY   = useSharedValue(16);
+
+  const cardStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const bodyStyle = useAnimatedStyle(() => ({
+    opacity: bodyOp.value,
+    transform: [{ translateY: bodyY.value }],
+  }));
+
+  const runIn = useCallback(() => {
+    scale.value  = 0.6;
+    bodyOp.value = 0;
+    bodyY.value  = 16;
+    scale.value  = withSpring(1, { damping: 14, stiffness: 180 });
+    bodyOp.value = withDelay(220, withTiming(1, { duration: 260 }));
+    bodyY.value  = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.back(1.2)) }));
+  }, [scale, bodyOp, bodyY]);
+
+  if (!payload) return null;
+
+  const { packName, price, rewards } = payload;
+
+  // Build chip list
+  type Chip = { icon: ReturnType<typeof require>; label: string };
+  const chips: Chip[] = [];
+  if (rewards.gems)
+    chips.push({ icon: DIAMOND_ICON, label: `+${rewards.gems}` });
+  if (rewards.tools)
+    Object.entries(rewards.tools).forEach(([k, v]) => {
+      if (v) chips.push({ icon: TOOL_ICONS[k], label: `+${v}` });
+    });
+  if (rewards.tokens)
+    Object.entries(rewards.tokens).forEach(([k, v]) => {
+      if (v) chips.push({ icon: TOKEN_ICONS[k], label: `+${v}` });
+    });
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={clear} onShow={runIn}>
+      <View style={s.scrim}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={clear} />
+        <Animated.View style={[s.card, cardStyle]}>
+          <LinearGradient colors={['#F5EEFF', '#E8D5FF']} style={s.cardInner}>
+
+            <Image source={DIAMOND_ICON} style={s.bigIcon} contentFit="contain" />
+            <Text style={s.title}>Purchase Complete!</Text>
+            <Text style={s.packName}>{packName}</Text>
+
+            <Animated.View style={[s.chips, bodyStyle]}>
+              {chips.map((c, i) => (
+                <View key={i} style={s.chip}>
+                  <Image source={c.icon} style={s.chipIcon} contentFit="contain" />
+                  <Text style={s.chipLabel}>{c.label}</Text>
+                </View>
+              ))}
+            </Animated.View>
+
+            <Pressable style={s.btn} onPress={clear}>
+              <Text style={s.btnText}>Awesome!</Text>
+            </Pressable>
+          </LinearGradient>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
+const s = StyleSheet.create({
+  scrim:    { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.45)' },
+  card:     { width: SCREEN_W * 0.85, borderRadius: 24, overflow: 'hidden', elevation: 8 },
+  cardInner:{ alignItems: 'center', padding: 24, paddingBottom: 20 },
+  bigIcon:  { width: 72, height: 72, marginBottom: 12 },
+  title:    { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#2D1A4E', marginBottom: 4 },
+  packName: { fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#7055A0', marginBottom: 16 },
+  chips:    { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginBottom: 20 },
+  chip:     { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.7)',
+              borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, gap: 4 },
+  chipIcon: { width: 20, height: 20 },
+  chipLabel:{ fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#2D1A4E' },
+  btn:      { backgroundColor: '#9A6FD0', borderRadius: 14, paddingHorizontal: 36, paddingVertical: 12 },
+  btnText:  { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#FFFFFF' },
+});

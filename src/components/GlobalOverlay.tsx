@@ -8,6 +8,7 @@ import InsufficientResourcesModal from './InsufficientResourcesModal';
 import TokenInsufficientModal from './TokenInsufficientModal';
 import TaskRewardModal from './TaskRewardModal';
 import HotelFullNoticeModal from './HotelFullNoticeModal';
+import PurchaseSuccessModal from './PurchaseSuccessModal';
 
 export default function GlobalOverlay() {
   return (
@@ -20,6 +21,7 @@ export default function GlobalOverlay() {
       <TokenInsufficientModal />
       <TaskRewardModal />
       <HotelFullNoticeModal />
+      <PurchaseSuccessModal />
     </View>
   );
 }
