@@ -85,13 +85,13 @@ export interface InsufficientResourcesPayload {
   need: number;
   have: number;
   missingTools?: {
-    key: 'briks' | 'glass' | 'nails' | 'screw';
+    key: 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement';
     need: number;
     have: number;
   }[];
 }
 
-type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
+type ToolKey = 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement';
 
 export interface FailedCommandEntry {
   id: string;
@@ -121,6 +121,12 @@ export type PendingTaskReward = {
   materialType?: string;
 };
 
+export type PurchaseSuccessPayload = {
+  packName: string;
+  price: string;
+  rewards: import('../data/shopPacks').ShopRewards;
+};
+
 export type ReferralNotification =
   | { type: 'claim'; referralId: string; referredName: string; milestone: 'registered'; coins: number }
   | { type: 'claim'; referralId: string; referredName: string; milestone: 'level10' | 'level30'; gems: number }
@@ -144,6 +150,7 @@ interface UIState {
   pendingDeliverAll: DeliverAllSummary | null;
   hotelFullNotice: boolean;
   pendingOpenHotel: boolean;
+  pendingPurchaseSuccess: PurchaseSuccessPayload | null;
 }
 
 
@@ -212,6 +219,8 @@ interface GameActions {
   clearTokenInsufficient: () => void;
   setTaskReward: (payload: PendingTaskReward) => void;
   clearTaskReward: () => void;
+  shopPurchase: (pack: import('../data/shopPacks').ShopPack) => void;
+  clearPurchaseSuccess: () => void;
   setPendingDeliverAll: (summary: DeliverAllSummary) => void;
   clearPendingDeliverAll: () => void;
   showHotelFullNotice: () => void;
@@ -385,6 +394,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   pendingDeliverAll: null,
   hotelFullNotice: false,
   pendingOpenHotel: false,
+  pendingPurchaseSuccess: null,
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -434,6 +444,37 @@ export const useGameStore = create<GameStore>((set, get) => ({
   clearTokenInsufficient: () => set({ tokenInsufficient: null }),
   setTaskReward: (payload) => set({ pendingTaskReward: payload }),
   clearTaskReward: () => set({ pendingTaskReward: null }),
+  clearPurchaseSuccess: () => set({ pendingPurchaseSuccess: null }),
+  shopPurchase: (pack) => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'shop_purchase',
+      gems:   pack.rewards.gems ?? 0,
+      tools:  {
+        briks:  pack.rewards.tools?.briks  ?? 0,
+        glass:  pack.rewards.tools?.glass  ?? 0,
+        nails:  pack.rewards.tools?.nails  ?? 0,
+        screw:  pack.rewards.tools?.screw  ?? 0,
+        wood:   pack.rewards.tools?.wood   ?? 0,
+        cement: pack.rewards.tools?.cement ?? 0,
+      },
+      tokens: {
+        green:  pack.rewards.tokens?.green  ?? 0,
+        blue:   pack.rewards.tokens?.blue   ?? 0,
+        yellow: pack.rewards.tokens?.yellow ?? 0,
+        purple: pack.rewards.tokens?.purple ?? 0,
+        red:    pack.rewards.tokens?.red    ?? 0,
+      },
+      timestamp: clock.now(),
+    });
+    set({
+      pendingPurchaseSuccess: {
+        packName: pack.name,
+        price:    pack.price,
+        rewards:  pack.rewards,
+      },
+    });
+  },
   setPendingDeliverAll: (summary) => set({ pendingDeliverAll: summary }),
   clearPendingDeliverAll: () => set({ pendingDeliverAll: null }),
   showHotelFullNotice: () => set({ hotelFullNotice: true }),
@@ -697,7 +738,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
 
     const builderTool = role === 'builder'
-      ? (['briks', 'glass', 'nails', 'screw'] as ToolKey[])[Math.floor(Math.random() * 4)]
+      ? (['briks', 'glass', 'nails', 'screw', 'wood', 'cement'] as ToolKey[])[Math.floor(Math.random() * 6)]
       : undefined;
 
     executeCommand(get, set, {
@@ -716,7 +757,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   deliverAll: () => {
     const state = get();
     const builders = state.lobbyVisitors.filter((v) => v.role === 'builder');
-    const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
+    const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'];
     const builderTools = builders.map(() => TOOLS[Math.floor(Math.random() * TOOLS.length)]);
 
     // Pre-generate workers for each guest heading to floor 1 so the server uses
@@ -847,7 +888,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   claimDailyTask: (taskKey, taskTitle) => {
     const COLORS = ['green', 'blue', 'yellow', 'purple', 'red'] as const;
-    const MATERIAL_TYPES = ['briks', 'glass', 'nails', 'screw'] as const;
+    const MATERIAL_TYPES = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'] as const;
     const taskConfig = DAILY_TASKS.find((t) => t.key === taskKey);
     if (!taskConfig) return;
     const state = get();
@@ -904,7 +945,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     stateVersion: state.stateVersion ?? 0,
     playerLevel: state.playerLevel ?? 1,
     playerXp: state.playerXp ?? 0,
-    tools: state.tools ?? { briks: 1, glass: 1, nails: 1, screw: 1 },
+    tools: state.tools ?? { briks: 1, glass: 1, nails: 1, screw: 1, wood: 1, cement: 1 },
     underConstruction: state.underConstruction ?? [],
     openedFloorTypes: state.openedFloorTypes ?? {},
     stats: state.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
@@ -986,7 +1027,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (playerLevel < cur.playerLevel) return cur.playerXp;
       return Math.max(playerXp ?? 0, cur.playerXp);
     })(),
-    tools: serverState.tools ?? cur.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
+    tools: serverState.tools ?? cur.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
     underConstruction: (() => {
       const pendingOpenFloorIds = new Set<number>();
       for (const cmd of cur.commandQueue) {
@@ -1046,7 +1087,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   })),
 
   buyFloor: (floorId) => {
-    const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw'];
+    const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'];
     const unlock = gameConfig.floorUnlocks.find((f) => f.floorId === floorId);
     const slots = unlock?.requiredToolSlots ?? 1;
     const shuffled = [...TOOLS].sort(() => Math.random() - 0.5);
