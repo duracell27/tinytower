@@ -42,7 +42,18 @@
   },
   "shop": {
     "title": "Shop",
-    "comingSoon": "Nothing here yet"
+    "sections": {
+      "diamonds": "Diamonds",
+      "bundles": "Bundles",
+      "builder": "Builder",
+      "materials": "Materials"
+    },
+    "badges": {
+      "best": "Best Value",
+      "popular": "Popular"
+    },
+    "purchasing": "Processing...",
+    "each5": "5 pcs"
   },
   "profile": {
     "title": "Profile",
