@@ -5,14 +5,16 @@ import { WorkerSchema } from './worker';
 import { VisitorSchema } from './visitor';
 
 export const ToolsSchema = z.object({
-  briks: z.number().int().nonnegative(),
-  glass: z.number().int().nonnegative(),
-  nails: z.number().int().nonnegative(),
-  screw: z.number().int().nonnegative(),
+  briks:  z.number().int().nonnegative(),
+  glass:  z.number().int().nonnegative(),
+  nails:  z.number().int().nonnegative(),
+  screw:  z.number().int().nonnegative(),
+  wood:   z.number().int().nonnegative(),
+  cement: z.number().int().nonnegative(),
 });
 
 export const RequiredToolEntrySchema = z.object({
-  tool: z.enum(['briks', 'glass', 'nails', 'screw']),
+  tool: z.enum(['briks', 'glass', 'nails', 'screw', 'wood', 'cement']),
   count: z.number().int().positive(),
 });
 
@@ -66,7 +68,7 @@ export const DailyTasksSchema = z.object({
   }),
   claimed:            z.array(z.string()).default([]),
   doubleRewardActive: z.boolean().default(false),
-  dailyMaterialType:  z.enum(['briks', 'glass', 'nails', 'screw']).optional(),
+  dailyMaterialType:  z.enum(['briks', 'glass', 'nails', 'screw', 'wood', 'cement']).optional(),
 });
 
 export const FloorStateSchema = z.object({
@@ -92,7 +94,7 @@ export const GameStateSchema = z.object({
   lastDailyReset: z.number().nonnegative(),
   dailyFillLobbyUses: z.number().int().nonnegative().default(0),
   nextVisitorAt: z.number().nonnegative(),
-  tools: ToolsSchema.default({ briks: 0, glass: 0, nails: 0, screw: 0 }),
+  tools: ToolsSchema.default({ briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 }),
   underConstruction: UnderConstructionSchema.array().default([]),
   openedFloorTypes: z.record(z.string(), z.string()).default({}),
   stats: StatsSchema.default({ totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 }),
