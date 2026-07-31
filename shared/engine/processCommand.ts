@@ -736,6 +736,7 @@ function handleUpgradeBusinessCategory(
     }
     return {
       success: true,
+      xpGained: 0,
       state: { ...state, gems: state.gems - cost.gems, businessUpgrades: upgradedBusinessUpgrades },
     };
   }
@@ -748,6 +749,7 @@ function handleUpgradeBusinessCategory(
   }
   return {
     success: true,
+    xpGained: 0,
     state: {
       ...state,
       balance: state.balance - cost.coins,

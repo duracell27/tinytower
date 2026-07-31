@@ -3,6 +3,9 @@ import {
   View, Text, Pressable, Modal, ScrollView, StyleSheet, Dimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
+
+const ICON_FLOOR  = require('../../assets/img/floor.png');
+const ICON_WORKER = require('../../assets/img/worker.png');
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS,
 } from 'react-native-reanimated';
@@ -38,6 +41,8 @@ interface BusinessTypePickerSheetProps {
   onClose: () => void;
   onSelectType: (floorType: string) => void;
   exhaustedTypes?: Set<string>;
+  builtFloorCounts?: Record<string, number>;
+  hotelWorkerCounts?: Record<string, number>;
 }
 
 export default function BusinessTypePickerSheet({
@@ -46,6 +51,8 @@ export default function BusinessTypePickerSheet({
   onClose,
   onSelectType,
   exhaustedTypes = new Set(),
+  builtFloorCounts = {},
+  hotelWorkerCounts = {},
 }: BusinessTypePickerSheetProps) {
   const translateY = useSharedValue(SHEET_HEIGHT);
 
@@ -119,10 +126,18 @@ export default function BusinessTypePickerSheet({
                 />
                 <View style={styles.typeTextCol}>
                   <Text style={styles.typeName}>{FLOOR_TYPE_NAMES[ft] ?? ft}</Text>
-                  {isExhausted && (
+                  {isExhausted ? (
                     <Text style={styles.typeExhaustedHint}>
                       All floors of this category already built
                     </Text>
+                  ) : (
+                    <View style={styles.typeStatsRow}>
+                      <Image source={ICON_FLOOR} style={styles.typeStatIcon} contentFit="contain" />
+                      <Text style={styles.typeStat}>{builtFloorCounts[ft] ?? 0}</Text>
+                      <Text style={styles.typeStatSep}>·</Text>
+                      <Image source={ICON_WORKER} style={styles.typeStatIcon} contentFit="contain" />
+                      <Text style={styles.typeStat}>{hotelWorkerCounts[ft] ?? 0}</Text>
+                    </View>
                   )}
                 </View>
               </Pressable>
@@ -225,5 +240,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9BA3B0',
     marginTop: 1,
+  },
+  typeStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  typeStatIcon: {
+    width: 13,
+    height: 13,
+  },
+  typeStat: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 12,
+    color: '#7A8899',
+  },
+  typeStatSep: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 12,
+    color: '#C0C8D4',
   },
 });

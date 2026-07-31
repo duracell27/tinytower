@@ -115,7 +115,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
 }
 
 export default function ReferralScreen() {
-  const { code, referrals, isLoading, hasUsedCode, isApplying, fetchReferral, applyReferralCode } = useReferralStore();
+  const { code, referrals, isLoading, hasUsedCode, referrerName, isApplying, fetchReferral, applyReferralCode } = useReferralStore();
   const [copied, setCopied] = React.useState(false);
   const [inputCode, setInputCode] = React.useState('');
   const [applyError, setApplyError] = React.useState('');
@@ -244,6 +244,20 @@ export default function ReferralScreen() {
                   {applyError ? <Text style={styles.applyError}>{applyError}</Text> : null}
                 </>
               )}
+            </View>
+          )}
+
+          {hasUsedCode && referrerName && (
+            <View style={styles.referredByCard}>
+              <Text style={styles.referredByLabel}>Invited by</Text>
+              <View style={styles.referredByRow}>
+                <Image
+                  source={require('../../assets/img/profile/ReferralProfileIcon.png')}
+                  style={styles.referredByIcon}
+                  contentFit="contain"
+                />
+                <Text style={styles.referredByName}>{referrerName}</Text>
+              </View>
             </View>
           )}
 
@@ -492,5 +506,38 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_600SemiBold',
     fontSize: 12,
     color: '#C62828',
+  },
+  referredByCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    gap: 8,
+    shadowColor: 'rgba(60,80,45,1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  referredByLabel: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 11,
+    color: '#9BA3B0',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  referredByRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  referredByIcon: {
+    width: 28,
+    height: 28,
+  },
+  referredByName: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 17,
+    color: '#27331F',
   },
 });

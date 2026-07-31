@@ -47,8 +47,7 @@ export function getMaxLobbyCapacity(): number {
 
 function getMidnightBefore(timestamp: number): number {
   const d = new Date(timestamp);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 }
 
 export function checkDailyReset(state: GameState, commandTimestamp: number): GameState {

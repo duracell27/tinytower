@@ -22,12 +22,14 @@ interface ReferralProfileResponse {
   code: string;
   referrals: ReferralEntry[];
   hasUsedCode: boolean;
+  referrerName?: string | null;
 }
 
 interface ReferralState {
   code: string | null;
   referrals: ReferralEntry[];
   hasUsedCode: boolean | null;
+  referrerName: string | null;
   isLoading: boolean;
   isApplying: boolean;
   fetchReferral: () => Promise<void>;
@@ -38,6 +40,7 @@ export const useReferralStore = create<ReferralState>((set) => ({
   code: null,
   referrals: [],
   hasUsedCode: null,
+  referrerName: null,
   isLoading: false,
   isApplying: false,
 
@@ -45,7 +48,7 @@ export const useReferralStore = create<ReferralState>((set) => ({
     set({ isLoading: true });
     try {
       const data = await api.get<ReferralProfileResponse>('/player/referral');
-      set({ code: data.code, referrals: data.referrals, hasUsedCode: data.hasUsedCode });
+      set({ code: data.code, referrals: data.referrals, hasUsedCode: data.hasUsedCode, referrerName: data.referrerName ?? null });
     } finally {
       set({ isLoading: false });
     }

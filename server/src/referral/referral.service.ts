@@ -41,12 +41,16 @@ export class ReferralService {
         include: { referred: { select: { playerLevel: true } } },
         orderBy: { createdAt: 'asc' },
       }),
-      this.prisma.referral.findUnique({ where: { referredId: playerId } }),
+      this.prisma.referral.findUnique({
+        where: { referredId: playerId },
+        include: { referrer: { select: { playerName: true } } },
+      }),
     ]);
 
     return {
       code: referralCode ?? null,
       hasUsedCode: usedReferral !== null,
+      referrerName: usedReferral?.referrer?.playerName ?? null,
       referrals: referrals.map((r) => ({
         id: r.id,
         referredName: r.referredName,
@@ -151,6 +155,8 @@ export class ReferralService {
             referrerId: referrer.id,
             referredId: playerId,
             referredName: player.playerName,
+            level10ReachedAt: player.playerLevel >= 10 ? new Date() : null,
+            level30ReachedAt: player.playerLevel >= 30 ? new Date() : null,
           },
         });
       } catch (e: any) {

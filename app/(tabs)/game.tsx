@@ -113,6 +113,26 @@ export default function GameScreen() {
     [workers, floors, openedFloorTypes],
   );
 
+  const builtFloorCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    const oft = openedFloorTypes ?? {};
+    for (const f of floors) {
+      const ft = gameConfig.floors.find((cf) => cf.id === f.id)?.floorType ?? oft[String(f.id)];
+      if (ft) counts[ft] = (counts[ft] ?? 0) + 1;
+    }
+    return counts;
+  }, [floors, openedFloorTypes]);
+
+  const hotelWorkerCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const w of workers) {
+      if (w.assignedFloorId === null) {
+        counts[w.floorType] = (counts[w.floorType] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [workers]);
+
   const exhaustedByFloor = React.useMemo(() => {
     const map = new Map<number, Set<string>>();
     for (const uc of underConstruction) {
@@ -736,6 +756,8 @@ export default function GameScreen() {
             setPickerOpenFor(null);
           }}
           exhaustedTypes={exhaustedByFloor.get(uc.floorId)}
+          builtFloorCounts={builtFloorCounts}
+          hotelWorkerCounts={hotelWorkerCounts}
         />
       ))}
     </View>

@@ -266,7 +266,7 @@ export default function ProfileScreen() {
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <View style={styles.statValueRow}>
-                <Text style={styles.statValue}>{playerLevel}</Text>
+                <Text style={styles.levelValue}>{playerLevel}</Text>
                 <Image source={require('../../assets/img/lvlIcon.png')} style={styles.statIcon} contentFit="contain" />
               </View>
             </View>
@@ -544,6 +544,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 18,
     color: '#27331F',
+  },
+  levelValue: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 32,
+    color: '#27331F',
+    lineHeight: 34,
   },
   statLabel: {
     fontFamily: 'Nunito_600SemiBold',

@@ -196,9 +196,9 @@ export default function UnderConstructionBanner({
           confirming ? (
             <View style={styles.confirmRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Image source={require('../../assets/img/speedUp.png')} style={{ width: 14, height: 14 }} contentFit="contain" />
+                <Image source={require('../../assets/img/speedUp.png')} style={{ width: 18, height: 18 }} contentFit="contain" />
                 <Text style={styles.confirmLabel}>{speedUpCost}</Text>
-                <Image source={require('../../assets/img/diamond.png')} style={{ width: 14, height: 14 }} contentFit="contain" />
+                <Image source={require('../../assets/img/diamond.png')} style={{ width: 18, height: 18 }} contentFit="contain" />
                 <Text style={styles.confirmLabel}>?</Text>
               </View>
               <Pressable
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
   },
   confirmLabel: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 13,
+    fontSize: 15,
     color: BANNER_COLOR,
   },
   confirmBtn: {

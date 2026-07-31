@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView } from 'expo-glass-effect';
 import Svg, { Circle } from 'react-native-svg';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
@@ -55,10 +54,6 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
 
   const panelContent = (
     <>
-      <LinearGradient
-        colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
-        style={styles.sheen}
-      />
       <View style={styles.content}>
         <View style={styles.avatarSection}>
           <View style={styles.avatarWrapper}>
@@ -124,6 +119,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: 'rgba(238,248,230,0.80)',
     shadowColor: 'rgba(40,70,35,1)',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
@@ -132,16 +128,6 @@ const styles = StyleSheet.create({
   },
   androidPanel: {
     backgroundColor: 'rgba(220,237,210,0.92)',
-  },
-  sheen: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '45%',
-    zIndex: 1,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
   },
   content: {
     flexDirection: 'row',
@@ -189,7 +175,7 @@ const styles = StyleSheet.create({
   },
   levelText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 9,
+    fontSize: 12,
     color: '#fff',
   },
   nameText: {

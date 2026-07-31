@@ -30,7 +30,10 @@ export function isBetterCandidate(
 
       const assignedMatchesFloor = assigned.floorType === floorType;
       if (hotelMatchesFloor && !assignedMatchesFloor) return true;
-      if (hotelMatchesFloor && assignedMatchesFloor && hotelWorker.level > assigned.level) return true;
+      if (hotelMatchesFloor && assignedMatchesFloor) {
+        const assignedHasDreamJob = assigned.dreamJob === floor.productions[slotIdx].typeId;
+        if (!assignedHasDreamJob || hotelWorker.level > assigned.level) return true;
+      }
     }
   }
   return false;

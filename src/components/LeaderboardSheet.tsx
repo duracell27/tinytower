@@ -160,7 +160,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
               <Text style={styles.title}>{t('leaderboard.title')}</Text>
               <Text style={styles.cacheNotice}>{t('leaderboard.cacheNotice')}</Text>
             </View>
-            <Pressable onPress={onClose} hitSlop={12}>
+            <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
               <Text style={styles.closeIcon}>✕</Text>
             </Pressable>
           </View>
@@ -281,6 +281,14 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
   },
   title: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#fff' },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   closeIcon: { fontSize: 18, color: 'rgba(255,255,255,0.7)' },
   tabs: { flexDirection: 'row', paddingHorizontal: 12, gap: 6 },
   tab: {

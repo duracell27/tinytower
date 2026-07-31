@@ -425,6 +425,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const stage1Reward = gameConfig.lobbyConfig.dailyTipsStage1Reward;
   const stage2Reward = gameConfig.lobbyConfig.dailyTipsStage2Reward;
   const effectiveDailyTips = resetPending ? 0 : dailyTips;
+  const effectiveDailyGemsCollected = resetPending ? 0 : dailyGemsCollected;
   const tipsProgress = Math.min(1, effectiveDailyTips / stage2Target);
   const stage1Pct = `${(stage1Target / stage2Target) * 100}%`;
   const stage1Ready = effectiveDailyTips >= stage1Target && !dailyTipsStage1Claimed;
@@ -478,9 +479,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     })
     .onEnd((e) => {
       if (e.translationY > DISMISS_THRESHOLD || e.velocityY > 500) {
-        translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 });
+        translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, () => {
+          runOnJS(onClose)();
+        });
         scrimOpacity.value = withTiming(0, { duration: 300 });
-        runOnJS(onClose)();
       } else {
         translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
         scrimOpacity.value = withTiming(1, { duration: 200 });
@@ -564,7 +566,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       };
     }
 
-    if (activeVisitor.role === 'businessman' && dailyGemsCollected < dailyGemLimit) {
+    if (activeVisitor.role === 'businessman' && effectiveDailyGemsCollected < dailyGemLimit) {
       return {
         label: t('actions.collect'),
         amount: '+1' as string | null,
@@ -598,7 +600,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       icon: 'coin' as const,
       onPress: handleCollectTip,
     };
-  }, [activeVisitor, arrived, elevatorLevel, dailyGemsCollected, dailyGemLimit, liftVisitor, handleCollectTip]);
+  }, [activeVisitor, arrived, elevatorLevel, effectiveDailyGemsCollected, dailyGemLimit, liftVisitor, handleCollectTip]);
 
   const actionButton = getActionButton();
 
@@ -935,7 +937,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   <GemIcon size={14} />
                   <Text style={styles.dailyGemsLabel}>{t('dailyGems.label')}</Text>
                   <Text style={styles.dailyGemsValue}>
-                    {dailyGemsCollected} / {dailyGemLimit}
+                    {effectiveDailyGemsCollected} / {dailyGemLimit}
                   </Text>
                 </View>
 
@@ -1300,12 +1302,18 @@ const popupStyles = StyleSheet.create({
     color: '#fff',
   },
   dismissBtn: {
-    paddingVertical: 8,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: 'rgba(155,163,176,0.35)',
+    marginTop: 2,
   },
   dismissText: {
-    fontFamily: 'Fredoka_500Medium',
+    fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
-    color: '#9BA3B0',
+    color: '#6E7686',
   },
 });
 

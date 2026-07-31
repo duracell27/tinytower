@@ -3,7 +3,7 @@ import { View, Text, Pressable, Modal, StyleSheet, Dimensions, ActivityIndicator
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
-import { GemIcon } from './CurrencyIcons';
+import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { api } from '../services/api';
 import { syncService } from '../services/sync';
 
@@ -103,7 +103,10 @@ export default function ReferralNotificationModal() {
                       {loading ? (
                         <ActivityIndicator color="#fff" />
                       ) : notification.milestone === 'registered' ? (
-                        <Text style={styles.buttonText}>Claim {notification.coins.toLocaleString()} 🪙</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={styles.buttonText}>Claim {notification.coins.toLocaleString()}</Text>
+                          <CoinIcon size={18} />
+                        </View>
                       ) : notification.milestone === 'level10' ? (
                         <Text style={styles.buttonText}>Claim {notification.gems} 💎</Text>
                       ) : (
