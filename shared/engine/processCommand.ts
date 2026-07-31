@@ -57,6 +57,29 @@ export function processCommand(
       return processLobbyCommand(state, command, config, playerLevel);
     case 'dev_add_gems':
       return { success: true, state: { ...state, gems: state.gems + command.amount } };
+    case 'shop_purchase':
+      return {
+        success: true,
+        state: {
+          ...state,
+          gems: state.gems + command.gems,
+          tools: {
+            briks:  (state.tools.briks  ?? 0) + (command.tools.briks  ?? 0),
+            glass:  (state.tools.glass  ?? 0) + (command.tools.glass  ?? 0),
+            nails:  (state.tools.nails  ?? 0) + (command.tools.nails  ?? 0),
+            screw:  (state.tools.screw  ?? 0) + (command.tools.screw  ?? 0),
+            wood:   (state.tools.wood   ?? 0) + (command.tools.wood   ?? 0),
+            cement: (state.tools.cement ?? 0) + (command.tools.cement ?? 0),
+          },
+          tokens: {
+            green:  (state.tokens.green  ?? 0) + (command.tokens.green  ?? 0),
+            blue:   (state.tokens.blue   ?? 0) + (command.tokens.blue   ?? 0),
+            yellow: (state.tokens.yellow ?? 0) + (command.tokens.yellow ?? 0),
+            purple: (state.tokens.purple ?? 0) + (command.tokens.purple ?? 0),
+            red:    (state.tokens.red    ?? 0) + (command.tokens.red    ?? 0),
+          },
+        },
+      };
     case 'collect_all':
       return handleCollectAll(state, config, now, bonuses);
     case 'list_all':
@@ -192,7 +215,7 @@ function handleOpenFloor(
   if (!uc) return { success: false, state, error: 'Floor not under construction' };
   if (command.timestamp - uc.startedAt < uc.durationMs) return { success: false, state, error: 'Construction not complete' };
 
-  const currentTools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 };
+  const currentTools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 };
   const hasAllTools = uc.requiredTools.every(({ tool, count }) => (currentTools[tool] ?? 0) >= count);
   if (!hasAllTools) return { success: false, state, error: 'Insufficient tools' };
 

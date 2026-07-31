@@ -79,7 +79,7 @@ export const LiftVisitorCommandSchema = TimestampedBaseSchema.extend({
   targetFloor: z.number().int().positive(),
 });
 
-const ToolKeySchema = z.enum(['briks', 'glass', 'nails', 'screw']);
+const ToolKeySchema = z.enum(['briks', 'glass', 'nails', 'screw', 'wood', 'cement']);
 
 export const CollectTipCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('collect_tip'),
@@ -141,7 +141,7 @@ export const FillLobbyCommandSchema = TimestampedBaseSchema.extend({
 export const BuyFloorCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('buy_floor'),
   floorId: z.number().int(),
-  requiredTools: z.array(z.object({ tool: z.enum(['briks', 'glass', 'nails', 'screw']) })),
+  requiredTools: z.array(z.object({ tool: z.enum(['briks', 'glass', 'nails', 'screw', 'wood', 'cement']) })),
 });
 
 export const OpenFloorCommandSchema = TimestampedBaseSchema.extend({
@@ -171,6 +171,26 @@ export const DevAddGemsCommandSchema = TimestampedBaseSchema.extend({
   amount: z.number().int().positive(),
 });
 
+export const ShopPurchaseCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('shop_purchase'),
+  gems:   z.number().int().nonnegative().default(0),
+  tools: z.object({
+    briks:  z.number().int().nonnegative().default(0),
+    glass:  z.number().int().nonnegative().default(0),
+    nails:  z.number().int().nonnegative().default(0),
+    screw:  z.number().int().nonnegative().default(0),
+    wood:   z.number().int().nonnegative().default(0),
+    cement: z.number().int().nonnegative().default(0),
+  }).default({}),
+  tokens: z.object({
+    green:  z.number().int().nonnegative().default(0),
+    blue:   z.number().int().nonnegative().default(0),
+    yellow: z.number().int().nonnegative().default(0),
+    purple: z.number().int().nonnegative().default(0),
+    red:    z.number().int().nonnegative().default(0),
+  }).default({}),
+});
+
 export const EvictLowLevelWorkersCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('evict_low_level_workers'),
 });
@@ -192,7 +212,7 @@ export const ClaimDailyTaskCommandSchema = TimestampedBaseSchema.extend({
   taskKey: z.string(),
   tokenCount: z.number().int().min(1).max(5),
   tokenColor: z.enum(['green', 'blue', 'yellow', 'purple', 'red']),
-  materialType: z.enum(['briks', 'glass', 'nails', 'screw']).optional(),
+  materialType: z.enum(['briks', 'glass', 'nails', 'screw', 'wood', 'cement']).optional(),
 });
 
 export const UpgradeBusinessCategoryCommandSchema = TimestampedBaseSchema.extend({
@@ -224,6 +244,7 @@ export const CommandSchema = z.discriminatedUnion('type', [
   SpeedUpConstructionCommandSchema,
   SpeedUpDeliveryCommandSchema,
   DevAddGemsCommandSchema,
+  ShopPurchaseCommandSchema,
   EvictLowLevelWorkersCommandSchema,
   CollectAllCommandSchema,
   ListAllCommandSchema,
