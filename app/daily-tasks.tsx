@@ -119,17 +119,41 @@ export default function DailyTasksScreen() {
         </View>
 
         {(() => {
-          const visibleTasks = DAILY_TASKS.filter((task) => !task.hidden);
-          const claimedCount = visibleTasks.filter((t) => dailyTasks.claimed.includes(t.key)).length;
+          const visibleTasks  = DAILY_TASKS.filter((task) => !task.hidden);
+          const claimedCount  = visibleTasks.filter((t) => dailyTasks.claimed.includes(t.key)).length;
+          const goalReached   = claimedCount >= 7 && !dailyTasks.doubleRewardActive;
+
+          if (dailyTasks.doubleRewardActive) {
+            return (
+              <View style={[styles.doubleBanner, styles.doubleBannerActive]}>
+                <Text style={[styles.doubleBannerText, styles.doubleBannerTextActive]}>
+                  {t('dailyTasks.doubleReward')}
+                </Text>
+                <View style={styles.completionBarBg}>
+                  <View style={[styles.completionBarFill, { width: `${Math.min(claimedCount / 7, 1) * 100}%` }]} />
+                </View>
+                <Text style={styles.completionText}>
+                  {t('dailyTasks.completedToday', { done: claimedCount })}
+                </Text>
+              </View>
+            );
+          }
+
+          if (goalReached) {
+            return (
+              <View style={[styles.doubleBanner, styles.doubleBannerGoal]}>
+                <Text style={styles.doubleBannerGoalEmoji}>🎉</Text>
+                <Text style={styles.doubleBannerGoalTitle}>{t('dailyTasks.goalReachedTitle')}</Text>
+                <Text style={styles.doubleBannerGoalSub}>{t('dailyTasks.goalReachedSub')}</Text>
+              </View>
+            );
+          }
+
           return (
-            <View style={[styles.doubleBanner, dailyTasks.doubleRewardActive && styles.doubleBannerActive]}>
-              <Text style={[styles.doubleBannerText, dailyTasks.doubleRewardActive && styles.doubleBannerTextActive]}>
-                {dailyTasks.doubleRewardActive
-                  ? t('dailyTasks.doubleReward')
-                  : t('dailyTasks.doubleRewardHint')}
-              </Text>
+            <View style={styles.doubleBanner}>
+              <Text style={styles.doubleBannerText}>{t('dailyTasks.doubleRewardHint')}</Text>
               <View style={styles.completionBarBg}>
-                <View style={[styles.completionBarFill, { width: `${Math.min(claimedCount / 7, 1) * 100}%` }]} />
+                <View style={[styles.completionBarFill, { width: `${(claimedCount / 7) * 100}%` }]} />
               </View>
               <Text style={styles.completionText}>
                 {t('dailyTasks.completedToday', { done: claimedCount })}
@@ -309,8 +333,12 @@ const styles = StyleSheet.create({
 
   doubleBanner: { backgroundColor: 'rgba(255,255,255,0.55)', borderRadius: 14, padding: 12, alignItems: 'center', gap: 8, marginBottom: 4 },
   doubleBannerActive: { backgroundColor: '#FFF4D6' },
+  doubleBannerGoal:   { backgroundColor: '#E8F7E4', gap: 4 },
   doubleBannerText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', textAlign: 'center' },
   doubleBannerTextActive: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#B07A00' },
+  doubleBannerGoalEmoji: { fontSize: 28, lineHeight: 34 },
+  doubleBannerGoalTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#277A20', textAlign: 'center' },
+  doubleBannerGoalSub:   { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#4A8A43', textAlign: 'center' },
 
   card: { backgroundColor: '#fff', borderRadius: 20, padding: 16, gap: 10, shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
   cardClaimed: { opacity: 0.55 },
