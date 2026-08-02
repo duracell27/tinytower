@@ -13,13 +13,15 @@ const BANNER_COLOR = '#E67E22';
 const BANNER_BG = shadeColor(BANNER_COLOR, 45);
 
 const TOOL_NAMES: Record<string, string> = {
-  briks: 'Bricks', glass: 'Glass', nails: 'Nails', screw: 'Screws',
+  briks: 'Bricks', glass: 'Glass', nails: 'Nails', screw: 'Screws', wood: 'Wood', cement: 'Cement',
 };
 const TOOL_IMAGES: Record<string, ReturnType<typeof require>> = {
-  briks: require('../../assets/img/tools/briks.png'),
-  glass: require('../../assets/img/tools/glass.png'),
-  nails: require('../../assets/img/tools/nails.png'),
-  screw: require('../../assets/img/tools/screw.png'),
+  briks:  require('../../assets/img/tools/briks.png'),
+  glass:  require('../../assets/img/tools/glass.png'),
+  nails:  require('../../assets/img/tools/nails.png'),
+  screw:  require('../../assets/img/tools/screw.png'),
+  wood:   require('../../assets/img/tools/wood.png'),
+  cement: require('../../assets/img/tools/cement.png'),
 };
 const FLOOR_TYPE_NAMES: Record<string, string> = {
   green: 'Products', blue: 'Service', yellow: 'Rest', purple: 'Fashion', red: 'Electronics',

@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, FlatList, Pressable, TextInput, Modal,
-  KeyboardAvoidingView, Platform, Alert, StyleSheet,
+  KeyboardAvoidingView, Platform, Alert, StyleSheet, Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
@@ -35,6 +35,7 @@ export default function ForumPostScreen() {
   const isAdmin = player?.isAdmin ?? false;
 
   const [commentText, setCommentText] = useState('');
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
   const [editPostVisible, setEditPostVisible] = useState(false);
@@ -48,6 +49,12 @@ export default function ForumPostScreen() {
       void markRead(postId);
     }, [postId, fetchPost, fetchComments, markRead]),
   );
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardWillShow', () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener('keyboardWillHide', () => setKeyboardVisible(false));
+    return () => { showSub.remove(); hideSub.remove(); };
+  }, []);
 
   const handleSendComment = async () => {
     const body = commentText.trim();
@@ -224,7 +231,7 @@ export default function ForumPostScreen() {
                 </Pressable>
               </View>
             )}
-            <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom + 8, 16) }]}>
+            <View style={[styles.inputBar, { paddingBottom: keyboardVisible ? 8 : Math.max(insets.bottom + 8, 16) }]}>
               <TextInput
                 style={styles.input}
                 value={commentText}

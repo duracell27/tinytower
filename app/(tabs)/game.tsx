@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, LayoutChangeEvent } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, LayoutChangeEvent, useColorScheme } from 'react-native';
 import { useNavigation } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { formatNum } from '../../src/utils/format';
@@ -56,7 +56,12 @@ function keyExtractor(item: FloorItem): string {
   return item.type; // 'hotel' | 'lobby' | 'buyFloor' | 'collapseDivider' | 'bottomAnchor' — all unique
 }
 
+const BG_LIGHT = require('../../assets/img/backgroung/bg15.png');
+const BG_DARK  = require('../../assets/img/backgroung/bgBlack.png');
+
 export default function GameScreen() {
+  const scheme = useColorScheme();
+  const bgSource = scheme === 'dark' ? BG_DARK : BG_LIGHT;
   const { t } = useTranslation('tabs');
   const { t: tContent } = useTranslation('gameContent');
   const balance = useBalance();
@@ -78,6 +83,7 @@ export default function GameScreen() {
   const listAll = useGameStore((s) => s.listAll);
   const buyAll = useGameStore((s) => s.buyAll);
   const lastSyncAt = useGameStore((s) => s.lastSyncAt);
+  const isHydrated = useGameStore((s) => s.isHydrated);
   const pendingOpenHotel = useGameStore((s) => s.pendingOpenHotel);
   const clearPendingOpenHotel = useGameStore((s) => s.clearPendingOpenHotel);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
@@ -167,7 +173,7 @@ export default function GameScreen() {
 
   const floorList: FloorItem[] = React.useMemo(() => {
     const items: FloorItem[] = [];
-    if (nextFloorUnlock && lastSyncAt > 0) {
+    if (nextFloorUnlock && (isHydrated || lastSyncAt > 0)) {
       items.push({ type: 'buyFloor' });
     }
 
@@ -235,7 +241,7 @@ export default function GameScreen() {
     items.push({ type: 'lobby' });
     items.push({ type: 'bottomAnchor' });
     return items;
-  }, [underConstruction, floors, nextFloorUnlock, lastSyncAt, towerCollapsed]);
+  }, [underConstruction, floors, nextFloorUnlock, isHydrated, lastSyncAt, towerCollapsed]);
 
   const [hotelOpen, setHotelOpen] = useState(false);
   const [lobbyOpen, setLobbyOpen] = useState(false);
@@ -624,7 +630,7 @@ export default function GameScreen() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require('../../assets/img/backgroung/bg15.png')}
+        source={bgSource}
         style={styles.background}
         resizeMode="cover"
       >
@@ -685,7 +691,7 @@ export default function GameScreen() {
               pointerEvents={quickActionMode !== null ? 'box-none' : 'none'}
             >
               <ImageBackground
-                source={require('../../assets/img/backgroung/bg15.png')}
+                source={bgSource}
                 style={{ flex: 1 }}
                 resizeMode="cover"
               >

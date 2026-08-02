@@ -4,6 +4,7 @@ import {
   StyleSheet, Dimensions, TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import Svg, { Path, Polygon } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle, useSharedValue, withTiming, withSpring, runOnJS, Easing,
@@ -300,6 +301,16 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
     [workers],
   );
 
+  const hasBetterUnsatisfied = React.useMemo(
+    () => categorized.unsatisfied.some((w) => isBetterCandidate(w, assignedWorkers, floors, openedFloorTypes)),
+    [categorized.unsatisfied, assignedWorkers, floors, openedFloorTypes],
+  );
+
+  const hasBetterMid = React.useMemo(
+    () => categorized.mid.some((w) => isBetterCandidate(w, assignedWorkers.filter((a) => a.id !== w.id), floors, openedFloorTypes)),
+    [categorized.mid, assignedWorkers, floors, openedFloorTypes],
+  );
+
   const currentWorkers =
     activeTab === 'happy'
       ? [...categorized.happy, ...categorized.specialists]
@@ -371,6 +382,10 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
       }
       const now = clock.now();
 
+      const isBetter = activeTab === 'mid'
+        ? isBetterCandidate(worker, assignedWorkers.filter((a) => a.id !== worker.id), floors, openedFloorTypes)
+        : false;
+
       return (
         <WorkerJobCard
           worker={worker}
@@ -382,9 +397,11 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
           expanded={expandedWorkerId === worker.id}
           isSpecialistTab={activeTab === 'specialists'}
           isMidTab={activeTab === 'mid'}
+          isBetterCandidate={isBetter}
           onToggle={() => setExpandedWorkerId((p) => (p === worker.id ? null : worker.id))}
           onFire={() => handleFireFromJob(worker)}
           onTrain={() => handleTrain(worker)}
+          onFindJob={isBetter ? () => setPickerWorker(worker) : undefined}
         />
       );
     },
@@ -431,6 +448,9 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
                     const count = tab === 'happy'
                       ? categorized.happy.length + categorized.specialists.length
                       : categorized[tab].length;
+                    const showArrow =
+                      (tab === 'unsatisfied' && hasBetterUnsatisfied) ||
+                      (tab === 'mid' && hasBetterMid);
                     return (
                       <Pressable
                         key={tab}
@@ -457,8 +477,17 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
                             </Text>
                           </View>
                         ) : (
-                          <View style={[styles.tabCount, { backgroundColor: isActive ? color : 'rgba(255,255,255,0.2)' }]}>
-                            <Text style={styles.tabCountText}>{count}</Text>
+                          <View style={styles.tabCountRow}>
+                            <View style={[styles.tabCount, { backgroundColor: isActive ? color : 'rgba(255,255,255,0.2)' }]}>
+                              <Text style={styles.tabCountText}>{count}</Text>
+                            </View>
+                            {showArrow && (
+                              <Image
+                                source={require('../../assets/img/greenArrowUp.png')}
+                                style={styles.tabArrow}
+                                contentFit="contain"
+                              />
+                            )}
                           </View>
                         )}
                       </Pressable>
@@ -611,6 +640,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 10,
   },
+  tabCountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+  },
   tabCount: {
     minWidth: 18,
     height: 18,
@@ -623,6 +658,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 11,
     color: 'rgba(255,255,255,0.9)',
+  },
+  tabArrow: {
+    width: 14,
+    height: 14,
   },
   tabStarWrap: {
     flexDirection: 'row',

@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ImageBackground } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { View, Text, StyleSheet } from 'react-native';
+import AppBackground from '../../src/components/AppBackground';
 import { useTranslation } from 'react-i18next';
 import TopBar from '../../src/components/TopBar';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
@@ -19,12 +19,7 @@ export default function CityScreen() {
 
   return (
     <View style={styles.container}>
-      <ImageBackground
-        source={require('../../assets/img/backgroung/bg15.png')}
-        style={styles.background}
-        resizeMode="cover"
-      >
-        <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+      <AppBackground style={styles.background}>
         <View style={styles.content}>
           <Text style={styles.emoji}>🏙️</Text>
           <Text style={styles.title}>{t('city.title')}</Text>
@@ -39,7 +34,7 @@ export default function CityScreen() {
           coins={formatNum(balance)}
           gems={String(gems)}
         />
-      </ImageBackground>
+      </AppBackground>
     </View>
   );
 }

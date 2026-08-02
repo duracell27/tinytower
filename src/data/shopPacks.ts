@@ -8,15 +8,16 @@ export interface ShopRewards {
 }
 
 export interface ShopPack {
-  id:          string;
-  section:     'diamonds' | 'bundles' | 'builder' | 'materials';
-  name:        string;
-  price:       string;
-  image:       ReturnType<typeof require>;
-  imageBg?:    [string, string]; // gradient behind transparent icon
-  bonusLabel?: string;
-  badge?:      'best' | 'popular';
-  rewards:     ShopRewards;
+  id:           string;
+  section:      'diamonds' | 'bundles' | 'builder' | 'materials';
+  name:         string;
+  price:        string;
+  image:        ReturnType<typeof require>;
+  imageBg?:     [string, string];
+  bonusGems?:   number;       // extra gems on top of base in diamond packs
+  description?: string;       // tagline for bundle cards
+  badge?:       'best' | 'popular';
+  rewards:      ShopRewards;
 }
 
 const ALL_TOOLS = (n: number): Partial<Record<ToolKey, number>> =>
@@ -34,33 +35,33 @@ export const DIAMOND_PACKS: ShopPack[] = [
   {
     id: 'diamonds_2', section: 'diamonds', name: 'Pouch', price: '$1.99',
     image: require('../../assets/img/shop/purchase2.png'),
-    bonusLabel: '+5%',
+    bonusGems: 20,
     rewards: { gems: 420 },
   },
   {
     id: 'diamonds_3', section: 'diamonds', name: 'Box', price: '$4.99',
     image: require('../../assets/img/shop/purchase3.png'),
-    bonusLabel: '+10%',
+    bonusGems: 100,
     rewards: { gems: 1100 },
   },
   {
     id: 'diamonds_4', section: 'diamonds', name: 'Chest', price: '$9.99',
     image: require('../../assets/img/shop/purchase4.png'),
-    bonusLabel: '+15%',
+    bonusGems: 300,
     badge: 'popular',
     rewards: { gems: 2300 },
   },
   {
     id: 'diamonds_5', section: 'diamonds', name: 'Vault', price: '$19.99',
     image: require('../../assets/img/shop/purchase5.png'),
-    bonusLabel: '+20%',
+    bonusGems: 800,
     badge: 'best',
     rewards: { gems: 4800 },
   },
   {
     id: 'diamonds_6', section: 'diamonds', name: 'Treasure', price: '$49.99',
     image: require('../../assets/img/shop/purchase6.png'),
-    bonusLabel: '+25%',
+    bonusGems: 2500,
     rewards: { gems: 12500 },
   },
 ];
@@ -70,12 +71,14 @@ export const BUNDLE_PACKS: ShopPack[] = [
     id: 'bundle_1', section: 'bundles', name: 'Starter Pack', price: '$1.99',
     image: require('../../assets/img/shop/bundleStarter.png'),
     imageBg: ['#E2F8EC', '#B8EDD4'],
+    description: 'Perfect for new players — gems, tools & tokens to get you started',
     rewards: { gems: 150, tools: ALL_TOOLS(3), tokens: ALL_TOKENS(3) },
   },
   {
     id: 'bundle_2', section: 'bundles', name: 'Resource Bundle', price: '$4.99',
     image: require('../../assets/img/shop/bundleResources.png'),
     imageBg: ['#DFF0FF', '#B8D8FF'],
+    description: 'Stock up on everything you need to keep building fast',
     rewards: { gems: 500, tools: ALL_TOOLS(8), tokens: ALL_TOKENS(8) },
   },
   {
@@ -83,6 +86,7 @@ export const BUNDLE_PACKS: ShopPack[] = [
     image: require('../../assets/img/shop/bundleGrowth.png'),
     imageBg: ['#FFF4CC', '#FFE566'],
     badge: 'popular',
+    description: 'Supercharge your tower with premium resources and extra gems',
     rewards: { gems: 1100, tools: ALL_TOOLS(15), tokens: ALL_TOKENS(20) },
   },
   {
@@ -90,6 +94,7 @@ export const BUNDLE_PACKS: ShopPack[] = [
     image: require('../../assets/img/shop/bundleVip.png'),
     imageBg: ['#EDE0FF', '#C9AAFF'],
     badge: 'best',
+    description: 'The ultimate value pack — massive gems, full tool & token supply',
     rewards: { gems: 3000, tools: ALL_TOOLS(30), tokens: ALL_TOKENS(50) },
   },
 ];
@@ -124,16 +129,16 @@ export const BUILDER_PACKS: ShopPack[] = [
 ];
 
 export const MATERIAL_PACKS: ShopPack[] = [
-  { id: 'mat_briks',  section: 'materials', name: 'Bricks',  price: '50',
+  { id: 'mat_briks',  section: 'materials', name: 'Bricks',  price: '$0.99',
     image: require('../../assets/img/tools/briks.png'),  rewards: { tools: { briks:  5 } } },
-  { id: 'mat_glass',  section: 'materials', name: 'Glass',   price: '50',
+  { id: 'mat_glass',  section: 'materials', name: 'Glass',   price: '$0.99',
     image: require('../../assets/img/tools/glass.png'),  rewards: { tools: { glass:  5 } } },
-  { id: 'mat_nails',  section: 'materials', name: 'Nails',   price: '50',
+  { id: 'mat_nails',  section: 'materials', name: 'Nails',   price: '$0.99',
     image: require('../../assets/img/tools/nails.png'),  rewards: { tools: { nails:  5 } } },
-  { id: 'mat_screw',  section: 'materials', name: 'Screws',  price: '50',
+  { id: 'mat_screw',  section: 'materials', name: 'Screws',  price: '$0.99',
     image: require('../../assets/img/tools/screw.png'),  rewards: { tools: { screw:  5 } } },
-  { id: 'mat_wood',   section: 'materials', name: 'Wood',    price: '50',
+  { id: 'mat_wood',   section: 'materials', name: 'Wood',    price: '$0.99',
     image: require('../../assets/img/tools/wood.png'),   rewards: { tools: { wood:   5 } } },
-  { id: 'mat_cement', section: 'materials', name: 'Cement',  price: '50',
+  { id: 'mat_cement', section: 'materials', name: 'Cement',  price: '$0.99',
     image: require('../../assets/img/tools/cement.png'), rewards: { tools: { cement: 5 } } },
 ];

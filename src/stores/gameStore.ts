@@ -151,6 +151,8 @@ interface UIState {
   hotelFullNotice: boolean;
   pendingOpenHotel: boolean;
   pendingPurchaseSuccess: PurchaseSuccessPayload | null;
+  isHydrated: boolean;
+  activeSheetCount: number;
 }
 
 
@@ -226,6 +228,8 @@ interface GameActions {
   showHotelFullNotice: () => void;
   dismissHotelFullNotice: () => void;
   clearPendingOpenHotel: () => void;
+  openSheet: () => void;
+  closeSheet: () => void;
   reset: () => void;
 }
 
@@ -395,6 +399,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   hotelFullNotice: false,
   pendingOpenHotel: false,
   pendingPurchaseSuccess: null,
+  isHydrated: false,
+  activeSheetCount: 0,
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -480,6 +486,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   showHotelFullNotice: () => set({ hotelFullNotice: true }),
   dismissHotelFullNotice: () => set({ hotelFullNotice: false }),
   clearPendingOpenHotel: () => set({ pendingOpenHotel: false }),
+  openSheet: () => set((s) => ({ activeSheetCount: s.activeSheetCount + 1 })),
+  closeSheet: () => set((s) => ({ activeSheetCount: Math.max(0, s.activeSheetCount - 1) })),
   setPendingWorkerFocus: (workerId) => set({ pendingWorkerFocus: workerId }),
   clearPendingWorkerFocus: () => set({ pendingWorkerFocus: null }),
   setDailyLoginReward: (reward) => set({ pendingDailyLoginReward: reward }),
@@ -553,6 +561,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     pendingOpenHotel: false,
     tokens: { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     dailyTasks: { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
+    isHydrated: false,
+    activeSheetCount: 0,
   }),
 
   buy: (floorId, slotIdx, typeId) => {
@@ -924,6 +934,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setLastSyncAt: (ts) => set({ lastSyncAt: ts }),
 
   hydrate: (state) => set({
+    isHydrated: true,
     balance: state.balance,
     gems: state.gems ?? 20,
     floors: state.floors,

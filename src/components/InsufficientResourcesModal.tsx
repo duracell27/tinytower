@@ -18,13 +18,15 @@ const COINS_PER_GEM = 1000;
 const { width: SCREEN_W } = Dimensions.get('window');
 
 const TOOL_META: Record<
-  'briks' | 'glass' | 'nails' | 'screw',
+  'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement',
   { label: string; image: ReturnType<typeof require> }
 > = {
-  briks: { label: 'Bricks',  image: require('../../assets/img/tools/briks.png') },
-  glass: { label: 'Glass',   image: require('../../assets/img/tools/glass.png') },
-  nails: { label: 'Nails',   image: require('../../assets/img/tools/nails.png') },
-  screw: { label: 'Screws',  image: require('../../assets/img/tools/screw.png') },
+  briks:  { label: 'Bricks',  image: require('../../assets/img/tools/briks.png') },
+  glass:  { label: 'Glass',   image: require('../../assets/img/tools/glass.png') },
+  nails:  { label: 'Nails',   image: require('../../assets/img/tools/nails.png') },
+  screw:  { label: 'Screws',  image: require('../../assets/img/tools/screw.png') },
+  wood:   { label: 'Wood',    image: require('../../assets/img/tools/wood.png') },
+  cement: { label: 'Cement',  image: require('../../assets/img/tools/cement.png') },
 };
 
 function CoinIcon() {
@@ -42,6 +44,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
   const exchangeGemsForCoins = useGameStore((s) => s.exchangeGemsForCoins);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const gems = useGameStore((s) => s.gems);
+  const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const visible = payload !== null;
   const scale = useSharedValue(0.5);
@@ -63,7 +66,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
     opacity: opacity.value,
   }));
 
-  if (!visible || !payload) return null;
+  if (!visible || !payload || (activeSheetCount > 0 && !asOverlay)) return null;
 
   const isCoins = payload.currency === 'coins';
   const isGems = payload.currency === 'gems';

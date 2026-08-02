@@ -12,6 +12,7 @@ import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import WorkerAvatar from './WorkerAvatar';
 import { shadeColor } from '../utils/color';
+import { formatNum } from '../utils/format';
 import type { Production, EffectiveStage, Worker } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
@@ -348,11 +349,11 @@ export default function ProductionCard({
   switch (effectiveStage) {
     case 'EMPTY':
       labelText = t('productionCard.actions.hire');
-      subText = typeConfig ? String(effectiveCost) : '';
+      subText = typeConfig ? formatNum(effectiveCost) : '';
       break;
     case 'IDLE':
       labelText = t('productionCard.actions.buy');
-      subText = typeConfig ? String(effectiveCost) : '';
+      subText = typeConfig ? formatNum(effectiveCost) : '';
       break;
     case 'DELIVERING':
       labelText = formatTime(timeRemaining);

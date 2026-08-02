@@ -53,7 +53,7 @@ export function loadGameState(): PersistedGameState | null {
       lastDailyReset: parsed.lastDailyReset ?? 0,
       nextVisitorAt: parsed.nextVisitorAt ?? 0,
       gems: parsed.gems ?? 20,
-      tools: parsed.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
+      tools: parsed.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
       underConstruction: Array.isArray(parsed.underConstruction)
         ? parsed.underConstruction
         : parsed.underConstruction != null
@@ -112,7 +112,7 @@ export function saveGameState(state: PersistedGameState): void {
     stateVersion: state.stateVersion ?? 0,
     playerLevel: state.playerLevel ?? 1,
     playerXp: state.playerXp ?? 0,
-    tools: state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 },
+    tools: state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
     underConstruction: state.underConstruction ?? [],
     openedFloorTypes: state.openedFloorTypes ?? {},
     stats: state.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },

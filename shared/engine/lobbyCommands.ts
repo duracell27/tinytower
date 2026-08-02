@@ -118,7 +118,7 @@ function applyVisitorEffect(
   const targetFloor = visitor.targetFloor ?? 1;
   const tip = calculateTip(role, targetFloor, state.elevatorLevel, config);
   let { balance, gems, dailyTips, dailyGemsCollected, workers, floors } = state;
-  let tools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0 };
+  let tools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 };
   const workersBefore = workers.length;
 
   if (role === 'businessman') {

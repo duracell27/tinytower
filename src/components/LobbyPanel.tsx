@@ -32,12 +32,14 @@ import { formatNum } from '../utils/format';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
 import DeliverAllModal from './DeliverAllModal';
 
-type ToolKey = 'briks' | 'glass' | 'nails' | 'screw';
+type ToolKey = 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement';
 const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
-  briks: require('../../assets/img/tools/briks.png'),
-  glass: require('../../assets/img/tools/glass.png'),
-  nails: require('../../assets/img/tools/nails.png'),
-  screw: require('../../assets/img/tools/screw.png'),
+  briks:  require('../../assets/img/tools/briks.png'),
+  glass:  require('../../assets/img/tools/glass.png'),
+  nails:  require('../../assets/img/tools/nails.png'),
+  screw:  require('../../assets/img/tools/screw.png'),
+  wood:   require('../../assets/img/tools/wood.png'),
+  cement: require('../../assets/img/tools/cement.png'),
 };
 
 const VISITOR_IMAGES: Record<VisitorRole, ReturnType<typeof require>> = {
@@ -451,6 +453,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       clearPendingDeliverAll();
     }
   }, [visible, clearBuilderToolDrop, clearPendingDeliverAll]);
+
+  useEffect(() => {
+    if (!visible) return;
+    const { openSheet, closeSheet } = useGameStore.getState();
+    openSheet();
+    return closeSheet;
+  }, [visible]);
 
   useEffect(() => {
     if (visible) {

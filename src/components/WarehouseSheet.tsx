@@ -20,11 +20,13 @@ const TIMING = { duration: 380, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const CLOSE_THRESHOLD = 80;
 const CLOSE_VELOCITY = 500;
 
-const TOOLS: { key: 'briks' | 'glass' | 'nails' | 'screw'; label: string; image: ReturnType<typeof require> }[] = [
+const TOOLS: { key: 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement'; label: string; image: ReturnType<typeof require> }[] = [
   { key: 'briks',  label: 'Bricks',  image: require('../../assets/img/tools/briks.png') },
   { key: 'glass',  label: 'Glass',   image: require('../../assets/img/tools/glass.png') },
   { key: 'nails',  label: 'Nails',   image: require('../../assets/img/tools/nails.png') },
   { key: 'screw',  label: 'Screws',  image: require('../../assets/img/tools/screw.png') },
+  { key: 'wood',   label: 'Wood',    image: require('../../assets/img/tools/wood.png') },
+  { key: 'cement', label: 'Cement',  image: require('../../assets/img/tools/cement.png') },
 ];
 
 interface WarehouseSheetProps {
@@ -37,11 +39,13 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SCREEN_HEIGHT);
 
-  const briks = useGameStore((s) => s.tools?.briks ?? 0);
-  const glass = useGameStore((s) => s.tools?.glass ?? 0);
-  const nails = useGameStore((s) => s.tools?.nails ?? 0);
-  const screw = useGameStore((s) => s.tools?.screw ?? 0);
-  const counts: Record<string, number> = { briks, glass, nails, screw };
+  const briks  = useGameStore((s) => s.tools?.briks  ?? 0);
+  const glass  = useGameStore((s) => s.tools?.glass  ?? 0);
+  const nails  = useGameStore((s) => s.tools?.nails  ?? 0);
+  const screw  = useGameStore((s) => s.tools?.screw  ?? 0);
+  const wood   = useGameStore((s) => s.tools?.wood   ?? 0);
+  const cement = useGameStore((s) => s.tools?.cement ?? 0);
+  const counts: Record<string, number> = { briks, glass, nails, screw, wood, cement };
 
   useEffect(() => {
     if (visible) {

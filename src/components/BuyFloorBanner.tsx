@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { shadeColor } from '../utils/color';
+import { formatNum } from '../utils/format';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 
 const BANNER_COLOR = '#5B6472';
@@ -34,7 +35,7 @@ export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPre
       </View>
       <View style={styles.ribbonPricePill}>
         <CurrencyIcon currency={currency} size={13} />
-        <Text style={[styles.ribbonPriceText, { color: currency === 'gems' ? '#2592AB' : '#C28A22' }]}>{price}</Text>
+        <Text style={[styles.ribbonPriceText, { color: currency === 'gems' ? '#2592AB' : '#C28A22' }]}>{formatNum(price)}</Text>
       </View>
     </Pressable>
   );

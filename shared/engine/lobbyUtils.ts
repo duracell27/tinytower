@@ -57,7 +57,7 @@ export function checkDailyReset(state: GameState, commandTimestamp: number): Gam
 
   const nextMidnight = state.lastDailyReset + 24 * 60 * 60 * 1000;
   if (commandTimestamp >= nextMidnight) {
-    const MATERIAL_TYPES = ['briks', 'glass', 'nails', 'screw'] as const;
+    const MATERIAL_TYPES = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'] as const;
     const visibleTaskKeys = new Set<string>(DAILY_TASKS.filter((t) => !t.hidden).map((t) => t.key));
     const completedCount = state.dailyTasks.claimed.filter((key) => visibleTaskKeys.has(key)).length;
     const dailyMaterialType = MATERIAL_TYPES[Math.floor(Math.random() * MATERIAL_TYPES.length)];

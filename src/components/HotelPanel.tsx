@@ -95,6 +95,13 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   }, [visible, clearInsufficientResources]);
 
   useEffect(() => {
+    if (!visible) return;
+    const { openSheet, closeSheet } = useGameStore.getState();
+    openSheet();
+    return closeSheet;
+  }, [visible]);
+
+  useEffect(() => {
     if (visible) {
       translateY.value = withTiming(0, SHEET_TIMING);
       scrimOpacity.value = withTiming(1, SCRIM_TIMING);

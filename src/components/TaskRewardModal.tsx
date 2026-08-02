@@ -35,6 +35,7 @@ const DIAMOND_ICON = require('../../assets/img/diamond.png');
 export default function TaskRewardModal() {
   const reward       = useGameStore((s) => s.pendingTaskReward);
   const clearReward  = useGameStore((s) => s.clearTaskReward);
+  const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const scale          = useSharedValue(0.6);
   const rewardsOpacity = useSharedValue(0);
@@ -55,7 +56,7 @@ export default function TaskRewardModal() {
     rewardsY.value = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.back(1.2)) }));
   }, [scale, rewardsOpacity, rewardsY]);
 
-  if (!reward) return null;
+  if (!reward || activeSheetCount > 0) return null;
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={clearReward} onShow={runIn}>

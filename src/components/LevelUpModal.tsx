@@ -21,6 +21,7 @@ export default function LevelUpModal() {
   const { t } = useTranslation('hotel');
   const event = useGameStore((s) => s.levelUpQueue[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissLevelUp);
+  const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const scale = useSharedValue(0.5);
   const starScale = useSharedValue(0);
@@ -52,7 +53,7 @@ export default function LevelUpModal() {
 
   return (
     <Modal
-      visible={!!event}
+      visible={!!event && activeSheetCount === 0}
       transparent
       animationType="fade"
       onRequestClose={dismiss}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ImageBackground, Image, Pressable } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { View, Text, ScrollView, StyleSheet, Image, Pressable } from 'react-native';
+import AppBackground from '../src/components/AppBackground';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { InfoSection } from '../src/components/InfoSection';
@@ -65,12 +65,7 @@ export default function AchievementsScreen() {
   const [infoVisible, setInfoVisible] = useState(false);
 
   return (
-    <ImageBackground
-      source={require('../assets/img/backgroung/bg15.png')}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+    <AppBackground style={styles.container}>
 
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -198,7 +193,7 @@ export default function AchievementsScreen() {
           </View>
         </View>
       )}
-    </ImageBackground>
+    </AppBackground>
   );
 }
 

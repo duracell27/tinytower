@@ -29,6 +29,7 @@ const TOOL_ICONS: Record<string, ReturnType<typeof require>> = {
 export default function PurchaseSuccessModal() {
   const payload = useGameStore((s) => s.pendingPurchaseSuccess);
   const clear   = useGameStore((s) => s.clearPurchaseSuccess);
+  const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const scale   = useSharedValue(0.6);
   const bodyOp  = useSharedValue(0);
@@ -49,7 +50,7 @@ export default function PurchaseSuccessModal() {
     bodyY.value  = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.back(1.2)) }));
   }, [scale, bodyOp, bodyY]);
 
-  if (!payload) return null;
+  if (!payload || activeSheetCount > 0) return null;
 
   const { packName, price, rewards } = payload;
 

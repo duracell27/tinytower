@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
-import { BlurView } from 'expo-blur';
+import AppBackground from '../../src/components/AppBackground';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
 import Svg, { Path, Polyline } from 'react-native-svg';
 import { router } from 'expo-router';
@@ -17,6 +17,7 @@ import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { formatNum, formatCompact } from '../../src/utils/format';
+import { BUSINESS_UPGRADE_COSTS } from '../../shared/config/businessUpgradeCosts';
 import { getUserIcon } from '../../src/utils/userIcon';
 import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
 import * as Clipboard from 'expo-clipboard';
@@ -195,6 +196,8 @@ export default function ProfileScreen() {
   const dailyTasks = useGameStore((s) => s.dailyTasks);
   const floors = useGameStore((s) => s.floors);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const tokens = useGameStore((s) => s.tokens);
+  const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const xpNeeded = xpForLevel(playerLevel);
   const totalWorkers = workers.length;
   const happyCount = workers.filter((w) => {
@@ -211,6 +214,19 @@ export default function ProfileScreen() {
     0,
   );
   const now = useGameClock(10_000);
+
+  const BUSINESS_TYPE_COLORS: Record<string, string> = {
+    green: '#3FA535', blue: '#3376E5', yellow: '#E5A72E', purple: '#9A6FD0', red: '#E05A4A',
+  };
+  const BUSINESS_FLOOR_TYPES = ['green', 'blue', 'yellow', 'purple', 'red'] as const;
+  const upgradeReadyTypes = BUSINESS_FLOOR_TYPES.filter((ft) => {
+    const level = businessUpgrades?.[ft] ?? 0;
+    if (level >= 40) return false;
+    const cost = BUSINESS_UPGRADE_COSTS[level];
+    if (!cost) return false;
+    if (cost.kind === 'gems') return gems >= cost.gems;
+    return balance >= cost.coins && (tokens?.[ft] ?? 0) >= cost.tokens;
+  });
 
   const [syncExpanded, setSyncExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -243,12 +259,7 @@ export default function ProfileScreen() {
   const reversedFailLog = [...failedCommandLog].reverse();
 
   return (
-    <ImageBackground
-      source={require('../../assets/img/backgroung/bg15.png')}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+    <AppBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.profileRow}>
@@ -340,7 +351,14 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
-          <Text style={styles.achievementsButtonText}>{tHotel('myBusiness.title')}</Text>
+          <Text style={[styles.achievementsButtonText, { flex: 1 }]}>{tHotel('myBusiness.title')}</Text>
+          {upgradeReadyTypes.length > 0 && (
+            <View style={styles.businessDotsRow}>
+              {upgradeReadyTypes.map((ft) => (
+                <View key={ft} style={[styles.businessDot, { backgroundColor: BUSINESS_TYPE_COLORS[ft] }]} />
+              ))}
+            </View>
+          )}
         </Pressable>
 
         <Pressable
@@ -457,7 +475,7 @@ export default function ProfileScreen() {
           )}
         </Pressable>
       </ScrollView>
-    </ImageBackground>
+    </AppBackground>
   );
 }
 
@@ -547,9 +565,10 @@ const styles = StyleSheet.create({
   },
   levelValue: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 32,
+    fontSize: 36,
     color: '#27331F',
-    lineHeight: 34,
+    lineHeight: 36,
+    marginTop: 6,
   },
   statLabel: {
     fontFamily: 'Nunito_600SemiBold',
@@ -778,6 +797,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   achievementsButtonPressed: { opacity: 0.7 },
+  businessDotsRow: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 4 },
+  businessDot: { width: 8, height: 8, borderRadius: 4 },
   achievementsIcon: {
     width: 36,
     height: 36,

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
-  Share, ActivityIndicator, TextInput, ImageBackground,
+  Share, ActivityIndicator, TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { InfoSection } from '../components/InfoSection';
 import { Image } from 'expo-image';
-import { BlurView } from 'expo-blur';
+import AppBackground from '../components/AppBackground';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { createMMKV } from 'react-native-mmkv';
@@ -169,12 +169,7 @@ export default function ReferralScreen() {
   };
 
   return (
-    <ImageBackground
-      source={require('../../assets/img/backgroung/bg15.png')}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+    <AppBackground style={styles.container}>
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -336,7 +331,7 @@ export default function ReferralScreen() {
           </View>
         </View>
       )}
-    </ImageBackground>
+    </AppBackground>
   );
 }
 

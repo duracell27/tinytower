@@ -7,6 +7,8 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  withRepeat,
+  withSequence,
   Easing,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -26,9 +28,11 @@ interface WorkerJobCardProps {
   expanded: boolean;
   isSpecialistTab: boolean;
   isMidTab?: boolean;
+  isBetterCandidate?: boolean;
   onToggle: () => void;
   onFire: () => void;
   onTrain: () => void;
+  onFindJob?: () => void;
 }
 
 const TIMING_CONFIG = { duration: 300, easing: Easing.bezier(0.4, 0, 0.2, 1) };
@@ -85,9 +89,11 @@ export default function WorkerJobCard({
   expanded,
   isSpecialistTab,
   isMidTab = false,
+  isBetterCandidate = false,
   onToggle,
   onFire,
   onTrain,
+  onFindJob,
 }: WorkerJobCardProps) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
@@ -111,11 +117,24 @@ export default function WorkerJobCard({
 
   const expandAnim = useSharedValue(expanded ? 1 : 0);
   const chevronAnim = useSharedValue(expanded ? 1 : 0);
+  const arrowBounce = useSharedValue(0);
 
   React.useEffect(() => {
     expandAnim.value = withTiming(expanded ? 1 : 0, TIMING_CONFIG);
     chevronAnim.value = withTiming(expanded ? 1 : 0, TIMING_CONFIG);
   }, [expanded]);
+
+  React.useEffect(() => {
+    if (!isBetterCandidate) return;
+    arrowBounce.value = withRepeat(
+      withSequence(
+        withTiming(-4, { duration: 350 }),
+        withTiming(0, { duration: 350 }),
+      ),
+      -1,
+      false,
+    );
+  }, [isBetterCandidate]);
 
   const expandedStyle = useAnimatedStyle(() => ({
     maxHeight: expandAnim.value * 480,
@@ -124,6 +143,10 @@ export default function WorkerJobCard({
 
   const chevronStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${chevronAnim.value * 90}deg` }],
+  }));
+
+  const arrowStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: arrowBounce.value }],
   }));
 
   const activeProduction = getProductionTimeRemaining(floor, worker.assignedSlotIdx!, now);
@@ -148,6 +171,15 @@ export default function WorkerJobCard({
         <View style={styles.infoColumn}>
           <View style={styles.nameRow}>
             <Text style={styles.nameText} numberOfLines={1}>{worker.name}</Text>
+            {isBetterCandidate && (
+              <Animated.View style={arrowStyle}>
+                <Image
+                  source={require('../../assets/img/greenArrowUp.png')}
+                  style={styles.upgradeBadge}
+                  contentFit="contain"
+                />
+              </Animated.View>
+            )}
           </View>
           {isMidTab && (
             <View style={styles.iconRow}>
@@ -204,6 +236,23 @@ export default function WorkerJobCard({
                 <GemIcon size={16} />
               </LinearGradient>
               <View style={[styles.actionButtonShadow, { backgroundColor: '#A07800' }]} />
+            </Pressable>
+          )}
+
+          {isMidTab && isBetterCandidate && onFindJob && (
+            <Pressable
+              onPress={onFindJob}
+              style={({ pressed }) => [styles.actionButton, pressed && styles.actionButtonPressed]}
+            >
+              <LinearGradient colors={['#4CAF7D', '#2E8B57']} style={styles.actionButtonGradient}>
+                <Image
+                  source={require('../../assets/img/greenArrowUp.png')}
+                  style={{ width: 16, height: 16 }}
+                  contentFit="contain"
+                />
+                <Text style={styles.actionButtonText}>{t('workerCard.actions.findJob')}</Text>
+              </LinearGradient>
+              <View style={[styles.actionButtonShadow, { backgroundColor: '#1E6B3A' }]} />
             </Pressable>
           )}
 
@@ -372,5 +421,9 @@ const styles = StyleSheet.create({
     height: 3,
     borderBottomLeftRadius: 14,
     borderBottomRightRadius: 14,
+  },
+  upgradeBadge: {
+    width: 16,
+    height: 16,
   },
 });

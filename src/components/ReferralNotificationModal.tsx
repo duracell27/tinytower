@@ -12,6 +12,7 @@ const { width: SCREEN_W } = Dimensions.get('window');
 export default function ReferralNotificationModal() {
   const notification = useGameStore((s) => s.pendingReferralNotifications[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissReferralNotification);
+  const activeSheetCount = useGameStore((s) => s.activeSheetCount);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -49,7 +50,7 @@ export default function ReferralNotificationModal() {
 
   return (
     <Modal
-      visible={!!notification}
+      visible={!!notification && activeSheetCount === 0}
       transparent
       animationType="fade"
       onRequestClose={isClaimModal ? undefined : dismiss}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import AppBackground from '../../src/components/AppBackground';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
@@ -24,12 +24,7 @@ export default function MenuScreen() {
   }, [pendingWorkerFocus]);
 
   return (
-    <ImageBackground
-      source={require('../../assets/img/backgroung/bg15.png')}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+    <AppBackground style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.heading}>{t('menu.heading')}</Text>
 
@@ -86,7 +81,7 @@ export default function MenuScreen() {
         targetWorkerId={pendingWorkerFocus}
       />
       <LeaderboardSheet visible={leaderboardOpen} onClose={() => setLeaderboardOpen(false)} />
-    </ImageBackground>
+    </AppBackground>
   );
 }
 

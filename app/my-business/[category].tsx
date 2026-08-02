@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import { BlurView } from 'expo-blur';
+import AppBackground from '../../src/components/AppBackground';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../../src/stores/gameStore';
@@ -71,12 +71,7 @@ export default function BusinessCategoryScreen() {
   }
 
   return (
-    <ImageBackground
-      source={require('../../assets/img/backgroung/bg15.png')}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+    <AppBackground style={styles.container}>
       <View style={styles.scroll}>
         <View style={styles.header}>
           <Text style={[styles.title, { color }]}>{tHotel(`myBusiness.categories.${ft}`)}</Text>
@@ -153,7 +148,7 @@ export default function BusinessCategoryScreen() {
         <Text style={styles.closeBtnText}>✕</Text>
       </Pressable>
 
-    </ImageBackground>
+    </AppBackground>
   );
 }
 

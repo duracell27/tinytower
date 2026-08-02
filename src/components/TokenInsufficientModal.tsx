@@ -28,6 +28,7 @@ export default function TokenInsufficientModal() {
   const { t } = useTranslation('hotel');
   const payload = useGameStore((s) => s.tokenInsufficient);
   const clearTokenInsufficient = useGameStore((s) => s.clearTokenInsufficient);
+  const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const scale   = useSharedValue(0.5);
   const opacity = useSharedValue(0);
@@ -48,7 +49,7 @@ export default function TokenInsufficientModal() {
     opacity: opacity.value,
   }));
 
-  if (!payload) return null;
+  if (!payload || activeSheetCount > 0) return null;
 
   const ft    = payload.floorType;
   const color = TYPE_COLORS[ft];

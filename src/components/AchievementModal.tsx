@@ -43,6 +43,7 @@ export default function AchievementModal() {
   const { t } = useTranslation('hotel');
   const grant = useGameStore((s) => s.achievementQueue[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissAchievement);
+  const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const scale = useSharedValue(0.5);
   const rewardsOpacity = useSharedValue(0);
@@ -65,7 +66,7 @@ export default function AchievementModal() {
 
   return (
     <Modal
-      visible={!!grant}
+      visible={!!grant && activeSheetCount === 0}
       transparent
       animationType="fade"
       onRequestClose={dismiss}

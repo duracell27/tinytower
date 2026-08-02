@@ -531,7 +531,7 @@ export function createInitialState(config: GameConfig): GameState {
     lastDailyReset: 0,
     dailyFillLobbyUses: 0,
     nextVisitorAt: 0,
-    tools: { briks: 1, glass: 1, nails: 1, screw: 1 },
+    tools: { briks: 1, glass: 1, nails: 1, screw: 1, wood: 1, cement: 1 },
     underConstruction: [],
     openedFloorTypes: {},
     stats: {

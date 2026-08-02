@@ -19,6 +19,7 @@ export default function DailyLoginRewardModal() {
   const { t } = useTranslation('hotel');
   const reward = useGameStore((s) => s.pendingDailyLoginReward);
   const dismiss = useGameStore((s) => s.dismissDailyLoginReward);
+  const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const scale = useSharedValue(0.5);
   const rewardsOpacity = useSharedValue(0);
@@ -41,7 +42,7 @@ export default function DailyLoginRewardModal() {
 
   return (
     <Modal
-      visible={!!reward}
+      visible={!!reward && activeSheetCount === 0}
       transparent
       animationType="fade"
       onRequestClose={dismiss}
