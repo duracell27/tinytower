@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, Pressable, ImageBackground,
+  View, Text, ScrollView, StyleSheet, Pressable,
 } from 'react-native';
-import { BlurView } from 'expo-blur';
+import AppBackground from '../src/components/AppBackground';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { InfoSection } from '../src/components/InfoSection';
@@ -94,12 +94,7 @@ export default function DailyTasksScreen() {
   const matCount   = getMaterialCount(playerLevel);
 
   return (
-    <ImageBackground
-      source={require('../assets/img/backgroung/bg15.png')}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+    <AppBackground style={styles.container}>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.headingRow}>
@@ -249,7 +244,7 @@ export default function DailyTasksScreen() {
               <InfoSection
                 icon={require('../assets/img/daily/dailytransporter.png')}
                 title="Daily Challenges"
-                text="Complete 9 tasks each day: buy, list, and collect goods, lift visitors and VIPs, add residents, spend gems, and more."
+                text="Complete 11 tasks each day: buy, list, and collect goods, lift visitors and VIPs, add residents, spend gems, purchase diamonds, and more."
                 accentColor="rgba(229,167,46,0.3)"
               />
               <InfoSection
@@ -275,7 +270,7 @@ export default function DailyTasksScreen() {
           </View>
         </View>
       )}
-    </ImageBackground>
+    </AppBackground>
   );
 }
 

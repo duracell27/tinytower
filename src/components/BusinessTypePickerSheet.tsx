@@ -5,7 +5,22 @@ import {
 import { Image } from 'expo-image';
 
 const ICON_FLOOR  = require('../../assets/img/floor.png');
-const ICON_WORKER = require('../../assets/img/worker.png');
+
+const TYPE_COLORS: Record<string, string> = {
+  green:  '#3FA535',
+  blue:   '#3376E5',
+  yellow: '#E5A72E',
+  purple: '#9A6FD0',
+  red:    '#E05A4A',
+};
+
+const WORKER_ICONS: Record<string, ReturnType<typeof require>> = {
+  green:  require('../../assets/img/workers/man-green.png'),
+  blue:   require('../../assets/img/workers/man-blue.png'),
+  yellow: require('../../assets/img/workers/man-yellow.png'),
+  purple: require('../../assets/img/workers/man-violet.png'),
+  red:    require('../../assets/img/workers/man-red.png'),
+};
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS,
 } from 'react-native-reanimated';
@@ -133,10 +148,10 @@ export default function BusinessTypePickerSheet({
                   ) : (
                     <View style={styles.typeStatsRow}>
                       <Image source={ICON_FLOOR} style={styles.typeStatIcon} contentFit="contain" />
-                      <Text style={styles.typeStat}>{builtFloorCounts[ft] ?? 0}</Text>
+                      <Text style={[styles.typeStatBuilt, { color: TYPE_COLORS[ft] }]}>Built {builtFloorCounts[ft] ?? 0}</Text>
                       <Text style={styles.typeStatSep}>·</Text>
-                      <Image source={ICON_WORKER} style={styles.typeStatIcon} contentFit="contain" />
-                      <Text style={styles.typeStat}>{hotelWorkerCounts[ft] ?? 0}</Text>
+                      <Image source={WORKER_ICONS[ft]} style={styles.typeStatIcon} contentFit="contain" />
+                      <Text style={styles.typeStat}>{hotelWorkerCounts[ft] ?? 0} waiting in the hotel</Text>
                     </View>
                   )}
                 </View>
@@ -250,6 +265,10 @@ const styles = StyleSheet.create({
   typeStatIcon: {
     width: 13,
     height: 13,
+  },
+  typeStatBuilt: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 12,
   },
   typeStat: {
     fontFamily: 'Fredoka_400Regular',

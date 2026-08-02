@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import { BlurView } from 'expo-blur';
+import AppBackground from '../src/components/AppBackground';
 import { LinearGradient } from 'expo-linear-gradient';
 import { InfoSection } from '../src/components/InfoSection';
 import { router } from 'expo-router';
@@ -39,6 +39,7 @@ const TOKEN_ICONS: Record<FloorType, ReturnType<typeof require>> = {
   red:    require('../assets/img/tokens/tokenRed.png'),
 };
 
+
 export default function MyBusinessScreen() {
   const { t: tHotel } = useTranslation('hotel');
   const balance          = useGameStore((s) => s.balance);
@@ -47,15 +48,11 @@ export default function MyBusinessScreen() {
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const floors           = useGameStore((s) => s.floors);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+
   const [infoVisible, setInfoVisible] = useState(false);
 
   return (
-    <ImageBackground
-      source={require('../assets/img/backgroung/bg15.png')}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+    <AppBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         <View style={styles.header}>
@@ -94,10 +91,10 @@ export default function MyBusinessScreen() {
         </View>
 
         {FLOOR_TYPES.map((ft) => {
-          const level = businessUpgrades?.[ft] ?? 0;
-          const count = getBuiltFloorCountForType(ft, floors, openedFloorTypes, gameConfig);
-          const color = TYPE_COLORS[ft];
-          const barBgColor = `${color}26`;
+          const level         = businessUpgrades?.[ft] ?? 0;
+          const count         = getBuiltFloorCountForType(ft, floors, openedFloorTypes, gameConfig);
+const color         = TYPE_COLORS[ft];
+          const barBgColor    = `${color}26`;
 
           return (
             <Pressable
@@ -118,7 +115,12 @@ export default function MyBusinessScreen() {
                   <View style={[styles.progressBarFill, { width: `${(level / 40) * 100}%`, backgroundColor: color }]} />
                 </View>
 
-                <Text style={styles.meta}>{tHotel('myBusiness.floorCount', { count })}</Text>
+                <View style={styles.statsRow}>
+                  <View style={styles.statChip}>
+                    <Image source={TYPE_ICONS[ft]} style={styles.statIcon} contentFit="contain" />
+                    <Text style={[styles.statBuilt, { color }]}>Built {count}</Text>
+                  </View>
+                </View>
               </View>
               <View style={[styles.colorBar, { backgroundColor: color }]} />
             </Pressable>
@@ -173,7 +175,7 @@ export default function MyBusinessScreen() {
           </View>
         </View>
       )}
-    </ImageBackground>
+    </AppBackground>
   );
 }
 
@@ -231,7 +233,10 @@ const styles = StyleSheet.create({
   bonus: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16 },
   progressBarBg: { height: 6, borderRadius: 3, overflow: 'hidden' },
   progressBarFill: { height: '100%', borderRadius: 3 },
-  meta: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#7C8A6E', textAlign: 'center' },
+  statsRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
+  statChip: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  statIcon: { width: 16, height: 16 },
+  statBuilt:   { fontFamily: 'Nunito_700Bold', fontSize: 12 },
   closeBtn: { position: 'absolute', bottom: 40, alignSelf: 'center', width: 56, height: 56, borderRadius: 28, backgroundColor: '#1A1A1A', alignItems: 'center', justifyContent: 'center' },
   closeBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 20, color: '#fff', lineHeight: 22 },
 });
