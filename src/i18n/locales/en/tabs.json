@@ -38,7 +38,22 @@
   },
   "city": {
     "title": "City",
-    "comingSoon": "Nothing here yet"
+    "comingSoon": "Nothing here yet",
+    "tagline": "A City is all about community!",
+    "description": "Players in a city communicate and help each other.",
+    "bonusTitle": "Free Bonuses for All Members",
+    "bonusDescription": "All city members receive free bonuses that boost revenue and experience!",
+    "requirementTitle": "Who Can Join?",
+    "requirementDescription": "Cities accept players who have built 10 or more floors.",
+    "joinTitle": "Join an Existing City",
+    "joinDescription": "Submit a request and you'll be invited by the city's mayor.",
+    "joinButton": "Join a City!",
+    "rankingsTitle": "City Rankings",
+    "rankingsSubtitle": "Top cities in the game",
+    "rankingsDescription": "Or find a city in the rankings and leave a request on the city forum.",
+    "createTitle": "Start Your Own",
+    "createDescription": "Create your own city and become its Mayor!",
+    "createButton": "Create a City"
   },
   "shop": {
     "title": "Shop",

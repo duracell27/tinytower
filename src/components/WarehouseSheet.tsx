@@ -15,6 +15,8 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_WIDTH  = Dimensions.get('window').width;
+const CELL_W = Math.floor((SCREEN_WIDTH - 32 - 20) / 3); // body padding 16*2, gap 10*2
 const SHEET_MIN_HEIGHT = SCREEN_HEIGHT * 0.42;
 const TIMING = { duration: 380, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const CLOSE_THRESHOLD = 80;
@@ -183,10 +185,11 @@ const styles = StyleSheet.create({
   },
   grid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
   },
   cell: {
-    flex: 1,
+    width: CELL_W,
     backgroundColor: '#fff',
     borderRadius: 14,
     paddingVertical: 12,

@@ -35,11 +35,12 @@ const TOOL_ICONS: Record<string, ReturnType<typeof require>> = {
   cement: require('../../assets/img/tools/cement.png'),
 };
 
+// Colors from FLOOR_TYPE_SCHEMES in FloorCard.tsx — single source of truth
 const SECTION_THEME: Record<string, { gradient: [string, string]; btn: string }> = {
-  diamonds:  { gradient: ['#49AA38', '#20810F'], btn: '#20810F' },
-  bundles:   { gradient: ['#3376E5', '#0A4DBC'], btn: '#0A4DBC' },
-  builder:   { gradient: ['#E5A72E', '#BC7E05'], btn: '#BC7E05' },
-  materials: { gradient: ['#9A6FD0', '#7B52BC'], btn: '#7B52BC' },
+  diamonds:  { gradient: ['#5E8F42', '#5E8F42'], btn: '#5E8F42' },
+  bundles:   { gradient: ['#2E6EC9', '#2E6EC9'], btn: '#2E6EC9' },
+  builder:   { gradient: ['#E7A52B', '#E7A52B'], btn: '#E7A52B' },
+  materials: { gradient: ['#9A6FD0', '#9A6FD0'], btn: '#9A6FD0' },
 };
 
 // ─── Section header ───────────────────────────────────────────────────────────
@@ -151,6 +152,14 @@ const dc = StyleSheet.create({
 // ─── Full-width card  (bundles & builder) ─────────────────────────────────────
 // Gradient card bg, header image+name+desc, reward pillars, large buy button
 
+function bgBrightness(hex: string): number {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
 function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
   pack: ShopPack;
   onBuy: (pack: ShopPack) => void;
@@ -160,6 +169,15 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
   btnColor: string;
 }) {
   const bg = (pack.imageBg ?? ['#EEE8FF', '#D8CCFF']) as [string, string];
+
+  // Use average brightness of both gradient stops to decide text colour
+  const avgBright = (bgBrightness(bg[0]) + bgBrightness(bg[1])) / 2;
+  const dark = avgBright < 148;
+  const txt       = dark ? '#FFFFFF'              : '#2D1A4E';
+  const txtSub    = dark ? 'rgba(255,255,255,0.85)' : '#4A3060';
+  const txtReward = dark ? 'rgba(255,255,255,0.92)' : '#3A2360';
+  const sepColor  = dark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.08)';
+  const divColor  = dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.12)';
 
   const toolEntries  = Object.entries(pack.rewards.tools  ?? {}).filter(([, v]) => v) as [string, number][];
   const tokenEntries = Object.entries(pack.rewards.tokens ?? {}).filter(([, v]) => v) as [string, number][];
@@ -179,24 +197,24 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
         </View>
         <View style={fw.headerText}>
           <View style={fw.titleRow}>
-            <Text style={fw.name}>{pack.name}</Text>
+            <Text style={[fw.name, { color: txt }]}>{pack.name}</Text>
             {pack.badge && <Badge kind={pack.badge} />}
           </View>
-          {pack.description && <Text style={fw.desc}>{pack.description}</Text>}
+          {pack.description && <Text style={[fw.desc, { color: txtSub }]}>{pack.description}</Text>}
         </View>
       </View>
 
-      <View style={fw.sep} />
+      <View style={[fw.sep, { backgroundColor: sepColor }]} />
 
       {/* Rewards — gems left | tools + tokens right */}
       <View style={fw.rewardSection}>
         {!!pack.rewards.gems && (
           <View style={fw.leftSide}>
             <Image source={DIAMOND_ICON} style={fw.gemIcon} contentFit="contain" />
-            <Text style={fw.gemCount}>{pack.rewards.gems.toLocaleString()}</Text>
+            <Text style={[fw.gemCount, { color: txt }]}>{pack.rewards.gems.toLocaleString()}</Text>
           </View>
         )}
-        {!!pack.rewards.gems && hasRight && <View style={fw.vDivider} />}
+        {!!pack.rewards.gems && hasRight && <View style={[fw.vDivider, { backgroundColor: divColor }]} />}
         {hasRight && (
           <View style={fw.rightSide}>
             {toolEntries.length > 0 && (
@@ -204,7 +222,7 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
                 {toolEntries.map(([k, v]) => (
                   <View key={k} style={fw.rewardItem}>
                     <Image source={TOOL_ICONS[k]} style={fw.rewardIcon} contentFit="contain" />
-                    <Text style={fw.rewardCount}>×{v}</Text>
+                    <Text style={[fw.rewardCount, { color: txtReward }]}>×{v}</Text>
                   </View>
                 ))}
               </View>
@@ -214,7 +232,7 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
                 {tokenEntries.map(([k, v]) => (
                   <View key={k} style={fw.rewardItem}>
                     <Image source={TOKEN_ICONS[k]} style={fw.rewardIcon} contentFit="contain" />
-                    <Text style={fw.rewardCount}>×{v}</Text>
+                    <Text style={[fw.rewardCount, { color: txtReward }]}>×{v}</Text>
                   </View>
                 ))}
               </View>
@@ -223,7 +241,7 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
         )}
       </View>
 
-      <View style={fw.sep} />
+      <View style={[fw.sep, { backgroundColor: sepColor }]} />
 
       {/* Large buy button */}
       <Pressable
