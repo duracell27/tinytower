@@ -446,3 +446,141 @@ describe('fill_lobby', () => {
     expect(result.state.lobbyVisitors).toHaveLength(2);
   });
 });
+
+describe('VIP visitor effects — collect_tip', () => {
+  function makeVipVisitor(role: string, targetFloor: number): Visitor {
+    return { id: 'vip1', role: role as any, isVip: true, targetFloor, hairColor: '#000', female: false };
+  }
+
+  it('VIP guest at floor 1 fills hotel to capacity', () => {
+    const workers = [{ id: 'w1', name: 'A', female: false, floorType: 'green', dreamJob: 'coffee', level: 1, hairColor: '#000', assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false }];
+    const state = makeState({ hotelCapacity: 3, workers, lobbyVisitors: [makeVipVisitor('guest', 1)], elevatorFloor: 1 });
+    // Pre-generate 2 workers (3 - 1 occupied)
+    const w2 = { id: 'w2', name: 'B', female: false, floorType: 'green', dreamJob: 'coffee', level: 1, hairColor: '#000' };
+    const w3 = { id: 'w3', name: 'C', female: false, floorType: 'green', dreamJob: 'coffee', level: 1, hairColor: '#000' };
+    const cmd: Command = {
+      id: 'c1', type: 'collect_tip', timestamp: 1000,
+      newWorkers: [w2, w3],
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    // Hotel should have 3 unassigned workers
+    const unassigned = result.state.workers.filter(w => w.assignedFloorId === null);
+    expect(unassigned).toHaveLength(3);
+  });
+
+  it('VIP guest gets tip × 10', () => {
+    const state = makeState({ hotelCapacity: 0, lobbyVisitors: [makeVipVisitor('guest', 3)], elevatorFloor: 3 });
+    const cmd: Command = { id: 'c1', type: 'collect_tip', timestamp: 1000 };
+    const before = state.balance;
+    const result = processCommand(state, cmd, testConfig, 1000);
+    // Regular tip = guestTipBase(10) * elevatorLevel(1) * floor(3) = 30; VIP = 300
+    expect(result.state.balance - before).toBe(300);
+  });
+
+  it('VIP businessman fallback tip is × 10', () => {
+    const gemLimit = testConfig.lobbyConfig.dailyGemLimitBase + 1;
+    const state = makeState({ dailyGemsCollected: gemLimit, lobbyVisitors: [makeVipVisitor('businessman', 3)], elevatorFloor: 3 });
+    const cmd: Command = { id: 'c1', type: 'collect_tip', timestamp: 1000 };
+    const before = state.balance;
+    const result = processCommand(state, cmd, testConfig, 1000);
+    // Regular fallback = businessmanFallbackBase(100) * elevatorLevel(1) * floor(3) = 300; VIP = 3000
+    expect(result.state.balance - before).toBe(3000);
+  });
+
+  it('VIP businessman still gives only 1 gem', () => {
+    const state = makeState({ gems: 5, dailyGemsCollected: 0, lobbyVisitors: [makeVipVisitor('businessman', 2)], elevatorFloor: 2 });
+    const cmd: Command = { id: 'c1', type: 'collect_tip', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.state.gems - state.gems).toBe(1);
+    expect(result.state.dailyGemsCollected).toBe(1);
+  });
+
+  it('VIP builder gives 2 tools when no construction on target floor', () => {
+    const state = makeState({
+      lobbyVisitors: [makeVipVisitor('builder', 3)],
+      underConstruction: [],
+      elevatorFloor: 3,
+      tools: { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
+    });
+    const cmd: Command = {
+      id: 'c1', type: 'collect_tip', timestamp: 1000,
+      builderTools: ['wood', 'cement'],
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.state.tools?.wood).toBe(1);
+    expect(result.state.tools?.cement).toBe(1);
+  });
+
+  it('VIP builder completes construction when target floor is under construction', () => {
+    const now = 5000;
+    const state = makeState({
+      lobbyVisitors: [makeVipVisitor('builder', 2)],
+      underConstruction: [{ floorId: 2, startedAt: 0, durationMs: 60_000, requiredTools: [], selectedFloorType: null }],
+      elevatorFloor: 2,
+    });
+    const cmd: Command = { id: 'c1', type: 'collect_tip', timestamp: now, builderTools: [] };
+    const result = processCommand(state, cmd, testConfig, now);
+    const uc = result.state.underConstruction.find(u => u.floorId === 2)!;
+    // startedAt should be set so now - startedAt >= durationMs
+    expect(now - uc.startedAt).toBeGreaterThanOrEqual(60_000);
+  });
+
+  it('VIP deliverer fully completes DELIVERING slot', () => {
+    const now = 1000;
+    const state = makeState({
+      lobbyVisitors: [makeVipVisitor('deliverer', 2)],
+      elevatorFloor: 2,
+    });
+    state.floors[0].productions[0].stage = 'DELIVERING';
+    state.floors[0].productions[0].stageStartedAt = 0;
+    const cmd: Command = { id: 'c1', type: 'collect_tip', timestamp: now };
+    const result = processCommand(state, cmd, testConfig, now);
+    const prod = result.state.floors[0].productions[0];
+    // deliveryDuration = 5000; now - stageStartedAt should be >= 5000
+    expect(now - prod.stageStartedAt).toBeGreaterThanOrEqual(5000);
+  });
+
+  it('VIP seller completes the SELLING slot with longest remaining time', () => {
+    const now = 1000;
+    // Two selling slots: slot 0 started at 500 (remaining 9500), slot 1 at 0 (remaining 9000)
+    // Should complete slot 0 (longest remaining)
+    const state = makeState({
+      lobbyVisitors: [makeVipVisitor('seller', 2)],
+      elevatorFloor: 2,
+      floors: [{
+        id: 2, productions: [
+          { typeId: 'coffee', stage: 'SELLING' as const, stageStartedAt: 500 },
+          { typeId: 'coffee', stage: 'SELLING' as const, stageStartedAt: 0 },
+        ],
+      }],
+    });
+    const cmd: Command = { id: 'c1', type: 'collect_tip', timestamp: now };
+    const result = processCommand(state, cmd, testConfig, now);
+    const prods = result.state.floors[0].productions;
+    // The slot with stageStartedAt=500 should be completed (now - stageStartedAt >= sellDuration)
+    expect(now - prods[0].stageStartedAt).toBeGreaterThanOrEqual(10000);
+    // The other slot should be unchanged
+    expect(prods[1].stageStartedAt).toBe(0);
+  });
+});
+
+describe('vipsLifted stat tracking', () => {
+  it('increments vipsLifted on collect_tip for VIP visitor', () => {
+    const visitor = { id: 'v1', role: 'guest' as const, isVip: true, targetFloor: 3, hairColor: '#000', female: false };
+    const state = makeState({ lobbyVisitors: [visitor], elevatorFloor: 3 });
+    const cmd: Command = { id: 'c1', type: 'collect_tip', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.state.dailyTasks.progress.vipsLifted).toBe(1);
+    expect(result.state.dailyTasks.progress.visitorsLifted).toBe(1);
+  });
+
+  it('does NOT increment vipsLifted for regular visitor', () => {
+    const visitor = { id: 'v1', role: 'guest' as const, isVip: false, targetFloor: 3, hairColor: '#000', female: false };
+    const state = makeState({ lobbyVisitors: [visitor], elevatorFloor: 3 });
+    const cmd: Command = { id: 'c1', type: 'collect_tip', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.state.dailyTasks.progress.vipsLifted).toBe(0);
+    expect(result.state.dailyTasks.progress.visitorsLifted).toBe(1);
+  });
+});

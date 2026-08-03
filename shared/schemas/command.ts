@@ -67,6 +67,7 @@ export const SpawnVisitorCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('spawn_visitor'),
   visitorId: z.string(),
   role: VisitorRoleSchema,
+  isVip: z.boolean().optional(),
   targetFloor: z.number().int().positive(),
   hairColor: z.string(),
   female: z.boolean(),
@@ -76,37 +77,35 @@ export const SpawnVisitorCommandSchema = TimestampedBaseSchema.extend({
 export const LiftVisitorCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('lift_visitor'),
   role: VisitorRoleSchema,
+  isVip: z.boolean().optional(),
   targetFloor: z.number().int().positive(),
 });
 
 const ToolKeySchema = z.enum(['briks', 'glass', 'nails', 'screw', 'wood', 'cement']);
 
+const WorkerDataSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  female: z.boolean(),
+  floorType: z.string(),
+  dreamJob: z.string(),
+  level: z.number().int().min(1).max(9),
+  hairColor: z.string(),
+});
+
 export const CollectTipCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('collect_tip'),
-  newWorker: z.object({
-    id: z.string(),
-    name: z.string(),
-    female: z.boolean(),
-    floorType: z.string(),
-    dreamJob: z.string(),
-    level: z.number().int().min(1).max(9),
-    hairColor: z.string(),
-  }).optional(),
+  newWorker: WorkerDataSchema.optional(),
+  newWorkers: z.array(WorkerDataSchema).optional(),
   builderTool: ToolKeySchema.optional(),
+  builderTools: z.array(ToolKeySchema).optional(),
 });
 
 export const DeliverAllCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('deliver_all'),
   builderTools: z.array(ToolKeySchema).optional(),
-  preGeneratedWorkers: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    female: z.boolean(),
-    floorType: z.string(),
-    dreamJob: z.string(),
-    level: z.number().int().min(1).max(9),
-    hairColor: z.string(),
-  })).optional(),
+  preGeneratedWorkers: z.array(WorkerDataSchema).optional(),
+  vipGuestWorkerBatches: z.array(z.array(WorkerDataSchema)).optional(),
 });
 
 export const UpgradeElevatorCommandSchema = TimestampedBaseSchema.extend({
@@ -131,6 +130,7 @@ export const FillLobbyCommandSchema = TimestampedBaseSchema.extend({
   visitors: z.array(z.object({
     visitorId: z.string(),
     role: VisitorRoleSchema,
+    isVip: z.boolean().optional(),
     targetFloor: z.number().int().positive(),
     hairColor: z.string(),
     female: z.boolean(),

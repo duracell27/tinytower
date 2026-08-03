@@ -73,6 +73,8 @@ const ROLE_COLORS: Record<string, string> = {
   builder: '#E67E22',
 };
 
+const VIP_ICON_BACKGROUND = 'rgba(255, 200, 0, 0.30)';
+
 function formatShortCoins(n: number): string {
   if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
   return String(n);
@@ -721,7 +723,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <View style={styles.visitorColumn}>
                         {/* Top row: avatar + speech bubble + status chip */}
                         <View style={styles.visitorInfoRow}>
-                          <View style={[styles.avatarTile, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+                          <View style={[styles.avatarTile, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }, activeVisitor.isVip && { backgroundColor: VIP_ICON_BACKGROUND }]}>
                             <VisitorAvatar
                               role={activeVisitor.role ?? 'guest'}
                               targetFloor={activeVisitor.targetFloor}
@@ -736,7 +738,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                               ) : (
                                 <Text style={[styles.speechText, isDark && { color: '#DDE8D8' }]}>
                                   <Text style={[styles.speechRoleLabel, { color: ROLE_COLORS[activeVisitor.role ?? 'guest'] }]}>
-                                    {t(`roles.${activeVisitor.role ?? 'guest'}`)}
+                                    {t(`roles.${activeVisitor.isVip ? `vip_${activeVisitor.role ?? 'guest'}` : (activeVisitor.role ?? 'guest')}`)}
                                   </Text>
                                   {t('visitor.floorSuffix', { floor: activeVisitor.targetFloor ?? '?' })}
                                 </Text>

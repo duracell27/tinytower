@@ -15,7 +15,12 @@
     "businessman": "Businessman",
     "deliverer": "Deliverer",
     "seller": "Seller",
-    "builder": "Builder"
+    "builder": "Builder",
+    "vip_guest": "VIP Guest",
+    "vip_businessman": "VIP Businessman",
+    "vip_deliverer": "VIP Deliverer",
+    "vip_seller": "VIP Seller",
+    "vip_builder": "VIP Builder"
   },
   "visitor": {
     "thankYou": "Thank you! 🎉",
