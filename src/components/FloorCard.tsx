@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
@@ -320,9 +320,10 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
     return business?.name ?? null;
   })();
   const floorName = dynamicFloorName ?? tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
+  const isDark = useColorScheme() === 'dark';
 
   return (
-    <View style={styles.floorContainer}>
+    <View style={[styles.floorContainer, isDark && styles.floorContainerDark]}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: scheme.color }]}>
         <View style={[styles.headerEdge, { backgroundColor: shadeColor(scheme.color, -22) }]} />
@@ -379,6 +380,9 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
         })}
       </View>
 
+      {isDark && (
+        <View style={styles.darkOverlay} pointerEvents="none" />
+      )}
     </View>
   );
 }
@@ -396,6 +400,15 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 6,
     backgroundColor: '#fff',
+  },
+  floorContainerDark: {
+    shadowColor: 'rgba(0,0,0,0.8)',
+    shadowOpacity: 0.45,
+  },
+  darkOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0,0,0,0.30)',
+    borderRadius: 24,
   },
   header: {
     flexDirection: 'row',
