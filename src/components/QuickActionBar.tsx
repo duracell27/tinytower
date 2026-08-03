@@ -72,6 +72,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   const { colors } = MODE_COLORS[mode];
   const isDark = useColorScheme() === 'dark';
   const pillBg = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.92)';
+  const pillTextColor = isDark ? '#E8EDE4' : undefined;
 
   const bulkLabel = BULK_LABEL[mode];
 
@@ -140,7 +141,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
         onPress={onExit}
         style={({ pressed }) => [styles.exitBtn, { backgroundColor: pillBg }, pressed && { opacity: 0.7 }]}
       >
-        <Text style={styles.exitIcon}>✕</Text>
+        <Text style={[styles.exitIcon, pillTextColor && { color: pillTextColor }]}>✕</Text>
       </Pressable>
 
       {onBulkAll && bulkLabel && (
@@ -149,7 +150,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
           style={({ pressed }) => [styles.bulkBtn, { backgroundColor: pillBg }, pressed && { opacity: 0.7 }]}
         >
           <View style={styles.bulkContent}>
-            <Text style={styles.bulkLabelText}>{bulkLabel}</Text>
+            <Text style={[styles.bulkLabelText, pillTextColor && { color: pillTextColor }]}>{bulkLabel}</Text>
             <GemIcon size={12} />
             <Text style={styles.bulkCostText}>1</Text>
           </View>
