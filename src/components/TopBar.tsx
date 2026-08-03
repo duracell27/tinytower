@@ -5,6 +5,7 @@ import { GlassView } from 'expo-glass-effect';
 import Svg, { Circle } from 'react-native-svg';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { getUserIcon } from '../utils/userIcon';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface TopBarProps {
   name: string;
@@ -51,6 +52,7 @@ function ProgressRing({ progress, size = 50 }: { progress: number; size?: number
 
 export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, revenuePerMin, onDevAddGems }: TopBarProps) {
   const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
+  const theme = useAppTheme();
 
   const panelContent = (
     <>
@@ -68,9 +70,9 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
             </View>
           </View>
           <View style={styles.nameColumn}>
-            <Text style={styles.nameText}>{name}</Text>
+            <Text style={[styles.nameText, { color: theme.text }]}>{name}</Text>
             {revenuePerMin !== undefined && (
-              <View style={styles.revenuePill}>
+              <View style={[styles.revenuePill, { backgroundColor: theme.surface }]}>
                 <CoinIcon size={12} />
                 <Text style={styles.revenuePillText}>{revenuePerMin} /min</Text>
               </View>
@@ -79,11 +81,11 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
         </View>
 
         <View style={styles.currencySection}>
-          <View style={styles.coinBadge}>
+          <View style={[styles.coinBadge, { backgroundColor: theme.surface }]}>
             <CoinIcon size={18} />
             <Text style={styles.coinText}>{coins}</Text>
           </View>
-          <Pressable style={styles.gemBadge} onLongPress={onDevAddGems} delayLongPress={800}>
+          <Pressable style={[styles.gemBadge, { backgroundColor: theme.surface }]} onLongPress={onDevAddGems} delayLongPress={800}>
             <GemIcon size={14} />
             <Text style={styles.gemText}>{gems}</Text>
           </Pressable>
@@ -95,11 +97,11 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
   return (
     <View style={styles.container}>
       {Platform.OS === 'android' ? (
-        <View style={[styles.glassPanel, styles.androidPanel]}>
+        <View style={[styles.glassPanel, styles.androidPanel, { backgroundColor: theme.topBarBg, borderColor: theme.topBarBorder }]}>
           {panelContent}
         </View>
       ) : (
-        <GlassView glassEffectStyle="regular" style={styles.glassPanel}>
+        <GlassView glassEffectStyle="regular" style={[styles.glassPanel, { backgroundColor: theme.topBarBg, borderColor: theme.topBarBorder }]}>
           {panelContent}
         </GlassView>
       )}
