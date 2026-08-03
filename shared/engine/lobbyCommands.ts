@@ -111,14 +111,18 @@ function applyVisitorEffect(
   visitor: Visitor,
   config: GameConfig,
   playerLevel: number,
-  preGeneratedWorker?: { id: string; name: string; female: boolean; floorType: string; dreamJob: string; level: number; hairColor: string },
-  preGeneratedTool?: string,
+  now: number,
+  preGeneratedWorkerBatch?: { id: string; name: string; female: boolean; floorType: string; dreamJob: string; level: number; hairColor: string }[],
+  preGeneratedTools?: string[],
 ): GameState {
   const role = visitor.role ?? 'guest';
+  const isVip = visitor.isVip ?? false;
   const targetFloor = visitor.targetFloor ?? 1;
   const tip = calculateTip(role, targetFloor, state.elevatorLevel, config);
+  const vipMultiplier = isVip ? 10 : 1;
   let { balance, gems, dailyTips, dailyGemsCollected, workers, floors } = state;
   let tools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 };
+  let underConstruction = state.underConstruction;
   const workersBefore = workers.length;
 
   if (role === 'businessman') {
@@ -127,23 +131,47 @@ function applyVisitorEffect(
       gems += 1;
       dailyGemsCollected += 1;
     } else {
-      balance += tip;
-      dailyTips += tip;
+      balance += tip * vipMultiplier;
+      dailyTips += tip * vipMultiplier;
     }
   } else if (role === 'builder') {
-    if (preGeneratedTool && preGeneratedTool in tools) {
-      const key = preGeneratedTool as keyof typeof tools;
-      tools = { ...tools, [key]: tools[key] + 1 };
+    if (isVip) {
+      const ucEntry = underConstruction.find((uc) => uc.floorId === targetFloor);
+      if (ucEntry) {
+        // Complete construction: set startedAt so timer is expired
+        underConstruction = underConstruction.map((uc) =>
+          uc.floorId === targetFloor ? { ...uc, startedAt: now - uc.durationMs } : uc,
+        );
+      } else {
+        // Give 2 tools
+        for (const key of preGeneratedTools ?? []) {
+          if (key in tools) {
+            tools = { ...tools, [key]: tools[key as keyof typeof tools] + 1 };
+          }
+        }
+      }
+    } else {
+      const key = preGeneratedTools?.[0];
+      if (key && key in tools) {
+        tools = { ...tools, [key]: tools[key as keyof typeof tools] + 1 };
+      }
     }
   } else {
-    balance += tip;
-    dailyTips += tip;
+    balance += tip * vipMultiplier;
+    dailyTips += tip * vipMultiplier;
   }
 
   if (role === 'guest' && targetFloor === 1) {
     const hotelOccupied = workers.filter((w) => w.assignedFloorId === null).length;
-    if (hotelOccupied < state.hotelCapacity) {
-      const workerData = preGeneratedWorker ?? generateRandomWorkers(1, config)[0];
+    if (isVip) {
+      // Fill hotel to capacity
+      for (const workerData of preGeneratedWorkerBatch ?? []) {
+        if (workers.filter((w) => w.assignedFloorId === null).length < state.hotelCapacity) {
+          workers = [...workers, { ...workerData, assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false }];
+        }
+      }
+    } else if (hotelOccupied < state.hotelCapacity) {
+      const workerData = preGeneratedWorkerBatch?.[0] ?? generateRandomWorkers(1, config)[0];
       const newWorker: Worker = { ...workerData, assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false };
       workers = [...workers, newWorker];
     }
@@ -160,14 +188,16 @@ function applyVisitorEffect(
         const typeId = floors[floorIdx].productions[slotIdx].typeId;
         const typeConfig = typeId ? config.productionTypes[typeId] : null;
         if (typeConfig) {
-          const reduction = Math.floor(typeConfig.deliveryDuration * config.lobbyConfig.deliverySpeedBonus);
           floors = floors.map((f, fi) => {
             if (fi !== floorIdx) return f;
             return {
               ...f,
               productions: f.productions.map((p, si) => {
                 if (si !== slotIdx) return p;
-                return { ...p, stageStartedAt: p.stageStartedAt - reduction };
+                const updated = isVip
+                  ? now - typeConfig.deliveryDuration
+                  : p.stageStartedAt - Math.floor(typeConfig.deliveryDuration * config.lobbyConfig.deliverySpeedBonus);
+                return { ...p, stageStartedAt: updated };
               }),
             };
           });
@@ -179,19 +209,40 @@ function applyVisitorEffect(
   if (role === 'seller') {
     const floorIdx = floors.findIndex((f) => f.id === targetFloor);
     if (floorIdx !== -1) {
-      const slotIdx = floors[floorIdx].productions.findIndex((p) => p.stage === 'SELLING');
-      if (slotIdx !== -1) {
-        const typeId = floors[floorIdx].productions[slotIdx].typeId;
+      let targetSlotIdx: number;
+      if (isVip) {
+        // Find SELLING slot with longest remaining time
+        let longestRemaining = -1;
+        targetSlotIdx = -1;
+        floors[floorIdx].productions.forEach((p, si) => {
+          if (p.stage !== 'SELLING') return;
+          const typeId = p.typeId;
+          const typeConfig = typeId ? config.productionTypes[typeId] : null;
+          if (!typeConfig) return;
+          const remaining = typeConfig.sellDuration - (now - p.stageStartedAt);
+          if (remaining > longestRemaining) {
+            longestRemaining = remaining;
+            targetSlotIdx = si;
+          }
+        });
+      } else {
+        targetSlotIdx = floors[floorIdx].productions.findIndex((p) => p.stage === 'SELLING');
+      }
+
+      if (targetSlotIdx !== -1) {
+        const typeId = floors[floorIdx].productions[targetSlotIdx].typeId;
         const typeConfig = typeId ? config.productionTypes[typeId] : null;
         if (typeConfig) {
-          const reduction = Math.floor(typeConfig.sellDuration * config.lobbyConfig.sellSpeedBonus);
           floors = floors.map((f, fi) => {
             if (fi !== floorIdx) return f;
             return {
               ...f,
               productions: f.productions.map((p, si) => {
-                if (si !== slotIdx) return p;
-                return { ...p, stageStartedAt: p.stageStartedAt - reduction };
+                if (si !== targetSlotIdx) return p;
+                const updated = isVip
+                  ? now - typeConfig.sellDuration
+                  : p.stageStartedAt - Math.floor(typeConfig.sellDuration * config.lobbyConfig.sellSpeedBonus);
+                return { ...p, stageStartedAt: updated };
               }),
             };
           });
@@ -203,6 +254,7 @@ function applyVisitorEffect(
   return {
     ...state,
     balance, gems, dailyTips, dailyGemsCollected, workers, floors, tools,
+    underConstruction,
     dailyTasks: residentsGained > 0 ? {
       ...state.dailyTasks,
       progress: {
@@ -227,7 +279,11 @@ function handleCollectTip(
   if (state.elevatorFloor !== active.targetFloor) {
     return { success: false, state, error: 'Elevator not at target floor' };
   }
-  let newState = applyVisitorEffect(state, active, config, playerLevel, command.newWorker, command.builderTool);
+  const workerBatch = command.newWorkers
+    ?? (command.newWorker ? [command.newWorker] : undefined);
+  const toolBatch = command.builderTools
+    ?? (command.builderTool ? [command.builderTool] : undefined);
+  let newState = applyVisitorEffect(state, active, config, playerLevel, now, workerBatch, toolBatch);
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
   const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
     ? now + config.lobbyConfig.visitorSpawnInterval
@@ -265,14 +321,29 @@ function handleDeliverAll(
   const passengersDelivered = state.lobbyVisitors.length;
   const builderTools = command.builderTools ?? [];
   const preGeneratedWorkers = command.preGeneratedWorkers ?? [];
+  const vipGuestWorkerBatches = command.vipGuestWorkerBatches ?? [];
   let builderIdx = 0;
   let workerIdx = 0;
+  let vipGuestIdx = 0;
   let newState = { ...state, gems: state.gems - 1 };
   for (const visitor of state.lobbyVisitors) {
-    const isBuilder = (visitor.role ?? 'guest') === 'builder';
-    const tool = isBuilder ? builderTools[builderIdx++] : undefined;
-    const preWorker = ((visitor.role ?? 'guest') === 'guest' && visitor.targetFloor === 1) ? preGeneratedWorkers[workerIdx++] : undefined;
-    newState = applyVisitorEffect(newState, visitor, config, playerLevel, preWorker, tool);
+    const role = visitor.role ?? 'guest';
+    const isBuilder = role === 'builder';
+    const isVipBuilder = isBuilder && (visitor.isVip ?? false);
+    const toolCount = isVipBuilder ? 2 : isBuilder ? 1 : 0;
+    const toolBatch = toolCount > 0 ? builderTools.slice(builderIdx, builderIdx + toolCount) : undefined;
+    builderIdx += toolCount;
+
+    const isGuestAtFloor1 = role === 'guest' && visitor.targetFloor === 1;
+    let preWorkerBatch: typeof preGeneratedWorkers | undefined;
+    if (isGuestAtFloor1 && (visitor.isVip ?? false)) {
+      preWorkerBatch = vipGuestWorkerBatches[vipGuestIdx++] ?? [];
+    } else if (isGuestAtFloor1) {
+      const w = preGeneratedWorkers[workerIdx++];
+      preWorkerBatch = w ? [w] : undefined;
+    }
+
+    newState = applyVisitorEffect(newState, visitor, config, playerLevel, now, preWorkerBatch, toolBatch);
   }
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
   const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
