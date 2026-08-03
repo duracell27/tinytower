@@ -7,6 +7,9 @@ import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { xpForLevel } from '../../shared/engine/xp';
 import { formatNum } from '../../src/utils/format';
+import { useGameClock } from '../../src/hooks/useGameClock';
+import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
+import { gameConfig } from '../../shared/config/gameConfig';
 
 export default function CityScreen() {
   const { t } = useTranslation('tabs');
@@ -16,6 +19,16 @@ export default function CityScreen() {
   const gems = useGameStore((s) => s.gems);
   const player = useAuthStore((s) => s.player);
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
+  const floors = useGameStore((s) => s.floors);
+  const workers = useGameStore((s) => s.workers);
+  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
+  const businessUpgrades = useGameStore((s) => s.businessUpgrades);
+  const now = useGameClock(60_000);
+  const revenuePerMin = React.useMemo(
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent],
+  );
 
   return (
     <View style={styles.container}>
@@ -33,6 +46,7 @@ export default function CityScreen() {
           xpForNextLevel={xpForLevel(playerLevel)}
           coins={formatNum(balance)}
           gems={String(gems)}
+          revenuePerMin={revenuePerMin}
         />
       </AppBackground>
     </View>

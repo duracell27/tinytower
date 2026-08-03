@@ -11,6 +11,9 @@ import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { xpForLevel } from '../../shared/engine/xp';
 import { formatNum } from '../../src/utils/format';
+import { useGameClock } from '../../src/hooks/useGameClock';
+import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
+import { gameConfig } from '../../shared/config/gameConfig';
 import {
   DIAMOND_PACKS, BUNDLE_PACKS, BUILDER_PACKS, MATERIAL_PACKS, ShopPack,
 } from '../../src/data/shopPacks';
@@ -32,7 +35,6 @@ const TOOL_ICONS: Record<string, ReturnType<typeof require>> = {
   cement: require('../../assets/img/tools/cement.png'),
 };
 
-// Floor-palette section themes
 const SECTION_THEME: Record<string, { gradient: [string, string]; btn: string }> = {
   diamonds:  { gradient: ['#49AA38', '#20810F'], btn: '#20810F' },
   bundles:   { gradient: ['#3376E5', '#0A4DBC'], btn: '#0A4DBC' },
@@ -61,77 +63,6 @@ const sh = StyleSheet.create({
   text: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFF', letterSpacing: 0.3 },
 });
 
-// ─── Grouped reward row ───────────────────────────────────────────────────────
-// Tools/tokens that all share the same count show as: 🧱🔧🪛🪵🪨🔩 ×3
-// Gems and non-uniform groups show individually
-
-function GroupedRewardRow({ pack, iconSize = 20 }: { pack: ShopPack; iconSize?: number }) {
-  const fontSize = Math.round(iconSize * 0.72);
-
-  const toolEntries  = Object.entries(pack.rewards.tools  ?? {}).filter(([, v]) => v) as [string, number][];
-  const tokenEntries = Object.entries(pack.rewards.tokens ?? {}).filter(([, v]) => v) as [string, number][];
-
-  const toolsUniform  = toolEntries.length  > 1 && toolEntries.every(([, v])  => v === toolEntries[0][1]);
-  const tokensUniform = tokenEntries.length > 1 && tokenEntries.every(([, v]) => v === tokenEntries[0][1]);
-
-  return (
-    <View style={gr.container}>
-      {/* Gems — own row, larger & bolder */}
-      {!!pack.rewards.gems && (
-        <View style={gr.line}>
-          <Image source={DIAMOND_ICON} style={{ width: iconSize + 2, height: iconSize + 2 }} contentFit="contain" />
-          <Text style={[gr.count, gr.countGems, { fontSize: fontSize + 2 }]}>×{pack.rewards.gems.toLocaleString()}</Text>
-        </View>
-      )}
-
-      {/* Tools — own row */}
-      {toolEntries.length > 0 && (
-        <View style={gr.line}>
-          {toolsUniform ? (
-            <>
-              {toolEntries.map(([k]) => (
-                <Image key={k} source={TOOL_ICONS[k]} style={{ width: iconSize, height: iconSize }} contentFit="contain" />
-              ))}
-              <Text style={[gr.count, { fontSize }]}>×{toolEntries[0][1]}</Text>
-            </>
-          ) : toolEntries.map(([k, v]) => (
-            <View key={k} style={gr.item}>
-              <Image source={TOOL_ICONS[k]} style={{ width: iconSize, height: iconSize }} contentFit="contain" />
-              <Text style={[gr.count, { fontSize }]}>×{v}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-
-      {/* Tokens — own row */}
-      {tokenEntries.length > 0 && (
-        <View style={gr.line}>
-          {tokensUniform ? (
-            <>
-              {tokenEntries.map(([k]) => (
-                <Image key={k} source={TOKEN_ICONS[k]} style={{ width: iconSize, height: iconSize }} contentFit="contain" />
-              ))}
-              <Text style={[gr.count, { fontSize }]}>×{tokenEntries[0][1]}</Text>
-            </>
-          ) : tokenEntries.map(([k, v]) => (
-            <View key={k} style={gr.item}>
-              <Image source={TOKEN_ICONS[k]} style={{ width: iconSize, height: iconSize }} contentFit="contain" />
-              <Text style={[gr.count, { fontSize }]}>×{v}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-}
-const gr = StyleSheet.create({
-  container: { gap: 4, marginTop: 6 },
-  line:      { flexDirection: 'row', alignItems: 'center', gap: 3, flexWrap: 'wrap' },
-  item:      { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  count:     { fontFamily: 'Fredoka_600SemiBold', color: '#3A2360' },
-  countGems: { fontFamily: 'Fredoka_700Bold', color: '#2D1A4E' },
-});
-
 // ─── Badge chip ───────────────────────────────────────────────────────────────
 
 function Badge({ kind }: { kind: 'best' | 'popular' }) {
@@ -149,80 +80,58 @@ const bdg = StyleSheet.create({
   text: { fontFamily: 'Fredoka_700Bold', fontSize: 10, color: '#FFF' },
 });
 
-// ─── Diamond / Material card  (2-column grid) ─────────────────────────────────
+// ─── Diamond card (2-column grid, white bg) ───────────────────────────────────
 
-function PackCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
+function DiamondCard({ pack, onBuy, buying, disabled, cardWidth }: {
   pack: ShopPack;
   onBuy: (pack: ShopPack) => void;
   buying: boolean;
   disabled: boolean;
   cardWidth: number;
-  btnColor: string;
 }) {
-  const { t } = useTranslation('tabs');
-  const isDiamond  = pack.section === 'diamonds';
-  const isMaterial = pack.section === 'materials';
-
-  const baseGems = isDiamond && pack.rewards.gems != null
+  const baseGems = pack.rewards.gems != null
     ? pack.rewards.gems - (pack.bonusGems ?? 0)
     : null;
 
   return (
-    <View style={[pc.card, { width: cardWidth }, buying && pc.buying]}>
-      {/* Image */}
-      {pack.imageBg ? (
-        <LinearGradient colors={pack.imageBg as [string, string]} style={pc.imgBg}>
-          <Image source={pack.image} style={pc.imgBgImg} contentFit="contain" />
-        </LinearGradient>
-      ) : (
-        <Image source={pack.image} style={isMaterial ? pc.imgMat : pc.img} contentFit="contain" />
-      )}
+    <View style={[dc.card, { width: cardWidth }, buying && dc.buying]}>
+      <Image source={pack.image} style={dc.img} contentFit="contain" />
 
-      {pack.badge && <View style={pc.badgePos}><Badge kind={pack.badge} /></View>}
+      {pack.badge && <View style={dc.badgePos}><Badge kind={pack.badge} /></View>}
 
-      {/* Diamond: base gem count */}
-      {isDiamond && baseGems != null && (
-        <View style={pc.gemRow}>
-          <Image source={DIAMOND_ICON} style={pc.gemIcon} contentFit="contain" />
-          <Text style={pc.gemText}>{baseGems.toLocaleString()}</Text>
+      {baseGems != null && (
+        <View style={dc.gemRow}>
+          <Image source={DIAMOND_ICON} style={dc.gemIcon} contentFit="contain" />
+          <Text style={dc.gemText}>{baseGems.toLocaleString()}</Text>
         </View>
       )}
 
-      {/* Diamond: bonus chip — always shown to keep height uniform */}
-      {isDiamond && (
-        pack.bonusGems
-          ? <View style={pc.bonusChip}><Text style={pc.bonusText}>+{pack.bonusGems.toLocaleString()} bonus</Text></View>
-          : <View style={pc.baseChip}><Text style={pc.baseText}>Base price</Text></View>
-      )}
+      {pack.bonusGems
+        ? <View style={dc.bonusChip}><Text style={dc.bonusText}>+{pack.bonusGems.toLocaleString()} bonus</Text></View>
+        : <View style={dc.baseChip}><Text style={dc.baseText}>Base price</Text></View>
+      }
 
-      {/* Material: quantity */}
-      {isMaterial && <Text style={pc.qty}>{t('shop.each5')}</Text>}
-
-      {/* Name above button */}
-      <Text style={pc.name}>{pack.name}</Text>
+      <Text style={dc.name}>{pack.name}</Text>
 
       <Pressable
-        style={[pc.btn, { backgroundColor: btnColor }, disabled && pc.btnDisabled]}
+        style={[dc.btn, disabled && dc.btnDisabled]}
         onPress={() => !disabled && onBuy(pack)}
         disabled={disabled}
       >
         {buying
           ? <ActivityIndicator color="#FFF" size="small" />
-          : <Text style={pc.btnText}>{pack.price}</Text>
+          : <Text style={dc.btnText}>{pack.price}</Text>
         }
       </Pressable>
     </View>
   );
 }
-const pc = StyleSheet.create({
+const dc = StyleSheet.create({
   card:       { backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 18,
                 padding: 12, alignItems: 'center', gap: 6, elevation: 3 },
   buying:     { opacity: 0.7 },
   badgePos:   { position: 'absolute', top: 8, right: 8, zIndex: 2 },
   img:        { width: 80, height: 80 },
-  imgBg:      { width: 108, height: 108, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  imgBgImg:   { width: 90, height: 90 },
-  imgMat:     { width: 56, height: 56 },
   gemRow:     { flexDirection: 'row', alignItems: 'center', gap: 4 },
   gemIcon:    { width: 18, height: 18 },
   gemText:    { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#2D1A4E' },
@@ -232,15 +141,15 @@ const pc = StyleSheet.create({
   baseChip:   { backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: 8,
                 paddingHorizontal: 8, paddingVertical: 2 },
   baseText:   { fontFamily: 'Fredoka_500Medium', fontSize: 12, color: '#9A8BAA' },
-  qty:        { fontFamily: 'Fredoka_500Medium', fontSize: 12, color: '#7055A0' },
   name:       { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#2D1A4E', textAlign: 'center' },
-  btn:        { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8,
-                minWidth: 110, alignItems: 'center', marginTop: 2 },
+  btn:        { backgroundColor: SECTION_THEME.diamonds.btn, borderRadius: 12,
+                paddingHorizontal: 16, paddingVertical: 8, minWidth: 110, alignItems: 'center', marginTop: 2 },
   btnDisabled:{ opacity: 0.5 },
   btnText:    { fontFamily: 'Fredoka_700Bold', fontSize: 14, color: '#FFF' },
 });
 
-// ─── Full-width card  (bundles & builder — single column) ─────────────────────
+// ─── Full-width card  (bundles & builder) ─────────────────────────────────────
+// Gradient card bg, header image+name+desc, reward pillars, large buy button
 
 function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
   pack: ShopPack;
@@ -250,55 +159,164 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
   fullWidth: number;
   btnColor: string;
 }) {
+  const bg = (pack.imageBg ?? ['#EEE8FF', '#D8CCFF']) as [string, string];
+
+  const toolEntries  = Object.entries(pack.rewards.tools  ?? {}).filter(([, v]) => v) as [string, number][];
+  const tokenEntries = Object.entries(pack.rewards.tokens ?? {}).filter(([, v]) => v) as [string, number][];
+  const hasRight = toolEntries.length > 0 || tokenEntries.length > 0;
+
   return (
-    <View style={[fw.card, { width: fullWidth }, buying && fw.buying]}>
-      {/* Left image */}
-      {pack.imageBg ? (
-        <LinearGradient colors={pack.imageBg as [string, string]} style={fw.imgBg}>
-          <Image source={pack.image} style={fw.imgBgImg} contentFit="contain" />
-        </LinearGradient>
-      ) : (
-        <Image source={pack.image} style={fw.img} contentFit="contain" />
-      )}
-
-      {/* Right content */}
-      <View style={fw.content}>
-        <View style={fw.titleRow}>
-          <Text style={fw.name}>{pack.name}</Text>
-          {pack.badge && <Badge kind={pack.badge} />}
+    <LinearGradient
+      colors={bg}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[fw.card, { width: fullWidth }, buying && fw.buying]}
+    >
+      {/* Header */}
+      <View style={fw.header}>
+        <View style={fw.imgWrap}>
+          <Image source={pack.image} style={fw.img} contentFit="contain" />
         </View>
-
-        {pack.description && <Text style={fw.desc}>{pack.description}</Text>}
-
-        <GroupedRewardRow pack={pack} iconSize={20} />
-
-        <Pressable
-          style={[fw.btn, { backgroundColor: btnColor }, disabled && fw.btnDisabled]}
-          onPress={() => !disabled && onBuy(pack)}
-          disabled={disabled}
-        >
-          {buying
-            ? <ActivityIndicator color="#FFF" size="small" />
-            : <Text style={fw.btnText}>{pack.price}</Text>
-          }
-        </Pressable>
+        <View style={fw.headerText}>
+          <View style={fw.titleRow}>
+            <Text style={fw.name}>{pack.name}</Text>
+            {pack.badge && <Badge kind={pack.badge} />}
+          </View>
+          {pack.description && <Text style={fw.desc}>{pack.description}</Text>}
+        </View>
       </View>
-    </View>
+
+      <View style={fw.sep} />
+
+      {/* Rewards — gems left | tools + tokens right */}
+      <View style={fw.rewardSection}>
+        {!!pack.rewards.gems && (
+          <View style={fw.leftSide}>
+            <Image source={DIAMOND_ICON} style={fw.gemIcon} contentFit="contain" />
+            <Text style={fw.gemCount}>{pack.rewards.gems.toLocaleString()}</Text>
+          </View>
+        )}
+        {!!pack.rewards.gems && hasRight && <View style={fw.vDivider} />}
+        {hasRight && (
+          <View style={fw.rightSide}>
+            {toolEntries.length > 0 && (
+              <View style={fw.rewardRow}>
+                {toolEntries.map(([k, v]) => (
+                  <View key={k} style={fw.rewardItem}>
+                    <Image source={TOOL_ICONS[k]} style={fw.rewardIcon} contentFit="contain" />
+                    <Text style={fw.rewardCount}>×{v}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            {tokenEntries.length > 0 && (
+              <View style={fw.rewardRow}>
+                {tokenEntries.map(([k, v]) => (
+                  <View key={k} style={fw.rewardItem}>
+                    <Image source={TOKEN_ICONS[k]} style={fw.rewardIcon} contentFit="contain" />
+                    <Text style={fw.rewardCount}>×{v}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+      </View>
+
+      <View style={fw.sep} />
+
+      {/* Large buy button */}
+      <Pressable
+        style={[fw.btn, { backgroundColor: btnColor }, disabled && fw.btnDisabled]}
+        onPress={() => !disabled && onBuy(pack)}
+        disabled={disabled}
+      >
+        {buying
+          ? <ActivityIndicator color="#FFF" size="small" />
+          : <Text style={fw.btnText}>{pack.price}</Text>
+        }
+      </Pressable>
+    </LinearGradient>
   );
 }
 const fw = StyleSheet.create({
-  card:       { backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 18,
-                padding: 14, flexDirection: 'row', gap: 14, elevation: 3, alignItems: 'flex-start' },
+  card:        { borderRadius: 20, padding: 16, gap: 14, elevation: 4,
+                 shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+                 shadowOpacity: 0.12, shadowRadius: 6 },
+  buying:      { opacity: 0.7 },
+  header:      { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  imgWrap:     { width: 72, height: 72, borderRadius: 14,
+                 backgroundColor: 'rgba(255,255,255,0.45)',
+                 alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  img:         { width: 58, height: 58 },
+  headerText:  { flex: 1, gap: 4, justifyContent: 'center' },
+  titleRow:    { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  name:        { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#2D1A4E' },
+  desc:        { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#4A3060', lineHeight: 17 },
+  sep:         { height: 1, backgroundColor: 'rgba(0,0,0,0.08)' },
+  rewardSection: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
+  leftSide:      { alignItems: 'center', gap: 5 },
+  vDivider:      { width: 1, alignSelf: 'stretch', backgroundColor: 'rgba(0,0,0,0.12)' },
+  rightSide:     { gap: 10 },
+  rewardRow:     { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' },
+  rewardItem:    { alignItems: 'center', gap: 4 },
+  gemIcon:       { width: 42, height: 42 },
+  gemCount:      { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#2D1A4E' },
+  rewardIcon:    { width: 28, height: 28 },
+  rewardCount:   { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#3A2360' },
+  btn:         { borderRadius: 14, paddingVertical: 13, alignItems: 'center' },
+  btnDisabled: { opacity: 0.5 },
+  btnText:     { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#FFF' },
+});
+
+// ─── Material card (2-column grid, coloured bg) ───────────────────────────────
+
+function MaterialCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
+  pack: ShopPack;
+  onBuy: (pack: ShopPack) => void;
+  buying: boolean;
+  disabled: boolean;
+  cardWidth: number;
+  btnColor: string;
+}) {
+  const { t } = useTranslation('tabs');
+  const bg = (pack.imageBg ?? ['#E8E0FF', '#C8B8F0']) as [string, string];
+
+  return (
+    <LinearGradient
+      colors={bg}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[mc.card, { width: cardWidth }, buying && mc.buying]}
+    >
+      <Image source={pack.image} style={mc.icon} contentFit="contain" />
+      <Text style={mc.name}>{pack.name}</Text>
+      {pack.description && <Text style={mc.desc}>{pack.description}</Text>}
+      <Text style={mc.qty}>{t('shop.each5')}</Text>
+      <Pressable
+        style={[mc.btn, { backgroundColor: btnColor }, disabled && mc.btnDisabled]}
+        onPress={() => !disabled && onBuy(pack)}
+        disabled={disabled}
+      >
+        {buying
+          ? <ActivityIndicator color="#FFF" size="small" />
+          : <Text style={mc.btnText}>{pack.price}</Text>
+        }
+      </Pressable>
+    </LinearGradient>
+  );
+}
+const mc = StyleSheet.create({
+  card:       { borderRadius: 18, padding: 14, alignItems: 'center', gap: 8, elevation: 3,
+                shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.10, shadowRadius: 4 },
   buying:     { opacity: 0.7 },
-  imgBg:      { width: 84, height: 84, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  imgBgImg:   { width: 68, height: 68 },
-  img:        { width: 84, height: 84, flexShrink: 0 },
-  content:    { flex: 1, gap: 4 },
-  titleRow:   { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  name:       { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#2D1A4E' },
-  desc:       { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#7055A0', lineHeight: 17 },
-  btn:        { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8,
-                alignItems: 'center', marginTop: 6 },
+  icon:       { width: 72, height: 72 },
+  name:       { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#2D1A4E', textAlign: 'center' },
+  desc:       { fontFamily: 'Fredoka_400Regular', fontSize: 11, color: '#4A3060', textAlign: 'center', lineHeight: 15 },
+  qty:        { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#4A3060' },
+  btn:        { borderRadius: 12, paddingVertical: 11, alignSelf: 'stretch',
+                alignItems: 'center', marginTop: 2 },
   btnDisabled:{ opacity: 0.5 },
   btnText:    { fontFamily: 'Fredoka_700Bold', fontSize: 14, color: '#FFF' },
 });
@@ -315,9 +333,19 @@ export default function ShopScreen() {
   const player       = useAuthStore((s) => s.player);
   const shopPurchase = useGameStore((s) => s.shopPurchase);
   const playerName   = player?.playerName ?? t('profile.guestFallbackName');
+  const floors = useGameStore((s) => s.floors);
+  const workers = useGameStore((s) => s.workers);
+  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
+  const businessUpgrades = useGameStore((s) => s.businessUpgrades);
+  const now = useGameClock(60_000);
+  const revenuePerMin = React.useMemo(
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent],
+  );
 
-  const cardWidth   = Math.floor((screenWidth - 32 - 12) / 2);
-  const fullWidth   = screenWidth - 32;
+  const cardWidth = Math.floor((screenWidth - 32 - 12) / 2);
+  const fullWidth = screenWidth - 32;
 
   const [buyingId, setBuyingId] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -345,6 +373,7 @@ export default function ShopScreen() {
           xpForNextLevel={xpForLevel(playerLevel)}
           coins={formatNum(balance)}
           gems={String(gems)}
+          revenuePerMin={revenuePerMin}
         />
 
         <ScrollView
@@ -352,17 +381,17 @@ export default function ShopScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Diamonds — 2-column grid */}
+          {/* Diamonds — 2-column grid, white cards */}
           <SectionHeader title={t('shop.sections.diamonds')} sectionKey="diamonds" />
           <View style={styles.grid}>
             {DIAMOND_PACKS.map((pack) => (
-              <PackCard key={pack.id} pack={pack} onBuy={handleBuy}
+              <DiamondCard key={pack.id} pack={pack} onBuy={handleBuy}
                 buying={buyingId === pack.id} disabled={buyingId !== null}
-                cardWidth={cardWidth} btnColor={SECTION_THEME.diamonds.btn} />
+                cardWidth={cardWidth} />
             ))}
           </View>
 
-          {/* Bundles — single column */}
+          {/* Bundles — single column, coloured cards */}
           <SectionHeader title={t('shop.sections.bundles')} sectionKey="bundles" />
           <View style={styles.column}>
             {BUNDLE_PACKS.map((pack) => (
@@ -372,7 +401,7 @@ export default function ShopScreen() {
             ))}
           </View>
 
-          {/* Builder — single column */}
+          {/* Builder — single column, coloured cards */}
           <SectionHeader title={t('shop.sections.builder')} sectionKey="builder" />
           <View style={styles.column}>
             {BUILDER_PACKS.map((pack) => (
@@ -382,11 +411,11 @@ export default function ShopScreen() {
             ))}
           </View>
 
-          {/* Materials — 2-column grid */}
+          {/* Materials — 2-column grid, coloured cards */}
           <SectionHeader title={t('shop.sections.materials')} sectionKey="materials" />
           <View style={styles.grid}>
             {MATERIAL_PACKS.map((pack) => (
-              <PackCard key={pack.id} pack={pack} onBuy={handleBuy}
+              <MaterialCard key={pack.id} pack={pack} onBuy={handleBuy}
                 buying={buyingId === pack.id} disabled={buyingId !== null}
                 cardWidth={cardWidth} btnColor={SECTION_THEME.materials.btn} />
             ))}
@@ -403,7 +432,7 @@ const styles = StyleSheet.create({
   container:     { flex: 1 },
   background:    { flex: 1, backgroundColor: '#DCEFF6' },
   scroll:        { flex: 1 },
-  scrollContent: { paddingTop: 130, paddingBottom: 20 },
+  scrollContent: { paddingTop: 130, paddingBottom: 50 },
   grid:          { flexDirection: 'row', flexWrap: 'wrap', gap: 12,
                    paddingHorizontal: 16, paddingBottom: 8 },
   column:        { flexDirection: 'column', gap: 12,
