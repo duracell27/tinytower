@@ -259,22 +259,35 @@ describe('getDailyTipsTargets', () => {
 });
 
 describe('generateRandomVisitorRole — VIP', () => {
-  it('returns isVip as a boolean', () => {
+  it('returns isVip: false when Math.random is above 0.02', () => {
+    // Create state BEFORE mocking to avoid excessive Math.random calls during setup
     const state = makeState();
-    const result = generateRandomVisitorRole(state, testConfig, Date.now(), 1);
-    expect(typeof result.isVip).toBe('boolean');
+
+    const originalRandom = Math.random;
+    Math.random = jest.fn(() => 0.5) as any;
+    try {
+      const result = generateRandomVisitorRole(state, testConfig, Date.now(), 1);
+      expect(result.isVip).toBe(false);
+    } finally {
+      Math.random = originalRandom;
+    }
   });
 
-  it('isVip is occasionally true (2% chance)', () => {
+  it('returns isVip: true when Math.random first call is below 0.02', () => {
+    // Create state BEFORE mocking to avoid excessive Math.random calls during setup
     const state = makeState();
-    let vipCount = 0;
-    const trials = 1000;
-    for (let i = 0; i < trials; i++) {
-      const result = generateRandomVisitorRole(state, testConfig, Date.now() + i, 1);
-      if (result.isVip) vipCount++;
+
+    // First Math.random call in generateRandomVisitorRole is the vip roll (0.01 < 0.02 → true),
+    // second is the builderChance check (0.5 >= 0.02 → no early return), rest for role/floor.
+    const originalRandom = Math.random;
+    const values = [0.01, 0.5, 0.5, 0.5]; // vip=hit, builderChance=miss, role=guest, floor=...
+    let idx = 0;
+    Math.random = jest.fn(() => values[idx++] ?? 0.5) as any;
+    try {
+      const result = generateRandomVisitorRole(state, testConfig, Date.now(), 1);
+      expect(result.isVip).toBe(true);
+    } finally {
+      Math.random = originalRandom;
     }
-    // With 2% chance and 1000 trials, we expect ~20 VIPs (allow 5-35 for variance)
-    expect(vipCount).toBeGreaterThan(5);
-    expect(vipCount).toBeLessThan(35);
   });
 });
