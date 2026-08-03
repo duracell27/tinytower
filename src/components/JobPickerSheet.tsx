@@ -197,8 +197,32 @@ export default function JobPickerSheet({
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
 
+  const checkAndFireSelf = useCallback(
+    (w: Worker): boolean => {
+      if (w.assignedFloorId === null) return true;
+      const currentFloor = storeFloors.find((f) => f.id === w.assignedFloorId);
+      if (currentFloor) {
+        const prod = currentFloor.productions[w.assignedSlotIdx!];
+        if (prod?.stage === 'DELIVERING' || prod?.stage === 'SELLING') {
+          const active = getProductionTimeRemaining(currentFloor, w.assignedSlotIdx!, clock.now());
+          if (active && active.remainingMs > 0) {
+            const msg = active.stage === 'DELIVERING'
+              ? t('workersPanel.fireBlockedDelivering', { name: w.name, time: formatTimeShort(active.remainingMs) })
+              : t('workersPanel.fireBlockedSelling', { name: w.name, time: formatTimeShort(active.remainingMs) });
+            Alert.alert(t('workersPanel.fireBlockedTitle'), msg, [{ text: 'OK' }]);
+            return false;
+          }
+        }
+      }
+      useGameStore.getState().fireWorker(w.id);
+      return true;
+    },
+    [storeFloors, t],
+  );
+
   const handleAssign = (floorId: number, slotIdx: number) => {
     if (!worker) return;
+    if (!checkAndFireSelf(worker)) return;
     useGameStore.getState().assignWorker(worker.id, floorId, slotIdx);
     onClose();
   };
@@ -224,11 +248,12 @@ export default function JobPickerSheet({
         }
       }
 
+      if (!checkAndFireSelf(worker)) return;
       useGameStore.getState().fireWorker(occupantId);
       useGameStore.getState().assignWorker(worker.id, floorId, slotIdx);
       onClose();
     },
-    [worker, storeFloors, workers, t, onClose],
+    [worker, storeFloors, workers, t, onClose, checkAndFireSelf],
   );
   const ft = worker ? gameConfig.floorTypes[worker.floorType as keyof typeof gameConfig.floorTypes] : null;
   const accent = ft?.accent ?? '#888';
