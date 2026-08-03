@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, useColorScheme } from 'react-native';
 import AppBackground from '../../src/components/AppBackground';
 import { useTranslation } from 'react-i18next';
 import TopBar from '../../src/components/TopBar';
@@ -13,6 +13,7 @@ import { gameConfig } from '../../shared/config/gameConfig';
 
 export default function CityScreen() {
   const { t } = useTranslation('tabs');
+  const isDark = useColorScheme() === 'dark';
   const balance = useBalance();
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
@@ -46,59 +47,59 @@ export default function CityScreen() {
           {/* Hero */}
           <View style={styles.hero}>
             <Image source={require('../../assets/img/forum/forumCatCities.png')} style={styles.heroImage} />
-            <Text style={styles.heroTagline}>{t('city.tagline')}</Text>
-            <Text style={styles.heroDescription}>{t('city.description')}</Text>
+            <Text style={[styles.heroTagline, isDark && { color: '#DDE8D8' }]}>{t('city.tagline')}</Text>
+            <Text style={[styles.heroDescription, isDark && { color: '#8A9A80' }]}>{t('city.description')}</Text>
           </View>
 
           {/* Bonus card */}
-          <View style={[styles.card, styles.cardBonus]}>
+          <View style={[styles.card, isDark ? { backgroundColor: 'rgba(40,90,55,0.35)' } : styles.cardBonus]}>
             <Text style={styles.cardIcon}>🎁</Text>
             <View style={styles.cardBody}>
-              <Text style={styles.cardTitle}>{t('city.bonusTitle')}</Text>
-              <Text style={styles.cardText}>{t('city.bonusDescription')}</Text>
+              <Text style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.bonusTitle')}</Text>
+              <Text style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.bonusDescription')}</Text>
             </View>
           </View>
 
           {/* Requirement card */}
-          <View style={[styles.card, styles.cardRequirement]}>
+          <View style={[styles.card, isDark ? { backgroundColor: 'rgba(100,75,15,0.35)' } : styles.cardRequirement]}>
             <Text style={styles.cardIcon}>🏗️</Text>
             <View style={styles.cardBody}>
-              <Text style={styles.cardTitle}>{t('city.requirementTitle')}</Text>
-              <Text style={styles.cardText}>{t('city.requirementDescription')}</Text>
+              <Text style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.requirementTitle')}</Text>
+              <Text style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.requirementDescription')}</Text>
             </View>
           </View>
 
           {/* Join section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('city.joinTitle')}</Text>
-            <Text style={styles.sectionText}>{t('city.joinDescription')}</Text>
+            <Text style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{t('city.joinTitle')}</Text>
+            <Text style={[styles.sectionText, isDark && { color: '#8A9A80' }]}>{t('city.joinDescription')}</Text>
             <TouchableOpacity style={styles.btnPrimary} disabled>
               <Text style={styles.btnPrimaryText}>{t('city.joinButton')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Rankings action card */}
-          <TouchableOpacity style={[styles.actionCard, styles.actionCardBlue]} disabled activeOpacity={0.7}>
-            <View style={styles.actionCardLeft}>
+          <TouchableOpacity style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(30,70,110,0.35)' } : styles.actionCardBlue]} disabled activeOpacity={0.7}>
+            <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
               <Text style={styles.actionCardEmoji}>🏆</Text>
             </View>
             <View style={styles.actionCardBody}>
-              <Text style={styles.actionCardTitle}>{t('city.rankingsTitle')}</Text>
-              <Text style={styles.actionCardSubtitle}>{t('city.rankingsSubtitle')}</Text>
+              <Text style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.rankingsTitle')}</Text>
+              <Text style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.rankingsSubtitle')}</Text>
             </View>
-            <Text style={styles.actionCardChevron}>›</Text>
+            <Text style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</Text>
           </TouchableOpacity>
 
           {/* Create action card */}
-          <TouchableOpacity style={[styles.actionCard, styles.actionCardGreen]} disabled activeOpacity={0.7}>
-            <View style={styles.actionCardLeft}>
+          <TouchableOpacity style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(30,90,55,0.35)' } : styles.actionCardGreen]} disabled activeOpacity={0.7}>
+            <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
               <Text style={styles.actionCardEmoji}>🏛️</Text>
             </View>
             <View style={styles.actionCardBody}>
-              <Text style={styles.actionCardTitle}>{t('city.createButton')}</Text>
-              <Text style={styles.actionCardSubtitle}>{t('city.createDescription')}</Text>
+              <Text style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.createButton')}</Text>
+              <Text style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.createDescription')}</Text>
             </View>
-            <Text style={styles.actionCardChevron}>›</Text>
+            <Text style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</Text>
           </TouchableOpacity>
         </ScrollView>
       </AppBackground>

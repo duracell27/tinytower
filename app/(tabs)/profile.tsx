@@ -144,6 +144,17 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
+function SkeletonBox({ width, height = 18 }: { width: number; height?: number }) {
+  return (
+    <View style={{
+      width,
+      height,
+      borderRadius: 6,
+      backgroundColor: 'rgba(120,140,100,0.15)',
+    }} />
+  );
+}
+
 function groupByType(queue: Command[]): { type: string; count: number }[] {
   const map = new Map<string, number>();
   for (const cmd of queue) {
@@ -188,6 +199,7 @@ export default function ProfileScreen() {
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
   const balance = useGameStore((s) => s.balance);
+  const isHydrated = useGameStore((s) => s.isHydrated);
   const commandQueue = useGameStore((s) => s.commandQueue);
   const commandQueueLength = commandQueue.length;
   const lastSyncAt = useGameStore((s) => s.lastSyncAt);
@@ -279,21 +291,25 @@ export default function ProfileScreen() {
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <View style={styles.statValueRow}>
-                <Text style={[styles.levelValue, { color: theme.text }]}>{playerLevel}</Text>
+                {isHydrated
+                  ? <Text style={[styles.levelValue, { color: theme.text }]}>{playerLevel}</Text>
+                  : <SkeletonBox width={40} height={36} />}
                 <Image source={require('../../assets/img/lvlIcon.png')} style={styles.statIcon} contentFit="contain" />
               </View>
             </View>
             <View style={[styles.statDivider, { backgroundColor: theme.divider }]} />
             <View style={styles.statItemXp}>
               <View style={styles.statValueRow}>
-                <Text style={[styles.statValue, { color: theme.text }]}>{formatCompact(playerXp)} / {formatCompact(xpNeeded)}</Text>
+                {isHydrated
+                  ? <Text style={[styles.statValue, { color: theme.text }]}>{formatCompact(playerXp)} / {formatCompact(xpNeeded)}</Text>
+                  : <SkeletonBox width={90} />}
                 <Image source={require('../../assets/img/xpIcon.png')} style={styles.statIcon} contentFit="contain" />
               </View>
             </View>
           </View>
 
           <View style={styles.xpBarContainer}>
-            <View style={[styles.xpBarFill, { width: `${Math.min((playerXp / xpNeeded) * 100, 100)}%` }]} />
+            <View style={[styles.xpBarFill, { width: isHydrated ? `${Math.min((playerXp / xpNeeded) * 100, 100)}%` : '0%' }]} />
           </View>
 
           {isAuthenticated && (
@@ -301,11 +317,15 @@ export default function ProfileScreen() {
               <View style={styles.currencyRow}>
                 <View style={styles.currencyItem}>
                   <CoinIcon size={18} />
-                  <Text style={styles.currencyValue}>{formatNum(balance)}</Text>
+                  {isHydrated
+                    ? <Text style={styles.currencyValue}>{formatNum(balance)}</Text>
+                    : <SkeletonBox width={60} />}
                 </View>
                 <View style={styles.currencyItem}>
                   <GemIcon size={16} />
-                  <Text style={styles.currencyValueGem}>{formatNum(gems)}</Text>
+                  {isHydrated
+                    ? <Text style={styles.currencyValueGem}>{formatNum(gems)}</Text>
+                    : <SkeletonBox width={40} />}
                 </View>
               </View>
 
@@ -315,14 +335,18 @@ export default function ProfileScreen() {
                   <Image source={require('../../assets/img/happySmile.png')} style={styles.workerStatIcon} contentFit="contain" />
                   <View style={styles.workerStatTextCol}>
                     <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.happy')}</Text>
-                    <Text style={[styles.workerStatValue, { color: theme.text }]}>{happyCount}/{totalWorkers}</Text>
+                    {isHydrated
+                      ? <Text style={[styles.workerStatValue, { color: theme.text }]}>{happyCount}/{totalWorkers}</Text>
+                      : <SkeletonBox width={36} />}
                   </View>
                 </View>
                 <View style={styles.workerStatItem}>
                   <Image source={require('../../assets/img/specialistWorker.png')} style={styles.workerStatIcon} contentFit="contain" />
                   <View style={styles.workerStatTextCol}>
                     <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.specialists')}</Text>
-                    <Text style={[styles.workerStatValue, { color: theme.text }]}>{specialistCount}/{totalWorkers}</Text>
+                    {isHydrated
+                      ? <Text style={[styles.workerStatValue, { color: theme.text }]}>{specialistCount}/{totalWorkers}</Text>
+                      : <SkeletonBox width={36} />}
                   </View>
                 </View>
               </View>
@@ -354,7 +378,7 @@ export default function ProfileScreen() {
         >
           <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
           <Text style={[styles.achievementsButtonText, { flex: 1, color: theme.text }]}>{tHotel('myBusiness.title')}</Text>
-          {upgradeReadyTypes.length > 0 && (
+          {isHydrated && upgradeReadyTypes.length > 0 && (
             <View style={styles.businessDotsRow}>
               {upgradeReadyTypes.map((ft) => (
                 <View key={ft} style={[styles.businessDot, { backgroundColor: BUSINESS_TYPE_COLORS[ft] }]} />

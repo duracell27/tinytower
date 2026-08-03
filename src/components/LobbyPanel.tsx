@@ -8,6 +8,7 @@ import {
   Modal,
   StyleSheet,
   Dimensions,
+  useColorScheme,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
@@ -350,12 +351,13 @@ interface LobbyPanelProps {
 }
 
 function InfoSection({ icon, title, text }: { icon: ReturnType<typeof require>; title: string; text: string }) {
+  const isDark = useColorScheme() === 'dark';
   return (
     <View style={infoStyles.section}>
       <Image source={icon} style={infoStyles.icon} contentFit="contain" />
       <View style={infoStyles.textCol}>
-        <Text style={infoStyles.sectionTitle}>{title}</Text>
-        <Text style={infoStyles.sectionText}>{text}</Text>
+        <Text style={[infoStyles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{title}</Text>
+        <Text style={[infoStyles.sectionText, isDark && { color: '#8A9A80' }]}>{text}</Text>
       </View>
     </View>
   );
@@ -369,6 +371,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const [newWorkerPopup, setNewWorkerPopup] = useState<Worker | null>(null);
   const showHotelFullNotice = useGameStore((s) => s.showHotelFullNotice);
   const [infoVisible, setInfoVisible] = useState(false);
+  const isDark = useColorScheme() === 'dark';
 
   const {
     lobbyVisitors,
@@ -624,7 +627,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         </Animated.View>
 
         {/* Sheet */}
-        <Animated.View style={[styles.sheet, sheetStyle]}>
+        <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: 'rgba(28,32,28,0.97)' }]}>
           {/* Header with pan gesture */}
           <GestureDetector gesture={panGesture}>
             <Animated.View>
@@ -711,14 +714,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             {view === 'operate' ? (
               <>
                 {/* Visitor + Shaft Card / Empty State */}
-                <View style={styles.card}>
+                <View style={[styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
                   {activeVisitor ? (
                     <View style={styles.visitorShaftRow}>
                       {/* Left column */}
                       <View style={styles.visitorColumn}>
                         {/* Top row: avatar + speech bubble + status chip */}
                         <View style={styles.visitorInfoRow}>
-                          <View style={styles.avatarTile}>
+                          <View style={[styles.avatarTile, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
                             <VisitorAvatar
                               role={activeVisitor.role ?? 'guest'}
                               targetFloor={activeVisitor.targetFloor}
@@ -727,11 +730,11 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                             />
                           </View>
                           <View style={styles.visitorTextCol}>
-                            <View style={styles.speechBubble}>
+                            <View style={[styles.speechBubble, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
                               {arrived ? (
-                                <Text style={styles.speechArrivedText}>{t('visitor.thankYou')}</Text>
+                                <Text style={[styles.speechArrivedText, isDark && { color: '#DDE8D8' }]}>{t('visitor.thankYou')}</Text>
                               ) : (
-                                <Text style={styles.speechText}>
+                                <Text style={[styles.speechText, isDark && { color: '#DDE8D8' }]}>
                                   <Text style={[styles.speechRoleLabel, { color: ROLE_COLORS[activeVisitor.role ?? 'guest'] }]}>
                                     {t(`roles.${activeVisitor.role ?? 'guest'}`)}
                                   </Text>
@@ -739,12 +742,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                 </Text>
                               )}
                             </View>
-                            <View style={styles.statusChip}>
+                            <View style={[styles.statusChip, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
                               <View style={[
                                 styles.statusDot,
                                 { backgroundColor: arrived ? '#52B847' : '#F0B92A' },
                               ]} />
-                              <Text style={styles.statusChipText}>
+                              <Text style={[styles.statusChipText, isDark && { color: '#8A9A80' }]}>
                                 {arrived
                                   ? t('visitor.arrivedStatus', { floor: activeVisitor.targetFloor })
                                   : t('visitor.elevatorStatus', { floor: elevatorFloor })}
@@ -829,18 +832,18 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       deliverAll();
                       suppressNewWorkerPopup.current = false;
                     }}
-                    style={({ pressed }) => [styles.deliverAllCard, pressed && { opacity: 0.8 }]}
+                    style={({ pressed }) => [styles.deliverAllCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }, pressed && { opacity: 0.8 }]}
                   >
-                    <PeopleGroupIcon size={20} color="#5A6478" />
-                    <Text style={styles.deliverAllText}>{t('actions.deliverAll')}</Text>
+                    <PeopleGroupIcon size={20} color={isDark ? '#8A9A80' : '#5A6478'} />
+                    <Text style={[styles.deliverAllText, isDark && { color: '#DDE8D8' }]}>{t('actions.deliverAll')}</Text>
                     <GemIcon size={14} />
                     <Text style={styles.deliverAllGemText}>1</Text>
                   </Pressable>
                 )}
 
                 {/* Daily tips card */}
-                <View style={styles.dailyTipsCard}>
-                  <Text style={styles.dailyTipsLabel}>{t('dailyTips.label')}</Text>
+                <View style={[styles.dailyTipsCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+                  <Text style={[styles.dailyTipsLabel, isDark && { color: '#8A9A80' }]}>{t('dailyTips.label')}</Text>
 
                   {/* Labels above bar */}
                   <View style={styles.milestoneAboveRow}>
@@ -848,14 +851,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={styles.milestone0}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                         <CoinIcon size={11} />
-                        <Text style={styles.milestoneAmount}>{formatNum(effectiveDailyTips)}</Text>
+                        <Text style={[styles.milestoneAmount, isDark && { color: '#8A9A80' }]}>{formatNum(effectiveDailyTips)}</Text>
                       </View>
                     </View>
                     {/* Stage 1: centered at stage1/stage2 position */}
                     <View style={[styles.milestone50, { left: stage1Pct as any }]}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                         <CoinIcon size={11} />
-                        <Text style={styles.milestoneAmount}>
+                        <Text style={[styles.milestoneAmount, isDark && { color: '#8A9A80' }]}>
                           {dailyTipsStage1Claimed ? t('dailyTips.received') : formatShortCoins(stage1Target)}
                         </Text>
                       </View>
@@ -864,7 +867,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={styles.milestone100}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                         <CoinIcon size={11} />
-                        <Text style={styles.milestoneAmount}>
+                        <Text style={[styles.milestoneAmount, isDark && { color: '#8A9A80' }]}>
                           {dailyTipsStage2Claimed ? t('dailyTips.received') : formatShortCoins(stage2Target)}
                         </Text>
                       </View>
@@ -872,7 +875,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   </View>
 
                   {/* Progress bar with mid divider */}
-                  <View style={styles.progressTrack}>
+                  <View style={[styles.progressTrack, isDark && { backgroundColor: 'rgba(255,255,255,0.10)' }]}>
                     <LinearGradient
                       colors={['#F6C642', '#E5A41C']}
                       start={{ x: 0, y: 0 }}
@@ -942,9 +945,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 </View>
 
                 {/* Daily gems card */}
-                <View style={styles.dailyGemsCard}>
+                <View style={[styles.dailyGemsCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
                   <GemIcon size={14} />
-                  <Text style={styles.dailyGemsLabel}>{t('dailyGems.label')}</Text>
+                  <Text style={[styles.dailyGemsLabel, isDark && { color: '#8A9A80' }]}>{t('dailyGems.label')}</Text>
                   <Text style={styles.dailyGemsValue}>
                     {effectiveDailyGemsCollected} / {dailyGemLimit}
                   </Text>
@@ -975,23 +978,23 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
               /* UPGRADE VIEW */
               <>
                 {/* Back button */}
-                <Pressable onPress={() => setView('operate')} style={styles.backButton}>
+                <Pressable onPress={() => setView('operate')} style={[styles.backButton, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
                   <ChevronLeftIcon />
-                  <Text style={styles.backButtonText}>{t('elevator.backToElevator')}</Text>
+                  <Text style={[styles.backButtonText, isDark && { color: '#8A9A80' }]}>{t('elevator.backToElevator')}</Text>
                 </Pressable>
 
                 {/* Elevator upgrade card */}
-                <View style={styles.card}>
+                <View style={[styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
                   <View style={styles.upgradeCardHeader}>
                     <View style={styles.upgradeCardTitleRow}>
-                      <Text style={styles.upgradeCardTitle}>{t('elevator.cardTitle')}</Text>
+                      <Text style={[styles.upgradeCardTitle, isDark && { color: '#DDE8D8' }]}>{t('elevator.cardTitle')}</Text>
                       <Text style={styles.upgradeCardLevel}>L-{elevatorLevel}</Text>
                     </View>
-                    <Text style={styles.upgradeCardCapacity}>{t('elevator.capacityPerTrip', { level: elevatorLevel })}</Text>
+                    <Text style={[styles.upgradeCardCapacity, isDark && { color: '#8A9A80' }]}>{t('elevator.capacityPerTrip', { level: elevatorLevel })}</Text>
                   </View>
 
                   {/* Progress */}
-                  <View style={styles.upgradeProgressTrack}>
+                  <View style={[styles.upgradeProgressTrack, isDark && { backgroundColor: 'rgba(255,255,255,0.10)' }]}>
                     <LinearGradient
                       colors={['#72C24F', '#5BA63C']}
                       start={{ x: 0, y: 0 }}
@@ -1007,7 +1010,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={[styles.upgradeIconTile, { backgroundColor: 'rgba(91,166,60,0.15)' }]}>
                       <ElevatorIcon size={22} color="#5BA63C" />
                     </View>
-                    <Text style={styles.upgradeDesc}>
+                    <Text style={[styles.upgradeDesc, isDark && { color: '#8A9A80' }]}>
                       {t('elevator.description')}
                     </Text>
                   </View>
@@ -1045,14 +1048,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 </View>
 
                 {/* Lobby upgrade card */}
-                <View style={styles.card}>
+                <View style={[styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
                   <View style={styles.upgradeCardHeader}>
-                    <Text style={styles.upgradeCardTitle}>{t('lobbyUpgrade.cardTitle')}</Text>
+                    <Text style={[styles.upgradeCardTitle, isDark && { color: '#DDE8D8' }]}>{t('lobbyUpgrade.cardTitle')}</Text>
                     <Text style={[styles.upgradeCardCapacity, { color: '#2592AB' }]}>{t('lobbyUpgrade.seats', { count: lobbyCapacity })}</Text>
                   </View>
 
                   {/* Progress */}
-                  <View style={styles.upgradeProgressTrack}>
+                  <View style={[styles.upgradeProgressTrack, isDark && { backgroundColor: 'rgba(255,255,255,0.10)' }]}>
                     <LinearGradient
                       colors={['#52A6E2', '#3B8BCB']}
                       start={{ x: 0, y: 0 }}
@@ -1068,7 +1071,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={[styles.upgradeIconTile, { backgroundColor: 'rgba(59,139,203,0.15)' }]}>
                       <PersonIcon size={22} color="#3B8BCB" />
                     </View>
-                    <Text style={styles.upgradeDesc}>
+                    <Text style={[styles.upgradeDesc, isDark && { color: '#8A9A80' }]}>
                       {t('lobbyUpgrade.description')}
                     </Text>
                   </View>
@@ -1112,14 +1115,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         {/* New worker popup — View overlay inside Modal */}
         {newWorkerPopup && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setNewWorkerPopup(null)}>
-            <Pressable style={popupStyles.card} onPress={() => {}}>
+            <Pressable style={[popupStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => {}}>
               <View style={popupStyles.avatarWrap}>
                 <WorkerAvatar worker={newWorkerPopup} size={56} />
               </View>
               <View style={popupStyles.info}>
-                <Text style={popupStyles.title}>{t('newWorkerPopup.title')}</Text>
+                <Text style={[popupStyles.title, isDark && { color: '#DDE8D8' }]}>{t('newWorkerPopup.title')}</Text>
                 <Text style={[popupStyles.name, { color: gameConfig.floorTypes[newWorkerPopup.floorType]?.shirtColor ?? '#3B8BCB' }]}>{newWorkerPopup.name}</Text>
-                <Text style={popupStyles.meta}>
+                <Text style={[popupStyles.meta, isDark && { color: '#8A9A80' }]}>
                   {t('newWorkerPopup.meta', {
                     level: newWorkerPopup.level,
                     job: tContent(`productionTypes.${newWorkerPopup.dreamJob}.displayName`, { defaultValue: newWorkerPopup.dreamJob }),
@@ -1140,7 +1143,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 </LinearGradient>
               </Pressable>
               <Pressable onPress={() => setNewWorkerPopup(null)} style={popupStyles.dismissBtn}>
-                <Text style={popupStyles.dismissText}>{t('newWorkerPopup.later')}</Text>
+                <Text style={[popupStyles.dismissText, isDark && { color: '#8A9A80' }]}>{t('newWorkerPopup.later')}</Text>
               </Pressable>
             </Pressable>
           </Pressable>
@@ -1149,7 +1152,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         {/* Builder tool drop popup */}
         {builderToolDrop && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={clearBuilderToolDrop}>
-            <Pressable style={popupStyles.card} onPress={() => {}}>
+            <Pressable style={[popupStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => {}}>
               <View style={popupStyles.avatarWrap}>
                 <Image
                   source={TOOL_IMAGES[builderToolDrop]}
@@ -1158,12 +1161,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 />
               </View>
               <View style={popupStyles.info}>
-                <Text style={popupStyles.title}>{t('builderPopup.title')}</Text>
+                <Text style={[popupStyles.title, isDark && { color: '#DDE8D8' }]}>{t('builderPopup.title')}</Text>
                 <Text style={[popupStyles.name, { color: '#E67E22' }]}>{t(`tools.${builderToolDrop}`)}</Text>
                 <Text style={popupStyles.subtitle}>{t('builderPopup.subtitle')}</Text>
               </View>
               <Pressable onPress={clearBuilderToolDrop} style={popupStyles.dismissBtn}>
-                <Text style={popupStyles.dismissText}>{t('builderPopup.dismiss')}</Text>
+                <Text style={[popupStyles.dismissText, isDark && { color: '#8A9A80' }]}>{t('builderPopup.dismiss')}</Text>
               </Pressable>
             </Pressable>
           </Pressable>
@@ -1181,7 +1184,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         {infoVisible && (
           <View style={infoStyles.scrim}>
             <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-            <View style={infoStyles.card}>
+            <View style={[infoStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
               <LinearGradient colors={['#C9637E', '#A8475F']} style={infoStyles.cardHeader}>
                 <Text style={infoStyles.cardTitle}>About the Lobby</Text>
                 <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
@@ -1246,7 +1249,7 @@ const popupStyles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 22,
     padding: 20,
     alignItems: 'center',
@@ -1473,7 +1476,7 @@ const styles = StyleSheet.create({
 
   /* Cards */
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 18,
     padding: 14,
     shadowColor: 'rgba(40,60,90,1)',
@@ -1644,7 +1647,7 @@ const styles = StyleSheet.create({
 
   /* Deliver All */
   deliverAllCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1676,7 +1679,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 14,
     paddingHorizontal: 15,
     paddingVertical: 11,
@@ -1699,7 +1702,7 @@ const styles = StyleSheet.create({
   },
 
   dailyTipsCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 16,
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -1866,7 +1869,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 11,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -2007,7 +2010,7 @@ const infoStyles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 20,
     overflow: 'hidden',
     maxHeight: SCREEN_HEIGHT * 0.75,
