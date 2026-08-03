@@ -6,6 +6,7 @@ import {
   getMaxLobbyCapacity,
   checkDailyReset,
   generateRandomVisitor,
+  generateRandomVisitorRole,
   getFillLobbyCost,
   getDailyTipsTargets,
 } from '../lobbyUtils';
@@ -254,5 +255,26 @@ describe('getDailyTipsTargets', () => {
   it('stage2 is always 2 × stage1', () => {
     const { stage1, stage2 } = getDailyTipsTargets(9, testConfig);
     expect(stage2).toBe(stage1 * 2);
+  });
+});
+
+describe('generateRandomVisitorRole — VIP', () => {
+  it('returns isVip as a boolean', () => {
+    const state = makeState();
+    const result = generateRandomVisitorRole(state, testConfig, Date.now(), 1);
+    expect(typeof result.isVip).toBe('boolean');
+  });
+
+  it('isVip is occasionally true (2% chance)', () => {
+    const state = makeState();
+    let vipCount = 0;
+    const trials = 1000;
+    for (let i = 0; i < trials; i++) {
+      const result = generateRandomVisitorRole(state, testConfig, Date.now() + i, 1);
+      if (result.isVip) vipCount++;
+    }
+    // With 2% chance and 1000 trials, we expect ~20 VIPs (allow 5-35 for variance)
+    expect(vipCount).toBeGreaterThan(5);
+    expect(vipCount).toBeLessThan(35);
   });
 });

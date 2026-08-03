@@ -90,8 +90,9 @@ export function generateRandomVisitorRole(
   config: GameConfig,
   now: number,
   playerLevel = 1,
-): { role: VisitorRole; targetFloor: number } {
+): { role: VisitorRole; targetFloor: number; isVip: boolean } {
   const totalFloors = config.floors.length + 1;
+  const isVip = Math.random() < 0.02;
 
   // Check if stage is still actively running (not yet expired by wall clock)
   const isActiveDelivering = (p: { stage: string; typeId: string | null; stageStartedAt: number }) =>
@@ -111,7 +112,7 @@ export function generateRandomVisitorRole(
   const builderChance = state.underConstruction.length > 0 ? 0.10 : 0.02;
   if (Math.random() < builderChance) {
     const targetFloor = 1 + Math.floor(Math.random() * totalFloors);
-    return { role: 'builder', targetFloor };
+    return { role: 'builder', targetFloor, isVip };
   }
 
   const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel;
@@ -160,7 +161,7 @@ export function generateRandomVisitorRole(
     targetFloor = 1 + Math.floor(Math.random() * totalFloors);
   }
 
-  return { role, targetFloor };
+  return { role, targetFloor, isVip };
 }
 
 export function generateVisitorAppearance(): { id: string; hairColor: string; female: boolean } {
@@ -180,10 +181,11 @@ export function getFillLobbyCost(uses: number): number {
 
 /** @deprecated use generateRandomVisitorRole + generateVisitorAppearance separately */
 export function generateRandomVisitor(state: GameState, config: GameConfig, now = Date.now()): Visitor {
-  const { role, targetFloor } = generateRandomVisitorRole(state, config, now, 1);
+  const { role, targetFloor, isVip } = generateRandomVisitorRole(state, config, now, 1);
   return {
     ...generateVisitorAppearance(),
     role,
+    isVip,
     targetFloor,
   };
 }
