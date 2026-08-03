@@ -62,6 +62,8 @@ model PlayerState {
   glass                  Int     @default(1)
   nails                  Int     @default(1)
   screw                  Int     @default(1)
+  wood                   Int     @default(0)
+  cement                 Int     @default(0)
   lobbyVisitors          Json    @default("[]")
   tokenGreen             Int     @default(0)
   tokenBlue              Int     @default(0)
