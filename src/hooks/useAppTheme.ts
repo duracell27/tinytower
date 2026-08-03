@@ -28,7 +28,7 @@ const LIGHT: AppTheme = {
 
 const DARK: AppTheme = {
   isDark: true,
-  surface: 'rgba(28,34,24,0.93)',
+  surface: 'rgba(52,55,52,0.97)',
   surfaceElevated: 'rgba(255,255,255,0.13)',
   surfaceSub: 'rgba(255,255,255,0.07)',
   surfaceDanger: 'rgba(220,50,30,0.15)',

@@ -370,7 +370,7 @@ export default function ProfileScreen() {
           <Image source={require('../../assets/img/profile/dayliQuests.png')} style={styles.achievementsIcon} />
           <Text style={[styles.achievementsButtonText, { color: theme.text }]}>
             {tHotel('dailyTasks.title')}{' '}
-            <Text style={styles.achievementsButtonSubText}>
+            <Text style={[styles.achievementsButtonSubText, { color: theme.text }]}>
               ({dailyTasks.claimed.filter(k => DAILY_TASKS.find(t => t.key === k && !t.hidden)).length}/{DAILY_TASKS.filter(t => !t.hidden).length})
             </Text>
           </Text>
