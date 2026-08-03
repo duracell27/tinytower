@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { createMMKV } from 'react-native-mmkv';
@@ -71,6 +71,7 @@ export default function UnderConstructionBanner({
   const speedUpCost = Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));
   const canStart = requiredTools.every(({ tool, count }) => (tools?.[tool as keyof typeof tools] ?? 0) >= count);
 
+  const isDark = useColorScheme() === 'dark';
   const [collapsed, setCollapsed] = useState<boolean>(
     () => uiStorage.getBoolean(`uc-collapsed-${floorId}`) ?? false,
   );
@@ -106,6 +107,7 @@ export default function UnderConstructionBanner({
               <View style={[styles.chevronShape, styles.chevronDown]} />
             </View>
           </Pressable>
+          {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
         </View>
       );
     }
@@ -175,6 +177,7 @@ export default function UnderConstructionBanner({
           </LinearGradient>
           {canStart && <View style={styles.startBtnShadow} />}
         </Pressable>
+        {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
       </View>
     );
   }
@@ -251,6 +254,7 @@ export default function UnderConstructionBanner({
           </>
         )}
       </View>
+      {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
     </View>
   );
 }
@@ -515,5 +519,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#A04000',
     borderBottomLeftRadius: 11,
     borderBottomRightRadius: 11,
+  },
+  darkOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0,0,0,0.30)',
+    borderRadius: 14,
   },
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { shadeColor } from '../utils/color';
@@ -23,6 +23,7 @@ function CurrencyIcon({ currency, size = 14 }: { currency: 'coins' | 'gems'; siz
 
 export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPress }: BuyFloorBannerProps) {
   const { t } = useTranslation('tabs');
+  const isDark = useColorScheme() === 'dark';
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.ribbon, pressed && styles.pressed]}>
       <View style={styles.ribbonLeft}>
@@ -37,6 +38,7 @@ export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPre
         <CurrencyIcon currency={currency} size={13} />
         <Text style={[styles.ribbonPriceText, { color: currency === 'gems' ? '#2592AB' : '#C28A22' }]}>{formatNum(price)}</Text>
       </View>
+      {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
     </Pressable>
   );
 }
@@ -87,5 +89,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 13,
     color: '#4A3266',
+  },
+  darkOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0,0,0,0.30)',
+    borderRadius: 16,
   },
 });
