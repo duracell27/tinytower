@@ -63,6 +63,7 @@ function handleSpawnVisitor(
   const visitor: Visitor = {
     id: command.visitorId,
     role: command.role,
+    isVip: command.isVip,
     targetFloor: command.targetFloor,
     hairColor: command.hairColor,
     female: command.female,
@@ -513,6 +514,7 @@ function handleFillLobby(
   const newVisitors: Visitor[] = command.visitors.slice(0, slots).map((v) => ({
     id: v.visitorId,
     role: v.role,
+    isVip: v.isVip,
     targetFloor: v.targetFloor,
     hairColor: v.hairColor,
     female: v.female,
