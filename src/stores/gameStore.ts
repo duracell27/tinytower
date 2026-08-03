@@ -25,20 +25,34 @@ function computeDeliverAllSummary(
   elevatorLevel: number,
   dailyGemsCollected: number,
   playerLevel: number,
+  hotelOccupied: number = 0,
+  hotelCapacity: number = 999,
 ): DeliverAllSummary {
   let guestCount = 0, businessmanCount = 0, delivererCount = 0, sellerCount = 0, builderCount = 0;
   let totalCoins = 0, totalGems = 0, newWorkers = 0;
   let gemsCollected = dailyGemsCollected;
   const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
+  let occupied = hotelOccupied;
 
   for (const v of visitors) {
     const role = v.role ?? 'guest';
     const targetFloor = v.targetFloor ?? 1;
+    const isVip = v.isVip ?? false;
+    const tipMultiplier = isVip ? 10 : 1;
     switch (role) {
       case 'guest':
         guestCount++;
-        totalCoins += calculateTip('guest', targetFloor, elevatorLevel, gameConfig);
-        if (targetFloor === 1) newWorkers++;
+        totalCoins += calculateTip('guest', targetFloor, elevatorLevel, gameConfig) * tipMultiplier;
+        if (targetFloor === 1) {
+          if (isVip) {
+            const added = Math.max(0, hotelCapacity - occupied);
+            newWorkers += added;
+            occupied += added;
+          } else if (occupied < hotelCapacity) {
+            newWorkers++;
+            occupied++;
+          }
+        }
         break;
       case 'businessman':
         businessmanCount++;
@@ -46,16 +60,16 @@ function computeDeliverAllSummary(
           totalGems++;
           gemsCollected++;
         } else {
-          totalCoins += calculateTip('businessman', targetFloor, elevatorLevel, gameConfig);
+          totalCoins += calculateTip('businessman', targetFloor, elevatorLevel, gameConfig) * tipMultiplier;
         }
         break;
       case 'deliverer':
         delivererCount++;
-        totalCoins += calculateTip('deliverer', targetFloor, elevatorLevel, gameConfig);
+        totalCoins += calculateTip('deliverer', targetFloor, elevatorLevel, gameConfig) * tipMultiplier;
         break;
       case 'seller':
         sellerCount++;
-        totalCoins += calculateTip('seller', targetFloor, elevatorLevel, gameConfig);
+        totalCoins += calculateTip('seller', targetFloor, elevatorLevel, gameConfig) * tipMultiplier;
         break;
       case 'builder':
         builderCount++;
@@ -661,7 +675,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const timestamp = (state.nextVisitorAt > 0 && state.nextVisitorAt < now)
       ? state.nextVisitorAt
       : now;
-    const { role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, timestamp, state.playerLevel);
+    const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, timestamp, state.playerLevel);
     const { id, hairColor, female } = generateVisitorAppearance();
     const floorTypeKeys = Object.keys(gameConfig.floorTypes);
     const pendingFloorType = (role === 'guest' && targetFloor === 1)
@@ -672,6 +686,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       type: 'spawn_visitor',
       visitorId: id,
       role,
+      isVip,
       targetFloor,
       hairColor,
       female,
@@ -726,71 +741,118 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const active = state.lobbyVisitors[0];
     const role = active?.role ?? 'guest';
     const targetFloor = active?.targetFloor ?? 1;
+    const isVip = active?.isVip ?? false;
     const prevVisitorCount = state.lobbyVisitors.length;
 
+    const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'];
+
+    // Worker pre-generation
     let newWorker: ReturnType<typeof generateRandomWorkers>[0] | undefined;
+    let newWorkers: ReturnType<typeof generateRandomWorkers>[0][] | undefined;
+
     if (role === 'guest' && targetFloor === 1) {
       const hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
-      if (hotelOccupied < state.hotelCapacity) {
+      if (isVip) {
+        const spotsLeft = state.hotelCapacity - hotelOccupied;
+        if (spotsLeft > 0) {
+          const pendingFloorType = active?.pendingFloorType;
+          newWorkers = Array.from({ length: spotsLeft }, () => {
+            let maxBizIdx: number | undefined;
+            if (pendingFloorType && gameConfig.floorTypes[pendingFloorType]) {
+              const builtCount = getBuiltFloorCountForType(pendingFloorType, state.floors, state.openedFloorTypes ?? {}, gameConfig);
+              maxBizIdx = Math.min(builtCount + WORKER_LOOKAHEAD - 1, gameConfig.floorTypes[pendingFloorType].businesses.length - 1);
+            }
+            return generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0];
+          });
+        }
+      } else if (hotelOccupied < state.hotelCapacity) {
         const pendingFloorType = active?.pendingFloorType;
         let maxBizIdx: number | undefined;
         if (pendingFloorType && gameConfig.floorTypes[pendingFloorType]) {
-          const builtCount = getBuiltFloorCountForType(
-            pendingFloorType, state.floors, state.openedFloorTypes ?? {}, gameConfig,
-          );
-          maxBizIdx = Math.min(
-            builtCount + WORKER_LOOKAHEAD - 1,
-            gameConfig.floorTypes[pendingFloorType].businesses.length - 1,
-          );
+          const builtCount = getBuiltFloorCountForType(pendingFloorType, state.floors, state.openedFloorTypes ?? {}, gameConfig);
+          maxBizIdx = Math.min(builtCount + WORKER_LOOKAHEAD - 1, gameConfig.floorTypes[pendingFloorType].businesses.length - 1);
         }
         newWorker = generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0];
       }
     }
 
-    const builderTool = role === 'builder'
-      ? (['briks', 'glass', 'nails', 'screw', 'wood', 'cement'] as ToolKey[])[Math.floor(Math.random() * 6)]
-      : undefined;
+    // Builder tool pre-generation
+    let builderTool: ToolKey | undefined;
+    let builderTools: ToolKey[] | undefined;
+
+    if (role === 'builder') {
+      if (isVip) {
+        const isUnderConstruction = state.underConstruction.some((uc) => uc.floorId === targetFloor);
+        builderTools = isUnderConstruction
+          ? []   // completing construction — no tools
+          : [TOOLS[Math.floor(Math.random() * TOOLS.length)], TOOLS[Math.floor(Math.random() * TOOLS.length)]];
+      } else {
+        builderTool = TOOLS[Math.floor(Math.random() * TOOLS.length)];
+      }
+    }
 
     executeCommand(get, set, {
       id: uuid(),
       type: 'collect_tip',
       timestamp: clock.now(),
       newWorker,
+      newWorkers,
       builderTool,
+      builderTools,
     });
 
-    if (builderTool && get().lobbyVisitors.length < prevVisitorCount) {
-      set({ builderToolDrop: builderTool });
+    // Builder tool drop popup (show first tool for VIP non-construction builders)
+    const droppedTool = builderTools?.[0] ?? (builderTool && get().lobbyVisitors.length < prevVisitorCount ? builderTool : undefined);
+    if (droppedTool && get().lobbyVisitors.length < prevVisitorCount) {
+      set({ builderToolDrop: droppedTool });
     }
   },
 
   deliverAll: () => {
     const state = get();
-    const builders = state.lobbyVisitors.filter((v) => v.role === 'builder');
+    const now = clock.now();
     const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'];
-    const builderTools = builders.map(() => TOOLS[Math.floor(Math.random() * TOOLS.length)]);
+
+    // Builder tools: 1 per regular builder, 2 per VIP builder (engine ignores if completing construction)
+    const builderTools: ToolKey[] = [];
+    for (const visitor of state.lobbyVisitors) {
+      const isBuilder = (visitor.role ?? 'guest') === 'builder';
+      if (isBuilder) {
+        const count = (visitor.isVip ?? false) ? 2 : 1;
+        for (let i = 0; i < count; i++) {
+          builderTools.push(TOOLS[Math.floor(Math.random() * TOOLS.length)]);
+        }
+      }
+    }
 
     // Pre-generate workers for each guest heading to floor 1 so the server uses
     // the same worker IDs instead of generating its own (which would cause mismatch
     // on reconcile, resulting in "Worker not found" and incorrect over-capacity display).
     let hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
     const preGeneratedWorkers: ReturnType<typeof generateRandomWorkers>[0][] = [];
+    const vipGuestWorkerBatches: ReturnType<typeof generateRandomWorkers>[0][][] = [];
+
     for (const visitor of state.lobbyVisitors) {
-      if ((visitor.role ?? 'guest') === 'guest' && visitor.targetFloor === 1 && hotelOccupied < state.hotelCapacity) {
-        const pendingFloorType = visitor.pendingFloorType;
-        let maxBizIdx: number | undefined;
-        if (pendingFloorType && gameConfig.floorTypes[pendingFloorType]) {
-          const builtCount = getBuiltFloorCountForType(
-            pendingFloorType, state.floors, state.openedFloorTypes ?? {}, gameConfig,
-          );
-          maxBizIdx = Math.min(
-            builtCount + WORKER_LOOKAHEAD - 1,
-            gameConfig.floorTypes[pendingFloorType].businesses.length - 1,
-          );
+      const isGuestAtFloor1 = (visitor.role ?? 'guest') === 'guest' && visitor.targetFloor === 1;
+      if (!isGuestAtFloor1) continue;
+
+      const pendingFloorType = visitor.pendingFloorType;
+      let maxBizIdx: number | undefined;
+      if (pendingFloorType && gameConfig.floorTypes[pendingFloorType]) {
+        const builtCount = getBuiltFloorCountForType(pendingFloorType, state.floors, state.openedFloorTypes ?? {}, gameConfig);
+        maxBizIdx = Math.min(builtCount + WORKER_LOOKAHEAD - 1, gameConfig.floorTypes[pendingFloorType].businesses.length - 1);
+      }
+
+      if (visitor.isVip ?? false) {
+        const spotsLeft = state.hotelCapacity - hotelOccupied;
+        const batch: ReturnType<typeof generateRandomWorkers>[0][] = [];
+        for (let i = 0; i < spotsLeft; i++) {
+          batch.push(generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0]);
+          hotelOccupied++;
         }
-        preGeneratedWorkers.push(
-          generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0],
-        );
+        vipGuestWorkerBatches.push(batch);
+      } else if (hotelOccupied < state.hotelCapacity) {
+        preGeneratedWorkers.push(generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0]);
         hotelOccupied++;
       }
     }
@@ -798,15 +860,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
     executeCommand(get, set, {
       id: uuid(),
       type: 'deliver_all',
-      timestamp: clock.now(),
+      timestamp: now,
       builderTools,
       ...(preGeneratedWorkers.length > 0 && { preGeneratedWorkers }),
+      ...(vipGuestWorkerBatches.length > 0 && { vipGuestWorkerBatches }),
     });
+
     const summary = computeDeliverAllSummary(
       state.lobbyVisitors,
       state.elevatorLevel,
       state.dailyGemsCollected,
       state.playerLevel,
+      state.workers.filter((w) => w.assignedFloorId === null).length,
+      state.hotelCapacity,
     );
     set({ pendingDeliverAll: summary });
   },
@@ -848,12 +914,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return;
     }
     const visitors = Array.from({ length: slotsToFill }, () => {
-      const { role, targetFloor } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
+      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
       const { id, hairColor, female } = generateVisitorAppearance();
       const pendingFloorType = (role === 'guest' && targetFloor === 1)
         ? Object.keys(gameConfig.floorTypes)[Math.floor(Math.random() * Object.keys(gameConfig.floorTypes).length)]
         : undefined;
-      return { visitorId: id, role, targetFloor, hairColor, female, pendingFloorType };
+      return { visitorId: id, role, isVip, targetFloor, hairColor, female, pendingFloorType };
     });
     executeCommand(get, set, {
       id: uuid(),
