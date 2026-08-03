@@ -564,3 +564,23 @@ describe('VIP visitor effects — collect_tip', () => {
     expect(prods[1].stageStartedAt).toBe(0);
   });
 });
+
+describe('vipsLifted stat tracking', () => {
+  it('increments vipsLifted on collect_tip for VIP visitor', () => {
+    const visitor = { id: 'v1', role: 'guest' as const, isVip: true, targetFloor: 3, hairColor: '#000', female: false };
+    const state = makeState({ lobbyVisitors: [visitor], elevatorFloor: 3 });
+    const cmd: Command = { id: 'c1', type: 'collect_tip', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.state.dailyTasks.progress.vipsLifted).toBe(1);
+    expect(result.state.dailyTasks.progress.visitorsLifted).toBe(1);
+  });
+
+  it('does NOT increment vipsLifted for regular visitor', () => {
+    const visitor = { id: 'v1', role: 'guest' as const, isVip: false, targetFloor: 3, hairColor: '#000', female: false };
+    const state = makeState({ lobbyVisitors: [visitor], elevatorFloor: 3 });
+    const cmd: Command = { id: 'c1', type: 'collect_tip', timestamp: 1000 };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.state.dailyTasks.progress.vipsLifted).toBe(0);
+    expect(result.state.dailyTasks.progress.visitorsLifted).toBe(1);
+  });
+});

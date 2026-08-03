@@ -279,6 +279,7 @@ function handleCollectTip(
   if (state.elevatorFloor !== active.targetFloor) {
     return { success: false, state, error: 'Elevator not at target floor' };
   }
+  const isVip = active.isVip ?? false;
   const workerBatch = command.newWorkers
     ?? (command.newWorker ? [command.newWorker] : undefined);
   const toolBatch = command.builderTools
@@ -299,6 +300,7 @@ function handleCollectTip(
       progress: {
         ...newState.dailyTasks.progress,
         visitorsLifted: newState.dailyTasks.progress.visitorsLifted + 1,
+        vipsLifted: newState.dailyTasks.progress.vipsLifted + (isVip ? 1 : 0),
       },
     },
   };
@@ -319,6 +321,7 @@ function handleDeliverAll(
     return { success: false, state, error: 'No visitors to deliver' };
   }
   const passengersDelivered = state.lobbyVisitors.length;
+  const vipsDelivered = state.lobbyVisitors.filter((v) => v.isVip ?? false).length;
   const builderTools = command.builderTools ?? [];
   const preGeneratedWorkers = command.preGeneratedWorkers ?? [];
   const vipGuestWorkerBatches = command.vipGuestWorkerBatches ?? [];
@@ -360,6 +363,7 @@ function handleDeliverAll(
       progress: {
         ...newState.dailyTasks.progress,
         visitorsLifted: newState.dailyTasks.progress.visitorsLifted + passengersDelivered,
+        vipsLifted: newState.dailyTasks.progress.vipsLifted + vipsDelivered,
       },
     },
   };
