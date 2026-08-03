@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
@@ -179,6 +180,7 @@ function buildCopyText(
 export default function ProfileScreen() {
   const { t } = useTranslation('tabs');
   const { t: tHotel } = useTranslation('hotel');
+  const theme = useAppTheme();
   const player = useAuthStore((s) => s.player);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useAuthStore((s) => s.logout);
@@ -261,7 +263,7 @@ export default function ProfileScreen() {
   return (
     <AppBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: theme.surface }]}>
           <View style={styles.profileRow}>
             <Image
               source={getUserIcon(playerLevel)}
@@ -269,22 +271,22 @@ export default function ProfileScreen() {
               contentFit="cover"
             />
             <View style={styles.profileInfo}>
-              <Text style={styles.name}>{player?.playerName ?? t('profile.guestFallbackName')}</Text>
-              <Text style={styles.email}>{player?.email ?? ''}</Text>
+              <Text style={[styles.name, { color: theme.text }]}>{player?.playerName ?? t('profile.guestFallbackName')}</Text>
+              <Text style={[styles.email, { color: theme.textMuted }]}>{player?.email ?? ''}</Text>
             </View>
           </View>
 
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <View style={styles.statValueRow}>
-                <Text style={styles.levelValue}>{playerLevel}</Text>
+                <Text style={[styles.levelValue, { color: theme.text }]}>{playerLevel}</Text>
                 <Image source={require('../../assets/img/lvlIcon.png')} style={styles.statIcon} contentFit="contain" />
               </View>
             </View>
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, { backgroundColor: theme.divider }]} />
             <View style={styles.statItemXp}>
               <View style={styles.statValueRow}>
-                <Text style={styles.statValue}>{formatCompact(playerXp)} / {formatCompact(xpNeeded)}</Text>
+                <Text style={[styles.statValue, { color: theme.text }]}>{formatCompact(playerXp)} / {formatCompact(xpNeeded)}</Text>
                 <Image source={require('../../assets/img/xpIcon.png')} style={styles.statIcon} contentFit="contain" />
               </View>
             </View>
@@ -307,20 +309,20 @@ export default function ProfileScreen() {
                 </View>
               </View>
 
-              <View style={styles.workerStatsDivider} />
+              <View style={[styles.workerStatsDivider, { backgroundColor: theme.divider }]} />
               <View style={styles.workerStatsRow}>
                 <View style={styles.workerStatItem}>
                   <Image source={require('../../assets/img/happySmile.png')} style={styles.workerStatIcon} contentFit="contain" />
                   <View style={styles.workerStatTextCol}>
-                    <Text style={styles.workerStatLabel}>{t('profile.stats.happy')}</Text>
-                    <Text style={styles.workerStatValue}>{happyCount}/{totalWorkers}</Text>
+                    <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.happy')}</Text>
+                    <Text style={[styles.workerStatValue, { color: theme.text }]}>{happyCount}/{totalWorkers}</Text>
                   </View>
                 </View>
                 <View style={styles.workerStatItem}>
                   <Image source={require('../../assets/img/specialistWorker.png')} style={styles.workerStatIcon} contentFit="contain" />
                   <View style={styles.workerStatTextCol}>
-                    <Text style={styles.workerStatLabel}>{t('profile.stats.specialists')}</Text>
-                    <Text style={styles.workerStatValue}>{specialistCount}/{totalWorkers}</Text>
+                    <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.specialists')}</Text>
+                    <Text style={[styles.workerStatValue, { color: theme.text }]}>{specialistCount}/{totalWorkers}</Text>
                   </View>
                 </View>
               </View>
@@ -330,28 +332,28 @@ export default function ProfileScreen() {
 
         <Pressable
           onPress={() => router.push('/achievements')}
-          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/achivProfileIcon.png')} style={styles.achievementsIcon} />
-          <Text style={styles.achievementsButtonText}>
+          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>
             {t('profile.achievements', { count: totalEarnedLevels })}
           </Text>
         </Pressable>
 
         <Pressable
           onPress={() => router.push('/referrals')}
-          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/ReferralProfileIcon.png')} style={styles.achievementsIcon} />
-          <Text style={styles.achievementsButtonText}>Referrals</Text>
+          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>Referrals</Text>
         </Pressable>
 
         <Pressable
           onPress={() => router.push('/my-business')}
-          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { flex: 1 }]}>{tHotel('myBusiness.title')}</Text>
+          <Text style={[styles.achievementsButtonText, { flex: 1, color: theme.text }]}>{tHotel('myBusiness.title')}</Text>
           {upgradeReadyTypes.length > 0 && (
             <View style={styles.businessDotsRow}>
               {upgradeReadyTypes.map((ft) => (
@@ -363,10 +365,10 @@ export default function ProfileScreen() {
 
         <Pressable
           onPress={() => router.push('/daily-tasks')}
-          style={({ pressed }) => [styles.achievementsButton, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/dayliQuests.png')} style={styles.achievementsIcon} />
-          <Text style={styles.achievementsButtonText}>
+          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>
             {tHotel('dailyTasks.title')}{' '}
             <Text style={styles.achievementsButtonSubText}>
               ({dailyTasks.claimed.filter(k => DAILY_TASKS.find(t => t.key === k && !t.hidden)).length}/{DAILY_TASKS.filter(t => !t.hidden).length})
@@ -376,6 +378,7 @@ export default function ProfileScreen() {
 
         <Pressable onPress={handleLogout} style={({ pressed }) => [
           styles.logoutButton,
+          { backgroundColor: theme.surface },
           pressed && styles.logoutPressed,
         ]}>
           <Text style={styles.logoutText}>{t('profile.logout')}</Text>
@@ -384,7 +387,7 @@ export default function ProfileScreen() {
         {/* Sync status card */}
         <Pressable
           onPress={() => hasExpandContent && setSyncExpanded((v) => !v)}
-          style={({ pressed }) => [styles.syncCard, pressed && hasExpandContent && styles.syncCardPressed]}
+          style={({ pressed }) => [styles.syncCard, { backgroundColor: theme.surface }, pressed && hasExpandContent && styles.syncCardPressed]}
         >
           <View style={styles.syncRow}>
             <View style={[
@@ -404,8 +407,8 @@ export default function ProfileScreen() {
               {syncStatus === 'critical' && t('profile.sync.critical', { count: commandQueueLength })}
             </Text>
             <View style={styles.syncTimeRow}>
-              <SyncIcon color="#9BA3B0" />
-              <Text style={styles.syncTime}>{formatSyncTime(lastSyncAt, now)}</Text>
+              <SyncIcon color={theme.textMuted} />
+              <Text style={[styles.syncTime, { color: theme.textMuted }]}>{formatSyncTime(lastSyncAt, now)}</Text>
             </View>
             {hasExpandContent && (
               <View style={styles.chevron}>
@@ -419,14 +422,14 @@ export default function ProfileScreen() {
 
               {/* Pending commands */}
               {commandQueueLength > 0 && (
-                <View style={styles.dropSection}>
-                  <Text style={styles.dropSectionTitle}>
+                <View style={[styles.dropSection, { backgroundColor: theme.surfaceSub }]}>
+                  <Text style={[styles.dropSectionTitle, { color: theme.textMuted }]}>
                     {t('profile.sync.pendingDetail', { count: commandQueueLength })}
                   </Text>
                   {pendingGroups.map(({ type, count }) => (
                     <View key={type} style={styles.dropRow}>
-                      <Text style={styles.dropRowBullet}>•</Text>
-                      <Text style={styles.dropRowText}>
+                      <Text style={[styles.dropRowBullet, { color: theme.textMuted }]}>•</Text>
+                      <Text style={[styles.dropRowText, { color: theme.text }]}>
                         {commandLabel(type)}{count > 1 ? ` ×${count}` : ''}
                       </Text>
                     </View>
@@ -436,9 +439,9 @@ export default function ProfileScreen() {
 
               {/* Failed command history */}
               {failedCommandLog.length > 0 && (
-                <View style={styles.dropSection}>
+                <View style={[styles.dropSection, { backgroundColor: theme.surfaceSub }]}>
                   <View style={styles.dropSectionHeader}>
-                    <Text style={styles.dropSectionTitle}>
+                    <Text style={[styles.dropSectionTitle, { color: theme.textMuted }]}>
                       {t('profile.sync.failedCount', { count: failedCommandLog.length })}
                     </Text>
                     <View style={styles.dropActions}>
@@ -446,11 +449,11 @@ export default function ProfileScreen() {
                         onPress={handleCopy}
                         style={({ pressed }) => [styles.dropActionBtn, pressed && styles.dropActionBtnPressed]}
                       >
-                        <Text style={styles.dropActionText}>{copied ? t('profile.sync.copied') : t('profile.sync.copy')}</Text>
+                        <Text style={[styles.dropActionText, { color: theme.textMuted }]}>{copied ? t('profile.sync.copied') : t('profile.sync.copy')}</Text>
                       </Pressable>
                       <Pressable
                         onPress={clearFailedCommandLog}
-                        style={({ pressed }) => [styles.dropActionBtn, styles.dropActionBtnDanger, pressed && styles.dropActionBtnPressed]}
+                        style={({ pressed }) => [styles.dropActionBtn, styles.dropActionBtnDanger, { backgroundColor: theme.surfaceDanger }, pressed && styles.dropActionBtnPressed]}
                       >
                         <Text style={[styles.dropActionText, styles.dropActionTextDanger]}>{t('profile.sync.clear')}</Text>
                       </Pressable>
@@ -458,13 +461,13 @@ export default function ProfileScreen() {
                   </View>
                   {reversedFailLog.map((entry) => (
                     <View key={entry.id} style={styles.dropRow}>
-                      <Text style={styles.dropRowBullet}>•</Text>
+                      <Text style={[styles.dropRowBullet, { color: theme.textMuted }]}>•</Text>
                       <View style={styles.dropRowContent}>
-                        <Text style={styles.dropRowText} numberOfLines={1}>
+                        <Text style={[styles.dropRowText, { color: theme.text }]} numberOfLines={1}>
                           {commandLabel(entry.type)}
                           <Text style={styles.dropRowError}> — {friendlyError(entry.error)}</Text>
                         </Text>
-                        <Text style={styles.dropRowTime}>{formatSyncTime(entry.timestamp, now)}</Text>
+                        <Text style={[styles.dropRowTime, { color: theme.textMuted }]}>{formatSyncTime(entry.timestamp, now)}</Text>
                       </View>
                     </View>
                   ))}
