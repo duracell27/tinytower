@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
@@ -40,6 +40,7 @@ interface HotelFloorProps {
 export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false, onPress }: HotelFloorProps) {
   const { t } = useTranslation('hotel');
   const hasVacancy = hotelOccupied < hotelTotal;
+  const isDark = useColorScheme() === 'dark';
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
@@ -93,6 +94,7 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
           </View>
         </View>
       </View>
+      {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
     </Pressable>
   );
 }
@@ -108,6 +110,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
   const now = useGameClock(1000);
   const { t } = useTranslation('hotel');
   const isFull = visitorCount >= lobbyCapacity;
+  const isDark = useColorScheme() === 'dark';
   const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
@@ -154,6 +157,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
           </View>
         </View>
       </View>
+      {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
     </Pressable>
   );
 }
@@ -168,6 +172,11 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 6,
     backgroundColor: '#fff',
+  },
+  darkOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0,0,0,0.30)',
+    borderRadius: 16,
   },
   header: {
     flexDirection: 'row',

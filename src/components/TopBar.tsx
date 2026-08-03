@@ -72,7 +72,7 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
           <View style={styles.nameColumn}>
             <Text style={[styles.nameText, { color: theme.text }]}>{name}</Text>
             {revenuePerMin !== undefined && (
-              <View style={[styles.revenuePill, { backgroundColor: theme.surface }]}>
+              <View style={[styles.revenuePill, { backgroundColor: theme.surfaceElevated }]}>
                 <CoinIcon size={12} />
                 <Text style={styles.revenuePillText}>{revenuePerMin} /min</Text>
               </View>
@@ -81,11 +81,11 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
         </View>
 
         <View style={styles.currencySection}>
-          <View style={[styles.coinBadge, { backgroundColor: theme.surface }]}>
+          <View style={[styles.coinBadge, { backgroundColor: theme.surfaceElevated }]}>
             <CoinIcon size={18} />
             <Text style={styles.coinText}>{coins}</Text>
           </View>
-          <Pressable style={[styles.gemBadge, { backgroundColor: theme.surface }]} onLongPress={onDevAddGems} delayLongPress={800}>
+          <Pressable style={[styles.gemBadge, { backgroundColor: theme.surfaceElevated }]} onLongPress={onDevAddGems} delayLongPress={800}>
             <GemIcon size={14} />
             <Text style={styles.gemText}>{gems}</Text>
           </Pressable>
