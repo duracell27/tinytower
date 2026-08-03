@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 import { formatNum } from '../utils/format';
 import type { QuickActionMode, FloorActionInfo } from '../utils/quickAction';
 
@@ -30,13 +30,14 @@ const MODE_CHIP_COLOR: Record<QuickActionMode, string> = {
 export default function QuickActionFloorRow({ floorId, floorName, mode, info }: Props) {
   const chipColor = MODE_CHIP_COLOR[mode];
   const summary = summaryText(mode, info);
+  const isDark = useColorScheme() === 'dark';
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, isDark && styles.rowDark]}>
       <View style={[styles.badge, { borderColor: chipColor }]}>
         <Text style={[styles.badgeText, { color: chipColor }]}>{floorId}</Text>
       </View>
-      <Text style={styles.name} numberOfLines={1}>{floorName}</Text>
+      <Text style={[styles.name, isDark && styles.nameDark]} numberOfLines={1}>{floorName}</Text>
       {summary !== '' && (
         <View style={[styles.chip, { backgroundColor: chipColor }]}>
           <Text style={styles.chipText}>{summary}</Text>
@@ -78,6 +79,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
     color: '#2A3040',
+  },
+  rowDark: {
+    backgroundColor: 'rgba(52,55,52,0.97)',
+  },
+  nameDark: {
+    color: '#DDE8D8',
   },
   chip: {
     borderRadius: 8,

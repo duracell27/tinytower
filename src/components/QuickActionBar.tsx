@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -70,6 +70,8 @@ function ModeIcon({ mode }: { mode: QuickActionMode }) {
 export default function QuickActionBar({ mode, info, visible, onHidden, onPress, onExit, onBulkAll }: Props) {
   const { t: tContent } = useTranslation('gameContent');
   const { colors } = MODE_COLORS[mode];
+  const isDark = useColorScheme() === 'dark';
+  const pillBg = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.92)';
 
   const bulkLabel = BULK_LABEL[mode];
 
@@ -136,7 +138,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
     <Animated.View style={[styles.wrapper, animatedStyle]}>
       <Pressable
         onPress={onExit}
-        style={({ pressed }) => [styles.exitBtn, pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => [styles.exitBtn, { backgroundColor: pillBg }, pressed && { opacity: 0.7 }]}
       >
         <Text style={styles.exitIcon}>✕</Text>
       </Pressable>
@@ -144,7 +146,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
       {onBulkAll && bulkLabel && (
         <Pressable
           onPress={onBulkAll}
-          style={({ pressed }) => [styles.bulkBtn, pressed && { opacity: 0.7 }]}
+          style={({ pressed }) => [styles.bulkBtn, { backgroundColor: pillBg }, pressed && { opacity: 0.7 }]}
         >
           <View style={styles.bulkContent}>
             <Text style={styles.bulkLabelText}>{bulkLabel}</Text>
