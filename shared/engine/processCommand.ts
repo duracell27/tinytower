@@ -3,6 +3,7 @@ import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getFloorSpeci
 import { processLobbyCommand } from './lobbyCommands';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress } from '../config/dailyTasksConfig';
 import { BUSINESS_UPGRADE_COSTS } from '../config/businessUpgradeCosts';
+import { FLOOR_STAR_MULTIPLIERS } from '../config/floorUpgradeConfig';
 
 export interface ProcessResult {
   success: boolean;
@@ -101,6 +102,11 @@ export function processCommand(
       return handleClaimDailyTask(state, command, playerLevel);
     case 'upgrade_business_category':
       return handleUpgradeBusinessCategory(state, command);
+    case 'upgrade_floor':
+      return handleUpgradeFloor(state, command, config);
+    default:
+      const exhaustive: never = command;
+      return { success: false, state, error: `Unknown command type: ${(exhaustive as any).type}` };
   }
 }
 
@@ -459,6 +465,11 @@ function resolveAvailableTypes(state: GameState, config: GameConfig, floorId: nu
   return floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
 }
 
+function getFloorStarMultiplier(state: GameState, floorId: number) {
+  const stars = state.floorStars?.[String(floorId)] ?? 0;
+  return FLOOR_STAR_MULTIPLIERS[stars] ?? FLOOR_STAR_MULTIPLIERS[0];
+}
+
 function handleBuy(
   state: GameState,
   command: Extract<Command, { type: 'buy' }>,
@@ -497,7 +508,8 @@ function handleBuy(
   }
 
   const discount = getFloorDiscount(state.workers, command.floorId);
-  const effectiveCost = Math.floor(typeConfig.buyCost * (1 - discount));
+  const starMult = getFloorStarMultiplier(state, command.floorId);
+  const effectiveCost = Math.floor(typeConfig.buyCost * starMult.cost * (1 - discount));
 
   if (state.balance < effectiveCost) {
     return { success: false, state, error: 'Insufficient balance' };
@@ -580,21 +592,23 @@ function handleCollect(
   const typeConfig = config.productionTypes[production.typeId];
   if (!typeConfig) return { success: false, state, error: 'Unknown production type' };
 
-  if (now - production.stageStartedAt < typeConfig.sellDuration) {
+  const floorId = state.floors[floorIdx].id;
+  const starMult = getFloorStarMultiplier(state, floorId);
+  const effectiveSellDuration = typeConfig.sellDuration * starMult.time;
+  if (now - production.stageStartedAt < effectiveSellDuration) {
     return { success: false, state, error: 'Sale not complete' };
   }
 
-  const floorId = state.floors[floorIdx].id;
   const floorType = resolveFloorType(state, config, floorId);
   const workerMultiplier = getRevenueMultiplier(worker, floorType, production.typeId);
   const specialistBonusPercent = Math.round(getFloorSpecialistBonus(state.workers, floorId) * 100);
   const categoryBonus = (state.businessUpgrades?.[floorType as keyof typeof state.businessUpgrades] ?? 0) * 5;
 
   const coinMultiplier = 1 + (bonuses.coinPercent + specialistBonusPercent + categoryBonus) / 100;
-  const revenue = Math.floor(typeConfig.batchValue * coinMultiplier * workerMultiplier);
+  const revenue = Math.floor(typeConfig.batchValue * starMult.value * coinMultiplier * workerMultiplier);
 
   const xpMultiplier = 1 + bonuses.xpPercent / 100;
-  const xpGained = Math.floor(typeConfig.batchValue * xpMultiplier * workerMultiplier);
+  const xpGained = Math.floor(typeConfig.batchValue * starMult.value * xpMultiplier * workerMultiplier);
 
   return {
     success: true,
@@ -791,6 +805,15 @@ function handleUpgradeBusinessCategory(
       businessUpgrades: upgradedBusinessUpgrades,
     },
   };
+}
+
+function handleUpgradeFloor(
+  state: GameState,
+  command: Extract<Command, { type: 'upgrade_floor' }>,
+  config: GameConfig,
+): ProcessResult {
+  // TODO: Implement floor upgrade logic
+  return { success: false, state, error: 'Floor upgrade not implemented' };
 }
 
 function updateProduction(

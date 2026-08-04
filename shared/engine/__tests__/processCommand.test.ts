@@ -668,7 +668,7 @@ describe('open_floor command', () => {
 
   const stateUnderConstruction: Partial<GameState> = {
     gems: 10,
-    tools: { briks: 2, glass: 0, nails: 0, screw: 0 },
+    tools: { briks: 2, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
     underConstruction: [{
       floorId: 5, startedAt: 1000, durationMs: 60000,
       requiredTools: [{ tool: 'briks', count: 1 }], selectedFloorType: null,
@@ -702,7 +702,7 @@ describe('open_floor command', () => {
 
   it('fails when tools insufficient', () => {
     const state = makeState({
-      tools: { briks: 0, glass: 0, nails: 0, screw: 0 },
+      tools: { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
       underConstruction: stateUnderConstruction.underConstruction,
     });
     const result = processCommand(state, openFloorCmd(), testConfig, 62000);
@@ -1482,5 +1482,104 @@ describe('buy_all command', () => {
     expect(result.state.gems).toBe(2);
     expect(result.state.floors[0].productions[0].stage).toBe('DELIVERING'); // unchanged
     expect(result.state.floors[1].productions[0].stage).toBe('DELIVERING'); // bought
+  });
+});
+
+describe('floor star multipliers', () => {
+  describe('buy command with stars', () => {
+    it('multiplies buyCost by star cost multiplier (3★ = ×2.5)', () => {
+      // coffee_shop buyCost=10, star-3 cost multiplier=2.5 → floor(10*2.5*0.95)=23
+      const state = makeState({ balance: 100, floorStars: { '1': 3 } });
+      const worker = makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 });
+      const s = { ...state, workers: [worker] };
+      const result = processCommand(s, buyCmd({ typeId: 'coffee_shop' }), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.balance).toBe(77); // 100 - floor(10 * 2.5 * 0.95)
+    });
+
+    it('no multiplier when floorStars not set (0★)', () => {
+      const state = makeState({ balance: 100 });
+      const worker = makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 });
+      const s = { ...state, workers: [worker] };
+      const result = processCommand(s, buyCmd({ typeId: 'coffee_shop' }), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.balance).toBe(91); // 100 - floor(10 * 0.95)
+    });
+  });
+
+  describe('collect command with stars', () => {
+    it('multiplies batchValue by star value multiplier (2★ = ×3)', () => {
+      // coffee_shop batchValue=25, star-2 value=3, workerMultiplier=2.0 (good mood) → revenue=150
+      const state = makeState({ floorStars: { '1': 2 } });
+      const worker = makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 });
+      const s = {
+        ...state,
+        workers: [worker],
+        floors: [{
+          id: 1,
+          productions: [{
+            typeId: 'coffee_shop',
+            stage: 'SELLING' as const,
+            stageStartedAt: 0,
+          }, state.floors[0].productions[1]],
+        }],
+      };
+      const result = processCommand(
+        s,
+        { id: 'c1', type: 'collect', floorId: 1, slotIdx: 0, timestamp: 100_000 },
+        testConfig, 100_000,
+      );
+      expect(result.success).toBe(true);
+      expect(result.state.balance).toBe(s.balance + 150);
+    });
+
+    it('respects extended sellDuration (1★ = ×1.5 → 15000ms)', () => {
+      // coffee_shop sellDuration=10000, star-1 time=1.5 → effectiveSellDuration=15000
+      // at t=12000 (elapsed 12000ms) — not done yet
+      const state = makeState({ floorStars: { '1': 1 } });
+      const worker = makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 });
+      const s = {
+        ...state,
+        workers: [worker],
+        floors: [{
+          id: 1,
+          productions: [{
+            typeId: 'coffee_shop',
+            stage: 'SELLING' as const,
+            stageStartedAt: 0,
+          }, state.floors[0].productions[1]],
+        }],
+      };
+      const result = processCommand(
+        s,
+        { id: 'c2', type: 'collect', floorId: 1, slotIdx: 0, timestamp: 12_000 },
+        testConfig, 12_000,
+      );
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Sale not complete');
+    });
+
+    it('collect succeeds after extended sellDuration elapsed', () => {
+      const state = makeState({ floorStars: { '1': 1 } });
+      const worker = makeWorker({ assignedFloorId: 1, assignedSlotIdx: 0 });
+      const s = {
+        ...state,
+        workers: [worker],
+        floors: [{
+          id: 1,
+          productions: [{
+            typeId: 'coffee_shop',
+            stage: 'SELLING' as const,
+            stageStartedAt: 0,
+          }, state.floors[0].productions[1]],
+        }],
+      };
+      const result = processCommand(
+        s,
+        { id: 'c3', type: 'collect', floorId: 1, slotIdx: 0, timestamp: 15_001 },
+        testConfig, 15_001,
+      );
+      expect(result.success).toBe(true);
+    });
   });
 });
