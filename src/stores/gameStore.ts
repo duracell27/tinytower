@@ -12,6 +12,7 @@ import type { NewAchievementGrant, CategoryProgressState } from '../../shared/ty
 import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount } from '../../shared/config/dailyTasksConfig';
+import { FLOOR_UPGRADE_COSTS } from '../../shared/config/floorUpgradeConfig';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -30,6 +31,7 @@ function computeDeliverAllSummary(
 ): DeliverAllSummary {
   let guestCount = 0, businessmanCount = 0, delivererCount = 0, sellerCount = 0, builderCount = 0;
   let totalCoins = 0, totalGems = 0, newWorkers = 0;
+  const vipBreakdown: Partial<Record<string, number>> = {};
   let gemsCollected = dailyGemsCollected;
   const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
   let occupied = hotelOccupied;
@@ -39,6 +41,7 @@ function computeDeliverAllSummary(
     const targetFloor = v.targetFloor ?? 1;
     const isVip = v.isVip ?? false;
     const tipMultiplier = isVip ? 10 : 1;
+    if (isVip) vipBreakdown[role] = (vipBreakdown[role] ?? 0) + 1;
     switch (role) {
       case 'guest':
         guestCount++;
@@ -77,7 +80,7 @@ function computeDeliverAllSummary(
     }
   }
 
-  return { guestCount, businessmanCount, delivererCount, sellerCount, builderCount, totalCoins, totalGems, newWorkers };
+  return { guestCount, businessmanCount, delivererCount, sellerCount, builderCount, totalCoins, totalGems, newWorkers, vipBreakdown };
 }
 
 const COMMAND_QUEUE_CAP = 10_000;
@@ -123,6 +126,7 @@ export type DeliverAllSummary = {
   totalCoins: number;
   totalGems: number;
   newWorkers: number;
+  vipBreakdown: Partial<Record<'guest' | 'businessman' | 'deliverer' | 'seller' | 'builder', number>>;
 };
 
 export type PendingTaskReward = {
@@ -167,6 +171,7 @@ interface UIState {
   pendingPurchaseSuccess: PurchaseSuccessPayload | null;
   isHydrated: boolean;
   activeSheetCount: number;
+  floorUpgradeModal: { floorId: number } | null;
 }
 
 
@@ -245,6 +250,9 @@ interface GameActions {
   openSheet: () => void;
   closeSheet: () => void;
   reset: () => void;
+  upgradeFloor: (floorId: number) => void;
+  openFloorUpgradeModal: (floorId: number) => void;
+  closeFloorUpgradeModal: () => void;
 }
 
 type GameStore = GameState & PlayerStats & SyncState & UIState & GameActions;
@@ -259,14 +267,14 @@ function executeCommand(
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks,
+    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks, floorStars,
   } = store;
   let gameState: GameState = {
     balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks,
+    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks, floorStars: floorStars ?? {},
   };
   // Use real wall-clock time so daily reset fires even when spawn_visitor
   // timestamps are from yesterday (catch-up cadence).
@@ -374,6 +382,7 @@ function executeCommand(
     tokens: result.state.tokens,
     businessUpgrades: result.state.businessUpgrades,
     dailyTasks: result.state.dailyTasks,
+    floorStars: result.state.floorStars,
     playerXp: xpResult.playerXp,
     playerLevel: xpResult.playerLevel,
     levelUpQueue: [...store.levelUpQueue, ...levelUps],
@@ -415,6 +424,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   pendingPurchaseSuccess: null,
   isHydrated: false,
   activeSheetCount: 0,
+  floorUpgradeModal: null,
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -430,6 +440,36 @@ export const useGameStore = create<GameStore>((set, get) => ({
       timestamp: clock.now(),
     });
   },
+  upgradeFloor: (floorId) => {
+    const state = get();
+    const stars = state.floorStars?.[String(floorId)] ?? 0;
+    if (stars >= 5) return;
+
+    const cost = FLOOR_UPGRADE_COSTS[stars];
+    const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
+    const floorType = (floorConfig?.floorType ?? state.openedFloorTypes?.[String(floorId)]) as
+      'green' | 'blue' | 'yellow' | 'purple' | 'red' | undefined;
+    if (!floorType) return;
+
+    if (state.gems < cost.gems) {
+      state.showInsufficientResources({ currency: 'gems', need: cost.gems, have: state.gems });
+      return;
+    }
+    const tokenBalance = state.tokens[floorType] ?? 0;
+    if (tokenBalance < cost.tokens) {
+      state.showTokenInsufficient({ floorType, have: tokenBalance, need: cost.tokens });
+      return;
+    }
+
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'upgrade_floor',
+      floorId,
+      timestamp: clock.now(),
+    });
+  },
+  openFloorUpgradeModal: (floorId) => set({ floorUpgradeModal: { floorId } }),
+  closeFloorUpgradeModal: () => set({ floorUpgradeModal: null }),
   speedUpConstruction: (floorId) => {
     const state = get();
     const now = clock.now();
@@ -577,6 +617,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     dailyTasks: { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
     isHydrated: false,
     activeSheetCount: 0,
+    floorUpgradeModal: null,
   }),
 
   buy: (floorId, slotIdx, typeId) => {
@@ -1033,6 +1074,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     tokens: state.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     businessUpgrades: state.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     dailyTasks: state.dailyTasks ?? { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
+    floorStars: state.floorStars ?? {},
   }),
 
   reconcile: (serverState, newVersion, ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
@@ -1145,6 +1187,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     tokens:     serverState.tokens     ?? cur.tokens,
     businessUpgrades: serverState.businessUpgrades ?? cur.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+    floorStars: serverState.floorStars ?? cur.floorStars ?? {},
     dailyTasks: (() => {
       const base = serverState.dailyTasks ?? cur.dailyTasks;
       const pendingClaims = cur.commandQueue
