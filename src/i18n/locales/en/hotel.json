@@ -1,4 +1,15 @@
 {
+  "floorUpgrade": {
+    "title": "Upgrade Floor",
+    "currentStars": "Current level",
+    "nextUpgrade": "Next upgrade",
+    "cost": "Cost",
+    "gems": "gems",
+    "tokens": "tokens",
+    "upgradeBtn": "Upgrade",
+    "maxLevel": "Max Level Reached",
+    "close": "Close"
+  },
   "floorCard": {
     "productFallback": "Product {{index}}"
   },
@@ -121,7 +132,12 @@
       "deliverers": "📦 Deliverers: {{count}}",
       "sellers": "🛒 Sellers: {{count}}",
       "builders": "🏗️ Builders: {{count}} (materials added to warehouse)",
-      "newWorkers": "🏨 New Workers: {{count}}"
+      "newWorkers": "🏨 New Workers: {{count}}",
+      "vip_guest": "⭐ VIP Guests: {{count}}",
+      "vip_businessman": "⭐ VIP Businessmen: {{count}}",
+      "vip_deliverer": "⭐ VIP Deliverers: {{count}}",
+      "vip_seller": "⭐ VIP Sellers: {{count}}",
+      "vip_builder": "⭐ VIP Builders: {{count}}"
     },
     "done": "Done"
   },
