@@ -212,7 +212,7 @@ function FloorStarsRow({ avg }: { avg: number }) {
 }
 
 const starStyles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 3, alignSelf: 'center' },
+  row: { flexDirection: 'row', gap: 4, marginBottom: 10 },
   star: { width: 20, height: 20 },
 });
 
@@ -309,15 +309,13 @@ export default function ProfileScreen() {
     <AppBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
+          <FloorStarsRow avg={isHydrated ? avgStars : 0} />
           <View style={styles.profileRow}>
-            <View style={styles.avatarCol}>
-              <FloorStarsRow avg={isHydrated ? avgStars : 0} />
-              <Image
-                source={getUserIcon(playerLevel)}
-                style={styles.avatar}
-                contentFit="cover"
-              />
-            </View>
+            <Image
+              source={getUserIcon(playerLevel)}
+              style={styles.avatar}
+              contentFit="cover"
+            />
             <View style={styles.profileInfo}>
               <Text style={[styles.name, { color: theme.text }]}>{player?.playerName ?? t('profile.guestFallbackName')}</Text>
               <Text style={[styles.email, { color: theme.textMuted }]}>{player?.email ?? ''}</Text>
@@ -582,10 +580,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'stretch',
     gap: 16,
-  },
-  avatarCol: {
-    alignItems: 'center',
-    gap: 6,
   },
   profileInfo: {
     flex: 1,
