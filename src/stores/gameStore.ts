@@ -172,6 +172,7 @@ interface UIState {
   isHydrated: boolean;
   activeSheetCount: number;
   floorUpgradeModal: { floorId: number } | null;
+  productionDetailModal: { floorId: number; slotIdx: number } | null;
 }
 
 
@@ -253,6 +254,8 @@ interface GameActions {
   upgradeFloor: (floorId: number) => void;
   openFloorUpgradeModal: (floorId: number) => void;
   closeFloorUpgradeModal: () => void;
+  openProductionDetailModal: (floorId: number, slotIdx: number) => void;
+  closeProductionDetailModal: () => void;
 }
 
 type GameStore = GameState & PlayerStats & SyncState & UIState & GameActions;
@@ -425,6 +428,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   isHydrated: false,
   activeSheetCount: 0,
   floorUpgradeModal: null,
+  productionDetailModal: null,
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -470,6 +474,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   openFloorUpgradeModal: (floorId) => set({ floorUpgradeModal: { floorId } }),
   closeFloorUpgradeModal: () => set({ floorUpgradeModal: null }),
+  openProductionDetailModal: (floorId, slotIdx) =>
+    set({ productionDetailModal: { floorId, slotIdx } }),
+  closeProductionDetailModal: () => set({ productionDetailModal: null }),
   speedUpConstruction: (floorId) => {
     const state = get();
     const now = clock.now();
@@ -618,6 +625,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     isHydrated: false,
     activeSheetCount: 0,
     floorUpgradeModal: null,
+    productionDetailModal: null,
   }),
 
   buy: (floorId, slotIdx, typeId) => {

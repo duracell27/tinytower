@@ -125,3 +125,18 @@ describe('hydrate migration', () => {
     expect(state.dailyTipsStage2Claimed).toBe(false);
   });
 });
+
+describe('productionDetailModal', () => {
+  it('opens with floorId and slotIdx', () => {
+    const store = useGameStore.getState();
+    store.openProductionDetailModal(5, 1);
+    expect(useGameStore.getState().productionDetailModal).toEqual({ floorId: 5, slotIdx: 1 });
+  });
+
+  it('closes by setting to null', () => {
+    const store = useGameStore.getState();
+    store.openProductionDetailModal(5, 1);
+    store.closeProductionDetailModal();
+    expect(useGameStore.getState().productionDetailModal).toBeNull();
+  });
+});
