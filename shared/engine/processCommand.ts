@@ -337,7 +337,11 @@ function handleFireWorker(
   if (production && (production.stage === 'DELIVERING' || production.stage === 'SELLING')) {
     const typeConfig = production.typeId ? config.productionTypes[production.typeId] : null;
     if (typeConfig) {
-      const duration = production.stage === 'DELIVERING' ? typeConfig.deliveryDuration : typeConfig.sellDuration;
+      const floorId = state.floors[floorIdx].id;
+      const starMult = getFloorStarMultiplier(state, floorId);
+      const duration = production.stage === 'DELIVERING'
+        ? typeConfig.deliveryDuration
+        : typeConfig.sellDuration * starMult.time;
       if (duration - (now - production.stageStartedAt) > 0) {
         return { success: false, state, error: 'Cannot fire during active production' };
       }
@@ -748,7 +752,11 @@ function handleFireAndEvictWorker(
   if (production && (production.stage === 'DELIVERING' || production.stage === 'SELLING')) {
     const typeConfig = production.typeId ? config.productionTypes[production.typeId] : null;
     if (typeConfig) {
-      const duration = production.stage === 'DELIVERING' ? typeConfig.deliveryDuration : typeConfig.sellDuration;
+      const floorId = state.floors[floorIdx].id;
+      const starMult = getFloorStarMultiplier(state, floorId);
+      const duration = production.stage === 'DELIVERING'
+        ? typeConfig.deliveryDuration
+        : typeConfig.sellDuration * starMult.time;
       if (duration - (now - production.stageStartedAt) > 0) {
         return { success: false, state, error: 'Cannot fire during active production' };
       }

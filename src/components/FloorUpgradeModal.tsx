@@ -21,6 +21,7 @@ export default function FloorUpgradeModal() {
   const floorStars = useGameStore((s) => s.floorStars);
   const gems = useGameStore((s) => s.gems);
   const tokens = useGameStore((s) => s.tokens);
+  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
 
   if (!modal) return null;
 
@@ -29,7 +30,7 @@ export default function FloorUpgradeModal() {
   const isMax = stars >= 5;
 
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
-  const floorType = (floorConfig?.floorType ?? '') as keyof typeof tokens;
+  const floorType = (floorConfig?.floorType ?? openedFloorTypes?.[String(floorId)] ?? '') as keyof typeof tokens;
   const floorName = (() => {
     if (!floorType || !floorConfig?.availableTypes[0]) return `Floor ${floorId}`;
     return gameConfig.floorTypes[floorType as string]?.businesses
