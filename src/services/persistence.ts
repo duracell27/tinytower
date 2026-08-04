@@ -62,6 +62,8 @@ export function loadGameState(): PersistedGameState | null {
       openedFloorTypes: parsed.openedFloorTypes ?? {},
       stats: parsed.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
       tokens: parsed.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+      businessUpgrades: parsed.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+      floorStars: parsed.floorStars ?? {},
       dailyTasks: parsed.dailyTasks ?? {
         progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
         claimed: [],
@@ -120,6 +122,8 @@ export function saveGameState(state: PersistedGameState): void {
     xpBonusPercent: state.xpBonusPercent ?? 0,
     categoryProgress: state.categoryProgress ?? {},
     tokens: state.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+    businessUpgrades: state.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+    floorStars: state.floorStars ?? {},
     dailyTasks: state.dailyTasks ?? {
       progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
       claimed: [],
