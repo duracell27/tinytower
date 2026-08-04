@@ -188,6 +188,34 @@ function buildCopyText(
   return lines.join('\n');
 }
 
+const STAR_FULL  = require('../../assets/img/starFull.png');
+const STAR_66    = require('../../assets/img/star66.png');
+const STAR_33    = require('../../assets/img/star33.png');
+const STAR_EMPTY = require('../../assets/img/starEmpty.png');
+
+function starSource(avg: number, idx: number) {
+  const rem = avg - idx;
+  if (rem >= 1)       return STAR_FULL;
+  if (rem >= 2 / 3)   return STAR_66;
+  if (rem >= 1 / 3)   return STAR_33;
+  return STAR_EMPTY;
+}
+
+function FloorStarsRow({ avg }: { avg: number }) {
+  return (
+    <View style={starStyles.row}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <Image key={i} source={starSource(avg, i)} style={starStyles.star} contentFit="contain" />
+      ))}
+    </View>
+  );
+}
+
+const starStyles = StyleSheet.create({
+  row: { flexDirection: 'row', gap: 2 },
+  star: { width: 13, height: 13 },
+});
+
 export default function ProfileScreen() {
   const { t } = useTranslation('tabs');
   const { t: tHotel } = useTranslation('hotel');
@@ -209,6 +237,7 @@ export default function ProfileScreen() {
   const workers = useGameStore((s) => s.workers);
   const dailyTasks = useGameStore((s) => s.dailyTasks);
   const floors = useGameStore((s) => s.floors);
+  const floorStars = useGameStore((s) => s.floorStars);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
   const tokens = useGameStore((s) => s.tokens);
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
@@ -241,6 +270,10 @@ export default function ProfileScreen() {
     if (cost.kind === 'gems') return gems >= cost.gems;
     return balance >= cost.coins && (tokens?.[ft] ?? 0) >= cost.tokens;
   });
+
+  const floorCount = floors.length;
+  const totalStars = Object.values(floorStars ?? {}).reduce((s, v) => s + v, 0);
+  const avgStars = floorCount > 0 ? totalStars / floorCount : 0;
 
   const [syncExpanded, setSyncExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -277,11 +310,14 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
           <View style={styles.profileRow}>
-            <Image
-              source={getUserIcon(playerLevel)}
-              style={styles.avatar}
-              contentFit="cover"
-            />
+            <View style={styles.avatarCol}>
+              <FloorStarsRow avg={isHydrated ? avgStars : 0} />
+              <Image
+                source={getUserIcon(playerLevel)}
+                style={styles.avatar}
+                contentFit="cover"
+              />
+            </View>
             <View style={styles.profileInfo}>
               <Text style={[styles.name, { color: theme.text }]}>{player?.playerName ?? t('profile.guestFallbackName')}</Text>
               <Text style={[styles.email, { color: theme.textMuted }]}>{player?.email ?? ''}</Text>
@@ -546,6 +582,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'stretch',
     gap: 16,
+  },
+  avatarCol: {
+    alignItems: 'center',
+    gap: 6,
   },
   profileInfo: {
     flex: 1,
