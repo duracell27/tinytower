@@ -9,6 +9,7 @@ import i18n from '../i18n';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
 import { getRevenueMultiplier } from '../../shared/engine/workerUtils';
 import { useGameStore } from '../stores/gameStore';
+import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { gameConfig } from '../../shared/config/gameConfig';
 import WorkerAvatar from './WorkerAvatar';
 import { shadeColor } from '../utils/color';
@@ -208,6 +209,11 @@ export default function ProductionCard({
     ? gameConfig.productionTypes[production.typeId] ?? null
     : null;
 
+  const floorStars = useGameStore((s) => s.floorStars);
+  const stars = floorStars?.[String(floorId)] ?? 0;
+  const starMult = FLOOR_STAR_MULTIPLIERS[stars] ?? FLOOR_STAR_MULTIPLIERS[0];
+  const effectiveSellDuration = typeConfig ? typeConfig.sellDuration * starMult.time : 0;
+
   // Get shirt color from floor type config
   const shirtColor = floorType && gameConfig.floorTypes[floorType]
     ? gameConfig.floorTypes[floorType].shirtColor
@@ -217,7 +223,7 @@ export default function ProductionCard({
   const levelBadgeBg = worker?.isSpecialist ? '#F5C842' : accentColor;
   const levelBadgeTextColor = worker?.isSpecialist ? '#fff' : '#fff';
 
-  const status = getProductionStatus(production, typeConfig, now, balance);
+  const status = getProductionStatus(production, typeConfig, now, balance, effectiveSellDuration || undefined);
   const { effectiveStage, timeRemaining, canAct } = status;
 
   const isDeliveryLocked =
@@ -244,7 +250,7 @@ export default function ProductionCard({
 
   // Compute discounted buy cost
   const effectiveCost = typeConfig
-    ? Math.floor(typeConfig.buyCost * (1 - (floorDiscount ?? 0)))
+    ? Math.floor(typeConfig.buyCost * starMult.cost * (1 - (floorDiscount ?? 0)))
     : 0;
   const hasDiscount = (floorDiscount ?? 0) > 0;
   const discountPercent = hasDiscount ? Math.round((floorDiscount ?? 0) * 100) : 0;
@@ -258,13 +264,13 @@ export default function ProductionCard({
   const specialistBonusPercent = Math.round((specialistBonus ?? 0) * 100);
   const categoryBonus = floorType ? (businessUpgrades?.[floorType as keyof typeof businessUpgrades] ?? 0) * 5 : 0;
   const effectiveRevenue = typeConfig
-    ? Math.floor(typeConfig.batchValue * (1 + (coinBonusPercent + specialistBonusPercent + categoryBonus) / 100) * multiplier)
+    ? Math.floor(typeConfig.batchValue * starMult.value * (1 + (coinBonusPercent + specialistBonusPercent + categoryBonus) / 100) * multiplier)
     : 0;
   const hasMultiplier = multiplier > 1;
 
   const isProgressTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING';
   const totalDur = isProgressTimer && typeConfig
-    ? (effectiveStage === 'DELIVERING' ? typeConfig.deliveryDuration : typeConfig.sellDuration)
+    ? (effectiveStage === 'DELIVERING' ? typeConfig.deliveryDuration : effectiveSellDuration)
     : 0;
 
   const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
@@ -361,7 +367,7 @@ export default function ProductionCard({
       break;
     case 'READY_TO_LIST':
       labelText = t('productionCard.actions.list');
-      subText = typeConfig ? formatDuration(typeConfig.sellDuration) : '';
+      subText = typeConfig ? formatDuration(effectiveSellDuration) : '';
       break;
     case 'SELLING':
       labelText = formatTime(timeRemaining);
