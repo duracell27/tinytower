@@ -59,6 +59,7 @@ export function loadGameState(): PersistedGameState | null {
         : parsed.underConstruction != null
           ? [parsed.underConstruction]
           : [],
+      dailyFillLobbyUses: parsed.dailyFillLobbyUses ?? 0,
       openedFloorTypes: parsed.openedFloorTypes ?? {},
       stats: parsed.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
       tokens: parsed.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
@@ -116,6 +117,7 @@ export function saveGameState(state: PersistedGameState): void {
     playerXp: state.playerXp ?? 0,
     tools: state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
     underConstruction: state.underConstruction ?? [],
+    dailyFillLobbyUses: state.dailyFillLobbyUses ?? 0,
     openedFloorTypes: state.openedFloorTypes ?? {},
     stats: state.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     coinBonusPercent: state.coinBonusPercent ?? 0,
