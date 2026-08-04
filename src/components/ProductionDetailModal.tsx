@@ -188,15 +188,16 @@ export default function ProductionDetailModal() {
       <Pressable style={styles.scrim} onPress={close} />
 
       <Animated.View style={[styles.sheet, sheetStyle]}>
-        {/* Drag handle */}
-        <GestureDetector gesture={panGesture}>
-          <View style={styles.handleRow}>
-            <View style={styles.handle} />
-          </View>
-        </GestureDetector>
+        {/* Colored top: handle + header */}
+        <View style={[styles.topSection, { backgroundColor: headerBg }]}>
+          <GestureDetector gesture={panGesture}>
+            <View style={styles.handleRow}>
+              <View style={styles.handle} />
+            </View>
+          </GestureDetector>
 
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: headerBg }]}>
+        <View style={styles.header}>
           {productImage && (
             <Image source={productImage} style={styles.productImage} contentFit="contain" />
           )}
@@ -216,6 +217,7 @@ export default function ProductionDetailModal() {
             <Text style={styles.closeBtnText}>✕</Text>
           </Pressable>
         </View>
+        </View>{/* /topSection */}
 
         <ScrollView
           style={styles.body}
@@ -379,6 +381,11 @@ const styles = StyleSheet.create({
     elevation: 16,
     paddingBottom: 20,
   },
+  topSection: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: 'hidden',
+  },
   handleRow: {
     alignItems: 'center',
     paddingTop: 12,
@@ -388,14 +395,15 @@ const styles = StyleSheet.create({
     width: 38,
     height: 4,
     borderRadius: 3,
-    backgroundColor: 'rgba(0,0,0,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.45)',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingTop: 4,
+    paddingBottom: 14,
   },
   productImage: {
     width: 48,

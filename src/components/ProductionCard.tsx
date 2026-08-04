@@ -426,7 +426,7 @@ export default function ProductionCard({
     <Pressable
       style={[styles.card, { backgroundColor: cardBg }]}
       onLongPress={onLongPress}
-      delayLongPress={2000}
+      delayLongPress={800}
     >
       {/* Title */}
       <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
@@ -486,7 +486,7 @@ export default function ProductionCard({
         <Pressable
           onPress={isDeliveryLocked ? undefined : (canAct ? handleAction : undefined)}
           onLongPress={onLongPress}
-          delayLongPress={2000}
+          delayLongPress={800}
           style={({ pressed }) => [
             styles.actionButton,
             { backgroundColor: resolvedBtnConfig.color, shadowColor: resolvedBtnConfig.shadowColor },
