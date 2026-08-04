@@ -110,6 +110,7 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
   const gems = useGameStore((s) => s.gems);
   const floorStars = useGameStore((s) => s.floorStars);
   const openFloorUpgradeModal = useGameStore((s) => s.openFloorUpgradeModal);
+  const openProductionDetailModal = useGameStore((s) => s.openProductionDetailModal);
   const starCount = floorStars?.[String(floorId)] ?? 0;
   const dynamicFloorType = openedFloorTypes?.[String(floorId)];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
@@ -196,6 +197,11 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
               onHire={onHireSlot}
               deliveryLockMs={deliveryLockMs}
               gems={gems}
+              onLongPress={
+                slotWorker
+                  ? () => openProductionDetailModal(floorId, idx)
+                  : undefined
+              }
             />
           );
         })}

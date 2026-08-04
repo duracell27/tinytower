@@ -181,6 +181,7 @@ interface ProductionCardProps {
   onHire?: (floorId: number, slotIdx: number) => void;
   deliveryLockMs?: number;   // NEW
   gems: number;
+  onLongPress?: () => void;
 }
 
 export default function ProductionCard({
@@ -202,6 +203,7 @@ export default function ProductionCard({
   onHire,
   deliveryLockMs,
   gems,
+  onLongPress,
 }: ProductionCardProps) {
   const router = useRouter();
 
@@ -421,7 +423,11 @@ export default function ProductionCard({
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: cardBg }]}>
+    <Pressable
+      style={[styles.card, { backgroundColor: cardBg }]}
+      onLongPress={onLongPress}
+      delayLongPress={2000}
+    >
       {/* Title */}
       <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
         {productTitle}
@@ -550,7 +556,7 @@ export default function ProductionCard({
         ) : null}
       </View>
 
-    </View>
+    </Pressable>
   );
 }
 
