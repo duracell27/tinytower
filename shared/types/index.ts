@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ProductionStageSchema, ProductionSchema } from '../schemas/production';
-import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, UpgradeToSpecialistCommandSchema, FireAndEvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema, ExpandHotelCommandSchema, BuyFloorCommandSchema, OpenFloorCommandSchema, SpeedUpDeliveryCommandSchema, EvictLowLevelWorkersCommandSchema, CollectAllCommandSchema, ListAllCommandSchema, BuyAllCommandSchema, ClaimDailyTaskCommandSchema, UpgradeBusinessCategoryCommandSchema } from '../schemas/command';
+import { CommandSchema, BuyCommandSchema, ListCommandSchema, CollectCommandSchema, AssignWorkerCommandSchema, FireWorkerCommandSchema, EvictWorkerCommandSchema, UpgradeToSpecialistCommandSchema, FireAndEvictWorkerCommandSchema, SpawnVisitorCommandSchema, LiftVisitorCommandSchema, CollectTipCommandSchema, DeliverAllCommandSchema, UpgradeElevatorCommandSchema, UpgradeLobbyCommandSchema, ClaimDailyRewardCommandSchema, ExpandHotelCommandSchema, BuyFloorCommandSchema, OpenFloorCommandSchema, SpeedUpDeliveryCommandSchema, EvictLowLevelWorkersCommandSchema, CollectAllCommandSchema, ListAllCommandSchema, BuyAllCommandSchema, ClaimDailyTaskCommandSchema, UpgradeBusinessCategoryCommandSchema, UpgradeFloorCommandSchema } from '../schemas/command';
 import { GameConfigSchema, FloorConfigSchema, ProductionTypeConfigSchema, FloorTypeConfigSchema, LobbyConfigSchema, FloorUnlockConfigSchema } from '../schemas/gameConfig';
 import { GameStateSchema, UnderConstructionSchema, ToolsSchema, StatsSchema, TokensSchema, DailyTaskProgressSchema, DailyTasksSchema, BusinessUpgradesSchema } from '../schemas/gameState';
 import { WorkerSchema } from '../schemas/worker';
@@ -34,6 +34,7 @@ export type ListAllCommand = z.infer<typeof ListAllCommandSchema>;
 export type BuyAllCommand = z.infer<typeof BuyAllCommandSchema>;
 export type ClaimDailyTaskCommand = z.infer<typeof ClaimDailyTaskCommandSchema>;
 export type UpgradeBusinessCategoryCommand = z.infer<typeof UpgradeBusinessCategoryCommandSchema>;
+export type UpgradeFloorCommand = z.infer<typeof UpgradeFloorCommandSchema>;
 export type FloorUnlockConfig = z.infer<typeof FloorUnlockConfigSchema>;
 export type UnderConstructionState = z.infer<typeof UnderConstructionSchema>;
 export type ToolsState = z.infer<typeof ToolsSchema>;

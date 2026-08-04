@@ -455,7 +455,7 @@ describe('GameStateSchema with new fields', () => {
 
   it('defaults tools to zero when not provided', () => {
     const result = GameStateSchema.parse(minimalState);
-    expect(result.tools).toEqual({ briks: 0, glass: 0, nails: 0, screw: 0 });
+    expect(result.tools).toEqual({ briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 });
   });
 
   it('defaults underConstruction to null when not provided', () => {

@@ -220,6 +220,11 @@ export const UpgradeBusinessCategoryCommandSchema = TimestampedBaseSchema.extend
   floorType: z.enum(['green', 'blue', 'yellow', 'purple', 'red']),
 });
 
+export const UpgradeFloorCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('upgrade_floor'),
+  floorId: z.number().int().positive(),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -251,4 +256,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   BuyAllCommandSchema,
   ClaimDailyTaskCommandSchema,
   UpgradeBusinessCategoryCommandSchema,
+  UpgradeFloorCommandSchema,
 ]);
