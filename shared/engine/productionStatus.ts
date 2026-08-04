@@ -5,6 +5,7 @@ export function getProductionStatus(
   typeConfig: ProductionTypeConfig | null,
   now: number,
   balance: number,
+  sellDurationOverride?: number,
 ): DerivedStatus {
   if (!production.typeId || !typeConfig) {
     return { effectiveStage: 'EMPTY', timeRemaining: 0, canAct: true, actionLabel: null };
@@ -31,7 +32,8 @@ export function getProductionStatus(
       return { effectiveStage: 'READY_TO_LIST', timeRemaining: 0, canAct: true, actionLabel: 'List' };
 
     case 'SELLING': {
-      const remaining = Math.max(0, typeConfig.sellDuration - (now - production.stageStartedAt));
+      const sellDuration = sellDurationOverride ?? typeConfig.sellDuration;
+      const remaining = Math.max(0, sellDuration - (now - production.stageStartedAt));
       if (remaining <= 0) {
         return {
           effectiveStage: 'READY_TO_COLLECT',

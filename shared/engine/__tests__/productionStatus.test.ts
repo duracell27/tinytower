@@ -96,6 +96,26 @@ describe('getProductionStatus', () => {
       expect(status.effectiveStage).toBe('READY_TO_COLLECT');
       expect(status.canAct).toBe(true);
     });
+
+    it('SELLING: uses sellDurationOverride instead of typeConfig.sellDuration', () => {
+      // At t=12000, default sellDuration=10000 would be done, but override=15000 means still selling
+      const prod: Production = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 };
+      const status = getProductionStatus(prod, coffeeConfig, 12_000, 0, 15_000);
+      expect(status.effectiveStage).toBe('SELLING');
+      expect(status.timeRemaining).toBeGreaterThan(0);
+    });
+
+    it('SELLING: completes when override duration has elapsed', () => {
+      const prod: Production = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 };
+      const status = getProductionStatus(prod, coffeeConfig, 15_001, 0, 15_000);
+      expect(status.effectiveStage).toBe('READY_TO_COLLECT');
+    });
+
+    it('SELLING: default behavior unchanged when no override given', () => {
+      const prod: Production = { typeId: 'coffee_shop', stage: 'SELLING', stageStartedAt: 0 };
+      const status = getProductionStatus(prod, coffeeConfig, 10_001, 0);
+      expect(status.effectiveStage).toBe('READY_TO_COLLECT');
+    });
   });
 
   describe('stored READY_TO_LIST / READY_TO_COLLECT stages', () => {
