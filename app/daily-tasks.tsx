@@ -135,6 +135,11 @@ export default function DailyTasksScreen() {
                 <Text style={styles.completionText}>
                   {t('dailyTasks.completedToday', { done: claimedCount })}
                 </Text>
+                {claimedCount >= 7 && (
+                  <Text style={styles.doubleBannerTomorrow}>
+                    {t('dailyTasks.doubleRewardTomorrow')}
+                  </Text>
+                )}
               </View>
             );
           }
@@ -336,6 +341,7 @@ const styles = StyleSheet.create({
   doubleBannerGoal:   { backgroundColor: '#E8F7E4', gap: 4 },
   doubleBannerText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', textAlign: 'center' },
   doubleBannerTextActive: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#B07A00' },
+  doubleBannerTomorrow: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#B07A00', textAlign: 'center' },
   doubleBannerGoalEmoji: { fontSize: 28, lineHeight: 34 },
   doubleBannerGoalTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#277A20', textAlign: 'center' },
   doubleBannerGoalSub:   { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#4A8A43', textAlign: 'center' },

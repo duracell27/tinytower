@@ -146,6 +146,7 @@
     "title": "Daily Tasks",
     "resetsIn": "Resets in {{time}}",
     "doubleReward": "⚡ Double rewards active today!",
+    "doubleRewardTomorrow": "🎉 Tomorrow will also be ×2!",
     "doubleRewardHint": "Complete 7 tasks today to earn ×2 rewards tomorrow!",
     "goalReachedTitle": "Daily goal reached!",
     "goalReachedSub": "Tomorrow all your task rewards will be doubled ×2",
