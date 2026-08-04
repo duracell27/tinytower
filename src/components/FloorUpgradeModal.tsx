@@ -24,14 +24,14 @@ export default function FloorUpgradeModal() {
   const { t } = useTranslation('hotel');
   const isDark = useColorScheme() === 'dark';
 
-  const modal           = useGameStore((s) => s.floorUpgradeModal);
-  const close           = useGameStore((s) => s.closeFloorUpgradeModal);
-  const upgradeFloor    = useGameStore((s) => s.upgradeFloor);
-  const floorStars      = useGameStore((s) => s.floorStars);
-  const gems            = useGameStore((s) => s.gems);
-  const tokens          = useGameStore((s) => s.tokens);
+  const modal            = useGameStore((s) => s.floorUpgradeModal);
+  const close            = useGameStore((s) => s.closeFloorUpgradeModal);
+  const upgradeFloor     = useGameStore((s) => s.upgradeFloor);
+  const floorStars       = useGameStore((s) => s.floorStars);
+  const gems             = useGameStore((s) => s.gems);
+  const tokens           = useGameStore((s) => s.tokens);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
-  const floors          = useGameStore((s) => s.floors);
+  const floors           = useGameStore((s) => s.floors);
 
   if (!modal) return null;
 
@@ -43,7 +43,6 @@ export default function FloorUpgradeModal() {
   const floorType   = (floorConfig?.floorType ?? openedFloorTypes?.[String(floorId)] ?? '') as keyof typeof tokens;
   const scheme      = FLOOR_TYPE_SCHEMES[floorType as string] ?? FLOOR_TYPE_SCHEMES.green;
 
-  // Resolve business name from first available typeId (works for static + dynamic floors)
   const storeFloor  = floors.find((f) => f.id === floorId);
   const firstTypeId = floorConfig?.availableTypes[0]
     ?? storeFloor?.productions.map((p) => p.typeId).find((id) => id != null)
@@ -54,20 +53,24 @@ export default function FloorUpgradeModal() {
     : `Floor ${floorId}`;
 
   const cost      = isMax ? null : FLOOR_UPGRADE_COSTS[stars];
-  const haveGems  = gems;
   const haveTok   = tokens[floorType] ?? 0;
-  const canAfford = cost ? haveGems >= cost.gems && haveTok >= cost.tokens : false;
-
+  const canAfford = cost ? gems >= cost.gems && haveTok >= cost.tokens : false;
   const tokenIcon = TOKEN_ICONS[floorType as string];
 
   return (
     <Modal transparent animationType="fade" visible onRequestClose={close}>
       <View style={styles.backdrop}>
-        <View style={[styles.card, isDark && styles.cardDark]}>
+        <View style={styles.card}>
 
-          {/* Colored header */}
-          <View style={[styles.header, { backgroundColor: scheme.color }]}>
-            <Text style={styles.headerTitle}>{floorName}</Text>
+          {/* Colored top strip — floor number + floor name */}
+          <View style={[styles.strip, { backgroundColor: scheme.color }]}>
+            <Text style={styles.stripTitle}>{floorId} {floorName}</Text>
+          </View>
+
+          {/* Body — bodyColor = background under cards on the floor */}
+          <View style={[styles.body, { backgroundColor: scheme.bodyColor }]}>
+
+            {/* Stars */}
             <View style={styles.starsRow}>
               {[0, 1, 2, 3, 4].map((i) => (
                 <Image
@@ -78,59 +81,28 @@ export default function FloorUpgradeModal() {
                 />
               ))}
             </View>
-          </View>
 
-          {/* Body */}
-          <View style={styles.body}>
+            {/* Description */}
+            <Text style={styles.description}>
+              {t('floorUpgrade.description')}
+            </Text>
+
             {isMax ? (
               <Text style={[styles.maxText, { color: scheme.color }]}>
                 {t('floorUpgrade.maxLevel')}
               </Text>
             ) : (
               <>
-                <Text style={[styles.sectionLabel, isDark && styles.textMuted]}>
-                  {t('floorUpgrade.cost')}
-                </Text>
-
                 {/* Cost row */}
-                <View style={styles.resourceRow}>
-                  <View style={styles.resourceItem}>
-                    <Image source={DIAMOND} style={styles.resourceIcon} contentFit="contain" />
-                    <Text style={[styles.resourceVal, isDark && styles.textLight]}>{cost!.gems}</Text>
+                <View style={[styles.costRow, { backgroundColor: scheme.cardBg }]}>
+                  <View style={styles.costItem}>
+                    <Image source={DIAMOND} style={styles.costIcon} contentFit="contain" />
+                    <Text style={styles.costVal}>{cost!.gems}</Text>
                   </View>
                   {tokenIcon && (
-                    <View style={styles.resourceItem}>
-                      <Image source={tokenIcon} style={styles.resourceIcon} contentFit="contain" />
-                      <Text style={[styles.resourceVal, isDark && styles.textLight]}>{cost!.tokens}</Text>
-                    </View>
-                  )}
-                </View>
-
-                {/* Balance row */}
-                <Text style={[styles.sectionLabel, isDark && styles.textMuted]}>
-                  {t('floorUpgrade.balance')}
-                </Text>
-                <View style={styles.resourceRow}>
-                  <View style={styles.resourceItem}>
-                    <Image source={DIAMOND} style={styles.resourceIcon} contentFit="contain" />
-                    <Text style={[
-                      styles.resourceVal,
-                      isDark && styles.textLight,
-                      haveGems < cost!.gems && styles.insufficient,
-                    ]}>
-                      {haveGems}
-                    </Text>
-                  </View>
-                  {tokenIcon && (
-                    <View style={styles.resourceItem}>
-                      <Image source={tokenIcon} style={styles.resourceIcon} contentFit="contain" />
-                      <Text style={[
-                        styles.resourceVal,
-                        isDark && styles.textLight,
-                        haveTok < cost!.tokens && styles.insufficient,
-                      ]}>
-                        {haveTok}
-                      </Text>
+                    <View style={styles.costItem}>
+                      <Image source={tokenIcon} style={styles.costIcon} contentFit="contain" />
+                      <Text style={styles.costVal}>{cost!.tokens}</Text>
                     </View>
                   )}
                 </View>
@@ -145,7 +117,7 @@ export default function FloorUpgradeModal() {
               </>
             )}
 
-            <TouchableOpacity style={styles.closeBtn} onPress={close}>
+            <TouchableOpacity onPress={close} style={styles.closeBtn}>
               <Text style={[styles.closeBtnText, isDark && styles.textMuted]}>
                 {t('floorUpgrade.close')}
               </Text>
@@ -169,73 +141,67 @@ const styles = StyleSheet.create({
     width: 300,
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#fff',
   },
-  cardDark: {
-    backgroundColor: '#1e1e1e',
-  },
-  header: {
-    paddingTop: 20,
-    paddingBottom: 16,
+  strip: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    gap: 10,
   },
-  headerTitle: {
+  stripTitle: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 20,
     color: '#fff',
-    textShadowColor: 'rgba(0,0,0,0.25)',
+    textShadowColor: 'rgba(0,0,0,0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
-  },
-  starsRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  starImg: {
-    width: 28,
-    height: 28,
   },
   body: {
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 16,
+    paddingTop: 20,
     paddingBottom: 20,
-    gap: 10,
+    gap: 14,
   },
-  sectionLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13,
-    color: '#888',
-    alignSelf: 'flex-start',
-  },
-  resourceRow: {
+  starsRow: {
     flexDirection: 'row',
-    gap: 24,
-    alignSelf: 'flex-start',
+    gap: 8,
   },
-  resourceItem: {
+  starImg: {
+    width: 34,
+    height: 34,
+  },
+  description: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 13,
+    color: '#555',
+    textAlign: 'center',
+    lineHeight: 18,
+    paddingHorizontal: 4,
+  },
+  costRow: {
+    flexDirection: 'row',
+    gap: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 0,
+  },
+  costItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 7,
   },
-  resourceIcon: {
-    width: 22,
-    height: 22,
+  costIcon: {
+    width: 26,
+    height: 26,
   },
-  resourceVal: {
+  costVal: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 18,
+    fontSize: 20,
     color: '#222',
-  },
-  textLight: {
-    color: '#f0f0f0',
   },
   textMuted: {
     color: '#888',
-  },
-  insufficient: {
-    color: '#E05050',
   },
   maxText: {
     fontFamily: 'Fredoka_700Bold',
@@ -244,9 +210,7 @@ const styles = StyleSheet.create({
   },
   upgradeBtn: {
     borderRadius: 14,
-    paddingHorizontal: 36,
-    paddingVertical: 11,
-    marginTop: 6,
+    paddingVertical: 12,
     alignSelf: 'stretch',
     alignItems: 'center',
   },
@@ -256,7 +220,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   closeBtn: {
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   closeBtnText: {
     fontFamily: 'Fredoka_600SemiBold',

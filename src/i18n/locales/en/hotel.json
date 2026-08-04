@@ -8,7 +8,7 @@
     "tokens": "tokens",
     "upgradeBtn": "Upgrade",
     "maxLevel": "Max Level Reached",
-    "balance": "You have",
+    "description": "Upgrading a floor increases storage capacity, revenue, and profitability",
     "close": "Close"
   },
   "floorCard": {

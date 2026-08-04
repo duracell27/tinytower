@@ -77,6 +77,15 @@ export default function DeliverAllModal({ visible, summary, onDismiss, asOverlay
                   <Text style={styles.rowLabel}>{t('deliverAll.rows.builders', { count: summary.builderCount })}</Text>
                 </View>
               )}
+              {(['guest', 'businessman', 'deliverer', 'seller', 'builder'] as const).map((role) => {
+                const count = summary.vipBreakdown[role];
+                if (!count) return null;
+                return (
+                  <View key={role} style={styles.row}>
+                    <Text style={styles.rowLabel}>{t(`deliverAll.rows.vip_${role}`, { count })}</Text>
+                  </View>
+                );
+              })}
               {summary.newWorkers > 0 && (
                 <View style={styles.row}>
                   <Text style={styles.rowLabel}>{t('deliverAll.rows.newWorkers', { count: summary.newWorkers })}</Text>

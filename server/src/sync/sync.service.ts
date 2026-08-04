@@ -676,6 +676,7 @@ export class SyncService {
         claimed: (s?.dailyTasksClaimed as string[]) ?? [],
         doubleRewardActive: s?.dailyTasksDoubleReward ?? false,
       },
+      floorStars: (s?.floorStars as Record<string, number>) ?? {},
     };
   }
 }
