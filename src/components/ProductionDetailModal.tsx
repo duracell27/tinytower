@@ -21,6 +21,7 @@ import { PRODUCT_IMAGES } from '../utils/productImages';
 import { FLOOR_TYPE_SCHEMES } from './FloorCard';
 import { shadeColor } from '../utils/color';
 import { formatNum } from '../utils/format';
+import { getProductionStatus } from '../../shared/engine/productionStatus';
 
 function formatDuration(ms: number): string {
   const totalSec = Math.round(ms / 1000);
@@ -43,6 +44,7 @@ export default function ProductionDetailModal() {
   const floorStars = useGameStore((s) => s.floorStars);
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
+  const balance = useGameStore((s) => s.balance);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
 
   if (!modal) return null;
@@ -92,11 +94,13 @@ export default function ProductionDetailModal() {
 
   const deliveryDuration = typeConfig?.deliveryDuration ?? 0;
   const effectiveSellDuration = typeConfig ? typeConfig.sellDuration * starMult.time : 0;
-  const totalCycleDuration = deliveryDuration + effectiveSellDuration;
   const revenuePerMin =
-    totalCycleDuration > 0
-      ? Math.round((effectiveRevenue / totalCycleDuration) * 60_000)
+    effectiveSellDuration > 0
+      ? Math.round((effectiveRevenue / effectiveSellDuration) * 60_000)
       : 0;
+
+  const status = getProductionStatus(production, typeConfig, Date.now(), balance, effectiveSellDuration || undefined);
+  const effectiveStage = status.effectiveStage;
 
   const effectiveCost = typeConfig
     ? Math.floor(typeConfig.buyCost * starMult.cost * (1 - discount))
@@ -132,6 +136,7 @@ export default function ProductionDetailModal() {
     READY_TO_LIST: t('productionDetail.status.READY_TO_LIST'),
     SELLING: t('productionDetail.status.SELLING'),
     READY_TO_COLLECT: t('productionDetail.status.READY_TO_COLLECT'),
+    EMPTY: t('productionDetail.status.EMPTY'),
   };
 
   return (
@@ -154,9 +159,16 @@ export default function ProductionDetailModal() {
                 {productTitle}
               </Text>
               <Text style={styles.statusLabel}>
-                {statusLabels[production.stage] ?? production.stage}
+                {statusLabels[effectiveStage] ?? effectiveStage}
               </Text>
             </View>
+            <Pressable
+              onPress={close}
+              style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.6 }]}
+              hitSlop={8}
+            >
+              <Text style={styles.closeBtnText}>✕</Text>
+            </Pressable>
           </View>
 
           <ScrollView
@@ -487,5 +499,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 11.5,
     color: '#72C24F',
+  },
+  closeBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: '#fff',
   },
 });

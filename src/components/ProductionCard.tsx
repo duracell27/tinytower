@@ -485,6 +485,8 @@ export default function ProductionCard({
       <View onLayout={(e) => setBtnSize(e.nativeEvent.layout)}>
         <Pressable
           onPress={isDeliveryLocked ? undefined : (canAct ? handleAction : undefined)}
+          onLongPress={onLongPress}
+          delayLongPress={2000}
           style={({ pressed }) => [
             styles.actionButton,
             { backgroundColor: resolvedBtnConfig.color, shadowColor: resolvedBtnConfig.shadowColor },
