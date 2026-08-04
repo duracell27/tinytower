@@ -108,10 +108,11 @@ export default function GameScreen() {
   const openedFloorTypes  = useGameStore((s) => s.openedFloorTypes);
   const coinBonusPercent  = useGameStore((s) => s.coinBonusPercent);
   const businessUpgrades  = useGameStore((s) => s.businessUpgrades);
+  const floorStars        = useGameStore((s) => s.floorStars);
 
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent),
-    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars],
   );
 
   const hasBetterWorker = React.useMemo(
@@ -301,22 +302,22 @@ export default function GameScreen() {
 
   // Highest-priority mode currently available — only computed when not already in a mode
   const availableMode = React.useMemo(
-    () => (quickActionMode !== null ? null : getAvailableMode(floors, workers, now)),
-    [quickActionMode, floors, workers, now],
+    () => (quickActionMode !== null ? null : getAvailableMode(floors, workers, now, floorStars ?? {})),
+    [quickActionMode, floors, workers, now, floorStars],
   );
 
   // Count of floors for the FAB badge (only when not yet in a mode)
   const availableFloorCount = React.useMemo(
-    () => (availableMode !== null ? getFloorsForMode(availableMode, floors, workers, now).length : 0),
-    [availableMode, floors, workers, now],
+    () => (availableMode !== null ? getFloorsForMode(availableMode, floors, workers, now, floorStars ?? {}).length : 0),
+    [availableMode, floors, workers, now, floorStars],
   );
 
   // Always compute QA floors — even before the mode is activated — so the overlay
   // is pre-rendered and pre-scrolled in the background before the user opens it.
   const precomputedMode = quickActionMode ?? availableMode;
   const filteredFloors = React.useMemo(
-    () => (precomputedMode !== null ? getFloorsForMode(precomputedMode, floors, workers, now) : []),
-    [precomputedMode, floors, workers, now],
+    () => (precomputedMode !== null ? getFloorsForMode(precomputedMode, floors, workers, now, floorStars ?? {}) : []),
+    [precomputedMode, floors, workers, now, floorStars],
   );
 
   const qaItems = React.useMemo(
@@ -336,9 +337,9 @@ export default function GameScreen() {
   const bottomFloorInfo = React.useMemo(
     () =>
       bottomFloor !== null && quickActionMode !== null
-        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers, coinBonusPercent, openedFloorTypes ?? {}, businessUpgrades ?? {})
+        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers, coinBonusPercent, openedFloorTypes ?? {}, businessUpgrades ?? {}, floorStars ?? {})
         : null,
-    [bottomFloor, quickActionMode, now, workers, coinBonusPercent, openedFloorTypes, businessUpgrades],
+    [bottomFloor, quickActionMode, now, workers, coinBonusPercent, openedFloorTypes, businessUpgrades, floorStars],
   );
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -490,9 +491,9 @@ export default function GameScreen() {
     const liveNow = Date.now();
     const { floors: liveFloors, workers: liveWorkers, balance: liveBalance,
       coinBonusPercent: liveCoinBonus, openedFloorTypes: liveOpenedTypes,
-      businessUpgrades: liveUpgrades } = useGameStore.getState();
+      businessUpgrades: liveUpgrades, floorStars: liveFloorStars } = useGameStore.getState();
 
-    const liveFilteredFloors = getFloorsForMode(quickActionMode, liveFloors, liveWorkers, liveNow);
+    const liveFilteredFloors = getFloorsForMode(quickActionMode, liveFloors, liveWorkers, liveNow, liveFloorStars ?? {});
     const liveBottomFloor = liveFilteredFloors.length > 0
       ? liveFilteredFloors[liveFilteredFloors.length - 1]
       : null;
@@ -526,7 +527,7 @@ export default function GameScreen() {
     if (quickActionMode === 'buy') {
       const liveBuyInfo = getFloorActionInfo(
         'buy', liveBottomFloor, liveNow, liveWorkers,
-        liveCoinBonus, liveOpenedTypes ?? {}, liveUpgrades ?? {},
+        liveCoinBonus, liveOpenedTypes ?? {}, liveUpgrades ?? {}, liveFloorStars ?? {},
       );
       if (!liveBuyInfo || liveBuyInfo.mode !== 'buy') return;
       if (liveBalance < liveBuyInfo.buyCost) {

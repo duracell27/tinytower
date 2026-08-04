@@ -80,6 +80,7 @@ export default function JobPickerSheet({
   const workers = useGameStore((s) => s.workers);
   const storeFloors = useGameStore((s) => s.floors);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const floorStars = useGameStore((s) => s.floorStars ?? {});
 
   useEffect(() => {
     if (visible) {
@@ -204,7 +205,7 @@ export default function JobPickerSheet({
       if (currentFloor) {
         const prod = currentFloor.productions[w.assignedSlotIdx!];
         if (prod?.stage === 'DELIVERING' || prod?.stage === 'SELLING') {
-          const active = getProductionTimeRemaining(currentFloor, w.assignedSlotIdx!, clock.now());
+          const active = getProductionTimeRemaining(currentFloor, w.assignedSlotIdx!, clock.now(), floorStars);
           if (active && active.remainingMs > 0) {
             const msg = active.stage === 'DELIVERING'
               ? t('workersPanel.fireBlockedDelivering', { name: w.name, time: formatTimeShort(active.remainingMs) })
@@ -238,7 +239,7 @@ export default function JobPickerSheet({
       const production = floor.productions[occupant.assignedSlotIdx!];
       const stage = production?.stage;
       if (stage === 'DELIVERING' || stage === 'SELLING') {
-        const active = getProductionTimeRemaining(floor, occupant.assignedSlotIdx!, clock.now());
+        const active = getProductionTimeRemaining(floor, occupant.assignedSlotIdx!, clock.now(), floorStars);
         if (active && active.remainingMs > 0) {
           const msg = active.stage === 'DELIVERING'
             ? t('jobPicker.replaceBlockedDelivering', { name: occupant.name, time: formatTimeShort(active.remainingMs) })

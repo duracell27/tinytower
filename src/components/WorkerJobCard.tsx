@@ -13,6 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { gameConfig } from '../../shared/config/gameConfig';
+import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
 import type { Worker, Floor } from '../../shared/types';
 import WorkerAvatar from './WorkerAvatar';
@@ -62,6 +63,7 @@ export function getProductionTimeRemaining(
   floor: Floor,
   slotIdx: number,
   now: number,
+  floorStars?: Record<string, number>,
 ): { stage: 'DELIVERING' | 'SELLING'; remainingMs: number } | null {
   const production = floor.productions[slotIdx];
   if (!production || !production.typeId) return null;
@@ -73,7 +75,9 @@ export function getProductionTimeRemaining(
     if (remaining > 0) return { stage: 'DELIVERING', remainingMs: remaining };
   }
   if (production.stage === 'SELLING') {
-    const remaining = typeConfig.sellDuration - (now - production.stageStartedAt);
+    const stars = floorStars?.[String(floor.id)] ?? 0;
+    const starTimeMultiplier = FLOOR_STAR_MULTIPLIERS[stars]?.time ?? 1;
+    const remaining = typeConfig.sellDuration * starTimeMultiplier - (now - production.stageStartedAt);
     if (remaining > 0) return { stage: 'SELLING', remainingMs: remaining };
   }
   return null;

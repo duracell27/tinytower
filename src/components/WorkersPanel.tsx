@@ -170,6 +170,7 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
   const fireAndEvictWorker = useGameStore((s) => s.fireAndEvictWorker);
   const upgradeToSpecialist = useGameStore((s) => s.upgradeToSpecialist);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
+  const floorStars = useGameStore((s) => s.floorStars ?? {});
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
 
   useEffect(() => {
@@ -254,7 +255,7 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
       const stage = production?.stage;
 
       if (stage === 'DELIVERING' || stage === 'SELLING') {
-        const active = getProductionTimeRemaining(floor, worker.assignedSlotIdx!, now);
+        const active = getProductionTimeRemaining(floor, worker.assignedSlotIdx!, now, floorStars);
         if (active && active.remainingMs > 0) {
           const stageLabel = active.stage === 'DELIVERING'
             ? t('workersPanel.fireBlockedDelivering', { name: worker.name, time: formatTimeShort(active.remainingMs) })
