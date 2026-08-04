@@ -3,7 +3,7 @@ import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getFloorSpeci
 import { processLobbyCommand } from './lobbyCommands';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress } from '../config/dailyTasksConfig';
 import { BUSINESS_UPGRADE_COSTS } from '../config/businessUpgradeCosts';
-import { FLOOR_STAR_MULTIPLIERS } from '../config/floorUpgradeConfig';
+import { FLOOR_STAR_MULTIPLIERS, FLOOR_UPGRADE_COSTS } from '../config/floorUpgradeConfig';
 
 export interface ProcessResult {
   success: boolean;
@@ -812,8 +812,33 @@ function handleUpgradeFloor(
   command: Extract<Command, { type: 'upgrade_floor' }>,
   config: GameConfig,
 ): ProcessResult {
-  // TODO: Implement floor upgrade logic
-  return { success: false, state, error: 'Floor upgrade not implemented' };
+  const { floorId } = command;
+  const floorExists = state.floors.some((f) => f.id === floorId);
+  if (!floorExists) return { success: false, state, error: 'Floor not found' };
+
+  const floorType = resolveFloorType(state, config, floorId);
+  if (!floorType) return { success: false, state, error: 'Floor not open' };
+
+  const currentStars = state.floorStars?.[String(floorId)] ?? 0;
+  if (currentStars >= 5) return { success: false, state, error: 'Floor already at max stars' };
+
+  const cost = FLOOR_UPGRADE_COSTS[currentStars];
+
+  if (state.gems < cost.gems) return { success: false, state, error: 'Insufficient gems' };
+
+  const tokenKey = floorType as keyof typeof state.tokens;
+  const tokenBalance = state.tokens?.[tokenKey] ?? 0;
+  if (tokenBalance < cost.tokens) return { success: false, state, error: 'Insufficient tokens' };
+
+  return {
+    success: true,
+    state: {
+      ...state,
+      gems: state.gems - cost.gems,
+      tokens: { ...state.tokens, [tokenKey]: tokenBalance - cost.tokens },
+      floorStars: { ...state.floorStars, [String(floorId)]: currentStars + 1 },
+    },
+  };
 }
 
 function updateProduction(

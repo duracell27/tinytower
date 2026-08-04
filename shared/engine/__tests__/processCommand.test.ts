@@ -1582,4 +1582,73 @@ describe('floor star multipliers', () => {
       expect(result.success).toBe(true);
     });
   });
+
+  describe('upgrade_floor', () => {
+    function upgradeCmd(floorId = 1): Command {
+      return { id: 'uf1', type: 'upgrade_floor', floorId, timestamp: 1000 };
+    }
+
+    it('upgrades 0★ → 1★, deducts gems and tokens', () => {
+      const state = makeState({
+        gems: 50,
+        tokens: { green: 5, blue: 0, yellow: 0, purple: 0, red: 0 },
+      });
+      const result = processCommand(state, upgradeCmd(), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.gems).toBe(40);              // 50 - 10
+      expect(result.state.tokens.green).toBe(4);       // 5 - 1
+      expect(result.state.floorStars?.['1']).toBe(1);
+    });
+
+    it('upgrades 1★ → 2★ using second cost entry', () => {
+      const state = makeState({
+        gems: 50,
+        tokens: { green: 5, blue: 0, yellow: 0, purple: 0, red: 0 },
+        floorStars: { '1': 1 },
+      });
+      const result = processCommand(state, upgradeCmd(), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.gems).toBe(30);              // 50 - 20
+      expect(result.state.tokens.green).toBe(3);       // 5 - 2
+      expect(result.state.floorStars?.['1']).toBe(2);
+    });
+
+    it('fails when gems insufficient', () => {
+      const state = makeState({
+        gems: 5,
+        tokens: { green: 5, blue: 0, yellow: 0, purple: 0, red: 0 },
+      });
+      const result = processCommand(state, upgradeCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Insufficient gems');
+    });
+
+    it('fails when tokens insufficient', () => {
+      const state = makeState({
+        gems: 50,
+        tokens: { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+      });
+      const result = processCommand(state, upgradeCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Insufficient tokens');
+    });
+
+    it('fails when already at 5★', () => {
+      const state = makeState({
+        gems: 200,
+        tokens: { green: 10, blue: 0, yellow: 0, purple: 0, red: 0 },
+        floorStars: { '1': 5 },
+      });
+      const result = processCommand(state, upgradeCmd(), testConfig, 1000);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Floor already at max stars');
+    });
+
+    it('fails when floor does not exist', () => {
+      const state = makeState({ gems: 50, tokens: { green: 5, blue: 0, yellow: 0, purple: 0, red: 0 } });
+      const result = processCommand(state, upgradeCmd(99), testConfig, 1000);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Floor not found');
+    });
+  });
 });
