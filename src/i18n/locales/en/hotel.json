@@ -181,6 +181,43 @@
       "floor": "Floor {{id}}"
     }
   },
+  "productionDetail": {
+    "title": "Production Details",
+    "worker": "Worker",
+    "noWorker": "No worker assigned",
+    "mood": {
+      "good": "Dream job",
+      "mid": "Same category",
+      "bad": "Wrong floor"
+    },
+    "revenue": {
+      "section": "Revenue per batch",
+      "base": "Base",
+      "stars": "Floor stars",
+      "worker": "Worker",
+      "specialist": "Specialist",
+      "category": "Category upgrade",
+      "global": "Global bonus",
+      "total": "Total",
+      "perMin": "/min"
+    },
+    "timing": {
+      "delivery": "Delivery",
+      "sell": "Sell time"
+    },
+    "cost": {
+      "buy": "Buy cost",
+      "discount": "-{{percent}}%"
+    },
+    "status": {
+      "IDLE": "Idle",
+      "DELIVERING": "Delivering",
+      "READY_TO_LIST": "Ready to list",
+      "SELLING": "Selling",
+      "READY_TO_COLLECT": "Ready to collect",
+      "EMPTY": "Empty"
+    }
+  },
   "myBusiness": {
     "title": "My Business",
     "subtitle": "Upgrade categories to increase profit on floors",
