@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
-import { FLOOR_UPGRADE_COSTS, FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
+import { FLOOR_UPGRADE_COSTS } from '../../shared/config/floorUpgradeConfig';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { GemIcon } from './CurrencyIcons';
 
@@ -30,7 +30,12 @@ export default function FloorUpgradeModal() {
 
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
   const floorType = (floorConfig?.floorType ?? '') as keyof typeof tokens;
-  const floorName = floorConfig ? `Floor ${floorId}` : `Floor ${floorId}`;
+  const floorName = (() => {
+    if (!floorType || !floorConfig?.availableTypes[0]) return `Floor ${floorId}`;
+    return gameConfig.floorTypes[floorType as string]?.businesses
+      .find((b) => b.dreamJobs.includes(floorConfig!.availableTypes[0]))?.name
+      ?? `Floor ${floorId}`;
+  })();
 
   const cost = isMax ? null : FLOOR_UPGRADE_COSTS[stars];
   const canAfford = cost
@@ -48,7 +53,7 @@ export default function FloorUpgradeModal() {
           {/* Stars row */}
           <View style={styles.starsRow}>
             {[0, 1, 2, 3, 4].map((i) => (
-              <Text key={i} style={[styles.star, { color: i < stars ? '#FFD23E' : 'rgba(0,0,0,0.18)' }]}>
+              <Text key={i} style={[styles.star, { color: i < stars ? '#FFD23E' : isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.18)' }]}>
                 {'★'}
               </Text>
             ))}
