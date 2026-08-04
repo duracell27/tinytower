@@ -212,8 +212,8 @@ function FloorStarsRow({ avg }: { avg: number }) {
 }
 
 const starStyles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 3, justifyContent: 'center' },
-  star: { width: 16, height: 16 },
+  row: { flexDirection: 'row', gap: 3, alignSelf: 'center' },
+  star: { width: 20, height: 20 },
 });
 
 export default function ProfileScreen() {
