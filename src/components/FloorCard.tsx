@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { View, Text, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
@@ -296,6 +296,9 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
   const workers = useGameStore((s) => s.workers);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
   const gems = useGameStore((s) => s.gems);
+  const floorStars = useGameStore((s) => s.floorStars);
+  const openFloorUpgradeModal = useGameStore((s) => s.openFloorUpgradeModal);
+  const starCount = floorStars?.[String(floorId)] ?? 0;
   const dynamicFloorType = openedFloorTypes?.[String(floorId)];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
   const floorType = floorConfig?.floorType ?? dynamicFloorType ?? null;
@@ -344,7 +347,13 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
               <Text style={styles.specialistBonusBadgeText}>+{Math.round(specialistBonus * 100)}%</Text>
             </View>
           )}
-          <Stars count={scheme.stars} />
+          <TouchableOpacity
+            onPress={() => openFloorUpgradeModal(floorId)}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            activeOpacity={0.7}
+          >
+            <Stars count={starCount} />
+          </TouchableOpacity>
         </View>
       </View>
 
