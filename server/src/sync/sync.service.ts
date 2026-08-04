@@ -319,6 +319,7 @@ export class SyncService {
             dailyTasksProgress:     gameState.dailyTasks.progress,
             dailyTasksClaimed:      gameState.dailyTasks.claimed,
             dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
+            floorStars:             gameState.floorStars,
           },
           update: {
             gems: gameState.gems,
@@ -354,6 +355,7 @@ export class SyncService {
             dailyTasksProgress:     gameState.dailyTasks.progress,
             dailyTasksClaimed:      gameState.dailyTasks.claimed,
             dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
+            floorStars:             gameState.floorStars,
           },
         });
 

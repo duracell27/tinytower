@@ -78,6 +78,7 @@ model PlayerState {
   dailyTasksProgress     Json    @default("{}")
   dailyTasksClaimed      Json    @default("[]")
   dailyTasksDoubleReward Boolean @default(false)
+  floorStars             Json    @default("{}")
   player                 Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }
 
