@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
-  View, Text, Modal, Pressable, StyleSheet, ScrollView,
+  View, Text, Modal, Pressable, StyleSheet, ScrollView, Dimensions,
 } from 'react-native';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS,
+} from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -22,6 +26,12 @@ import { FLOOR_TYPE_SCHEMES } from './FloorCard';
 import { shadeColor } from '../utils/color';
 import { formatNum } from '../utils/format';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SHEET_HEIGHT = SCREEN_HEIGHT * 0.85;
+const SHEET_TIMING = { duration: 320, easing: Easing.bezier(0.4, 0, 0.2, 1) };
+const SWIPE_CLOSE_THRESHOLD = 80;
+const VELOCITY_CLOSE_THRESHOLD = 500;
 
 function formatDuration(ms: number): string {
   const totalSec = Math.round(ms / 1000);
@@ -46,6 +56,34 @@ export default function ProductionDetailModal() {
   const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
   const balance = useGameStore((s) => s.balance);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+
+  // Animation hooks — must come before early returns
+  const translateY = useSharedValue(SHEET_HEIGHT);
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  useEffect(() => {
+    if (modal) {
+      translateY.value = SHEET_HEIGHT;
+      translateY.value = withTiming(0, SHEET_TIMING);
+    }
+  }, [modal]);
+
+  const panGesture = Gesture.Pan()
+    .activeOffsetY(5)
+    .onUpdate((e) => {
+      if (e.translationY > 0) {
+        translateY.value = e.translationY;
+      }
+    })
+    .onEnd((e) => {
+      if (e.translationY > SWIPE_CLOSE_THRESHOLD || e.velocityY > VELOCITY_CLOSE_THRESHOLD) {
+        runOnJS(close)();
+      } else {
+        translateY.value = withTiming(0, SHEET_TIMING);
+      }
+    });
 
   if (!modal) return null;
 
@@ -143,162 +181,169 @@ export default function ProductionDetailModal() {
     <Modal
       visible
       transparent
-      animationType="fade"
+      animationType="none"
       onRequestClose={close}
       statusBarTranslucent
     >
-      <Pressable style={styles.backdrop} onPress={close}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
-          {/* Header */}
-          <View style={[styles.header, { backgroundColor: headerBg }]}>
-            {productImage && (
-              <Image source={productImage} style={styles.productImage} contentFit="contain" />
-            )}
-            <View style={styles.headerText}>
-              <Text style={styles.productName} numberOfLines={1}>
-                {productTitle}
-              </Text>
-              <Text style={styles.statusLabel}>
-                {statusLabels[effectiveStage] ?? effectiveStage}
-              </Text>
+      <Pressable style={styles.scrim} onPress={close} />
+
+      <Animated.View style={[styles.sheet, sheetStyle]}>
+        {/* Drag handle */}
+        <GestureDetector gesture={panGesture}>
+          <View style={styles.handleRow}>
+            <View style={styles.handle} />
+          </View>
+        </GestureDetector>
+
+        {/* Header */}
+        <View style={[styles.header, { backgroundColor: headerBg }]}>
+          {productImage && (
+            <Image source={productImage} style={styles.productImage} contentFit="contain" />
+          )}
+          <View style={styles.headerText}>
+            <Text style={styles.productName} numberOfLines={1}>
+              {productTitle}
+            </Text>
+            <Text style={styles.statusLabel}>
+              {statusLabels[effectiveStage] ?? effectiveStage}
+            </Text>
+          </View>
+          <Pressable
+            onPress={close}
+            style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.6 }]}
+            hitSlop={8}
+          >
+            <Text style={styles.closeBtnText}>✕</Text>
+          </Pressable>
+        </View>
+
+        <ScrollView
+          style={styles.body}
+          contentContainerStyle={styles.bodyContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Worker row */}
+          <View style={styles.section}>
+            <View style={styles.workerRow}>
+              <View style={[styles.avatarWrap, worker.isSpecialist && { borderColor: '#F5C842' }]}>
+                <WorkerAvatar worker={worker} size={40} />
+              </View>
+              <View style={styles.workerInfo}>
+                <Text style={styles.workerName} numberOfLines={1}>
+                  {worker.name}
+                </Text>
+                <Text style={styles.workerLevel}>Lv{worker.level}</Text>
+                {worker.isSpecialist && (
+                  <View style={styles.specialistBadge}>
+                    <Text style={styles.specialistBadgeText}>★</Text>
+                  </View>
+                )}
+              </View>
+              <View style={[styles.moodChip, { backgroundColor: moodColor }]}>
+                <Text style={styles.moodChipText}>
+                  {moodLabel} {multiplierText}
+                </Text>
+              </View>
             </View>
-            <Pressable
-              onPress={close}
-              style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.6 }]}
-              hitSlop={8}
-            >
-              <Text style={styles.closeBtnText}>✕</Text>
-            </Pressable>
           </View>
 
-          <ScrollView
-            style={styles.body}
-            contentContainerStyle={styles.bodyContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Worker row */}
-            <View style={styles.section}>
-              <View style={styles.workerRow}>
-                <View style={[styles.avatarWrap, worker.isSpecialist && { borderColor: '#F5C842' }]}>
-                  <WorkerAvatar worker={worker} size={40} />
-                </View>
-                <View style={styles.workerInfo}>
-                  <Text style={styles.workerName} numberOfLines={1}>
-                    {worker.name}
+          {/* Divider */}
+          <View style={styles.divider} />
+
+          {/* Revenue breakdown */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('productionDetail.revenue.section')}</Text>
+
+            <BreakdownRow
+              label={t('productionDetail.revenue.base')}
+              value={<><Text style={styles.rowValue}>{formatNum(baseRevenue)}</Text><CoinIcon size={13} /></>}
+            />
+
+            {stars > 0 && (
+              <BreakdownRow
+                label={t('productionDetail.revenue.stars')}
+                value={<Text style={styles.rowValue}>×{starValueMult.toFixed(1)}</Text>}
+              />
+            )}
+
+            <BreakdownRow
+              label={t('productionDetail.revenue.worker')}
+              value={<Text style={[styles.rowValue, { color: moodColor }]}>{multiplierText}</Text>}
+            />
+
+            {specialistBonusPercent > 0 && (
+              <BreakdownRow
+                label={t('productionDetail.revenue.specialist')}
+                value={<Text style={styles.rowValue}>+{specialistBonusPercent}%</Text>}
+              />
+            )}
+
+            {categoryBonus > 0 && (
+              <BreakdownRow
+                label={t('productionDetail.revenue.category')}
+                value={<Text style={styles.rowValue}>+{categoryBonus}%</Text>}
+              />
+            )}
+
+            {coinBonusPercent > 0 && (
+              <BreakdownRow
+                label={t('productionDetail.revenue.global')}
+                value={<Text style={styles.rowValue}>+{coinBonusPercent}%</Text>}
+              />
+            )}
+
+            <View style={styles.rowDivider} />
+
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>{t('productionDetail.revenue.total')}</Text>
+              <View style={styles.totalValueRow}>
+                <Text style={styles.totalValue}>{formatNum(effectiveRevenue)}</Text>
+                <CoinIcon size={14} />
+                {revenuePerMin > 0 && (
+                  <Text style={styles.perMin}>
+                    {' '}({formatNum(revenuePerMin)}{t('productionDetail.revenue.perMin')})
                   </Text>
-                  <Text style={styles.workerLevel}>Lv{worker.level}</Text>
-                  {worker.isSpecialist && (
-                    <View style={styles.specialistBadge}>
-                      <Text style={styles.specialistBadgeText}>★</Text>
-                    </View>
-                  )}
-                </View>
-                <View style={[styles.moodChip, { backgroundColor: moodColor }]}>
-                  <Text style={styles.moodChipText}>
-                    {moodLabel} {multiplierText}
-                  </Text>
-                </View>
+                )}
               </View>
             </View>
+          </View>
 
-            {/* Divider */}
-            <View style={styles.divider} />
+          {/* Divider */}
+          <View style={styles.divider} />
 
-            {/* Revenue breakdown */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t('productionDetail.revenue.section')}</Text>
-
+          {/* Timings + cost */}
+          <View style={styles.section}>
+            {deliveryDuration > 0 && (
               <BreakdownRow
-                label={t('productionDetail.revenue.base')}
-                value={<><Text style={styles.rowValue}>{formatNum(baseRevenue)}</Text><CoinIcon size={13} /></>}
+                label={t('productionDetail.timing.delivery')}
+                value={<Text style={styles.rowValue}>{formatDuration(deliveryDuration)}</Text>}
               />
-
-              {stars > 0 && (
-                <BreakdownRow
-                  label={t('productionDetail.revenue.stars')}
-                  value={<Text style={styles.rowValue}>×{starValueMult.toFixed(1)}</Text>}
-                />
-              )}
-
+            )}
+            {effectiveSellDuration > 0 && (
               <BreakdownRow
-                label={t('productionDetail.revenue.worker')}
-                value={<Text style={[styles.rowValue, { color: moodColor }]}>{multiplierText}</Text>}
+                label={t('productionDetail.timing.sell')}
+                value={<Text style={styles.rowValue}>{formatDuration(effectiveSellDuration)}</Text>}
               />
-
-              {specialistBonusPercent > 0 && (
-                <BreakdownRow
-                  label={t('productionDetail.revenue.specialist')}
-                  value={<Text style={styles.rowValue}>+{specialistBonusPercent}%</Text>}
-                />
-              )}
-
-              {categoryBonus > 0 && (
-                <BreakdownRow
-                  label={t('productionDetail.revenue.category')}
-                  value={<Text style={styles.rowValue}>+{categoryBonus}%</Text>}
-                />
-              )}
-
-              {coinBonusPercent > 0 && (
-                <BreakdownRow
-                  label={t('productionDetail.revenue.global')}
-                  value={<Text style={styles.rowValue}>+{coinBonusPercent}%</Text>}
-                />
-              )}
-
-              <View style={styles.rowDivider} />
-
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>{t('productionDetail.revenue.total')}</Text>
-                <View style={styles.totalValueRow}>
-                  <Text style={styles.totalValue}>{formatNum(effectiveRevenue)}</Text>
-                  <CoinIcon size={14} />
-                  {revenuePerMin > 0 && (
-                    <Text style={styles.perMin}>
-                      {' '}({formatNum(revenuePerMin)}{t('productionDetail.revenue.perMin')})
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </View>
-
-            {/* Divider */}
-            <View style={styles.divider} />
-
-            {/* Timings + cost */}
-            <View style={styles.section}>
-              {deliveryDuration > 0 && (
-                <BreakdownRow
-                  label={t('productionDetail.timing.delivery')}
-                  value={<Text style={styles.rowValue}>{formatDuration(deliveryDuration)}</Text>}
-                />
-              )}
-              {effectiveSellDuration > 0 && (
-                <BreakdownRow
-                  label={t('productionDetail.timing.sell')}
-                  value={<Text style={styles.rowValue}>{formatDuration(effectiveSellDuration)}</Text>}
-                />
-              )}
-              {effectiveCost > 0 && (
-                <BreakdownRow
-                  label={t('productionDetail.cost.buy')}
-                  value={
-                    <View style={styles.costValueRow}>
-                      <Text style={styles.rowValue}>{formatNum(effectiveCost)}</Text>
-                      <CoinIcon size={13} />
-                      {discountPercent > 0 && (
-                        <Text style={styles.discountLabel}>
-                          {t('productionDetail.cost.discount', { percent: discountPercent })}
-                        </Text>
-                      )}
-                    </View>
-                  }
-                />
-              )}
-            </View>
-          </ScrollView>
-        </Pressable>
-      </Pressable>
+            )}
+            {effectiveCost > 0 && (
+              <BreakdownRow
+                label={t('productionDetail.cost.buy')}
+                value={
+                  <View style={styles.costValueRow}>
+                    <Text style={styles.rowValue}>{formatNum(effectiveCost)}</Text>
+                    <CoinIcon size={13} />
+                    {discountPercent > 0 && (
+                      <Text style={styles.discountLabel}>
+                        {t('productionDetail.cost.discount', { percent: discountPercent })}
+                      </Text>
+                    )}
+                  </View>
+                }
+              />
+            )}
+          </View>
+        </ScrollView>
+      </Animated.View>
     </Modal>
   );
 }
@@ -313,21 +358,37 @@ function BreakdownRow({ label, value }: { label: string; value: React.ReactNode 
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
+  scrim: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.48)',
-    justifyContent: 'flex-end',
   },
   sheet: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    maxHeight: SHEET_HEIGHT,
     backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '82%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 16,
+    paddingBottom: 20,
+  },
+  handleRow: {
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  handle: {
+    width: 38,
+    height: 4,
+    borderRadius: 3,
+    backgroundColor: 'rgba(0,0,0,0.18)',
   },
   header: {
     flexDirection: 'row',
@@ -335,8 +396,6 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 18,
     paddingVertical: 14,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
   },
   productImage: {
     width: 48,
@@ -365,7 +424,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   bodyContent: {
-    paddingBottom: 32,
+    paddingBottom: 12,
   },
   section: {
     paddingHorizontal: 18,
