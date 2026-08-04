@@ -12,7 +12,7 @@ import type { NewAchievementGrant, CategoryProgressState } from '../../shared/ty
 import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount } from '../../shared/config/dailyTasksConfig';
-import { FLOOR_UPGRADE_COSTS } from '../../shared/config/floorUpgradeConfig';
+import { FLOOR_UPGRADE_COSTS, FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -747,9 +747,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     const isStillSelling = (floorId: number) => {
       const floor = state.floors.find((f) => f.id === floorId);
-      return floor?.productions.some(
+      if (!floor) return false;
+      const stars = state.floorStars?.[String(floorId)] ?? 0;
+      const starMult = FLOOR_STAR_MULTIPLIERS[stars] ?? FLOOR_STAR_MULTIPLIERS[0];
+      return floor.productions.some(
         (p) => p.stage === 'SELLING' && p.typeId != null &&
-          now - p.stageStartedAt < (gameConfig.productionTypes[p.typeId]?.sellDuration ?? 0),
+          now - p.stageStartedAt < (gameConfig.productionTypes[p.typeId]?.sellDuration ?? 0) * starMult.time,
       );
     };
     const isStillDelivering = (floorId: number) => {

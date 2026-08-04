@@ -1,6 +1,7 @@
 import type { GameState, GameConfig, Visitor, VisitorRole } from '../types';
 import { HAIR_COLORS } from '../config/workerNames';
 import { DAILY_TASKS, getTaskProgress } from '../config/dailyTasksConfig';
+import { FLOOR_STAR_MULTIPLIERS } from '../config/floorUpgradeConfig';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -100,13 +101,15 @@ export function generateRandomVisitorRole(
     p.typeId != null &&
     now - p.stageStartedAt < (config.productionTypes[p.typeId]?.deliveryDuration ?? 0);
 
-  const isActiveSelling = (p: { stage: string; typeId: string | null; stageStartedAt: number }) =>
-    p.stage === 'SELLING' &&
-    p.typeId != null &&
-    now - p.stageStartedAt < (config.productionTypes[p.typeId]?.sellDuration ?? 0);
+  const isActiveSelling = (floorId: number, p: { stage: string; typeId: string | null; stageStartedAt: number }) => {
+    if (p.stage !== 'SELLING' || p.typeId == null) return false;
+    const stars = state.floorStars?.[String(floorId)] ?? 0;
+    const starMult = FLOOR_STAR_MULTIPLIERS[stars] ?? FLOOR_STAR_MULTIPLIERS[0];
+    return now - p.stageStartedAt < (config.productionTypes[p.typeId]?.sellDuration ?? 0) * starMult.time;
+  };
 
   const hasDelivering = state.floors.some((f) => f.productions.some(isActiveDelivering));
-  const hasSelling = state.floors.some((f) => f.productions.some(isActiveSelling));
+  const hasSelling = state.floors.some((f) => f.productions.some((p) => isActiveSelling(f.id, p)));
 
   // higher builder chance when a floor is actively under construction
   const builderChance = state.underConstruction.length > 0 ? 0.10 : 0.02;
@@ -151,7 +154,7 @@ export function generateRandomVisitorRole(
       targetFloor = deliveringFloors[Math.floor(Math.random() * deliveringFloors.length)].id;
     }
   } else if (role === 'seller') {
-    const sellingFloors = state.floors.filter((f) => f.productions.some(isActiveSelling));
+    const sellingFloors = state.floors.filter((f) => f.productions.some((p) => isActiveSelling(f.id, p)));
     if (sellingFloors.length === 0) {
       targetFloor = 1 + Math.floor(Math.random() * totalFloors);
     } else {

@@ -12,6 +12,7 @@ import {
   getDailyTipsTargets,
 } from './lobbyUtils';
 import { generateRandomWorkers } from '../config/workerNames';
+import { FLOOR_STAR_MULTIPLIERS } from '../config/floorUpgradeConfig';
 import type { VisitorRole } from '../types';
 
 type LobbyCommand = Extract<Command, { type:
@@ -210,9 +211,12 @@ function applyVisitorEffect(
   if (role === 'seller') {
     const floorIdx = floors.findIndex((f) => f.id === targetFloor);
     if (floorIdx !== -1) {
+      const floorStarCount = state.floorStars?.[String(targetFloor)] ?? 0;
+      const sellerStarMult = FLOOR_STAR_MULTIPLIERS[floorStarCount] ?? FLOOR_STAR_MULTIPLIERS[0];
+
       let targetSlotIdx: number;
       if (isVip) {
-        // Find SELLING slot with longest remaining time
+        // Find SELLING slot with longest remaining time (star-scaled)
         let longestRemaining = -1;
         targetSlotIdx = -1;
         floors[floorIdx].productions.forEach((p, si) => {
@@ -220,7 +224,7 @@ function applyVisitorEffect(
           const typeId = p.typeId;
           const typeConfig = typeId ? config.productionTypes[typeId] : null;
           if (!typeConfig) return;
-          const remaining = typeConfig.sellDuration - (now - p.stageStartedAt);
+          const remaining = typeConfig.sellDuration * sellerStarMult.time - (now - p.stageStartedAt);
           if (remaining > longestRemaining) {
             longestRemaining = remaining;
             targetSlotIdx = si;
@@ -234,6 +238,7 @@ function applyVisitorEffect(
         const typeId = floors[floorIdx].productions[targetSlotIdx].typeId;
         const typeConfig = typeId ? config.productionTypes[typeId] : null;
         if (typeConfig) {
+          const effectiveSellDuration = typeConfig.sellDuration * sellerStarMult.time;
           floors = floors.map((f, fi) => {
             if (fi !== floorIdx) return f;
             return {
@@ -241,8 +246,8 @@ function applyVisitorEffect(
               productions: f.productions.map((p, si) => {
                 if (si !== targetSlotIdx) return p;
                 const updated = isVip
-                  ? now - typeConfig.sellDuration
-                  : p.stageStartedAt - Math.floor(typeConfig.sellDuration * config.lobbyConfig.sellSpeedBonus);
+                  ? now - effectiveSellDuration
+                  : p.stageStartedAt - Math.floor(effectiveSellDuration * config.lobbyConfig.sellSpeedBonus);
                 return { ...p, stageStartedAt: updated };
               }),
             };
