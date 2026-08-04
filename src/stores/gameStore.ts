@@ -1198,7 +1198,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
     stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     tokens:     serverState.tokens     ?? cur.tokens,
     businessUpgrades: serverState.businessUpgrades ?? cur.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
-    floorStars: serverState.floorStars ?? cur.floorStars ?? {},
+    floorStars: (() => {
+      const base = serverState.floorStars ?? cur.floorStars ?? {};
+      const pending: Record<string, number> = {};
+      for (const cmd of cur.commandQueue) {
+        if (!sentIds.has(cmd.id) && cmd.type === 'upgrade_floor') {
+          const key = String((cmd as Extract<typeof cmd, { type: 'upgrade_floor' }>).floorId);
+          pending[key] = Math.min(5, (pending[key] ?? base[key] ?? 0) + 1);
+        }
+      }
+      return Object.keys(pending).length > 0 ? { ...base, ...pending } : base;
+    })(),
     dailyTasks: (() => {
       const base = serverState.dailyTasks ?? cur.dailyTasks;
       const pendingClaims = cur.commandQueue

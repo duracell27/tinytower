@@ -99,11 +99,21 @@ export default function ProductionDetailModal() {
   if (!worker) return null;
 
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
-  const floorType = floorConfig?.floorType ?? openedFloorTypes?.[String(floorId)] ?? null;
   const availableTypes = floorConfig?.availableTypes
     ?? floor.productions.map((p) => p.typeId).filter((id): id is string => id !== null);
 
   const typeId = production.typeId ?? availableTypes[slotIdx] ?? null;
+
+  // Resolve floorType: static config → openedFloorTypes → derive from typeId dreamJobs
+  let floorType: string | null = floorConfig?.floorType ?? openedFloorTypes?.[String(floorId)] ?? null;
+  if (!floorType && typeId) {
+    for (const [type, typeData] of Object.entries(gameConfig.floorTypes)) {
+      if (typeData.businesses.some((b) => b.dreamJobs.includes(typeId))) {
+        floorType = type;
+        break;
+      }
+    }
+  }
   const typeConfig = typeId ? gameConfig.productionTypes[typeId] : null;
 
   const stars = floorStars?.[String(floorId)] ?? 0;
