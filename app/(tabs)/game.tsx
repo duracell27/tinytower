@@ -39,6 +39,7 @@ import {
   type QuickActionMode,
 } from '../../src/utils/quickAction';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
+import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { hasAnyBetterCandidate } from '../../src/utils/workerCandidate';
 
 type FloorItem =
@@ -501,11 +502,13 @@ export default function GameScreen() {
     if (!liveBottomFloor) return;
 
     if (quickActionMode === 'collect') {
+      const collectStars = liveFloorStars?.[String(liveBottomFloor.id)] ?? 0;
+      const collectStarMult = FLOOR_STAR_MULTIPLIERS[collectStars] ?? FLOOR_STAR_MULTIPLIERS[0];
       liveBottomFloor.productions.forEach((prod, slotIdx) => {
         if (!prod.typeId) return;
         const tc = gameConfig.productionTypes[prod.typeId];
         if (!tc) return;
-        if (getProductionStatus(prod, tc, liveNow, liveBalance).effectiveStage === 'READY_TO_COLLECT') {
+        if (getProductionStatus(prod, tc, liveNow, liveBalance, tc.sellDuration * collectStarMult.time).effectiveStage === 'READY_TO_COLLECT') {
           storeCollect(liveBottomFloor.id, slotIdx);
         }
       });
