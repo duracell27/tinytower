@@ -290,7 +290,7 @@ export default function UserProfileScreen() {
             <InfoRow icons={[COIN_ICON]} label="Current / min" value={formatNum(profile.revenuePerMin)} />
 
             {/* Coin bonus + XP bonus on one row */}
-            <View style={[pStyles.infoRow, { borderBottomWidth: 1 }]}>
+            <View style={[pStyles.infoRow, { borderBottomWidth: 1, justifyContent: 'space-between' }]}>
               <View style={pStyles.bonusHalf}>
                 <Image source={MARKETING_ICON} style={pStyles.infoIcon} contentFit="contain" />
                 <View>
@@ -298,6 +298,7 @@ export default function UserProfileScreen() {
                   <Text style={pStyles.infoValue}>+{profile.coinBonusPercent}%</Text>
                 </View>
               </View>
+              <View style={[pStyles.statDivider, { backgroundColor: 'rgba(0,0,0,0.1)', height: 36 }]} />
               <View style={pStyles.bonusHalf}>
                 <Image source={PR_ICON} style={pStyles.infoIcon} contentFit="contain" />
                 <View>
