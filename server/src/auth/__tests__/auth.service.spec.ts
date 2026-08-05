@@ -34,6 +34,7 @@ describe('AuthService', () => {
     lastSeenAt: new Date(),
     createdAt: new Date(),
     referralCode: null,
+    city: null,
     isAdmin: false,
   };
 

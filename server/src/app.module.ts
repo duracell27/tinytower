@@ -12,6 +12,7 @@ import { ChatModule } from './chat/chat.module';
 import { ForumModule } from './forum/forum.module';
 import { StatsModule } from './stats/stats.module';
 import { AdminModule } from './admin/admin.module';
+import { PlayersModule } from './players/players.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AdminModule } from './admin/admin.module';
     PrismaModule,
     AuthModule,
     PlayerModule,
+    PlayersModule,
     SyncModule,
     LeaderboardModule,
     AchievementModule,
