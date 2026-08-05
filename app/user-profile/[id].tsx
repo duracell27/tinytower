@@ -2,30 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import Svg, { Polyline } from 'react-native-svg';
+import Svg, { Polyline, Path } from 'react-native-svg';
 import AppBackground from '../../src/components/AppBackground';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { api, type PlayerProfile } from '../../src/services/api';
 import { getUserIcon } from '../../src/utils/userIcon';
-import { ACHIEVEMENT_CATEGORIES, ACHIEVEMENT_GEM_REWARDS } from '../../shared/config/achievementCategories';
+import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { formatNum } from '../../src/utils/format';
 
-const STAR_FULL    = require('../../assets/img/starFull.png');
-const STAR_66      = require('../../assets/img/star66.png');
-const STAR_33      = require('../../assets/img/star33.png');
-const STAR_EMPTY   = require('../../assets/img/starEmpty.png');
-const LVL_ICON     = require('../../assets/img/lvlIcon.png');
-const FLOOR_ICON   = require('../../assets/img/floorIcon.png');
-const CANCEL_ICON  = require('../../assets/img/CancellIcon.png');
-const ACHIV_ICON   = require('../../assets/img/profile/achivProfileIcon.png');
-const MAIL_ICON    = require('../../assets/img/mail.png');
-const FRIEND_ICON  = require('../../assets/img/addfriend.png');
-const COIN_ICON    = require('../../assets/img/coin.png');
-const XP_ICON      = require('../../assets/img/xpIcon.png');
-const ARROW_UP     = require('../../assets/img/greenArrowUp.png');
-const SAND_CLOCK   = require('../../assets/img/sandClock.png');
-const HAPPY_ICON   = require('../../assets/img/happySmile.png');
-const SPEC_ICON    = require('../../assets/img/specialistWorker.png');
+const STAR_FULL      = require('../../assets/img/starFull.png');
+const STAR_66        = require('../../assets/img/star66.png');
+const STAR_33        = require('../../assets/img/star33.png');
+const STAR_EMPTY     = require('../../assets/img/starEmpty.png');
+const LVL_ICON       = require('../../assets/img/lvlIcon.png');
+const FLOOR_ICON     = require('../../assets/img/floorIcon.png');
+const ACHIV_ICON     = require('../../assets/img/profile/achivProfileIcon.png');
+const MAIL_ICON      = require('../../assets/img/mail.png');
+const FRIEND_ICON    = require('../../assets/img/addfriend.png');
+const COIN_ICON      = require('../../assets/img/coin.png');
+const ARROW_UP       = require('../../assets/img/greenArrowUp.png');
+const SAND_CLOCK     = require('../../assets/img/sandClock.png');
+const HAPPY_ICON     = require('../../assets/img/happySmile.png');
+const SPEC_ICON      = require('../../assets/img/specialistWorker.png');
+const MARKETING_ICON = require('../../assets/img/MarketingIcon.png');
+const PR_ICON        = require('../../assets/img/PRIcon.png');
 
 const TIER_ICONS: Record<number, any> = {
   0: require('../../assets/img/achivment/0TierAchive.png'),
@@ -45,12 +45,13 @@ const CAT_ICONS: Record<string, any> = {
   elevator: require('../../assets/img/achivment/achivLiftCategory.png'),
 };
 
-const TOKEN_ICONS: Record<string, any> = {
-  green:  require('../../assets/img/tokens/tokenGreen.png'),
-  blue:   require('../../assets/img/tokens/tokenBlue.png'),
-  yellow: require('../../assets/img/tokens/tokenYellow.png'),
-  purple: require('../../assets/img/tokens/tokenViolet.png'),
-  red:    require('../../assets/img/tokens/tokenRed.png'),
+// Production-type icons per floor category
+const BIZ_ICONS: Record<string, any> = {
+  green:  require('../../assets/img/ForkliftIcon.png'),
+  blue:   require('../../assets/img/BusIcon.png'),
+  yellow: require('../../assets/img/TaxiIcon.png'),
+  purple: require('../../assets/img/DeliverytruckIcon.png'),
+  red:    require('../../assets/img/ArmoredtruckIcon.png'),
 };
 
 const BUSINESS_LABELS: Record<string, string> = {
@@ -85,11 +86,13 @@ function SectionHeader({ label }: { label: string }) {
   return <Text style={pStyles.sectionHeader}>{label}</Text>;
 }
 
-function InfoRow({ icon, label, value, noBorder }: { icon?: any; label: string; value: string; noBorder?: boolean }) {
+function InfoRow({ icons, label, value, noBorder }: { icons?: any[]; label: string; value: string; noBorder?: boolean }) {
   return (
     <View style={[pStyles.infoRow, noBorder && { borderBottomWidth: 0 }]}>
       <View style={pStyles.infoLeft}>
-        {icon && <Image source={icon} style={pStyles.infoIcon} contentFit="contain" />}
+        {icons?.map((src, i) => (
+          <Image key={i} source={src} style={pStyles.infoIcon} contentFit="contain" />
+        ))}
         <Text style={pStyles.infoLabel}>{label}</Text>
       </View>
       <Text style={pStyles.infoValue}>{value}</Text>
@@ -101,10 +104,10 @@ function formatLastSeen(lastSeenAt: string): string {
   const diff = Date.now() - new Date(lastSeenAt).getTime();
   if (diff < 5 * 60 * 1000) return 'Online';
   const mins = Math.floor(diff / 60_000);
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return `Last seen ${mins}m ago`;
   const hrs = Math.floor(diff / 3_600_000);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(diff / 86_400_000)}d ago`;
+  if (hrs < 24) return `Last seen ${hrs}h ago`;
+  return `Last seen ${Math.floor(diff / 86_400_000)}d ago`;
 }
 
 export default function UserProfileScreen() {
@@ -142,11 +145,6 @@ export default function UserProfileScreen() {
   return (
     <AppBackground style={{ flex: 1 }}>
 
-      {/* Close button */}
-      <Pressable onPress={() => router.back()} style={pStyles.closeBtn} hitSlop={12}>
-        <Image source={CANCEL_ICON} style={pStyles.closeBtnIcon} contentFit="contain" />
-      </Pressable>
-
       {loading && (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="large" color="#3FA535" />
@@ -176,17 +174,21 @@ export default function UserProfileScreen() {
               ) : null}
             </View>
 
-            {/* Level + Floors side by side */}
+            {/* Level + Floors — icon inline with number, label below */}
             <View style={[pStyles.statsRow, { borderTopColor: theme.divider }]}>
               <View style={pStyles.statCol}>
-                <Image source={LVL_ICON} style={pStyles.statIcon} contentFit="contain" />
-                <Text style={[pStyles.statValue, { color: theme.text }]}>{profile.playerLevel}</Text>
+                <View style={pStyles.statIconNum}>
+                  <Image source={LVL_ICON} style={pStyles.statIcon} contentFit="contain" />
+                  <Text style={[pStyles.statValue, { color: theme.text }]}>{profile.playerLevel}</Text>
+                </View>
                 <Text style={[pStyles.statLabel, { color: theme.textMuted }]}>Level</Text>
               </View>
               <View style={[pStyles.statDivider, { backgroundColor: theme.divider }]} />
               <View style={pStyles.statCol}>
-                <Image source={FLOOR_ICON} style={pStyles.statIcon} contentFit="contain" />
-                <Text style={[pStyles.statValue, { color: theme.text }]}>{profile.openedFloorsCount}</Text>
+                <View style={pStyles.statIconNum}>
+                  <Image source={FLOOR_ICON} style={pStyles.statIcon} contentFit="contain" />
+                  <Text style={[pStyles.statValue, { color: theme.text }]}>{profile.openedFloorsCount}</Text>
+                </View>
                 <Text style={[pStyles.statLabel, { color: theme.textMuted }]}>Floors</Text>
               </View>
             </View>
@@ -217,7 +219,7 @@ export default function UserProfileScreen() {
           </Pressable>
           <Pressable style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
             <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
-            <Text style={[pStyles.actionBtnText, { color: '#3FA535' }]}>Add Friend</Text>
+            <Text style={[pStyles.actionBtnText, { color: theme.text }]}>Add Friend</Text>
           </Pressable>
 
           {/* Block 3: Achievements */}
@@ -267,14 +269,14 @@ export default function UserProfileScreen() {
 
           {/* Block 4: Business */}
           <SectionHeader label="Business" />
-          <View style={[pStyles.card, { backgroundColor: theme.surface }]}>
+          <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
             {FLOOR_TYPES.map((ft, idx) => {
               const level = profile.businessUpgrades[ft] ?? 0;
               const pct = level * 5;
               const isLast = idx === FLOOR_TYPES.length - 1;
               return (
                 <View key={ft} style={[pStyles.businessRow, isLast && { borderBottomWidth: 0 }]}>
-                  <Image source={TOKEN_ICONS[ft]} style={pStyles.tokenIcon} contentFit="contain" />
+                  <Image source={BIZ_ICONS[ft]} style={pStyles.bizIcon} contentFit="contain" />
                   <Text style={[pStyles.businessName, { color: theme.text }]}>{BUSINESS_LABELS[ft]}</Text>
                   <Text style={[pStyles.businessPct, { color: BUSINESS_COLORS[ft] }]}>+{pct}%</Text>
                 </View>
@@ -284,45 +286,79 @@ export default function UserProfileScreen() {
 
           {/* Block 5: Revenue */}
           <SectionHeader label="Revenue" />
-          <View style={[pStyles.card, { backgroundColor: theme.surface }]}>
-            <InfoRow icon={COIN_ICON}  label="Current / min" value={formatNum(profile.revenuePerMin)} />
-            <InfoRow icon={COIN_ICON}  label="Coin bonus"    value={`+${profile.coinBonusPercent}%`} />
-            <InfoRow icon={XP_ICON}    label="XP bonus"      value={`+${profile.xpBonusPercent}%`} />
-            <InfoRow icon={ARROW_UP}   label="Best / min"    value={formatNum(profile.maxRevenuePerMin)} noBorder />
+          <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
+            <InfoRow icons={[COIN_ICON]} label="Current / min" value={formatNum(profile.revenuePerMin)} />
+
+            {/* Coin bonus + XP bonus on one row */}
+            <View style={[pStyles.infoRow, { borderBottomWidth: 1 }]}>
+              <View style={pStyles.bonusHalf}>
+                <Image source={MARKETING_ICON} style={pStyles.infoIcon} contentFit="contain" />
+                <View>
+                  <Text style={pStyles.infoLabel}>Coin bonus</Text>
+                  <Text style={pStyles.infoValue}>+{profile.coinBonusPercent}%</Text>
+                </View>
+              </View>
+              <View style={pStyles.bonusHalf}>
+                <Image source={PR_ICON} style={pStyles.infoIcon} contentFit="contain" />
+                <View>
+                  <Text style={pStyles.infoLabel}>XP bonus</Text>
+                  <Text style={pStyles.infoValue}>+{profile.xpBonusPercent}%</Text>
+                </View>
+              </View>
+            </View>
+
+            <InfoRow icons={[COIN_ICON, ARROW_UP]} label="Best / min" value={formatNum(profile.maxRevenuePerMin)} noBorder />
           </View>
 
           {/* Block 6: Status */}
           <SectionHeader label="Status" />
-          <View style={[pStyles.card, { backgroundColor: theme.surface }]}>
+          <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
             <View style={pStyles.statusRow}>
               <View style={[pStyles.statusDot, { backgroundColor: isOnline ? '#52B847' : '#A6ACB8' }]} />
               <Text style={[pStyles.statusText, { color: theme.text }]}>{formatLastSeen(profile.lastSeenAt)}</Text>
             </View>
-            <InfoRow icon={SAND_CLOCK} label="Days in game" value={String(daysInGame)} noBorder />
+            <InfoRow icons={[SAND_CLOCK]} label="Days in game" value={String(daysInGame)} noBorder />
           </View>
 
         </ScrollView>
       )}
+
+      {/* Close button — bottom center, black circle */}
+      <View style={pStyles.closeBtnWrap} pointerEvents="box-none">
+        <Pressable onPress={() => router.back()} style={pStyles.closeBtn} hitSlop={8}>
+          <Svg width={18} height={18} viewBox="0 0 24 24">
+            <Path
+              d="M18 6L6 18M6 6l12 12"
+              stroke="#fff"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+            />
+          </Svg>
+        </Pressable>
+      </View>
+
     </AppBackground>
   );
 }
 
 const pStyles = StyleSheet.create({
-  scroll: { paddingTop: 96, paddingBottom: 80 },
-  closeBtn: {
-    position: 'absolute', top: 52, right: 20, zIndex: 10,
-  },
-  closeBtnIcon: { width: 36, height: 36 },
+  scroll: { paddingTop: 56, paddingBottom: 110 },
   errorText: { fontFamily: 'Fredoka_500Medium', fontSize: 16, color: '#E05A4A' },
 
   /* Stars */
   starsRow: { flexDirection: 'row', justifyContent: 'center', gap: 4, marginBottom: 14 },
   star: { width: 22, height: 22 },
 
-  /* Card */
+  /* Cards */
   card: {
     marginHorizontal: 20, marginTop: 12,
     borderRadius: 24, paddingHorizontal: 15, paddingTop: 20, paddingBottom: 14,
+    shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1, shadowRadius: 12, elevation: 4,
+  },
+  compactCard: {
+    marginHorizontal: 20, marginTop: 12,
+    borderRadius: 24, paddingHorizontal: 15, paddingTop: 10, paddingBottom: 8,
     shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1, shadowRadius: 12, elevation: 4,
   },
@@ -333,19 +369,20 @@ const pStyles = StyleSheet.create({
     width: 80, height: 80, borderRadius: 40,
     borderWidth: 3, borderColor: '#fff', overflow: 'hidden',
   },
-  name: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: '#27331F', textAlign: 'center' },
-  cityLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 14, color: '#7C8A6E', textAlign: 'center' },
+  name: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, textAlign: 'center' },
+  cityLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 14, textAlign: 'center' },
 
   /* Level + Floors */
   statsRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
     marginTop: 14, paddingTop: 14, borderTopWidth: 1,
   },
-  statCol: { flex: 1, alignItems: 'center', gap: 2 },
-  statIcon: { width: 32, height: 32 },
+  statCol: { flex: 1, alignItems: 'center', gap: 4 },
+  statIconNum: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  statIcon: { width: 30, height: 30 },
   statValue: { fontFamily: 'Fredoka_700Bold', fontSize: 28, lineHeight: 30 },
   statLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.3 },
-  statDivider: { width: 1, height: 50, opacity: 0.15 },
+  statDivider: { width: 1, height: 48, opacity: 0.15 },
 
   /* Workers */
   workerRow: {
@@ -354,8 +391,8 @@ const pStyles = StyleSheet.create({
   },
   workerItem: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   workerIcon: { width: 36, height: 36 },
-  workerLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 12, color: '#7C8A6E' },
-  workerValue: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#27331F' },
+  workerLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
+  workerValue: { fontFamily: 'Fredoka_700Bold', fontSize: 16 },
 
   /* Action buttons */
   actionBtn: {
@@ -366,11 +403,11 @@ const pStyles = StyleSheet.create({
     shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
   },
   actionIcon: { width: 36, height: 36 },
-  actionBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#27331F' },
+  actionBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16 },
 
   /* Achievements dropdown */
   dropdownCard: {
-    marginHorizontal: 20, marginTop: 2, borderRadius: 18,
+    marginHorizontal: 20, marginTop: 10, borderRadius: 18,
     paddingVertical: 4, paddingHorizontal: 15,
     shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08, shadowRadius: 8, elevation: 2,
@@ -384,37 +421,54 @@ const pStyles = StyleSheet.create({
   achieveRank: { fontFamily: 'Fredoka_400Regular', fontSize: 12, marginTop: 1 },
   achieveTierIcon: { width: 36, height: 36 },
 
-  /* Section header */
+  /* Section header — centered, dark */
   sectionHeader: {
     marginHorizontal: 24, marginTop: 18, marginBottom: 2,
     fontFamily: 'Fredoka_600SemiBold', fontSize: 13,
-    color: '#9098A6', textTransform: 'uppercase', letterSpacing: 0.5,
+    color: '#27331F', textTransform: 'uppercase', letterSpacing: 0.5,
+    textAlign: 'center',
   },
 
   /* Business */
   businessRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)',
+    paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)',
   },
-  tokenIcon: { width: 28, height: 28 },
+  bizIcon: { width: 28, height: 28 },
   businessName: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 14 },
   businessPct: { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
 
-  /* Info rows (revenue / status) */
+  /* Info rows */
   infoRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)',
+    paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)',
   },
-  infoLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  infoLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   infoIcon: { width: 22, height: 22 },
   infoLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#7C8A6E' },
   infoValue: { fontFamily: 'Fredoka_700Bold', fontSize: 14, color: '#27331F' },
 
+  /* Coin + XP bonus combined */
+  bonusHalf: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+
   /* Status */
   statusRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)',
+    paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   statusDot: { width: 9, height: 9, borderRadius: 5 },
   statusText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+
+  /* Close button */
+  closeBtnWrap: {
+    position: 'absolute', bottom: 36, left: 0, right: 0,
+    alignItems: 'center', zIndex: 10,
+  },
+  closeBtn: {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: '#1A2030',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 8, elevation: 6,
+  },
 });
