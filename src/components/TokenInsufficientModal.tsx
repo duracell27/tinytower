@@ -24,7 +24,7 @@ const TOKEN_ICONS: Record<FloorType, ReturnType<typeof require>> = {
   red:    require('../../assets/img/tokens/tokenRed.png'),
 };
 
-export default function TokenInsufficientModal() {
+export default function TokenInsufficientModal({ asOverlay = false }: { asOverlay?: boolean }) {
   const { t } = useTranslation('hotel');
   const payload = useGameStore((s) => s.tokenInsufficient);
   const clearTokenInsufficient = useGameStore((s) => s.clearTokenInsufficient);
@@ -36,7 +36,7 @@ export default function TokenInsufficientModal() {
   useEffect(() => {
     if (payload) {
       opacity.value = withTiming(1, { duration: 200 });
-      scale.value   = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
+      scale.value   = withTiming(1, { duration: 350, easing: Easing.out(Easing.cubic) });
     } else {
       opacity.value = 0;
       scale.value   = 0.5;
@@ -49,68 +49,74 @@ export default function TokenInsufficientModal() {
     opacity: opacity.value,
   }));
 
-  if (!payload || activeSheetCount > 0) return null;
+  if (!payload || (activeSheetCount > 0 && !asOverlay)) return null;
 
   const ft    = payload.floorType;
   const color = TYPE_COLORS[ft];
 
-  return (
-    <Modal visible transparent animationType="none" onRequestClose={clearTokenInsufficient}>
-      <Animated.View style={[styles.scrim, scrimStyle]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={clearTokenInsufficient} />
-        <Animated.View style={[styles.card, cardStyle]}>
-          <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={styles.cardGradient}>
+  const inner = (
+    <Animated.View style={[styles.scrim, scrimStyle]}>
+      <Pressable style={StyleSheet.absoluteFill} onPress={clearTokenInsufficient} />
+      <Animated.View style={[styles.card, cardStyle]}>
+        <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={styles.cardGradient}>
 
-            <View style={styles.iconWrap}>
-              <Image source={TOKEN_ICONS[ft]} style={styles.tokenImg} contentFit="contain" />
-            </View>
+          <View style={styles.iconWrap}>
+            <Image source={TOKEN_ICONS[ft]} style={styles.tokenImg} contentFit="contain" />
+          </View>
 
-            <Text style={styles.title}>{t('myBusiness.notEnoughTokens')}</Text>
+          <Text style={styles.title}>{t('myBusiness.notEnoughTokens')}</Text>
 
-            <View style={styles.deficitCard}>
-              <View style={styles.deficitRow}>
-                <View style={styles.deficitCell}>
-                  <Text style={styles.deficitLabel}>{t('myBusiness.have')}</Text>
-                  <View style={styles.deficitValueRow}>
-                    <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
-                    <Text style={[styles.deficitValue, { color }]}>{formatNum(payload.have)}</Text>
-                  </View>
-                </View>
-                <Text style={styles.arrow}>→</Text>
-                <View style={styles.deficitCell}>
-                  <Text style={styles.deficitLabel}>{t('myBusiness.need')}</Text>
-                  <View style={styles.deficitValueRow}>
-                    <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
-                    <Text style={[styles.deficitValue, { color }]}>{formatNum(payload.need)}</Text>
-                  </View>
-                </View>
-              </View>
-              <View style={styles.missingRow}>
-                <Text style={styles.missingLabel}>{t('myBusiness.missing')}:</Text>
+          <View style={styles.deficitCard}>
+            <View style={styles.deficitRow}>
+              <View style={styles.deficitCell}>
+                <Text style={styles.deficitLabel}>{t('myBusiness.have')}</Text>
                 <View style={styles.deficitValueRow}>
                   <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
-                  <Text style={styles.missingValue}>{formatNum(payload.need - payload.have)}</Text>
+                  <Text style={[styles.deficitValue, { color }]}>{formatNum(payload.have)}</Text>
+                </View>
+              </View>
+              <Text style={styles.arrow}>→</Text>
+              <View style={styles.deficitCell}>
+                <Text style={styles.deficitLabel}>{t('myBusiness.need')}</Text>
+                <View style={styles.deficitValueRow}>
+                  <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
+                  <Text style={[styles.deficitValue, { color }]}>{formatNum(payload.need)}</Text>
                 </View>
               </View>
             </View>
+            <View style={styles.missingRow}>
+              <Text style={styles.missingLabel}>{t('myBusiness.missing')}:</Text>
+              <View style={styles.deficitValueRow}>
+                <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
+                <Text style={styles.missingValue}>{formatNum(payload.need - payload.have)}</Text>
+              </View>
+            </View>
+          </View>
 
-            <Pressable
-              onPress={() => { router.replace('/shop'); clearTokenInsufficient(); }}
-              style={({ pressed }) => [styles.shopBtn, pressed && { opacity: 0.85 }]}
-            >
-              <LinearGradient colors={['#52A6E2', '#3B8BCB']} style={styles.shopBtnGradient}>
-                <Text style={styles.shopBtnText}>{t('myBusiness.goToShop')}</Text>
-              </LinearGradient>
-              <View style={styles.shopBtnShadow} />
-            </Pressable>
+          <Pressable
+            onPress={() => { router.replace('/shop'); clearTokenInsufficient(); }}
+            style={({ pressed }) => [styles.shopBtn, pressed && { opacity: 0.85 }]}
+          >
+            <LinearGradient colors={['#52A6E2', '#3B8BCB']} style={styles.shopBtnGradient}>
+              <Text style={styles.shopBtnText}>{t('myBusiness.goToShop')}</Text>
+            </LinearGradient>
+            <View style={styles.shopBtnShadow} />
+          </Pressable>
 
-            <Pressable onPress={clearTokenInsufficient} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>{t('myBusiness.cancel')}</Text>
-            </Pressable>
+          <Pressable onPress={clearTokenInsufficient} style={styles.closeBtn}>
+            <Text style={styles.closeBtnText}>{t('myBusiness.cancel')}</Text>
+          </Pressable>
 
-          </LinearGradient>
-        </Animated.View>
+        </LinearGradient>
       </Animated.View>
+    </Animated.View>
+  );
+
+  if (asOverlay) return <View style={StyleSheet.absoluteFill}>{inner}</View>;
+
+  return (
+    <Modal visible transparent animationType="none" onRequestClose={clearTokenInsufficient}>
+      {inner}
     </Modal>
   );
 }

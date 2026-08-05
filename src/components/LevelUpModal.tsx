@@ -6,7 +6,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  withDelay,
   Easing,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -24,38 +23,21 @@ export default function LevelUpModal() {
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const scale = useSharedValue(0.5);
-  const starScale = useSharedValue(0);
-  const rewardsY = useSharedValue(20);
-  const rewardsOpacity = useSharedValue(0);
 
   const triggerAnimations = useCallback(() => {
     scale.value = 0.5;
-    starScale.value = 0;
-    rewardsY.value = 20;
-    rewardsOpacity.value = 0;
     scale.value = withTiming(1, { duration: 320, easing: Easing.out(Easing.cubic) });
-    starScale.value = withDelay(150, withTiming(1, { duration: 280, easing: Easing.out(Easing.cubic) }));
-    rewardsOpacity.value = withDelay(300, withTiming(1, { duration: 250 }));
-    rewardsY.value = withDelay(300, withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) }));
   }, []);
-
 
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-  }));
-  const starStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: starScale.value }],
-  }));
-  const rewardsStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: rewardsY.value }],
-    opacity: rewardsOpacity.value,
   }));
 
   return (
     <Modal
       visible={!!event && activeSheetCount === 0}
       transparent
-      animationType="fade"
+      animationType="none"
       onRequestClose={dismiss}
       onShow={triggerAnimations}
     >
@@ -66,11 +48,11 @@ export default function LevelUpModal() {
           {event && (
             <Animated.View style={[styles.card, cardStyle]}>
               <LinearGradient colors={['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
-                <Animated.View style={[styles.starsRow, starStyle]}>
+                <View style={styles.starsRow}>
                   <Text style={[styles.starText, styles.starSmall]}>★</Text>
                   <Text style={[styles.starText, styles.starLarge]}>★</Text>
                   <Text style={[styles.starText, styles.starSmall]}>★</Text>
-                </Animated.View>
+                </View>
 
                 <View style={styles.levelCircle}>
                   <LinearGradient colors={['#74D44F', '#3FA535']} style={styles.levelCircleGradient}>
@@ -81,7 +63,7 @@ export default function LevelUpModal() {
                 <Text style={styles.title}>{t('levelUp.title')}</Text>
                 <Text style={styles.subtitle}>{t('levelUp.subtitle', { level: event.newLevel })}</Text>
 
-                <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
+                <View style={styles.rewardsContainer}>
                   <View style={styles.rewardRow}>
                     <CoinIcon size={20} />
                     <Text style={styles.rewardText}>+{formatNum(event.coinReward)}</Text>
@@ -90,7 +72,7 @@ export default function LevelUpModal() {
                     <GemIcon size={16} />
                     <Text style={styles.rewardTextGem}>+{event.gemReward}</Text>
                   </View>
-                </Animated.View>
+                </View>
 
                 <Pressable
                   onPress={dismiss}

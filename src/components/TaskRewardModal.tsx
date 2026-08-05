@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, Modal, Dimensions } from 'react-nati
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
-  useSharedValue, useAnimatedStyle, withTiming, withDelay, Easing,
+  useSharedValue, useAnimatedStyle, withTiming, Easing,
 } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
 import { formatNum } from '../utils/format';
@@ -37,29 +37,19 @@ export default function TaskRewardModal() {
   const clearReward  = useGameStore((s) => s.clearTaskReward);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
-  const scale          = useSharedValue(0.6);
-  const rewardsOpacity = useSharedValue(0);
-  const rewardsY       = useSharedValue(16);
+  const scale = useSharedValue(0.6);
 
-  const cardStyle    = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const rewardsStyle = useAnimatedStyle(() => ({
-    opacity: rewardsOpacity.value,
-    transform: [{ translateY: rewardsY.value }],
-  }));
+  const cardStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   const runIn = useCallback(() => {
     scale.value = 0.6;
-    rewardsOpacity.value = 0;
-    rewardsY.value = 16;
     scale.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
-    rewardsOpacity.value = withDelay(220, withTiming(1, { duration: 260 }));
-    rewardsY.value = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) }));
-  }, [scale, rewardsOpacity, rewardsY]);
+  }, [scale]);
 
   if (!reward || activeSheetCount > 0) return null;
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={clearReward} onShow={runIn}>
+    <Modal visible transparent animationType="none" onRequestClose={clearReward} onShow={runIn}>
       <View style={styles.scrim}>
         <Pressable style={StyleSheet.absoluteFill} onPress={clearReward} />
 
@@ -74,7 +64,7 @@ export default function TaskRewardModal() {
             <Text style={styles.title}>Task Complete!</Text>
             <Text style={styles.subtitle} numberOfLines={1}>{reward.taskTitle}</Text>
 
-            <Animated.View style={[styles.chipsWrap, rewardsStyle]}>
+            <View style={styles.chipsWrap}>
               <View style={styles.chip}>
                 <Image source={COIN_ICON} style={styles.chipIcon} contentFit="contain" />
                 <Text style={styles.chipCoins}>+{formatNum(reward.coins)}</Text>
@@ -95,7 +85,7 @@ export default function TaskRewardModal() {
                   <Text style={styles.chipMat}>+{reward.matCount}</Text>
                 </View>
               )}
-            </Animated.View>
+            </View>
 
             <Pressable
               onPress={clearReward}

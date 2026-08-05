@@ -372,7 +372,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const [view, setView] = useState<'operate' | 'upgrade'>('operate');
   const [newWorkerPopup, setNewWorkerPopup] = useState<Worker | null>(null);
   const [vipHotelFillCount, setVipHotelFillCount] = useState<number | null>(null);
-  const showHotelFullNotice = useGameStore((s) => s.showHotelFullNotice);
+  const [hotelFullPopup, setHotelFullPopup] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
   const isDark = useColorScheme() === 'dark';
 
@@ -455,6 +455,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     setView('operate');
     if (!visible) {
       setNewWorkerPopup(null);
+      setHotelFullPopup(false);
       clearBuilderToolDrop();
       clearPendingDeliverAll();
     }
@@ -481,7 +482,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   // gesture competes with the popup's Pressable scrim and produces unpredictable
   // touch behaviour on iOS (feels like "interface blocked").
   const hasActivePopup =
-    !!newWorkerPopup || !!builderToolDrop || !!vipHotelFillCount ||
+    !!newWorkerPopup || !!builderToolDrop || !!vipHotelFillCount || hotelFullPopup ||
     !!pendingDeliverAll || infoVisible || !!insufficientResources;
 
   const panGesture = Gesture.Pan()
@@ -548,7 +549,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     collectTip();
 
     if (isHotelFull) {
-      showHotelFullNotice();
+      setHotelFullPopup(true);
     }
   }, [collectTip]);
 
@@ -608,7 +609,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       };
     }
 
-    const tip = calculateTip(activeVisitor.role ?? 'guest', activeVisitor.targetFloor ?? 1, elevatorLevel, gameConfig);
+    const tip = calculateTip(activeVisitor.role ?? 'guest', activeVisitor.targetFloor ?? 1, elevatorLevel, gameConfig) * (activeVisitor.isVip ? 10 : 1);
     return {
       label: t('actions.collectTip'),
       amount: `+${tip}` as string | null,
@@ -1168,6 +1169,35 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
               </View>
               <Pressable onPress={() => setVipHotelFillCount(null)} style={popupStyles.dismissBtn}>
                 <Text style={[popupStyles.dismissText, isDark && { color: '#8A9A80' }]}>{t('vipHotelFillPopup.dismiss')}</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        )}
+
+        {/* Hotel full popup */}
+        {hotelFullPopup && (
+          <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setHotelFullPopup(false)}>
+            <Pressable style={[popupStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => {}}>
+              <View style={[popupStyles.avatarWrap, { backgroundColor: '#FDEEF2' }]}>
+                <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
+                  <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#A8475F" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                  <Path d="M9 22V12h6v10" stroke="#A8475F" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                </Svg>
+              </View>
+              <View style={popupStyles.info}>
+                <Text style={[popupStyles.title, isDark && { color: '#DDE8D8' }]}>{t('hotelFullPopup.title')}</Text>
+                <Text style={popupStyles.subtitle}>{t('hotelFullPopup.subtitle')}</Text>
+              </View>
+              <Pressable
+                onPress={() => { setHotelFullPopup(false); onClose(); onOpenHotel?.(); }}
+                style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
+              >
+                <LinearGradient colors={['#C9637E', '#A8475F']} style={popupStyles.findJobGradient}>
+                  <Text style={popupStyles.findJobText}>{t('hotelFullPopup.goToHotel')}</Text>
+                </LinearGradient>
+              </Pressable>
+              <Pressable onPress={() => setHotelFullPopup(false)} style={popupStyles.dismissBtn}>
+                <Text style={[popupStyles.dismissText, isDark && { color: '#8A9A80' }]}>{t('hotelFullPopup.dismiss')}</Text>
               </Pressable>
             </Pressable>
           </Pressable>

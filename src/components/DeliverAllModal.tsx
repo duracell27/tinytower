@@ -30,7 +30,7 @@ export default function DeliverAllModal({ visible, summary, onDismiss, asOverlay
   useEffect(() => {
     if (visible && summary) {
       opacity.value = withTiming(1, { duration: 200 });
-      scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
+      scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.cubic) });
     } else {
       opacity.value = 0;
       scale.value = 0.5;

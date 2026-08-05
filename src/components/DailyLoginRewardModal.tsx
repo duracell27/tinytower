@@ -5,7 +5,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  withDelay,
   Easing,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -22,29 +21,19 @@ export default function DailyLoginRewardModal() {
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const scale = useSharedValue(0.5);
-  const rewardsOpacity = useSharedValue(0);
-  const rewardsY = useSharedValue(20);
 
   const triggerAnimations = useCallback(() => {
     scale.value = 0.5;
-    rewardsOpacity.value = 0;
-    rewardsY.value = 20;
-    scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
-    rewardsOpacity.value = withDelay(250, withTiming(1, { duration: 250 }));
-    rewardsY.value = withDelay(250, withTiming(0, { duration: 300, easing: Easing.out(Easing.back(1.3)) }));
+    scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.cubic) });
   }, []);
 
   const cardStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const rewardsStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: rewardsY.value }],
-    opacity: rewardsOpacity.value,
-  }));
 
   return (
     <Modal
       visible={!!reward && activeSheetCount === 0}
       transparent
-      animationType="fade"
+      animationType="none"
       onRequestClose={dismiss}
       onShow={triggerAnimations}
     >
@@ -63,7 +52,7 @@ export default function DailyLoginRewardModal() {
               <Text style={styles.title}>{t('dailyLoginReward.title')}</Text>
               <Text style={styles.subtitle}>{t('dailyLoginReward.subtitle')}</Text>
 
-              <Animated.View style={[styles.rewardsContainer, rewardsStyle]}>
+              <View style={styles.rewardsContainer}>
                 <View style={styles.rewardRow}>
                   <CoinIcon size={20} />
                   <Text style={styles.rewardText}>+{formatNum(reward.coins)}</Text>
@@ -72,7 +61,7 @@ export default function DailyLoginRewardModal() {
                   <GemIcon size={16} />
                   <Text style={styles.rewardTextGem}>+{reward.gems}</Text>
                 </View>
-              </Animated.View>
+              </View>
 
               <Pressable
                 onPress={dismiss}

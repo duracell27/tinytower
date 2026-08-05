@@ -54,11 +54,10 @@ export default function FloorUpgradeModal() {
 
   const cost      = isMax ? null : FLOOR_UPGRADE_COSTS[stars];
   const haveTok   = tokens[floorType] ?? 0;
-  const canAfford = cost ? gems >= cost.gems && haveTok >= cost.tokens : false;
   const tokenIcon = TOKEN_ICONS[floorType as string];
 
   return (
-    <Modal transparent animationType="fade" visible onRequestClose={close}>
+    <Modal transparent animationType="none" visible onRequestClose={close}>
       <View style={styles.backdrop}>
         <Pressable style={StyleSheet.absoluteFill} onPress={close} />
         <View style={styles.card}>
@@ -110,7 +109,7 @@ export default function FloorUpgradeModal() {
 
                 <TouchableOpacity
                   style={[styles.upgradeBtn, { backgroundColor: scheme.color }]}
-                  onPress={() => { upgradeFloor(floorId); if (canAfford) close(); }}
+                  onPress={() => { close(); upgradeFloor(floorId); }}
                 >
                   <Text style={styles.upgradeBtnText}>{t('floorUpgrade.upgradeBtn')}</Text>
                 </TouchableOpacity>

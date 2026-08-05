@@ -41,7 +41,7 @@ export default function CityScreen() {
           xp={playerXp}
           xpForNextLevel={xpForLevel(playerLevel)}
           coins={formatNum(balance)}
-          gems={String(gems)}
+          gems={formatNum(gems)}
           revenuePerMin={revenuePerMin}
         />
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} style={styles.scrollView}>

@@ -721,7 +721,7 @@ export default function GameScreen() {
           xp={playerXp}
           xpForNextLevel={xpForLevel(playerLevel)}
           coins={formatNum(balance)}
-          gems={String(gems)}
+          gems={formatNum(gems)}
           revenuePerMin={revenuePerMin}
           onDevAddGems={__DEV__ ? () => devAddGems(100) : undefined}
         />

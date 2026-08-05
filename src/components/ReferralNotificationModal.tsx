@@ -21,7 +21,7 @@ export default function ReferralNotificationModal() {
 
   const triggerAnimation = useCallback(() => {
     scale.value = 0.5;
-    scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
+    scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.cubic) });
     setError('');
     setLoading(false);
   }, []);
@@ -52,7 +52,7 @@ export default function ReferralNotificationModal() {
     <Modal
       visible={!!notification && activeSheetCount === 0}
       transparent
-      animationType="fade"
+      animationType="none"
       onRequestClose={isClaimModal ? undefined : dismiss}
       onShow={triggerAnimation}
     >

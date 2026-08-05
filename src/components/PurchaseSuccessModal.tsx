@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, Modal, Dimensions } from 'react-nati
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
-  useSharedValue, useAnimatedStyle, withDelay, withTiming, Easing,
+  useSharedValue, useAnimatedStyle, withTiming, Easing,
 } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
 
@@ -31,24 +31,14 @@ export default function PurchaseSuccessModal() {
   const clear   = useGameStore((s) => s.clearPurchaseSuccess);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
-  const scale   = useSharedValue(0.6);
-  const bodyOp  = useSharedValue(0);
-  const bodyY   = useSharedValue(16);
+  const scale = useSharedValue(0.6);
 
   const cardStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const bodyStyle = useAnimatedStyle(() => ({
-    opacity: bodyOp.value,
-    transform: [{ translateY: bodyY.value }],
-  }));
 
   const runIn = useCallback(() => {
-    scale.value  = 0.6;
-    bodyOp.value = 0;
-    bodyY.value  = 16;
-    scale.value  = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
-    bodyOp.value = withDelay(220, withTiming(1, { duration: 260 }));
-    bodyY.value  = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) }));
-  }, [scale, bodyOp, bodyY]);
+    scale.value = 0.6;
+    scale.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
+  }, [scale]);
 
   if (!payload || activeSheetCount > 0) return null;
 
@@ -69,7 +59,7 @@ export default function PurchaseSuccessModal() {
     });
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={clear} onShow={runIn}>
+    <Modal visible transparent animationType="none" onRequestClose={clear} onShow={runIn}>
       <View style={s.scrim}>
         <Pressable style={StyleSheet.absoluteFill} onPress={clear} />
         <Animated.View style={[s.card, cardStyle]}>
@@ -79,14 +69,14 @@ export default function PurchaseSuccessModal() {
             <Text style={s.title}>Purchase Complete!</Text>
             <Text style={s.packName}>{packName}</Text>
 
-            <Animated.View style={[s.chips, bodyStyle]}>
+            <View style={s.chips}>
               {chips.map((c, i) => (
                 <View key={i} style={s.chip}>
                   <Image source={c.icon} style={s.chipIcon} contentFit="contain" />
                   <Text style={s.chipLabel}>{c.label}</Text>
                 </View>
               ))}
-            </Animated.View>
+            </View>
 
             <Pressable style={s.btn} onPress={clear}>
               <Text style={s.btnText}>Awesome!</Text>

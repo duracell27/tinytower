@@ -7,7 +7,6 @@ import DailyLoginRewardModal from './DailyLoginRewardModal';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
 import TokenInsufficientModal from './TokenInsufficientModal';
 import TaskRewardModal from './TaskRewardModal';
-import HotelFullNoticeModal from './HotelFullNoticeModal';
 import PurchaseSuccessModal from './PurchaseSuccessModal';
 import FloorUpgradeModal from './FloorUpgradeModal';
 import ProductionDetailModal from './ProductionDetailModal';
@@ -22,7 +21,6 @@ export default function GlobalOverlay() {
       <InsufficientResourcesModal />
       <TokenInsufficientModal />
       <TaskRewardModal />
-      <HotelFullNoticeModal />
       <PurchaseSuccessModal />
       <FloorUpgradeModal />
       <ProductionDetailModal />

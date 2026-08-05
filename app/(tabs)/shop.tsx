@@ -391,7 +391,7 @@ export default function ShopScreen() {
           xp={playerXp}
           xpForNextLevel={xpForLevel(playerLevel)}
           coins={formatNum(balance)}
-          gems={String(gems)}
+          gems={formatNum(gems)}
           revenuePerMin={revenuePerMin}
         />
 
