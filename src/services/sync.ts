@@ -33,6 +33,7 @@ interface SyncResponse {
 }
 
 const SYNC_INTERVAL_MS = 30_000;
+const SYNC_CHUNK_SIZE = 200;
 
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 let isSyncing = false;
@@ -46,9 +47,26 @@ async function doSync(): Promise<void> {
 
   isSyncing = true;
   try {
+    let currentLastAckCursor = lastAckCursor;
+
+    // When the queue is large, drain it in chunks so each request stays under the server body limit.
+    // The server deduplicates by commandLog, so re-sending is safe on retry.
+    if (commandQueue.length > SYNC_CHUNK_SIZE) {
+      for (let i = 0; i + SYNC_CHUNK_SIZE < commandQueue.length; i += SYNC_CHUNK_SIZE) {
+        const interim = await api.post<SyncResponse>('/sync', {
+          commands: commandQueue.slice(i, i + SYNC_CHUNK_SIZE),
+          lastAckCursor: currentLastAckCursor,
+        });
+        currentLastAckCursor = interim.ackCursor;
+      }
+    }
+
+    const finalStart = commandQueue.length > SYNC_CHUNK_SIZE
+      ? Math.floor((commandQueue.length - 1) / SYNC_CHUNK_SIZE) * SYNC_CHUNK_SIZE
+      : 0;
     const response = await api.post<SyncResponse>('/sync', {
-      commands: commandQueue,
-      lastAckCursor,
+      commands: commandQueue.slice(finalStart),
+      lastAckCursor: currentLastAckCursor,
     });
 
     clock.updateOffset(response.serverTime);
