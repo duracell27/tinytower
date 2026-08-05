@@ -49,7 +49,7 @@ function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void })
           {online && <View style={styles.onlineDot} />}
           <Text style={styles.name} numberOfLines={1}>{item.playerName}</Text>
         </View>
-        <Text style={styles.cityText} numberOfLines={1}>{item.city ?? '—'}</Text>
+        <Text style={styles.cityText} numberOfLines={1}>{item.city ?? t('users.noCity')}</Text>
       </View>
       <View style={styles.levelBadge}>
         <Image source={LVL_ICON} style={styles.lvlIcon} contentFit="contain" />

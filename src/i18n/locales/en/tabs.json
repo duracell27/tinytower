@@ -132,7 +132,8 @@
     "minChars": "Enter at least 2 characters",
     "empty": "Nothing found",
     "errorLoad": "Failed to load",
-    "onlineBadge": "{{count}} online"
+    "onlineBadge": "{{count}} online",
+    "noCity": "No city"
   },
   "forum": {
     "comingSoon": "Coming soon",
