@@ -30,6 +30,8 @@ function isOnline(lastSeenAt: string): boolean {
   return Date.now() - new Date(lastSeenAt).getTime() < ONLINE_THRESHOLD_MS;
 }
 
+const LVL_ICON = require('../../assets/img/lvlIcon.png');
+
 function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void }) {
   const online = isOnline(item.lastSeenAt);
   return (
@@ -43,14 +45,15 @@ function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void })
         contentFit="cover"
       />
       <View style={styles.nameBlock}>
-        <Text style={styles.name} numberOfLines={1}>{item.playerName}</Text>
+        <View style={styles.nameRow}>
+          {online && <View style={styles.onlineDot} />}
+          <Text style={styles.name} numberOfLines={1}>{item.playerName}</Text>
+        </View>
         <Text style={styles.cityText} numberOfLines={1}>{item.city ?? '—'}</Text>
       </View>
-      <View style={styles.rightBlock}>
-        {online && <View style={styles.onlineDot} />}
-        <View style={styles.levelBadge}>
-          <Text style={styles.levelText}>LVL {item.playerLevel}</Text>
-        </View>
+      <View style={styles.levelBadge}>
+        <Image source={LVL_ICON} style={styles.lvlIcon} contentFit="contain" />
+        <Text style={styles.levelText}>{item.playerLevel}</Text>
       </View>
     </Pressable>
   );
@@ -302,15 +305,13 @@ const styles = StyleSheet.create({
   },
   avatar: { width: 40, height: 40, borderRadius: 20, overflow: 'hidden' },
   nameBlock: { flex: 1, gap: 2 },
-  name: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2A3344' },
-  cityText: { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#9CA3AF' },
-  rightBlock: { alignItems: 'flex-end', gap: 4 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   onlineDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#52B847' },
-  levelBadge: {
-    backgroundColor: '#EEF2F8', borderRadius: 8,
-    paddingHorizontal: 8, paddingVertical: 3,
-  },
-  levelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 12, color: '#5A6478' },
+  name: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2A3344', flexShrink: 1 },
+  cityText: { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#9CA3AF' },
+  levelBadge: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  lvlIcon: { width: 16, height: 16 },
+  levelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#5A6478' },
   pagination: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 20, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#E8EAF0',
