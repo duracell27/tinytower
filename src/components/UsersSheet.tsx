@@ -310,8 +310,8 @@ const styles = StyleSheet.create({
   name: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2A3344', flexShrink: 1 },
   cityText: { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#9CA3AF' },
   levelBadge: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  lvlIcon: { width: 20, height: 20 },
-  levelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#5A6478' },
+  lvlIcon: { width: 24, height: 24 },
+  levelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 17, color: '#5A6478' },
   pagination: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 20, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#E8EAF0',
