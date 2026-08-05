@@ -159,6 +159,8 @@ export default function UserProfileScreen() {
       {!loading && !error && profile && (
         <ScrollView contentContainerStyle={pStyles.scroll} showsVerticalScrollIndicator={false}>
 
+          <SectionHeader label="Profile" />
+
           {/* Block 1: Header card */}
           <View style={[pStyles.card, { backgroundColor: theme.surface }]}>
 
