@@ -33,6 +33,7 @@ function isOnline(lastSeenAt: string): boolean {
 const LVL_ICON = require('../../assets/img/lvlIcon.png');
 
 function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void }) {
+  const { t } = useTranslation('tabs');
   const online = isOnline(item.lastSeenAt);
   return (
     <Pressable
