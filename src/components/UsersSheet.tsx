@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { api, type UserEntry } from '../services/api';
 import { getUserIcon } from '../utils/userIcon';
 
@@ -56,6 +57,7 @@ function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void })
 }
 
 export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
+  const { t } = useTranslation('tabs');
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [tab, setTab] = useState<Tab>('online');
@@ -107,7 +109,7 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
         setTotal(d.total);
         if (tab === 'online' && page === 1) onCountReady?.(d.total);
       })
-      .catch(() => { if (!cancelled) setError('Failed to load'); })
+      .catch(() => { if (!cancelled) setError(t('users.errorLoad')); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [visible, tab, page]);
@@ -123,7 +125,7 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
       setError(null);
       api.searchPlayers(query, page)
         .then((d) => { if (!cancelled) { setEntries(d.entries); setTotal(d.total); } })
-        .catch(() => { if (!cancelled) setError('Failed to load'); })
+        .catch(() => { if (!cancelled) setError(t('users.errorLoad')); })
         .finally(() => { if (!cancelled) setLoading(false); });
     }, 400);
     return () => {
@@ -144,9 +146,9 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
   if (!mounted) return null;
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: 'online',   label: 'Online' },
-    { key: 'no-city',  label: 'Без міста' },
-    { key: 'search',   label: 'Пошук' },
+    { key: 'online',  label: t('users.tabOnline') },
+    { key: 'no-city', label: t('users.tabNoCity') },
+    { key: 'search',  label: t('users.tabSearch') },
   ];
 
   return (
@@ -158,7 +160,7 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
       <Animated.View style={[styles.sheet, sheetStyle]}>
         <LinearGradient colors={['#3FA535', '#2E7D28']} style={styles.gradientHeader}>
           <View style={styles.header}>
-            <Text style={styles.title}>Users</Text>
+            <Text style={styles.title}>{t('users.title')}</Text>
             <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
               <Text style={styles.closeIcon}>✕</Text>
             </Pressable>
@@ -185,7 +187,7 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
           <View style={styles.searchContainer}>
             <TextInput
               style={styles.searchInput}
-              placeholder="Пошук за нікнеймом..."
+              placeholder={t('users.searchPlaceholder')}
               placeholderTextColor="#9CA3AF"
               value={query}
               onChangeText={(v) => { setQuery(v); setPage(1); }}
@@ -205,13 +207,13 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
 
         {!loading && !error && tab === 'search' && query.length < 2 && (
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyText}>Введіть мінімум 2 символи</Text>
+            <Text style={styles.emptyText}>{t('users.minChars')}</Text>
           </View>
         )}
 
         {!loading && !error && entries.length === 0 && (tab !== 'search' || query.length >= 2) && (
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyText}>Нічого не знайдено</Text>
+            <Text style={styles.emptyText}>{t('users.empty')}</Text>
           </View>
         )}
 

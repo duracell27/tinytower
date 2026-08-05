@@ -87,10 +87,10 @@ export default function MenuScreen() {
 
         <Pressable style={styles.menuItem} onPress={() => setUsersOpen(true)}>
           <View style={styles.usersDot} />
-          <Text style={styles.menuLabel}>Users</Text>
+          <Text style={styles.menuLabel}>{t('menu.users')}</Text>
           {onlineCount !== null && (
             <View style={styles.onlineBadge}>
-              <Text style={styles.onlineBadgeText}>{onlineCount} online</Text>
+              <Text style={styles.onlineBadgeText}>{t('users.onlineBadge', { count: onlineCount })}</Text>
             </View>
           )}
         </Pressable>

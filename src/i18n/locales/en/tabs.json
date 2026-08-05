@@ -120,7 +120,19 @@
     "workers": "My Workers",
     "leaderboard": "Leaderboard",
     "chat": "Chat",
-    "forum": "Forum"
+    "forum": "Forum",
+    "users": "Users"
+  },
+  "users": {
+    "title": "Users",
+    "tabOnline": "Online",
+    "tabNoCity": "No City",
+    "tabSearch": "Search",
+    "searchPlaceholder": "Search by nickname...",
+    "minChars": "Enter at least 2 characters",
+    "empty": "Nothing found",
+    "errorLoad": "Failed to load",
+    "onlineBadge": "{{count}} online"
   },
   "forum": {
     "comingSoon": "Coming soon",
