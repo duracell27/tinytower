@@ -45,17 +45,16 @@ const CAT_ICONS: Record<string, any> = {
   elevator: require('../../assets/img/achivment/achivLiftCategory.png'),
 };
 
-// Production-type icons per floor category
 const BIZ_ICONS: Record<string, any> = {
-  green:  require('../../assets/img/ForkliftIcon.png'),
-  blue:   require('../../assets/img/BusIcon.png'),
-  yellow: require('../../assets/img/TaxiIcon.png'),
-  purple: require('../../assets/img/DeliverytruckIcon.png'),
-  red:    require('../../assets/img/ArmoredtruckIcon.png'),
+  green:  require('../../assets/img/flourTypes/products.png'),
+  blue:   require('../../assets/img/flourTypes/service.png'),
+  yellow: require('../../assets/img/flourTypes/rest.png'),
+  purple: require('../../assets/img/flourTypes/fashion.png'),
+  red:    require('../../assets/img/flourTypes/electronics.png'),
 };
 
 const BUSINESS_LABELS: Record<string, string> = {
-  green: 'Green', blue: 'Blue', yellow: 'Yellow', purple: 'Purple', red: 'Red',
+  green: 'Products', blue: 'Service', yellow: 'Rest', purple: 'Fashion', red: 'Electronics',
 };
 
 const BUSINESS_COLORS: Record<string, string> = {
