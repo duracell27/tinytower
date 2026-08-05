@@ -86,7 +86,11 @@ export default function MenuScreen() {
         </Pressable>
 
         <Pressable style={styles.menuItem} onPress={() => setUsersOpen(true)}>
-          <View style={styles.usersDot} />
+          <Image
+            source={require('../../assets/img/users.png')}
+            style={{ width: 56, height: 56 }}
+            contentFit="contain"
+          />
           <Text style={styles.menuLabel}>{t('menu.users')}</Text>
           {onlineCount !== null && (
             <View style={styles.onlineBadge}>
@@ -146,13 +150,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#2A3344',
   },
-  usersDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#52B847',
-    marginHorizontal: 20,
-  },
+
   onlineBadge: {
     marginLeft: 'auto',
     backgroundColor: '#EAF6E8',
