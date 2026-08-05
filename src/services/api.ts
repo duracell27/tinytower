@@ -14,6 +14,40 @@ export interface LeaderboardResponse {
   currentPlayer: { rank: number; value: number };
 }
 
+export interface UserEntry {
+  id: string;
+  playerName: string;
+  playerLevel: number;
+  city: string | null;
+  lastSeenAt: string;
+}
+
+export interface UsersResponse {
+  entries: UserEntry[];
+  total: number;
+}
+
+export interface PlayerProfile {
+  id: string;
+  playerName: string;
+  playerLevel: number;
+  playerXp: number;
+  openedFloorsCount: number;
+  city: string | null;
+  lastSeenAt: string;
+  createdAt: string;
+  avgStars: number;
+  revenuePerMin: number;
+  maxRevenuePerMin: number;
+  coinBonusPercent: number;
+  xpBonusPercent: number;
+  happyWorkers: number;
+  specialistWorkers: number;
+  totalWorkers: number;
+  businessUpgrades: Record<string, number>;
+  categoryProgress: Record<string, number>;
+}
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? (
   __DEV__ ? 'http://localhost:3000' : 'https://api.tinytower.com'
 );
@@ -121,6 +155,14 @@ export const api = {
   delete: <T>(path: string) => request<T>('DELETE', path),
   leaderboard: (tab: 'level' | 'floors' | 'revenue', page: number) =>
     request<LeaderboardResponse>('GET', `/leaderboard?tab=${tab}&page=${page}`),
+  getOnlinePlayers: (page: number) =>
+    request<UsersResponse>('GET', `/players/online?page=${page}`),
+  getNoCityPlayers: (page: number) =>
+    request<UsersResponse>('GET', `/players/no-city?page=${page}`),
+  searchPlayers: (q: string, page: number) =>
+    request<UsersResponse>('GET', `/players/search?q=${encodeURIComponent(q)}&page=${page}`),
+  getPlayerProfile: (id: string) =>
+    request<PlayerProfile>('GET', `/players/${id}`),
   setTokens,
   clearTokens,
   getAccessToken,
