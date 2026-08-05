@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, Modal, Dimensions } from 'react-nati
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
-  useSharedValue, useAnimatedStyle, withSpring, withDelay, withTiming, Easing,
+  useSharedValue, useAnimatedStyle, withDelay, withTiming, Easing,
 } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
 
@@ -45,9 +45,9 @@ export default function PurchaseSuccessModal() {
     scale.value  = 0.6;
     bodyOp.value = 0;
     bodyY.value  = 16;
-    scale.value  = withSpring(1, { damping: 14, stiffness: 180 });
+    scale.value  = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
     bodyOp.value = withDelay(220, withTiming(1, { duration: 260 }));
-    bodyY.value  = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.back(1.2)) }));
+    bodyY.value  = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) }));
   }, [scale, bodyOp, bodyY]);
 
   if (!payload || activeSheetCount > 0) return null;

@@ -807,15 +807,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (isVip) {
         const spotsLeft = state.hotelCapacity - hotelOccupied;
         if (spotsLeft > 0) {
-          const pendingFloorType = active?.pendingFloorType;
-          newWorkers = Array.from({ length: spotsLeft }, () => {
-            let maxBizIdx: number | undefined;
-            if (pendingFloorType && gameConfig.floorTypes[pendingFloorType]) {
-              const builtCount = getBuiltFloorCountForType(pendingFloorType, state.floors, state.openedFloorTypes ?? {}, gameConfig);
-              maxBizIdx = Math.min(builtCount + WORKER_LOOKAHEAD - 1, gameConfig.floorTypes[pendingFloorType].businesses.length - 1);
-            }
-            return generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0];
-          });
+          // Random colors for VIP batch — no floor type override so workers are diverse
+          newWorkers = Array.from({ length: spotsLeft }, () =>
+            generateRandomWorkers(1, gameConfig)[0],
+          );
         }
       } else if (hotelOccupied < state.hotelCapacity) {
         const pendingFloorType = active?.pendingFloorType;
@@ -824,7 +819,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
           const builtCount = getBuiltFloorCountForType(pendingFloorType, state.floors, state.openedFloorTypes ?? {}, gameConfig);
           maxBizIdx = Math.min(builtCount + WORKER_LOOKAHEAD - 1, gameConfig.floorTypes[pendingFloorType].businesses.length - 1);
         }
-        newWorker = generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0];
+        const generated = generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0];
+        // Worker gender matches visitor appearance shown in elevator
+        newWorker = { ...generated, female: active?.female ?? generated.female };
       }
     }
 

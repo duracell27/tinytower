@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -138,7 +139,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   return (
     <Animated.View style={[styles.wrapper, animatedStyle]}>
       <Pressable
-        onPress={onExit}
+        onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onExit(); }}
         style={({ pressed }) => [styles.exitBtn, { backgroundColor: pillBg }, pressed && { opacity: 0.7 }]}
       >
         <Text style={[styles.exitIcon, pillTextColor && { color: pillTextColor }]}>✕</Text>
@@ -146,7 +147,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
 
       {onBulkAll && bulkLabel && (
         <Pressable
-          onPress={onBulkAll}
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onBulkAll(); }}
           style={({ pressed }) => [styles.bulkBtn, { backgroundColor: pillBg }, pressed && { opacity: 0.7 }]}
         >
           <View style={styles.bulkContent}>
@@ -158,7 +159,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
       )}
 
       <Pressable
-        onPress={onPress}
+        onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onPress(); }}
         style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}
       >
         <LinearGradient colors={colors} style={styles.btnGradient}>

@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, Modal, Dimensions } from 'react-nati
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
-  useSharedValue, useAnimatedStyle, withTiming, withDelay, withSpring, Easing,
+  useSharedValue, useAnimatedStyle, withTiming, withDelay, Easing,
 } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
 import { formatNum } from '../utils/format';
@@ -51,9 +51,9 @@ export default function TaskRewardModal() {
     scale.value = 0.6;
     rewardsOpacity.value = 0;
     rewardsY.value = 16;
-    scale.value = withSpring(1, { damping: 14, stiffness: 180 });
+    scale.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
     rewardsOpacity.value = withDelay(220, withTiming(1, { duration: 260 }));
-    rewardsY.value = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.back(1.2)) }));
+    rewardsY.value = withDelay(220, withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) }));
   }, [scale, rewardsOpacity, rewardsY]);
 
   if (!reward || activeSheetCount > 0) return null;

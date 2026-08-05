@@ -33,10 +33,10 @@ export default function LevelUpModal() {
     starScale.value = 0;
     rewardsY.value = 20;
     rewardsOpacity.value = 0;
-    scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
-    starScale.value = withDelay(150, withTiming(1, { duration: 300, easing: Easing.out(Easing.back(1.3)) }));
+    scale.value = withTiming(1, { duration: 320, easing: Easing.out(Easing.cubic) });
+    starScale.value = withDelay(150, withTiming(1, { duration: 280, easing: Easing.out(Easing.cubic) }));
     rewardsOpacity.value = withDelay(300, withTiming(1, { duration: 250 }));
-    rewardsY.value = withDelay(300, withTiming(0, { duration: 300, easing: Easing.out(Easing.back(1.3)) }));
+    rewardsY.value = withDelay(300, withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) }));
   }, []);
 
 

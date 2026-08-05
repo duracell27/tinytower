@@ -88,6 +88,13 @@
     "briks": "Bricks",
     "glass": "Glass",
     "nails": "Nails",
-    "screw": "Screws"
+    "screw": "Screws",
+    "wood": "Wood",
+    "cement": "Cement"
+  },
+  "vipHotelFillPopup": {
+    "title": "Hotel Filled!",
+    "subtitle": "{{count}} new workers moved into the hotel",
+    "dismiss": "Awesome!"
   }
 }

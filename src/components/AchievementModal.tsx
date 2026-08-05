@@ -53,9 +53,9 @@ export default function AchievementModal() {
     scale.value = 0.5;
     rewardsOpacity.value = 0;
     rewardsY.value = 20;
-    scale.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.back(1.4)) });
+    scale.value = withTiming(1, { duration: 320, easing: Easing.out(Easing.cubic) });
     rewardsOpacity.value = withDelay(250, withTiming(1, { duration: 250 }));
-    rewardsY.value = withDelay(250, withTiming(0, { duration: 300, easing: Easing.out(Easing.back(1.3)) }));
+    rewardsY.value = withDelay(250, withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) }));
   }, []);
 
   const cardStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));

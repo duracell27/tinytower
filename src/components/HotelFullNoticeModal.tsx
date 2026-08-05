@@ -21,7 +21,6 @@ export default function HotelFullNoticeModal() {
   const { t } = useTranslation('lobby');
   const visible = useGameStore((s) => s.hotelFullNotice);
   const dismiss = useGameStore((s) => s.dismissHotelFullNotice);
-  const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const handleGoToHotel = () => {
     dismiss();
@@ -29,7 +28,7 @@ export default function HotelFullNoticeModal() {
   };
 
   return (
-    <Modal visible={visible && activeSheetCount === 0} transparent animationType="fade" onRequestClose={dismiss}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={dismiss}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Pressable style={styles.scrim} onPress={dismiss}>
           <Pressable style={styles.card} onPress={() => {}}>

@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  View, Text, StyleSheet, Modal, TouchableOpacity, useColorScheme,
+  View, Text, StyleSheet, Modal, TouchableOpacity, Pressable, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
@@ -60,6 +60,7 @@ export default function FloorUpgradeModal() {
   return (
     <Modal transparent animationType="fade" visible onRequestClose={close}>
       <View style={styles.backdrop}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={close} />
         <View style={styles.card}>
 
           {/* Colored top strip — floor number + floor name */}
@@ -108,9 +109,8 @@ export default function FloorUpgradeModal() {
                 </View>
 
                 <TouchableOpacity
-                  style={[styles.upgradeBtn, { backgroundColor: canAfford ? scheme.color : '#bbb' }]}
-                  disabled={!canAfford}
-                  onPress={() => { upgradeFloor(floorId); close(); }}
+                  style={[styles.upgradeBtn, { backgroundColor: scheme.color }]}
+                  onPress={() => { upgradeFloor(floorId); if (canAfford) close(); }}
                 >
                   <Text style={styles.upgradeBtnText}>{t('floorUpgrade.upgradeBtn')}</Text>
                 </TouchableOpacity>

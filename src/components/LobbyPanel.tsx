@@ -371,6 +371,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const { t: tContent } = useTranslation('gameContent');
   const [view, setView] = useState<'operate' | 'upgrade'>('operate');
   const [newWorkerPopup, setNewWorkerPopup] = useState<Worker | null>(null);
+  const [vipHotelFillCount, setVipHotelFillCount] = useState<number | null>(null);
   const showHotelFullNotice = useGameStore((s) => s.showHotelFullNotice);
   const [infoVisible, setInfoVisible] = useState(false);
   const isDark = useColorScheme() === 'dark';
@@ -480,7 +481,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   // gesture competes with the popup's Pressable scrim and produces unpredictable
   // touch behaviour on iOS (feels like "interface blocked").
   const hasActivePopup =
-    !!newWorkerPopup || !!builderToolDrop ||
+    !!newWorkerPopup || !!builderToolDrop || !!vipHotelFillCount ||
     !!pendingDeliverAll || infoVisible || !!insufficientResources;
 
   const panGesture = Gesture.Pan()
@@ -525,7 +526,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     if (!visible) return;
     const unsubscribe = useGameStore.subscribe((state, prevState) => {
       if (suppressNewWorkerPopup.current) return;
-      if (state.workers.length > prevState.workers.length) {
+      const added = state.workers.length - prevState.workers.length;
+      if (added > 1) {
+        setVipHotelFillCount(added);
+      } else if (added === 1) {
         const newWorker = state.workers.find((w) => !prevState.workers.some((p) => p.id === w.id));
         if (newWorker) setNewWorkerPopup(newWorker);
       }
@@ -1146,6 +1150,24 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
               </Pressable>
               <Pressable onPress={() => setNewWorkerPopup(null)} style={popupStyles.dismissBtn}>
                 <Text style={[popupStyles.dismissText, isDark && { color: '#8A9A80' }]}>{t('newWorkerPopup.later')}</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        )}
+
+        {/* VIP hotel fill popup */}
+        {vipHotelFillCount && (
+          <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setVipHotelFillCount(null)}>
+            <Pressable style={[popupStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => {}}>
+              <View style={[popupStyles.avatarWrap, { backgroundColor: '#FFF9E6' }]}>
+                <Text style={{ fontSize: 32 }}>🏨</Text>
+              </View>
+              <View style={popupStyles.info}>
+                <Text style={[popupStyles.title, isDark && { color: '#DDE8D8' }]}>{t('vipHotelFillPopup.title')}</Text>
+                <Text style={popupStyles.subtitle}>{t('vipHotelFillPopup.subtitle', { count: vipHotelFillCount })}</Text>
+              </View>
+              <Pressable onPress={() => setVipHotelFillCount(null)} style={popupStyles.dismissBtn}>
+                <Text style={[popupStyles.dismissText, isDark && { color: '#8A9A80' }]}>{t('vipHotelFillPopup.dismiss')}</Text>
               </Pressable>
             </Pressable>
           </Pressable>

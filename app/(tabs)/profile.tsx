@@ -193,28 +193,26 @@ const STAR_66    = require('../../assets/img/star66.png');
 const STAR_33    = require('../../assets/img/star33.png');
 const STAR_EMPTY = require('../../assets/img/starEmpty.png');
 
-function starSource(avg: number, idx: number) {
+const starStyles = StyleSheet.create({
+  row: { flexDirection: 'row', gap: 4, marginBottom: 10 },
+  star: { width: 20, height: 20 },
+});
+
+const starSource = (avg: number, idx: number) => {
   const rem = avg - idx;
   if (rem >= 1)       return STAR_FULL;
   if (rem >= 2 / 3)   return STAR_66;
   if (rem >= 1 / 3)   return STAR_33;
   return STAR_EMPTY;
-}
+};
 
-function FloorStarsRow({ avg }: { avg: number }) {
-  return (
-    <View style={starStyles.row}>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <Image key={i} source={starSource(avg, i)} style={starStyles.star} contentFit="contain" />
-      ))}
-    </View>
-  );
-}
-
-const starStyles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 4, marginBottom: 10 },
-  star: { width: 20, height: 20 },
-});
+const FloorStarsRow = ({ avg }: { avg: number }) => (
+  <View style={starStyles.row}>
+    {[0, 1, 2, 3, 4].map((i) => (
+      <Image key={i} source={starSource(avg, i)} style={starStyles.star} contentFit="contain" />
+    ))}
+  </View>
+);
 
 export default function ProfileScreen() {
   const { t } = useTranslation('tabs');
