@@ -122,6 +122,7 @@ function applyVisitorEffect(
   const targetFloor = visitor.targetFloor ?? 1;
   const tip = calculateTip(role, targetFloor, state.elevatorLevel, config);
   const vipMultiplier = isVip ? 10 : 1;
+  const isToday = now >= state.lastDailyReset;
   let { balance, gems, dailyTips, dailyGemsCollected, workers, floors } = state;
   let tools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 };
   let underConstruction = state.underConstruction;
@@ -131,10 +132,10 @@ function applyVisitorEffect(
     const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel;
     if (dailyGemsCollected < gemLimit) {
       gems += 1;
-      dailyGemsCollected += 1;
+      dailyGemsCollected += 1; // accumulates for limit correctness; callers restore if not today
     } else {
       balance += tip * vipMultiplier;
-      dailyTips += tip * vipMultiplier;
+      if (isToday) dailyTips += tip * vipMultiplier;
     }
   } else if (role === 'builder') {
     if (isVip) {
@@ -160,7 +161,7 @@ function applyVisitorEffect(
     }
   } else {
     balance += tip * vipMultiplier;
-    dailyTips += tip * vipMultiplier;
+    if (isToday) dailyTips += tip * vipMultiplier;
   }
 
   if (role === 'guest' && targetFloor === 1) {
@@ -291,6 +292,10 @@ function handleCollectTip(
   const toolBatch = command.builderTools
     ?? (command.builderTool ? [command.builderTool] : undefined);
   let newState = applyVisitorEffect(state, active, config, playerLevel, now, workerBatch, toolBatch);
+  // For yesterday's commands don't let the gem counter bleed into today's tracking
+  if (now < state.lastDailyReset) {
+    newState = { ...newState, dailyGemsCollected: state.dailyGemsCollected };
+  }
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
   const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
     ? now + config.lobbyConfig.visitorSpawnInterval
@@ -353,6 +358,10 @@ function handleDeliverAll(
     }
 
     newState = applyVisitorEffect(newState, visitor, config, playerLevel, now, preWorkerBatch, toolBatch);
+  }
+  // For yesterday's commands don't let the gem counter bleed into today's tracking
+  if (now < state.lastDailyReset) {
+    newState = { ...newState, dailyGemsCollected: state.dailyGemsCollected };
   }
   // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
   const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
