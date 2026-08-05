@@ -288,8 +288,6 @@ export default function UserProfileScreen() {
           {/* Block 5: Revenue */}
           <SectionHeader label="Revenue" />
           <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
-            <InfoRow icons={[COIN_ICON]} label="Current / min" value={formatNum(profile.revenuePerMin)} />
-
             {/* Coin bonus + XP bonus on one row */}
             <View style={pStyles.bonusRow}>
               <View style={pStyles.bonusHalf}>
@@ -309,6 +307,7 @@ export default function UserProfileScreen() {
               </View>
             </View>
 
+            <InfoRow icons={[COIN_ICON]} label="Current / min" value={formatNum(profile.revenuePerMin)} />
             <InfoRow icons={[COIN_ICON, ARROW_UP]} label="Best / min" value={formatNum(profile.maxRevenuePerMin)} noBorder />
           </View>
 
