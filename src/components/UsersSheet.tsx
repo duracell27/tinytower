@@ -126,7 +126,10 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
         .catch(() => { if (!cancelled) setError('Failed to load'); })
         .finally(() => { if (!cancelled) setLoading(false); });
     }, 400);
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [query, page, tab]);
 
   const totalPages = Math.max(1, Math.ceil(total / 20));

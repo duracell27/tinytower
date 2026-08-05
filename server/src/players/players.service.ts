@@ -142,6 +142,7 @@ export class PlayersService {
             floorId: true,
             productions: {
               select: { slotIdx: true, typeId: true, stage: true, stageStartedAt: true },
+              orderBy: { slotIdx: 'asc' },
             },
           },
         },
@@ -222,8 +223,8 @@ export class PlayersService {
     // floorStars avg
     const starsMap = (player.state?.floorStars ?? {}) as Record<string, number>;
     const starValues = Object.values(starsMap);
-    const avgStars = starValues.length > 0
-      ? starValues.reduce((s, v) => s + v, 0) / starValues.length
+    const avgStars = player.openedFloorsCount > 0
+      ? starValues.reduce((s, v) => s + v, 0) / player.openedFloorsCount
       : 0;
 
     // categoryProgress map
