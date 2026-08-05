@@ -49,7 +49,7 @@ export function processLobbyCommand(
     case 'fill_lobby':
       return handleFillLobby(state, command, config);
     case 'evict_low_level_workers':
-      return handleEvictLowLevelWorkers(state);
+      return handleEvictLowLevelWorkers(state, command.timestamp);
   }
 }
 
@@ -261,7 +261,7 @@ function applyVisitorEffect(
     ...state,
     balance, gems, dailyTips, dailyGemsCollected, workers, floors, tools,
     underConstruction,
-    dailyTasks: residentsGained > 0 ? {
+    dailyTasks: residentsGained > 0 && now >= state.lastDailyReset ? {
       ...state.dailyTasks,
       progress: {
         ...state.dailyTasks.progress,
@@ -301,14 +301,14 @@ function handleCollectTip(
     elevatorFloor: 0,
     nextVisitorAt,
     stats: { ...newState.stats, totalPassengersLifted: newState.stats.totalPassengersLifted + 1 },
-    dailyTasks: {
+    dailyTasks: now >= state.lastDailyReset ? {
       ...newState.dailyTasks,
       progress: {
         ...newState.dailyTasks.progress,
         visitorsLifted: newState.dailyTasks.progress.visitorsLifted + 1,
         vipsLifted: newState.dailyTasks.progress.vipsLifted + (isVip ? 1 : 0),
       },
-    },
+    } : newState.dailyTasks,
   };
   return { success: true, state: newState };
 }
@@ -364,14 +364,14 @@ function handleDeliverAll(
     elevatorFloor: 0,
     nextVisitorAt,
     stats: { ...newState.stats, totalPassengersLifted: newState.stats.totalPassengersLifted + passengersDelivered },
-    dailyTasks: {
+    dailyTasks: now >= state.lastDailyReset ? {
       ...newState.dailyTasks,
       progress: {
         ...newState.dailyTasks.progress,
         visitorsLifted: newState.dailyTasks.progress.visitorsLifted + passengersDelivered,
         vipsLifted: newState.dailyTasks.progress.vipsLifted + vipsDelivered,
       },
-    },
+    } : newState.dailyTasks,
   };
   return { success: true, state: newState };
 }
@@ -438,7 +438,7 @@ function handleExpandHotel(state: GameState): ProcessResult {
   };
 }
 
-function handleEvictLowLevelWorkers(state: GameState): ProcessResult {
+function handleEvictLowLevelWorkers(state: GameState, commandTimestamp: number): ProcessResult {
   if (state.gems < 1) {
     return { success: false, state, error: 'Not enough gems' };
   }
@@ -451,13 +451,13 @@ function handleEvictLowLevelWorkers(state: GameState): ProcessResult {
       ...state,
       gems: state.gems - 1,
       workers: state.workers.filter(w => w.level === 9 || w.assignedFloorId !== null),
-      dailyTasks: {
+      dailyTasks: commandTimestamp >= state.lastDailyReset ? {
         ...state.dailyTasks,
         progress: {
           ...state.dailyTasks.progress,
           residentsEvicted: state.dailyTasks.progress.residentsEvicted + evictedCount,
         },
-      },
+      } : state.dailyTasks,
     },
   };
 }

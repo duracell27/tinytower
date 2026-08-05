@@ -59,7 +59,7 @@ export function processCommand(
     case 'dev_add_gems':
       return { success: true, state: { ...state, gems: state.gems + command.amount } };
     case 'shop_purchase': {
-      const newDailyTasks = command.gems > 0
+      const newDailyTasks = command.gems > 0 && command.timestamp >= state.lastDailyReset
         ? {
             ...state.dailyTasks,
             progress: {
@@ -284,10 +284,10 @@ function handleOpenFloor(
         [String(command.floorId)]: command.floorType,
       },
       underConstruction: state.underConstruction.filter((u) => u.floorId !== command.floorId),
-      dailyTasks: {
+      dailyTasks: command.timestamp >= state.lastDailyReset ? {
         ...state.dailyTasks,
         progress: { ...state.dailyTasks.progress, floorsBuilt: state.dailyTasks.progress.floorsBuilt + 1 },
-      },
+      } : state.dailyTasks,
     },
   };
 }
@@ -374,10 +374,10 @@ function handleEvictWorker(
     state: {
       ...state,
       workers: state.workers.filter((w) => w.id !== command.workerId),
-      dailyTasks: {
+      dailyTasks: command.timestamp >= state.lastDailyReset ? {
         ...state.dailyTasks,
         progress: { ...state.dailyTasks.progress, residentsEvicted: state.dailyTasks.progress.residentsEvicted + 1 },
-      },
+      } : state.dailyTasks,
     },
   };
 }
@@ -530,10 +530,10 @@ function handleBuy(
         stageStartedAt: now,
       }),
       stats: { ...state.stats, totalBought: state.stats.totalBought + 1 },
-      dailyTasks: {
+      dailyTasks: now >= state.lastDailyReset ? {
         ...state.dailyTasks,
         progress: { ...state.dailyTasks.progress, goodsBought: state.dailyTasks.progress.goodsBought + 1 },
-      },
+      } : state.dailyTasks,
     },
   };
 }
@@ -569,10 +569,10 @@ function handleList(
         stageStartedAt: now,
       }),
       stats: { ...state.stats, totalListed: state.stats.totalListed + 1 },
-      dailyTasks: {
+      dailyTasks: now >= state.lastDailyReset ? {
         ...state.dailyTasks,
         progress: { ...state.dailyTasks.progress, goodsListed: state.dailyTasks.progress.goodsListed + 1 },
-      },
+      } : state.dailyTasks,
     },
   };
 }
@@ -626,10 +626,10 @@ function handleCollect(
         stageStartedAt: 0,
       }),
       stats: { ...state.stats, totalCollected: state.stats.totalCollected + 1 },
-      dailyTasks: {
+      dailyTasks: now >= state.lastDailyReset ? {
         ...state.dailyTasks,
         progress: { ...state.dailyTasks.progress, goodsCollected: state.dailyTasks.progress.goodsCollected + 1 },
-      },
+      } : state.dailyTasks,
     },
   };
 }
