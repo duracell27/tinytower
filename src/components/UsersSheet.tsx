@@ -116,17 +116,17 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
   useEffect(() => {
     if (tab !== 'search') return;
     if (query.length < 2) { setEntries([]); setTotal(0); return; }
+    let cancelled = false;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      let cancelled = false;
       setLoading(true);
       setError(null);
       api.searchPlayers(query, page)
         .then((d) => { if (!cancelled) { setEntries(d.entries); setTotal(d.total); } })
         .catch(() => { if (!cancelled) setError('Failed to load'); })
         .finally(() => { if (!cancelled) setLoading(false); });
-      return () => { cancelled = true; };
     }, 400);
+    return () => { cancelled = true; };
   }, [query, page, tab]);
 
   const totalPages = Math.max(1, Math.ceil(total / 20));
@@ -134,7 +134,7 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
   const renderItem = useCallback(({ item }: { item: UserEntry }) => (
     <PlayerCard
       item={item}
-      onPress={() => { onClose(); router.push(`/user-profile/${item.id}`); }}
+      onPress={() => { router.push(`/user-profile/${item.id}`); onClose(); }}
     />
   ), [onClose, router]);
 
