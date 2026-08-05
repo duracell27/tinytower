@@ -25,6 +25,7 @@ model Player {
   lastSeenAt         DateTime            @default(now())
   createdAt          DateTime            @default(now())
   referralCode       String?             @unique
+  city               String?
   referrals          Referral[]          @relation("ReferrerReferrals")
   referredBy         Referral?           @relation("ReferredReferral")
   purchaseNotifications ReferralPurchaseNotification[]
