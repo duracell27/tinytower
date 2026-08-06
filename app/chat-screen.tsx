@@ -124,6 +124,14 @@ export default function ChatScreen() {
     ]);
   };
 
+  const handleAvatarPress = useCallback((playerId: string) => {
+    if (playerId === player?.id) {
+      router.push('/(tabs)/profile');
+    } else {
+      router.push(`/user-profile/${playerId}`);
+    }
+  }, [player?.id, router]);
+
   return (
     <View style={styles.container}>
       {/* White top area */}
@@ -181,6 +189,7 @@ export default function ChatScreen() {
               isOwn={item.playerId === player?.id}
               isAdmin={player?.isAdmin === true}
               onLongPress={handleLongPress}
+              onAvatarPress={() => handleAvatarPress(item.playerId)}
             />
           )}
           contentContainerStyle={styles.list}

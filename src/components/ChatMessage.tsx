@@ -9,6 +9,7 @@ interface Props {
   isOwn: boolean;
   isAdmin: boolean;
   onLongPress?: (id: string, body: string, isOwn: boolean) => void;
+  onAvatarPress?: () => void;
 }
 
 function formatTime(iso: string): string {
@@ -18,16 +19,18 @@ function formatTime(iso: string): string {
   return `${Math.floor(diff / 3600)}h`;
 }
 
-export default function ChatMessage({ message, isOwn, isAdmin, onLongPress }: Props) {
+export default function ChatMessage({ message, isOwn, isAdmin, onLongPress, onAvatarPress }: Props) {
   const canInteract = isOwn || isAdmin;
 
   return (
     <View style={styles.row}>
-      <Image
-        source={getUserIcon(message.playerLevel)}
-        style={styles.avatar}
-        contentFit="cover"
-      />
+      <Pressable onPress={onAvatarPress} disabled={!onAvatarPress} hitSlop={6}>
+        <Image
+          source={getUserIcon(message.playerLevel)}
+          style={styles.avatar}
+          contentFit="cover"
+        />
+      </Pressable>
       <Pressable
         onLongPress={canInteract && onLongPress ? () => onLongPress(message.id, message.body, isOwn) : undefined}
         delayLongPress={350}
