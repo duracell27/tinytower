@@ -34,7 +34,7 @@ const testConfig: GameConfig = {
 };
 
 function makeVisitor(overrides?: Partial<Visitor>): Visitor {
-  return { id: 'v1', role: 'guest', targetFloor: 3, hairColor: '#5C3A22', female: false, ...overrides };
+  return { id: 'v1', role: 'guest', targetFloor: 3, ...overrides };
 }
 
 function makeState(overrides?: Partial<GameState>): GameState {
@@ -42,27 +42,25 @@ function makeState(overrides?: Partial<GameState>): GameState {
 }
 
 describe('spawn_visitor', () => {
-  it('adds visitor to lobby with role assigned at spawn', () => {
+  it('adds blank visitor to lobby (no role, no appearance)', () => {
     const state = makeState({ lobbyVisitors: [] });
     const cmd: Command = {
       id: 'c1', type: 'spawn_visitor', timestamp: 1000,
-      visitorId: 'v1', role: 'guest', targetFloor: 3, hairColor: '#5C3A22', female: false,
+      visitorId: 'v1',
     };
     const result = processCommand(state, cmd, testConfig, 1000);
     expect(result.success).toBe(true);
     expect(result.state.lobbyVisitors).toHaveLength(1);
     expect(result.state.lobbyVisitors[0].id).toBe('v1');
-    expect(result.state.lobbyVisitors[0].role).toBe('guest');
+    expect(result.state.lobbyVisitors[0].role).toBeUndefined();
+    expect(result.state.lobbyVisitors[0].hairColor).toBeUndefined();
     expect(result.state.nextVisitorAt).toBe(1000 + 120_000);
   });
 
   it('fails when lobby is full', () => {
     const visitors = Array.from({ length: 10 }, (_, i) => makeVisitor({ id: `v${i}` }));
     const state = makeState({ lobbyVisitors: visitors, lobbyCapacity: 10 });
-    const cmd: Command = {
-      id: 'c1', type: 'spawn_visitor', timestamp: 1000,
-      visitorId: 'v99', role: 'guest', targetFloor: 2, hairColor: '#5C3A22', female: false,
-    };
+    const cmd: Command = { id: 'c1', type: 'spawn_visitor', timestamp: 1000, visitorId: 'v99' };
     const result = processCommand(state, cmd, testConfig, 1000);
     expect(result.success).toBe(false);
   });
@@ -92,6 +90,21 @@ describe('lift_visitor', () => {
     const cmd: Command = { id: 'c1', type: 'lift_visitor', timestamp: 1000, role: 'guest', targetFloor: 2 };
     const result = processCommand(state, cmd, testConfig, 1000);
     expect(result.success).toBe(false);
+  });
+
+  it('assigns role + appearance from command to lobbyVisitors[0]', () => {
+    const state = makeState({ lobbyVisitors: [{ id: 'v1' }], elevatorLevel: 1 });
+    const cmd: Command = {
+      id: 'c1', type: 'lift_visitor', timestamp: 1000,
+      role: 'guest', targetFloor: 3, isVip: true, hairColor: '#5C3A22', female: true,
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.lobbyVisitors[0].role).toBe('guest');
+    expect(result.state.lobbyVisitors[0].isVip).toBe(true);
+    expect(result.state.lobbyVisitors[0].hairColor).toBe('#5C3A22');
+    expect(result.state.lobbyVisitors[0].female).toBe(true);
+    expect(result.state.elevatorFloor).toBe(1);
   });
 });
 
@@ -234,6 +247,28 @@ describe('deliver_all', () => {
   });
 });
 
+describe('deliver_all with resolvedVisitors', () => {
+  it('uses resolvedVisitors for role/targetFloor when visitors are blank', () => {
+    const state = makeState({
+      lobbyVisitors: [{ id: 'v1' }, { id: 'v2' }],
+      gems: 5,
+      elevatorFloor: 0,
+      workers: [],
+    });
+    const cmd: Command = {
+      id: 'c1', type: 'deliver_all', timestamp: 1000,
+      resolvedVisitors: [
+        { role: 'guest', targetFloor: 2, isVip: false },
+        { role: 'guest', targetFloor: 3, isVip: false },
+      ],
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.lobbyVisitors).toHaveLength(0);
+    expect(result.state.gems).toBe(4); // 5 - 1 (deliver_all cost)
+  });
+});
+
 describe('upgrade_elevator', () => {
   it('increments elevator level and deducts gems equal to target level', () => {
     // testConfig has 2 floors → max = 2; starting at level 1, cost = 1+1 = 2
@@ -373,6 +408,19 @@ describe('passenger tracking', () => {
 });
 
 describe('fill_lobby', () => {
+  it('creates blank visitors without roles', () => {
+    const state = makeState({ lobbyVisitors: [], gems: 10, dailyFillLobbyUses: 0 });
+    const cmd: Command = {
+      id: 'c1', type: 'fill_lobby', timestamp: 1000,
+      visitors: [{ visitorId: 'v1' }, { visitorId: 'v2' }],
+    };
+    const result = processCommand(state, cmd, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.lobbyVisitors).toHaveLength(2);
+    expect(result.state.lobbyVisitors[0].id).toBe('v1');
+    expect(result.state.lobbyVisitors[0].role).toBeUndefined();
+  });
+
   it('fills lobby to capacity and deducts 1 gem on first use', () => {
     const state = makeState({ gems: 5, lobbyCapacity: 3, lobbyVisitors: [] });
     const cmd: Command = {
