@@ -4,28 +4,14 @@ import i18n from '../i18n';
 import { api } from '../services/api';
 import { setupUserPersistence, teardownPersistence } from '../services/persistence';
 
-type GuestNameLocale = 'en';
-
-const GUEST_NAME_POOLS: Record<GuestNameLocale, { adjectives: string[]; nouns: string[] }> = {
-  en: {
-    adjectives: ['Bold', 'Cheerful', 'Swift', 'Wise', 'Lucky'],
-    nouns: ['Builder', 'Architect', 'Owner', 'Foreman', 'Creator'],
-  },
-};
-
-function currentGuestNameLocale(): GuestNameLocale {
-  return 'en';
-  // Widen this once a second language is supported: return the app's
-  // current i18n language if it's a supported GuestNameLocale, else 'en'.
-}
-
-void i18n; // referenced above for the future per-language lookup
+void i18n;
 
 interface PlayerInfo {
   id: string;
   email: string;
   playerName: string;
   isAdmin?: boolean;
+  isTemporary?: boolean;
 }
 
 interface AuthState {
@@ -42,7 +28,8 @@ interface AuthActions {
   quickLogin: (password: string) => Promise<void>;
   logout: () => void;
   loadTokens: () => void;
-  enterAsGuest: () => void;
+  enterAsGuest: () => Promise<void>;
+  convertAccount: (email: string, password: string, playerName: string) => Promise<void>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -133,17 +120,33 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ player: null, isAuthenticated: false, isGuest: false });
   },
 
-  enterAsGuest: () => {
-    const pool = GUEST_NAME_POOLS[currentGuestNameLocale()];
-    const adj = pool.adjectives[Math.floor(Math.random() * pool.adjectives.length)];
-    const noun = pool.nouns[Math.floor(Math.random() * pool.nouns.length)];
-    const guestPlayer: PlayerInfo = {
-      id: `guest_${Date.now()}`,
-      email: '',
-      playerName: `${adj} ${noun}`,
-    };
-    set({ player: guestPlayer, isAuthenticated: false, isGuest: true });
-    setupUserPersistence(guestPlayer.id);
+  enterAsGuest: async () => {
+    set({ isLoading: true });
+    try {
+      const data = await api.registerAsGuest();
+      api.setTokens(data.accessToken, data.refreshToken);
+      getStorage().set('player', JSON.stringify(data.player));
+      saveLastPlayer(data.player);
+      set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
+      setupUserPersistence(data.player.id);
+    } catch (e) {
+      set({ isLoading: false });
+      throw e;
+    }
+  },
+
+  convertAccount: async (email, password, playerName) => {
+    set({ isLoading: true });
+    try {
+      const data = await api.convertAccount(email, password, playerName);
+      const player = data.player;
+      getStorage().set('player', JSON.stringify(player));
+      saveLastPlayer(player);
+      set({ player, lastPlayer: player, isLoading: false });
+    } catch (e) {
+      set({ isLoading: false });
+      throw e;
+    }
   },
 
   loadTokens: () => {

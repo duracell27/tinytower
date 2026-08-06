@@ -156,6 +156,7 @@ export function setupUserPersistence(userId: string): void {
     useGameStore.getState().hydrate(savedState);
   } else {
     useGameStore.getState().reset();
+    useGameStore.setState({ isHydrated: true });
   }
 
   storeUnsubscribe = useGameStore.subscribe((state) => {

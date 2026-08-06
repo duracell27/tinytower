@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
@@ -221,6 +221,8 @@ export default function ProfileScreen() {
   const player = useAuthStore((s) => s.player);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useAuthStore((s) => s.logout);
+  const convertAccount = useAuthStore((s) => s.convertAccount);
+  const isTemporary = player?.isTemporary ?? false;
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
@@ -275,6 +277,33 @@ export default function ProfileScreen() {
 
   const [syncExpanded, setSyncExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [convertOpen, setConvertOpen] = useState(false);
+  const [convertEmail, setConvertEmail] = useState('');
+  const [convertPassword, setConvertPassword] = useState('');
+  const [convertName, setConvertName] = useState(player?.playerName ?? '');
+  const [convertError, setConvertError] = useState('');
+  const [convertLoading, setConvertLoading] = useState(false);
+
+  const handleConvert = async () => {
+    if (!convertEmail.trim() || !convertPassword.trim() || !convertName.trim()) {
+      setConvertError(t('profile.convert.errorFillAll'));
+      return;
+    }
+    if (convertPassword.length < 6) {
+      setConvertError(t('profile.convert.errorPasswordShort'));
+      return;
+    }
+    setConvertLoading(true);
+    setConvertError('');
+    try {
+      await convertAccount(convertEmail.trim(), convertPassword, convertName.trim());
+      setConvertOpen(false);
+    } catch (e) {
+      setConvertError(e instanceof Error ? e.message : t('profile.convert.errorGeneric'));
+    } finally {
+      setConvertLoading(false);
+    }
+  };
 
   const syncStatus = commandQueueLength > 2000
     ? 'critical'
@@ -432,6 +461,16 @@ export default function ProfileScreen() {
           </Text>
         </Pressable>
 
+        {isTemporary && (
+          <Pressable
+            onPress={() => setConvertOpen(true)}
+            style={({ pressed }) => [styles.convertBanner, pressed && { opacity: 0.88 }]}
+          >
+            <Text style={styles.convertBannerTitle}>{t('profile.convert.bannerTitle')}</Text>
+            <Text style={styles.convertBannerSub}>{t('profile.convert.bannerSub')}</Text>
+          </Pressable>
+        )}
+
         <Pressable onPress={handleLogout} style={({ pressed }) => [
           styles.logoutButton,
           { backgroundColor: theme.surface },
@@ -439,6 +478,53 @@ export default function ProfileScreen() {
         ]}>
           <Text style={styles.logoutText}>{t('profile.logout')}</Text>
         </Pressable>
+
+        <Modal visible={convertOpen} transparent animationType="fade" onRequestClose={() => setConvertOpen(false)}>
+          <KeyboardAvoidingView style={styles.convertOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <Pressable style={styles.convertBackdrop} onPress={() => setConvertOpen(false)} />
+            <View style={[styles.convertCard, { backgroundColor: theme.surface }]}>
+              <Text style={[styles.convertTitle, { color: theme.text }]}>{t('profile.convert.title')}</Text>
+              <Text style={[styles.convertSub, { color: theme.textMuted }]}>{t('profile.convert.subtitle')}</Text>
+
+              {convertError ? <Text style={styles.convertErrorText}>{convertError}</Text> : null}
+
+              <Text style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelName')}</Text>
+              <TextInput
+                style={[styles.convertInput, { borderColor: '#E4E1D3', color: theme.text, backgroundColor: theme.surfaceSub }]}
+                value={convertName}
+                onChangeText={setConvertName}
+                autoCapitalize="words"
+                editable={!convertLoading}
+              />
+
+              <Text style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelEmail')}</Text>
+              <TextInput
+                style={[styles.convertInput, { borderColor: '#E4E1D3', color: theme.text, backgroundColor: theme.surfaceSub }]}
+                value={convertEmail}
+                onChangeText={setConvertEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                editable={!convertLoading}
+              />
+
+              <Text style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelPassword')}</Text>
+              <TextInput
+                style={[styles.convertInput, { borderColor: '#E4E1D3', color: theme.text, backgroundColor: theme.surfaceSub }]}
+                value={convertPassword}
+                onChangeText={setConvertPassword}
+                secureTextEntry
+                editable={!convertLoading}
+              />
+
+              <Pressable onPress={handleConvert} disabled={convertLoading} style={styles.convertSubmit}>
+                {convertLoading
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : <Text style={styles.convertSubmitText}>{t('profile.convert.submit')}</Text>
+                }
+              </Pressable>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
 
         {/* Sync status card */}
         <Pressable
@@ -889,5 +975,89 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#E87C5E',
+  },
+  convertBanner: {
+    marginHorizontal: 20,
+    marginTop: 16,
+    borderRadius: 18,
+    padding: 16,
+    backgroundColor: '#3FA535',
+  },
+  convertBannerTitle: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 16,
+    color: '#fff',
+    marginBottom: 3,
+  },
+  convertBannerSub: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 12.5,
+    color: 'rgba(255,255,255,0.85)',
+  },
+  convertOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  convertBackdrop: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  convertCard: {
+    width: '100%',
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  convertTitle: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 22,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  convertSub: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 18,
+  },
+  convertErrorText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: '#C62828',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  convertLabel: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 13,
+    marginBottom: 5,
+    marginTop: 10,
+  },
+  convertInput: {
+    height: 48,
+    borderRadius: 13,
+    borderWidth: 2,
+    paddingHorizontal: 14,
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 15,
+  },
+  convertSubmit: {
+    marginTop: 20,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: '#3FA535',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  convertSubmitText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 17,
+    color: '#fff',
   },
 });

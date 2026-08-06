@@ -29,7 +29,7 @@ export class PlayerService {
     return this.prisma.player.findUnique({ where: { referralCode: code } });
   }
 
-  async createWithInitialState(email: string, passwordHash: string, playerName: string) {
+  async createWithInitialState(email: string, passwordHash: string, playerName: string, isTemporary = false) {
     const initial = createInitialState(gameConfig);
 
     // Generate a unique referral code with up to 5 retry attempts
@@ -52,6 +52,7 @@ export class PlayerService {
           balance: initial.balance,
           openedFloorsCount: initial.floors.length,
           referralCode,
+          isTemporary,
         },
       });
 
@@ -101,6 +102,13 @@ export class PlayerService {
       });
 
       return player;
+    });
+  }
+
+  async convertToRegistered(playerId: string, email: string, passwordHash: string, playerName: string) {
+    return this.prisma.player.update({
+      where: { id: playerId },
+      data: { email, passwordHash, playerName, isTemporary: false },
     });
   }
 }

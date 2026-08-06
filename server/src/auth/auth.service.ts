@@ -9,6 +9,10 @@ import { PlayerService } from '../player/player.service';
 import { REDIS_CLIENT } from './redis.provider';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
+import type { ConvertDto } from './dto/convert.dto';
+
+const GUEST_ADJECTIVES = ['Bold', 'Cheerful', 'Swift', 'Wise', 'Lucky', 'Brave', 'Clever', 'Happy', 'Calm', 'Eager'];
+const GUEST_NOUNS = ['Builder', 'Architect', 'Owner', 'Foreman', 'Creator', 'Planner', 'Designer', 'Investor'];
 
 @Injectable()
 export class AuthService {
@@ -80,9 +84,51 @@ export class AuthService {
     return this.generateTokens(player.id, player.email, player.isAdmin);
   }
 
+  async registerAsGuest() {
+    const playerName = await this.generateUniqueGuestName();
+    const email = `guest-${randomUUID()}@tmp.tinytower`;
+    const passwordHash = await bcrypt.hash(randomUUID(), 10);
+
+    const player = await this.playerService.createWithInitialState(email, passwordHash, playerName, true);
+    const tokens = await this.generateTokens(player.id, player.email, player.isAdmin);
+    return {
+      ...tokens,
+      player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin, isTemporary: true },
+    };
+  }
+
+  async convertAccount(playerId: string, dto: ConvertDto) {
+    const email = dto.email.toLowerCase().trim();
+    const playerName = dto.playerName.trim();
+
+    const existingEmail = await this.playerService.findByEmail(email);
+    if (existingEmail && existingEmail.id !== playerId) throw new ConflictException('Email already registered');
+
+    const existingName = await this.playerService.findByPlayerName(playerName);
+    if (existingName && existingName.id !== playerId) throw new ConflictException('Player name already taken');
+
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+    const player = await this.playerService.convertToRegistered(playerId, email, passwordHash, playerName);
+    return {
+      player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin, isTemporary: false },
+    };
+  }
+
   async logout(playerId: string) {
     const keys = await this.redis.keys(`refresh:${playerId}:*`);
     if (keys.length > 0) await this.redis.del(...keys);
+  }
+
+  private async generateUniqueGuestName(): Promise<string> {
+    for (let i = 0; i < 10; i++) {
+      const adj = GUEST_ADJECTIVES[Math.floor(Math.random() * GUEST_ADJECTIVES.length)];
+      const noun = GUEST_NOUNS[Math.floor(Math.random() * GUEST_NOUNS.length)];
+      const suffix = Math.floor(Math.random() * 9000) + 1000;
+      const name = `${adj}${noun}${suffix}`;
+      const existing = await this.playerService.findByPlayerName(name);
+      if (!existing) return name;
+    }
+    return `Guest${randomUUID().slice(0, 8)}`;
   }
 
   private async generateTokens(playerId: string, email: string, isAdmin: boolean) {

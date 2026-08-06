@@ -36,6 +36,7 @@ model Player {
   floorTypes         PlayerFloorType[]
   categoryProgress   PlayerCategoryProgress[]
   isAdmin      Boolean     @default(false)
+  isTemporary  Boolean     @default(false)
   chatMessages ChatMessage[]
   forumPosts      ForumPost[]
   forumComments   ForumComment[]

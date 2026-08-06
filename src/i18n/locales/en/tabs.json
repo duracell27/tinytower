@@ -111,7 +111,20 @@
       "copied": "Copied!",
       "clear": "Clear"
     },
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "convert": {
+      "bannerTitle": "Save Your Progress",
+      "bannerSub": "Create an account to keep your tower across devices.",
+      "title": "Create Account",
+      "subtitle": "Your progress will be saved to your account.",
+      "labelName": "Player Name",
+      "labelEmail": "Email",
+      "labelPassword": "Password",
+      "submit": "Save Progress",
+      "errorFillAll": "Please fill in all fields.",
+      "errorPasswordShort": "Password must be at least 6 characters.",
+      "errorGeneric": "Something went wrong. Please try again."
+    }
   },
   "menu": {
     "heading": "Menu",
@@ -172,7 +185,8 @@
     }
   },
   "game": {
-    "buyFloor": "Buy floor {{number}}"
+    "buyFloor": "Buy floor {{number}}",
+    "registerBanner": "Save your progress — create a free account"
   },
   "leaderboard": {
     "title": "Leaderboard",

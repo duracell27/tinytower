@@ -36,6 +36,7 @@ describe('AuthService', () => {
     referralCode: null,
     city: null,
     isAdmin: false,
+      isTemporary: false,
   };
 
   beforeEach(async () => {
@@ -112,6 +113,7 @@ describe('AuthService', () => {
         email: 'test@test.com',
         playerName: 'TestPlayer',
         isAdmin: false,
+      isTemporary: false,
       });
       expect(playerService.createWithInitialState).toHaveBeenCalledWith(
         'test@test.com', 'hashed-password', 'TestPlayer',

@@ -9,8 +9,8 @@ export default function Index() {
     router.replace('/game');
   };
 
-  const handleGuest = () => {
-    useAuthStore.getState().enterAsGuest();
+  const handleGuest = async () => {
+    await useAuthStore.getState().enterAsGuest();
     router.replace('/game');
   };
 

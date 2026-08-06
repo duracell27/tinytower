@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, LayoutChangeEvent, useColorScheme } from 'react-native';
-import { useNavigation } from 'expo-router';
+import { useNavigation, router } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { formatNum } from '../../src/utils/format';
 import Animated, {
@@ -97,6 +97,7 @@ export default function GameScreen() {
   const spawnVisitor = useGameStore((s) => s.spawnVisitor);
   const player = useAuthStore((s) => s.player);
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
+  const isTemporary = player?.isTemporary ?? false;
 
   const underConstruction = useGameStore((s) => s.underConstruction);
   const buyFloor = useGameStore((s) => s.buyFloor);
@@ -613,6 +614,14 @@ export default function GameScreen() {
             nextVisitorAt={nextVisitorAt}
             onPress={() => setLobbyOpen(true)}
           />
+          {isTemporary && (
+            <Pressable
+              onPress={() => router.navigate('/(tabs)/profile')}
+              style={({ pressed }) => [styles.registerBanner, pressed && { opacity: 0.82 }]}
+            >
+              <Text style={styles.registerBannerText}>{t('game.registerBanner')}</Text>
+            </Pressable>
+          )}
         </View>
       );
     }
@@ -629,7 +638,7 @@ export default function GameScreen() {
     return null;
   }, [balance, hotelOccupied, hotelTotal, hasBetterWorker, lobbyVisitors.length, nextVisitorAt,
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
-      showInsufficientResources, towerCollapsed]);
+      showInsufficientResources, towerCollapsed, isTemporary]);
 
   return (
     <View style={styles.container}>
@@ -902,5 +911,19 @@ const styles = StyleSheet.create({
   },
   floorWrapper: {
     marginBottom: 13,
+  },
+  registerBanner: {
+    marginTop: 8,
+    marginHorizontal: 4,
+    borderRadius: 14,
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+    backgroundColor: '#3FA535',
+    alignItems: 'center',
+  },
+  registerBannerText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
+    color: '#fff',
   },
 });

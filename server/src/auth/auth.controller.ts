@@ -4,6 +4,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { RegisterSchema } from './dto/register.dto';
 import { LoginSchema } from './dto/login.dto';
 import { RefreshSchema } from './dto/refresh.dto';
+import { ConvertSchema } from './dto/convert.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +31,21 @@ export class AuthController {
     const result = RefreshSchema.safeParse(body);
     if (!result.success) throw new BadRequestException(result.error.issues);
     return this.authService.refresh(result.data.refreshToken);
+  }
+
+  @Post('guest')
+  @HttpCode(200)
+  async registerAsGuest() {
+    return this.authService.registerAsGuest();
+  }
+
+  @Post('convert')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async convertAccount(@Req() req: { user: { playerId: string } }, @Body() body: unknown) {
+    const result = ConvertSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues);
+    return this.authService.convertAccount(req.user.playerId, result.data);
   }
 
   @Post('logout')

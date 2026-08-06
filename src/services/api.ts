@@ -109,7 +109,7 @@ async function request<T>(
   body?: unknown,
   retry = true,
 ): Promise<T> {
-  const isAuthEndpoint = path === '/auth/login' || path === '/auth/register';
+  const isAuthEndpoint = path === '/auth/login' || path === '/auth/register' || path === '/auth/guest';
   const token = getAccessToken();
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token && !isAuthEndpoint) headers['Authorization'] = `Bearer ${token}`;
@@ -121,6 +121,7 @@ async function request<T>(
   });
 
   if (res.status === 401 && retry && !isAuthEndpoint) {
+    if (!token) throw new Error('Unauthorized');
     const refreshed = await refreshTokens();
     if (refreshed) return request<T>(method, path, body, false);
     clearTokens();
@@ -163,6 +164,14 @@ export const api = {
     request<UsersResponse>('GET', `/players/search?q=${encodeURIComponent(q)}&page=${page}`),
   getPlayerProfile: (id: string) =>
     request<PlayerProfile>('GET', `/players/${id}`),
+  registerAsGuest: () =>
+    request<{ accessToken: string; refreshToken: string; player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: true } }>(
+      'POST', '/auth/guest',
+    ),
+  convertAccount: (email: string, password: string, playerName: string) =>
+    request<{ player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: false } }>(
+      'POST', '/auth/convert', { email, password, playerName },
+    ),
   setTokens,
   clearTokens,
   getAccessToken,
