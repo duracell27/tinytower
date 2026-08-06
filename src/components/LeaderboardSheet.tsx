@@ -235,11 +235,13 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         {!loading && !error && data && !isOnPage && (
           <View style={[styles.row, styles.rowMe, styles.pinnedRow]}>
             <Text style={styles.rankNum}>#{data.currentPlayer.rank}</Text>
-            <Image
-              source={getUserIcon(myLevel)}
-              style={styles.avatar}
-              contentFit="cover"
-            />
+            <Pressable onPress={myId ? () => handleAvatarPress(myId) : undefined} hitSlop={6}>
+              <Image
+                source={getUserIcon(myLevel)}
+                style={styles.avatar}
+                contentFit="cover"
+              />
+            </Pressable>
             <View style={styles.nameBlock}>
               <Text style={styles.name}>{t('leaderboard.you')}</Text>
               <Text style={styles.cityText}>no city</Text>

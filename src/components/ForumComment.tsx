@@ -24,7 +24,7 @@ export default function ForumComment({ comment, isOwn, isAdmin, onLongPress, onA
   const canInteract = isOwn || isAdmin;
   return (
     <View style={styles.row}>
-      <Pressable onPress={onAvatarPress} disabled={!onAvatarPress}>
+      <Pressable onPress={onAvatarPress} disabled={!onAvatarPress} hitSlop={6}>
         <Image source={getUserIcon(comment.playerLevel)} style={styles.avatar} contentFit="cover" />
       </Pressable>
       <Pressable

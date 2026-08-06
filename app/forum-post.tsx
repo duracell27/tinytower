@@ -141,7 +141,7 @@ export default function ForumPostScreen() {
   const ListHeader = activePost ? (
     <View style={styles.postCard}>
       <View style={styles.postMeta}>
-        <Pressable onPress={() => handleAvatarPress(activePost.playerId)}>
+        <Pressable onPress={() => handleAvatarPress(activePost.playerId)} hitSlop={6}>
           <Image source={getUserIcon(activePost.playerLevel)} style={styles.postAvatar} contentFit="cover" />
         </Pressable>
         <View>

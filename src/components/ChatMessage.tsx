@@ -24,7 +24,7 @@ export default function ChatMessage({ message, isOwn, isAdmin, onLongPress, onAv
 
   return (
     <View style={styles.row}>
-      <Pressable onPress={onAvatarPress} disabled={!onAvatarPress}>
+      <Pressable onPress={onAvatarPress} disabled={!onAvatarPress} hitSlop={6}>
         <Image
           source={getUserIcon(message.playerLevel)}
           style={styles.avatar}
