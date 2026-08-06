@@ -66,11 +66,12 @@ const TimestampedBaseSchema = z.object({
 export const SpawnVisitorCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('spawn_visitor'),
   visitorId: z.string(),
-  role: VisitorRoleSchema,
+  // role/isVip/targetFloor/hairColor/female/pendingFloorType are generated during liftVisitor
+  role: VisitorRoleSchema.optional(),
   isVip: z.boolean().optional(),
-  targetFloor: z.number().int().positive(),
-  hairColor: z.string(),
-  female: z.boolean(),
+  targetFloor: z.number().int().positive().optional(),
+  hairColor: z.string().optional(),
+  female: z.boolean().optional(),
   pendingFloorType: z.string().optional(),
 });
 
@@ -79,6 +80,9 @@ export const LiftVisitorCommandSchema = TimestampedBaseSchema.extend({
   role: VisitorRoleSchema,
   isVip: z.boolean().optional(),
   targetFloor: z.number().int().positive(),
+  hairColor: z.string().optional(),
+  female: z.boolean().optional(),
+  pendingFloorType: z.string().optional(),
 });
 
 const ToolKeySchema = z.enum(['briks', 'glass', 'nails', 'screw', 'wood', 'cement']);
@@ -101,11 +105,21 @@ export const CollectTipCommandSchema = TimestampedBaseSchema.extend({
   builderTools: z.array(ToolKeySchema).optional(),
 });
 
+const ResolvedVisitorSchema = z.object({
+  role: VisitorRoleSchema,
+  isVip: z.boolean().optional(),
+  targetFloor: z.number().int().positive(),
+  hairColor: z.string().optional(),
+  female: z.boolean().optional(),
+  pendingFloorType: z.string().optional(),
+});
+
 export const DeliverAllCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('deliver_all'),
   builderTools: z.array(ToolKeySchema).optional(),
   preGeneratedWorkers: z.array(WorkerDataSchema).optional(),
   vipGuestWorkerBatches: z.array(z.array(WorkerDataSchema)).optional(),
+  resolvedVisitors: z.array(ResolvedVisitorSchema).optional(),
 });
 
 export const UpgradeElevatorCommandSchema = TimestampedBaseSchema.extend({
@@ -129,11 +143,13 @@ export const FillLobbyCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('fill_lobby'),
   visitors: z.array(z.object({
     visitorId: z.string(),
-    role: VisitorRoleSchema,
+    // role/appearance/targetFloor are generated during liftVisitor
+    // but kept optional for backward compatibility with old fill_lobby commands
+    role: VisitorRoleSchema.optional(),
     isVip: z.boolean().optional(),
-    targetFloor: z.number().int().positive(),
-    hairColor: z.string(),
-    female: z.boolean(),
+    targetFloor: z.number().int().positive().optional(),
+    hairColor: z.string().optional(),
+    female: z.boolean().optional(),
     pendingFloorType: z.string().optional(),
   })),
 });

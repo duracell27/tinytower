@@ -7,7 +7,7 @@ export const VisitorSchema = z.object({
   role: VisitorRoleSchema.optional(),
   isVip: z.boolean().optional(),
   targetFloor: z.number().int().positive().optional(),
-  hairColor: z.string(),
-  female: z.boolean(),
+  hairColor: z.string().optional(),
+  female: z.boolean().optional(),
   pendingFloorType: z.string().optional(),
 });
