@@ -228,10 +228,10 @@ describe('deliver_all', () => {
     const state = makeState({ lobbyVisitors: visitors, gems: 5, elevatorLevel: 1 });
     const result = processCommand(state, { id: 'c1', type: 'deliver_all', timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(true);
-    // Roles are freshly generated from current state (random), so exact tips are non-deterministic.
     expect(result.state.lobbyVisitors).toHaveLength(0);
     expect(result.state.elevatorFloor).toBe(0);
-    expect(result.state.balance).toBeGreaterThan(1000);
+    // Stored roles are deterministic: guest@floor2 tip=10*1*2=20, guest@floor3 tip=10*1*3=30 → total 1050
+    expect(result.state.balance).toBe(1050);
   });
 
   it('fails with 0 gems', () => {
@@ -266,6 +266,9 @@ describe('deliver_all with resolvedVisitors', () => {
     expect(result.success).toBe(true);
     expect(result.state.lobbyVisitors).toHaveLength(0);
     expect(result.state.gems).toBe(4); // 5 - 1 (deliver_all cost)
+    expect(result.state.stats.totalPassengersLifted).toBe(2);
+    // guest@floor2 tip=10*1*2=20, guest@floor3 tip=10*1*3=30 → total 1050
+    expect(result.state.balance).toBe(1050);
   });
 });
 

@@ -61,7 +61,15 @@ function handleSpawnVisitor(
   if (state.lobbyVisitors.length >= state.lobbyCapacity) {
     return { success: false, state, error: 'Lobby is full' };
   }
-  const visitor: Visitor = { id: command.visitorId };
+  const visitor: Visitor = {
+    id: command.visitorId,
+    role: command.role,
+    targetFloor: command.targetFloor,
+    hairColor: command.hairColor,
+    female: command.female,
+    isVip: command.isVip,
+    pendingFloorType: command.pendingFloorType,
+  };
   const newVisitors = [...state.lobbyVisitors, visitor];
   const willBeFull = newVisitors.length >= state.lobbyCapacity;
   return {
@@ -94,6 +102,7 @@ function handleLiftVisitor(
     pendingFloorType: base.pendingFloorType ?? command.pendingFloorType,
   };
   const updatedVisitors = [active, ...state.lobbyVisitors.slice(1)];
+  // targetFloor is guaranteed non-null: base.targetFloor ?? command.targetFloor, and LiftVisitorCommandSchema requires targetFloor
   const move = Math.min(state.elevatorLevel, active.targetFloor! - state.elevatorFloor);
   if (move <= 0) {
     return { success: false, state, error: 'Already at target floor' };
@@ -539,6 +548,12 @@ function handleFillLobby(
   const slots = state.lobbyCapacity - state.lobbyVisitors.length;
   const newVisitors: Visitor[] = command.visitors.slice(0, slots).map((v) => ({
     id: v.visitorId,
+    role: v.role,
+    targetFloor: v.targetFloor,
+    hairColor: v.hairColor,
+    female: v.female,
+    isVip: v.isVip,
+    pendingFloorType: v.pendingFloorType,
   }));
   return {
     success: true,

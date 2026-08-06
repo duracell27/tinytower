@@ -855,12 +855,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
         return { role: v.role, isVip: v.isVip, targetFloor: v.targetFloor, pendingFloorType: v.pendingFloorType, female: v.female };
       }
       const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
-      const { female } = generateVisitorAppearance();
+      const { hairColor, female } = generateVisitorAppearance();
       const floorTypeKeys = Object.keys(gameConfig.floorTypes);
       const pendingFloorType = (role === 'guest' && targetFloor === 1)
         ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
         : undefined;
-      return { role, isVip, targetFloor, pendingFloorType, female };
+      return { role, isVip, targetFloor, pendingFloorType, hairColor, female };
     });
 
     // Builder tools: 1 per regular builder, 2 per VIP builder (engine ignores if completing construction)
