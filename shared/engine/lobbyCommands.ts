@@ -64,10 +64,10 @@ function handleSpawnVisitor(
   const visitor: Visitor = {
     id: command.visitorId,
     role: command.role,
-    isVip: command.isVip,
     targetFloor: command.targetFloor,
     hairColor: command.hairColor,
     female: command.female,
+    isVip: command.isVip,
     pendingFloorType: command.pendingFloorType,
   };
   const newVisitors = [...state.lobbyVisitors, visitor];
@@ -90,15 +90,20 @@ function handleLiftVisitor(
     return { success: false, state, error: 'No visitors in lobby' };
   }
   const base = state.lobbyVisitors[0];
-  // Apply role/targetFloor from command only on the first lift (when not yet assigned).
+  // Apply role/appearance from command on the first lift (when not yet assigned).
   // Subsequent lifts pass the same stored values so the visitor never changes mid-trip.
-  const active = {
+  const active: Visitor = {
     ...base,
     role: base.role ?? command.role,
     targetFloor: base.targetFloor ?? command.targetFloor,
-  } satisfies Visitor;
+    isVip: base.isVip ?? command.isVip,
+    hairColor: base.hairColor ?? command.hairColor,
+    female: base.female ?? command.female,
+    pendingFloorType: base.pendingFloorType ?? command.pendingFloorType,
+  };
   const updatedVisitors = [active, ...state.lobbyVisitors.slice(1)];
-  const move = Math.min(state.elevatorLevel, active.targetFloor - state.elevatorFloor);
+  // targetFloor is guaranteed non-null: base.targetFloor ?? command.targetFloor, and LiftVisitorCommandSchema requires targetFloor
+  const move = Math.min(state.elevatorLevel, active.targetFloor! - state.elevatorFloor);
   if (move <= 0) {
     return { success: false, state, error: 'Already at target floor' };
   }
@@ -332,7 +337,14 @@ function handleDeliverAll(
     return { success: false, state, error: 'No visitors to deliver' };
   }
   const passengersDelivered = state.lobbyVisitors.length;
-  const vipsDelivered = state.lobbyVisitors.filter((v) => v.isVip ?? false).length;
+  const resolvedList = command.resolvedVisitors ?? state.lobbyVisitors.map((v) => ({
+    role: v.role ?? 'guest' as VisitorRole,
+    isVip: v.isVip ?? false,
+    targetFloor: v.targetFloor ?? 1,
+    pendingFloorType: v.pendingFloorType,
+    female: v.female,
+  }));
+  const vipsDelivered = resolvedList.filter((v) => v.isVip ?? false).length;
   const builderTools = command.builderTools ?? [];
   const preGeneratedWorkers = command.preGeneratedWorkers ?? [];
   const vipGuestWorkerBatches = command.vipGuestWorkerBatches ?? [];
@@ -340,24 +352,33 @@ function handleDeliverAll(
   let workerIdx = 0;
   let vipGuestIdx = 0;
   let newState = { ...state, gems: state.gems - 1 };
-  for (const visitor of state.lobbyVisitors) {
-    const role = visitor.role ?? 'guest';
+  for (let i = 0; i < state.lobbyVisitors.length; i++) {
+    const resolved = resolvedList[i] ?? { role: 'guest' as VisitorRole, targetFloor: 1, isVip: false };
+    const role = resolved.role;
     const isBuilder = role === 'builder';
-    const isVipBuilder = isBuilder && (visitor.isVip ?? false);
+    const isVipBuilder = isBuilder && (resolved.isVip ?? false);
     const toolCount = isVipBuilder ? 2 : isBuilder ? 1 : 0;
     const toolBatch = toolCount > 0 ? builderTools.slice(builderIdx, builderIdx + toolCount) : undefined;
     builderIdx += toolCount;
 
-    const isGuestAtFloor1 = role === 'guest' && visitor.targetFloor === 1;
+    const isGuestAtFloor1 = role === 'guest' && resolved.targetFloor === 1;
     let preWorkerBatch: typeof preGeneratedWorkers | undefined;
-    if (isGuestAtFloor1 && (visitor.isVip ?? false)) {
+    if (isGuestAtFloor1 && (resolved.isVip ?? false)) {
       preWorkerBatch = vipGuestWorkerBatches[vipGuestIdx++] ?? [];
     } else if (isGuestAtFloor1) {
       const w = preGeneratedWorkers[workerIdx++];
       preWorkerBatch = w ? [w] : undefined;
     }
 
-    newState = applyVisitorEffect(newState, visitor, config, playerLevel, now, preWorkerBatch, toolBatch);
+    const visitorForEffect: Visitor = {
+      ...state.lobbyVisitors[i],
+      role: resolved.role,
+      isVip: resolved.isVip,
+      targetFloor: resolved.targetFloor,
+      pendingFloorType: resolved.pendingFloorType,
+      female: resolved.female ?? state.lobbyVisitors[i].female,
+    };
+    newState = applyVisitorEffect(newState, visitorForEffect, config, playerLevel, now, preWorkerBatch, toolBatch);
   }
   // For yesterday's commands don't let the gem counter bleed into today's tracking
   if (now < state.lastDailyReset) {
@@ -528,10 +549,10 @@ function handleFillLobby(
   const newVisitors: Visitor[] = command.visitors.slice(0, slots).map((v) => ({
     id: v.visitorId,
     role: v.role,
-    isVip: v.isVip,
     targetFloor: v.targetFloor,
     hairColor: v.hairColor,
     female: v.female,
+    isVip: v.isVip,
     pendingFloorType: v.pendingFloorType,
   }));
   return {

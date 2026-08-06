@@ -206,12 +206,14 @@ function ElevatorShaft({
   targetFloor,
   currentFloor,
 }: {
-  targetFloor: number;
+  targetFloor?: number;
   currentFloor: number;
 }) {
   // bottom range 6..102 → leaves 6px gap at top of shaft (shaft 148 - cabin 40 - top_pad 6)
-  const cabinBottomTarget = currentFloor > 0 && targetFloor > 0
-    ? 6 + (currentFloor / targetFloor) * 96
+  // targetFloor may be undefined before first liftVisitor; fall back to 0 so cabin stays at bottom
+  const resolvedTarget = targetFloor ?? 0;
+  const cabinBottomTarget = currentFloor > 0 && resolvedTarget > 0
+    ? 6 + (currentFloor / resolvedTarget) * 96
     : 6;
 
   const cabinBottom = useSharedValue(cabinBottomTarget);
@@ -229,7 +231,7 @@ function ElevatorShaft({
 
   return (
     <View style={shaftStyles.container}>
-      <Text style={shaftStyles.targetLabel}>{targetFloor}</Text>
+      <Text style={shaftStyles.targetLabel}>{targetFloor ?? '?'}</Text>
       <LinearGradient colors={['#3C4658', '#2C3445']} style={shaftStyles.shaft}>
         {/* Rails */}
         <View style={shaftStyles.railLeft} />
@@ -733,7 +735,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                               role={activeVisitor.role ?? 'guest'}
                               targetFloor={activeVisitor.targetFloor}
                               pendingFloorType={activeVisitor.pendingFloorType}
-                              female={activeVisitor.female}
+                              female={activeVisitor.female ?? false}
                             />
                           </View>
                           <View style={styles.visitorTextCol}>
