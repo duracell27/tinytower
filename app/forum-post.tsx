@@ -130,10 +130,20 @@ export default function ForumPostScreen() {
   const isPostOwn = activePost?.playerId === player?.id;
   const canModifyPost = isPostOwn || isAdmin;
 
+  const handleAvatarPress = useCallback((playerId: string) => {
+    if (playerId === player?.id) {
+      router.push('/(tabs)/profile');
+    } else {
+      router.push(`/user-profile/${playerId}`);
+    }
+  }, [player?.id, router]);
+
   const ListHeader = activePost ? (
     <View style={styles.postCard}>
       <View style={styles.postMeta}>
-        <Image source={getUserIcon(activePost.playerLevel)} style={styles.postAvatar} contentFit="cover" />
+        <Pressable onPress={() => handleAvatarPress(activePost.playerId)}>
+          <Image source={getUserIcon(activePost.playerLevel)} style={styles.postAvatar} contentFit="cover" />
+        </Pressable>
         <View>
           <Text style={styles.postAuthor}>{activePost.playerName} · Lv.{activePost.playerLevel}</Text>
           <Text style={styles.postDate}>{formatDate(activePost.createdAt)}</Text>
@@ -201,6 +211,7 @@ export default function ForumPostScreen() {
               isOwn={item.playerId === player?.id}
               isAdmin={isAdmin}
               onLongPress={handleLongPressComment}
+              onAvatarPress={() => handleAvatarPress(item.playerId)}
             />
           )}
           ListEmptyComponent={
