@@ -165,7 +165,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         </View>
       </View>
     );
-  }, [myId, tab]);
+  }, [myId, tab, handleAvatarPress]);
 
   if (!mounted) return null;
 
