@@ -9,6 +9,7 @@ interface Props {
   isOwn: boolean;
   isAdmin: boolean;
   onLongPress?: (id: string, body: string, isOwn: boolean) => void;
+  onAvatarPress?: () => void;
 }
 
 function formatTime(iso: string): string {
@@ -19,11 +20,13 @@ function formatTime(iso: string): string {
   return `${Math.floor(diff / 86400)}d`;
 }
 
-export default function ForumComment({ comment, isOwn, isAdmin, onLongPress }: Props) {
+export default function ForumComment({ comment, isOwn, isAdmin, onLongPress, onAvatarPress }: Props) {
   const canInteract = isOwn || isAdmin;
   return (
     <View style={styles.row}>
-      <Image source={getUserIcon(comment.playerLevel)} style={styles.avatar} contentFit="cover" />
+      <Pressable onPress={onAvatarPress} disabled={!onAvatarPress}>
+        <Image source={getUserIcon(comment.playerLevel)} style={styles.avatar} contentFit="cover" />
+      </Pressable>
       <Pressable
         onLongPress={canInteract && onLongPress ? () => onLongPress(comment.id, comment.body, isOwn || isAdmin) : undefined}
         delayLongPress={350}
