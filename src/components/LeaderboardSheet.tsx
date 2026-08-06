@@ -8,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
 import { getUserIcon } from '../utils/userIcon';
@@ -57,6 +58,9 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
   const myId = useAuthStore(s => s.player?.id);
   const myLevel = useGameStore(s => s.playerLevel);
 
+  const router = useRouter();
+  const [pendingNav, setPendingNav] = useState<string | null>(null);
+
   const slideY = useSharedValue(SHEET_HEIGHT);
   const scrimOpacity = useSharedValue(0);
 
@@ -93,6 +97,17 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     return () => { cancelled = true; };
   }, [visible, tab, page, retryKey]);
 
+  useEffect(() => {
+    if (!mounted && pendingNav !== null) {
+      if (pendingNav === '__profile__') {
+        router.push('/(tabs)/profile');
+      } else {
+        router.push(`/user-profile/${pendingNav}`);
+      }
+      setPendingNav(null);
+    }
+  }, [mounted, pendingNav, router]);
+
   const TABS: { key: Tab; label: string }[] = [
     { key: 'level',   label: t('leaderboard.tabLevel') },
     { key: 'floors',  label: t('leaderboard.tabFloors') },
@@ -105,6 +120,11 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
   function formatValue(v: number) {
     return formatNum(v);
   }
+
+  const handleAvatarPress = useCallback((playerId: string) => {
+    setPendingNav(playerId === myId ? '__profile__' : playerId);
+    onClose();
+  }, [myId, onClose]);
 
   const renderEntry = useCallback(({ item }: { item: LeaderboardEntry }) => {
     const isMe = item.playerId === myId;
@@ -128,11 +148,13 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         ) : (
           <Text style={styles.rankNum}>#{item.rank}</Text>
         )}
-        <Image
-          source={getUserIcon(tab === 'level' ? item.value : 1)}
-          style={styles.avatar}
-          contentFit="cover"
-        />
+        <Pressable onPress={() => handleAvatarPress(item.playerId)} hitSlop={6}>
+          <Image
+            source={getUserIcon(tab === 'level' ? item.value : 1)}
+            style={styles.avatar}
+            contentFit="cover"
+          />
+        </Pressable>
         <View style={styles.nameBlock}>
           <Text style={styles.name} numberOfLines={1}>{item.playerName}</Text>
           <Text style={styles.cityText} numberOfLines={1}>{item.city ?? 'no city'}</Text>
