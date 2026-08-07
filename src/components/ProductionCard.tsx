@@ -390,8 +390,8 @@ export default function ProductionCard({
         </Text>
 
         <View style={styles.imageContainer}>
-          <View style={styles.hireSlot}>
-            <Svg viewBox="0 0 24 24" width={30} height={30} fill="#C2BEB2">
+          <View style={[styles.hireSlot, { borderColor: accentColor + '66' }]}>
+            <Svg viewBox="0 0 24 24" width={30} height={30} fill={accentColor + '99'}>
               <Circle cx={12} cy={8} r={4.2} />
               <Path d="M4.5 21c0-4.2 3.4-6.8 7.5-6.8s7.5 2.6 7.5 6.8z" />
             </Svg>
@@ -416,7 +416,7 @@ export default function ProductionCard({
         </Pressable>
 
         <View style={styles.subContainer}>
-          <Text style={styles.statusText}>{t('productionCard.actions.workerWanted')}</Text>
+          <Text style={[styles.pillText, { color: accentColor }]}>{t('productionCard.actions.workerWanted')}</Text>
         </View>
       </View>
     );
@@ -436,8 +436,8 @@ export default function ProductionCard({
       {/* Image / Hire slot */}
       <View style={styles.imageContainer}>
         {isHire ? (
-          <View style={styles.hireSlot}>
-            <Svg viewBox="0 0 24 24" width={30} height={30} fill="#C2BEB2">
+          <View style={[styles.hireSlot, { borderColor: accentColor + '66' }]}>
+            <Svg viewBox="0 0 24 24" width={30} height={30} fill={accentColor + '99'}>
               <Circle cx={12} cy={8} r={4.2} />
               <Path d="M4.5 21c0-4.2 3.4-6.8 7.5-6.8s7.5 2.6 7.5 6.8z" />
             </Svg>
@@ -526,34 +526,34 @@ export default function ProductionCard({
       {/* Sub-block: price or status */}
       <View style={styles.subContainer}>
         {isDeliveryLocked ? (
-          <View style={styles.statusPill}>
-            <Text style={styles.statusText}>{formatTime(deliveryLockMs ?? 0)}</Text>
+          <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
+            <Text style={[styles.pillText, { color: accentColor }]}>{formatTime(deliveryLockMs ?? 0)}</Text>
           </View>
         ) : effectiveStage === 'DELIVERING' ? (
           <Pressable
             onPress={handleSpeedUp}
-            style={({ pressed }) => [styles.speedUpPill, { borderColor: accentColor }, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [styles.pill, { backgroundColor: accentColor + '20', borderColor: accentColor, borderWidth: 1 }, pressed && { opacity: 0.7 }]}
           >
-            <Text style={styles.speedUpPillText}>speed up {speedUpCost}</Text>
+            <Text style={[styles.pillText, { color: accentColor }]}>speed up {speedUpCost}</Text>
             <GemIcon size={12} />
           </Pressable>
         ) : effectiveStage === 'READY_TO_LIST' && subText ? (
-          <View style={styles.statusPill}>
-            <Svg viewBox="0 0 24 24" width={10} height={10} fill="none" stroke="#8A8475" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+          <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
+            <Svg viewBox="0 0 24 24" width={10} height={10} fill="none" stroke={accentColor} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
               <Path d="M3 4h2.2l2.4 10.5h9.1l1.9-7H6.3" />
-              <Circle cx={9} cy={19} r={1.2} fill="#8A8475" stroke="none" />
-              <Circle cx={17} cy={19} r={1.2} fill="#8A8475" stroke="none" />
+              <Circle cx={9} cy={19} r={1.2} fill={accentColor} stroke="none" />
+              <Circle cx={17} cy={19} r={1.2} fill={accentColor} stroke="none" />
             </Svg>
-            <Text style={styles.statusText}>{subText}</Text>
+            <Text style={[styles.pillText, { color: accentColor }]}>{subText}</Text>
           </View>
         ) : isTimer ? (
-          <View style={styles.statusPill}>
-            <Text style={styles.statusText}>{subText}</Text>
+          <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
+            <Text style={[styles.pillText, { color: accentColor }]}>{subText}</Text>
           </View>
         ) : subText ? (
-          <View style={styles.pricePill}>
+          <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
             <CoinIcon size={13} />
-            <Text style={styles.priceText}>{subText}</Text>
+            <Text style={[styles.pillText, { color: accentColor }]}>{subText}</Text>
           </View>
         ) : null}
       </View>
@@ -571,10 +571,6 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingHorizontal: 7,
     paddingBottom: 7,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.55)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.07)',
     shadowColor: 'rgba(60,70,45,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -601,7 +597,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: 'rgba(60,70,45,0.22)',
     backgroundColor: 'rgba(0,0,0,0.02)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -665,55 +660,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statusPill: {
+  pill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     paddingVertical: 2,
-    paddingHorizontal: 11,
+    paddingHorizontal: 8,
     borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.85)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.04)',
   },
-  statusText: {
+  pillText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 10.5,
-    color: '#8A8475',
-  },
-  pricePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 2,
-    paddingLeft: 4,
-    paddingRight: 9,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    shadowColor: 'rgba(120,90,30,1)',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 1,
-    elevation: 1,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.04)',
-  },
-  priceCoinIcon: {
-    width: 13,
-    height: 13,
-    borderRadius: 7,
-    backgroundColor: '#F2B330',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.55)',
-    shadowColor: 'rgba(180,130,30,1)',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 1,
-  },
-  priceText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 11.5,
-    color: '#7C7256',
   },
   workerBadgeColumn: {
     position: 'absolute',
@@ -760,21 +717,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 8,
     color: '#fff',
-  },
-  speedUpPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  speedUpPillText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 10.5,
-    color: '#8A8475',
   },
 });

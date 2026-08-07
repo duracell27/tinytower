@@ -17,6 +17,12 @@ export interface FloorColorScheme {
   cardBg: string;
   nameColor: string;
   stars: number;
+  dark: {
+    color: string;
+    bodyColor: string;
+    cardBg: string;
+    nameColor: string;
+  };
 }
 
 // Single source of truth for all floor type color schemes
@@ -28,6 +34,12 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     cardBg: '#E8F5E5',
     nameColor: '#117200',
     stars: 0,
+    dark: {
+      color: '#6BA34A',
+      bodyColor: '#1C241A',
+      cardBg: '#232C20',
+      nameColor: '#8FCC70',
+    },
   },
   blue: {
     color: '#2E6EC9',
@@ -36,6 +48,12 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     cardBg: '#E5EEFD',
     nameColor: '#003EAD',
     stars: 0,
+    dark: {
+      color: '#3A7ED8',
+      bodyColor: '#18202E',
+      cardBg: '#1E2A3A',
+      nameColor: '#7AADEE',
+    },
   },
   yellow: {
     color: '#E7A52B',
@@ -44,6 +62,12 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     cardBg: '#FDF5E4',
     nameColor: '#AD6F00',
     stars: 0,
+    dark: {
+      color: '#F0B030',
+      bodyColor: '#26201A',
+      cardBg: '#302820',
+      nameColor: '#F0C060',
+    },
   },
   purple: {
     color: '#9A6FD0',
@@ -52,6 +76,12 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     cardBg: '#F2ECFF',
     nameColor: '#6A40A0',
     stars: 0,
+    dark: {
+      color: '#A87EDE',
+      bodyColor: '#201A2E',
+      cardBg: '#28203A',
+      nameColor: '#C4A0F0',
+    },
   },
   red: {
     color: '#E05050',
@@ -60,6 +90,12 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     cardBg: '#FFF0F0',
     nameColor: '#B02020',
     stars: 0,
+    dark: {
+      color: '#E86060',
+      bodyColor: '#2A1A1A',
+      cardBg: '#342020',
+      nameColor: '#F08080',
+    },
   },
 };
 
@@ -137,12 +173,16 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
   })();
   const floorName = dynamicFloorName ?? tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
   const isDark = useColorScheme() === 'dark';
+  const effectiveColor = isDark ? scheme.dark.color : scheme.color;
+  const effectiveBodyColor = isDark ? scheme.dark.bodyColor : scheme.bodyColor;
+  const effectiveCardBg = isDark ? scheme.dark.cardBg : scheme.cardBg;
+  const effectiveNameColor = isDark ? scheme.dark.nameColor : scheme.nameColor;
 
   return (
     <View style={[styles.floorContainer, isDark && styles.floorContainerDark]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: scheme.color }]}>
-        <View style={[styles.headerEdge, { backgroundColor: shadeColor(scheme.color, -22) }]} />
+      <View style={[styles.header, { backgroundColor: effectiveColor }]}>
+        <View style={[styles.headerEdge, { backgroundColor: shadeColor(effectiveColor, -22) }]} />
         <View style={styles.floorNumberBadge}>
           <Text style={styles.floorNumberText}>{floorId}</Text>
         </View>
@@ -171,7 +211,7 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
       </View>
 
       {/* Production cards */}
-      <View style={[styles.cardsContainer, { backgroundColor: scheme.bodyColor }]}>
+      <View style={[styles.cardsContainer, { backgroundColor: effectiveBodyColor }]}>
         {floor.productions.map((production, idx) => {
           const slotWorker = getWorkerForSlot(workers, floorId, idx);
           return (
@@ -184,8 +224,8 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
               floorType={floorType}
               slotIdx={idx}
               floorAvailableTypes={availableTypes}
-              cardBg={scheme.cardBg}
-              nameColor={scheme.nameColor}
+              cardBg={effectiveCardBg}
+              nameColor={effectiveNameColor}
               productTitle={tContent(`productionTypes.${availableTypes[idx]}.displayName`, {
                 defaultValue: availableTypes[idx] ?? t('floorCard.productFallback', { index: idx + 1 }),
               })}
@@ -193,7 +233,7 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
               worker={slotWorker}
               floorDiscount={discount}
               specialistBonus={specialistBonus}
-              accentColor={scheme.color}
+              accentColor={effectiveColor}
               onHire={onHireSlot}
               deliveryLockMs={deliveryLockMs}
               gems={gems}
@@ -207,9 +247,6 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
         })}
       </View>
 
-      {isDark && (
-        <View style={styles.darkOverlay} pointerEvents="none" />
-      )}
     </View>
   );
 }
@@ -231,11 +268,6 @@ const styles = StyleSheet.create({
   floorContainerDark: {
     shadowColor: 'rgba(0,0,0,0.8)',
     shadowOpacity: 0.45,
-  },
-  darkOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.30)',
-    borderRadius: 24,
   },
   header: {
     flexDirection: 'row',

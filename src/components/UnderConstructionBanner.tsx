@@ -72,6 +72,7 @@ export default function UnderConstructionBanner({
   const canStart = requiredTools.every(({ tool, count }) => (tools?.[tool as keyof typeof tools] ?? 0) >= count);
 
   const isDark = useColorScheme() === 'dark';
+
   const [collapsed, setCollapsed] = useState<boolean>(
     () => uiStorage.getBoolean(`uc-collapsed-${floorId}`) ?? false,
   );
@@ -92,12 +93,18 @@ export default function UnderConstructionBanner({
     const g = Math.round(255 - (255 - ((num >> 8) & 0xff)) * mix);
     const b = Math.round(255 - (255 - (num & 0xff)) * mix);
     const cardBg = `rgb(${r},${g},${b})`;
+    const darkMix = 0.15;
+    const dr = Math.round((num >> 16) * darkMix);
+    const dg = Math.round(((num >> 8) & 0xff) * darkMix);
+    const db = Math.round((num & 0xff) * darkMix);
+    const darkCardBg = `rgb(${dr},${dg},${db})`;
+    const effectiveCardBg = isDark ? darkCardBg : cardBg;
 
     // Collapsed: compact row
     if (collapsed) {
       return (
-        <View style={[styles.collapsedRow, { borderColor: typeColor, backgroundColor: cardBg }]}>
-          <Text style={styles.collapsedTitle} numberOfLines={1}>
+        <View style={[styles.collapsedRow, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
+          <Text style={[styles.collapsedTitle, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>
             {'Floor '}
             <Text style={{ color: typeColor }}>{typeName}</Text>
             {' awaits opening'}
@@ -107,16 +114,15 @@ export default function UnderConstructionBanner({
               <View style={[styles.chevronShape, styles.chevronDown]} />
             </View>
           </Pressable>
-          {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
         </View>
       );
     }
 
     return (
-      <View style={[styles.card, { borderColor: typeColor, backgroundColor: cardBg }]}>
+      <View style={[styles.card, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
         {/* Header row with collapse button */}
         <View style={styles.cardHeader}>
-          <Text style={[styles.cardTitle, { flex: 1 }]}>
+          <Text style={[styles.cardTitle, { flex: 1 }, isDark && { color: '#DDE8D8' }]}>
             {'Floor '}
             <Text style={[styles.cardTitleType, { color: typeColor }]}>{typeName}</Text>
             {' awaits opening.'}
@@ -127,7 +133,7 @@ export default function UnderConstructionBanner({
             </View>
           </Pressable>
         </View>
-        <Text style={styles.cardHint}>
+        <Text style={[styles.cardHint, isDark && { color: '#8A9A80' }]}>
           Gather all required materials to open the business
         </Text>
 
@@ -138,7 +144,7 @@ export default function UnderConstructionBanner({
             const met = have >= count;
             return (
               <View key={tool} style={styles.toolCircleWrap}>
-                <View style={[styles.toolCircle, { borderColor: met ? '#49AA38' : '#C8CDD6' }]}>
+                <View style={[styles.toolCircle, { borderColor: met ? '#49AA38' : '#C8CDD6', backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)' }]}>
                   <Image
                     source={TOOL_IMAGES[tool] ?? TOOL_IMAGES.briks}
                     style={{ width: 28, height: 28 }}
@@ -148,14 +154,14 @@ export default function UnderConstructionBanner({
                 <Text style={[styles.toolCount, { color: met ? '#49AA38' : '#E05050' }]}>
                   {`${have}/${count}`}
                 </Text>
-                <Text style={styles.toolLabel}>{TOOL_NAMES[tool] ?? tool}</Text>
+                <Text style={[styles.toolLabel, isDark && { color: '#8A9A80' }]}>{TOOL_NAMES[tool] ?? tool}</Text>
               </View>
             );
           })}
         </View>
 
         {!canStart && (
-          <Text style={styles.materialsHint}>
+          <Text style={[styles.materialsHint, isDark && { color: '#8A9A80' }]}>
             🛗 Ride the elevator — the builder delivers materials to your warehouse
           </Text>
         )}
@@ -177,14 +183,13 @@ export default function UnderConstructionBanner({
           </LinearGradient>
           {canStart && <View style={styles.startBtnShadow} />}
         </Pressable>
-        {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
       </View>
     );
   }
 
   // State: building (timer) or ready but no type selected yet
   return (
-    <View style={[styles.ribbon, { borderColor: BANNER_COLOR, backgroundColor: BANNER_BG }]}>
+    <View style={[styles.ribbon, { borderColor: BANNER_COLOR, backgroundColor: isDark ? '#221408' : BANNER_BG }]}>
       <View style={styles.ribbonLeft}>
         <Image
           source={require('../../assets/img/workers/builder.png')}
@@ -219,14 +224,14 @@ export default function UnderConstructionBanner({
             </View>
           ) : (
             <View style={styles.timerRow}>
-              <View style={styles.timerPill}>
+              <View style={[styles.timerPill, isDark && { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: BANNER_COLOR }]}>
                 <Text style={[styles.timerText, { color: BANNER_COLOR }]}>
                   {formatCountdown(timeLeft)}
                 </Text>
               </View>
               <Pressable
                 onPress={() => setConfirming(true)}
-                style={styles.speedUpBtn}
+                style={[styles.speedUpBtn, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}
                 hitSlop={6}
               >
                 <Image source={require('../../assets/img/speedUp.png')} style={{ width: 13, height: 13 }} contentFit="contain" />
@@ -254,7 +259,6 @@ export default function UnderConstructionBanner({
           </>
         )}
       </View>
-      {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
     </View>
   );
 }
@@ -519,10 +523,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#A04000',
     borderBottomLeftRadius: 11,
     borderBottomRightRadius: 11,
-  },
-  darkOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.30)',
-    borderRadius: 14,
   },
 });

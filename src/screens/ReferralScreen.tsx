@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
-  Share, ActivityIndicator, TextInput,
+  Share, ActivityIndicator, TextInput, useColorScheme,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { InfoSection } from '../components/InfoSection';
@@ -37,6 +37,7 @@ function MilestoneRow({
   reachable: boolean;
   currentLevel?: number;
 }) {
+  const isDark = useColorScheme() === 'dark';
   const rewardIcon =
     rewardType === 'coins'
       ? require('../../assets/img/coin.png')
@@ -49,7 +50,7 @@ function MilestoneRow({
   return (
     <View style={styles.milestoneRow}>
       <Image source={claimed ? ICON_OK : ICON_CLOCK} style={styles.milestoneIcon} contentFit="contain" />
-      <Text style={styles.milestoneLabel}>{label}</Text>
+      <Text style={[styles.milestoneLabel, isDark && { color: '#8A9A80' }]}>{label}</Text>
       <View style={{ flex: 1 }} />
       {claimed ? (
         <View style={styles.milestoneValueRow}>
@@ -73,11 +74,12 @@ function MilestoneRow({
 }
 
 function ReferralCard({ entry }: { entry: ReferralEntry }) {
+  const isDark = useColorScheme() === 'dark';
   return (
-    <View style={styles.referralCard}>
+    <View style={[styles.referralCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
       <View style={styles.referralNameRow}>
         <Image source={getUserIcon(entry.referredLevel)} style={styles.referralAvatar} contentFit="cover" />
-        <Text style={styles.referralName}>{entry.referredName}</Text>
+        <Text style={[styles.referralName, isDark && { color: '#DDE8D8' }]}>{entry.referredName}</Text>
       </View>
       <MilestoneRow
         label="Registration"
@@ -116,6 +118,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
 
 export default function ReferralScreen() {
   const { code, referrals, isLoading, hasUsedCode, referrerName, isApplying, fetchReferral, applyReferralCode } = useReferralStore();
+  const isDark = useColorScheme() === 'dark';
   const [copied, setCopied] = React.useState(false);
   const [inputCode, setInputCode] = React.useState('');
   const [applyError, setApplyError] = React.useState('');
@@ -178,7 +181,7 @@ export default function ReferralScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <View style={styles.headingRow}>
-            <Text style={styles.heading}>Referrals</Text>
+            <Text style={[styles.heading, isDark && { color: '#DDE8D8' }]}>Referrals</Text>
             <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
               <Image
                 source={require('../../assets/img/InformationIcon.png')}
@@ -189,12 +192,12 @@ export default function ReferralScreen() {
           </View>
 
           {hasUsedCode === false && (
-            <View style={styles.applyCard}>
+            <View style={[styles.applyCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
               <Pressable
                 onPress={handleToggle}
                 style={styles.applyHeader}
               >
-                <Text style={styles.applyLabel}>Have a referral code?</Text>
+                <Text style={[styles.applyLabel, isDark && { color: '#8A9A80' }]}>Have a referral code?</Text>
                 <Animated.View style={chevronStyle}>
                   <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
                     <Path
@@ -211,7 +214,7 @@ export default function ReferralScreen() {
                 <>
                   <View style={styles.applyRow}>
                     <TextInput
-                      style={styles.applyInput}
+                      style={[styles.applyInput, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.08)', color: '#DDE8D8' }]}
                       value={inputCode}
                       onChangeText={(t) => { setInputCode(t.toUpperCase()); setApplyError(''); }}
                       autoCapitalize="characters"
@@ -243,7 +246,7 @@ export default function ReferralScreen() {
           )}
 
           {hasUsedCode && referrerName && (
-            <View style={styles.referredByCard}>
+            <View style={[styles.referredByCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
               <Text style={styles.referredByLabel}>Invited by</Text>
               <View style={styles.referredByRow}>
                 <Image
@@ -251,16 +254,16 @@ export default function ReferralScreen() {
                   style={styles.referredByIcon}
                   contentFit="contain"
                 />
-                <Text style={styles.referredByName}>{referrerName}</Text>
+                <Text style={[styles.referredByName, isDark && { color: '#DDE8D8' }]}>{referrerName}</Text>
               </View>
             </View>
           )}
 
-          <View style={styles.codeCard}>
-            <Text style={styles.codeLabel}>Your code</Text>
+          <View style={[styles.codeCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+            <Text style={[styles.codeLabel, isDark && { color: '#8A9A80' }]}>Your code</Text>
             <View style={styles.codeRow}>
-              <Text style={styles.codeText}>{code ?? '------'}</Text>
-              <Pressable onPress={handleCopy} style={({ pressed }) => [styles.copyBtn, pressed && { opacity: 0.7 }]}>
+              <Text style={[styles.codeText, isDark && { color: '#DDE8D8' }]}>{code ?? '------'}</Text>
+              <Pressable onPress={handleCopy} style={({ pressed }) => [styles.copyBtn, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }, pressed && { opacity: 0.7 }]}>
                 <Text style={styles.copyBtnText}>{copied ? 'Copied!' : 'Copy'}</Text>
               </Pressable>
             </View>
@@ -270,12 +273,12 @@ export default function ReferralScreen() {
           </View>
 
           {referrals.length === 0 ? (
-            <View style={styles.emptyCard}>
+            <View style={[styles.emptyCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
               <Text style={styles.emptyText}>No invited players yet.{'\n'}Share your link!</Text>
             </View>
           ) : (
             <>
-              <Text style={styles.sectionTitle}>Invited players</Text>
+              <Text style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>Invited players</Text>
               {referrals.map((entry) => (
                 <ReferralCard key={entry.id} entry={entry} />
               ))}
@@ -294,7 +297,7 @@ export default function ReferralScreen() {
       {infoVisible && (
         <View style={styles.infoOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-          <View style={styles.infoCard}>
+          <View style={[styles.infoCard, isDark && { backgroundColor: '#2A2F38' }]}>
             <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.infoCardHeader}>
               <Text style={styles.infoCardTitle}>Referrals</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>

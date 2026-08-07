@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, Pressable } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, Pressable, useColorScheme } from 'react-native';
 import AppBackground from '../src/components/AppBackground';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -62,6 +62,7 @@ function ProgressBar({ value, max }: { value: number; max: number }) {
 
 export default function AchievementsScreen() {
   const categoryProgress = useGameStore(s => s.categoryProgress);
+  const isDark = useColorScheme() === 'dark';
   const [infoVisible, setInfoVisible] = useState(false);
 
   return (
@@ -72,7 +73,7 @@ export default function AchievementsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headingRow}>
-          <Text style={styles.heading}>Achievements</Text>
+          <Text style={[styles.heading, isDark && { color: '#DDE8D8' }]}>Achievements</Text>
           <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -95,12 +96,12 @@ export default function AchievementsScreen() {
           const relativeMax = nextLevelConfig ? nextLevelConfig.threshold : 1;
 
           return (
-            <View key={category.key} style={styles.card}>
+            <View key={category.key} style={[styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
               <View style={styles.cardTop}>
                 <Image source={CATEGORY_IMAGES[category.key]} style={styles.categoryIcon} />
                 <View style={styles.cardTopText}>
-                  <Text style={styles.categoryTitle}>{category.title}</Text>
-                  <Text style={styles.levelLabel}>
+                  <Text style={[styles.categoryTitle, isDark && { color: '#DDE8D8' }]}>{category.title}</Text>
+                  <Text style={[styles.levelLabel, isDark && { color: '#8A9A80' }]}>
                     {currentLevel === 0
                       ? 'No rank earned'
                       : `Rank ${currentLevel} · ${currentLevelConfig?.title ?? ''}`}
@@ -120,27 +121,27 @@ export default function AchievementsScreen() {
                   <View style={styles.nextRankRow}>
                     <View style={styles.inlineRow}>
                       <Text style={styles.sectionLabel}>Next rank: </Text>
-                      <Text style={styles.nextTitleBold}>{nextLevelConfig.title}</Text>
+                      <Text style={[styles.nextTitleBold, isDark && { color: '#DDE8D8' }]}>{nextLevelConfig.title}</Text>
                       <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
                     </View>
-                    <Text style={styles.progressCount}>
+                    <Text style={[styles.progressCount, isDark && { color: '#8A9A80' }]}>
                       {formatCompact(relativeProgress)} / {formatCompact(relativeMax)}
                     </Text>
                   </View>
                   <ProgressBar value={relativeProgress} max={relativeMax} />
                   <View style={styles.inlineRow}>
                     <Text style={styles.sectionLabel}>Reward: </Text>
-                    <View style={styles.rewardChip}>
+                    <View style={[styles.rewardChip, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
                       <Image source={DIAMOND_ICON} style={styles.diamondIcon} />
-                      <Text style={styles.rewardChipText}>{nextGems}</Text>
+                      <Text style={[styles.rewardChipText, isDark && { color: '#DDE8D8' }]}>{nextGems}</Text>
                     </View>
                     {nextIncomeBonus > 0 && (
-                      <View style={styles.rewardChipBonus}>
+                      <View style={[styles.rewardChipBonus, isDark && { backgroundColor: 'rgba(160,107,0,0.2)' }]}>
                         <Text style={styles.rewardChipBonusText}>+{nextIncomeBonus}% coins</Text>
                       </View>
                     )}
                     {nextXpBonus > 0 && (
-                      <View style={styles.rewardChipBonus}>
+                      <View style={[styles.rewardChipBonus, isDark && { backgroundColor: 'rgba(160,107,0,0.2)' }]}>
                         <Text style={styles.rewardChipBonusText}>+{nextXpBonus}% XP</Text>
                       </View>
                     )}
@@ -162,7 +163,7 @@ export default function AchievementsScreen() {
       {infoVisible && (
         <View style={styles.infoOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-          <View style={styles.infoCard}>
+          <View style={[styles.infoCard, isDark && { backgroundColor: '#2A2F38' }]}>
             <LinearGradient colors={['#5B8CD6', '#3A6BB5']} style={styles.infoCardHeader}>
               <Text style={styles.infoCardTitle}>Achievements</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>

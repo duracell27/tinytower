@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, useWindowDimensions,
+  View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, useWindowDimensions, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
@@ -90,12 +90,13 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth }: {
   disabled: boolean;
   cardWidth: number;
 }) {
+  const isDark = useColorScheme() === 'dark';
   const baseGems = pack.rewards.gems != null
     ? pack.rewards.gems - (pack.bonusGems ?? 0)
     : null;
 
   return (
-    <View style={[dc.card, { width: cardWidth }, buying && dc.buying]}>
+    <View style={[dc.card, { width: cardWidth }, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }, buying && dc.buying]}>
       <Image source={pack.image} style={dc.img} contentFit="contain" />
 
       {pack.badge && <View style={dc.badgePos}><Badge kind={pack.badge} /></View>}
@@ -103,16 +104,20 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth }: {
       {baseGems != null && (
         <View style={dc.gemRow}>
           <Image source={DIAMOND_ICON} style={dc.gemIcon} contentFit="contain" />
-          <Text style={dc.gemText}>{baseGems.toLocaleString()}</Text>
+          <Text style={[dc.gemText, isDark && { color: '#DDE8D8' }]}>{baseGems.toLocaleString()}</Text>
         </View>
       )}
 
       {pack.bonusGems
-        ? <View style={dc.bonusChip}><Text style={dc.bonusText}>+{pack.bonusGems.toLocaleString()} bonus</Text></View>
-        : <View style={dc.baseChip}><Text style={dc.baseText}>Base price</Text></View>
+        ? <View style={[dc.bonusChip, isDark && { backgroundColor: 'rgba(90,180,70,0.15)' }]}>
+            <Text style={[dc.bonusText, isDark && { color: '#5ABF50' }]}>+{pack.bonusGems.toLocaleString()} bonus</Text>
+          </View>
+        : <View style={[dc.baseChip, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+            <Text style={[dc.baseText, isDark && { color: '#8A9A80' }]}>Base price</Text>
+          </View>
       }
 
-      <Text style={dc.name}>{pack.name}</Text>
+      <Text style={[dc.name, isDark && { color: '#DDE8D8' }]}>{pack.name}</Text>
 
       <Pressable
         style={[dc.btn, disabled && dc.btnDisabled]}

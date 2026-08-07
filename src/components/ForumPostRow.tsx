@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import type { ForumPost } from '../stores/forumStore';
 import { getUserIcon } from '../utils/userIcon';
@@ -25,24 +25,28 @@ function formatAge(iso: string): string {
 }
 
 export default function ForumPostRow({ post, onPress }: Props) {
+  const isDark = useColorScheme() === 'dark';
   return (
-    <Pressable style={styles.row} onPress={onPress}>
+    <Pressable
+      style={[styles.row, isDark && { backgroundColor: '#2A2F38', borderBottomColor: 'rgba(255,255,255,0.08)' }]}
+      onPress={onPress}
+    >
       <Image source={getPostIcon(post)} style={styles.statusIcon} contentFit="contain" />
       <View style={styles.content}>
         <Text
-          style={[styles.title, post.isPinned && styles.titlePinned]}
+          style={[styles.title, post.isPinned && styles.titlePinned, isDark && { color: '#DDE8D8' }]}
           numberOfLines={2}
         >
           {post.title}
         </Text>
         <View style={styles.meta}>
-          <Image source={getUserIcon(post.playerLevel)} style={styles.avatar} contentFit="cover" />
-          <Text style={styles.metaText} numberOfLines={1}>
+          <Image source={getUserIcon(post.playerLevel)} style={[styles.avatar, isDark && { backgroundColor: '#3A3F4A' }]} contentFit="cover" />
+          <Text style={[styles.metaText, isDark && { color: '#5A6470' }]} numberOfLines={1}>
             {post.playerName} · Lv.{post.playerLevel} · {formatAge(post.updatedAt)} · 💬 {post.commentCount}
           </Text>
         </View>
       </View>
-      <Text style={styles.chevron}>›</Text>
+      <Text style={[styles.chevron, isDark && { color: '#5A6470' }]}>›</Text>
     </Pressable>
   );
 }

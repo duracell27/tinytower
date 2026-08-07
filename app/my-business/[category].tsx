@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../../src/stores/gameStore';
@@ -18,6 +19,22 @@ const TYPE_COLORS: Record<FloorType, string> = {
   yellow: '#E5A72E',
   purple: '#9A6FD0',
   red:    '#E05A4A',
+};
+
+const TYPE_LIGHT_GRADIENTS: Record<FloorType, [string, string]> = {
+  green:  ['#3FA535', '#3FA535'],
+  blue:   ['#3376E5', '#3376E5'],
+  yellow: ['#E5A72E', '#E5A72E'],
+  purple: ['#9A6FD0', '#9A6FD0'],
+  red:    ['#E05A4A', '#E05A4A'],
+};
+
+const TYPE_DARK_GRADIENTS: Record<FloorType, [string, string]> = {
+  green:  ['#1E4018', '#143010'],
+  blue:   ['#0E2040', '#0A1830'],
+  yellow: ['#4A3500', '#3A2800'],
+  purple: ['#261040', '#1A0A30'],
+  red:    ['#4A1010', '#380A0A'],
 };
 
 const TOKEN_ICONS: Record<FloorType, ReturnType<typeof require>> = {
@@ -41,6 +58,8 @@ export default function BusinessCategoryScreen() {
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const showTokenInsufficient     = useGameStore((s) => s.showTokenInsufficient);
 
+  const isDark = useColorScheme() === 'dark';
+  const gradColors = isDark ? TYPE_DARK_GRADIENTS[ft] : TYPE_LIGHT_GRADIENTS[ft];
   const level    = businessUpgrades?.[ft] ?? 0;
   const tokenBal = tokens?.[ft] ?? 0;
   const color    = TYPE_COLORS[ft];
@@ -78,8 +97,8 @@ export default function BusinessCategoryScreen() {
         </View>
 
         {/* Level + progress */}
-        <View style={styles.card}>
-          <Text style={styles.levelText}>{tHotel('myBusiness.level', { level })}</Text>
+        <View style={[styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+          <Text style={[styles.levelText, isDark && { color: '#8A9A80' }]}>{tHotel('myBusiness.level', { level })}</Text>
           <Text style={[styles.bonusText, { color }]}>
             {isMaxed ? tHotel('myBusiness.maxLevel') : tHotel('myBusiness.profitBonus', { percent: level * 5 })}
           </Text>
@@ -90,17 +109,17 @@ export default function BusinessCategoryScreen() {
         </View>
 
         {/* Balance */}
-        <View style={styles.balanceCard}>
+        <View style={[styles.balanceCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
           <View style={styles.balanceChip}>
             <CoinIcon size={16} />
             <Text style={styles.balanceCoin}>{formatNum(balance)}</Text>
           </View>
-          <View style={styles.balanceDivider} />
+          <View style={[styles.balanceDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
           <View style={styles.balanceChip}>
             <GemIcon size={14} />
             <Text style={styles.balanceGem}>{formatNum(gems)}</Text>
           </View>
-          <View style={styles.balanceDivider} />
+          <View style={[styles.balanceDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
           <View style={styles.balanceChip}>
             <Image source={TOKEN_ICONS[ft]} style={styles.tokenIcon} contentFit="contain" />
             <Text style={[styles.balanceToken, { color }]}>{formatNum(tokenBal)}</Text>
@@ -112,32 +131,33 @@ export default function BusinessCategoryScreen() {
           onPress={handleUpgrade}
           style={({ pressed }) => [
             styles.upgradeBtn,
-            { backgroundColor: color },
             isMaxed && styles.upgradeBtnDisabled,
             pressed && !isMaxed && styles.upgradeBtnPressed,
           ]}
         >
-          <Text style={styles.upgradeBtnText}>
-            {isMaxed ? tHotel('myBusiness.maxLevel') : tHotel('myBusiness.upgrade')}
-          </Text>
-          {!isMaxed && nextCost && (
-            <View style={styles.costPill}>
-              {nextCost.kind === 'gems' ? (
-                <>
-                  <GemIcon size={14} />
-                  <Text style={styles.costGems}>{formatNum(nextCost.gems)}</Text>
-                </>
-              ) : (
-                <>
-                  <CoinIcon size={14} />
-                  <Text style={styles.costCoins}>{formatNum(nextCost.coins)}</Text>
-                  <Text style={styles.costSep}>+</Text>
-                  <Image source={TOKEN_ICONS[ft]} style={styles.costTokenIcon} contentFit="contain" />
-                  <Text style={[styles.costTokens, { color }]}>{nextCost.tokens}</Text>
-                </>
-              )}
-            </View>
-          )}
+          <LinearGradient colors={gradColors} style={styles.upgradeBtnGradient}>
+            <Text style={styles.upgradeBtnText}>
+              {isMaxed ? tHotel('myBusiness.maxLevel') : tHotel('myBusiness.upgrade')}
+            </Text>
+            {!isMaxed && nextCost && (
+              <View style={[styles.costPill, isDark && { backgroundColor: 'rgba(0,0,0,0.35)' }]}>
+                {nextCost.kind === 'gems' ? (
+                  <>
+                    <GemIcon size={14} />
+                    <Text style={styles.costGems}>{formatNum(nextCost.gems)}</Text>
+                  </>
+                ) : (
+                  <>
+                    <CoinIcon size={14} />
+                    <Text style={styles.costCoins}>{formatNum(nextCost.coins)}</Text>
+                    <Text style={styles.costSep}>+</Text>
+                    <Image source={TOKEN_ICONS[ft]} style={styles.costTokenIcon} contentFit="contain" />
+                    <Text style={[styles.costTokens, { color }]}>{nextCost.tokens}</Text>
+                  </>
+                )}
+              </View>
+            )}
+          </LinearGradient>
         </Pressable>
       </View>
 
@@ -183,7 +203,9 @@ const styles = StyleSheet.create({
   tokenIcon:   { width: 18, height: 18 },
 
   upgradeBtn: {
-    marginHorizontal: 20, marginTop: 16, borderRadius: 18,
+    marginHorizontal: 20, marginTop: 16, borderRadius: 18, overflow: 'hidden',
+  },
+  upgradeBtnGradient: {
     paddingVertical: 16, paddingHorizontal: 20, alignItems: 'center', gap: 10,
   },
   upgradeBtnDisabled: { opacity: 0.45 },

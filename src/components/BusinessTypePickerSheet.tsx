@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import {
-  View, Text, Pressable, Modal, ScrollView, StyleSheet, Dimensions,
+  View, Text, Pressable, Modal, ScrollView, StyleSheet, Dimensions, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
 
@@ -69,6 +69,7 @@ export default function BusinessTypePickerSheet({
   builtFloorCounts = {},
   hotelWorkerCounts = {},
 }: BusinessTypePickerSheetProps) {
+  const isDark = useColorScheme() === 'dark';
   const translateY = useSharedValue(SHEET_HEIGHT);
 
   useEffect(() => {
@@ -104,18 +105,18 @@ export default function BusinessTypePickerSheet({
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <Pressable style={styles.scrim} onPress={onClose} />
-      <Animated.View style={[styles.sheet, sheetStyle]}>
+      <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2026' }]}>
 
         <GestureDetector gesture={panGesture}>
           <View style={styles.handleRow}>
-            <View style={styles.handle} />
+            <View style={[styles.handle, isDark && { backgroundColor: 'rgba(255,255,255,0.18)' }]} />
           </View>
         </GestureDetector>
 
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Choose business type</Text>
-          <Pressable onPress={onClose} style={styles.closeBtn} hitSlop={8}>
-            <Text style={styles.closeBtnText}>✕</Text>
+          <Text style={[styles.title, isDark && { color: '#DDE8D8' }]}>Choose business type</Text>
+          <Pressable onPress={onClose} style={[styles.closeBtn, isDark && { backgroundColor: 'rgba(255,255,255,0.10)' }]} hitSlop={8}>
+            <Text style={[styles.closeBtnText, isDark && { color: '#A0AABC' }]}>✕</Text>
           </Pressable>
         </View>
         <Text style={styles.subtitle}>Floor {underConstruction.floorId}</Text>
@@ -130,6 +131,7 @@ export default function BusinessTypePickerSheet({
                 accessibilityState={{ disabled: isExhausted }}
                 style={({ pressed }) => [
                   styles.typeRow,
+                  isDark && { backgroundColor: '#2A2F38' },
                   isExhausted && styles.typeRowExhausted,
                   !isExhausted && pressed && { opacity: 0.82 },
                 ]}
@@ -140,7 +142,7 @@ export default function BusinessTypePickerSheet({
                   contentFit="contain"
                 />
                 <View style={styles.typeTextCol}>
-                  <Text style={styles.typeName}>{FLOOR_TYPE_NAMES[ft] ?? ft}</Text>
+                  <Text style={[styles.typeName, isDark && { color: '#DDE8D8' }]}>{FLOOR_TYPE_NAMES[ft] ?? ft}</Text>
                   {isExhausted ? (
                     <Text style={styles.typeExhaustedHint}>
                       All floors of this category already built
@@ -149,9 +151,9 @@ export default function BusinessTypePickerSheet({
                     <View style={styles.typeStatsRow}>
                       <Image source={ICON_FLOOR} style={styles.typeStatIcon} contentFit="contain" />
                       <Text style={[styles.typeStatBuilt, { color: TYPE_COLORS[ft] }]}>Built {builtFloorCounts[ft] ?? 0}</Text>
-                      <Text style={styles.typeStatSep}>·</Text>
+                      <Text style={[styles.typeStatSep, isDark && { color: 'rgba(255,255,255,0.2)' }]}>·</Text>
                       <Image source={WORKER_ICONS[ft]} style={styles.typeStatIcon} contentFit="contain" />
-                      <Text style={styles.typeStat}>{hotelWorkerCounts[ft] ?? 0} waiting in the hotel</Text>
+                      <Text style={[styles.typeStat, isDark && { color: '#6A7A88' }]}>{hotelWorkerCounts[ft] ?? 0} waiting in the hotel</Text>
                     </View>
                   )}
                 </View>

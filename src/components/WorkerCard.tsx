@@ -158,7 +158,7 @@ export default function WorkerCard({
                 strokeLinejoin="round"
               />
             </Svg>
-            <Text style={styles.statusText}>{statusText}</Text>
+            <Text style={[styles.statusText, isDark && { color: '#5A6470' }]}>{statusText}</Text>
           </View>
         </View>
 
@@ -243,7 +243,7 @@ export default function WorkerCard({
           </Pressable>
 
           {/* Hint */}
-          <Text style={styles.hintText}>
+          <Text style={[styles.hintText, isDark && { color: '#5A6470' }]}>
             {t('workerCard.hint')}
           </Text>
         </View>

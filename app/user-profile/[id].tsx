@@ -82,19 +82,21 @@ function FloorStarsRow({ avg }: { avg: number }) {
 }
 
 function SectionHeader({ label }: { label: string }) {
-  return <Text style={pStyles.sectionHeader}>{label}</Text>;
+  const theme = useAppTheme();
+  return <Text style={[pStyles.sectionHeader, { color: theme.text }]}>{label}</Text>;
 }
 
 function InfoRow({ icons, label, value, noBorder }: { icons?: any[]; label: string; value: string; noBorder?: boolean }) {
+  const theme = useAppTheme();
   return (
-    <View style={[pStyles.infoRow, noBorder && { borderBottomWidth: 0 }]}>
+    <View style={[pStyles.infoRow, { borderBottomColor: theme.divider }, noBorder && { borderBottomWidth: 0 }]}>
       <View style={pStyles.infoLeft}>
         {icons?.map((src, i) => (
           <Image key={i} source={src} style={pStyles.infoIcon} contentFit="contain" />
         ))}
-        <Text style={pStyles.infoLabel}>{label}</Text>
+        <Text style={[pStyles.infoLabel, { color: theme.textMuted }]}>{label}</Text>
       </View>
-      <Text style={pStyles.infoValue}>{value}</Text>
+      <Text style={[pStyles.infoValue, { color: theme.text }]}>{value}</Text>
     </View>
   );
 }
@@ -253,7 +255,7 @@ export default function UserProfileScreen() {
                   : 'Locked';
                 const isLast = idx === ACHIEVEMENT_CATEGORIES.length - 1;
                 return (
-                  <View key={cat.key} style={[pStyles.achieveRow, isLast && { borderBottomWidth: 0 }]}>
+                  <View key={cat.key} style={[pStyles.achieveRow, { borderBottomColor: theme.divider }, isLast && { borderBottomWidth: 0 }]}>
                     <Image source={CAT_ICONS[cat.key]} style={pStyles.achieveCatIcon} contentFit="contain" />
                     <View style={{ flex: 1 }}>
                       <Text style={[pStyles.achieveName, { color: theme.text }]}>{cat.title}</Text>
@@ -276,7 +278,7 @@ export default function UserProfileScreen() {
               const pct = level * 5;
               const isLast = idx === FLOOR_TYPES.length - 1;
               return (
-                <View key={ft} style={[pStyles.businessRow, isLast && { borderBottomWidth: 0 }]}>
+                <View key={ft} style={[pStyles.businessRow, { borderBottomColor: theme.divider }, isLast && { borderBottomWidth: 0 }]}>
                   <Image source={BIZ_ICONS[ft]} style={pStyles.bizIcon} contentFit="contain" />
                   <Text style={[pStyles.businessName, { color: theme.text }]}>{BUSINESS_LABELS[ft]}</Text>
                   <Text style={[pStyles.businessPct, { color: BUSINESS_COLORS[ft] }]}>+{pct}%</Text>
@@ -289,20 +291,20 @@ export default function UserProfileScreen() {
           <SectionHeader label="Revenue" />
           <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
             {/* Coin bonus + XP bonus on one row */}
-            <View style={pStyles.bonusRow}>
+            <View style={[pStyles.bonusRow, { borderBottomColor: theme.divider }]}>
               <View style={pStyles.bonusHalf}>
                 <Image source={MARKETING_ICON} style={pStyles.infoIcon} contentFit="contain" />
                 <View>
-                  <Text style={pStyles.infoLabel}>Coin bonus</Text>
-                  <Text style={pStyles.infoValue}>+{profile.coinBonusPercent}%</Text>
+                  <Text style={[pStyles.infoLabel, { color: theme.textMuted }]}>Coin bonus</Text>
+                  <Text style={[pStyles.infoValue, { color: theme.text }]}>+{profile.coinBonusPercent}%</Text>
                 </View>
               </View>
-              <View style={pStyles.bonusDivider} />
+              <View style={[pStyles.bonusDivider, { backgroundColor: theme.divider }]} />
               <View style={pStyles.bonusHalf}>
                 <Image source={PR_ICON} style={pStyles.infoIcon} contentFit="contain" />
                 <View>
-                  <Text style={pStyles.infoLabel}>XP bonus</Text>
-                  <Text style={pStyles.infoValue}>+{profile.xpBonusPercent}%</Text>
+                  <Text style={[pStyles.infoLabel, { color: theme.textMuted }]}>XP bonus</Text>
+                  <Text style={[pStyles.infoValue, { color: theme.text }]}>+{profile.xpBonusPercent}%</Text>
                 </View>
               </View>
             </View>
@@ -314,7 +316,7 @@ export default function UserProfileScreen() {
           {/* Block 6: Status */}
           <SectionHeader label="Status" />
           <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
-            <View style={pStyles.statusRow}>
+            <View style={[pStyles.statusRow, { borderBottomColor: theme.divider }]}>
               <View style={[pStyles.statusDot, { backgroundColor: isOnline ? '#52B847' : '#A6ACB8' }]} />
               <Text style={[pStyles.statusText, { color: theme.text }]}>{formatLastSeen(profile.lastSeenAt)}</Text>
             </View>

@@ -39,8 +39,8 @@ interface HotelFloorProps {
 
 export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false, onPress }: HotelFloorProps) {
   const { t } = useTranslation('hotel');
-  const hasVacancy = hotelOccupied < hotelTotal;
   const isDark = useColorScheme() === 'dark';
+  const hasVacancy = hotelOccupied < hotelTotal;
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
@@ -56,7 +56,7 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
         </View>
       </View>
 
-      <View style={[styles.body, { backgroundColor: BODY_BG }]}>
+      <View style={[styles.body, { backgroundColor: isDark ? '#2A1A1E' : BODY_BG }]}>
         <View style={styles.techContent}>
           <Image
             source={require('../../assets/img/hotel.png')}
@@ -74,10 +74,10 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
               </View>
               {/* Right: occupancy count */}
               <View style={styles.occupancyRight}>
-                <Text style={styles.occupancyLabel}>{t('technicalFloor.hotel.occupied')}</Text>
+                <Text style={[styles.occupancyLabel, isDark && { color: '#D494A8' }]}>{t('technicalFloor.hotel.occupied')}</Text>
                 <Text style={styles.occupancyCount}>
-                  <Text style={styles.occupancyNum}>{hotelOccupied}</Text>
-                  <Text style={styles.occupancyTotal}>/{hotelTotal}</Text>
+                  <Text style={[styles.occupancyNum, isDark && { color: '#D46E85' }]}>{hotelOccupied}</Text>
+                  <Text style={[styles.occupancyTotal, isDark && { color: '#A87080' }]}>/{hotelTotal}</Text>
                 </Text>
               </View>
             </View>
@@ -94,7 +94,6 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
           </View>
         </View>
       </View>
-      {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
     </Pressable>
   );
 }
@@ -109,8 +108,8 @@ interface LobbyFloorProps {
 export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress }: LobbyFloorProps) {
   const now = useGameClock(1000);
   const { t } = useTranslation('hotel');
-  const isFull = visitorCount >= lobbyCapacity;
   const isDark = useColorScheme() === 'dark';
+  const isFull = visitorCount >= lobbyCapacity;
   const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
@@ -130,7 +129,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
         </View>
       </View>
 
-      <View style={[styles.body, { backgroundColor: BODY_BG }]}>
+      <View style={[styles.body, { backgroundColor: isDark ? '#2A1A1E' : BODY_BG }]}>
         <View style={styles.techContent}>
           <Image
             source={require('../../assets/img/reception.png')}
@@ -139,25 +138,24 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
           />
           <View style={styles.techInfo}>
             <View style={styles.infoRow}>
-              <Text style={styles.visitorLabel}>{t('technicalFloor.lobby.waiting')}</Text>
+              <Text style={[styles.visitorLabel, isDark && { color: '#C4849A' }]}>{t('technicalFloor.lobby.waiting')}</Text>
               {/* Visitor count pill */}
-              <View style={styles.visitorPill}>
+              <View style={[styles.visitorPill, isDark && { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(168,71,95,0.3)' }]}>
                 <View style={styles.visitorAvatarCircle}>
                   <PersonMiniIcon />
                 </View>
-                <Text style={styles.visitorPillText}>{visitorCount} / {lobbyCapacity}</Text>
+                <Text style={[styles.visitorPillText, isDark && { color: '#D06880' }]}>{visitorCount} / {lobbyCapacity}</Text>
               </View>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.visitorLabel}>
+              <Text style={[styles.visitorLabel, isDark && { color: '#C4849A' }]}>
                 {t('technicalFloor.lobby.newGuest')}{' '}
-                <Text style={styles.timerText}>{timerText}</Text>
+                <Text style={[styles.timerText, isDark && { color: '#C4849A' }]}>{timerText}</Text>
               </Text>
             </View>
           </View>
         </View>
       </View>
-      {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
     </Pressable>
   );
 }
@@ -172,11 +170,6 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 6,
     backgroundColor: '#fff',
-  },
-  darkOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.30)',
-    borderRadius: 16,
   },
   header: {
     flexDirection: 'row',

@@ -23,7 +23,7 @@
     "vip_builder": "VIP Builder"
   },
   "visitor": {
-    "thankYou": "Thank you! 🎉",
+    "thankYou": "Thank you!",
     "floorSuffix": " · floor {{floor}}",
     "arrivedStatus": "Floor {{floor}} · arrived",
     "elevatorStatus": "Elevator on floor {{floor}}"

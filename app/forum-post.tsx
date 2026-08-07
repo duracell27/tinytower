@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, FlatList, Pressable, TextInput, Modal,
-  KeyboardAvoidingView, Platform, Alert, StyleSheet, Keyboard,
+  KeyboardAvoidingView, Platform, Alert, StyleSheet, Keyboard, useColorScheme,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
@@ -34,6 +34,7 @@ export default function ForumPostScreen() {
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const isAdmin = player?.isAdmin ?? false;
 
+  const isDark = useColorScheme() === 'dark';
   const [commentText, setCommentText] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
@@ -139,13 +140,13 @@ export default function ForumPostScreen() {
   }, [player?.id, router]);
 
   const ListHeader = activePost ? (
-    <View style={styles.postCard}>
+    <View style={[styles.postCard, isDark && { backgroundColor: '#2A2F38' }]}>
       <View style={styles.postMeta}>
         <Pressable onPress={() => handleAvatarPress(activePost.playerId)} hitSlop={6}>
-          <Image source={getUserIcon(activePost.playerLevel)} style={styles.postAvatar} contentFit="cover" />
+          <Image source={getUserIcon(activePost.playerLevel)} style={[styles.postAvatar, isDark && { backgroundColor: '#3A3F4A' }]} contentFit="cover" />
         </Pressable>
         <View>
-          <Text style={styles.postAuthor}>{activePost.playerName} · Lv.{activePost.playerLevel}</Text>
+          <Text style={[styles.postAuthor, isDark && { color: '#DDE8D8' }]}>{activePost.playerName} · Lv.{activePost.playerLevel}</Text>
           <Text style={styles.postDate}>{formatDate(activePost.createdAt)}</Text>
         </View>
         {canModifyPost && (
@@ -158,25 +159,25 @@ export default function ForumPostScreen() {
           </Pressable>
         )}
       </View>
-      <Text style={styles.postTitle}>{activePost.title}</Text>
-      <Text style={styles.postBody}>{activePost.body}</Text>
+      <Text style={[styles.postTitle, isDark && { color: '#DDE8D8' }]}>{activePost.title}</Text>
+      <Text style={[styles.postBody, isDark && { color: '#C8D8C0' }]}>{activePost.body}</Text>
       {isAdmin && (
         <View style={styles.adminActions}>
           <Pressable
-            style={[styles.adminBtn, activePost.isPinned && styles.adminBtnActive]}
+            style={[styles.adminBtn, activePost.isPinned && styles.adminBtnActive, isDark && { backgroundColor: '#1A1E24', borderColor: 'rgba(255,255,255,0.08)' }]}
             onPress={() => void pinPost(postId, !activePost.isPinned)}
           >
-            <Text style={styles.adminBtnText}>{activePost.isPinned ? '📌 Unpin' : '📌 Pin'}</Text>
+            <Text style={[styles.adminBtnText, isDark && { color: '#DDE8D8' }]}>{activePost.isPinned ? '📌 Unpin' : '📌 Pin'}</Text>
           </Pressable>
           <Pressable
-            style={[styles.adminBtn, activePost.isClosed && styles.adminBtnActive]}
+            style={[styles.adminBtn, activePost.isClosed && styles.adminBtnActive, isDark && { backgroundColor: '#1A1E24', borderColor: 'rgba(255,255,255,0.08)' }]}
             onPress={() => void closePost(postId, !activePost.isClosed)}
           >
-            <Text style={styles.adminBtnText}>{activePost.isClosed ? '🔓 Open' : '🔒 Close'}</Text>
+            <Text style={[styles.adminBtnText, isDark && { color: '#DDE8D8' }]}>{activePost.isClosed ? '🔓 Open' : '🔒 Close'}</Text>
           </Pressable>
         </View>
       )}
-      <View style={styles.divider} />
+      <View style={[styles.divider, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
       <Text style={styles.commentsLabel}>💬 {activePost.commentCount} comments</Text>
     </View>
   ) : null;
@@ -185,12 +186,12 @@ export default function ForumPostScreen() {
   void category;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+    <View style={[styles.container, { paddingTop: insets.top }, isDark && { backgroundColor: '#1A1E24' }]}>
+      <View style={[styles.header, isDark && { backgroundColor: '#1E2028', borderBottomColor: 'rgba(255,255,255,0.08)' }]}>
         <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
           <Text style={styles.backIcon}>‹</Text>
         </Pressable>
-        <Text style={styles.headerTitle} numberOfLines={1}>
+        <Text style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>
           {activePost?.title ?? ''}
         </Text>
         <View style={styles.headerBtn} />
@@ -223,7 +224,7 @@ export default function ForumPostScreen() {
           }
           ListFooterComponent={
             commentsHasMore ? (
-              <Pressable style={styles.loadMore} onPress={() => void fetchComments(postId)}>
+              <Pressable style={[styles.loadMore, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.08)' }]} onPress={() => void fetchComments(postId)}>
                 <Text style={styles.loadMoreText}>{t('forum.loadMore')}</Text>
               </Pressable>
             ) : null
@@ -235,20 +236,20 @@ export default function ForumPostScreen() {
         {isAuthenticated && activePost && !activePost.isClosed ? (
           <View>
             {editingCommentId && (
-              <View style={styles.editBanner}>
+              <View style={[styles.editBanner, isDark && { backgroundColor: 'rgba(30,64,24,0.5)', borderTopColor: '#3C9A34' }]}>
                 <Text style={styles.editBannerText}>{t('forum.editing')}</Text>
                 <Pressable onPress={() => { setEditingCommentId(null); setCommentText(''); }} hitSlop={8}>
                   <Text style={styles.editBannerCancel}>✕</Text>
                 </Pressable>
               </View>
             )}
-            <View style={[styles.inputBar, { paddingBottom: keyboardVisible ? 8 : Math.max(insets.bottom + 8, 16) }]}>
+            <View style={[styles.inputBar, { paddingBottom: keyboardVisible ? 8 : Math.max(insets.bottom + 8, 16) }, isDark && { backgroundColor: '#1E2028', borderTopColor: 'rgba(255,255,255,0.08)' }]}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, isDark && { backgroundColor: '#2A2F38', color: '#DDE8D8' }]}
                 value={commentText}
                 onChangeText={v => setCommentText(v.slice(0, 1000))}
                 placeholder={t('forum.commentPlaceholder')}
-                placeholderTextColor="#aaa"
+                placeholderTextColor={isDark ? '#4A5468' : '#aaa'}
                 multiline
                 maxLength={1000}
               />
@@ -262,11 +263,11 @@ export default function ForumPostScreen() {
             </View>
           </View>
         ) : activePost?.isClosed ? (
-          <View style={[styles.closedBanner, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <View style={[styles.closedBanner, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: '#1E2028', borderTopColor: 'rgba(255,255,255,0.08)' }]}>
             <Text style={styles.closedText}>🔒 {t('forum.closedBanner')}</Text>
           </View>
         ) : !isAuthenticated ? (
-          <View style={[styles.closedBanner, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <View style={[styles.closedBanner, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: '#1E2028', borderTopColor: 'rgba(255,255,255,0.08)' }]}>
             <Text style={styles.closedText}>{t('forum.guestBanner')}</Text>
           </View>
         ) : null}
@@ -275,18 +276,18 @@ export default function ForumPostScreen() {
       {/* Action sheet for long-press */}
       <Modal visible={!!selectedItem} transparent animationType="fade" onRequestClose={() => setSelectedItem(null)}>
         <Pressable style={styles.overlay} onPress={() => setSelectedItem(null)}>
-          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: '#2A2F38' }]}>
             {selectedItem?.isOwn && (
               <Pressable style={styles.sheetItem} onPress={handleActionEdit}>
                 <Image source={require('../assets/img/edit.png')} style={styles.sheetIcon} contentFit="contain" />
-                <Text style={styles.sheetText}>{t('forum.actionEdit')}</Text>
+                <Text style={[styles.sheetText, isDark && { color: '#DDE8D8' }]}>{t('forum.actionEdit')}</Text>
               </Pressable>
             )}
             <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
               <Image source={require('../assets/img/delete.png')} style={styles.sheetIcon} contentFit="contain" />
               <Text style={[styles.sheetText, styles.sheetDanger]}>{t('forum.actionDelete')}</Text>
             </Pressable>
-            <View style={styles.sheetDivider} />
+            <View style={[styles.sheetDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
             <Pressable style={styles.sheetItem} onPress={() => setSelectedItem(null)}>
               <Text style={[styles.sheetText, styles.sheetCancel]}>{t('forum.cancel')}</Text>
             </Pressable>
@@ -296,9 +297,9 @@ export default function ForumPostScreen() {
 
       {/* Edit post modal */}
       <Modal visible={editPostVisible} animationType="slide" onRequestClose={() => setEditPostVisible(false)}>
-        <KeyboardAvoidingView style={styles.modalContainer} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={[styles.modalContainer, isDark && { backgroundColor: '#1A1E24' }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={{ flex: 1, paddingTop: insets.top }}>
-            <LinearGradient colors={['#4BAD42', '#2E8528']} style={styles.modalHeader}>
+            <LinearGradient colors={isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.modalHeader}>
               <Pressable onPress={() => setEditPostVisible(false)} style={styles.modalClose} hitSlop={10}>
                 <Text style={styles.modalCloseText}>✕</Text>
               </Pressable>
@@ -308,13 +309,13 @@ export default function ForumPostScreen() {
               </Pressable>
             </LinearGradient>
             <TextInput
-              style={styles.editTitleInput}
+              style={[styles.editTitleInput, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.08)', color: '#DDE8D8' }]}
               value={editTitle}
               onChangeText={v => setEditTitle(v.slice(0, 200))}
               maxLength={200}
             />
             <TextInput
-              style={styles.editBodyInput}
+              style={[styles.editBodyInput, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.08)', color: '#DDE8D8' }]}
               value={editBody}
               onChangeText={v => setEditBody(v.slice(0, 5000))}
               multiline

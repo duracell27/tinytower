@@ -624,7 +624,7 @@ export default function ProfileScreen() {
 
               <Text style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelName')}</Text>
               <TextInput
-                style={[styles.convertInput, { borderColor: '#E4E1D3', color: theme.text, backgroundColor: theme.surfaceSub }]}
+                style={[styles.convertInput, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
                 value={convertName}
                 onChangeText={setConvertName}
                 autoCapitalize="words"
@@ -633,7 +633,7 @@ export default function ProfileScreen() {
 
               <Text style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelEmail')}</Text>
               <TextInput
-                style={[styles.convertInput, { borderColor: '#E4E1D3', color: theme.text, backgroundColor: theme.surfaceSub }]}
+                style={[styles.convertInput, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
                 value={convertEmail}
                 onChangeText={setConvertEmail}
                 keyboardType="email-address"
@@ -643,7 +643,7 @@ export default function ProfileScreen() {
 
               <Text style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelPassword')}</Text>
               <TextInput
-                style={[styles.convertInput, { borderColor: '#E4E1D3', color: theme.text, backgroundColor: theme.surfaceSub }]}
+                style={[styles.convertInput, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
                 value={convertPassword}
                 onChangeText={setConvertPassword}
                 secureTextEntry
@@ -708,7 +708,7 @@ export default function ProfileScreen() {
           )}
 
           {syncExpanded && (
-            <View style={styles.syncDropdown}>
+            <View style={[styles.syncDropdown, { borderTopColor: theme.divider }]}>
 
               {/* Pending commands */}
               {commandQueueLength > 0 && (
@@ -737,7 +737,7 @@ export default function ProfileScreen() {
                     <View style={styles.dropActions}>
                       <Pressable
                         onPress={handleCopy}
-                        style={({ pressed }) => [styles.dropActionBtn, pressed && styles.dropActionBtnPressed]}
+                        style={({ pressed }) => [styles.dropActionBtn, { backgroundColor: theme.surfaceSub }, pressed && styles.dropActionBtnPressed]}
                       >
                         <Text style={[styles.dropActionText, { color: theme.textMuted }]}>{copied ? t('profile.sync.copied') : t('profile.sync.copy')}</Text>
                       </Pressable>

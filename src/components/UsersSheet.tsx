@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, Pressable, FlatList, StyleSheet, Dimensions,
-  ActivityIndicator, Modal, TextInput,
+  ActivityIndicator, Modal, TextInput, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
@@ -34,10 +34,11 @@ const LVL_ICON = require('../../assets/img/lvlIcon.png');
 
 function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void }) {
   const { t } = useTranslation('tabs');
+  const isDark = useColorScheme() === 'dark';
   const online = isOnline(item.lastSeenAt);
   return (
     <Pressable
-      style={({ pressed }) => [styles.row, pressed && { opacity: 0.75 }]}
+      style={({ pressed }) => [styles.row, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.08)' }, pressed && { opacity: 0.75 }]}
       onPress={onPress}
     >
       <Image
@@ -48,13 +49,13 @@ function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void })
       <View style={styles.nameBlock}>
         <View style={styles.nameRow}>
           {online && <View style={styles.onlineDot} />}
-          <Text style={styles.name} numberOfLines={1}>{item.playerName}</Text>
+          <Text style={[styles.name, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>{item.playerName}</Text>
         </View>
         <Text style={styles.cityText} numberOfLines={1}>{item.city ?? t('users.noCity')}</Text>
       </View>
       <View style={styles.levelBadge}>
         <Image source={LVL_ICON} style={styles.lvlIcon} contentFit="contain" />
-        <Text style={styles.levelText}>{item.playerLevel}</Text>
+        <Text style={[styles.levelText, isDark && { color: '#8A9A80' }]}>{item.playerLevel}</Text>
       </View>
     </Pressable>
   );
@@ -62,6 +63,7 @@ function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void })
 
 export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
   const { t } = useTranslation('tabs');
+  const isDark = useColorScheme() === 'dark';
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [tab, setTab] = useState<Tab>('online');
@@ -161,8 +163,8 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
         <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]} />
       </Pressable>
 
-      <Animated.View style={[styles.sheet, sheetStyle]}>
-        <LinearGradient colors={['#3FA535', '#2E7D28']} style={styles.gradientHeader}>
+      <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2028' }]}>
+        <LinearGradient colors={isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.gradientHeader}>
           <View style={styles.header}>
             <Text style={styles.title}>{t('users.title')}</Text>
             <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
@@ -175,7 +177,7 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
               return (
                 <Pressable
                   key={t.key}
-                  style={[styles.tab, isActive && styles.tabActive]}
+                  style={[styles.tab, isActive && styles.tabActive, isActive && isDark && { backgroundColor: '#1E2028' }]}
                   onPress={() => setTab(t.key)}
                 >
                   <Text style={[styles.tabText, isActive ? styles.tabTextActive : styles.tabTextInactive]}>
@@ -190,9 +192,9 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
         {tab === 'search' && (
           <View style={styles.searchContainer}>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.08)', color: '#DDE8D8' }]}
               placeholder={t('users.searchPlaceholder')}
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={isDark ? '#4A5468' : '#9CA3AF'}
               value={query}
               onChangeText={(v) => { setQuery(v); setPage(1); }}
               autoCapitalize="none"
@@ -232,7 +234,7 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
         )}
 
         {!loading && !error && tab !== 'search' && totalPages > 1 && (
-          <View style={styles.pagination}>
+          <View style={[styles.pagination, isDark && { borderTopColor: 'rgba(255,255,255,0.08)' }]}>
             <Pressable
               style={[styles.pageBtn, page === 1 && styles.pageBtnDisabled]}
               onPress={() => setPage((p) => Math.max(1, p - 1))}
@@ -240,7 +242,7 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
             >
               <Text style={styles.pageBtnText}>◀</Text>
             </Pressable>
-            <Text style={styles.pageLabel}>{page} / {totalPages}</Text>
+            <Text style={[styles.pageLabel, isDark && { color: '#DDE8D8' }]}>{page} / {totalPages}</Text>
             <Pressable
               style={[styles.pageBtn, page >= totalPages && styles.pageBtnDisabled]}
               onPress={() => setPage((p) => Math.min(totalPages, p + 1))}

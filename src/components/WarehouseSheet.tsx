@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, Modal, Pressable, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Modal, Pressable, StyleSheet, Dimensions, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
   useAnimatedStyle,
@@ -38,6 +38,7 @@ interface WarehouseSheetProps {
 
 export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps) {
   const { t } = useTranslation('tabs');
+  const isDark = useColorScheme() === 'dark';
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SCREEN_HEIGHT);
 
@@ -91,9 +92,9 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
         </Animated.View>
 
         <GestureDetector gesture={pan}>
-          <Animated.View style={[styles.sheet, sheetStyle]}>
+          <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2026' }]}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, isDark && { backgroundColor: '#2E333D' }]}>
               <View style={styles.handle} />
               <View style={styles.titleRow}>
                 <Image
@@ -114,11 +115,11 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
             <View style={styles.body}>
               <View style={styles.grid}>
                 {TOOLS.map((tool) => (
-                  <View key={tool.key} style={styles.cell}>
+                  <View key={tool.key} style={[styles.cell, isDark && { backgroundColor: '#2A2F38' }]}>
                     <Image source={tool.image} style={{ width: 40, height: 40 }} contentFit="contain" />
-                    <Text style={styles.cellLabel}>{tool.label}</Text>
-                    <View style={styles.countBadge}>
-                      <Text style={styles.countText}>{counts[tool.key]}</Text>
+                    <Text style={[styles.cellLabel, isDark && { color: '#DDE8D8' }]}>{tool.label}</Text>
+                    <View style={[styles.countBadge, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+                      <Text style={[styles.countText, isDark && { color: '#A0AABC' }]}>{counts[tool.key]}</Text>
                     </View>
                   </View>
                 ))}

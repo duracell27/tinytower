@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import type { ChatMessage as ChatMessageType } from '../stores/chatStore';
 import { getUserIcon } from '../utils/userIcon';
@@ -21,26 +21,27 @@ function formatTime(iso: string): string {
 
 export default function ChatMessage({ message, isOwn, isAdmin, onLongPress, onAvatarPress }: Props) {
   const canInteract = isOwn || isAdmin;
+  const isDark = useColorScheme() === 'dark';
 
   return (
     <View style={styles.row}>
       <Pressable onPress={onAvatarPress} disabled={!onAvatarPress} hitSlop={6}>
         <Image
           source={getUserIcon(message.playerLevel)}
-          style={styles.avatar}
+          style={[styles.avatar, isDark && { backgroundColor: '#3A3F4A' }]}
           contentFit="cover"
         />
       </Pressable>
       <Pressable
         onLongPress={canInteract && onLongPress ? () => onLongPress(message.id, message.body, isOwn) : undefined}
         delayLongPress={350}
-        style={[styles.bubble, isOwn ? styles.bubbleOwn : styles.bubbleOther]}
+        style={[styles.bubble, isOwn ? styles.bubbleOwn : [styles.bubbleOther, isDark && { backgroundColor: '#2A2F38' }]]}
       >
         <View style={styles.header}>
           <Text style={[styles.name, isOwn && styles.nameOwn]}>{message.playerName}</Text>
-          <Text style={[styles.time, isOwn && styles.timeOwn]}>{formatTime(message.createdAt)}</Text>
+          <Text style={[styles.time, isOwn ? styles.timeOwn : isDark && { color: '#5A6470' }]}>{formatTime(message.createdAt)}</Text>
         </View>
-        <Text style={[styles.body, isOwn && styles.bodyOwn]}>{message.body}</Text>
+        <Text style={[styles.body, isOwn ? styles.bodyOwn : isDark && { color: '#DDE8D8' }]}>{message.body}</Text>
       </Pressable>
     </View>
   );

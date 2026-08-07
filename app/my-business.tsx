@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import AppBackground from '../src/components/AppBackground';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -49,6 +49,7 @@ export default function MyBusinessScreen() {
   const floors           = useGameStore((s) => s.floors);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
 
+  const isDark = useColorScheme() === 'dark';
   const [infoVisible, setInfoVisible] = useState(false);
 
   return (
@@ -56,7 +57,7 @@ export default function MyBusinessScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         <View style={styles.header}>
-          <Text style={styles.title}>{tHotel('myBusiness.title')}</Text>
+          <Text style={[styles.title, isDark && { color: '#DDE8D8' }]}>{tHotel('myBusiness.title')}</Text>
           <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -66,10 +67,10 @@ export default function MyBusinessScreen() {
           </Pressable>
         </View>
 
-        <Text style={styles.subtitle}>{tHotel('myBusiness.subtitle')}</Text>
+        <Text style={[styles.subtitle, isDark && { color: '#8A9A80' }]}>{tHotel('myBusiness.subtitle')}</Text>
 
         {/* Currency + token balances */}
-        <View style={styles.balanceCard}>
+        <View style={[styles.balanceCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
           <View style={styles.currencyRow}>
             <View style={styles.currencyChip}>
               <CoinIcon size={16} />
@@ -100,12 +101,12 @@ const color         = TYPE_COLORS[ft];
             <Pressable
               key={ft}
               onPress={() => router.push(`/my-business/${ft}`)}
-              style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+              style={({ pressed }) => [styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }, pressed && styles.cardPressed]}
             >
               <Image source={TYPE_ICONS[ft]} style={styles.categoryIcon} contentFit="contain" />
               <View style={styles.cardContent}>
                 <View style={styles.cardRow}>
-                  <Text style={styles.categoryName}>{tHotel(`myBusiness.categories.${ft}`)}</Text>
+                  <Text style={[styles.categoryName, isDark && { color: '#DDE8D8' }]}>{tHotel(`myBusiness.categories.${ft}`)}</Text>
                   <Text style={[styles.bonus, { color }]}>
                     {level >= 40 ? tHotel('myBusiness.maxLevel') : tHotel('myBusiness.profitBonus', { percent: level * 5 })}
                   </Text>
@@ -138,7 +139,7 @@ const color         = TYPE_COLORS[ft];
       {infoVisible && (
         <View style={styles.infoOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-          <View style={styles.infoCard}>
+          <View style={[styles.infoCard, isDark && { backgroundColor: '#2A2F38' }]}>
             <LinearGradient colors={['#3FA535', '#2C7A25']} style={styles.infoCardHeader}>
               <Text style={styles.infoCardTitle}>{tHotel('myBusiness.title')}</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>

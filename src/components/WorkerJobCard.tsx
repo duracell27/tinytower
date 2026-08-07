@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
@@ -101,6 +101,7 @@ export default function WorkerJobCard({
 }: WorkerJobCardProps) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
+  const isDark = useColorScheme() === 'dark';
 
   const ft = gameConfig.floorTypes[worker.floorType];
   const accent = ft?.accent ?? '#888';
@@ -161,12 +162,12 @@ export default function WorkerJobCard({
   const borderColor = worker.isSpecialist ? '#F5C842' : accent;
 
   return (
-    <View style={[styles.card, { borderColor, borderWidth: expanded ? 2 : 1 }]}>
+    <View style={[styles.card, { borderColor, borderWidth: expanded ? 2 : 1 }, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
       <Pressable onPress={onToggle} style={styles.collapsedRow}>
         <View style={styles.avatarWrap}>
           <WorkerAvatar worker={worker} size={60} />
           {(isSpecialistTab || worker.level === 9) && (
-            <View style={styles.starBadge}>
+            <View style={[styles.starBadge, isDark && { backgroundColor: '#2A2F38' }]}>
               <StarIcon filled={worker.isSpecialist} />
             </View>
           )}
@@ -174,7 +175,7 @@ export default function WorkerJobCard({
 
         <View style={styles.infoColumn}>
           <View style={styles.nameRow}>
-            <Text style={styles.nameText} numberOfLines={1}>{worker.name}</Text>
+            <Text style={[styles.nameText, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>{worker.name}</Text>
             {isBetterCandidate && (
               <Animated.View style={arrowStyle}>
                 <Image
@@ -201,7 +202,7 @@ export default function WorkerJobCard({
             <Text style={[styles.floorText, { color: floorAccent }]} numberOfLines={1}>{`${floorName} · ${productionName}`}</Text>
           </View>
           {activeProduction && (
-            <Text style={styles.statusText} numberOfLines={1}>{statusLabel}</Text>
+            <Text style={[styles.statusText, isDark && { color: '#5A6470' }]} numberOfLines={1}>{statusLabel}</Text>
           )}
         </View>
 
@@ -224,7 +225,7 @@ export default function WorkerJobCard({
 
       <Animated.View style={[styles.expandedSection, expandedStyle]}>
         <View style={styles.expandedContent}>
-          <View style={styles.infoRows}>
+          <View style={[styles.infoRows, isDark && { backgroundColor: 'rgba(255,255,255,0.07)' }]}>
             <InfoRow label={t('workersPanel.workerJobCard.skill')} value={`${category} · ${worker.level}`} />
             <InfoRow label={t('workersPanel.workerJobCard.dreamJob')} value={dreamJobName} valueColor={dreamAccent} />
             <InfoRow label={t('workersPanel.workerJobCard.worksAt')} value={`${floorName} · ${productionName}`} valueColor={floorAccent} />
@@ -276,10 +277,11 @@ export default function WorkerJobCard({
 }
 
 function InfoRow({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
+  const isDark = useColorScheme() === 'dark';
   return (
     <View style={styles.infoRow}>
-      <Text style={styles.infoRowLabel}>{label}</Text>
-      <Text style={[styles.infoRowValue, valueColor ? { color: valueColor } : undefined]}>{value}</Text>
+      <Text style={[styles.infoRowLabel, isDark && { color: '#8A9A80' }]}>{label}</Text>
+      <Text style={[styles.infoRowValue, isDark && { color: '#DDE8D8' }, valueColor ? { color: valueColor } : undefined]}>{value}</Text>
     </View>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import AppBackground from '../../src/components/AppBackground';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import LeaderboardSheet from '../../src/components/LeaderboardSheet';
 
 export default function MenuScreen() {
   const { t } = useTranslation('tabs');
+  const isDark = useColorScheme() === 'dark';
   const router = useRouter();
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [workersOpen, setWorkersOpen] = useState(false);
@@ -38,62 +39,62 @@ export default function MenuScreen() {
   return (
     <AppBackground style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.heading}>{t('menu.heading')}</Text>
+        <Text style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('menu.heading')}</Text>
 
-        <Pressable style={styles.menuItem} onPress={() => setInventoryOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => setInventoryOpen(true)}>
           <Image
             source={require('../../assets/img/menu/werehouse.png')}
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={styles.menuLabel}>{t('menu.inventory')}</Text>
+          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.inventory')}</Text>
         </Pressable>
 
-        <Pressable style={styles.menuItem} onPress={() => setWorkersOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => setWorkersOpen(true)}>
           <Image
             source={require('../../assets/img/menu/myWorkers.png')}
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={styles.menuLabel}>{t('menu.workers')}</Text>
+          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.workers')}</Text>
         </Pressable>
 
-        <Pressable style={styles.menuItem} onPress={() => setLeaderboardOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => setLeaderboardOpen(true)}>
           <Image
             source={require('../../assets/img/menu/rating.png')}
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={styles.menuLabel}>{t('menu.leaderboard')}</Text>
+          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.leaderboard')}</Text>
         </Pressable>
 
-        <Pressable style={styles.menuItem} onPress={() => router.push('/chat-screen')}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => router.push('/chat-screen')}>
           <Image
             source={require('../../assets/img/menu/chat.png')}
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={styles.menuLabel}>{t('menu.chat')}</Text>
+          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.chat')}</Text>
         </Pressable>
 
-        <Pressable style={styles.menuItem} onPress={() => router.push('/forum-screen')}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => router.push('/forum-screen')}>
           <Image
             source={require('../../assets/img/menu/forum.png')}
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={styles.menuLabel}>{t('menu.forum')}</Text>
+          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.forum')}</Text>
         </Pressable>
 
-        <Pressable style={styles.menuItem} onPress={() => setUsersOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => setUsersOpen(true)}>
           <Image
             source={require('../../assets/img/users.png')}
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={styles.menuLabel}>{t('menu.users')}</Text>
+          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.users')}</Text>
           {onlineCount !== null && (
-            <View style={styles.onlineBadge}>
+            <View style={[styles.onlineBadge, isDark && { backgroundColor: 'rgba(63,165,53,0.15)' }]}>
               <Text style={styles.onlineBadgeText}>{t('users.onlineBadge', { count: onlineCount })}</Text>
             </View>
           )}

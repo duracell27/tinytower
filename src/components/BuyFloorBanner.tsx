@@ -25,20 +25,19 @@ export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPre
   const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.ribbon, pressed && styles.pressed]}>
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.ribbon, { backgroundColor: isDark ? '#1A1E22' : BANNER_BG }, pressed && styles.pressed]}>
       <View style={styles.ribbonLeft}>
         <Image
           source={require('../../assets/img/workers/builder.png')}
           style={{ width: 28, height: 28 }}
           contentFit="contain"
         />
-        <Text style={styles.ribbonTitle} numberOfLines={1}>{t('game.buyFloor', { number: nextFloorNumber })}</Text>
+        <Text style={[styles.ribbonTitle, isDark && { color: '#9BA4B0' }]} numberOfLines={1}>{t('game.buyFloor', { number: nextFloorNumber })}</Text>
       </View>
-      <View style={styles.ribbonPricePill}>
+      <View style={[styles.ribbonPricePill, isDark && { backgroundColor: 'rgba(255,255,255,0.10)' }]}>
         <CurrencyIcon currency={currency} size={13} />
         <Text style={[styles.ribbonPriceText, { color: currency === 'gems' ? '#2592AB' : '#C28A22' }]}>{formatNum(price)}</Text>
       </View>
-      {isDark && <View style={styles.darkOverlay} pointerEvents="none" />}
     </Pressable>
   );
 }
@@ -89,10 +88,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 13,
     color: '#4A3266',
-  },
-  darkOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.30)',
-    borderRadius: 16,
   },
 });

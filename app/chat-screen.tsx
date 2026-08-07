@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View, Text, FlatList, TextInput, Pressable, Modal, ScrollView,
-  StyleSheet, KeyboardAvoidingView, Platform, Alert, Keyboard,
+  StyleSheet, KeyboardAvoidingView, Platform, Alert, Keyboard, useColorScheme,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
@@ -21,12 +21,13 @@ const regionToFlag = (code: string) =>
   code.toUpperCase().replace(/./g, (c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65));
 
 function InfoSection({ emoji, title, text }: { emoji: string; title: string; text: string }) {
+  const isDark = useColorScheme() === 'dark';
   return (
-    <View style={infoStyles.section}>
+    <View style={[infoStyles.section, isDark && { borderBottomColor: 'rgba(255,255,255,0.08)' }]}>
       <Text style={infoStyles.sectionEmoji}>{emoji}</Text>
       <View style={infoStyles.sectionBody}>
-        <Text style={infoStyles.sectionTitle}>{title}</Text>
-        <Text style={infoStyles.sectionText}>{text}</Text>
+        <Text style={[infoStyles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{title}</Text>
+        <Text style={[infoStyles.sectionText, isDark && { color: '#8A9A80' }]}>{text}</Text>
       </View>
     </View>
   );
@@ -42,6 +43,7 @@ export default function ChatScreen() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const playerLevel = useGameStore((s) => s.playerLevel);
 
+  const isDark = useColorScheme() === 'dark';
   const [inputText, setInputText] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [channel, setChannel] = useState<Channel>('global');
@@ -133,14 +135,14 @@ export default function ChatScreen() {
   }, [player?.id, router]);
 
   return (
-    <View style={styles.container}>
-      {/* White top area */}
-      <View style={[styles.topBar, { paddingTop: insets.top }]}>
+    <View style={[styles.container, isDark && { backgroundColor: '#1A1E24' }]}>
+      {/* Top bar */}
+      <View style={[styles.topBar, { paddingTop: insets.top }, isDark && { backgroundColor: '#1E2028' }]}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
             <Text style={styles.backIcon}>‹</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>{t('chat.title')}</Text>
+          <Text style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>{t('chat.title')}</Text>
           <Pressable onPress={() => setInfoVisible(true)} style={styles.headerBtn} hitSlop={8}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -153,7 +155,7 @@ export default function ChatScreen() {
         <View style={styles.divider} />
         <View style={styles.pills}>
           <Pressable
-            style={[styles.pill, channel === 'global' && styles.pillActive]}
+            style={[styles.pill, channel === 'global' && styles.pillActive, isDark && channel !== 'global' && { backgroundColor: '#252A36' }]}
             onPress={() => setChannel('global')}
           >
             <Text style={[styles.pillText, channel === 'global' && styles.pillTextActive]}>
@@ -162,7 +164,7 @@ export default function ChatScreen() {
           </Pressable>
           {countryCode && (
             <Pressable
-              style={[styles.pill, channel === 'country' && styles.pillActive]}
+              style={[styles.pill, channel === 'country' && styles.pillActive, isDark && channel !== 'country' && { backgroundColor: '#252A36' }]}
               onPress={() => setChannel('country')}
             >
               <Text style={[styles.pillText, channel === 'country' && styles.pillTextActive]}>
@@ -205,20 +207,20 @@ export default function ChatScreen() {
         {isAuthenticated ? (
           <View>
             {editingId && (
-              <View style={styles.editBanner}>
+              <View style={[styles.editBanner, isDark && { backgroundColor: 'rgba(30,64,24,0.5)', borderTopColor: '#3C9A34' }]}>
                 <Text style={styles.editBannerText}>{t('chat.editing')}</Text>
                 <Pressable onPress={handleCancelEdit} hitSlop={8}>
                   <Text style={styles.editBannerCancel}>✕</Text>
                 </Pressable>
               </View>
             )}
-            <View style={[styles.inputBar, { paddingBottom: keyboardVisible ? 8 : Math.max(insets.bottom + 8, 16) }]}>
+            <View style={[styles.inputBar, { paddingBottom: keyboardVisible ? 8 : Math.max(insets.bottom + 8, 16) }, isDark && { backgroundColor: '#1E2028', borderTopColor: 'rgba(255,255,255,0.08)' }]}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, isDark && { backgroundColor: '#2A2F38', color: '#DDE8D8' }]}
                 value={inputText}
                 onChangeText={(v) => setInputText(v.slice(0, 300))}
                 placeholder={t('chat.placeholder')}
-                placeholderTextColor="#aaa"
+                placeholderTextColor={isDark ? '#4A5468' : '#aaa'}
                 multiline
                 maxLength={300}
               />
@@ -242,7 +244,7 @@ export default function ChatScreen() {
             </View>
           </View>
         ) : (
-          <View style={[styles.guestBanner, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <View style={[styles.guestBanner, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: '#1E2028', borderTopColor: 'rgba(255,255,255,0.08)' }]}>
             <Text style={styles.guestText}>{t('chat.guestBanner')}</Text>
           </View>
         )}
@@ -252,8 +254,8 @@ export default function ChatScreen() {
       {infoVisible && (
         <View style={styles.infoScrim}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-          <View style={styles.infoCard}>
-            <LinearGradient colors={['#4BAD42', '#2E8528']} style={styles.infoCardHeader}>
+          <View style={[styles.infoCard, isDark && { backgroundColor: '#2A2F38' }]}>
+            <LinearGradient colors={isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.infoCardHeader}>
               <Text style={styles.infoCardTitle}>{t('chat.infoTitle')}</Text>
               <Pressable onPress={() => setInfoVisible(false)} style={styles.infoCardClose} hitSlop={10}>
                 <Text style={styles.infoCardCloseText}>✕</Text>
@@ -280,18 +282,18 @@ export default function ChatScreen() {
         onRequestClose={() => setSelectedMessage(null)}
       >
         <Pressable style={styles.overlay} onPress={() => setSelectedMessage(null)}>
-          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: '#2A2F38' }]}>
             {selectedMessage?.isOwn && (
               <Pressable style={styles.sheetItem} onPress={handleActionEdit}>
                 <Image source={require('../assets/img/edit.png')} style={styles.sheetItemIcon} contentFit="contain" />
-                <Text style={styles.sheetItemText}>{t('chat.actionEdit')}</Text>
+                <Text style={[styles.sheetItemText, isDark && { color: '#DDE8D8' }]}>{t('chat.actionEdit')}</Text>
               </Pressable>
             )}
             <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
               <Image source={require('../assets/img/delete.png')} style={styles.sheetItemIcon} contentFit="contain" />
               <Text style={[styles.sheetItemText, styles.sheetItemDanger]}>{t('chat.actionDelete')}</Text>
             </Pressable>
-            <View style={styles.sheetDivider} />
+            <View style={[styles.sheetDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
             <Pressable style={styles.sheetItem} onPress={() => setSelectedMessage(null)}>
               <Text style={[styles.sheetItemText, styles.sheetItemCancel]}>{t('chat.cancel')}</Text>
             </Pressable>

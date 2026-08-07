@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import type { ForumComment as ForumCommentType } from '../stores/forumStore';
 import { getUserIcon } from '../utils/userIcon';
@@ -22,22 +22,23 @@ function formatTime(iso: string): string {
 
 export default function ForumComment({ comment, isOwn, isAdmin, onLongPress, onAvatarPress }: Props) {
   const canInteract = isOwn || isAdmin;
+  const isDark = useColorScheme() === 'dark';
   return (
     <View style={styles.row}>
       <Pressable onPress={onAvatarPress} disabled={!onAvatarPress} hitSlop={6}>
-        <Image source={getUserIcon(comment.playerLevel)} style={styles.avatar} contentFit="cover" />
+        <Image source={getUserIcon(comment.playerLevel)} style={[styles.avatar, isDark && { backgroundColor: '#3A3F4A' }]} contentFit="cover" />
       </Pressable>
       <Pressable
         onLongPress={canInteract && onLongPress ? () => onLongPress(comment.id, comment.body, isOwn || isAdmin) : undefined}
         delayLongPress={350}
-        style={styles.bubble}
+        style={[styles.bubble, isDark && { backgroundColor: '#2A2F38' }]}
       >
         <View style={styles.header}>
           <Text style={styles.name}>{comment.playerName}</Text>
-          <Text style={styles.level}>Lv.{comment.playerLevel}</Text>
-          <Text style={styles.time}>{formatTime(comment.createdAt)}</Text>
+          <Text style={[styles.level, isDark && { color: '#5A6470' }]}>Lv.{comment.playerLevel}</Text>
+          <Text style={[styles.time, isDark && { color: '#5A6470' }]}>{formatTime(comment.createdAt)}</Text>
         </View>
-        <Text style={styles.body}>{comment.body}</Text>
+        <Text style={[styles.body, isDark && { color: '#DDE8D8' }]}>{comment.body}</Text>
       </Pressable>
     </View>
   );

@@ -742,7 +742,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                           <View style={styles.visitorTextCol}>
                             <View style={[styles.speechBubble, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
                               {arrived ? (
-                                <Text style={[styles.speechArrivedText, isDark && { color: '#DDE8D8' }]}>{t('visitor.thankYou')}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                  <Text style={[styles.speechArrivedText, isDark && { color: '#DDE8D8' }]}>{t('visitor.thankYou')}</Text>
+                                  <CoinIcon size={14} />
+                                </View>
                               ) : (
                                 <Text style={[styles.speechText, isDark && { color: '#DDE8D8' }]}>
                                   <Text style={[styles.speechRoleLabel, { color: ROLE_COLORS[activeVisitor.role ?? 'guest'] }]}>
@@ -783,7 +786,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                           >
                             <LinearGradient
                               colors={actionButton.colors}
-                              style={styles.actionButtonGradient}
+                              style={[styles.actionButtonGradient, isDark && { opacity: 0.78 }]}
                             >
                               {actionButton.icon === 'up-arrow' && <UpArrowIcon />}
                               {actionButton.icon === 'hotel' && <HotelIcon size={18} color={actionButton.textColor} />}
@@ -824,7 +827,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       >
                         <LinearGradient
                           colors={['#52A6E2', '#3B8BCB']}
-                          style={styles.fillLobbyGradient}
+                          style={[styles.fillLobbyGradient, isDark && { opacity: 0.78 }]}
                         >
                           <Text style={styles.fillLobbyText}>{t('actions.fillLobby')}</Text>
                           <GemIcon size={14} />
@@ -979,14 +982,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 >
                   <LinearGradient
                     colors={['#C9637E', '#A8475F']}
-                    style={styles.upgradeEntryGradient}
+                    style={[styles.upgradeEntryGradient, isDark && { opacity: 0.78 }]}
                   >
                     <UploadIcon />
                     <Text style={styles.upgradeEntryText}>{t('elevator.upgradeEntry')}</Text>
                   </LinearGradient>
                   <View style={styles.upgradeEntryShadow} />
                 </Pressable>
-                <Text style={styles.upgradeCaption}>
+                <Text style={[styles.upgradeCaption, isDark && { color: '#8A9A80' }]}>
                   {t('elevator.upgradeCaption')}
                 </Text>
               </>
@@ -1047,7 +1050,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     >
                       <LinearGradient
                         colors={['#72C24F', '#5BA63C']}
-                        style={styles.upgradeButtonGradient}
+                        style={[styles.upgradeButtonGradient, isDark && { opacity: 0.78 }]}
                       >
                         <Text style={styles.upgradeButtonText}>{t('elevator.upgradeFor')}</Text>
                         <GemIcon size={14} />
@@ -1056,7 +1059,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <View style={[styles.upgradeButtonShadow, { backgroundColor: '#4A8A2E' }]} />
                     </Pressable>
                   ) : (
-                    <View style={styles.maxLevelStrip}>
+                    <View style={[styles.maxLevelStrip, isDark && { backgroundColor: 'rgba(255,255,255,0.06)' }]}>
                       <CheckIcon size={14} color="#5BA63C" />
                       <Text style={[styles.claimedText, { color: '#5BA63C' }]}>{t('elevator.maxLevel')}</Text>
                     </View>
@@ -1108,7 +1111,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     >
                       <LinearGradient
                         colors={['#52A6E2', '#3B8BCB']}
-                        style={styles.upgradeButtonGradient}
+                        style={[styles.upgradeButtonGradient, isDark && { opacity: 0.78 }]}
                       >
                         <Text style={styles.upgradeButtonText}>{t('lobbyUpgrade.upgradeForSeats')}</Text>
                         <GemIcon size={14} />
@@ -1117,7 +1120,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <View style={[styles.upgradeButtonShadow, { backgroundColor: '#2E72A8' }]} />
                     </Pressable>
                   ) : (
-                    <View style={styles.maxLevelStrip}>
+                    <View style={[styles.maxLevelStrip, isDark && { backgroundColor: 'rgba(255,255,255,0.06)' }]}>
                       <CheckIcon size={14} color="#2592AB" />
                       <Text style={[styles.claimedText, { color: '#2592AB' }]}>{t('lobbyUpgrade.maxLevel')}</Text>
                     </View>

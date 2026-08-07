@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal,
+  View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
@@ -33,11 +33,12 @@ const VALUE_LABELS: Record<Tab, string> = {
   revenue: '/MIN',
 };
 
-function rankStyle(rank: number): { borderWidth: number; borderColor: string; backgroundColor: string } {
-  if (rank === 1) return { borderWidth: 2, borderColor: '#E8B800', backgroundColor: '#FFF' };
-  if (rank === 2) return { borderWidth: 2, borderColor: '#A0AABA', backgroundColor: '#fff' };
-  if (rank === 3) return { borderWidth: 2, borderColor: '#B87040', backgroundColor: '#FFf' };
-  return { borderWidth: 1, borderColor: 'rgba(40,60,90,0.06)', backgroundColor: '#fff' };
+function rankStyle(rank: number, isDark: boolean): { borderWidth: number; borderColor: string; backgroundColor: string } {
+  const bg = isDark ? '#2A2F38' : '#fff';
+  if (rank === 1) return { borderWidth: 2, borderColor: '#E8B800', backgroundColor: bg };
+  if (rank === 2) return { borderWidth: 2, borderColor: '#A0AABA', backgroundColor: bg };
+  if (rank === 3) return { borderWidth: 2, borderColor: '#B87040', backgroundColor: bg };
+  return { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(40,60,90,0.06)', backgroundColor: bg };
 }
 
 interface Props {
@@ -47,6 +48,7 @@ interface Props {
 
 export default function LeaderboardSheet({ visible, onClose }: Props) {
   const { t } = useTranslation('tabs');
+  const isDark = useColorScheme() === 'dark';
   const [mounted, setMounted] = useState(false);
   const [tab, setTab] = useState<Tab>('level');
   const [page, setPage] = useState(1);
@@ -130,7 +132,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     const isMe = item.playerId === myId;
     const accent = TAB_ACTIVE_COLORS[tab];
     return (
-      <View style={[styles.row, isMe ? styles.rowMe : rankStyle(item.rank)]}>
+      <View style={[styles.row, isMe ? [styles.rowMe, isDark && { backgroundColor: '#2A2F38' }] : rankStyle(item.rank, isDark)]}>
         {item.rank <= 3 ? (
           <View style={styles.trophyWrap}>
             <Text style={styles.trophyRankNum}>#{item.rank}</Text>
@@ -156,7 +158,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
           />
         </Pressable>
         <View style={styles.nameBlock}>
-          <Text style={styles.name} numberOfLines={1}>{item.playerName}</Text>
+          <Text style={[styles.name, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>{item.playerName}</Text>
           <Text style={styles.cityText} numberOfLines={1}>{item.city ?? 'no city'}</Text>
         </View>
         <View style={styles.valueBlock}>
@@ -165,7 +167,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         </View>
       </View>
     );
-  }, [myId, tab, handleAvatarPress]);
+  }, [myId, tab, isDark, handleAvatarPress]);
 
   if (!mounted) return null;
 
@@ -175,8 +177,8 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]} />
       </Pressable>
 
-      <Animated.View style={[styles.sheet, sheetStyle]}>
-        <LinearGradient colors={['#5B8DD9', '#3A6BBF']} style={styles.gradientHeader}>
+      <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2028' }]}>
+        <LinearGradient colors={isDark ? ['#6A4A10', '#4A3208'] : ['#E7A52B', '#C08A1E']} style={styles.gradientHeader}>
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>{t('leaderboard.title')}</Text>
@@ -193,7 +195,11 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
               return (
                 <Pressable
                   key={tabItem.key}
-                  style={[styles.tab, isActive && styles.tabActive]}
+                  style={[
+                    styles.tab,
+                    isActive && styles.tabActive,
+                    isActive && isDark && { backgroundColor: '#1E2028' },
+                  ]}
                   onPress={() => setTab(tabItem.key)}
                 >
                   <Text style={[
@@ -233,7 +239,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         )}
 
         {!loading && !error && data && !isOnPage && (
-          <View style={[styles.row, styles.rowMe, styles.pinnedRow]}>
+          <View style={[styles.row, styles.rowMe, isDark && { backgroundColor: '#2A2F38' }, styles.pinnedRow]}>
             <Text style={styles.rankNum}>#{data.currentPlayer.rank}</Text>
             <Pressable onPress={myId ? () => handleAvatarPress(myId) : undefined} hitSlop={6}>
               <Image
@@ -243,7 +249,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
               />
             </Pressable>
             <View style={styles.nameBlock}>
-              <Text style={styles.name}>{t('leaderboard.you')}</Text>
+              <Text style={[styles.name, isDark && { color: '#DDE8D8' }]}>{t('leaderboard.you')}</Text>
               <Text style={styles.cityText}>no city</Text>
             </View>
             <View style={styles.valueBlock}>
@@ -256,7 +262,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         )}
 
         {!loading && !error && data && (
-          <View style={styles.pagination}>
+          <View style={[styles.pagination, isDark && { borderTopColor: 'rgba(255,255,255,0.08)' }]}>
             <Pressable
               style={[styles.pageBtn, page === 1 && styles.pageBtnDisabled]}
               onPress={() => setPage(p => Math.max(1, p - 1))}
@@ -264,7 +270,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
             >
               <Text style={styles.pageBtnText}>◀</Text>
             </Pressable>
-            <Text style={styles.pageLabel}>{page} / {totalPages}</Text>
+            <Text style={[styles.pageLabel, isDark && { color: '#DDE8D8' }]}>{page} / {totalPages}</Text>
             <Pressable
               style={[styles.pageBtn, page >= totalPages && styles.pageBtnDisabled]}
               onPress={() => setPage(p => Math.min(totalPages, p + 1))}

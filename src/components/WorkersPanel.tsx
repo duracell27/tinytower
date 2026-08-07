@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, Pressable, FlatList, Alert, Modal,
-  StyleSheet, Dimensions, TextInput,
+  StyleSheet, Dimensions, TextInput, useColorScheme,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
@@ -149,6 +149,7 @@ function formatTimeShort(ms: number): string {
 export default function WorkersPanel({ visible, onClose, targetWorkerId }: WorkersPanelProps) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
+  const isDark = useColorScheme() === 'dark';
   const [activeTab, setActiveTab] = useState<Tab>('unsatisfied');
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
@@ -416,10 +417,10 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         </Animated.View>
 
-        <Animated.View style={[styles.sheet, sheetStyle]}>
+        <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2028' }]}>
           <GestureDetector gesture={panGesture}>
             <Animated.View>
-              <LinearGradient colors={['#5B8DD9', '#3A6BBF']} style={styles.header}>
+              <LinearGradient colors={isDark ? ['#1A3868', '#102848'] : ['#2E6EC9', '#2360A8']} style={styles.header}>
                 <View style={styles.handleRow}>
                   <View style={styles.handle} />
                 </View>
@@ -456,7 +457,7 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
                       <Pressable
                         key={tab}
                         onPress={() => { setActiveTab(tab); setExpandedWorkerId(null); }}
-                        style={[styles.tabButton, isActive && styles.tabButtonActive]}
+                        style={[styles.tabButton, isActive && styles.tabButtonActive, isActive && isDark && { backgroundColor: '#1E2028' }]}
                       >
                         <Text style={[styles.tabLabel, { color: isActive ? color : 'rgba(255,255,255,0.75)' }]}>
                           {t(`workersPanel.tabs.${tab}`)}
@@ -523,22 +524,22 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
             }}
             ListHeaderComponent={
               <View style={styles.searchWrap}>
-                <View style={styles.searchRow}>
+                <View style={[styles.searchRow, isDark && { backgroundColor: '#252A36', borderColor: 'rgba(255,255,255,0.08)' }]}>
                   <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
                     <Path
                       d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
-                      stroke="#9098A6"
+                      stroke={isDark ? '#6A7A88' : '#9098A6'}
                       strokeWidth={2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                   </Svg>
                   <TextInput
-                    style={styles.searchInput}
+                    style={[styles.searchInput, isDark && { color: '#DDE8D8' }]}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     placeholder={t('workersPanel.searchPlaceholder')}
-                    placeholderTextColor="#B0B6C2"
+                    placeholderTextColor={isDark ? '#4A5468' : '#B0B6C2'}
                     autoCapitalize="none"
                     autoCorrect={false}
                     returnKeyType="search"
