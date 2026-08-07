@@ -20,7 +20,7 @@ const ACHIV_ICON     = require('../../assets/img/profile/achivProfileIcon.png');
 const MAIL_ICON      = require('../../assets/img/mail.png');
 const FRIEND_ICON    = require('../../assets/img/addfriend.png');
 const COIN_ICON      = require('../../assets/img/coin.png');
-const ARROW_UP       = require('../../assets/img/greenArrowUp.png');
+const BEST_RPM_ICON  = require('../../assets/img/bestRPM.png');
 const SAND_CLOCK     = require('../../assets/img/sandClock.png');
 const HAPPY_ICON     = require('../../assets/img/happySmile.png');
 const SPEC_ICON      = require('../../assets/img/specialistWorker.png');
@@ -308,7 +308,7 @@ export default function UserProfileScreen() {
             </View>
 
             <InfoRow icons={[COIN_ICON]} label="Current / min" value={formatNum(profile.revenuePerMin)} />
-            <InfoRow icons={[COIN_ICON, ARROW_UP]} label="Best / min" value={formatNum(profile.maxRevenuePerMin)} noBorder />
+            <InfoRow icons={[BEST_RPM_ICON]} label="Best / min" value={formatNum(profile.maxRevenuePerMin)} noBorder />
           </View>
 
           {/* Block 6: Status */}

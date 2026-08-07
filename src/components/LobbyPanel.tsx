@@ -27,6 +27,7 @@ import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, 
 import { gameConfig } from '../../shared/config/gameConfig';
 import type { Visitor, VisitorRole, Worker } from '../../shared/types';
 import { Image } from 'expo-image';
+import * as Haptics from 'expo-haptics';
 import WorkerAvatar from './WorkerAvatar';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
@@ -768,7 +769,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         {/* Action button */}
                         {actionButton && (
                           <Pressable
-                            onPress={actionButton.onPress}
+                            onPress={() => {
+                              const style = activeVisitor?.isVip
+                                ? Haptics.ImpactFeedbackStyle.Heavy
+                                : Haptics.ImpactFeedbackStyle.Medium;
+                              Haptics.impactAsync(style);
+                              actionButton.onPress();
+                            }}
                             style={({ pressed }) => [
                               styles.actionButton,
                               pressed && { opacity: 0.85, transform: [{ translateY: 1 }] },

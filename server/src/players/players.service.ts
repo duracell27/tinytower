@@ -194,12 +194,22 @@ export class PlayersService {
       female: w.female,
     }));
 
+    const businessUpgradesForCalc: Record<string, number> = {
+      green:  player.state?.businessUpgradeGreen  ?? 0,
+      blue:   player.state?.businessUpgradeBlue   ?? 0,
+      yellow: player.state?.businessUpgradeYellow ?? 0,
+      purple: player.state?.businessUpgradePurple ?? 0,
+      red:    player.state?.businessUpgradeRed    ?? 0,
+    };
     const revenuePerMin = calcRevenuePerMin(
       floorsForCalc as any,
       workersForCalc as any,
       openedFloorTypes,
       gameConfig,
       Date.now(),
+      businessUpgradesForCalc,
+      player.state?.coinBonusPercent ?? 0,
+      (player.state?.floorStars ?? {}) as Record<string, number>,
     );
 
     // Happy workers: worker has assigned floor and mood is 'good'

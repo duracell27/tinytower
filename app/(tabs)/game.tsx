@@ -1,5 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, LayoutChangeEvent, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, LayoutChangeEvent, useColorScheme, LayoutAnimation, Platform, UIManager } from 'react-native';
+
+if (Platform.OS === 'android') {
+  UIManager.setLayoutAnimationEnabledExperimental?.(true);
+}
 import { useNavigation, router } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { formatNum } from '../../src/utils/format';
@@ -30,6 +34,7 @@ import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import type { UnderConstructionState } from '../../shared/types';
 import QuickActionFAB from '../../src/components/QuickActionFAB';
 import QuickActionBar from '../../src/components/QuickActionBar';
+import QaAnimatedFloor from '../../src/components/QaAnimatedFloor';
 import DailyTasksFAB from '../../src/components/DailyTasksFAB';
 import { DAILY_TASKS, getTaskProgress } from '../../shared/config/dailyTasksConfig';
 import {
@@ -284,6 +289,8 @@ export default function GameScreen() {
 
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
   const [qaBarVisible, setQaBarVisible] = useState(false);
+  const [leavingFloorId, setLeavingFloorId] = useState<number | null>(null);
+  const pendingActionRef = useRef<(() => void) | null>(null);
   quickActionModeRef.current = quickActionMode;
   const qaBarVisibleRef = useRef(false);
   qaBarVisibleRef.current = qaBarVisible;
@@ -484,8 +491,21 @@ export default function GameScreen() {
     }
   }, [quickActionMode, collectAll, listAll, buyAll]);
 
+  const executeQaAction = useCallback(() => {
+    const action = pendingActionRef.current;
+    pendingActionRef.current = null;
+    if (action) {
+      LayoutAnimation.configureNext({
+        duration: 120,
+        update: { type: LayoutAnimation.Types.spring, springDamping: 0.85 },
+      });
+      action();
+    }
+    setLeavingFloorId(null);
+  }, []);
+
   const handleQuickAction = useCallback(() => {
-    if (!quickActionMode) return;
+    if (!quickActionMode || leavingFloorId !== null) return;
 
     // Read live state to avoid stale-closure issues during rapid clicking.
     // The 1-second game clock can lag real time by up to 999ms, causing floors
@@ -502,30 +522,40 @@ export default function GameScreen() {
 
     if (!liveBottomFloor) return;
 
+    if (quickActionMode === 'hire') {
+      setHotelOpen(true);
+      return;
+    }
+
+    // Build the action closure from live state now; execute it after the slide-out animation.
+    let pendingAction: (() => void) | null = null;
+
     if (quickActionMode === 'collect') {
       const collectStars = liveFloorStars?.[String(liveBottomFloor.id)] ?? 0;
       const collectStarMult = FLOOR_STAR_MULTIPLIERS[collectStars] ?? FLOOR_STAR_MULTIPLIERS[0];
+      const slots: [number, number][] = [];
       liveBottomFloor.productions.forEach((prod, slotIdx) => {
         if (!prod.typeId) return;
         const tc = gameConfig.productionTypes[prod.typeId];
         if (!tc) return;
         if (getProductionStatus(prod, tc, liveNow, liveBalance, tc.sellDuration * collectStarMult.time).effectiveStage === 'READY_TO_COLLECT') {
-          storeCollect(liveBottomFloor.id, slotIdx);
+          slots.push([liveBottomFloor.id, slotIdx]);
         }
       });
-      return;
+      if (slots.length > 0) pendingAction = () => slots.forEach(([fId, sIdx]) => storeCollect(fId, sIdx));
     }
 
     if (quickActionMode === 'list') {
+      const slots: [number, number][] = [];
       liveBottomFloor.productions.forEach((prod, slotIdx) => {
         if (!prod.typeId) return;
         const tc = gameConfig.productionTypes[prod.typeId];
         if (!tc) return;
         if (getProductionStatus(prod, tc, liveNow, liveBalance).effectiveStage === 'READY_TO_LIST') {
-          storeList(liveBottomFloor.id, slotIdx);
+          slots.push([liveBottomFloor.id, slotIdx]);
         }
       });
-      return;
+      if (slots.length > 0) pendingAction = () => slots.forEach(([fId, sIdx]) => storeList(fId, sIdx));
     }
 
     if (quickActionMode === 'buy') {
@@ -538,14 +568,15 @@ export default function GameScreen() {
         showInsufficientResources({ currency: 'coins', need: liveBuyInfo.buyCost, have: liveBalance });
         return;
       }
-      storeBuy(liveBottomFloor.id, liveBuyInfo.slotIdx, liveBuyInfo.typeId);
-      return;
+      const { slotIdx, typeId, buyCost: _cost } = liveBuyInfo;
+      pendingAction = () => storeBuy(liveBottomFloor.id, slotIdx, typeId);
     }
 
-    if (quickActionMode === 'hire') {
-      setHotelOpen(true);
+    if (pendingAction) {
+      pendingActionRef.current = pendingAction;
+      setLeavingFloorId(liveBottomFloor.id);
     }
-  }, [quickActionMode, storeCollect, storeList, storeBuy, showInsufficientResources]);
+  }, [quickActionMode, leavingFloorId, storeCollect, storeList, storeBuy, showInsufficientResources]);
 
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
     if (item.type === 'collapseDivider') {
@@ -640,6 +671,19 @@ export default function GameScreen() {
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
       showInsufficientResources, towerCollapsed, isTemporary]);
 
+  const renderQaItem = useCallback(({ item }: { item: FloorItem }) => {
+    if (item.type === 'production') {
+      return (
+        <QaAnimatedFloor isLeaving={item.id === leavingFloorId} onAnimationDone={executeQaAction}>
+          <View style={styles.floorWrapper}>
+            <FloorCard floorId={item.id} balance={balance} onHireSlot={() => setHotelOpen(true)} />
+          </View>
+        </QaAnimatedFloor>
+      );
+    }
+    return renderItem({ item });
+  }, [leavingFloorId, balance, executeQaAction, renderItem]);
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -711,12 +755,13 @@ export default function GameScreen() {
                 <FlashList
                   ref={qaListRef as any}
                   data={qaItems}
-                  renderItem={renderItem}
+                  renderItem={renderQaItem}
                   keyExtractor={keyExtractor}
                   estimatedItemSize={216}
                   getItemType={(item) => item.type}
                   contentContainerStyle={styles.listContentQA}
                   showsVerticalScrollIndicator={false}
+                  extraData={leavingFloorId}
                 />
               </ImageBackground>
             </Animated.View>

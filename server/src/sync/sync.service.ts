@@ -169,6 +169,9 @@ export class SyncService {
       gameState.openedFloorTypes ?? {},
       gameConfig,
       serverNow,
+      gameState.businessUpgrades,
+      gameState.coinBonusPercent,
+      gameState.floorStars,
     );
     const currentOpenedFloors = gameConfig.floors.length + Object.keys(gameState.openedFloorTypes ?? {}).length;
 
@@ -216,13 +219,6 @@ export class SyncService {
               gems: gameState.gems + 3,
             };
             dailyLoginReward = { coins: loginCoins, gems: 3 };
-            const loginXpResult = applyXpGain(xpResult.playerLevel, xpResult.playerXp, loginCoins);
-            gameState = {
-              ...gameState,
-              balance: gameState.balance + loginXpResult.bonusCoins,
-              gems: gameState.gems + loginXpResult.bonusGems,
-            };
-            xpResult = loginXpResult;
           }
         }
         // Compute final stats using locked player values + deltas to avoid stale reads under concurrency

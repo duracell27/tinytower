@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
@@ -16,13 +16,19 @@ import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategorie
 import { DAILY_TASKS } from '../../shared/config/dailyTasksConfig';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
+import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { useGameClock } from '../../src/hooks/useGameClock';
-import { formatNum, formatCompact } from '../../src/utils/format';
+import { formatNum, formatCompact, formatNumFull } from '../../src/utils/format';
 import { BUSINESS_UPGRADE_COSTS } from '../../shared/config/businessUpgradeCosts';
 import { getUserIcon } from '../../src/utils/userIcon';
 import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
 import * as Clipboard from 'expo-clipboard';
 import type { Command } from '../../shared/types';
+import { api, type PlayerProfile } from '../../src/services/api';
+
+const COIN_ICON     = require('../../assets/img/coin.png');
+const BEST_RPM_ICON = require('../../assets/img/bestRPM.png');
+const SAND_CLOCK    = require('../../assets/img/sandClock.png');
 
 const COMMAND_LABELS: Record<string, string> = {
   buy: 'Buy product',
@@ -214,6 +220,62 @@ const FloorStarsRow = ({ avg }: { avg: number }) => (
   </View>
 );
 
+function ProfileInfoRow({
+  icons, label, value, theme, noBorder, compact,
+}: {
+  icons: any[];
+  label: string;
+  value: string;
+  theme: ReturnType<typeof import('../../src/hooks/useAppTheme').useAppTheme>;
+  noBorder?: boolean;
+  compact?: boolean;
+}) {
+  return (
+    <View style={[
+      profileInfoRowStyles.row,
+      !noBorder && { borderBottomWidth: 1, borderBottomColor: theme.divider },
+      compact && { paddingVertical: 6 },
+    ]}>
+      <View style={profileInfoRowStyles.left}>
+        {icons.map((src, i) => (
+          <Image key={i} source={src} style={profileInfoRowStyles.icon} contentFit="contain" />
+        ))}
+        <Text style={[profileInfoRowStyles.label, { color: theme.textMuted }]}>{label}</Text>
+      </View>
+      <Text style={[profileInfoRowStyles.value, { color: theme.text }]}>{value}</Text>
+    </View>
+  );
+}
+
+const profileInfoRowStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 9,
+    alignSelf: 'stretch',
+  },
+  left: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  icon: {
+    width: 18,
+    height: 18,
+  },
+  label: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: '#7C8A6E',
+  },
+  value: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 15,
+    color: '#27331F',
+  },
+});
+
 export default function ProfileScreen() {
   const { t } = useTranslation('tabs');
   const { t: tHotel } = useTranslation('hotel');
@@ -271,9 +333,30 @@ export default function ProfileScreen() {
     return balance >= cost.coins && (tokens?.[ft] ?? 0) >= cost.tokens;
   });
 
+  const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
+
   const floorCount = floors.length;
   const totalStars = Object.values(floorStars ?? {}).reduce((s, v) => s + v, 0);
   const avgStars = floorCount > 0 ? totalStars / floorCount : 0;
+
+  const revenuePerMin = useMemo(
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars],
+  );
+
+  const [myProfile, setMyProfile] = useState<PlayerProfile | null>(null);
+  useEffect(() => {
+    if (!player?.id) return;
+    let cancelled = false;
+    api.getPlayerProfile(player.id)
+      .then((p) => { if (!cancelled) setMyProfile(p); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [player?.id]);
+
+  const daysInGame = myProfile
+    ? Math.floor((Date.now() - new Date(myProfile.createdAt).getTime()) / 86_400_000)
+    : null;
 
   const [syncExpanded, setSyncExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -411,9 +494,81 @@ export default function ProfileScreen() {
                   </View>
                 </View>
               </View>
+
+              {isHydrated && (
+                <>
+                  <View style={[styles.workerStatsDivider, { backgroundColor: theme.divider }]} />
+                  <View style={styles.revenueRow}>
+                    <View style={styles.revenueItem}>
+                      <Image source={COIN_ICON} style={styles.revenueIcon} contentFit="contain" />
+                      <View style={styles.workerStatTextCol}>
+                        <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>Current / min</Text>
+                        <Text style={[styles.workerStatValue, { color: theme.text }]}>{formatNumFull(revenuePerMin)}</Text>
+                      </View>
+                    </View>
+                    <View style={[styles.workerStatsDivider, { backgroundColor: theme.divider, width: 1, height: 32, marginTop: 0 }]} />
+                    <View style={styles.revenueItem}>
+                      <Image source={BEST_RPM_ICON} style={styles.revenueIcon} contentFit="contain" />
+                      <View style={styles.workerStatTextCol}>
+                        <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>Best / min</Text>
+                        <Text style={[styles.workerStatValue, { color: '#3FA535' }]}>{myProfile ? formatNumFull(myProfile.maxRevenuePerMin) : '—'}</Text>
+                      </View>
+                    </View>
+                  </View>
+                </>
+              )}
             </>
           )}
         </View>
+
+        <Pressable
+          onPress={() => router.push('/daily-tasks')}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+        >
+          <Image source={require('../../assets/img/profile/dayliQuests.png')} style={styles.achievementsIcon} />
+          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>
+            {tHotel('dailyTasks.title')}{' '}
+            <Text style={[styles.achievementsButtonSubText, { color: theme.text }]}>
+              ({dailyTasks.claimed.filter(k => DAILY_TASKS.find(t => t.key === k && !t.hidden)).length}/{DAILY_TASKS.filter(t => !t.hidden).length})
+            </Text>
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+        >
+          <Image source={require('../../assets/img/mail.png')} style={styles.achievementsIcon} />
+          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>My Mail</Text>
+        </Pressable>
+
+        <Pressable
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+        >
+          <Image source={require('../../assets/img/users.png')} style={styles.achievementsIcon} />
+          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>My Friends</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push('/my-business')}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+        >
+          <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
+          <Text style={[styles.achievementsButtonText, { flex: 1, color: theme.text }]}>{tHotel('myBusiness.title')}</Text>
+          {isHydrated && upgradeReadyTypes.length > 0 && (
+            <View style={styles.businessDotsRow}>
+              {upgradeReadyTypes.map((ft) => (
+                <View key={ft} style={[styles.businessDot, { backgroundColor: BUSINESS_TYPE_COLORS[ft] }]} />
+              ))}
+            </View>
+          )}
+        </Pressable>
+
+        <Pressable
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+        >
+          <Image source={require('../../assets/img/TrucksProfileIcon.png')} style={styles.achievementsIcon} />
+          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>Autopark</Text>
+        </Pressable>
 
         <Pressable
           onPress={() => router.push('/achievements')}
@@ -434,31 +589,10 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Pressable
-          onPress={() => router.push('/my-business')}
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
-          <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { flex: 1, color: theme.text }]}>{tHotel('myBusiness.title')}</Text>
-          {isHydrated && upgradeReadyTypes.length > 0 && (
-            <View style={styles.businessDotsRow}>
-              {upgradeReadyTypes.map((ft) => (
-                <View key={ft} style={[styles.businessDot, { backgroundColor: BUSINESS_TYPE_COLORS[ft] }]} />
-              ))}
-            </View>
-          )}
-        </Pressable>
-
-        <Pressable
-          onPress={() => router.push('/daily-tasks')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
-        >
-          <Image source={require('../../assets/img/profile/dayliQuests.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>
-            {tHotel('dailyTasks.title')}{' '}
-            <Text style={[styles.achievementsButtonSubText, { color: theme.text }]}>
-              ({dailyTasks.claimed.filter(k => DAILY_TASKS.find(t => t.key === k && !t.hidden)).length}/{DAILY_TASKS.filter(t => !t.hidden).length})
-            </Text>
-          </Text>
+          <Image source={require('../../assets/img/settingsIcon.png')} style={styles.achievementsIcon} />
+          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>Settings</Text>
         </Pressable>
 
         {isTemporary && (
@@ -559,12 +693,26 @@ export default function ProfileScreen() {
             )}
           </View>
 
+          {daysInGame !== null && (
+            <>
+              <View style={[styles.syncDivider, { backgroundColor: theme.divider }]} />
+              <ProfileInfoRow
+                icons={[SAND_CLOCK]}
+                label="Days in game"
+                value={daysInGame === 0 ? '<1' : String(daysInGame)}
+                theme={theme}
+                noBorder
+                compact
+              />
+            </>
+          )}
+
           {syncExpanded && (
             <View style={styles.syncDropdown}>
 
               {/* Pending commands */}
               {commandQueueLength > 0 && (
-                <View style={[styles.dropSection, { backgroundColor: theme.surfaceSub }]}>
+                <View style={styles.dropSection}>
                   <Text style={[styles.dropSectionTitle, { color: theme.textMuted }]}>
                     {t('profile.sync.pendingDetail', { count: commandQueueLength })}
                   </Text>
@@ -581,7 +729,7 @@ export default function ProfileScreen() {
 
               {/* Failed command history */}
               {failedCommandLog.length > 0 && (
-                <View style={[styles.dropSection, { backgroundColor: theme.surfaceSub }]}>
+                <View style={styles.dropSection}>
                   <View style={styles.dropSectionHeader}>
                     <Text style={[styles.dropSectionTitle, { color: theme.textMuted }]}>
                       {t('profile.sync.failedCount', { count: failedCommandLog.length })}
@@ -791,6 +939,27 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_600SemiBold',
     fontSize: 12,
     color: '#7C8A6E',
+  },
+  revenueRow: {
+    flexDirection: 'row',
+    alignSelf: 'stretch',
+    marginTop: 10,
+    gap: 12,
+    alignItems: 'center',
+  },
+  revenueItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  revenueIcon: {
+    width: 30,
+    height: 30,
+  },
+  syncDivider: {
+    height: 1,
+    marginTop: 8,
   },
   syncCard: {
     marginHorizontal: 20,
