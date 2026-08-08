@@ -71,6 +71,16 @@ export interface FriendStatusResponse {
   requestId?: string;
 }
 
+export interface MailMessage {
+  id: string;
+  fromId: string;
+  fromName: string;
+  subject: string;
+  body: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? (
   __DEV__ ? 'http://localhost:3000' : 'https://api.tinytower.com'
 );
@@ -203,6 +213,16 @@ export const api = {
     request<void>('POST', `/friends/request/${requestId}/reject`),
   removeFriend: (requestId: string) =>
     request<void>('DELETE', `/friends/${requestId}`),
+  sendMail: (toId: string, subject: string, body: string) =>
+    request<{ id: string }>('POST', `/mail/send/${toId}`, { subject, body }),
+  getMailInbox: () =>
+    request<MailMessage[]>('GET', '/mail/inbox'),
+  getMailUnreadCount: () =>
+    request<{ count: number }>('GET', '/mail/unread-count'),
+  markMailRead: (id: string) =>
+    request<{ success: true }>('POST', `/mail/${id}/read`),
+  deleteMail: (id: string) =>
+    request<{ success: true }>('DELETE', `/mail/${id}`),
   registerAsGuest: () =>
     request<{ accessToken: string; refreshToken: string; player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: true } }>(
       'POST', '/auth/guest',
