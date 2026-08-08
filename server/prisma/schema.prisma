@@ -41,6 +41,8 @@ model Player {
   forumPosts      ForumPost[]
   forumComments   ForumComment[]
   forumPostReads  ForumPostRead[]
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
 }
 
 model PlayerState {
@@ -274,4 +276,25 @@ model ForumPostRead {
   player               Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@id([playerId, postId])
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model FriendRequest {
+  id        String              @id @default(uuid())
+  fromId    String
+  toId      String
+  status    FriendRequestStatus @default(PENDING)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  from      Player              @relation("SentRequests", fields: [fromId], references: [id], onDelete: Cascade)
+  to        Player              @relation("ReceivedRequests", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
+  @@index([toId, status])
+  @@index([fromId, status])
 }
