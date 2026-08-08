@@ -43,6 +43,8 @@ model Player {
   forumPostReads  ForumPostRead[]
   sentRequests     FriendRequest[] @relation("SentRequests")
   receivedRequests FriendRequest[] @relation("ReceivedRequests")
+  sentMail         MailMessage[]   @relation("SentMail")
+  receivedMail     MailMessage[]   @relation("ReceivedMail")
 }
 
 model PlayerState {
@@ -297,4 +299,20 @@ model FriendRequest {
   @@unique([fromId, toId])
   @@index([toId, status])
   @@index([fromId, status])
+}
+
+model MailMessage {
+  id        String   @id @default(uuid())
+  fromId    String
+  toId      String
+  subject   String
+  body      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  from Player @relation("SentMail",     fields: [fromId], references: [id], onDelete: Cascade)
+  to   Player @relation("ReceivedMail", fields: [toId],   references: [id], onDelete: Cascade)
+
+  @@index([toId, isRead])
+  @@index([toId, createdAt])
 }
