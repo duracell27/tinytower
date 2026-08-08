@@ -34,25 +34,25 @@ export class FriendsController {
 
   @Delete('request/:requestId')
   @UseGuards(JwtAuthGuard)
-  cancelRequest(@Req() req: AuthReq, @Param('requestId') requestId: string) {
+  cancelRequest(@Req() req: AuthReq, @Param('requestId') requestId: string): Promise<{ success: true }> {
     return this.friendsService.cancelRequest(requestId, req.user.playerId);
   }
 
   @Post('request/:requestId/accept')
   @UseGuards(JwtAuthGuard)
-  acceptRequest(@Req() req: AuthReq, @Param('requestId') requestId: string) {
+  acceptRequest(@Req() req: AuthReq, @Param('requestId') requestId: string): Promise<{ success: true }> {
     return this.friendsService.acceptRequest(requestId, req.user.playerId);
   }
 
   @Post('request/:requestId/reject')
   @UseGuards(JwtAuthGuard)
-  rejectRequest(@Req() req: AuthReq, @Param('requestId') requestId: string) {
+  rejectRequest(@Req() req: AuthReq, @Param('requestId') requestId: string): Promise<{ success: true }> {
     return this.friendsService.rejectRequest(requestId, req.user.playerId);
   }
 
   @Delete(':requestId')
   @UseGuards(JwtAuthGuard)
-  removeFriend(@Req() req: AuthReq, @Param('requestId') requestId: string) {
+  removeFriend(@Req() req: AuthReq, @Param('requestId') requestId: string): Promise<{ success: true }> {
     return this.friendsService.removeFriend(requestId, req.user.playerId);
   }
 }

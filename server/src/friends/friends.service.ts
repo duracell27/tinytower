@@ -54,6 +54,8 @@ export class FriendsService {
   }
 
   async sendRequest(fromId: string, toId: string): Promise<{ requestId: string }> {
+    const target = await this.prisma.player.findUnique({ where: { id: toId }, select: { id: true } });
+    if (!target) throw new NotFoundException('Player not found');
     if (fromId === toId) throw new BadRequestException('Cannot send request to yourself');
     const existing = await this.findAnyRequest(fromId, toId);
     if (existing) {
@@ -74,36 +76,40 @@ export class FriendsService {
     return { requestId: req.id };
   }
 
-  async cancelRequest(requestId: string, myId: string): Promise<void> {
+  async cancelRequest(requestId: string, myId: string): Promise<{ success: true }> {
     const req = await this.prisma.friendRequest.findUnique({ where: { id: requestId } });
     if (!req) throw new NotFoundException('Request not found');
     if (req.fromId !== myId) throw new ForbiddenException('Not your request');
     if (req.status !== FriendRequestStatus.PENDING) throw new BadRequestException('Request is not pending');
     await this.prisma.friendRequest.delete({ where: { id: requestId } });
+    return { success: true } as const;
   }
 
-  async acceptRequest(requestId: string, myId: string): Promise<void> {
+  async acceptRequest(requestId: string, myId: string): Promise<{ success: true }> {
     const req = await this.prisma.friendRequest.findUnique({ where: { id: requestId } });
     if (!req) throw new NotFoundException('Request not found');
     if (req.toId !== myId) throw new ForbiddenException('Not your request to accept');
     if (req.status !== FriendRequestStatus.PENDING) throw new BadRequestException('Request is not pending');
     await this.prisma.friendRequest.update({ where: { id: requestId }, data: { status: FriendRequestStatus.ACCEPTED } });
+    return { success: true } as const;
   }
 
-  async rejectRequest(requestId: string, myId: string): Promise<void> {
+  async rejectRequest(requestId: string, myId: string): Promise<{ success: true }> {
     const req = await this.prisma.friendRequest.findUnique({ where: { id: requestId } });
     if (!req) throw new NotFoundException('Request not found');
     if (req.toId !== myId) throw new ForbiddenException('Not your request to reject');
     if (req.status !== FriendRequestStatus.PENDING) throw new BadRequestException('Request is not pending');
     await this.prisma.friendRequest.update({ where: { id: requestId }, data: { status: FriendRequestStatus.REJECTED } });
+    return { success: true } as const;
   }
 
-  async removeFriend(requestId: string, myId: string): Promise<void> {
+  async removeFriend(requestId: string, myId: string): Promise<{ success: true }> {
     const req = await this.prisma.friendRequest.findUnique({ where: { id: requestId } });
     if (!req) throw new NotFoundException('Friendship not found');
     if (req.fromId !== myId && req.toId !== myId) throw new ForbiddenException('Not your friendship');
     if (req.status !== FriendRequestStatus.ACCEPTED) throw new BadRequestException('Not friends');
     await this.prisma.friendRequest.delete({ where: { id: requestId } });
+    return { success: true } as const;
   }
 
   async getFriends(myId: string): Promise<FriendEntryDto[]> {

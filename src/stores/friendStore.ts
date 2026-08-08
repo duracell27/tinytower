@@ -75,6 +75,7 @@ export const useFriendStore = create<FriendState & FriendActions>((set, get) => 
   },
 
   acceptRequest: async (requestId: string, fromId: string) => {
+    const prev = get().statusCache[fromId];
     set(s => ({
       incomingRequests: s.incomingRequests.filter(r => r.requestId !== requestId),
       pendingCount: Math.max(0, s.pendingCount - 1),
@@ -84,12 +85,14 @@ export const useFriendStore = create<FriendState & FriendActions>((set, get) => 
       await api.acceptFriendRequest(requestId);
       await get().fetchFriends();
     } catch (e) {
+      set(s => ({ statusCache: { ...s.statusCache, [fromId]: prev } }));
       await get().fetchIncoming();
       throw e;
     }
   },
 
   rejectRequest: async (requestId: string, fromId: string) => {
+    const prev = get().statusCache[fromId];
     set(s => ({
       incomingRequests: s.incomingRequests.filter(r => r.requestId !== requestId),
       pendingCount: Math.max(0, s.pendingCount - 1),
@@ -98,6 +101,7 @@ export const useFriendStore = create<FriendState & FriendActions>((set, get) => 
     try {
       await api.rejectFriendRequest(requestId);
     } catch (e) {
+      set(s => ({ statusCache: { ...s.statusCache, [fromId]: prev } }));
       await get().fetchIncoming();
       throw e;
     }

@@ -150,6 +150,11 @@ export default function MyFriendsScreen() {
     if (friends.length === 0 && pendingCount > 0) setActiveTab('requests');
   }, [friends.length, pendingCount]);
 
+  // Switch back to friends tab when all requests have been handled
+  useEffect(() => {
+    if (pendingCount === 0 && activeTab === 'requests') setActiveTab('friends');
+  }, [pendingCount, activeTab]);
+
   return (
     <AppBackground style={{ flex: 1 }}>
 
@@ -201,7 +206,8 @@ export default function MyFriendsScreen() {
                     entry={entry}
                     theme={theme}
                     onRemove={async () => {
-                      await removeFriend(entry.requestId, entry.playerId);
+                      try { await removeFriend(entry.requestId, entry.playerId); }
+                      catch { /* already handled by store */ }
                     }}
                   />
                 ))
@@ -219,8 +225,14 @@ export default function MyFriendsScreen() {
                     key={entry.requestId}
                     entry={entry}
                     theme={theme}
-                    onAccept={async () => { await acceptRequest(entry.requestId, entry.fromId); }}
-                    onReject={async () => { await rejectRequest(entry.requestId, entry.fromId); }}
+                    onAccept={async () => {
+                      try { await acceptRequest(entry.requestId, entry.fromId); }
+                      catch { /* already handled by store */ }
+                    }}
+                    onReject={async () => {
+                      try { await rejectRequest(entry.requestId, entry.fromId); }
+                      catch { /* already handled by store */ }
+                    }}
                   />
                 ))
               )}
