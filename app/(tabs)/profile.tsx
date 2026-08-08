@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
 import Svg, { Path, Polyline } from 'react-native-svg';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../src/i18n';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -25,6 +25,7 @@ import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
 import * as Clipboard from 'expo-clipboard';
 import type { Command } from '../../shared/types';
 import { api, type PlayerProfile } from '../../src/services/api';
+import { useFriendStore } from '../../src/stores/friendStore';
 
 const COIN_ICON     = require('../../assets/img/coin.png');
 const BEST_RPM_ICON = require('../../assets/img/bestRPM.png');
@@ -320,6 +321,9 @@ export default function ProfileScreen() {
   );
   const now = useGameClock(10_000);
 
+  const pendingCount = useFriendStore(s => s.pendingCount);
+  const fetchIncoming = useFriendStore(s => s.fetchIncoming);
+
   const BUSINESS_TYPE_COLORS: Record<string, string> = {
     green: '#3FA535', blue: '#3376E5', yellow: '#E5A72E', purple: '#9A6FD0', red: '#E05A4A',
   };
@@ -353,6 +357,10 @@ export default function ProfileScreen() {
       .catch(() => {});
     return () => { cancelled = true; };
   }, [player?.id]);
+
+  useFocusEffect(useCallback(() => {
+    fetchIncoming();
+  }, [fetchIncoming]));
 
   const daysInGame = myProfile
     ? Math.floor((Date.now() - new Date(myProfile.createdAt).getTime()) / 86_400_000)
@@ -542,10 +550,16 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Pressable
+          onPress={() => router.push('/my-friends')}
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/users.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>My Friends</Text>
+          <Text style={[styles.achievementsButtonText, { flex: 1, color: theme.text }]}>My Friends</Text>
+          {pendingCount > 0 && (
+            <View style={styles.friendsBadge}>
+              <Text style={styles.friendsBadgeText}>{pendingCount}</Text>
+            </View>
+          )}
         </Pressable>
 
         <Pressable
@@ -1227,6 +1241,21 @@ const styles = StyleSheet.create({
   convertSubmitText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 17,
+    color: '#fff',
+  },
+  friendsBadge: {
+    backgroundColor: '#E05A4A',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 4,
+  },
+  friendsBadgeText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 12,
     color: '#fff',
   },
 });
