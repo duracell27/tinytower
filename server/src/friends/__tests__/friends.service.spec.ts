@@ -25,6 +25,7 @@ describe('FriendsService', () => {
         delete: jest.fn().mockResolvedValue(baseRequest),
       },
       player: {
+        findUnique: jest.fn().mockResolvedValue(player2),
         findMany: jest.fn().mockResolvedValue([player1, player2]),
       },
     };
@@ -82,6 +83,11 @@ describe('FriendsService', () => {
         data: { fromId: 'p1', toId: 'p2', status: 'PENDING' },
       });
       expect(result.requestId).toBe('req-1');
+    });
+
+    it('throws NotFoundException when target player does not exist', async () => {
+      prisma.player.findUnique.mockResolvedValue(null);
+      await expect(service.sendRequest('p1', 'p-unknown')).rejects.toThrow(NotFoundException);
     });
 
     it('throws when sending to yourself', async () => {
