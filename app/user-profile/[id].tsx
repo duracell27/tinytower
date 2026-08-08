@@ -9,6 +9,8 @@ import { api, type PlayerProfile } from '../../src/services/api';
 import { getUserIcon } from '../../src/utils/userIcon';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { formatNum } from '../../src/utils/format';
+import { useAuthStore } from '../../src/stores/authStore';
+import { useFriendStore } from '../../src/stores/friendStore';
 
 const STAR_FULL      = require('../../assets/img/starFull.png');
 const STAR_66        = require('../../assets/img/star66.png');
@@ -120,6 +122,18 @@ export default function UserProfileScreen() {
   const [error, setError] = useState<string | null>(null);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
 
+  const currentPlayerId = useAuthStore(s => s.player?.id);
+  const statusCache = useFriendStore(s => s.statusCache);
+  const fetchStatus = useFriendStore(s => s.fetchStatus);
+  const sendRequest = useFriendStore(s => s.sendRequest);
+  const cancelRequest = useFriendStore(s => s.cancelRequest);
+  const acceptRequest = useFriendStore(s => s.acceptRequest);
+  const rejectRequest = useFriendStore(s => s.rejectRequest);
+  const removeFriend = useFriendStore(s => s.removeFriend);
+
+  const friendStatus = id ? statusCache[id] : undefined;
+  const [friendActionLoading, setFriendActionLoading] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -127,8 +141,11 @@ export default function UserProfileScreen() {
       .then((p) => { if (!cancelled) setProfile(p); })
       .catch(() => { if (!cancelled) setError('Failed to load profile'); })
       .finally(() => { if (!cancelled) setLoading(false); });
+    if (id && currentPlayerId && id !== currentPlayerId) {
+      fetchStatus(id);
+    }
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id, currentPlayerId, fetchStatus]);
 
   const isOnline = profile
     ? Date.now() - new Date(profile.lastSeenAt).getTime() < 5 * 60 * 1000
@@ -220,10 +237,93 @@ export default function UserProfileScreen() {
             <Image source={MAIL_ICON} style={pStyles.actionIcon} contentFit="contain" />
             <Text style={[pStyles.actionBtnText, { color: theme.text }]}>Send Message</Text>
           </Pressable>
-          <Pressable style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
-            <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
-            <Text style={[pStyles.actionBtnText, { color: theme.text }]}>Add Friend</Text>
-          </Pressable>
+          {/* Friend action — only shown if viewing someone else's profile */}
+          {currentPlayerId && id !== currentPlayerId && (
+            <>
+              {(!friendStatus || friendStatus.status === 'none') && (
+                <Pressable
+                  style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+                  onPress={async () => {
+                    setFriendActionLoading(true);
+                    try { await sendRequest(id); } catch { /* silent */ }
+                    setFriendActionLoading(false);
+                  }}
+                  disabled={friendActionLoading}
+                >
+                  <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
+                  <Text style={[pStyles.actionBtnText, { color: theme.text }]}>Add Friend</Text>
+                </Pressable>
+              )}
+
+              {friendStatus?.status === 'pending_sent' && (
+                <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
+                  <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
+                  <Text style={[pStyles.actionBtnText, { flex: 1, color: theme.textMuted }]}>Request Sent</Text>
+                  <Pressable
+                    style={pStyles.cancelBtn}
+                    onPress={async () => {
+                      if (!friendStatus.requestId) return;
+                      setFriendActionLoading(true);
+                      try { await cancelRequest(friendStatus.requestId, id); } catch { /* silent */ }
+                      setFriendActionLoading(false);
+                    }}
+                    disabled={friendActionLoading}
+                  >
+                    <Text style={pStyles.cancelBtnText}>Cancel</Text>
+                  </Pressable>
+                </View>
+              )}
+
+              {friendStatus?.status === 'pending_received' && (
+                <View style={[pStyles.actionBtn, { backgroundColor: theme.surface, gap: 8 }]}>
+                  <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
+                  <Pressable
+                    style={pStyles.acceptBtn}
+                    onPress={async () => {
+                      if (!friendStatus.requestId) return;
+                      setFriendActionLoading(true);
+                      try { await acceptRequest(friendStatus.requestId, id); } catch { /* silent */ }
+                      setFriendActionLoading(false);
+                    }}
+                    disabled={friendActionLoading}
+                  >
+                    <Text style={pStyles.acceptBtnText}>Accept</Text>
+                  </Pressable>
+                  <Pressable
+                    style={pStyles.rejectBtn}
+                    onPress={async () => {
+                      if (!friendStatus.requestId) return;
+                      setFriendActionLoading(true);
+                      try { await rejectRequest(friendStatus.requestId, id); } catch { /* silent */ }
+                      setFriendActionLoading(false);
+                    }}
+                    disabled={friendActionLoading}
+                  >
+                    <Text style={pStyles.rejectBtnText}>Reject</Text>
+                  </Pressable>
+                </View>
+              )}
+
+              {friendStatus?.status === 'friends' && (
+                <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
+                  <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
+                  <Text style={[pStyles.actionBtnText, { flex: 1, color: '#3FA535' }]}>Friends</Text>
+                  <Pressable
+                    style={pStyles.removeFriendBtn}
+                    onPress={async () => {
+                      if (!friendStatus.requestId) return;
+                      setFriendActionLoading(true);
+                      try { await removeFriend(friendStatus.requestId, id); } catch { /* silent */ }
+                      setFriendActionLoading(false);
+                    }}
+                    disabled={friendActionLoading}
+                  >
+                    <Text style={pStyles.removeFriendBtnText}>Remove</Text>
+                  </Pressable>
+                </View>
+              )}
+            </>
+          )}
 
           {/* Block 3: Achievements */}
           <Pressable
@@ -466,6 +566,56 @@ const pStyles = StyleSheet.create({
   },
   statusDot: { width: 9, height: 9, borderRadius: 5 },
   statusText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+
+  /* Friend action buttons */
+  cancelBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    backgroundColor: '#F0EDE5',
+  },
+  cancelBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
+    color: '#7C8A6E',
+  },
+  acceptBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: 12,
+    backgroundColor: '#3FA535',
+    alignItems: 'center',
+  },
+  acceptBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: '#fff',
+  },
+  rejectBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E05A4A',
+    alignItems: 'center',
+  },
+  rejectBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: '#E05A4A',
+  },
+  removeFriendBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#E05A4A',
+  },
+  removeFriendBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
+    color: '#E05A4A',
+  },
 
   /* Close button */
   closeBtnWrap: {
