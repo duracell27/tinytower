@@ -13,6 +13,7 @@ import { ForumModule } from './forum/forum.module';
 import { StatsModule } from './stats/stats.module';
 import { AdminModule } from './admin/admin.module';
 import { PlayersModule } from './players/players.module';
+import { FriendsModule } from './friends/friends.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PlayersModule } from './players/players.module';
     ForumModule,
     StatsModule,
     AdminModule,
+    FriendsModule,
   ],
 })
 export class AppModule {}
