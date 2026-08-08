@@ -48,6 +48,29 @@ export interface PlayerProfile {
   categoryProgress: Record<string, number>;
 }
 
+export interface FriendEntry {
+  requestId: string;
+  playerId: string;
+  playerName: string;
+  playerLevel: number;
+  city: string | null;
+  lastSeenAt: string;
+}
+
+export interface IncomingRequest {
+  requestId: string;
+  fromId: string;
+  playerName: string;
+  playerLevel: number;
+  city: string | null;
+  createdAt: string;
+}
+
+export interface FriendStatusResponse {
+  status: 'none' | 'pending_sent' | 'pending_received' | 'friends';
+  requestId?: string;
+}
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? (
   __DEV__ ? 'http://localhost:3000' : 'https://api.tinytower.com'
 );
@@ -164,6 +187,22 @@ export const api = {
     request<UsersResponse>('GET', `/players/search?q=${encodeURIComponent(q)}&page=${page}`),
   getPlayerProfile: (id: string) =>
     request<PlayerProfile>('GET', `/players/${id}`),
+  getFriendStatus: (playerId: string) =>
+    request<FriendStatusResponse>('GET', `/friends/status/${playerId}`),
+  getFriends: () =>
+    request<FriendEntry[]>('GET', '/friends'),
+  getIncomingFriendRequests: () =>
+    request<IncomingRequest[]>('GET', '/friends/requests/incoming'),
+  sendFriendRequest: (toId: string) =>
+    request<{ requestId: string }>('POST', `/friends/request/${toId}`),
+  cancelFriendRequest: (requestId: string) =>
+    request<void>('DELETE', `/friends/request/${requestId}`),
+  acceptFriendRequest: (requestId: string) =>
+    request<void>('POST', `/friends/request/${requestId}/accept`),
+  rejectFriendRequest: (requestId: string) =>
+    request<void>('POST', `/friends/request/${requestId}/reject`),
+  removeFriend: (requestId: string) =>
+    request<void>('DELETE', `/friends/${requestId}`),
   registerAsGuest: () =>
     request<{ accessToken: string; refreshToken: string; player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: true } }>(
       'POST', '/auth/guest',
