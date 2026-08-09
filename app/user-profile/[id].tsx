@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator, Modal, KeyboardAvoidingView, TextInput, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import Svg, { Polyline, Path } from 'react-native-svg';
@@ -11,6 +11,7 @@ import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategorie
 import { formatNum } from '../../src/utils/format';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useFriendStore } from '../../src/stores/friendStore';
+import { useMailStore } from '../../src/stores/mailStore';
 
 const STAR_FULL      = require('../../assets/img/starFull.png');
 const STAR_66        = require('../../assets/img/star66.png');
@@ -20,7 +21,8 @@ const LVL_ICON       = require('../../assets/img/lvlIcon.png');
 const FLOOR_ICON     = require('../../assets/img/floorIcon.png');
 const ACHIV_ICON     = require('../../assets/img/profile/achivProfileIcon.png');
 const MAIL_ICON      = require('../../assets/img/mail.png');
-const FRIEND_ICON    = require('../../assets/img/addfriend.png');
+const FRIEND_ICON       = require('../../assets/img/addfriend.png');
+const REMOVE_FRIEND_ICON = require('../../assets/img/removefriend.png');
 const COIN_ICON      = require('../../assets/img/coin.png');
 const BEST_RPM_ICON  = require('../../assets/img/bestRPM.png');
 const SAND_CLOCK     = require('../../assets/img/sandClock.png');
@@ -134,6 +136,37 @@ export default function UserProfileScreen() {
   const friendStatus = id ? statusCache[id] : undefined;
   const [friendActionLoading, setFriendActionLoading] = useState(false);
 
+  const sendMail = useMailStore(s => s.sendMail);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeSubject, setComposeSubject] = useState('');
+  const [composeBody, setComposeBody] = useState('');
+  const [sendLoading, setSendLoading] = useState(false);
+  const [sendError, setSendError] = useState('');
+  const [sendSuccess, setSendSuccess] = useState(false);
+
+  const handleSend = async () => {
+    if (!composeSubject.trim() || !composeBody.trim()) {
+      setSendError('Please fill in subject and message');
+      return;
+    }
+    setSendLoading(true);
+    setSendError('');
+    try {
+      await sendMail(id, composeSubject.trim(), composeBody.trim());
+      setSendSuccess(true);
+      setTimeout(() => {
+        setComposeOpen(false);
+        setSendSuccess(false);
+        setComposeSubject('');
+        setComposeBody('');
+      }, 1200);
+    } catch (e) {
+      setSendError(e instanceof Error ? e.message : 'Failed to send');
+    } finally {
+      setSendLoading(false);
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -233,10 +266,15 @@ export default function UserProfileScreen() {
           </View>
 
           {/* Block 2: Actions */}
-          <Pressable style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
-            <Image source={MAIL_ICON} style={pStyles.actionIcon} contentFit="contain" />
-            <Text style={[pStyles.actionBtnText, { color: theme.text }]}>Send Message</Text>
-          </Pressable>
+          {currentPlayerId && id !== currentPlayerId && (
+            <Pressable
+              style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+              onPress={() => setComposeOpen(true)}
+            >
+              <Image source={MAIL_ICON} style={pStyles.actionIcon} contentFit="contain" />
+              <Text style={[pStyles.actionBtnText, { color: theme.text }]}>Send Message</Text>
+            </Pressable>
+          )}
           {/* Friend action — only shown if viewing someone else's profile */}
           {currentPlayerId && id !== currentPlayerId && (
             <>
@@ -305,22 +343,19 @@ export default function UserProfileScreen() {
               )}
 
               {friendStatus?.status === 'friends' && (
-                <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
-                  <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
-                  <Text style={[pStyles.actionBtnText, { flex: 1, color: '#3FA535' }]}>Friends</Text>
-                  <Pressable
-                    style={pStyles.removeFriendBtn}
-                    onPress={async () => {
-                      if (!friendStatus.requestId) return;
-                      setFriendActionLoading(true);
-                      try { await removeFriend(friendStatus.requestId, id); } catch { /* silent */ }
-                      setFriendActionLoading(false);
-                    }}
-                    disabled={friendActionLoading}
-                  >
-                    <Text style={pStyles.removeFriendBtnText}>Remove</Text>
-                  </Pressable>
-                </View>
+                <Pressable
+                  style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+                  onPress={async () => {
+                    if (!friendStatus.requestId) return;
+                    setFriendActionLoading(true);
+                    try { await removeFriend(friendStatus.requestId, id); } catch { /* silent */ }
+                    setFriendActionLoading(false);
+                  }}
+                  disabled={friendActionLoading}
+                >
+                  <Image source={REMOVE_FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
+                  <Text style={[pStyles.actionBtnText, { flex: 1, color: theme.text }]}>Remove from Friends</Text>
+                </Pressable>
               )}
             </>
           )}
@@ -425,6 +460,75 @@ export default function UserProfileScreen() {
 
         </ScrollView>
       )}
+
+      <Modal
+        visible={composeOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setComposeOpen(false)}
+      >
+        <KeyboardAvoidingView
+          style={cStyles.overlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <Pressable style={cStyles.backdrop} onPress={() => setComposeOpen(false)} />
+          <View style={[cStyles.card, { backgroundColor: theme.surface }]}>
+            <Text style={[cStyles.title, { color: theme.text }]}>Send Message</Text>
+            <Text style={[cStyles.costLabel, { color: theme.textMuted }]}>Cost: 100 🪙</Text>
+
+            {sendSuccess ? (
+              <Text style={cStyles.successText}>Sent!</Text>
+            ) : (
+              <>
+                {sendError ? <Text style={cStyles.errorText}>{sendError}</Text> : null}
+
+                <Text style={[cStyles.fieldLabel, { color: theme.textMuted }]}>Subject</Text>
+                <TextInput
+                  style={[cStyles.input, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
+                  value={composeSubject}
+                  onChangeText={setComposeSubject}
+                  placeholder="Subject (max 100 chars)"
+                  placeholderTextColor={theme.textMuted as string}
+                  maxLength={100}
+                  editable={!sendLoading}
+                />
+
+                <Text style={[cStyles.fieldLabel, { color: theme.textMuted }]}>Message</Text>
+                <TextInput
+                  style={[cStyles.textArea, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
+                  value={composeBody}
+                  onChangeText={setComposeBody}
+                  placeholder="Your message (max 1000 chars)"
+                  placeholderTextColor={theme.textMuted as string}
+                  multiline
+                  maxLength={1000}
+                  editable={!sendLoading}
+                />
+
+                <View style={cStyles.btnRow}>
+                  <Pressable
+                    style={({ pressed }) => [cStyles.cancelBtn, pressed && { opacity: 0.7 }]}
+                    onPress={() => setComposeOpen(false)}
+                    disabled={sendLoading}
+                  >
+                    <Text style={cStyles.cancelBtnText}>Cancel</Text>
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => [cStyles.sendBtn, pressed && { opacity: 0.85 }]}
+                    onPress={handleSend}
+                    disabled={sendLoading}
+                  >
+                    {sendLoading
+                      ? <ActivityIndicator color="#fff" size="small" />
+                      : <Text style={cStyles.sendBtnText}>Send</Text>
+                    }
+                  </Pressable>
+                </View>
+              </>
+            )}
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
       {/* Close button — bottom center, black circle */}
       <View style={pStyles.closeBtnWrap} pointerEvents="box-none">
@@ -604,19 +708,6 @@ const pStyles = StyleSheet.create({
     fontSize: 14,
     color: '#E05A4A',
   },
-  removeFriendBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#E05A4A',
-  },
-  removeFriendBtnText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13,
-    color: '#E05A4A',
-  },
-
   /* Close button */
   closeBtnWrap: {
     position: 'absolute', bottom: 36, left: 0, right: 0,
@@ -628,5 +719,63 @@ const pStyles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25, shadowRadius: 8, elevation: 6,
+  },
+});
+
+const cStyles = StyleSheet.create({
+  overlay: {
+    flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24,
+  },
+  backdrop: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  card: {
+    width: '100%', borderRadius: 24, padding: 24,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.25, shadowRadius: 24, elevation: 12,
+  },
+  title: {
+    fontFamily: 'Fredoka_700Bold', fontSize: 20, textAlign: 'center', marginBottom: 2,
+  },
+  costLabel: {
+    fontFamily: 'Nunito_600SemiBold', fontSize: 13, textAlign: 'center', marginBottom: 16,
+  },
+  fieldLabel: {
+    fontFamily: 'Fredoka_500Medium', fontSize: 13, marginBottom: 5, marginTop: 10,
+  },
+  input: {
+    height: 48, borderRadius: 13, borderWidth: 2, paddingHorizontal: 14,
+    fontFamily: 'Nunito_600SemiBold', fontSize: 15,
+  },
+  textArea: {
+    minHeight: 100, borderRadius: 13, borderWidth: 2, paddingHorizontal: 14,
+    paddingTop: 12, fontFamily: 'Nunito_400Regular', fontSize: 14,
+    textAlignVertical: 'top',
+  },
+  btnRow: {
+    flexDirection: 'row', gap: 10, marginTop: 20,
+  },
+  cancelBtn: {
+    flex: 1, height: 48, borderRadius: 14, borderWidth: 1.5,
+    borderColor: '#C5C5C5', alignItems: 'center', justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#7C8A6E',
+  },
+  sendBtn: {
+    flex: 2, height: 48, borderRadius: 14, backgroundColor: '#3FA535',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  sendBtnText: {
+    fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#fff',
+  },
+  errorText: {
+    fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#C62828',
+    textAlign: 'center', marginBottom: 10,
+  },
+  successText: {
+    fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#3FA535',
+    textAlign: 'center', paddingVertical: 20,
   },
 });
