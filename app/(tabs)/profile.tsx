@@ -26,6 +26,7 @@ import * as Clipboard from 'expo-clipboard';
 import type { Command } from '../../shared/types';
 import { api, type PlayerProfile } from '../../src/services/api';
 import { useFriendStore } from '../../src/stores/friendStore';
+import { useMailStore } from '../../src/stores/mailStore';
 
 const COIN_ICON     = require('../../assets/img/coin.png');
 const BEST_RPM_ICON = require('../../assets/img/bestRPM.png');
@@ -324,6 +325,9 @@ export default function ProfileScreen() {
   const pendingCount = useFriendStore(s => s.pendingCount);
   const fetchIncoming = useFriendStore(s => s.fetchIncoming);
 
+  const unreadMailCount = useMailStore(s => s.unreadCount);
+  const fetchUnreadCount = useMailStore(s => s.fetchUnreadCount);
+
   const BUSINESS_TYPE_COLORS: Record<string, string> = {
     green: '#3FA535', blue: '#3376E5', yellow: '#E5A72E', purple: '#9A6FD0', red: '#E05A4A',
   };
@@ -349,18 +353,19 @@ export default function ProfileScreen() {
   );
 
   const [myProfile, setMyProfile] = useState<PlayerProfile | null>(null);
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     if (!player?.id) return;
     let cancelled = false;
     api.getPlayerProfile(player.id)
       .then((p) => { if (!cancelled) setMyProfile(p); })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [player?.id]);
+  }, [player?.id]));
 
   useFocusEffect(useCallback(() => {
     fetchIncoming();
-  }, [fetchIncoming]));
+    fetchUnreadCount();
+  }, [fetchIncoming, fetchUnreadCount]));
 
   const daysInGame = myProfile
     ? Math.floor((Date.now() - new Date(myProfile.createdAt).getTime()) / 86_400_000)
@@ -519,7 +524,7 @@ export default function ProfileScreen() {
                       <Image source={BEST_RPM_ICON} style={styles.revenueIcon} contentFit="contain" />
                       <View style={styles.workerStatTextCol}>
                         <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>Best / min</Text>
-                        <Text style={[styles.workerStatValue, { color: '#3FA535' }]}>{myProfile ? formatNumFull(myProfile.maxRevenuePerMin) : '—'}</Text>
+                        <Text style={[styles.workerStatValue, { color: '#3FA535' }]}>{myProfile ? formatNumFull(Math.max(myProfile.maxRevenuePerMin, revenuePerMin)) : '—'}</Text>
                       </View>
                     </View>
                   </View>
@@ -543,10 +548,16 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Pressable
+          onPress={() => router.push('/my-mail')}
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/mail.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>My Mail</Text>
+          <Text style={[styles.achievementsButtonText, { flex: 1, color: theme.text }]}>My Mail</Text>
+          {unreadMailCount > 0 && (
+            <View style={styles.friendsBadge}>
+              <Text style={styles.friendsBadgeText}>{unreadMailCount}</Text>
+            </View>
+          )}
         </Pressable>
 
         <Pressable
