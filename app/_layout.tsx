@@ -23,6 +23,7 @@ import { setAuthFailureCallback } from '../src/services/api';
 import * as Linking from 'expo-linking';
 import { createMMKV } from 'react-native-mmkv';
 import GlobalOverlay from '../src/components/GlobalOverlay';
+import { ClockProvider } from '../src/context/ClockContext';
 
 const authStorage = createMMKV({ id: 'auth' });
 
@@ -80,6 +81,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <ClockProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" options={{ animation: 'none' }} />
         <Stack.Screen name="login" options={{ animation: 'slide_from_right' }} />
@@ -93,6 +95,7 @@ export default function RootLayout() {
         <Stack.Screen name="my-business/[category]" options={{ headerShown: false }} />
       </Stack>
       <GlobalOverlay />
+      </ClockProvider>
     </GestureHandlerRootView>
   );
 }

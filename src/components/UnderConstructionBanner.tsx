@@ -189,7 +189,7 @@ export default function UnderConstructionBanner({
 
   // State: building (timer) or ready but no type selected yet
   return (
-    <View style={[styles.ribbon, { borderColor: BANNER_COLOR, backgroundColor: isDark ? '#221408' : BANNER_BG }]}>
+    <View style={[styles.ribbon, { borderColor: BANNER_COLOR, backgroundColor: isDark ? '#32240E' : BANNER_BG }]}>
       <View style={styles.ribbonLeft}>
         <Image
           source={require('../../assets/img/workers/builder.png')}

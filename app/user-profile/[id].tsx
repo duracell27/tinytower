@@ -482,7 +482,10 @@ export default function UserProfileScreen() {
           <Pressable style={cStyles.backdrop} onPress={closeCompose} />
           <View style={[cStyles.card, { backgroundColor: theme.surface }]}>
             <Text style={[cStyles.title, { color: theme.text }]}>Send Message</Text>
-            <Text style={[cStyles.costLabel, { color: theme.textMuted }]}>Cost: 100 🪙</Text>
+            <View style={cStyles.costRow}>
+              <Text style={[cStyles.costLabel, { color: theme.textMuted }]}>Cost: 100</Text>
+              <Image source={COIN_ICON} style={cStyles.costIcon} contentFit="contain" />
+            </View>
 
             {sendSuccess ? (
               <Text style={cStyles.successText}>Sent!</Text>
@@ -746,9 +749,14 @@ const cStyles = StyleSheet.create({
   title: {
     fontFamily: 'Fredoka_700Bold', fontSize: 20, textAlign: 'center', marginBottom: 2,
   },
-  costLabel: {
-    fontFamily: 'Nunito_600SemiBold', fontSize: 13, textAlign: 'center', marginBottom: 16,
+  costRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 4, marginBottom: 16,
   },
+  costLabel: {
+    fontFamily: 'Nunito_600SemiBold', fontSize: 13,
+  },
+  costIcon: { width: 18, height: 18 },
   fieldLabel: {
     fontFamily: 'Fredoka_500Medium', fontSize: 13, marginBottom: 5, marginTop: 10,
   },

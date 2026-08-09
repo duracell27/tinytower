@@ -15,7 +15,7 @@ describe('MailService', () => {
     body: 'World',
     isRead: false,
     createdAt: new Date('2026-01-01T00:00:00Z'),
-    from: { playerName: 'Alice' },
+    from: { playerName: 'Alice', playerLevel: 5 },
   };
 
   beforeEach(async () => {
@@ -121,6 +121,7 @@ describe('MailService', () => {
         id: 'msg-1',
         fromId: 'p1',
         fromName: 'Alice',
+        fromLevel: 5,
         subject: 'Hello',
         body: 'World',
         isRead: false,

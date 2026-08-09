@@ -66,7 +66,7 @@ const TimestampedBaseSchema = z.object({
 export const SpawnVisitorCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('spawn_visitor'),
   visitorId: z.string(),
-  // role/isVip/targetFloor/hairColor/female/pendingFloorType are generated during liftVisitor
+  // optional for backward compat with old spawn_visitor commands without eager generation
   role: VisitorRoleSchema.optional(),
   isVip: z.boolean().optional(),
   targetFloor: z.number().int().positive().optional(),
@@ -143,8 +143,7 @@ export const FillLobbyCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('fill_lobby'),
   visitors: z.array(z.object({
     visitorId: z.string(),
-    // role/appearance/targetFloor are generated during liftVisitor
-    // but kept optional for backward compatibility with old fill_lobby commands
+    // optional for backward compat with old fill_lobby commands without eager generation
     role: VisitorRoleSchema.optional(),
     isVip: z.boolean().optional(),
     targetFloor: z.number().int().positive().optional(),

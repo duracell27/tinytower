@@ -75,6 +75,7 @@ export interface MailMessage {
   id: string;
   fromId: string;
   fromName: string;
+  fromLevel: number;
   subject: string;
   body: string;
   isRead: boolean;

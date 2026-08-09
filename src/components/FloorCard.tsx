@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-
 import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
-import { useGameClock } from '../hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerForSlot, getFloorDiscount, getFloorSpecialistBonus } from '../../shared/engine/workerUtils';
 import { shadeColor } from '../utils/color';
@@ -37,7 +36,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     dark: {
       color: '#6BA34A',
       bodyColor: '#1C241A',
-      cardBg: '#232C20',
+      cardBg: '#384434',
       nameColor: '#8FCC70',
     },
   },
@@ -51,7 +50,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     dark: {
       color: '#3A7ED8',
       bodyColor: '#18202E',
-      cardBg: '#1E2A3A',
+      cardBg: '#323E52',
       nameColor: '#7AADEE',
     },
   },
@@ -65,7 +64,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     dark: {
       color: '#F0B030',
       bodyColor: '#26201A',
-      cardBg: '#302820',
+      cardBg: '#483E34',
       nameColor: '#F0C060',
     },
   },
@@ -79,7 +78,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     dark: {
       color: '#A87EDE',
       bodyColor: '#201A2E',
-      cardBg: '#28203A',
+      cardBg: '#3E3454',
       nameColor: '#C4A0F0',
     },
   },
@@ -93,7 +92,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     dark: {
       color: '#E86060',
       bodyColor: '#2A1A1A',
-      cardBg: '#342020',
+      cardBg: '#4C3434',
       nameColor: '#F08080',
     },
   },
@@ -137,7 +136,6 @@ interface FloorCardProps {
 }
 
 function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
-  const now = useGameClock(1000);
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
   const floor = useFloor(floorId);
@@ -156,12 +154,11 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
     ?? floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
   const discount = getFloorDiscount(workers, floorId);
   const specialistBonus = getFloorSpecialistBonus(workers, floorId);
-  const deliveryLockMs = floor.productions.reduce((maxRemaining, p) => {
-    if (p.stage !== 'DELIVERING' || !p.typeId) return maxRemaining;
+  const deliveryLockUntil = floor.productions.reduce((maxEndAt, p) => {
+    if (p.stage !== 'DELIVERING' || !p.typeId) return maxEndAt;
     const tc = gameConfig.productionTypes[p.typeId];
-    if (!tc) return maxRemaining;
-    const remaining = tc.deliveryDuration - (now - p.stageStartedAt);
-    return Math.max(maxRemaining, remaining);
+    if (!tc) return maxEndAt;
+    return Math.max(maxEndAt, p.stageStartedAt + tc.deliveryDuration);
   }, 0);
   // Derive business name from the first production typeId — stable regardless of what
   // other floors of the same type get opened later.
@@ -219,7 +216,6 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
               key={idx}
               production={production}
               balance={balance}
-              now={now}
               floorId={floorId}
               floorType={floorType}
               slotIdx={idx}
@@ -235,7 +231,7 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
               specialistBonus={specialistBonus}
               accentColor={effectiveColor}
               onHire={onHireSlot}
-              deliveryLockMs={deliveryLockMs}
+              deliveryLockUntil={deliveryLockUntil}
               gems={gems}
               onLongPress={
                 slotWorker

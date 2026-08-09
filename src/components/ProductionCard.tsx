@@ -1,12 +1,12 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing } from 'react-native-reanimated';
+import { useClockNow } from '../context/ClockContext';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
-import { getProductionStatus } from '../../shared/engine/productionStatus';
 import { getRevenueMultiplier } from '../../shared/engine/workerUtils';
 import { useGameStore } from '../stores/gameStore';
 import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
@@ -28,7 +28,6 @@ function calcPerimeter(w: number, h: number): number {
   return 2 * (w - STROKE_W) + 2 * (h - STROKE_W) - r * (8 - 2 * Math.PI);
 }
 
-// Path starting from 12 o'clock (top-center), going clockwise
 function makeRoundRectPath(btnW: number, btnH: number): string {
   const x = STROKE_W / 2;
   const y = STROKE_W / 2;
@@ -50,7 +49,6 @@ function makeRoundRectPath(btnW: number, btnH: number): string {
   ].join(' ');
 }
 
-// Button color and shadow configs per stage
 const BTN_COLORS: Record<string, { color: string; shadowColor: string }> = {
   IDLE: { color: '#F0895E', shadowColor: '#B5512A' },
   READY_TO_COLLECT: { color: '#72C24F', shadowColor: '#4A8A2E' },
@@ -162,10 +160,29 @@ const iconStyles = StyleSheet.create({
   },
 });
 
+// Tiny sub-component: only this Text re-renders every second during active timers.
+// The parent ProductionCard stays frozen until a real stage transition occurs.
+function TimerText({ stageEndsAt, style }: { stageEndsAt: number; style: object }) {
+  const now = useClockNow();
+  return <Text style={style}>{formatTime(Math.max(0, stageEndsAt - now))}</Text>;
+}
+
+// Tiny sub-component: delivery lock countdown pill.
+// Re-renders every second so the countdown ticks, without touching the parent.
+function DeliveryLockPill({ deliveryLockUntil, accentColor }: { deliveryLockUntil: number; accentColor: string }) {
+  const now = useClockNow();
+  const remaining = Math.max(0, deliveryLockUntil - now);
+  if (remaining <= 0) return null;
+  return (
+    <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
+      <Text style={[styles.pillText, { color: accentColor }]}>{formatTime(remaining)}</Text>
+    </View>
+  );
+}
+
 interface ProductionCardProps {
   production: Production;
   balance: number;
-  now: number;
   floorId: number;
   floorType: string | null;
   slotIdx: number;
@@ -179,7 +196,7 @@ interface ProductionCardProps {
   specialistBonus?: number;
   accentColor: string;
   onHire?: (floorId: number, slotIdx: number) => void;
-  deliveryLockMs?: number;   // NEW
+  deliveryLockUntil?: number;
   gems: number;
   onLongPress?: () => void;
 }
@@ -187,7 +204,6 @@ interface ProductionCardProps {
 export default function ProductionCard({
   production,
   balance,
-  now,
   floorId,
   floorType,
   slotIdx,
@@ -201,7 +217,7 @@ export default function ProductionCard({
   specialistBonus,
   accentColor,
   onHire,
-  deliveryLockMs,
+  deliveryLockUntil,
   gems,
   onLongPress,
 }: ProductionCardProps) {
@@ -216,48 +232,112 @@ export default function ProductionCard({
   const starMult = FLOOR_STAR_MULTIPLIERS[stars] ?? FLOOR_STAR_MULTIPLIERS[0];
   const effectiveSellDuration = typeConfig ? typeConfig.sellDuration * starMult.time : 0;
 
-  // Get shirt color from floor type config
   const shirtColor = floorType && gameConfig.floorTypes[floorType]
     ? gameConfig.floorTypes[floorType].shirtColor
     : '#999';
 
-  // Level badge background: gold for specialists, else accent color
   const levelBadgeBg = worker?.isSpecialist ? '#F5C842' : accentColor;
   const levelBadgeTextColor = worker?.isSpecialist ? '#fff' : '#fff';
 
-  const status = getProductionStatus(production, typeConfig, now, balance, effectiveSellDuration || undefined);
-  const { effectiveStage, timeRemaining, canAct } = status;
+  // --- Stage management via setTimeout (no per-second re-renders) ---
 
-  const isDeliveryLocked =
-    (effectiveStage === 'IDLE' || effectiveStage === 'EMPTY') &&
-    (deliveryLockMs ?? 0) > 0;
+  // Fires once when a DELIVERING or SELLING timer expires, flipping the stage locally.
+  const [localCompleted, setLocalCompleted] = useState(false);
 
-  const MS_PER_HOUR = 3_600_000;
-  const speedUpCost = effectiveStage === 'DELIVERING'
-    ? Math.max(1, Math.ceil(timeRemaining / MS_PER_HOUR))
-    : 0;
+  useEffect(() => {
+    setLocalCompleted(false);
+    if ((production.stage !== 'DELIVERING' && production.stage !== 'SELLING') || !typeConfig) return;
+    const duration = production.stage === 'DELIVERING'
+      ? typeConfig.deliveryDuration
+      : effectiveSellDuration;
+    const endAt = production.stageStartedAt + duration;
+    const delay = Math.max(0, endAt - Date.now());
+    if (delay <= 0) { setLocalCompleted(true); return; }
+    const id = setTimeout(() => setLocalCompleted(true), delay);
+    return () => clearTimeout(id);
+  }, [production.stage, production.stageStartedAt, effectiveSellDuration, typeConfig]);
 
-  const btnConfig = BTN_COLORS[effectiveStage] || BTN_COLORS.IDLE;
+  // Fires once when the delivery lock on an adjacent slot expires.
+  const [lockExpired, setLockExpired] = useState(false);
 
-  // Primary (clickable) states use the floor's accent color; in-progress
-  // timer states (DELIVERING/SELLING) keep their fixed BTN_COLORS above so
-  // "processing" stays visually distinct from "your turn to tap".
-  const PRIMARY_STAGES = new Set(['EMPTY', 'IDLE', 'READY_TO_LIST', 'READY_TO_COLLECT']);
-  const isPrimaryStage = PRIMARY_STAGES.has(effectiveStage);
-  const accentBtnConfig = {
-    color: accentColor,
-    shadowColor: shadeColor(accentColor, -28),
-  };
-  const resolvedBtnConfig = isPrimaryStage ? accentBtnConfig : btnConfig;
+  useEffect(() => {
+    const until = deliveryLockUntil ?? 0;
+    if (until <= 0) { setLockExpired(true); return; }
+    setLockExpired(false);
+    const delay = Math.max(0, until - Date.now());
+    if (delay <= 0) { setLockExpired(true); return; }
+    const id = setTimeout(() => setLockExpired(true), delay);
+    return () => clearTimeout(id);
+  }, [deliveryLockUntil]);
 
-  // Compute discounted buy cost
+  // --- Derive stage without now ---
+
   const effectiveCost = typeConfig
     ? Math.floor(typeConfig.buyCost * starMult.cost * (1 - (floorDiscount ?? 0)))
     : 0;
+
+  let effectiveStage: EffectiveStage;
+  let canAct: boolean;
+
+  if (!production.typeId || !typeConfig) {
+    effectiveStage = 'EMPTY';
+    canAct = true;
+  } else {
+    switch (production.stage) {
+      case 'IDLE':
+        effectiveStage = 'IDLE';
+        canAct = balance >= effectiveCost;
+        break;
+      case 'DELIVERING':
+        effectiveStage = localCompleted ? 'READY_TO_LIST' : 'DELIVERING';
+        canAct = localCompleted;
+        break;
+      case 'READY_TO_LIST':
+        effectiveStage = 'READY_TO_LIST';
+        canAct = true;
+        break;
+      case 'SELLING':
+        effectiveStage = localCompleted ? 'READY_TO_COLLECT' : 'SELLING';
+        canAct = localCompleted;
+        break;
+      case 'READY_TO_COLLECT':
+        effectiveStage = 'READY_TO_COLLECT';
+        canAct = true;
+        break;
+      default:
+        effectiveStage = 'IDLE';
+        canAct = false;
+    }
+  }
+
+  const isDeliveryLocked =
+    (effectiveStage === 'IDLE' || effectiveStage === 'EMPTY') &&
+    !lockExpired &&
+    (deliveryLockUntil ?? 0) > 0;
+
+  // Stable absolute timestamp for the active timer — only changes when stage starts.
+  const isProgressTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING';
+  const totalDur = isProgressTimer && typeConfig
+    ? (effectiveStage === 'DELIVERING' ? typeConfig.deliveryDuration : effectiveSellDuration)
+    : 0;
+  const stageEndsAt = isProgressTimer && typeConfig
+    ? production.stageStartedAt + totalDur
+    : 0;
+
+  const MS_PER_HOUR = 3_600_000;
+  const speedUpCost = (production.stage === 'DELIVERING' && !localCompleted && stageEndsAt > 0)
+    ? Math.max(1, Math.ceil(Math.max(0, stageEndsAt - Date.now()) / MS_PER_HOUR))
+    : 0;
+
+  const btnConfig = BTN_COLORS[effectiveStage] || BTN_COLORS.IDLE;
+  const PRIMARY_STAGES = new Set(['EMPTY', 'IDLE', 'READY_TO_LIST', 'READY_TO_COLLECT']);
+  const isPrimaryStage = PRIMARY_STAGES.has(effectiveStage);
+  const accentBtnConfig = { color: accentColor, shadowColor: shadeColor(accentColor, -28) };
+  const resolvedBtnConfig = isPrimaryStage ? accentBtnConfig : btnConfig;
+
   const hasDiscount = (floorDiscount ?? 0) > 0;
   const discountPercent = hasDiscount ? Math.round((floorDiscount ?? 0) * 100) : 0;
 
-  // Compute revenue multiplier
   const multiplier = worker && floorType
     ? getRevenueMultiplier(worker, floorType, production.typeId)
     : 1;
@@ -270,10 +350,8 @@ export default function ProductionCard({
     : 0;
   const hasMultiplier = multiplier > 1;
 
-  const isProgressTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING';
-  const totalDur = isProgressTimer && typeConfig
-    ? (effectiveStage === 'DELIVERING' ? typeConfig.deliveryDuration : effectiveSellDuration)
-    : 0;
+  // --- Progress border animation ---
+  // Kicked off ONCE per stage start; Reanimated drives it on the UI thread.
 
   const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
   const dashOffset = useSharedValue(99999);
@@ -282,20 +360,16 @@ export default function ProductionCard({
   useEffect(() => { layoutReady.current = false; }, [effectiveStage]);
 
   useEffect(() => {
-    if (!isProgressTimer || btnSize.width === 0 || totalDur === 0) return;
+    if (stageEndsAt === 0 || btnSize.width === 0 || totalDur === 0) return;
     const perim = calcPerimeter(btnSize.width, btnSize.height);
-    const progress = Math.max(0, Math.min(1, timeRemaining / totalDur));
-    // On the last tick animate to 0 so the border completes before stage changes
-    const isLastTick = timeRemaining < 1200;
-    const target = isLastTick ? 0 : perim * progress;
-    const duration = isLastTick ? Math.max(timeRemaining, 80) : 1100;
+    const remaining = Math.max(0, stageEndsAt - Date.now());
+    const startOffset = perim * Math.min(1, remaining / totalDur);
     if (!layoutReady.current) {
       layoutReady.current = true;
-      dashOffset.value = target;
-    } else {
-      dashOffset.value = withTiming(target, { duration, easing: Easing.linear });
+      dashOffset.value = startOffset;
     }
-  }, [timeRemaining, btnSize, isProgressTimer, totalDur]);
+    dashOffset.value = withTiming(0, { duration: Math.max(remaining, 80), easing: Easing.linear });
+  }, [stageEndsAt, btnSize.width, btnSize.height, totalDur]);
 
   const animatedRectProps = useAnimatedProps(() => ({
     strokeDashoffset: dashOffset.value,
@@ -351,7 +425,6 @@ export default function ProductionCard({
   const isTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING' || effectiveStage === 'READY_TO_LIST';
   const isLocked = !worker;
 
-  // Label text
   let labelText = '';
   let subText = '';
   switch (effectiveStage) {
@@ -364,7 +437,6 @@ export default function ProductionCard({
       subText = typeConfig ? formatNum(effectiveCost) : '';
       break;
     case 'DELIVERING':
-      labelText = formatTime(timeRemaining);
       subText = t('productionCard.status.delivering');
       break;
     case 'READY_TO_LIST':
@@ -372,7 +444,6 @@ export default function ProductionCard({
       subText = typeConfig ? formatDuration(effectiveSellDuration) : '';
       break;
     case 'SELLING':
-      labelText = formatTime(timeRemaining);
       subText = t('productionCard.status.selling');
       break;
     case 'READY_TO_COLLECT':
@@ -381,7 +452,6 @@ export default function ProductionCard({
       break;
   }
 
-  // No worker: show hire design
   if (isLocked) {
     return (
       <View style={[styles.card, { backgroundColor: cardBg }]}>
@@ -428,12 +498,10 @@ export default function ProductionCard({
       onLongPress={onLongPress}
       delayLongPress={800}
     >
-      {/* Title */}
       <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
         {productTitle}
       </Text>
 
-      {/* Image / Hire slot */}
       <View style={styles.imageContainer}>
         {isHire ? (
           <View style={[styles.hireSlot, { borderColor: accentColor + '66' }]}>
@@ -454,7 +522,6 @@ export default function ProductionCard({
             contentFit="contain"
           />
         )}
-        {/* Worker mini-indicator */}
         {worker && (
           <Pressable
             style={({ pressed }) => [styles.workerBadgeColumn, pressed && { opacity: 0.7 }]}
@@ -481,7 +548,6 @@ export default function ProductionCard({
         )}
       </View>
 
-      {/* Action button */}
       <View onLayout={(e) => setBtnSize(e.nativeEvent.layout)}>
         <Pressable
           onPress={isDeliveryLocked ? undefined : (canAct ? handleAction : undefined)}
@@ -495,12 +561,14 @@ export default function ProductionCard({
           ]}
         >
           {isDeliveryLocked ? <LockIcon /> : <StageIcon stage={effectiveStage} />}
-          <Text style={styles.actionLabel}>{labelText}</Text>
+          {isProgressTimer && stageEndsAt > 0
+            ? <TimerText stageEndsAt={stageEndsAt} style={styles.actionLabel} />
+            : <Text style={styles.actionLabel}>{labelText}</Text>
+          }
         </Pressable>
         {isProgressTimer && btnSize.width > 0 && (
           <View style={StyleSheet.absoluteFill} pointerEvents="none">
             <Svg width={btnSize.width} height={btnSize.height}>
-              {/* Background track */}
               <Path
                 d={makeRoundRectPath(btnSize.width, btnSize.height)}
                 fill="none"
@@ -508,7 +576,6 @@ export default function ProductionCard({
                 strokeWidth={STROKE_W}
                 strokeLinecap="round"
               />
-              {/* Animated progress */}
               <AnimatedPath
                 d={makeRoundRectPath(btnSize.width, btnSize.height)}
                 fill="none"
@@ -523,12 +590,9 @@ export default function ProductionCard({
         )}
       </View>
 
-      {/* Sub-block: price or status */}
       <View style={styles.subContainer}>
         {isDeliveryLocked ? (
-          <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
-            <Text style={[styles.pillText, { color: accentColor }]}>{formatTime(deliveryLockMs ?? 0)}</Text>
-          </View>
+          <DeliveryLockPill deliveryLockUntil={deliveryLockUntil ?? 0} accentColor={accentColor} />
         ) : effectiveStage === 'DELIVERING' ? (
           <Pressable
             onPress={handleSpeedUp}
@@ -557,7 +621,6 @@ export default function ProductionCard({
           </View>
         ) : null}
       </View>
-
     </Pressable>
   );
 }

@@ -218,7 +218,6 @@ interface GameActions {
   reconcile: (state: GameState, stateVersion: number, ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   clearAckedCommands: (ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   exchangeGemsForCoins: (gems: number) => void;
-  devAddGems: (amount: number) => void;
   speedUpConstruction: (floorId: number) => void;
   speedUpDelivery: (floorId: number, slotIdx: number) => void;
   showInsufficientResources: (payload: InsufficientResourcesPayload) => void;
@@ -432,9 +431,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
-  },
-  devAddGems: (amount) => {
-    executeCommand(get, set, { id: uuid(), type: 'dev_add_gems', amount, timestamp: clock.now() });
   },
   upgradeBusinessCategory: (floorType) => {
     executeCommand(get, set, {
@@ -723,11 +719,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const timestamp = (state.nextVisitorAt > 0 && state.nextVisitorAt < now)
       ? state.nextVisitorAt
       : now;
+    const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
+    const { hairColor, female } = generateVisitorAppearance();
+    const floorTypeKeys = Object.keys(gameConfig.floorTypes);
+    const pendingFloorType = (role === 'guest' && targetFloor === 1)
+      ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
+      : undefined;
     executeCommand(get, set, {
       id: uuid(),
       type: 'spawn_visitor',
       visitorId: uuid(),
       timestamp,
+      role,
+      targetFloor,
+      isVip,
+      hairColor,
+      female,
+      pendingFloorType,
     });
   },
 
@@ -738,39 +746,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     const now = clock.now();
 
-    // If role already assigned (repeat lift on multi-floor trip), reuse stored data
-    if (active.role != null && active.targetFloor != null) {
-      executeCommand(get, set, {
-        id: uuid(),
-        type: 'lift_visitor',
-        role: active.role,
-        targetFloor: active.targetFloor,
-        isVip: active.isVip,
-        hairColor: active.hairColor,
-        female: active.female,
-        pendingFloorType: active.pendingFloorType,
-        timestamp: now,
-      });
-      return;
-    }
-
-    // First lift — generate role and appearance from current state
-    const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
-    const { hairColor, female } = generateVisitorAppearance();
-    const floorTypeKeys = Object.keys(gameConfig.floorTypes);
-    const pendingFloorType = (role === 'guest' && targetFloor === 1)
-      ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
-      : undefined;
+    // Role and targetFloor are always assigned at spawn time
+    const role = active.role ?? 'guest';
+    const targetFloor = active.targetFloor ?? 1;
 
     executeCommand(get, set, {
       id: uuid(),
       type: 'lift_visitor',
       role,
       targetFloor,
-      isVip,
-      hairColor,
-      female,
-      pendingFloorType,
+      isVip: active.isVip,
+      hairColor: active.hairColor,
+      female: active.female,
+      pendingFloorType: active.pendingFloorType,
       timestamp: now,
     });
   },
@@ -964,7 +952,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
       state.showInsufficientResources({ currency: 'gems', need: cost, have: state.gems });
       return;
     }
-    const visitors = Array.from({ length: slotsToFill }, () => ({ visitorId: uuid() }));
+    const floorTypeKeys = Object.keys(gameConfig.floorTypes);
+    const visitors = Array.from({ length: slotsToFill }, () => {
+      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
+      const { hairColor, female } = generateVisitorAppearance();
+      const pendingFloorType = (role === 'guest' && targetFloor === 1)
+        ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
+        : undefined;
+      return { visitorId: uuid(), role, targetFloor, isVip, hairColor, female, pendingFloorType };
+    });
     executeCommand(get, set, {
       id: uuid(),
       type: 'fill_lobby',

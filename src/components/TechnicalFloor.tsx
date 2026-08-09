@@ -56,7 +56,7 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
         </View>
       </View>
 
-      <View style={[styles.body, { backgroundColor: isDark ? '#2A1A1E' : BODY_BG }]}>
+      <View style={[styles.body, { backgroundColor: isDark ? '#3A2A2E' : BODY_BG }]}>
         <View style={styles.techContent}>
           <Image
             source={require('../../assets/img/hotel.png')}
@@ -129,7 +129,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
         </View>
       </View>
 
-      <View style={[styles.body, { backgroundColor: isDark ? '#2A1A1E' : BODY_BG }]}>
+      <View style={[styles.body, { backgroundColor: isDark ? '#3A2A2E' : BODY_BG }]}>
         <View style={styles.techContent}>
           <Image
             source={require('../../assets/img/reception.png')}

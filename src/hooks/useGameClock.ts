@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
 import { clock } from '../services/clock';
+import { useClockNow } from '../context/ClockContext';
 
 export function useGameClock(intervalMs: number = 1000): number {
-  const [now, setNow] = useState(() => clock.now());
+  const contextNow = useClockNow();
+  const [localNow, setLocalNow] = useState(() => clock.now());
+
   useEffect(() => {
-    const id = setInterval(() => setNow(clock.now()), intervalMs);
+    if (intervalMs === 1000) return;
+    const id = setInterval(() => setLocalNow(clock.now()), intervalMs);
     return () => clearInterval(id);
   }, [intervalMs]);
-  return now;
+
+  return intervalMs === 1000 ? contextNow : localNow;
 }

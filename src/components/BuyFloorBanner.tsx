@@ -25,7 +25,7 @@ export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPre
   const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.ribbon, { backgroundColor: isDark ? '#1A1E22' : BANNER_BG }, pressed && styles.pressed]}>
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.ribbon, { backgroundColor: isDark ? '#2A2E34' : BANNER_BG }, pressed && styles.pressed]}>
       <View style={styles.ribbonLeft}>
         <Image
           source={require('../../assets/img/workers/builder.png')}

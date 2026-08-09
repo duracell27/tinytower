@@ -38,6 +38,12 @@ function formatCompact(n: number): string {
   return String(n);
 }
 
+function formatCompactPrecise(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2).replace(/\.?0+$/, '')}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(2).replace(/\.?0+$/, '')}K`;
+  return String(n);
+}
+
 function LevelSegments({ current }: { current: number }) {
   return (
     <View style={styles.segmentsRow}>
@@ -93,7 +99,7 @@ export default function AchievementsScreen() {
           const nextXpBonus = nextLevelConfig ? ACHIEVEMENT_XP_BONUS[nextLevelConfig.level] : 0;
           const currentThreshold = currentLevelConfig?.threshold ?? 0;
           const relativeProgress = Math.max(0, progress - currentThreshold);
-          const relativeMax = nextLevelConfig ? nextLevelConfig.threshold : 1;
+          const relativeMax = nextLevelConfig ? nextLevelConfig.threshold - currentThreshold : 1;
 
           return (
             <View key={category.key} style={[styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
@@ -125,7 +131,7 @@ export default function AchievementsScreen() {
                       <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
                     </View>
                     <Text style={[styles.progressCount, isDark && { color: '#8A9A80' }]}>
-                      {formatCompact(relativeProgress)} / {formatCompact(relativeMax)}
+                      {formatCompactPrecise(relativeProgress)} / {formatCompact(relativeMax)}
                     </Text>
                   </View>
                   <ProgressBar value={relativeProgress} max={relativeMax} />

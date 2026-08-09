@@ -1,28 +1,26 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-
-const DAILY_ICON = require('../../assets/img/profile/dayliQuests.png');
 
 interface Props {
-  unclaimedCount: number;
+  icon: ReturnType<typeof require>;
+  count: number;
   slot: number; // 0 = bottom 96, each step adds 62px
+  badgeColor?: string;
+  onPress: () => void;
 }
 
-export default function DailyTasksFAB({ unclaimedCount, slot }: Props) {
-  if (unclaimedCount === 0) return null;
-
-  const handlePress = () => router.push('/daily-tasks');
+export default function NotificationFAB({ icon, count, slot, badgeColor = '#3FA535', onPress }: Props) {
+  if (count === 0) return null;
 
   return (
     <Pressable
-      onPress={handlePress}
+      onPress={onPress}
       style={({ pressed }) => [styles.fab, { bottom: 96 + slot * 62 }, pressed && { opacity: 0.82 }]}
     >
-      <Image source={DAILY_ICON} style={styles.icon} contentFit="contain" />
-      <View style={styles.fabBadge}>
-        <Text style={styles.badgeText}>{unclaimedCount}</Text>
+      <Image source={icon} style={styles.icon} contentFit="contain" />
+      <View style={[styles.badge, { backgroundColor: badgeColor }]}>
+        <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
       </View>
     </Pressable>
   );
@@ -32,7 +30,6 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 16,
-    bottom: 96, // overridden by inline style
     width: 54,
     height: 54,
     borderRadius: 27,
@@ -43,14 +40,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.9)',
   },
   icon: { width: 28, height: 28 },
-  fabBadge: {
+  badge: {
     position: 'absolute',
     top: -4,
     right: -4,
     minWidth: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#3FA535',
     paddingHorizontal: 4,
     alignItems: 'center',
     justifyContent: 'center',

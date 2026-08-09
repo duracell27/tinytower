@@ -25,6 +25,8 @@ import HotelPanel from '../../src/components/HotelPanel';
 import LobbyPanel from '../../src/components/LobbyPanel';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
+import { useMailStore } from '../../src/stores/mailStore';
+import { useFriendStore } from '../../src/stores/friendStore';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getExhaustedFloorTypes } from '../../shared/engine/floorTypeUtils';
@@ -36,6 +38,7 @@ import QuickActionFAB from '../../src/components/QuickActionFAB';
 import QuickActionBar from '../../src/components/QuickActionBar';
 import QaAnimatedFloor from '../../src/components/QaAnimatedFloor';
 import DailyTasksFAB from '../../src/components/DailyTasksFAB';
+import NotificationFAB from '../../src/components/NotificationFAB';
 import { DAILY_TASKS, getTaskProgress } from '../../shared/config/dailyTasksConfig';
 import {
   getAvailableMode,
@@ -62,8 +65,10 @@ function keyExtractor(item: FloorItem): string {
   return item.type; // 'hotel' | 'lobby' | 'buyFloor' | 'collapseDivider' | 'bottomAnchor' — all unique
 }
 
-const BG_LIGHT = require('../../assets/img/backgroung/bg15.png');
-const BG_DARK  = require('../../assets/img/backgroung/bgBlack.png');
+const BG_LIGHT       = require('../../assets/img/backgroung/bgWhite.png');
+const BG_DARK        = require('../../assets/img/backgroung/bgBlack.png');
+const MAIL_FAB_ICON  = require('../../assets/img/mail.png');
+const FRIEND_FAB_ICON = require('../../assets/img/users.png');
 
 export default function GameScreen() {
   const scheme = useColorScheme();
@@ -72,6 +77,7 @@ export default function GameScreen() {
   const { t: tContent } = useTranslation('gameContent');
   const balance = useBalance();
   const now = useGameClock(1000);
+  const revenueNow = useGameClock(10_000);
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const unclaimedDailyTasksCount = useGameStore((s) =>
@@ -81,7 +87,6 @@ export default function GameScreen() {
     }).length,
   );
   const gems = useGameStore((s) => s.gems);
-  const devAddGems = useGameStore((s) => s.devAddGems);
   const storeCollect = useGameStore((s) => s.collect);
   const storeList = useGameStore((s) => s.list);
   const storeBuy = useGameStore((s) => s.buy);
@@ -104,6 +109,9 @@ export default function GameScreen() {
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
   const isTemporary = player?.isTemporary ?? false;
 
+  const unreadMailCount = useMailStore((s) => s.unreadCount);
+  const incomingFriendCount = useFriendStore((s) => s.incomingRequests.length);
+
   const underConstruction = useGameStore((s) => s.underConstruction);
   const buyFloor = useGameStore((s) => s.buyFloor);
   const selectFloorType = useGameStore((s) => s.selectFloorType);
@@ -118,8 +126,8 @@ export default function GameScreen() {
   const floorStars        = useGameStore((s) => s.floorStars);
 
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars),
-    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, revenueNow, businessUpgrades, coinBonusPercent, floorStars),
+    [floors, workers, openedFloorTypes, revenueNow, businessUpgrades, coinBonusPercent, floorStars],
   );
 
   const hasBetterWorker = React.useMemo(
@@ -777,7 +785,6 @@ export default function GameScreen() {
           coins={formatNum(balance)}
           gems={formatNum(gems)}
           revenuePerMin={revenuePerMin}
-          onDevAddGems={__DEV__ ? () => devAddGems(100) : undefined}
         />
 
         <QuickActionFAB
@@ -786,9 +793,30 @@ export default function GameScreen() {
           count={availableFloorCount}
           onPress={handleFABPress}
         />
-        {quickActionMode === null && !qaBarVisible && (
-          <DailyTasksFAB unclaimedCount={unclaimedDailyTasksCount} hasQuickAction={availableMode !== null} />
-        )}
+        {quickActionMode === null && !qaBarVisible && (() => {
+          const qaSlot = availableMode !== null ? 1 : 0;
+          const hasDaily = unclaimedDailyTasksCount > 0;
+          const hasMail  = unreadMailCount > 0;
+          return (
+            <>
+              <DailyTasksFAB unclaimedCount={unclaimedDailyTasksCount} slot={qaSlot} />
+              <NotificationFAB
+                icon={MAIL_FAB_ICON}
+                count={unreadMailCount}
+                slot={qaSlot + (hasDaily ? 1 : 0)}
+                badgeColor="#3FA535"
+                onPress={() => router.push('/my-mail')}
+              />
+              <NotificationFAB
+                icon={FRIEND_FAB_ICON}
+                count={incomingFriendCount}
+                slot={qaSlot + (hasDaily ? 1 : 0) + (hasMail ? 1 : 0)}
+                badgeColor="#3376E5"
+                onPress={() => router.push('/(tabs)/profile')}
+              />
+            </>
+          );
+        })()}
 
         {(quickActionMode !== null || qaBarVisible) && (
           <QuickActionBar

@@ -5,6 +5,7 @@ export interface MailMessageDto {
   id: string;
   fromId: string;
   fromName: string;
+  fromLevel: number;
   subject: string;
   body: string;
   isRead: boolean;
@@ -40,12 +41,13 @@ export class MailService {
       where: { toId: myId },
       orderBy: { createdAt: 'desc' },
       take: 50,
-      include: { from: { select: { playerName: true } } },
+      include: { from: { select: { playerName: true, playerLevel: true } } },
     });
     return messages.map((m) => ({
       id: m.id,
       fromId: m.fromId,
       fromName: m.from.playerName,
+      fromLevel: m.from.playerLevel,
       subject: m.subject,
       body: m.body,
       isRead: m.isRead,

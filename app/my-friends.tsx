@@ -4,12 +4,17 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import AppBackground from '../src/components/AppBackground';
 import { useAppTheme } from '../src/hooks/useAppTheme';
+import { InfoSection } from '../src/components/InfoSection';
 import { useFriendStore } from '../src/stores/friendStore';
 import { getUserIcon } from '../src/utils/userIcon';
 import type { FriendEntry, IncomingRequest } from '../src/services/api';
+
+const INFO_ICON    = require('../assets/img/InformationIcon.png');
+const CANCEL_ICON  = require('../assets/img/CancellIcon.png');
 
 const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
 
@@ -47,6 +52,7 @@ function FriendRow({ entry, onRemove, theme }: {
         onPress={onRemove}
         hitSlop={8}
       >
+        <Image source={CANCEL_ICON} style={fStyles.removeIcon} contentFit="contain" />
         <Text style={fStyles.removeBtnText}>Remove</Text>
       </Pressable>
     </Pressable>
@@ -64,10 +70,10 @@ const fStyles = StyleSheet.create({
   subRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   level: { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
   removeBtn: {
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8,
-    borderWidth: 1.5, borderColor: '#E05A4A',
+    flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4,
   },
-  removeBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 12, color: '#E05A4A' },
+  removeIcon: { width: 16, height: 16 },
+  removeBtnText: { fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#E05A4A' },
 });
 
 function RequestRow({ entry, onAccept, onReject, theme }: {
@@ -140,6 +146,7 @@ export default function MyFriendsScreen() {
 
   const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');
   const [loading, setLoading] = useState(true);
+  const [infoVisible, setInfoVisible] = useState(false);
 
   useEffect(() => {
     Promise.all([fetchFriends(), fetchIncoming()]).finally(() => setLoading(false));
@@ -157,6 +164,14 @@ export default function MyFriendsScreen() {
 
   return (
     <AppBackground style={{ flex: 1 }}>
+
+      <View style={headerStyles.header}>
+        <Text style={headerStyles.title}>My Friends</Text>
+        <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
+          <Image source={INFO_ICON} style={headerStyles.infoIcon} contentFit="contain" />
+        </Pressable>
+      </View>
+      <Text style={headerStyles.subtitle}>Friends list and incoming requests</Text>
 
       {/* Tab bar */}
       <View style={[tabStyles.bar, { borderBottomColor: theme.divider }]}>
@@ -242,6 +257,47 @@ export default function MyFriendsScreen() {
         </ScrollView>
       )}
 
+      {infoVisible && (
+        <View style={headerStyles.overlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
+          <View style={headerStyles.infoCard}>
+            <LinearGradient colors={['#3FA535', '#2C7A25']} style={headerStyles.infoCardHeader}>
+              <Text style={headerStyles.infoCardTitle}>My Friends</Text>
+              <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
+                <Text style={headerStyles.infoCardClose}>✕</Text>
+              </Pressable>
+            </LinearGradient>
+            <View style={headerStyles.infoCardBody}>
+              <InfoSection
+                icon={require('../assets/img/users.png')}
+                title="Friends List"
+                text="View all your in-game friends. Tap a friend to visit their profile and see their tower stats."
+                accentColor="rgba(63,165,53,0.2)"
+              />
+              <InfoSection
+                icon={require('../assets/img/addfriend.png')}
+                title="Friend Requests"
+                text="Accept or reject incoming friend requests. The badge on the tab shows how many requests are waiting."
+                accentColor="rgba(63,165,53,0.2)"
+              />
+              <InfoSection
+                icon={require('../assets/img/removefriend.png')}
+                title="Remove Friends"
+                text="You can remove a friend at any time from the friends list."
+                accentColor="rgba(63,165,53,0.2)"
+              />
+              <InfoSection
+                icon={require('../assets/img/userIcons/user1-29.png')}
+                title="Add Friends"
+                text="To send a friend request, visit any player's profile and tap 'Add Friend'."
+                accentColor="rgba(63,165,53,0.2)"
+                isLast
+              />
+            </View>
+          </View>
+        </View>
+      )}
+
       {/* Close button — same style as user-profile */}
       <View style={closeStyles.wrap} pointerEvents="box-none">
         <Pressable onPress={() => router.back()} style={closeStyles.btn} hitSlop={8}>
@@ -255,10 +311,29 @@ export default function MyFriendsScreen() {
   );
 }
 
+const headerStyles = StyleSheet.create({
+  header: { flexDirection: 'row', alignItems: 'center', marginTop: 60, marginHorizontal: 20, gap: 12 },
+  title: { fontFamily: 'Fredoka_700Bold', fontSize: 24, color: '#27331F' },
+  subtitle: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#7C8A6E', marginHorizontal: 20, marginTop: 6, marginBottom: 10 },
+  infoIcon: { width: 20, height: 20, opacity: 0.8 },
+  overlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(18,26,44,0.45)',
+    justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 20,
+  },
+  infoCard: { width: '100%', backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden' },
+  infoCardHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 18, paddingVertical: 13,
+  },
+  infoCardTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#fff' },
+  infoCardClose: { color: 'rgba(255,255,255,0.85)', fontSize: 16, fontFamily: 'Fredoka_600SemiBold' },
+  infoCardBody: { paddingHorizontal: 14, paddingTop: 4, paddingBottom: 8 },
+});
+
 const tabStyles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
-    paddingTop: 56,
     borderBottomWidth: 1,
   },
   tab: {

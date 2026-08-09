@@ -15,7 +15,6 @@ interface TopBarProps {
   coins: string;
   gems: string;
   revenuePerMin?: number;
-  onDevAddGems?: () => void;
 }
 
 function ProgressRing({ progress, size = 50 }: { progress: number; size?: number }) {
@@ -50,7 +49,7 @@ function ProgressRing({ progress, size = 50 }: { progress: number; size?: number
   );
 }
 
-export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, revenuePerMin, onDevAddGems }: TopBarProps) {
+export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, revenuePerMin }: TopBarProps) {
   const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
   const theme = useAppTheme();
 
@@ -85,7 +84,7 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
             <CoinIcon size={18} />
             <Text style={styles.coinText}>{coins}</Text>
           </View>
-          <Pressable style={[styles.gemBadge, { backgroundColor: theme.surfaceElevated }]} onLongPress={onDevAddGems} delayLongPress={800}>
+          <Pressable style={[styles.gemBadge, { backgroundColor: theme.surfaceElevated }]}>
             <GemIcon size={14} />
             <Text style={styles.gemText}>{gems}</Text>
           </Pressable>

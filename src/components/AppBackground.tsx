@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, useColorScheme, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
 
-const BG_LIGHT = require('../../assets/img/backgroung/bg15.png');
+const BG_LIGHT = require('../../assets/img/backgroung/bgWhite.png');
 const BG_DARK  = require('../../assets/img/backgroung/bgBlack.png');
 
 export default function AppBackground({ children, style }: {

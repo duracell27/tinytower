@@ -539,12 +539,15 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/dayliQuests.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>
-            {tHotel('dailyTasks.title')}{' '}
-            <Text style={[styles.achievementsButtonSubText, { color: theme.text }]}>
-              ({dailyTasks.claimed.filter(k => DAILY_TASKS.find(t => t.key === k && !t.hidden)).length}/{DAILY_TASKS.filter(t => !t.hidden).length})
+          <View style={styles.menuTextCol}>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>
+              {tHotel('dailyTasks.title')}{' '}
+              <Text style={[styles.achievementsButtonSubText, { color: theme.text }]}>
+                ({dailyTasks.claimed.filter(k => DAILY_TASKS.find(t => t.key === k && !t.hidden)).length}/{DAILY_TASKS.filter(t => !t.hidden).length})
+              </Text>
             </Text>
-          </Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Complete missions for rewards</Text>
+          </View>
         </Pressable>
 
         <Pressable
@@ -552,7 +555,10 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/mail.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { flex: 1, color: theme.text }]}>My Mail</Text>
+          <View style={styles.menuTextCol}>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>My Mail</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Messages from other players</Text>
+          </View>
           {unreadMailCount > 0 && (
             <View style={styles.friendsBadge}>
               <Text style={styles.friendsBadgeText}>{unreadMailCount}</Text>
@@ -565,7 +571,10 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/users.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { flex: 1, color: theme.text }]}>My Friends</Text>
+          <View style={styles.menuTextCol}>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>My Friends</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Manage your friend list</Text>
+          </View>
           {pendingCount > 0 && (
             <View style={styles.friendsBadge}>
               <Text style={styles.friendsBadgeText}>{pendingCount}</Text>
@@ -578,7 +587,10 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { flex: 1, color: theme.text }]}>{tHotel('myBusiness.title')}</Text>
+          <View style={styles.menuTextCol}>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>{tHotel('myBusiness.title')}</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Upgrade your businesses</Text>
+          </View>
           {isHydrated && upgradeReadyTypes.length > 0 && (
             <View style={styles.businessDotsRow}>
               {upgradeReadyTypes.map((ft) => (
@@ -592,7 +604,10 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/TrucksProfileIcon.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>Autopark</Text>
+          <View style={styles.menuTextCol}>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>Autopark</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Manage your vehicles</Text>
+          </View>
         </Pressable>
 
         <Pressable
@@ -600,9 +615,12 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/achivProfileIcon.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>
-            {t('profile.achievements', { count: totalEarnedLevels })}
-          </Text>
+          <View style={styles.menuTextCol}>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>
+              {t('profile.achievements', { count: totalEarnedLevels })}
+            </Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Track your progress</Text>
+          </View>
         </Pressable>
 
         <Pressable
@@ -610,14 +628,20 @@ export default function ProfileScreen() {
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/ReferralProfileIcon.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>Referrals</Text>
+          <View style={styles.menuTextCol}>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>Referrals</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Invite friends for bonuses</Text>
+          </View>
         </Pressable>
 
         <Pressable
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/settingsIcon.png')} style={styles.achievementsIcon} />
-          <Text style={[styles.achievementsButtonText, { color: theme.text }]}>Settings</Text>
+          <View style={styles.menuTextCol}>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>Settings</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>App preferences</Text>
+          </View>
         </Pressable>
 
         {isTemporary && (
@@ -1128,19 +1152,39 @@ const styles = StyleSheet.create({
     marginTop: 14,
     backgroundColor: '#fff',
     borderRadius: 18,
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingLeft: 15,
-    paddingRight: 8,
+    paddingRight: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
+    shadowColor: 'rgba(60,80,45,1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 2,
   },
   achievementsButtonPressed: { opacity: 0.7 },
-  businessDotsRow: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 4 },
+  businessDotsRow: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 2 },
   businessDot: { width: 8, height: 8, borderRadius: 4 },
   achievementsIcon: {
-    width: 36,
-    height: 36,
+    width: 38,
+    height: 38,
+    flexShrink: 0,
+  },
+  menuTextCol: {
+    flex: 1,
+    gap: 1,
+  },
+  menuTitle: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: '#27331F',
+  },
+  menuSub: {
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 12,
+    color: '#7C8A6E',
   },
   achievementsButtonText: {
     fontFamily: 'Fredoka_600SemiBold',
