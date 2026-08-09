@@ -144,6 +144,14 @@ export default function UserProfileScreen() {
   const [sendError, setSendError] = useState('');
   const [sendSuccess, setSendSuccess] = useState(false);
 
+  const closeCompose = () => {
+    setComposeOpen(false);
+    setComposeSubject('');
+    setComposeBody('');
+    setSendError('');
+    setSendSuccess(false);
+  };
+
   const handleSend = async () => {
     if (!composeSubject.trim() || !composeBody.trim()) {
       setSendError('Please fill in subject and message');
@@ -465,13 +473,13 @@ export default function UserProfileScreen() {
         visible={composeOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => setComposeOpen(false)}
+        onRequestClose={closeCompose}
       >
         <KeyboardAvoidingView
           style={cStyles.overlay}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <Pressable style={cStyles.backdrop} onPress={() => setComposeOpen(false)} />
+          <Pressable style={cStyles.backdrop} onPress={closeCompose} />
           <View style={[cStyles.card, { backgroundColor: theme.surface }]}>
             <Text style={[cStyles.title, { color: theme.text }]}>Send Message</Text>
             <Text style={[cStyles.costLabel, { color: theme.textMuted }]}>Cost: 100 🪙</Text>
@@ -508,7 +516,7 @@ export default function UserProfileScreen() {
                 <View style={cStyles.btnRow}>
                   <Pressable
                     style={({ pressed }) => [cStyles.cancelBtn, pressed && { opacity: 0.7 }]}
-                    onPress={() => setComposeOpen(false)}
+                    onPress={closeCompose}
                     disabled={sendLoading}
                   >
                     <Text style={cStyles.cancelBtnText}>Cancel</Text>

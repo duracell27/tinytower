@@ -65,6 +65,26 @@ describe('MailService', () => {
         .rejects.toThrow(BadRequestException);
     });
 
+    it('throws BadRequestException when subject is empty', async () => {
+      await expect(service.sendMail('p1', 'p2', '', 'body'))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException when subject is whitespace only', async () => {
+      await expect(service.sendMail('p1', 'p2', '   ', 'body'))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException when body is empty', async () => {
+      await expect(service.sendMail('p1', 'p2', 'subject', ''))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException when body is whitespace only', async () => {
+      await expect(service.sendMail('p1', 'p2', 'subject', '   '))
+        .rejects.toThrow(BadRequestException);
+    });
+
     it('throws BadRequestException when subject exceeds 100 chars', async () => {
       await expect(service.sendMail('p1', 'p2', 'a'.repeat(101), 'body'))
         .rejects.toThrow(BadRequestException);

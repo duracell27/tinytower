@@ -17,6 +17,8 @@ export class MailService {
 
   async sendMail(fromId: string, toId: string, subject: string, body: string): Promise<{ id: string }> {
     if (fromId === toId) throw new BadRequestException('Cannot send mail to yourself');
+    if (!subject.trim().length) throw new BadRequestException('Subject cannot be empty');
+    if (!body.trim().length) throw new BadRequestException('Message cannot be empty');
     if (subject.length > 100) throw new BadRequestException('Subject too long');
     if (body.length > 1000) throw new BadRequestException('Body too long');
 
