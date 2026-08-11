@@ -23,6 +23,7 @@ import Animated, {
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useGameStore, useLobbyState, useBalance } from '../stores/gameStore';
 import { useSettingsStore } from '../stores/settingsStore';
+import { WORKER_NAME_POOLS } from '../../shared/config/workerNames';
 import { useGameClock } from '../hooks/useGameClock';
 import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity, getFillLobbyCost, getDailyTipsTargets } from '../../shared/engine/lobbyUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
@@ -39,7 +40,7 @@ type ToolKey = 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement';
 
 type InlineRewardPayload =
   | { kind: 'worker_in'; worker: Worker }
-  | { kind: 'hotel_full'; pendingFloorType: string | undefined; female: boolean | undefined }
+  | { kind: 'hotel_full'; pendingFloorType: string | undefined; female: boolean | undefined; name: string }
   | { kind: 'vip_fill'; count: number }
   | { kind: 'tool'; tool: ToolKey };
 
@@ -591,10 +592,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
     if (isHotelFull) {
       if (liftSimplifiedRewards) {
+        const isFemale = active?.female ?? false;
+        const namePool = WORKER_NAME_POOLS.en[isFemale ? 'female' : 'male'];
+        const fakeName = namePool[Math.floor(Math.random() * namePool.length)];
         showInlineReward({
           kind: 'hotel_full',
           pendingFloorType: active?.pendingFloorType,
-          female: active?.female,
+          female: isFemale,
+          name: fakeName,
         });
       } else {
         setHotelFullPopup(true);
@@ -873,14 +878,20 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                 })()}
                                 {inlineReward.kind === 'hotel_full' && (() => {
                                   const floorType = inlineReward.pendingFloorType ?? 'green';
+                                  const workerColor = gameConfig.floorTypes[floorType]?.shirtColor ?? '#3B8BCB';
                                   const avatarSrc = WORKER_IMAGES[floorType]?.[inlineReward.female ? 'female' : 'male']
                                     ?? VISITOR_IMAGES.guest;
                                   return (
                                     <>
                                       <Text style={styles.inlineRewardWarning}>⚠</Text>
                                       <Image source={avatarSrc} style={{ width: 22, height: 22 }} contentFit="contain" />
-                                      <Text style={[styles.inlineRewardText, { color: '#C9637E' }]}>
-                                        {t('inlineReward.noRoom')}
+                                      <Text numberOfLines={1}>
+                                        <Text style={[styles.inlineRewardText, { color: workerColor }]}>
+                                          {inlineReward.name}
+                                        </Text>
+                                        <Text style={[styles.inlineRewardText, { color: '#C9637E' }]}>
+                                          {' · '}{t('inlineReward.noRoom')}
+                                        </Text>
                                       </Text>
                                     </>
                                   );
