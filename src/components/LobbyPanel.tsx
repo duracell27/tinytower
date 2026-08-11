@@ -386,15 +386,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const [hotelFullPopup, setHotelFullPopup] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
   const [inlineReward, setInlineReward] = useState<InlineRewardPayload | null>(null);
-  const inlineRewardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const liftSimplifiedRewards = useSettingsStore((s) => s.liftSimplifiedRewards);
   const liftSimplifiedRewardsRef = useRef(liftSimplifiedRewards);
   useEffect(() => { liftSimplifiedRewardsRef.current = liftSimplifiedRewards; }, [liftSimplifiedRewards]);
 
   const showInlineReward = useCallback((payload: InlineRewardPayload) => {
-    if (inlineRewardTimerRef.current) clearTimeout(inlineRewardTimerRef.current);
     setInlineReward(payload);
-    inlineRewardTimerRef.current = setTimeout(() => setInlineReward(null), 2500);
   }, []);
 
   const isDark = useColorScheme() === 'dark';
@@ -480,7 +477,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       setNewWorkerPopup(null);
       setHotelFullPopup(false);
       setInlineReward(null);
-      if (inlineRewardTimerRef.current) clearTimeout(inlineRewardTimerRef.current);
       clearBuilderToolDrop();
       clearPendingDeliverAll();
     }
