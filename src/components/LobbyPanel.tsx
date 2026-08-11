@@ -22,6 +22,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useGameStore, useLobbyState, useBalance } from '../stores/gameStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import { useGameClock } from '../hooks/useGameClock';
 import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity, getFillLobbyCost, getDailyTipsTargets } from '../../shared/engine/lobbyUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
@@ -35,6 +36,15 @@ import InsufficientResourcesModal from './InsufficientResourcesModal';
 import DeliverAllModal from './DeliverAllModal';
 
 type ToolKey = 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement';
+
+type InlineRewardPayload =
+  | { kind: 'worker_in'; worker: Worker }
+  | { kind: 'hotel_full' }
+  | { kind: 'vip_fill'; count: number }
+  | { kind: 'tool'; tool: ToolKey }
+  | { kind: 'coins'; amount: number }
+  | { kind: 'gem' };
+
 const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
   briks:  require('../../assets/img/tools/briks.png'),
   glass:  require('../../assets/img/tools/glass.png'),
@@ -377,6 +387,18 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const [vipHotelFillCount, setVipHotelFillCount] = useState<number | null>(null);
   const [hotelFullPopup, setHotelFullPopup] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
+  const [inlineReward, setInlineReward] = useState<InlineRewardPayload | null>(null);
+  const inlineRewardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const liftSimplifiedRewards = useSettingsStore((s) => s.liftSimplifiedRewards);
+  const liftSimplifiedRewardsRef = useRef(liftSimplifiedRewards);
+  useEffect(() => { liftSimplifiedRewardsRef.current = liftSimplifiedRewards; }, [liftSimplifiedRewards]);
+
+  const showInlineReward = useCallback((payload: InlineRewardPayload) => {
+    if (inlineRewardTimerRef.current) clearTimeout(inlineRewardTimerRef.current);
+    setInlineReward(payload);
+    inlineRewardTimerRef.current = setTimeout(() => setInlineReward(null), 2500);
+  }, []);
+
   const isDark = useColorScheme() === 'dark';
 
   const {
@@ -459,10 +481,18 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     if (!visible) {
       setNewWorkerPopup(null);
       setHotelFullPopup(false);
+      setInlineReward(null);
+      if (inlineRewardTimerRef.current) clearTimeout(inlineRewardTimerRef.current);
       clearBuilderToolDrop();
       clearPendingDeliverAll();
     }
   }, [visible, clearBuilderToolDrop, clearPendingDeliverAll]);
+
+  useEffect(() => {
+    if (!visible || !liftSimplifiedRewards || !builderToolDrop) return;
+    showInlineReward({ kind: 'tool', tool: builderToolDrop });
+    clearBuilderToolDrop();
+  }, [visible, liftSimplifiedRewards, builderToolDrop, showInlineReward, clearBuilderToolDrop]);
 
   useEffect(() => {
     if (!visible) return;
@@ -532,14 +562,24 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       if (suppressNewWorkerPopup.current) return;
       const added = state.workers.length - prevState.workers.length;
       if (added > 1) {
-        setVipHotelFillCount(added);
+        if (liftSimplifiedRewardsRef.current) {
+          showInlineReward({ kind: 'vip_fill', count: added });
+        } else {
+          setVipHotelFillCount(added);
+        }
       } else if (added === 1) {
         const newWorker = state.workers.find((w) => !prevState.workers.some((p) => p.id === w.id));
-        if (newWorker) setNewWorkerPopup(newWorker);
+        if (newWorker) {
+          if (liftSimplifiedRewardsRef.current) {
+            showInlineReward({ kind: 'worker_in', worker: newWorker });
+          } else {
+            setNewWorkerPopup(newWorker);
+          }
+        }
       }
     });
     return unsubscribe;
-  }, [visible]);
+  }, [visible, showInlineReward]);
 
   // Handle collect tip — hotel full check only; worker popup handled by subscribe above
   const handleCollectTip = useCallback(() => {
@@ -552,9 +592,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     collectTip();
 
     if (isHotelFull) {
-      setHotelFullPopup(true);
+      if (liftSimplifiedRewards) {
+        showInlineReward({ kind: 'hotel_full' });
+      } else {
+        setHotelFullPopup(true);
+      }
     }
-  }, [collectTip]);
+  }, [collectTip, liftSimplifiedRewards, showInlineReward]);
 
   // Determine action button for active visitor
   const getActionButton = useCallback(() => {
@@ -777,6 +821,16 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                 ? Haptics.ImpactFeedbackStyle.Heavy
                                 : Haptics.ImpactFeedbackStyle.Medium;
                               Haptics.impactAsync(style);
+
+                              if (liftSimplifiedRewards) {
+                                if (actionButton.icon === 'coin' && actionButton.amount) {
+                                  const amt = parseInt(actionButton.amount.replace('+', ''), 10);
+                                  if (!isNaN(amt)) showInlineReward({ kind: 'coins', amount: amt });
+                                } else if (actionButton.icon === 'gem') {
+                                  showInlineReward({ kind: 'gem' });
+                                }
+                              }
+
                               actionButton.onPress();
                             }}
                             style={({ pressed }) => [
@@ -803,6 +857,64 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                             </LinearGradient>
                             {!isDark && <View style={[styles.actionButtonShadow, { backgroundColor: actionButton.shadowColor }]} />}
                           </Pressable>
+                        )}
+
+                        {/* Inline reward strip — fixed height keeps card stable when simplified mode is ON */}
+                        {liftSimplifiedRewards && (
+                          <View style={styles.inlineRewardStrip}>
+                            {inlineReward && (
+                              <View style={styles.inlineRewardContent}>
+                                {inlineReward.kind === 'worker_in' && (
+                                  <>
+                                    <WorkerAvatar worker={inlineReward.worker} size={22} />
+                                    <Text style={styles.inlineRewardText} numberOfLines={1}>
+                                      {inlineReward.worker.name} · {t('inlineReward.checkedIn')}
+                                    </Text>
+                                  </>
+                                )}
+                                {inlineReward.kind === 'hotel_full' && (
+                                  <>
+                                    <Text style={styles.inlineRewardWarning}>⚠</Text>
+                                    <Text style={[styles.inlineRewardText, { color: '#C9637E' }]}>
+                                      {t('inlineReward.notCheckedIn')}
+                                    </Text>
+                                  </>
+                                )}
+                                {inlineReward.kind === 'vip_fill' && (
+                                  <>
+                                    <Text style={styles.inlineRewardEmoji}>🏨</Text>
+                                    <Text style={styles.inlineRewardText}>
+                                      {t('inlineReward.vipFill', { count: inlineReward.count })}
+                                    </Text>
+                                  </>
+                                )}
+                                {inlineReward.kind === 'tool' && (
+                                  <>
+                                    <Image
+                                      source={TOOL_IMAGES[inlineReward.tool]}
+                                      style={{ width: 20, height: 20 }}
+                                      contentFit="contain"
+                                    />
+                                    <Text style={styles.inlineRewardText}>{t(`tools.${inlineReward.tool}`)}</Text>
+                                  </>
+                                )}
+                                {inlineReward.kind === 'coins' && (
+                                  <>
+                                    <CoinIcon size={14} />
+                                    <Text style={[styles.inlineRewardText, { color: '#C28A22' }]}>
+                                      +{formatNum(inlineReward.amount)}
+                                    </Text>
+                                  </>
+                                )}
+                                {inlineReward.kind === 'gem' && (
+                                  <>
+                                    <GemIcon size={14} />
+                                    <Text style={[styles.inlineRewardText, { color: '#2592AB' }]}>+1</Text>
+                                  </>
+                                )}
+                              </View>
+                            )}
+                          </View>
                         )}
                       </View>
 
@@ -1132,7 +1244,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         </Animated.View>
 
         {/* New worker popup — View overlay inside Modal */}
-        {newWorkerPopup && (
+        {!liftSimplifiedRewards && newWorkerPopup && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setNewWorkerPopup(null)}>
             <Pressable style={[popupStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => {}}>
               <View style={popupStyles.avatarWrap}>
@@ -1169,7 +1281,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         )}
 
         {/* VIP hotel fill popup */}
-        {vipHotelFillCount && (
+        {!liftSimplifiedRewards && vipHotelFillCount && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setVipHotelFillCount(null)}>
             <Pressable style={[popupStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => {}}>
               <View style={[popupStyles.avatarWrap, { backgroundColor: '#FFF9E6' }]}>
@@ -1187,7 +1299,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         )}
 
         {/* Hotel full popup */}
-        {hotelFullPopup && (
+        {!liftSimplifiedRewards && hotelFullPopup && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setHotelFullPopup(false)}>
             <Pressable style={[popupStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => {}}>
               <View style={[popupStyles.avatarWrap, { backgroundColor: '#FDEEF2' }]}>
@@ -1216,7 +1328,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         )}
 
         {/* Builder tool drop popup */}
-        {builderToolDrop && (
+        {!liftSimplifiedRewards && builderToolDrop && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={clearBuilderToolDrop}>
             <Pressable style={[popupStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => {}}>
               <View style={popupStyles.avatarWrap}>
@@ -2063,6 +2175,33 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     opacity: 0.85,
+  },
+  inlineRewardStrip: {
+    height: 34,
+    justifyContent: 'center',
+  },
+  inlineRewardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+  },
+  inlineRewardText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
+    color: '#2A3344',
+  },
+  inlineRewardWarning: {
+    fontSize: 14,
+    color: '#E8A020',
+  },
+  inlineRewardEmoji: {
+    fontSize: 16,
   },
 });
 
