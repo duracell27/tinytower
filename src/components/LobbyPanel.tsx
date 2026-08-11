@@ -880,7 +880,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                       style={{ width: 20, height: 20 }}
                                       contentFit="contain"
                                     />
-                                    <Text style={styles.inlineRewardText}>{t(`tools.${inlineReward.tool}`)}</Text>
+                                    <Text style={styles.inlineRewardText}>
+                                      {t('inlineReward.builderDelivered', { tool: t(`tools.${inlineReward.tool}`) })}
+                                    </Text>
                                   </>
                                 )}
                               </View>

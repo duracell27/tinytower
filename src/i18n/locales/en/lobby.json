@@ -100,6 +100,7 @@
   "inlineReward": {
     "checkedIn": "checked in",
     "notCheckedIn": "not checked in",
-    "vipFill": "×{{count}} checked in"
+    "vipFill": "×{{count}} checked in",
+    "builderDelivered": "Builder delivered {{tool}}"
   }
 }
