@@ -124,6 +124,12 @@
       "errorFillAll": "Please fill in all fields.",
       "errorPasswordShort": "Password must be at least 6 characters.",
       "errorGeneric": "Something went wrong. Please try again."
+    },
+    "settings": {
+      "title": "Settings",
+      "liftSection": "Lift",
+      "simplifiedRewards": "Simplified reward display",
+      "simplifiedRewardsDesc": "Shows items received in the elevator below the transport button, instead of separate popups"
     }
   },
   "menu": {

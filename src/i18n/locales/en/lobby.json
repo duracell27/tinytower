@@ -96,5 +96,10 @@
     "title": "Hotel Filled!",
     "subtitle": "{{count}} new workers moved into the hotel",
     "dismiss": "Awesome!"
+  },
+  "inlineReward": {
+    "checkedIn": "checked in",
+    "notCheckedIn": "not checked in",
+    "vipFill": "×{{count}} checked in"
   }
 }
