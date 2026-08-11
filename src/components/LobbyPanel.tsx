@@ -849,14 +849,20 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                           <View style={styles.inlineRewardStrip}>
                             {inlineReward && (
                               <View style={styles.inlineRewardContent}>
-                                {inlineReward.kind === 'worker_in' && (
-                                  <>
-                                    <WorkerAvatar worker={inlineReward.worker} size={22} />
-                                    <Text style={styles.inlineRewardText} numberOfLines={1}>
-                                      {inlineReward.worker.name} · {t('inlineReward.checkedIn')}
-                                    </Text>
-                                  </>
-                                )}
+                                {inlineReward.kind === 'worker_in' && (() => {
+                                  const workerColor = gameConfig.floorTypes[inlineReward.worker.floorType]?.shirtColor ?? '#3B8BCB';
+                                  return (
+                                    <>
+                                      <WorkerAvatar worker={inlineReward.worker} size={22} />
+                                      <Text numberOfLines={1}>
+                                        <Text style={[styles.inlineRewardText, { color: workerColor }]}>
+                                          {inlineReward.worker.name} Lv.{inlineReward.worker.level}
+                                        </Text>
+                                        <Text style={styles.inlineRewardText}> · {t('inlineReward.checkedIn')}</Text>
+                                      </Text>
+                                    </>
+                                  );
+                                })()}
                                 {inlineReward.kind === 'hotel_full' && (
                                   <>
                                     <Text style={styles.inlineRewardWarning}>⚠</Text>
