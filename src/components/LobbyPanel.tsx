@@ -41,9 +41,7 @@ type InlineRewardPayload =
   | { kind: 'worker_in'; worker: Worker }
   | { kind: 'hotel_full' }
   | { kind: 'vip_fill'; count: number }
-  | { kind: 'tool'; tool: ToolKey }
-  | { kind: 'coins'; amount: number }
-  | { kind: 'gem' };
+  | { kind: 'tool'; tool: ToolKey };
 
 const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
   briks:  require('../../assets/img/tools/briks.png'),
@@ -822,15 +820,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                 : Haptics.ImpactFeedbackStyle.Medium;
                               Haptics.impactAsync(style);
 
-                              if (liftSimplifiedRewards) {
-                                if (actionButton.icon === 'coin' && actionButton.amount) {
-                                  const amt = parseInt(actionButton.amount.replace('+', ''), 10);
-                                  if (!isNaN(amt)) showInlineReward({ kind: 'coins', amount: amt });
-                                } else if (actionButton.icon === 'gem') {
-                                  showInlineReward({ kind: 'gem' });
-                                }
-                              }
-
                               actionButton.onPress();
                             }}
                             style={({ pressed }) => [
@@ -896,20 +885,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                       contentFit="contain"
                                     />
                                     <Text style={styles.inlineRewardText}>{t(`tools.${inlineReward.tool}`)}</Text>
-                                  </>
-                                )}
-                                {inlineReward.kind === 'coins' && (
-                                  <>
-                                    <CoinIcon size={14} />
-                                    <Text style={[styles.inlineRewardText, { color: '#C28A22' }]}>
-                                      +{formatNum(inlineReward.amount)}
-                                    </Text>
-                                  </>
-                                )}
-                                {inlineReward.kind === 'gem' && (
-                                  <>
-                                    <GemIcon size={14} />
-                                    <Text style={[styles.inlineRewardText, { color: '#2592AB' }]}>+1</Text>
                                   </>
                                 )}
                               </View>
