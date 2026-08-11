@@ -39,7 +39,7 @@ type ToolKey = 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement';
 
 type InlineRewardPayload =
   | { kind: 'worker_in'; worker: Worker }
-  | { kind: 'hotel_full' }
+  | { kind: 'hotel_full'; pendingFloorType: string | undefined; female: boolean | undefined }
   | { kind: 'vip_fill'; count: number }
   | { kind: 'tool'; tool: ToolKey };
 
@@ -591,7 +591,11 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
     if (isHotelFull) {
       if (liftSimplifiedRewards) {
-        showInlineReward({ kind: 'hotel_full' });
+        showInlineReward({
+          kind: 'hotel_full',
+          pendingFloorType: active?.pendingFloorType,
+          female: active?.female,
+        });
       } else {
         setHotelFullPopup(true);
       }
@@ -867,14 +871,20 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                     </>
                                   );
                                 })()}
-                                {inlineReward.kind === 'hotel_full' && (
-                                  <>
-                                    <Text style={styles.inlineRewardWarning}>⚠</Text>
-                                    <Text style={[styles.inlineRewardText, { color: '#C9637E' }]}>
-                                      {t('inlineReward.notCheckedIn')}
-                                    </Text>
-                                  </>
-                                )}
+                                {inlineReward.kind === 'hotel_full' && (() => {
+                                  const floorType = inlineReward.pendingFloorType ?? 'green';
+                                  const avatarSrc = WORKER_IMAGES[floorType]?.[inlineReward.female ? 'female' : 'male']
+                                    ?? VISITOR_IMAGES.guest;
+                                  return (
+                                    <>
+                                      <Text style={styles.inlineRewardWarning}>⚠</Text>
+                                      <Image source={avatarSrc} style={{ width: 22, height: 22 }} contentFit="contain" />
+                                      <Text style={[styles.inlineRewardText, { color: '#C9637E' }]}>
+                                        {t('inlineReward.noRoom')}
+                                      </Text>
+                                    </>
+                                  );
+                                })()}
                                 {inlineReward.kind === 'vip_fill' && (
                                   <>
                                     <Text style={styles.inlineRewardEmoji}>🏨</Text>

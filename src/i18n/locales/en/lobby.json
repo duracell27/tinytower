@@ -99,7 +99,7 @@
   },
   "inlineReward": {
     "checkedIn": "checked in",
-    "notCheckedIn": "not checked in",
+    "noRoom": "no room in hotel",
     "vipFill": "×{{count}} checked in",
     "builderDelivered": "Builder delivered {{tool}}"
   }
