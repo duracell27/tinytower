@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch } from 'react-native';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
@@ -27,6 +27,7 @@ import type { Command } from '../../shared/types';
 import { api, type PlayerProfile } from '../../src/services/api';
 import { useFriendStore } from '../../src/stores/friendStore';
 import { useMailStore } from '../../src/stores/mailStore';
+import { useSettingsStore } from '../../src/stores/settingsStore';
 
 const COIN_ICON     = require('../../assets/img/coin.png');
 const BEST_RPM_ICON = require('../../assets/img/bestRPM.png');
@@ -306,6 +307,9 @@ export default function ProfileScreen() {
   const tokens = useGameStore((s) => s.tokens);
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const xpNeeded = xpForLevel(playerLevel);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const liftSimplifiedRewards = useSettingsStore((s) => s.liftSimplifiedRewards);
+  const setLiftSimplifiedRewards = useSettingsStore((s) => s.setLiftSimplifiedRewards);
   const totalWorkers = workers.length;
   const happyCount = workers.filter((w) => {
     if (w.assignedFloorId === null) return false;
@@ -635,11 +639,12 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Pressable
+          onPress={() => setSettingsVisible(true)}
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/settingsIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>Settings</Text>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>{t('profile.settings.title')}</Text>
             <Text style={[styles.menuSub, { color: theme.textMuted }]}>App preferences</Text>
           </View>
         </Pressable>
@@ -707,6 +712,43 @@ export default function ProfileScreen() {
               </Pressable>
             </View>
           </KeyboardAvoidingView>
+        </Modal>
+
+        {/* Settings bottom sheet */}
+        <Modal
+          visible={settingsVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setSettingsVisible(false)}
+        >
+          <View style={settingsStyles.overlay}>
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => setSettingsVisible(false)} />
+            <View style={[settingsStyles.sheet, { backgroundColor: theme.surface }]}>
+              <View style={settingsStyles.handle} />
+              <Text style={[settingsStyles.title, { color: theme.text }]}>{t('profile.settings.title')}</Text>
+
+              <Text style={[settingsStyles.sectionHeader, { color: theme.textMuted }]}>
+                {t('profile.settings.liftSection')}
+              </Text>
+
+              <View style={[settingsStyles.row, { borderBottomColor: theme.divider }]}>
+                <View style={settingsStyles.rowLeft}>
+                  <Text style={[settingsStyles.rowTitle, { color: theme.text }]}>
+                    {t('profile.settings.simplifiedRewards')}
+                  </Text>
+                  <Text style={[settingsStyles.rowDesc, { color: theme.textMuted }]}>
+                    {t('profile.settings.simplifiedRewardsDesc')}
+                  </Text>
+                </View>
+                <Switch
+                  value={liftSimplifiedRewards}
+                  onValueChange={setLiftSimplifiedRewards}
+                  trackColor={{ true: '#72C24F', false: undefined }}
+                  thumbColor="#fff"
+                />
+              </View>
+            </View>
+          </View>
         </Modal>
 
         {/* Sync status card */}
@@ -1312,5 +1354,64 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 12,
     color: '#fff',
+  },
+});
+
+const settingsStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(90,100,120,0.25)',
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 16,
+  },
+  title: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  sectionHeader: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 12,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    gap: 12,
+  },
+  rowLeft: {
+    flex: 1,
+    gap: 3,
+  },
+  rowTitle: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
+  },
+  rowDesc: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 12.5,
+    lineHeight: 17,
   },
 });
