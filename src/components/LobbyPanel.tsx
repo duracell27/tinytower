@@ -395,8 +395,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   }, []);
 
   useEffect(() => {
-    if (lobbyVisitors.length === 0) setInlineReward(null);
-  }, [lobbyVisitors.length]);
+    if (!lobbyVisitors?.length) setInlineReward(null);
+  }, [lobbyVisitors]);
 
   const isDark = useColorScheme() === 'dark';
 
