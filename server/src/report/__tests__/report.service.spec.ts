@@ -204,6 +204,7 @@ describe('ReportService', () => {
 
   describe('deleteReportedContent', () => {
     it('soft-deletes forum post and resets report fields', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ id: 'post-1' });
       prisma.forumPost.update.mockResolvedValue({});
 
       const result = await service.deleteReportedContent('FORUM_POST', 'post-1');

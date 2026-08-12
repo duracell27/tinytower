@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { Alert, Modal, View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useReportStore, type ReportTargetType, type ReportCategory } from '../stores/reportStore';
@@ -33,6 +33,8 @@ export default function ReportSheet({ visible, targetType, targetId, onClose, on
       onClose();
       if (e?.message?.includes('Already reported') || e?.message?.includes('already')) {
         onAlreadyReported();
+      } else {
+        Alert.alert(t('report.error'));
       }
     }
   };

@@ -44,6 +44,7 @@ export default function ChatScreen() {
   const player = useAuthStore((s) => s.player);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const playerLevel = useGameStore((s) => s.playerLevel);
+  const isAdmin = player?.isAdmin === true;
 
   const isDark = useColorScheme() === 'dark';
   const [inputText, setInputText] = useState('');
@@ -305,10 +306,12 @@ export default function ChatScreen() {
                 <Text style={[styles.sheetItemText, isDark && { color: '#DDE8D8' }]}>⚑ {t('chat.actionReport')}</Text>
               </Pressable>
             )}
-            <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
-              <Image source={require('../assets/img/delete.png')} style={styles.sheetItemIcon} contentFit="contain" />
-              <Text style={[styles.sheetItemText, styles.sheetItemDanger]}>{t('chat.actionDelete')}</Text>
-            </Pressable>
+            {(selectedMessage?.isOwn || isAdmin) && (
+              <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
+                <Image source={require('../assets/img/delete.png')} style={styles.sheetItemIcon} contentFit="contain" />
+                <Text style={[styles.sheetItemText, styles.sheetItemDanger]}>{t('chat.actionDelete')}</Text>
+              </Pressable>
+            )}
             <View style={[styles.sheetDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
             <Pressable style={styles.sheetItem} onPress={() => setSelectedMessage(null)}>
               <Text style={[styles.sheetItemText, styles.sheetItemCancel]}>{t('chat.cancel')}</Text>

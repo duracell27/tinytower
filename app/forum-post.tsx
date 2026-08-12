@@ -309,10 +309,12 @@ export default function ForumPostScreen() {
                 <Text style={[styles.sheetText, isDark && { color: '#DDE8D8' }]}>⚑ {t('forum.actionReport')}</Text>
               </Pressable>
             )}
-            <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
-              <Image source={require('../assets/img/delete.png')} style={styles.sheetIcon} contentFit="contain" />
-              <Text style={[styles.sheetText, styles.sheetDanger]}>{t('forum.actionDelete')}</Text>
-            </Pressable>
+            {(selectedItem?.isOwn || isAdmin) && (
+              <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
+                <Image source={require('../assets/img/delete.png')} style={styles.sheetIcon} contentFit="contain" />
+                <Text style={[styles.sheetText, styles.sheetDanger]}>{t('forum.actionDelete')}</Text>
+              </Pressable>
+            )}
             <View style={[styles.sheetDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
             <Pressable style={styles.sheetItem} onPress={() => setSelectedItem(null)}>
               <Text style={[styles.sheetText, styles.sheetCancel]}>{t('forum.cancel')}</Text>

@@ -135,6 +135,8 @@ export class ReportService {
   }
 
   async dismissReports(targetType: ReportTargetType, targetId: string) {
+    const target = await this.findTarget(this.prisma, targetType, targetId);
+    if (!target) throw new NotFoundException('Target not found');
     const data = { reportCount: 0, isHidden: false };
     await this.prisma.$transaction(async (tx) => {
       if (targetType === 'CHAT_MESSAGE') await tx.chatMessage.update({ where: { id: targetId }, data });
@@ -146,6 +148,11 @@ export class ReportService {
   }
 
   async deleteReportedContent(targetType: ReportTargetType, targetId: string) {
+    const target = await this.findTarget(this.prisma, targetType, targetId);
+    if (!target) throw new NotFoundException('Target not found');
+    const comment = targetType === 'FORUM_COMMENT'
+      ? await this.prisma.forumComment.findUnique({ where: { id: targetId }, select: { postId: true } })
+      : null;
     const deletedAt = new Date();
     await this.prisma.$transaction(async (tx) => {
       const data = { deletedAt, reportCount: 0, isHidden: false };
@@ -153,6 +160,12 @@ export class ReportService {
       else if (targetType === 'FORUM_POST') await tx.forumPost.update({ where: { id: targetId }, data });
       else await tx.forumComment.update({ where: { id: targetId }, data });
       await tx.report.deleteMany({ where: { targetType, targetId } });
+      if (targetType === 'FORUM_COMMENT' && comment?.postId) {
+        await tx.forumPost.update({
+          where: { id: comment.postId },
+          data: { commentCount: { decrement: 1 } },
+        });
+      }
     });
     return { ok: true as const };
   }
