@@ -189,7 +189,7 @@ export class AdminController {
     @Param('targetType') targetType: string,
     @Param('targetId') targetId: string,
   ) {
-    if (!REPORT_TARGET_TYPES.includes(targetType as any)) throw new BadRequestException('Invalid target type');
+    if (!(REPORT_TARGET_TYPES as readonly string[]).includes(targetType)) throw new BadRequestException('Invalid target type');
     return this.reportService.getReportDetail(targetType as ReportTargetType, targetId);
   }
 
@@ -198,7 +198,7 @@ export class AdminController {
     @Param('targetType') targetType: string,
     @Param('targetId') targetId: string,
   ) {
-    if (!REPORT_TARGET_TYPES.includes(targetType as any)) throw new BadRequestException('Invalid target type');
+    if (!(REPORT_TARGET_TYPES as readonly string[]).includes(targetType)) throw new BadRequestException('Invalid target type');
     return this.reportService.deleteReportedContent(targetType as ReportTargetType, targetId);
   }
 
@@ -207,7 +207,7 @@ export class AdminController {
     @Param('targetType') targetType: string,
     @Param('targetId') targetId: string,
   ) {
-    if (!REPORT_TARGET_TYPES.includes(targetType as any)) throw new BadRequestException('Invalid target type');
+    if (!(REPORT_TARGET_TYPES as readonly string[]).includes(targetType)) throw new BadRequestException('Invalid target type');
     return this.reportService.dismissReports(targetType as ReportTargetType, targetId);
   }
 }
