@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native'
 import { Image } from 'expo-image';
 import type { ForumComment as ForumCommentType } from '../stores/forumStore';
 import { getUserIcon } from '../utils/userIcon';
+import { useBlockStore } from '../stores/blockStore';
 
 interface Props {
   comment: ForumCommentType;
@@ -24,10 +25,11 @@ function formatTime(iso: string): string {
 export default function ForumComment({ comment, isOwn, isAdmin, canReport, onLongPress, onAvatarPress }: Props) {
   const canInteract = isOwn || isAdmin || canReport;
   const isDark = useColorScheme() === 'dark';
+  const blocked = useBlockStore(s => s.isBlocked(comment.playerId));
   return (
     <View style={styles.row}>
       <Pressable onPress={onAvatarPress} disabled={!onAvatarPress} hitSlop={6}>
-        <Image source={getUserIcon(comment.playerLevel)} style={[styles.avatar, isDark && { backgroundColor: '#3A3F4A' }]} contentFit="cover" />
+        <Image source={getUserIcon(comment.playerLevel)} style={[styles.avatar, isDark && { backgroundColor: '#3A3F4A' }, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]} contentFit="cover" />
       </Pressable>
       <Pressable
         onLongPress={canInteract && onLongPress ? () => onLongPress(comment.id, comment.body, isOwn || isAdmin) : undefined}
@@ -39,7 +41,9 @@ export default function ForumComment({ comment, isOwn, isAdmin, canReport, onLon
           <Text style={[styles.level, isDark && { color: '#5A6470' }]}>Lv.{comment.playerLevel}</Text>
           <Text style={[styles.time, isDark && { color: '#5A6470' }]}>{formatTime(comment.createdAt)}</Text>
         </View>
-        <Text style={[styles.body, isDark && { color: '#DDE8D8' }]}>{comment.body}</Text>
+        <Text style={[styles.body, isDark && { color: '#DDE8D8' }]}>
+          {blocked ? <Text style={styles.blockedText}>From blocked user</Text> : comment.body}
+        </Text>
       </Pressable>
     </View>
   );
@@ -78,4 +82,5 @@ const styles = StyleSheet.create({
   level: { fontFamily: 'Nunito_400Regular', fontSize: 11, color: '#bbb' },
   time: { fontFamily: 'Nunito_400Regular', fontSize: 11, color: '#bbb' },
   body: { fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#1a1a1a', lineHeight: 20 },
+  blockedText: { fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#aaa', fontStyle: 'italic' },
 });

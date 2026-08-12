@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native'
 import { Image } from 'expo-image';
 import type { ForumPost } from '../stores/forumStore';
 import { getUserIcon } from '../utils/userIcon';
+import { useBlockStore } from '../stores/blockStore';
 
 interface Props {
   post: ForumPost;
@@ -27,6 +28,7 @@ function formatAge(iso: string): string {
 
 export default function ForumPostRow({ post, onPress, onReport }: Props) {
   const isDark = useColorScheme() === 'dark';
+  const blocked = useBlockStore(s => s.isBlocked(post.playerId));
   return (
     <Pressable
       style={[styles.row, isDark && { backgroundColor: '#2A2F38', borderBottomColor: 'rgba(255,255,255,0.08)' }]}
@@ -38,10 +40,10 @@ export default function ForumPostRow({ post, onPress, onReport }: Props) {
           style={[styles.title, post.isPinned && styles.titlePinned, isDark && { color: '#DDE8D8' }]}
           numberOfLines={2}
         >
-          {post.title}
+          {blocked ? <Text style={styles.blockedText}>From blocked user</Text> : post.title}
         </Text>
         <View style={styles.meta}>
-          <Image source={getUserIcon(post.playerLevel)} style={[styles.avatar, isDark && { backgroundColor: '#3A3F4A' }]} contentFit="cover" />
+          <Image source={getUserIcon(post.playerLevel)} style={[styles.avatar, isDark && { backgroundColor: '#3A3F4A' }, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]} contentFit="cover" />
           <Text style={[styles.metaText, isDark && { color: '#5A6470' }]} numberOfLines={1}>
             {post.playerName} · Lv.{post.playerLevel} · {formatAge(post.updatedAt)} · 💬 {post.commentCount}
           </Text>
@@ -84,4 +86,5 @@ const styles = StyleSheet.create({
   chevron: { fontSize: 20, color: '#ccc' },
   moreBtn: { padding: 4 },
   moreIcon: { fontSize: 14, color: '#ccc', letterSpacing: 1 },
+  blockedText: { fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#aaa', fontStyle: 'italic' },
 });

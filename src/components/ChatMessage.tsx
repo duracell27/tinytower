@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native'
 import { Image } from 'expo-image';
 import type { ChatMessage as ChatMessageType } from '../stores/chatStore';
 import { getUserIcon } from '../utils/userIcon';
+import { useBlockStore } from '../stores/blockStore';
 
 interface Props {
   message: ChatMessageType;
@@ -23,13 +24,14 @@ function formatTime(iso: string): string {
 export default function ChatMessage({ message, isOwn, isAdmin, canReport, onLongPress, onAvatarPress }: Props) {
   const canInteract = isOwn || isAdmin || !!canReport;
   const isDark = useColorScheme() === 'dark';
+  const blocked = useBlockStore(s => s.isBlocked(message.playerId));
 
   return (
     <View style={styles.row}>
       <Pressable onPress={onAvatarPress} disabled={!onAvatarPress} hitSlop={6}>
         <Image
           source={getUserIcon(message.playerLevel)}
-          style={[styles.avatar, isDark && { backgroundColor: '#3A3F4A' }]}
+          style={[styles.avatar, isDark && { backgroundColor: '#3A3F4A' }, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]}
           contentFit="cover"
         />
       </Pressable>
@@ -42,7 +44,9 @@ export default function ChatMessage({ message, isOwn, isAdmin, canReport, onLong
           <Text style={[styles.name, isOwn && styles.nameOwn]}>{message.playerName}</Text>
           <Text style={[styles.time, isOwn ? styles.timeOwn : isDark && { color: '#5A6470' }]}>{formatTime(message.createdAt)}</Text>
         </View>
-        <Text style={[styles.body, isOwn ? styles.bodyOwn : isDark && { color: '#DDE8D8' }]}>{message.body}</Text>
+        <Text style={[styles.body, isOwn ? styles.bodyOwn : isDark && { color: '#DDE8D8' }]}>
+          {blocked ? <Text style={styles.blockedText}>From blocked user</Text> : message.body}
+        </Text>
       </Pressable>
     </View>
   );
@@ -113,5 +117,11 @@ const styles = StyleSheet.create({
   },
   bodyOwn: {
     color: '#fff',
+  },
+  blockedText: {
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 13,
+    color: '#aaa',
+    fontStyle: 'italic',
   },
 });
