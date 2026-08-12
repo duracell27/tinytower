@@ -7,6 +7,7 @@ import { getUserIcon } from '../utils/userIcon';
 interface Props {
   post: ForumPost;
   onPress: () => void;
+  onReport?: () => void;
 }
 
 function getPostIcon(post: ForumPost) {
@@ -24,7 +25,7 @@ function formatAge(iso: string): string {
   return `${Math.floor(diff / 86400)}d`;
 }
 
-export default function ForumPostRow({ post, onPress }: Props) {
+export default function ForumPostRow({ post, onPress, onReport }: Props) {
   const isDark = useColorScheme() === 'dark';
   return (
     <Pressable
@@ -46,7 +47,13 @@ export default function ForumPostRow({ post, onPress }: Props) {
           </Text>
         </View>
       </View>
-      <Text style={[styles.chevron, isDark && { color: '#5A6470' }]}>›</Text>
+      {onReport ? (
+        <Pressable onPress={onReport} hitSlop={12} style={styles.moreBtn}>
+          <Text style={[styles.moreIcon, isDark && { color: '#5A6470' }]}>•••</Text>
+        </Pressable>
+      ) : (
+        <Text style={[styles.chevron, isDark && { color: '#5A6470' }]}>›</Text>
+      )}
     </Pressable>
   );
 }
@@ -75,4 +82,6 @@ const styles = StyleSheet.create({
   avatar: { width: 18, height: 18, borderRadius: 9, backgroundColor: '#e8e8e8' },
   metaText: { fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#999', flex: 1 },
   chevron: { fontSize: 20, color: '#ccc' },
+  moreBtn: { padding: 4 },
+  moreIcon: { fontSize: 14, color: '#ccc', letterSpacing: 1 },
 });

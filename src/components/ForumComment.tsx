@@ -8,6 +8,7 @@ interface Props {
   comment: ForumCommentType;
   isOwn: boolean;
   isAdmin: boolean;
+  canReport?: boolean;
   onLongPress?: (id: string, body: string, isOwn: boolean) => void;
   onAvatarPress?: () => void;
 }
@@ -20,8 +21,8 @@ function formatTime(iso: string): string {
   return `${Math.floor(diff / 86400)}d`;
 }
 
-export default function ForumComment({ comment, isOwn, isAdmin, onLongPress, onAvatarPress }: Props) {
-  const canInteract = isOwn || isAdmin;
+export default function ForumComment({ comment, isOwn, isAdmin, canReport, onLongPress, onAvatarPress }: Props) {
+  const canInteract = isOwn || isAdmin || canReport;
   const isDark = useColorScheme() === 'dark';
   return (
     <View style={styles.row}>

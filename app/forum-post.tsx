@@ -9,9 +9,11 @@ import { useTranslation } from 'react-i18next';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import ForumCommentComponent from '../src/components/ForumComment';
+import ReportSheet from '../src/components/ReportSheet';
 import { useForumStore } from '../src/stores/forumStore';
 import { useAuthStore } from '../src/stores/authStore';
 import { getUserIcon } from '../src/utils/userIcon';
+import type { ReportTargetType } from '../src/stores/reportStore';
 
 type SelectedItem = { id: string; body: string; isOwn: boolean; type: 'post' | 'comment' };
 
@@ -42,6 +44,7 @@ export default function ForumPostScreen() {
   const [editPostVisible, setEditPostVisible] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editBody, setEditBody] = useState('');
+  const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: string } | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -158,6 +161,15 @@ export default function ForumPostScreen() {
             <Text style={styles.postMenuIcon}>•••</Text>
           </Pressable>
         )}
+        {!isPostOwn && !isAdmin && isAuthenticated && (
+          <Pressable
+            onPress={() => setReportTarget({ type: 'FORUM_POST', id: postId })}
+            style={styles.postMenuBtn}
+            hitSlop={8}
+          >
+            <Text style={[styles.postMenuIcon, isDark && { color: '#8A9A80' }]}>⚑</Text>
+          </Pressable>
+        )}
       </View>
       <Text style={[styles.postTitle, isDark && { color: '#DDE8D8' }]}>{activePost.title}</Text>
       <Text style={[styles.postBody, isDark && { color: '#C8D8C0' }]}>{activePost.body}</Text>
@@ -211,6 +223,7 @@ export default function ForumPostScreen() {
               comment={item}
               isOwn={item.playerId === player?.id}
               isAdmin={isAdmin}
+              canReport={isAuthenticated && item.playerId !== player?.id}
               onLongPress={handleLongPressComment}
               onAvatarPress={() => handleAvatarPress(item.playerId)}
             />
@@ -283,6 +296,19 @@ export default function ForumPostScreen() {
                 <Text style={[styles.sheetText, isDark && { color: '#DDE8D8' }]}>{t('forum.actionEdit')}</Text>
               </Pressable>
             )}
+            {!selectedItem?.isOwn && isAuthenticated && (
+              <Pressable
+                style={styles.sheetItem}
+                onPress={() => {
+                  if (!selectedItem) return;
+                  const id = selectedItem.id;
+                  setSelectedItem(null);
+                  setReportTarget({ type: 'FORUM_COMMENT', id });
+                }}
+              >
+                <Text style={[styles.sheetText, isDark && { color: '#DDE8D8' }]}>⚑ {t('forum.actionReport')}</Text>
+              </Pressable>
+            )}
             <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
               <Image source={require('../assets/img/delete.png')} style={styles.sheetIcon} contentFit="contain" />
               <Text style={[styles.sheetText, styles.sheetDanger]}>{t('forum.actionDelete')}</Text>
@@ -294,6 +320,17 @@ export default function ForumPostScreen() {
           </View>
         </Pressable>
       </Modal>
+
+      {reportTarget && (
+        <ReportSheet
+          visible={!!reportTarget}
+          targetType={reportTarget.type}
+          targetId={reportTarget.id}
+          onClose={() => setReportTarget(null)}
+          onSuccess={() => Alert.alert(t('report.success'))}
+          onAlreadyReported={() => Alert.alert(t('report.alreadyReported'))}
+        />
+      )}
 
       {/* Edit post modal */}
       <Modal visible={editPostVisible} animationType="slide" onRequestClose={() => setEditPostVisible(false)}>
