@@ -214,6 +214,12 @@ export const api = {
     request<void>('POST', `/friends/request/${requestId}/reject`),
   removeFriend: (requestId: string) =>
     request<void>('DELETE', `/friends/${requestId}`),
+  getBlockedIds: () =>
+    request<{ ids: string[] }>('GET', '/block'),
+  blockPlayer: (id: string) =>
+    request<{ success: true }>('POST', `/block/${id}`),
+  unblockPlayer: (id: string) =>
+    request<void>('DELETE', `/block/${id}`),
   sendMail: (toId: string, subject: string, body: string) =>
     request<{ id: string }>('POST', `/mail/send/${toId}`, { subject, body }),
   getMailInbox: () =>
