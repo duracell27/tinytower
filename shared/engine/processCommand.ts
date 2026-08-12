@@ -55,6 +55,7 @@ export function processCommand(
     case 'expand_hotel':
     case 'fill_lobby':
     case 'evict_low_level_workers':
+    case 'buy_daily_gems':
       return processLobbyCommand(state, command, config, playerLevel);
     case 'dev_add_gems':
       return { success: true, state: { ...state, gems: state.gems + command.amount } };
@@ -333,7 +334,10 @@ function handleFireWorker(
   const floorIdx = state.floors.findIndex((f) => f.id === worker.assignedFloorId);
   if (floorIdx === -1) return { success: false, state, error: 'Floor not found' };
 
-  const production = state.floors[floorIdx].productions[worker.assignedSlotIdx!];
+  const slotIdx = worker.assignedSlotIdx!;
+  const production = state.floors[floorIdx].productions[slotIdx];
+  let floors = state.floors;
+
   if (production && (production.stage === 'DELIVERING' || production.stage === 'SELLING')) {
     const typeConfig = production.typeId ? config.productionTypes[production.typeId] : null;
     if (typeConfig) {
@@ -345,6 +349,14 @@ function handleFireWorker(
       if (duration - (now - production.stageStartedAt) > 0) {
         return { success: false, state, error: 'Cannot fire during active production' };
       }
+      // Selling is done but uncollected — reset slot so hire mode is shown correctly
+      if (production.stage === 'SELLING') {
+        floors = updateProduction(state.floors, floorIdx, slotIdx, {
+          ...production,
+          stage: 'IDLE',
+          stageStartedAt: 0,
+        });
+      }
     }
   }
 
@@ -352,6 +364,7 @@ function handleFireWorker(
     success: true,
     state: {
       ...state,
+      floors,
       workers: state.workers.map((w) =>
         w.id === command.workerId
           ? { ...w, assignedFloorId: null, assignedSlotIdx: null }

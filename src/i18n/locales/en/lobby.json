@@ -47,7 +47,12 @@
     "received": "Received"
   },
   "dailyGems": {
-    "label": "Gems today"
+    "label": "Gems today",
+    "buyAll": "Buy all",
+    "confirmTitle": "Buy All Gems",
+    "confirmFor": "for",
+    "confirmBuy": "Buy",
+    "confirmCancel": "Cancel"
   },
   "elevator": {
     "upgradeEntry": "Upgrade Elevator",

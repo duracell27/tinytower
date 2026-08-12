@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
 import { getUserIcon } from '../utils/userIcon';
+import { useBlockStore } from '../stores/blockStore';
 import { api, type LeaderboardResponse, type LeaderboardEntry } from '../services/api';
 import { formatNum } from '../utils/format';
 
@@ -59,6 +60,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
 
   const myId = useAuthStore(s => s.player?.id);
   const myLevel = useGameStore(s => s.playerLevel);
+  const isBlocked = useBlockStore(s => s.isBlocked);
 
   const router = useRouter();
   const [pendingNav, setPendingNav] = useState<string | null>(null);
@@ -153,7 +155,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         <Pressable onPress={() => handleAvatarPress(item.playerId)} hitSlop={6}>
           <Image
             source={getUserIcon(tab === 'level' ? item.value : 1)}
-            style={styles.avatar}
+            style={[styles.avatar, isBlocked(item.playerId) && { borderColor: '#E05A4A', borderWidth: 2 }]}
             contentFit="cover"
           />
         </Pressable>

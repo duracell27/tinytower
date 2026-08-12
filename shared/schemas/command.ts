@@ -240,6 +240,10 @@ export const UpgradeFloorCommandSchema = TimestampedBaseSchema.extend({
   floorId: z.number().int().positive(),
 });
 
+export const BuyDailyGemsCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('buy_daily_gems'),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -272,4 +276,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   ClaimDailyTaskCommandSchema,
   UpgradeBusinessCategoryCommandSchema,
   UpgradeFloorCommandSchema,
+  BuyDailyGemsCommandSchema,
 ]);

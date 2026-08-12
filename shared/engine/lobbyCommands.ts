@@ -18,7 +18,7 @@ import type { VisitorRole } from '../types';
 type LobbyCommand = Extract<Command, { type:
   'spawn_visitor' | 'lift_visitor' | 'collect_tip' |
   'deliver_all' | 'upgrade_elevator' | 'upgrade_lobby' | 'claim_daily_reward' | 'expand_hotel' | 'fill_lobby' |
-  'evict_low_level_workers'
+  'evict_low_level_workers' | 'buy_daily_gems'
 }>;
 
 export function processLobbyCommand(
@@ -50,6 +50,8 @@ export function processLobbyCommand(
       return handleFillLobby(state, command, config);
     case 'evict_low_level_workers':
       return handleEvictLowLevelWorkers(state, command.timestamp);
+    case 'buy_daily_gems':
+      return handleBuyDailyGems(state, config, playerLevel, command.timestamp);
   }
 }
 
@@ -486,6 +488,44 @@ function handleEvictLowLevelWorkers(state: GameState, commandTimestamp: number):
         progress: {
           ...state.dailyTasks.progress,
           residentsEvicted: state.dailyTasks.progress.residentsEvicted + evictedCount,
+        },
+      } : state.dailyTasks,
+    },
+  };
+}
+
+export function calculateBuyDailyGemsCost(gemsRemaining: number, playerLevel: number): number {
+  return 100 * gemsRemaining * playerLevel;
+}
+
+function handleBuyDailyGems(
+  state: GameState,
+  config: GameConfig,
+  playerLevel: number,
+  now: number,
+): ProcessResult {
+  const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel;
+  const gemsRemaining = gemLimit - state.dailyGemsCollected;
+  if (gemsRemaining <= 0) {
+    return { success: false, state, error: 'Daily gem limit already reached' };
+  }
+  const cost = calculateBuyDailyGemsCost(gemsRemaining, playerLevel);
+  if (state.balance < cost) {
+    return { success: false, state, error: 'Insufficient coins' };
+  }
+  const isToday = now >= state.lastDailyReset;
+  return {
+    success: true,
+    state: {
+      ...state,
+      balance: state.balance - cost,
+      gems: state.gems + gemsRemaining,
+      dailyGemsCollected: gemLimit,
+      dailyTasks: isToday ? {
+        ...state.dailyTasks,
+        progress: {
+          ...state.dailyTasks.progress,
+          gemsPurchased: state.dailyTasks.progress.gemsPurchased + gemsRemaining,
         },
       } : state.dailyTasks,
     },

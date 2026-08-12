@@ -19,6 +19,13 @@ const CATEGORY_IMAGES: Record<string, ReturnType<typeof require>> = {
   elevator: require('../assets/img/achivment/achivLiftCategory.png'),
 };
 
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  buy:      'Buy goods for your floors to restock production',
+  list:     'Put delivered goods on shelves to start selling',
+  collect:  'Collect earned coins from completed sales',
+  elevator: 'Transport visitors between floors in the elevator',
+};
+
 const DIAMOND_ICON = require('../assets/img/diamond.png');
 
 const TIER_IMAGES: ReturnType<typeof require>[] = [
@@ -33,8 +40,8 @@ const TIER_IMAGES: ReturnType<typeof require>[] = [
 ];
 
 function formatCompact(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.floor(n / 1_000)}K`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1)}K`;
   return String(n);
 }
 
@@ -107,6 +114,9 @@ export default function AchievementsScreen() {
                 <Image source={CATEGORY_IMAGES[category.key]} style={styles.categoryIcon} />
                 <View style={styles.cardTopText}>
                   <Text style={[styles.categoryTitle, isDark && { color: '#DDE8D8' }]}>{category.title}</Text>
+                  <Text style={[styles.categoryDesc, isDark && { color: '#7A8F70' }]}>
+                    {CATEGORY_DESCRIPTIONS[category.key]}
+                  </Text>
                   <Text style={[styles.levelLabel, isDark && { color: '#8A9A80' }]}>
                     {currentLevel === 0
                       ? 'No rank earned'
@@ -131,7 +141,7 @@ export default function AchievementsScreen() {
                       <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
                     </View>
                     <Text style={[styles.progressCount, isDark && { color: '#8A9A80' }]}>
-                      {formatCompactPrecise(relativeProgress)} / {formatCompact(relativeMax)}
+                      {formatCompactPrecise(progress)} / {formatCompact(nextLevelConfig.threshold)}
                     </Text>
                   </View>
                   <ProgressBar value={relativeProgress} max={relativeMax} />
@@ -295,10 +305,16 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#27331F',
   },
+  categoryDesc: {
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 12,
+    color: '#8A9A80',
+    lineHeight: 15,
+  },
   levelLabel: {
-    fontFamily: 'Fredoka_500Medium',
+    fontFamily: 'Fredoka_600SemiBold',
     fontSize: 13,
-    color: '#7C8A6E',
+    color: '#27331F',
   },
   sectionLabel: {
     fontFamily: 'Nunito_600SemiBold',

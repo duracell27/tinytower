@@ -303,7 +303,8 @@ export default function ChatScreen() {
             )}
             {!selectedMessage?.isOwn && isAuthenticated && (
               <Pressable style={styles.sheetItem} onPress={handleActionReport}>
-                <Text style={[styles.sheetItemText, isDark && { color: '#DDE8D8' }]}>⚑ {t('chat.actionReport')}</Text>
+                <Image source={require('../assets/img/warningIcon.png')} style={styles.sheetItemIcon} contentFit="contain" />
+                <Text style={[styles.sheetItemText, isDark && { color: '#DDE8D8' }]}>{t('chat.actionReport')}</Text>
               </Pressable>
             )}
             {(selectedMessage?.isOwn || isAdmin) && (

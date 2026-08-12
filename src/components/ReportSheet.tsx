@@ -13,7 +13,7 @@ interface Props {
   onAlreadyReported: () => void;
 }
 
-const CATEGORIES: ReportCategory[] = ['SPAM', 'INSULT', 'ADVERTISEMENT', 'PROFANITY', 'THREAT', 'OTHER'];
+const CATEGORIES: ReportCategory[] = ['SPAM', 'HARASSMENT', 'ADVERTISEMENT', 'PROFANITY', 'THREAT', 'ADULT_CONTENT', 'OTHER'];
 
 export default function ReportSheet({ visible, targetType, targetId, onClose, onSuccess, onAlreadyReported }: Props) {
   const { t } = useTranslation('tabs');

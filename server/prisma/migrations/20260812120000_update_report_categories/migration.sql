@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "ReportCategory" ADD VALUE 'HARASSMENT';
+ALTER TYPE "ReportCategory" ADD VALUE 'ADULT_CONTENT';

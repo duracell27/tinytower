@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { generateRandomVisitorRole, generateVisitorAppearance, getFillLobbyCost, checkDailyReset, calculateTip } from '../../shared/engine/lobbyUtils';
+import { calculateBuyDailyGemsCost } from '../../shared/engine/lobbyCommands';
 import { generateRandomWorkers, WORKER_LOOKAHEAD } from '../../shared/config/workerNames';
 import { getBuiltFloorCountForType } from '../../shared/engine/workerUtils';
 import { applyXpGain, xpForCommand, type LevelUpEvent } from '../../shared/engine/xp';
@@ -195,6 +196,7 @@ interface GameActions {
   fillLobby: () => void;
   upgradeElevator: () => void;
   upgradeLobby: () => void;
+  buyAllDailyGems: () => void;
   expandHotel: () => void;
   evictLowLevelWorkers: () => void;
   claimDailyReward: (stage: 1 | 2) => void;
@@ -973,6 +975,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
     executeCommand(get, set, {
       id: uuid(),
       type: 'upgrade_elevator',
+      timestamp: clock.now(),
+    });
+  },
+
+  buyAllDailyGems: () => {
+    const state = get();
+    const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + state.playerLevel;
+    const gemsRemaining = gemLimit - state.dailyGemsCollected;
+    if (gemsRemaining <= 0) return;
+    const cost = calculateBuyDailyGemsCost(gemsRemaining, state.playerLevel);
+    if (state.balance < cost) {
+      state.showInsufficientResources({ currency: 'coins', need: cost, have: state.balance });
+      return;
+    }
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'buy_daily_gems',
       timestamp: clock.now(),
     });
   },

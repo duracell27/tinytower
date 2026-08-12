@@ -387,6 +387,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const [hotelFullPopup, setHotelFullPopup] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
   const [inlineReward, setInlineReward] = useState<InlineRewardPayload | null>(null);
+  const [showBuyGemsConfirm, setShowBuyGemsConfirm] = useState(false);
   const liftSimplifiedRewards = useSettingsStore((s) => s.liftSimplifiedRewards);
   const liftSimplifiedRewardsRef = useRef(liftSimplifiedRewards);
   useEffect(() => { liftSimplifiedRewardsRef.current = liftSimplifiedRewards; }, [liftSimplifiedRewards]);
@@ -434,6 +435,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const clearBuilderToolDrop = useGameStore((s) => s.clearBuilderToolDrop);
   const pendingDeliverAll = useGameStore((s) => s.pendingDeliverAll);
   const clearPendingDeliverAll = useGameStore((s) => s.clearPendingDeliverAll);
+  const buyAllDailyGems = useGameStore((s) => s.buyAllDailyGems);
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -475,6 +477,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
   // Gem limit for businessman
   const dailyGemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
+  const gemsRemaining = Math.max(0, dailyGemLimit - effectiveDailyGemsCollected);
+  const buyAllGemsCost = 100 * gemsRemaining * playerLevel;
 
   useEffect(() => {
     setView('operate');
@@ -482,6 +486,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       setNewWorkerPopup(null);
       setHotelFullPopup(false);
       setInlineReward(null);
+      setShowBuyGemsConfirm(false);
       clearBuilderToolDrop();
       clearPendingDeliverAll();
     }
@@ -515,7 +520,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   // touch behaviour on iOS (feels like "interface blocked").
   const hasActivePopup =
     !!newWorkerPopup || !!builderToolDrop || !!vipHotelFillCount || hotelFullPopup ||
-    !!pendingDeliverAll || infoVisible || !!insufficientResources;
+    !!pendingDeliverAll || infoVisible || !!insufficientResources || showBuyGemsConfirm;
 
   const panGesture = Gesture.Pan()
     .enabled(visible && !hasActivePopup)
@@ -867,7 +872,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                   return (
                                     <>
                                       <WorkerAvatar worker={inlineReward.worker} size={22} />
-                                      <Text numberOfLines={1}>
+                                      <Text numberOfLines={1} style={{ flex: 1 }}>
                                         <Text style={[styles.inlineRewardText, { color: workerColor }]}>
                                           {inlineReward.worker.name} Lv.{inlineReward.worker.level}
                                         </Text>
@@ -883,12 +888,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                     ?? VISITOR_IMAGES.guest;
                                   return (
                                     <>
-                                      <Text style={styles.inlineRewardWarning}>⚠</Text>
+                                      <Image source={require('../../assets/img/warningIcon.png')} style={{ width: 18, height: 18 }} contentFit="contain" />
                                       <Image source={avatarSrc} style={{ width: 22, height: 22 }} contentFit="contain" />
-                                      <Text numberOfLines={1}>
-                                        <Text style={[styles.inlineRewardText, { color: workerColor }]}>
-                                          {inlineReward.name}
-                                        </Text>
+                                      <Text style={[styles.inlineRewardText, { color: workerColor, flex: 1 }]} numberOfLines={1}>
+                                        {inlineReward.name}
                                         <Text style={[styles.inlineRewardText, { color: '#C9637E' }]}>
                                           {' · '}{t('inlineReward.noRoom')}
                                         </Text>
@@ -1086,6 +1089,19 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   <Text style={styles.dailyGemsValue}>
                     {effectiveDailyGemsCollected} / {dailyGemLimit}
                   </Text>
+                  {gemsRemaining > 0 && (
+                    <Pressable
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setShowBuyGemsConfirm(true);
+                      }}
+                      style={({ pressed }) => [styles.buyGemsChip, isDark && { backgroundColor: 'rgba(82,166,226,0.18)' }, pressed && { opacity: 0.7 }]}
+                    >
+                      <Text style={styles.buyGemsChipText}>{t('dailyGems.buyAll')}</Text>
+                      <GemIcon size={11} />
+                      <Text style={styles.buyGemsChipText}>+{gemsRemaining}</Text>
+                    </Pressable>
+                  )}
                 </View>
 
                 {/* Upgrade elevator entry button */}
@@ -1412,6 +1428,42 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             </View>
           </View>
         )}
+        {/* Buy all gems confirmation popup */}
+        {showBuyGemsConfirm && (
+          <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setShowBuyGemsConfirm(false)}>
+            <Pressable style={[popupStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => {}}>
+              <View style={[popupStyles.avatarWrap, { backgroundColor: 'rgba(82,166,226,0.12)' }]}>
+                <GemIcon size={36} />
+              </View>
+              <View style={popupStyles.info}>
+                <Text style={[popupStyles.title, isDark && { color: '#DDE8D8' }]}>{t('dailyGems.confirmTitle')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                  <Text style={[popupStyles.confirmAmount, { color: '#2592AB' }]}>+{gemsRemaining}</Text>
+                  <GemIcon size={20} />
+                  <Text style={[popupStyles.confirmFor, isDark && { color: '#8A9A80' }]}>{t('dailyGems.confirmFor')}</Text>
+                  <CoinIcon size={20} />
+                  <Text style={[popupStyles.confirmAmount, { color: '#E5A41C' }]}>{formatNum(buyAllGemsCost)}</Text>
+                </View>
+              </View>
+              <Pressable
+                onPress={() => {
+                  setShowBuyGemsConfirm(false);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  buyAllDailyGems();
+                }}
+                style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
+              >
+                <LinearGradient colors={['#52A6E2', '#3B8BCB']} style={popupStyles.findJobGradient}>
+                  <Text style={popupStyles.findJobText}>{t('dailyGems.confirmBuy')}</Text>
+                </LinearGradient>
+              </Pressable>
+              <Pressable onPress={() => setShowBuyGemsConfirm(false)} style={popupStyles.dismissBtn}>
+                <Text style={[popupStyles.dismissText, isDark && { color: '#8A9A80' }]}>{t('dailyGems.confirmCancel')}</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        )}
+
         <InsufficientResourcesModal asOverlay />
       </GestureHandlerRootView>
     </Modal>
@@ -1459,6 +1511,15 @@ const popupStyles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 18,
     color: '#2A3344',
+  },
+  confirmAmount: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 22,
+  },
+  confirmFor: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 16,
+    color: '#5A6478',
   },
   name: {
     fontFamily: 'Fredoka_600SemiBold',
@@ -1871,6 +1932,11 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
   },
+  dailyGemsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   dailyGemsLabel: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 14,
@@ -1881,6 +1947,20 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 14,
     color: '#2592AB',
+  },
+  buyGemsChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(82,166,226,0.13)',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  buyGemsChipText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 12,
+    color: '#3B8BCB',
   },
 
   dailyTipsCard: {

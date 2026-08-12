@@ -14,6 +14,7 @@ import { useForumStore } from '../src/stores/forumStore';
 import { useAuthStore } from '../src/stores/authStore';
 import { getUserIcon } from '../src/utils/userIcon';
 import type { ReportTargetType } from '../src/stores/reportStore';
+import { useBlockStore } from '../src/stores/blockStore';
 
 type SelectedItem = { id: string; body: string; isOwn: boolean; type: 'post' | 'comment' };
 
@@ -133,6 +134,7 @@ export default function ForumPostScreen() {
 
   const isPostOwn = activePost?.playerId === player?.id;
   const canModifyPost = isPostOwn || isAdmin;
+  const isPostBlocked = useBlockStore(s => activePost ? s.isBlocked(activePost.playerId) : false);
 
   const handleAvatarPress = useCallback((playerId: string) => {
     if (playerId === player?.id) {
@@ -146,7 +148,7 @@ export default function ForumPostScreen() {
     <View style={[styles.postCard, isDark && { backgroundColor: '#2A2F38' }]}>
       <View style={styles.postMeta}>
         <Pressable onPress={() => handleAvatarPress(activePost.playerId)} hitSlop={6}>
-          <Image source={getUserIcon(activePost.playerLevel)} style={[styles.postAvatar, isDark && { backgroundColor: '#3A3F4A' }]} contentFit="cover" />
+          <Image source={getUserIcon(activePost.playerLevel)} style={[styles.postAvatar, isDark && { backgroundColor: '#3A3F4A' }, isPostBlocked && { borderColor: '#E05A4A', borderWidth: 2 }]} contentFit="cover" />
         </Pressable>
         <View>
           <Text style={[styles.postAuthor, isDark && { color: '#DDE8D8' }]}>{activePost.playerName} · Lv.{activePost.playerLevel}</Text>
@@ -167,12 +169,16 @@ export default function ForumPostScreen() {
             style={styles.postMenuBtn}
             hitSlop={8}
           >
-            <Text style={[styles.postMenuIcon, isDark && { color: '#8A9A80' }]}>⚑</Text>
+            <Image source={require('../assets/img/warningIcon.png')} style={{ width: 16, height: 16 }} contentFit="contain" />
           </Pressable>
         )}
       </View>
-      <Text style={[styles.postTitle, isDark && { color: '#DDE8D8' }]}>{activePost.title}</Text>
-      <Text style={[styles.postBody, isDark && { color: '#C8D8C0' }]}>{activePost.body}</Text>
+      <Text style={[styles.postTitle, isDark && { color: '#DDE8D8' }]}>
+        {isPostBlocked ? <Text style={styles.blockedText}>From blocked user</Text> : activePost.title}
+      </Text>
+      <Text style={[styles.postBody, isDark && { color: '#C8D8C0' }]}>
+        {isPostBlocked ? '' : activePost.body}
+      </Text>
       {isAdmin && (
         <View style={styles.adminActions}>
           <Pressable
@@ -306,7 +312,8 @@ export default function ForumPostScreen() {
                   setReportTarget({ type: 'FORUM_COMMENT', id });
                 }}
               >
-                <Text style={[styles.sheetText, isDark && { color: '#DDE8D8' }]}>⚑ {t('forum.actionReport')}</Text>
+                <Image source={require('../assets/img/warningIcon.png')} style={styles.sheetIcon} contentFit="contain" />
+                <Text style={[styles.sheetText, isDark && { color: '#DDE8D8' }]}>{t('forum.actionReport')}</Text>
               </Pressable>
             )}
             {(selectedItem?.isOwn || isAdmin) && (
@@ -389,6 +396,7 @@ const styles = StyleSheet.create({
   postMenuIcon: { fontSize: 16, color: '#aaa', letterSpacing: 1 },
   postTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 19, color: '#2A3344', marginBottom: 10, lineHeight: 24 },
   postBody: { fontFamily: 'Nunito_400Regular', fontSize: 15, color: '#333', lineHeight: 22 },
+  blockedText: { fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#aaa', fontStyle: 'italic' },
   adminActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
   adminBtn: {
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8,

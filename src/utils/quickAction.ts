@@ -48,7 +48,7 @@ export function getAvailableMode(
       const prod = floor.productions[slotIdx];
       const stage = derivedStage(prod, now, starTimeMultiplier);
 
-      if (stage === 'READY_TO_COLLECT') return 'collect';
+      if (stage === 'READY_TO_COLLECT' && !!getWorkerForSlot(workers, floor.id, slotIdx)) return 'collect';
       if (stage === 'READY_TO_LIST') hasList = true;
       if (prod.stage === 'IDLE' && prod.typeId !== null && !hasActiveDelivery(floor, now) && !!getWorkerForSlot(workers, floor.id, slotIdx)) hasBuy = true;
       if (prod.typeId !== null && !getWorkerForSlot(workers, floor.id, slotIdx)) hasHire = true;
@@ -74,7 +74,7 @@ export function getFloorsForMode(
       const starTimeMultiplier = getStarMult(floor.id, floorStars).time;
       return floor.productions.some((prod, slotIdx) => {
         switch (mode) {
-          case 'collect': return derivedStage(prod, now, starTimeMultiplier) === 'READY_TO_COLLECT';
+          case 'collect': return derivedStage(prod, now, starTimeMultiplier) === 'READY_TO_COLLECT' && !!getWorkerForSlot(workers, floor.id, slotIdx);
           case 'list':    return derivedStage(prod, now, starTimeMultiplier) === 'READY_TO_LIST';
           case 'buy':     return prod.stage === 'IDLE' && prod.typeId !== null && !hasActiveDelivery(floor, now) && !!getWorkerForSlot(workers, floor.id, slotIdx);
           case 'hire':    return prod.typeId !== null && !getWorkerForSlot(workers, floor.id, slotIdx);

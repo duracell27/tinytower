@@ -5,7 +5,7 @@ import { ReportService } from './report.service';
 import { ReportTargetType, ReportCategory } from '@prisma/client';
 
 const REPORT_TYPES = ['CHAT_MESSAGE', 'FORUM_POST', 'FORUM_COMMENT'] as const;
-const REPORT_CATEGORIES = ['SPAM', 'INSULT', 'ADVERTISEMENT', 'PROFANITY', 'THREAT', 'OTHER'] as const;
+const REPORT_CATEGORIES = ['SPAM', 'HARASSMENT', 'ADVERTISEMENT', 'PROFANITY', 'THREAT', 'ADULT_CONTENT', 'OTHER'] as const;
 
 const CreateReportSchema = z.object({
   targetType: z.enum(REPORT_TYPES),

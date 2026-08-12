@@ -102,7 +102,7 @@ describe('ReportService', () => {
       prisma.forumPost.findFirst.mockResolvedValue({ id: 'post-1' });
       prisma.forumPost.update.mockResolvedValue({ reportCount: 2 });
 
-      const result = await service.createReport('p1', 'FORUM_POST', 'post-1', 'INSULT');
+      const result = await service.createReport('p1', 'FORUM_POST', 'post-1', 'HARASSMENT');
       expect(result).toEqual({ ok: true });
       expect(prisma.forumPost.update).toHaveBeenCalled();
     });

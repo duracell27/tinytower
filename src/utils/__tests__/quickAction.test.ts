@@ -43,11 +43,19 @@ describe('getAvailableMode', () => {
     expect(getAvailableMode([floor], [makeWorker('w1', 1, 0)], now)).toBeNull();
   });
 
-  it('returns collect when floor has READY_TO_COLLECT', () => {
+  it('returns collect when floor has READY_TO_COLLECT and a worker', () => {
     const floor = makeFloor(1, [
       { typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 },
     ]);
-    expect(getAvailableMode([floor], [], now)).toBe('collect');
+    expect(getAvailableMode([floor], [makeWorker('w1', 1, 0)], now)).toBe('collect');
+  });
+
+  it('does not return collect when READY_TO_COLLECT slot has no worker', () => {
+    const floor = makeFloor(1, [
+      { typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 },
+    ]);
+    // no worker → should fall through to hire
+    expect(getAvailableMode([floor], [], now)).toBe('hire');
   });
 
   it('returns list when floor has READY_TO_LIST and no collect', () => {
@@ -77,7 +85,8 @@ describe('getAvailableMode', () => {
       makeFloor(1, [{ typeId: REAL_TYPE, stage: 'READY_TO_LIST', stageStartedAt: 0 }]),
       makeFloor(2, [{ typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 }]),
     ];
-    expect(getAvailableMode(floors, [], now)).toBe('collect');
+    const workers = [makeWorker('w1', 2, 0)];
+    expect(getAvailableMode(floors, workers, now)).toBe('collect');
   });
 
   it('prioritizes list over buy', () => {
@@ -125,19 +134,27 @@ describe('getAvailableMode', () => {
 describe('getFloorsForMode', () => {
   const now = 100_000;
 
-  it('returns only floors with matching collect slot', () => {
+  it('returns only floors with matching collect slot (worker present)', () => {
     const f1 = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 }]);
     const f2 = makeFloor(2, [{ typeId: REAL_TYPE, stage: 'SELLING', stageStartedAt: now - 100 }]);
-    const result = getFloorsForMode('collect', [f1, f2], [], now);
+    const workers = [makeWorker('w1', 1, 0)];
+    const result = getFloorsForMode('collect', [f1, f2], workers, now);
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe(1);
+  });
+
+  it('excludes collect floor when worker was fired (no worker on READY_TO_COLLECT slot)', () => {
+    const f1 = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 }]);
+    const result = getFloorsForMode('collect', [f1], [], now);
+    expect(result).toHaveLength(0);
   });
 
   it('returns floors sorted by ID descending (highest first)', () => {
     const f1 = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 }]);
     const f5 = makeFloor(5, [{ typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 }]);
     const f3 = makeFloor(3, [{ typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 }]);
-    const result = getFloorsForMode('collect', [f1, f5, f3], [], now);
+    const workers = [makeWorker('w1', 1, 0), makeWorker('w5', 5, 0), makeWorker('w3', 3, 0)];
+    const result = getFloorsForMode('collect', [f1, f5, f3], workers, now);
     expect(result.map((f) => f.id)).toEqual([5, 3, 1]);
   });
 
@@ -213,7 +230,7 @@ describe('getFloorActionInfo', () => {
 
   it('list — returns count 1 for a single ready slot', () => {
     const floor = makeFloor(1, [{ typeId: REAL_TYPE, stage: 'READY_TO_LIST', stageStartedAt: 0 }]);
-    expect(getFloorActionInfo('list', floor, now, [])).toEqual({ mode: 'list', count: 1 });
+    expect(getFloorActionInfo('list', floor, now, [])).toEqual({ mode: 'list', count: 1, typeId: REAL_TYPE });
   });
 
   it('list — returns count for multiple ready slots', () => {

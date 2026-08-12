@@ -33,6 +33,7 @@ const SPEC_ICON      = require('../../assets/img/specialistWorker.png');
 const MARKETING_ICON = require('../../assets/img/MarketingIcon.png');
 const PR_ICON        = require('../../assets/img/PRIcon.png');
 const CANCEL_ICON    = require('../../assets/img/CancellIcon.png');
+const OK_ICON        = require('../../assets/img/OkIcon.png');
 
 const TIER_ICONS: Record<number, any> = {
   0: require('../../assets/img/achivment/0TierAchive.png'),
@@ -382,30 +383,6 @@ export default function UserProfileScreen() {
             </>
           )}
 
-          {currentPlayerId && id !== currentPlayerId && (
-            <Pressable
-              style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
-              onPress={async () => {
-                try {
-                  if (blocked) {
-                    await unblockPlayer(id);
-                  } else {
-                    await blockPlayer(id);
-                    useFriendStore.getState().fetchStatus(id);
-                  }
-                } catch {
-                  // silent
-                }
-              }}
-              disabled={blockSubmitting}
-            >
-              <Image source={CANCEL_ICON} style={pStyles.actionIcon} contentFit="contain" />
-              <Text style={[pStyles.actionBtnText, { color: blocked ? '#E05A4A' : theme.text }]}>
-                {blocked ? t('block.unblockUser') : t('block.blockUser')}
-              </Text>
-            </Pressable>
-          )}
-
           {/* Block 3: Achievements */}
           <Pressable
             style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
@@ -503,6 +480,30 @@ export default function UserProfileScreen() {
             </View>
             <InfoRow icons={[SAND_CLOCK]} label="Days in game" value={String(daysInGame)} noBorder />
           </View>
+
+          {currentPlayerId && id !== currentPlayerId && (
+            <Pressable
+              style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+              onPress={async () => {
+                try {
+                  if (blocked) {
+                    await unblockPlayer(id);
+                  } else {
+                    await blockPlayer(id);
+                    useFriendStore.getState().fetchStatus(id);
+                  }
+                } catch {
+                  // silent
+                }
+              }}
+              disabled={blockSubmitting}
+            >
+              <Image source={blocked ? OK_ICON : CANCEL_ICON} style={pStyles.actionIcon} contentFit="contain" />
+              <Text style={[pStyles.actionBtnText, { color: blocked ? '#E05A4A' : theme.text }]}>
+                {blocked ? t('block.unblockUser') : t('block.blockUser')}
+              </Text>
+            </Pressable>
+          )}
 
         </ScrollView>
       )}

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { api } from '../services/api';
 
 export type ReportTargetType = 'CHAT_MESSAGE' | 'FORUM_POST' | 'FORUM_COMMENT';
-export type ReportCategory = 'SPAM' | 'INSULT' | 'ADVERTISEMENT' | 'PROFANITY' | 'THREAT' | 'OTHER';
+export type ReportCategory = 'SPAM' | 'HARASSMENT' | 'ADVERTISEMENT' | 'PROFANITY' | 'THREAT' | 'ADULT_CONTENT' | 'OTHER';
 
 interface ReportState {
   reportedKeys: Set<string>;

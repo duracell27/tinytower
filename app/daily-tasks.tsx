@@ -44,10 +44,12 @@ const DIAMOND_ICON = require('../assets/img/diamond.png');
 const COIN_ICON    = require('../assets/img/coin.png');
 
 const MATERIAL_ICONS: Record<string, ReturnType<typeof require>> = {
-  briks: require('../assets/img/tools/briks.png'),
-  glass: require('../assets/img/tools/glass.png'),
-  nails: require('../assets/img/tools/nails.png'),
-  screw: require('../assets/img/tools/screw.png'),
+  briks:  require('../assets/img/tools/briks.png'),
+  glass:  require('../assets/img/tools/glass.png'),
+  nails:  require('../assets/img/tools/nails.png'),
+  screw:  require('../assets/img/tools/screw.png'),
+  wood:   require('../assets/img/tools/wood.png'),
+  cement: require('../assets/img/tools/cement.png'),
 };
 
 function formatCountdown(ms: number): string {

@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { api, type UserEntry } from '../services/api';
 import { getUserIcon } from '../utils/userIcon';
+import { useBlockStore } from '../stores/blockStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
@@ -36,6 +37,7 @@ function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void })
   const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   const online = isOnline(item.lastSeenAt);
+  const blocked = useBlockStore(s => s.isBlocked(item.id));
   return (
     <Pressable
       style={({ pressed }) => [styles.row, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.08)' }, pressed && { opacity: 0.75 }]}
@@ -43,7 +45,7 @@ function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void })
     >
       <Image
         source={getUserIcon(item.playerLevel)}
-        style={styles.avatar}
+        style={[styles.avatar, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]}
         contentFit="cover"
       />
       <View style={styles.nameBlock}>
