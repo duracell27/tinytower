@@ -23,7 +23,7 @@ export class ForumService {
 
   async getUnreadCounts(playerId: string): Promise<Record<ForumCategory, number>> {
     const posts = await this.prisma.forumPost.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, isHidden: false },
       select: { id: true, category: true, commentCount: true },
     });
     const reads = await this.prisma.forumPostRead.findMany({
@@ -43,9 +43,9 @@ export class ForumService {
   async getPosts(category: ForumCategory, page: number, limit: number, playerId: string) {
     const skip = (page - 1) * limit;
     const [total, posts] = await Promise.all([
-      this.prisma.forumPost.count({ where: { category, deletedAt: null } }),
+      this.prisma.forumPost.count({ where: { category, deletedAt: null, isHidden: false } }),
       this.prisma.forumPost.findMany({
-        where: { category, deletedAt: null },
+        where: { category, deletedAt: null, isHidden: false },
         orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
         skip,
         take: limit,
@@ -92,7 +92,7 @@ export class ForumService {
   }
 
   async getPost(id: string, playerId: string) {
-    const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null }, select: POST_SELECT });
+    const post = await this.prisma.forumPost.findFirst({ where: { id, deletedAt: null, isHidden: false }, select: POST_SELECT });
     if (!post) throw new NotFoundException('Post not found');
     const read = await this.prisma.forumPostRead.findUnique({ where: { playerId_postId: { playerId, postId: id } } });
     return { ...post, isUnread: (read?.lastSeenCommentCount ?? -1) < post.commentCount };
@@ -151,9 +151,9 @@ export class ForumService {
     if (!post) throw new NotFoundException('Post not found');
     const skip = (page - 1) * limit;
     const [total, comments] = await Promise.all([
-      this.prisma.forumComment.count({ where: { postId, deletedAt: null } }),
+      this.prisma.forumComment.count({ where: { postId, deletedAt: null, isHidden: false } }),
       this.prisma.forumComment.findMany({
-        where: { postId, deletedAt: null },
+        where: { postId, deletedAt: null, isHidden: false },
         orderBy: { createdAt: 'asc' },
         skip,
         take: limit,

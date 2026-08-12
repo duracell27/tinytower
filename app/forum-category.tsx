@@ -9,8 +9,10 @@ import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import ForumPostRow from '../src/components/ForumPostRow';
+import ReportSheet from '../src/components/ReportSheet';
 import { useForumStore, type ForumCategory } from '../src/stores/forumStore';
 import { useAuthStore } from '../src/stores/authStore';
+import type { ReportTargetType } from '../src/stores/reportStore';
 
 export default function ForumCategoryScreen() {
   const router = useRouter();
@@ -27,6 +29,7 @@ export default function ForumCategoryScreen() {
 
   const isDark = useColorScheme() === 'dark';
   const [modalVisible, setModalVisible] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: string } | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [newBody, setNewBody] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -87,6 +90,11 @@ export default function ForumCategoryScreen() {
           <ForumPostRow
             post={item}
             onPress={() => router.push({ pathname: '/forum-post', params: { postId: item.id, category: cat } })}
+            onReport={
+              isAuthenticated && item.playerId !== player?.id
+                ? () => setReportTarget({ type: 'FORUM_POST', id: item.id })
+                : undefined
+            }
           />
         )}
         refreshControl={
@@ -112,6 +120,17 @@ export default function ForumCategoryScreen() {
         }
         contentContainerStyle={styles.list}
       />
+
+      {reportTarget && (
+        <ReportSheet
+          visible={!!reportTarget}
+          targetType={reportTarget.type}
+          targetId={reportTarget.id}
+          onClose={() => setReportTarget(null)}
+          onSuccess={() => Alert.alert(t('report.success'))}
+          onAlreadyReported={() => Alert.alert(t('report.alreadyReported'))}
+        />
+      )}
 
       {/* New post modal */}
       <Modal visible={modalVisible} animationType="slide" onRequestClose={handleCloseModal}>

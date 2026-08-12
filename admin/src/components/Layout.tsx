@@ -10,6 +10,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { to: '/players', label: 'Players' },
     { to: '/commands', label: 'Command Logs' },
     { to: '/forum', label: 'Forum' },
+    { to: '/reports', label: 'Reports' },
   ];
 
   return (

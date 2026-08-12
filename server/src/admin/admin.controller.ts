@@ -3,14 +3,16 @@ import {
   UseGuards, Body, BadRequestException, Req,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { ForumCategory } from '@prisma/client';
+import { ForumCategory, ReportTargetType } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
 import { AdminService } from './admin.service';
+import { ReportService } from '../report/report.service';
 
 type AuthReq = { user: { playerId: string; isAdmin: boolean } };
 
 const FORUM_CATEGORIES = ['NEWS', 'HELP', 'GENERAL', 'CITIES', 'PURCHASES'] as const;
+const REPORT_TARGET_TYPES = ['CHAT_MESSAGE', 'FORUM_POST', 'FORUM_COMMENT'] as const;
 
 const CreateForumPostSchema = z.object({
   category: z.enum(FORUM_CATEGORIES),
@@ -52,7 +54,7 @@ const UpdateTokensSchema = z.object({
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class AdminController {
-  constructor(private adminService: AdminService) {}
+  constructor(private adminService: AdminService, private reportService: ReportService) {}
 
   @Get('players')
   getPlayers(
@@ -169,5 +171,43 @@ export class AdminController {
   @Delete('forum/comments/:id')
   deleteForumComment(@Param('id') id: string) {
     return this.adminService.deleteForumComment(id);
+  }
+
+  @Get('reports')
+  getReports(
+    @Query('page') page = '1',
+    @Query('limit') limit = '50',
+  ) {
+    return this.reportService.getReports(
+      Math.max(1, +page || 1),
+      Math.min(Math.max(1, +limit || 50), 100),
+    );
+  }
+
+  @Get('reports/:targetType/:targetId')
+  getReportDetail(
+    @Param('targetType') targetType: string,
+    @Param('targetId') targetId: string,
+  ) {
+    if (!(REPORT_TARGET_TYPES as readonly string[]).includes(targetType)) throw new BadRequestException('Invalid target type');
+    return this.reportService.getReportDetail(targetType as ReportTargetType, targetId);
+  }
+
+  @Delete('reports/:targetType/:targetId/content')
+  deleteReportedContent(
+    @Param('targetType') targetType: string,
+    @Param('targetId') targetId: string,
+  ) {
+    if (!(REPORT_TARGET_TYPES as readonly string[]).includes(targetType)) throw new BadRequestException('Invalid target type');
+    return this.reportService.deleteReportedContent(targetType as ReportTargetType, targetId);
+  }
+
+  @Post('reports/:targetType/:targetId/dismiss')
+  dismissReports(
+    @Param('targetType') targetType: string,
+    @Param('targetId') targetId: string,
+  ) {
+    if (!(REPORT_TARGET_TYPES as readonly string[]).includes(targetType)) throw new BadRequestException('Invalid target type');
+    return this.reportService.dismissReports(targetType as ReportTargetType, targetId);
   }
 }

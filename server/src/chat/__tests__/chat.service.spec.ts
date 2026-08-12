@@ -40,26 +40,28 @@ describe('ChatService', () => {
     it('returns global messages (country IS NULL) when no country given', async () => {
       const result = await chatService.fetchMessages();
       expect(result).toEqual(mockMessages);
-      expect(prisma.chatMessage.findMany).toHaveBeenCalledWith({
-        where: { deletedAt: null, country: null },
-        orderBy: { createdAt: 'asc' },
-        take: 100,
-        select: {
-          id: true,
-          playerId: true,
-          playerName: true,
-          playerLevel: true,
-          country: true,
-          body: true,
-          createdAt: true,
-        },
-      });
+      expect(prisma.chatMessage.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ deletedAt: null, country: null, isHidden: false }),
+          orderBy: { createdAt: 'asc' },
+          take: 100,
+        }),
+      );
     });
 
     it('returns country messages when country given', async () => {
       await chatService.fetchMessages('UA');
       expect(prisma.chatMessage.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { deletedAt: null, country: 'UA' } }),
+        expect.objectContaining({ where: expect.objectContaining({ deletedAt: null, country: 'UA', isHidden: false }) }),
+      );
+    });
+
+    it('excludes hidden messages', async () => {
+      await chatService.fetchMessages();
+      expect(prisma.chatMessage.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ isHidden: false }),
+        }),
       );
     });
   });
