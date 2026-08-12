@@ -23,6 +23,12 @@ export class MailService {
     if (subject.length > 100) throw new BadRequestException('Subject too long');
     if (body.length > 1000) throw new BadRequestException('Body too long');
 
+    const isBlocked = await this.prisma.block.findFirst({
+      where: { blockerId: toId, blockedId: fromId },
+      select: { id: true },
+    });
+    if (isBlocked) throw new ForbiddenException('Cannot send mail to this user');
+
     const target = await this.prisma.player.findUnique({ where: { id: toId }, select: { id: true } });
     if (!target) throw new NotFoundException('Player not found');
 

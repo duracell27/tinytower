@@ -57,6 +57,17 @@ export class FriendsService {
     const target = await this.prisma.player.findUnique({ where: { id: toId }, select: { id: true } });
     if (!target) throw new NotFoundException('Player not found');
     if (fromId === toId) throw new BadRequestException('Cannot send request to yourself');
+
+    const block = await this.prisma.block.findFirst({
+      where: {
+        OR: [
+          { blockerId: fromId, blockedId: toId },
+          { blockerId: toId, blockedId: fromId },
+        ],
+      },
+      select: { id: true },
+    });
+    if (block) throw new BadRequestException('Cannot send request to this user');
     const existing = await this.findAnyRequest(fromId, toId);
     if (existing) {
       if (existing.status === FriendRequestStatus.ACCEPTED) throw new BadRequestException('Already friends');
