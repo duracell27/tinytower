@@ -154,6 +154,37 @@ describe('ReportService', () => {
     });
   });
 
+  describe('getReportDetail', () => {
+    it('returns content and individual reports on success', async () => {
+      const createdAt = new Date('2026-08-01T10:00:00Z');
+      prisma.chatMessage.findUnique.mockResolvedValue({ playerName: 'Alice', body: 'Hello world' });
+      prisma.report.findMany.mockResolvedValue([
+        { id: 'r-1', category: 'SPAM', createdAt, reporter: { playerName: 'Bob' } },
+      ]);
+
+      const result = await service.getReportDetail('CHAT_MESSAGE', 'msg-1');
+
+      expect(result).toEqual({
+        targetType: 'CHAT_MESSAGE',
+        targetId: 'msg-1',
+        content: { playerName: 'Alice', body: 'Hello world' },
+        reports: [{ id: 'r-1', category: 'SPAM', createdAt, reporter: { playerName: 'Bob' } }],
+      });
+      expect(prisma.report.findMany).toHaveBeenCalledWith({
+        where: { targetType: 'CHAT_MESSAGE', targetId: 'msg-1' },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, category: true, createdAt: true, reporter: { select: { playerName: true } } },
+      });
+    });
+
+    it('throws NotFoundException when target does not exist', async () => {
+      prisma.chatMessage.findUnique.mockResolvedValue(null);
+
+      await expect(service.getReportDetail('CHAT_MESSAGE', 'msg-999'))
+        .rejects.toThrow(NotFoundException);
+    });
+  });
+
   describe('dismissReports', () => {
     it('resets reportCount and isHidden, deletes all reports for target', async () => {
       prisma.chatMessage.update.mockResolvedValue({});

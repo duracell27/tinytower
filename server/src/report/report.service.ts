@@ -43,8 +43,8 @@ export class ReportService {
           await this.setHidden(tx, targetType, targetId);
         }
       });
-    } catch (e: any) {
-      if (e?.code === 'P2002') throw new ConflictException('Already reported');
+    } catch (e: unknown) {
+      if ((e as { code?: string })?.code === 'P2002') throw new ConflictException('Already reported');
       throw e;
     }
     return { ok: true as const };
