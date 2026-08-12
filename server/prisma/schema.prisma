@@ -41,6 +41,7 @@ model Player {
   forumPosts      ForumPost[]
   forumComments   ForumComment[]
   forumPostReads  ForumPostRead[]
+  reports         Report[]
   sentRequests     FriendRequest[] @relation("SentRequests")
   receivedRequests FriendRequest[] @relation("ReceivedRequests")
   sentMail         MailMessage[]   @relation("SentMail")
@@ -218,6 +219,8 @@ model ChatMessage {
   body        String    @db.VarChar(300)
   createdAt   DateTime  @default(now())
   deletedAt   DateTime?
+  reportCount Int     @default(0)
+  isHidden    Boolean @default(false)
   player      Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
@@ -246,6 +249,8 @@ model ForumPost {
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   deletedAt    DateTime?
+  reportCount Int     @default(0)
+  isHidden    Boolean @default(false)
   player       Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
   comments     ForumComment[]
   reads        ForumPostRead[]
@@ -264,6 +269,8 @@ model ForumComment {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
+  reportCount Int     @default(0)
+  isHidden    Boolean @default(false)
   post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   player      Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
@@ -284,6 +291,21 @@ enum FriendRequestStatus {
   PENDING
   ACCEPTED
   REJECTED
+}
+
+enum ReportTargetType {
+  CHAT_MESSAGE
+  FORUM_POST
+  FORUM_COMMENT
+}
+
+enum ReportCategory {
+  SPAM
+  INSULT
+  ADVERTISEMENT
+  PROFANITY
+  THREAT
+  OTHER
 }
 
 model FriendRequest {
@@ -315,4 +337,18 @@ model MailMessage {
 
   @@index([toId, isRead])
   @@index([toId, createdAt])
+}
+
+model Report {
+  id         String           @id @default(uuid())
+  reporterId String
+  targetType ReportTargetType
+  targetId   String
+  category   ReportCategory
+  createdAt  DateTime         @default(now())
+  reporter   Player           @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@unique([reporterId, targetType, targetId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
 }
