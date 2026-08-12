@@ -207,6 +207,13 @@
     "revenueSuffix": "/min",
     "cacheNotice": "Updates every 5 min"
   },
+  "block": {
+    "blockUser": "Block user",
+    "unblockUser": "Unblock user",
+    "blockedContent": "From blocked user",
+    "blockSuccess": "User blocked",
+    "unblockSuccess": "User unblocked"
+  },
   "report": {
     "title": "Report Content",
     "submit": "Send Report",
@@ -216,10 +223,11 @@
     "error": "Failed to submit report",
     "category": {
       "spam": "Spam",
-      "insult": "Insult",
+      "harassment": "Harassment",
       "advertisement": "Advertisement",
       "profanity": "Profanity",
       "threat": "Threat",
+      "adult_content": "Adult Content (18+)",
       "other": "Other"
     }
   }

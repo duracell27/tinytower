@@ -27,6 +27,7 @@ import type { Command } from '../../shared/types';
 import { api, type PlayerProfile } from '../../src/services/api';
 import { useFriendStore } from '../../src/stores/friendStore';
 import { useMailStore } from '../../src/stores/mailStore';
+import { useBlockStore } from '../../src/stores/blockStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 
 const COIN_ICON     = require('../../assets/img/coin.png');
@@ -331,6 +332,7 @@ export default function ProfileScreen() {
 
   const unreadMailCount = useMailStore(s => s.unreadCount);
   const fetchUnreadCount = useMailStore(s => s.fetchUnreadCount);
+  const fetchBlocked = useBlockStore(s => s.fetchBlocked);
 
   const BUSINESS_TYPE_COLORS: Record<string, string> = {
     green: '#3FA535', blue: '#3376E5', yellow: '#E5A72E', purple: '#9A6FD0', red: '#E05A4A',
@@ -369,7 +371,8 @@ export default function ProfileScreen() {
   useFocusEffect(useCallback(() => {
     fetchIncoming();
     fetchUnreadCount();
-  }, [fetchIncoming, fetchUnreadCount]));
+    fetchBlocked();
+  }, [fetchIncoming, fetchUnreadCount, fetchBlocked]));
 
   const daysInGame = myProfile
     ? Math.floor((Date.now() - new Date(myProfile.createdAt).getTime()) / 86_400_000)

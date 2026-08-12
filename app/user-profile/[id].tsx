@@ -9,9 +9,11 @@ import { api, type PlayerProfile } from '../../src/services/api';
 import { getUserIcon } from '../../src/utils/userIcon';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { formatNum } from '../../src/utils/format';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useFriendStore } from '../../src/stores/friendStore';
 import { useMailStore } from '../../src/stores/mailStore';
+import { useBlockStore } from '../../src/stores/blockStore';
 
 const STAR_FULL      = require('../../assets/img/starFull.png');
 const STAR_66        = require('../../assets/img/star66.png');
@@ -30,6 +32,7 @@ const HAPPY_ICON     = require('../../assets/img/happySmile.png');
 const SPEC_ICON      = require('../../assets/img/specialistWorker.png');
 const MARKETING_ICON = require('../../assets/img/MarketingIcon.png');
 const PR_ICON        = require('../../assets/img/PRIcon.png');
+const CANCEL_ICON    = require('../../assets/img/CancellIcon.png');
 
 const TIER_ICONS: Record<number, any> = {
   0: require('../../assets/img/achivment/0TierAchive.png'),
@@ -124,6 +127,7 @@ export default function UserProfileScreen() {
   const [error, setError] = useState<string | null>(null);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
 
+  const { t } = useTranslation('tabs');
   const currentPlayerId = useAuthStore(s => s.player?.id);
   const statusCache = useFriendStore(s => s.statusCache);
   const fetchStatus = useFriendStore(s => s.fetchStatus);
@@ -135,6 +139,12 @@ export default function UserProfileScreen() {
 
   const friendStatus = id ? statusCache[id] : undefined;
   const [friendActionLoading, setFriendActionLoading] = useState(false);
+
+  const isBlockedFn = useBlockStore(s => s.isBlocked);
+  const blockPlayer = useBlockStore(s => s.blockPlayer);
+  const unblockPlayer = useBlockStore(s => s.unblockPlayer);
+  const blockSubmitting = useBlockStore(s => s.isSubmitting);
+  const blocked = id ? isBlockedFn(id) : false;
 
   const sendMail = useMailStore(s => s.sendMail);
   const [composeOpen, setComposeOpen] = useState(false);
@@ -228,7 +238,11 @@ export default function UserProfileScreen() {
 
             {/* Avatar + Name centered */}
             <View style={pStyles.profileCenter}>
-              <Image source={getUserIcon(profile.playerLevel)} style={pStyles.avatar} contentFit="cover" />
+              <Image
+                source={getUserIcon(profile.playerLevel)}
+                style={[pStyles.avatar, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]}
+                contentFit="cover"
+              />
               <Text style={[pStyles.name, { color: theme.text }]}>{profile.playerName}</Text>
               {profile.city ? (
                 <Text style={[pStyles.cityLabel, { color: theme.textMuted }]}>{profile.city}</Text>
@@ -274,7 +288,7 @@ export default function UserProfileScreen() {
           </View>
 
           {/* Block 2: Actions */}
-          {currentPlayerId && id !== currentPlayerId && (
+          {currentPlayerId && id !== currentPlayerId && !blocked && (
             <Pressable
               style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
               onPress={() => setComposeOpen(true)}
@@ -284,7 +298,7 @@ export default function UserProfileScreen() {
             </Pressable>
           )}
           {/* Friend action — only shown if viewing someone else's profile */}
-          {currentPlayerId && id !== currentPlayerId && (
+          {currentPlayerId && id !== currentPlayerId && !blocked && (
             <>
               {(!friendStatus || friendStatus.status === 'none') && (
                 <Pressable
@@ -366,6 +380,30 @@ export default function UserProfileScreen() {
                 </Pressable>
               )}
             </>
+          )}
+
+          {currentPlayerId && id !== currentPlayerId && (
+            <Pressable
+              style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+              onPress={async () => {
+                try {
+                  if (blocked) {
+                    await unblockPlayer(id);
+                  } else {
+                    await blockPlayer(id);
+                    useFriendStore.getState().fetchStatus(id);
+                  }
+                } catch {
+                  // silent
+                }
+              }}
+              disabled={blockSubmitting}
+            >
+              <Image source={CANCEL_ICON} style={pStyles.actionIcon} contentFit="contain" />
+              <Text style={[pStyles.actionBtnText, { color: blocked ? '#E05A4A' : theme.text }]}>
+                {blocked ? t('block.unblockUser') : t('block.blockUser')}
+              </Text>
+            </Pressable>
           )}
 
           {/* Block 3: Achievements */}
