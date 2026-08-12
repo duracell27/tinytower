@@ -85,6 +85,20 @@ describe('ForumService', () => {
       const result = await service.getPosts('GENERAL', 1, 20, 'player-1');
       expect(result.posts[0].isUnread).toBe(false);
     });
+
+    it('excludes hidden posts', async () => {
+      await service.getPosts('GENERAL', 1, 20, 'p1');
+      expect(prisma.forumPost.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ isHidden: false }),
+        }),
+      );
+      expect(prisma.forumPost.count).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ isHidden: false }),
+        }),
+      );
+    });
   });
 
   describe('createPost', () => {
@@ -356,6 +370,21 @@ describe('ForumService', () => {
     it('throws NotFoundException when post does not exist', async () => {
       prisma.forumPost.findFirst.mockResolvedValue(null);
       await expect(service.getComments('missing', 1, 20)).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('excludes hidden comments', async () => {
+      prisma.forumPost.findFirst.mockResolvedValue({ id: 'post-1' });
+      await service.getComments('post-1', 1, 50);
+      expect(prisma.forumComment.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ isHidden: false }),
+        }),
+      );
+      expect(prisma.forumComment.count).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ isHidden: false }),
+        }),
+      );
     });
   });
 

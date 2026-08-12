@@ -43,9 +43,9 @@ export class ForumService {
   async getPosts(category: ForumCategory, page: number, limit: number, playerId: string) {
     const skip = (page - 1) * limit;
     const [total, posts] = await Promise.all([
-      this.prisma.forumPost.count({ where: { category, deletedAt: null } }),
+      this.prisma.forumPost.count({ where: { category, deletedAt: null, isHidden: false } }),
       this.prisma.forumPost.findMany({
-        where: { category, deletedAt: null },
+        where: { category, deletedAt: null, isHidden: false },
         orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
         skip,
         take: limit,
@@ -151,9 +151,9 @@ export class ForumService {
     if (!post) throw new NotFoundException('Post not found');
     const skip = (page - 1) * limit;
     const [total, comments] = await Promise.all([
-      this.prisma.forumComment.count({ where: { postId, deletedAt: null } }),
+      this.prisma.forumComment.count({ where: { postId, deletedAt: null, isHidden: false } }),
       this.prisma.forumComment.findMany({
-        where: { postId, deletedAt: null },
+        where: { postId, deletedAt: null, isHidden: false },
         orderBy: { createdAt: 'asc' },
         skip,
         take: limit,
