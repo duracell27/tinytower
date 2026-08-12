@@ -8,6 +8,7 @@ interface Props {
   message: ChatMessageType;
   isOwn: boolean;
   isAdmin: boolean;
+  canReport?: boolean;
   onLongPress?: (id: string, body: string, isOwn: boolean) => void;
   onAvatarPress?: () => void;
 }
@@ -19,8 +20,8 @@ function formatTime(iso: string): string {
   return `${Math.floor(diff / 3600)}h`;
 }
 
-export default function ChatMessage({ message, isOwn, isAdmin, onLongPress, onAvatarPress }: Props) {
-  const canInteract = isOwn || isAdmin;
+export default function ChatMessage({ message, isOwn, isAdmin, canReport, onLongPress, onAvatarPress }: Props) {
+  const canInteract = isOwn || isAdmin || !!canReport;
   const isDark = useColorScheme() === 'dark';
 
   return (

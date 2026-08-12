@@ -13,6 +13,8 @@ import { useChatStore } from '../src/stores/chatStore';
 import { useAuthStore } from '../src/stores/authStore';
 import { useGameStore } from '../src/stores/gameStore';
 import ChatMessage from '../src/components/ChatMessage';
+import ReportSheet from '../src/components/ReportSheet';
+import type { ReportTargetType } from '../src/stores/reportStore';
 
 type Channel = 'global' | 'country';
 type SelectedMessage = { id: string; body: string; isOwn: boolean };
@@ -50,6 +52,7 @@ export default function ChatScreen() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
   const [infoVisible, setInfoVisible] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: string } | null>(null);
 
   const countryCode = getLocales()[0]?.regionCode ?? null;
   const activeCountry = channel === 'country' ? (countryCode ?? undefined) : undefined;
@@ -104,6 +107,13 @@ export default function ChatScreen() {
     setSelectedMessage(null);
     setEditingId(selectedMessage.id);
     setInputText(selectedMessage.body);
+  };
+
+  const handleActionReport = () => {
+    if (!selectedMessage) return;
+    const { id } = selectedMessage;
+    setSelectedMessage(null);
+    setReportTarget({ type: 'CHAT_MESSAGE', id });
   };
 
   const handleActionDelete = () => {
@@ -190,6 +200,7 @@ export default function ChatScreen() {
               message={item}
               isOwn={item.playerId === player?.id}
               isAdmin={player?.isAdmin === true}
+              canReport={item.playerId !== player?.id && isAuthenticated}
               onLongPress={handleLongPress}
               onAvatarPress={() => handleAvatarPress(item.playerId)}
             />
@@ -289,6 +300,11 @@ export default function ChatScreen() {
                 <Text style={[styles.sheetItemText, isDark && { color: '#DDE8D8' }]}>{t('chat.actionEdit')}</Text>
               </Pressable>
             )}
+            {!selectedMessage?.isOwn && isAuthenticated && (
+              <Pressable style={styles.sheetItem} onPress={handleActionReport}>
+                <Text style={[styles.sheetItemText, isDark && { color: '#DDE8D8' }]}>⚑ {t('chat.actionReport')}</Text>
+              </Pressable>
+            )}
             <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
               <Image source={require('../assets/img/delete.png')} style={styles.sheetItemIcon} contentFit="contain" />
               <Text style={[styles.sheetItemText, styles.sheetItemDanger]}>{t('chat.actionDelete')}</Text>
@@ -300,6 +316,16 @@ export default function ChatScreen() {
           </View>
         </Pressable>
       </Modal>
+      {reportTarget && (
+        <ReportSheet
+          visible={!!reportTarget}
+          targetType={reportTarget.type}
+          targetId={reportTarget.id}
+          onClose={() => setReportTarget(null)}
+          onSuccess={() => Alert.alert(t('report.success'))}
+          onAlreadyReported={() => Alert.alert(t('report.alreadyReported'))}
+        />
+      )}
     </View>
   );
 }
