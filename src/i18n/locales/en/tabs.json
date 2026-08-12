@@ -24,6 +24,7 @@
     "editing": "Editing message",
     "actionEdit": "Edit",
     "actionDelete": "Delete",
+    "actionReport": "Report",
     "infoTitle": "How Chat Works",
     "infoGlobalTitle": "Global",
     "infoGlobal": "Visible to all players around the world, regardless of country.",
@@ -165,6 +166,7 @@
     "actionEdit": "Edit",
     "actionDelete": "Delete",
     "editing": "Editing",
+    "actionReport": "Report",
     "closedBanner": "This topic is closed — no new comments.",
     "guestBanner": "Log in to participate in the forum",
     "commentPlaceholder": "Write a comment...",
@@ -198,5 +200,21 @@
     "retry": "Retry",
     "revenueSuffix": "/min",
     "cacheNotice": "Updates every 5 min"
+  },
+  "report": {
+    "title": "Report Content",
+    "submit": "Send Report",
+    "cancel": "Cancel",
+    "success": "Report submitted",
+    "alreadyReported": "You already reported this",
+    "error": "Failed to submit report",
+    "category": {
+      "spam": "Spam",
+      "insult": "Insult",
+      "advertisement": "Advertisement",
+      "profanity": "Profanity",
+      "threat": "Threat",
+      "other": "Other"
+    }
   }
 }
