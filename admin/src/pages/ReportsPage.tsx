@@ -64,15 +64,14 @@ export function ReportsPage() {
     queryFn: () => api.get<ReportsResponse>(`/admin/reports?page=${page}&limit=50`),
   });
 
-  const detailKey = expandedKey;
   const { data: detail } = useQuery({
-    queryKey: ['admin-report-detail', detailKey],
+    queryKey: ['admin-report-detail', expandedKey],
     queryFn: () => {
-      if (!detailKey) return null;
-      const [type, id] = detailKey.split('::');
+      if (!expandedKey) return null;
+      const [type, id] = expandedKey.split('::');
       return api.get<ReportDetail>(`/admin/reports/${type}/${id}`);
     },
-    enabled: !!detailKey,
+    enabled: !!expandedKey,
   });
 
   const deleteMutation = useMutation({
@@ -80,6 +79,7 @@ export function ReportsPage() {
       api.delete<{ ok: true }>(`/admin/reports/${targetType}/${targetId}/content`),
     onSuccess: () => {
       toast.success('Content deleted');
+      setConfirmAction(null);
       setExpandedKey(null);
       qc.invalidateQueries({ queryKey: ['admin-reports'] });
     },
@@ -91,6 +91,7 @@ export function ReportsPage() {
       api.post<{ ok: true }>(`/admin/reports/${targetType}/${targetId}/dismiss`, undefined),
     onSuccess: () => {
       toast.success('Reports dismissed');
+      setConfirmAction(null);
       setExpandedKey(null);
       qc.invalidateQueries({ queryKey: ['admin-reports'] });
     },
@@ -161,7 +162,7 @@ export function ReportsPage() {
                 {/* Expanded detail */}
                 {isExpanded && (
                   <div className="border-t px-4 py-3 bg-gray-50 space-y-3">
-                    {detail && detail.targetId === item.targetId ? (
+                    {detail && detail.targetId === item.targetId && detail.targetType === item.targetType ? (
                       <>
                         <div className="bg-white border rounded p-3">
                           {detail.content.title && (
@@ -219,7 +220,8 @@ export function ReportsPage() {
           onOpenChange={(open) => { if (!open) setConfirmAction(null); }}
           title={confirmAction.title}
           description={confirmAction.description}
-          onConfirm={() => { confirmAction.onConfirm(); setConfirmAction(null); }}
+          onConfirm={() => confirmAction.onConfirm()}
+          loading={deleteMutation.isPending || dismissMutation.isPending}
         />
       )}
     </Layout>
