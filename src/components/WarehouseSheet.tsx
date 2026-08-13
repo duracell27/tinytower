@@ -1,22 +1,25 @@
 import React, { useEffect } from 'react';
-import { View, Text, Modal, Pressable, StyleSheet, Dimensions, useColorScheme } from 'react-native';
+import {
+  View, Text, Modal, Pressable, StyleSheet, Dimensions, useColorScheme,
+} from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  withSpring,
-  Easing,
-  runOnJS,
+  useAnimatedStyle, useSharedValue, withTiming, withSpring, Easing, runOnJS,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
+import {
+  warehouseCapacity,
+  WAREHOUSE_UPGRADE_COSTS,
+  WAREHOUSE_MAX_LEVEL,
+} from '../../shared/config/warehouseUpgradeConfig';
+import { CoinIcon, GemIcon } from './CurrencyIcons';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH  = Dimensions.get('window').width;
-const CELL_W = Math.floor((SCREEN_WIDTH - 32 - 20) / 3); // body padding 16*2, gap 10*2
+const CELL_W = Math.floor((SCREEN_WIDTH - 32 - 20) / 3);
 const SHEET_MIN_HEIGHT = SCREEN_HEIGHT * 0.42;
 const TIMING = { duration: 380, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const CLOSE_THRESHOLD = 80;
@@ -48,7 +51,17 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
   const screw  = useGameStore((s) => s.tools?.screw  ?? 0);
   const wood   = useGameStore((s) => s.tools?.wood   ?? 0);
   const cement = useGameStore((s) => s.tools?.cement ?? 0);
+  const warehouseLevel   = useGameStore((s) => s.warehouseLevel ?? 0);
+  const upgradeWarehouse = useGameStore((s) => s.upgradeWarehouse);
+
   const counts: Record<string, number> = { briks, glass, nails, screw, wood, cement };
+  const total     = briks + glass + nails + screw + wood + cement;
+  const capacity  = warehouseCapacity(warehouseLevel);
+  const fillRatio = Math.min(total / capacity, 1);
+  const isMaxLevel = warehouseLevel >= WAREHOUSE_MAX_LEVEL;
+  const nextCost   = !isMaxLevel ? WAREHOUSE_UPGRADE_COSTS[warehouseLevel + 1] : null;
+
+  const barColor = fillRatio >= 1 ? '#E53E3E' : fillRatio >= 0.8 ? '#DD8C00' : '#48BB78';
 
   useEffect(() => {
     if (visible) {
@@ -80,9 +93,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
     });
 
   const scrimStyle = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
-  const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
+  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -111,7 +122,17 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
               </View>
             </View>
 
-            {/* Tool grid — 4 per row */}
+            {/* Capacity bar */}
+            <View style={[styles.capacityRow, isDark && { backgroundColor: '#2A2F38' }]}>
+              <Text style={[styles.capacityLabel, isDark && { color: '#A0AABC' }]}>
+                {t('warehouse.capacity', { current: total, max: capacity })}
+              </Text>
+              <View style={styles.barTrack}>
+                <View style={[styles.barFill, { width: `${fillRatio * 100}%`, backgroundColor: barColor }]} />
+              </View>
+            </View>
+
+            {/* Tool grid */}
             <View style={styles.body}>
               <View style={styles.grid}>
                 {TOOLS.map((tool) => (
@@ -125,6 +146,32 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                 ))}
               </View>
             </View>
+
+            {/* Upgrade button */}
+            <View style={styles.upgradeRow}>
+              {isMaxLevel ? (
+                <View style={[styles.upgradeBtn, styles.upgradeBtnDisabled]}>
+                  <Text style={styles.upgradeBtnText}>{t('warehouse.maxLevel')}</Text>
+                </View>
+              ) : (
+                <Pressable
+                  onPress={upgradeWarehouse}
+                  style={({ pressed }) => [styles.upgradeBtn, pressed && { opacity: 0.8 }]}
+                >
+                  <Text style={styles.upgradeBtnText}>{t('warehouse.upgrade')}</Text>
+                  {nextCost && (
+                    <View style={styles.costRow}>
+                      {nextCost.currency === 'coins'
+                        ? <CoinIcon size={14} />
+                        : <GemIcon size={14} />}
+                      <Text style={styles.upgradeCostText}>
+                        {nextCost.amount.toLocaleString()}
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
+              )}
+            </View>
           </Animated.View>
         </GestureDetector>
       </GestureHandlerRootView>
@@ -134,83 +181,60 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
 
 const styles = StyleSheet.create({
   overlay: { flex: 1 },
-  scrim: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(18,26,44,0.5)',
-  },
+  scrim: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(18,26,44,0.5)' },
   sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+    position: 'absolute', left: 0, right: 0, bottom: 0,
     minHeight: SCREEN_HEIGHT * 0.42,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    backgroundColor: '#EAEDF2',
-    overflow: 'hidden',
+    borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    backgroundColor: '#EAEDF2', overflow: 'hidden',
   },
   header: {
     backgroundColor: '#5B6472',
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingBottom: 16,
   },
   handle: {
-    alignSelf: 'center',
-    marginTop: 10,
-    marginBottom: 10,
-    width: 38,
-    height: 4,
-    borderRadius: 2,
+    alignSelf: 'center', marginTop: 10, marginBottom: 10,
+    width: 38, height: 4, borderRadius: 2,
     backgroundColor: 'rgba(255,255,255,0.5)',
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    gap: 10,
-  },
-  title: {
-    flex: 1,
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 18,
-    color: '#fff',
-  },
+  titleRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18, gap: 10 },
+  title: { flex: 1, fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#fff' },
   closeBtn: {
     width: 32, height: 32, borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center', justifyContent: 'center',
   },
-  body: {
-    padding: 16,
+  capacityRow: {
+    paddingHorizontal: 16, paddingVertical: 10,
+    backgroundColor: '#DDE1E7', gap: 6,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
+  capacityLabel: {
+    fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#4A5568',
   },
+  barTrack: {
+    height: 8, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.1)', overflow: 'hidden',
+  },
+  barFill: { height: '100%', borderRadius: 4 },
+  body: { padding: 16 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   cell: {
-    width: CELL_W,
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    paddingVertical: 12,
-    alignItems: 'center',
-    gap: 4,
+    width: CELL_W, backgroundColor: '#fff', borderRadius: 14,
+    paddingVertical: 12, alignItems: 'center', gap: 4,
   },
-  cellLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13,
-    color: '#2A3344',
-  },
+  cellLabel: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#2A3344' },
   countBadge: {
-    backgroundColor: '#F0F2F5',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 2,
+    backgroundColor: '#F0F2F5', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 2,
   },
-  countText: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 13,
-    color: '#5B6472',
+  countText: { fontFamily: 'Fredoka_700Bold', fontSize: 13, color: '#5B6472' },
+  upgradeRow: { paddingHorizontal: 16, paddingBottom: 24, paddingTop: 4 },
+  upgradeBtn: {
+    backgroundColor: '#5B6472', borderRadius: 14,
+    paddingVertical: 13, alignItems: 'center', gap: 2,
   },
+  upgradeBtnDisabled: { backgroundColor: '#9BA3B0' },
+  upgradeBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#fff' },
+  costRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  upgradeCostText: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: 'rgba(255,255,255,0.8)' },
 });
