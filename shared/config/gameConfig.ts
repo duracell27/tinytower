@@ -545,6 +545,7 @@ export function createInitialState(config: GameConfig): GameState {
     tokens: { green: 3, blue: 3, yellow: 3, purple: 3, red: 3 },
     businessUpgrades: { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     floorStars: {},
+    warehouseLevel: 0,
     dailyTasks: {
       progress: {
         visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,

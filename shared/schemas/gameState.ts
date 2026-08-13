@@ -103,6 +103,7 @@ export const GameStateSchema = z.object({
   tokens:     TokensSchema.default({ green: 0, blue: 0, yellow: 0, purple: 0, red: 0 }),
   businessUpgrades: BusinessUpgradesSchema.default({ green: 0, blue: 0, yellow: 0, purple: 0, red: 0 }),
   floorStars: z.record(z.string(), z.number().int().min(0).max(5)).default({}),
+  warehouseLevel: z.number().int().nonnegative().default(0),
   dailyTasks: DailyTasksSchema.default({
     progress: {
       visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,

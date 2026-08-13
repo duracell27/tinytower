@@ -88,6 +88,7 @@ model PlayerState {
   dailyTasksClaimed      Json    @default("[]")
   dailyTasksDoubleReward Boolean @default(false)
   floorStars             Json    @default("{}")
+  warehouseLevel         Int     @default(0)
   player                 Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }
 
