@@ -42,7 +42,8 @@ type InlineRewardPayload =
   | { kind: 'worker_in'; worker: Worker }
   | { kind: 'hotel_full'; pendingFloorType: string | undefined; female: boolean | undefined; name: string }
   | { kind: 'vip_fill'; count: number }
-  | { kind: 'tool'; tool: ToolKey };
+  | { kind: 'tool'; tool: ToolKey }
+  | { kind: 'warehouse_full' };
 
 const TOOL_IMAGES: Record<ToolKey, ReturnType<typeof require>> = {
   briks:  require('../../assets/img/tools/briks.png'),
@@ -433,6 +434,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const insufficientResources = useGameStore((s) => s.insufficientResources);
   const builderToolDrop = useGameStore((s) => s.builderToolDrop);
   const clearBuilderToolDrop = useGameStore((s) => s.clearBuilderToolDrop);
+  const builderWarehouseFull = useGameStore((s) => s.builderWarehouseFull);
+  const clearBuilderWarehouseFull = useGameStore((s) => s.clearBuilderWarehouseFull);
   const pendingDeliverAll = useGameStore((s) => s.pendingDeliverAll);
   const clearPendingDeliverAll = useGameStore((s) => s.clearPendingDeliverAll);
   const buyAllDailyGems = useGameStore((s) => s.buyAllDailyGems);
@@ -488,15 +491,22 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       setInlineReward(null);
       setShowBuyGemsConfirm(false);
       clearBuilderToolDrop();
+      clearBuilderWarehouseFull();
       clearPendingDeliverAll();
     }
-  }, [visible, clearBuilderToolDrop, clearPendingDeliverAll]);
+  }, [visible, clearBuilderToolDrop, clearBuilderWarehouseFull, clearPendingDeliverAll]);
 
   useEffect(() => {
     if (!visible || !liftSimplifiedRewards || !builderToolDrop) return;
     showInlineReward({ kind: 'tool', tool: builderToolDrop });
     clearBuilderToolDrop();
   }, [visible, liftSimplifiedRewards, builderToolDrop, showInlineReward, clearBuilderToolDrop]);
+
+  useEffect(() => {
+    if (!visible || !liftSimplifiedRewards || !builderWarehouseFull) return;
+    showInlineReward({ kind: 'warehouse_full' });
+    clearBuilderWarehouseFull();
+  }, [visible, liftSimplifiedRewards, builderWarehouseFull, showInlineReward, clearBuilderWarehouseFull]);
 
   useEffect(() => {
     if (!visible) return;
@@ -519,7 +529,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   // gesture competes with the popup's Pressable scrim and produces unpredictable
   // touch behaviour on iOS (feels like "interface blocked").
   const hasActivePopup =
-    !!newWorkerPopup || !!builderToolDrop || !!vipHotelFillCount || hotelFullPopup ||
+    !!newWorkerPopup || !!builderToolDrop || builderWarehouseFull || !!vipHotelFillCount || hotelFullPopup ||
     !!pendingDeliverAll || infoVisible || !!insufficientResources || showBuyGemsConfirm;
 
   const panGesture = Gesture.Pan()
@@ -843,7 +853,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                           >
                             <LinearGradient
                               colors={actionButton.colors}
-                              style={[styles.actionButtonGradient, isDark && { opacity: 0.68 }]}
+                              style={styles.actionButtonGradient}
                             >
                               {actionButton.icon === 'up-arrow' && <UpArrowIcon />}
                               {actionButton.icon === 'hotel' && <HotelIcon size={18} color={actionButton.textColor} />}
@@ -866,7 +876,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         {liftSimplifiedRewards && (
                           <View style={styles.inlineRewardStrip}>
                             {inlineReward && (
-                              <View style={styles.inlineRewardContent}>
+                              <View style={[styles.inlineRewardContent, isDark && { backgroundColor: 'rgba(255,255,255,0.10)' }]}>
                                 {inlineReward.kind === 'worker_in' && (() => {
                                   const workerColor = gameConfig.floorTypes[inlineReward.worker.floorType]?.shirtColor ?? '#3B8BCB';
                                   return (
@@ -876,7 +886,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                         <Text style={[styles.inlineRewardText, { color: workerColor }]}>
                                           {inlineReward.worker.name} Lv.{inlineReward.worker.level}
                                         </Text>
-                                        <Text style={styles.inlineRewardText}> · {t('inlineReward.checkedIn')}</Text>
+                                        <Text style={[styles.inlineRewardText, isDark && { color: '#DDE8D8' }]}> · {t('inlineReward.checkedIn')}</Text>
                                       </Text>
                                     </>
                                   );
@@ -902,7 +912,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                 {inlineReward.kind === 'vip_fill' && (
                                   <>
                                     <Text style={styles.inlineRewardEmoji}>🏨</Text>
-                                    <Text style={styles.inlineRewardText}>
+                                    <Text style={[styles.inlineRewardText, isDark && { color: '#DDE8D8' }]}>
                                       {t('inlineReward.vipFill', { count: inlineReward.count })}
                                     </Text>
                                   </>
@@ -914,8 +924,16 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                       style={{ width: 20, height: 20 }}
                                       contentFit="contain"
                                     />
-                                    <Text style={styles.inlineRewardText}>
+                                    <Text style={[styles.inlineRewardText, isDark && { color: '#DDE8D8' }]}>
                                       {t('inlineReward.builderDelivered', { tool: t(`tools.${inlineReward.tool}`) })}
+                                    </Text>
+                                  </>
+                                )}
+                                {inlineReward.kind === 'warehouse_full' && (
+                                  <>
+                                    <Image source={require('../../assets/img/warningIcon.png')} style={{ width: 18, height: 18 }} contentFit="contain" />
+                                    <Text style={[styles.inlineRewardText, { color: '#E53E3E', flex: 1 }]} numberOfLines={1}>
+                                      {t('inlineReward.warehouseFull')}
                                     </Text>
                                   </>
                                 )}
@@ -946,7 +964,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       >
                         <LinearGradient
                           colors={['#52A6E2', '#3B8BCB']}
-                          style={[styles.fillLobbyGradient, isDark && { opacity: 0.78 }]}
+                          style={styles.fillLobbyGradient}
                         >
                           <Text style={styles.fillLobbyText}>{t('actions.fillLobby')}</Text>
                           <GemIcon size={14} />
@@ -1114,7 +1132,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 >
                   <LinearGradient
                     colors={['#C9637E', '#A8475F']}
-                    style={[styles.upgradeEntryGradient, isDark && { opacity: 0.68 }]}
+                    style={styles.upgradeEntryGradient}
                   >
                     <UploadIcon />
                     <Text style={styles.upgradeEntryText}>{t('elevator.upgradeEntry')}</Text>
@@ -1182,7 +1200,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     >
                       <LinearGradient
                         colors={['#72C24F', '#5BA63C']}
-                        style={[styles.upgradeButtonGradient, isDark && { opacity: 0.68 }]}
+                        style={styles.upgradeButtonGradient}
                       >
                         <Text style={styles.upgradeButtonText}>{t('elevator.upgradeFor')}</Text>
                         <GemIcon size={14} />
@@ -1243,7 +1261,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     >
                       <LinearGradient
                         colors={['#52A6E2', '#3B8BCB']}
-                        style={[styles.upgradeButtonGradient, isDark && { opacity: 0.68 }]}
+                        style={styles.upgradeButtonGradient}
                       >
                         <Text style={styles.upgradeButtonText}>{t('lobbyUpgrade.upgradeForSeats')}</Text>
                         <GemIcon size={14} />
@@ -1364,6 +1382,24 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <Text style={popupStyles.subtitle}>{t('builderPopup.subtitle')}</Text>
               </View>
               <Pressable onPress={clearBuilderToolDrop} style={popupStyles.dismissBtn}>
+                <Text style={[popupStyles.dismissText, isDark && { color: '#8A9A80' }]}>{t('builderPopup.dismiss')}</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        )}
+
+        {/* Builder warehouse full popup */}
+        {!liftSimplifiedRewards && builderWarehouseFull && (
+          <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={clearBuilderWarehouseFull}>
+            <Pressable style={[popupStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => {}}>
+              <View style={[popupStyles.avatarWrap, { backgroundColor: 'rgba(229,82,82,0.12)' }]}>
+                <Image source={require('../../assets/img/warningIcon.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
+              </View>
+              <View style={popupStyles.info}>
+                <Text style={[popupStyles.title, isDark && { color: '#DDE8D8' }]}>{t('builderPopup.warehouseFullTitle')}</Text>
+                <Text style={popupStyles.subtitle}>{t('builderPopup.warehouseFullSubtitle')}</Text>
+              </View>
+              <Pressable onPress={clearBuilderWarehouseFull} style={popupStyles.dismissBtn}>
                 <Text style={[popupStyles.dismissText, isDark && { color: '#8A9A80' }]}>{t('builderPopup.dismiss')}</Text>
               </Pressable>
             </Pressable>

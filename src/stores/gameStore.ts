@@ -14,6 +14,7 @@ import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount } from '../../shared/config/dailyTasksConfig';
 import { FLOOR_UPGRADE_COSTS, FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
+import { WAREHOUSE_UPGRADE_COSTS } from '../../shared/config/warehouseUpgradeConfig';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -155,6 +156,7 @@ export type ReferralNotification =
 interface UIState {
   insufficientResources: InsufficientResourcesPayload | null;
   builderToolDrop: ToolKey | null;
+  builderWarehouseFull: boolean;
   achievementQueue: NewAchievementGrant[];
   coinBonusPercent: number;
   xpBonusPercent: number;
@@ -227,6 +229,7 @@ interface GameActions {
   showInsufficientResources: (payload: InsufficientResourcesPayload) => void;
   clearInsufficientResources: () => void;
   clearBuilderToolDrop: () => void;
+  clearBuilderWarehouseFull: () => void;
   addAchievements: (grants: NewAchievementGrant[]) => void;
   dismissAchievement: () => void;
   enqueueReferralNotifications: (
@@ -421,6 +424,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   lastSyncAt: 0,
   insufficientResources: null,
   builderToolDrop: null,
+  builderWarehouseFull: false,
   achievementQueue: [],
   locallyGrantedAchievements: new Set<string>(),
   coinBonusPercent: 0,
@@ -565,6 +569,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setDailyLoginReward: (reward) => set({ pendingDailyLoginReward: reward }),
   dismissDailyLoginReward: () => set({ pendingDailyLoginReward: null }),
   clearBuilderToolDrop: () => set({ builderToolDrop: null }),
+  clearBuilderWarehouseFull: () => set({ builderWarehouseFull: false }),
 
   addAchievements: (grants) => set((cur) => ({
     achievementQueue: [...cur.achievementQueue, ...grants],
@@ -621,6 +626,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     lastSyncAt: 0,
     insufficientResources: null,
     builderToolDrop: null,
+    builderWarehouseFull: false,
     achievementQueue: [],
     coinBonusPercent: 0,
     xpBonusPercent: 0,
@@ -821,6 +827,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     let builderTool: ToolKey | undefined;
     let builderTools: ToolKey[] | undefined;
 
+    const toolsCountBefore = role === 'builder'
+      ? Object.values(state.tools ?? {}).reduce<number>((s, v) => s + (v ?? 0), 0)
+      : 0;
+
     if (role === 'builder') {
       if (isVip) {
         const isUnderConstruction = state.underConstruction.some((uc) => uc.floorId === targetFloor);
@@ -842,10 +852,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
       builderTools,
     });
 
-    // Builder tool drop popup (show first tool for VIP non-construction builders)
-    const droppedTool = builderTools?.[0] ?? (builderTool && get().lobbyVisitors.length < prevVisitorCount ? builderTool : undefined);
-    if (droppedTool && get().lobbyVisitors.length < prevVisitorCount) {
-      set({ builderToolDrop: droppedTool });
+    const visitorLeft = get().lobbyVisitors.length < prevVisitorCount;
+
+    if (role === 'builder' && visitorLeft) {
+      const toolsCountAfter = Object.values(get().tools ?? {}).reduce<number>((s, v) => s + (v ?? 0), 0);
+      const expectedTools = builderTools?.length ?? (builderTool ? 1 : 0);
+      if (expectedTools > 0 && toolsCountAfter <= toolsCountBefore) {
+        // Warehouse was full — tool(s) not added; inner lobby popup handles notification
+        set({ builderWarehouseFull: true });
+      } else {
+        // Builder tool drop popup (show first tool for VIP non-construction builders)
+        const droppedTool = builderTools?.[0] ?? builderTool;
+        if (droppedTool) set({ builderToolDrop: droppedTool });
+      }
     }
   },
 
@@ -1020,6 +1039,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   upgradeWarehouse: () => {
+    const state = get();
+    const nextLevel = (state.warehouseLevel ?? 0) + 1;
+    const cost = WAREHOUSE_UPGRADE_COSTS[nextLevel];
+    if (cost) {
+      if (cost.currency === 'coins' && state.balance < cost.amount) {
+        state.showInsufficientResources({ currency: 'coins', need: cost.amount, have: state.balance });
+        return;
+      }
+      if (cost.currency === 'gems' && state.gems < cost.amount) {
+        state.showInsufficientResources({ currency: 'gems', need: cost.amount, have: state.gems });
+        return;
+      }
+    }
     executeCommand(get, set, {
       id: uuid(),
       type: 'upgrade_warehouse',

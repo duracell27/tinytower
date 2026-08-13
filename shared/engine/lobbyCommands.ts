@@ -13,6 +13,7 @@ import {
 } from './lobbyUtils';
 import { generateRandomWorkers } from '../config/workerNames';
 import { FLOOR_STAR_MULTIPLIERS } from '../config/floorUpgradeConfig';
+import { warehouseCapacity } from '../config/warehouseUpgradeConfig';
 import type { VisitorRole } from '../types';
 
 type LobbyCommand = Extract<Command, { type:
@@ -145,6 +146,9 @@ function applyVisitorEffect(
       if (isToday) dailyTips += tip * vipMultiplier;
     }
   } else if (role === 'builder') {
+    const toolsTotal = (t: typeof tools) =>
+      (t.briks ?? 0) + (t.glass ?? 0) + (t.nails ?? 0) + (t.screw ?? 0) + (t.wood ?? 0) + (t.cement ?? 0);
+    const cap = warehouseCapacity(state.warehouseLevel ?? 0);
     if (isVip) {
       const ucEntry = underConstruction.find((uc) => uc.floorId === targetFloor);
       if (ucEntry) {
@@ -153,16 +157,16 @@ function applyVisitorEffect(
           uc.floorId === targetFloor ? { ...uc, startedAt: now - uc.durationMs } : uc,
         );
       } else {
-        // Give 2 tools
+        // Give 2 tools (each only if there is room)
         for (const key of preGeneratedTools ?? []) {
-          if (key in tools) {
+          if (key in tools && toolsTotal(tools) < cap) {
             tools = { ...tools, [key]: tools[key as keyof typeof tools] + 1 };
           }
         }
       }
     } else {
       const key = preGeneratedTools?.[0];
-      if (key && key in tools) {
+      if (key && key in tools && toolsTotal(tools) < cap) {
         tools = { ...tools, [key]: tools[key as keyof typeof tools] + 1 };
       }
     }

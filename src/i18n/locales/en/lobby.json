@@ -87,6 +87,8 @@
   "builderPopup": {
     "title": "Builder Visited!",
     "subtitle": "Delivered to your warehouse",
+    "warehouseFullTitle": "Warehouse Full!",
+    "warehouseFullSubtitle": "Upgrade your warehouse to receive more materials",
     "dismiss": "Nice!"
   },
   "tools": {
@@ -106,6 +108,7 @@
     "checkedIn": "checked in",
     "noRoom": "no room in hotel",
     "vipFill": "×{{count}} checked in",
-    "builderDelivered": "Builder delivered {{tool}}"
+    "builderDelivered": "Builder delivered {{tool}}",
+    "warehouseFull": "Warehouse full — material lost"
   }
 }
