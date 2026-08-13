@@ -443,6 +443,39 @@ describe('SyncService', () => {
       expect(result.state.gems).toBe(50);
     });
 
+    it('should read warehouseLevel from PlayerState', async () => {
+      const playerWithState = {
+        ...mockPlayer,
+        state: {
+          playerId: 'player-uuid',
+          gems: 50,
+          lobbyCapacity: 10,
+          hotelCapacity: 10,
+          elevatorLevel: 1,
+          elevatorFloor: 0,
+          dailyTips: 0,
+          dailyGemsCollected: 0,
+          dailyTipsRewardClaimed: false,
+          lastDailyReset: BigInt(0),
+          nextVisitorAt: BigInt(0),
+          briks: 3,
+          glass: 2,
+          nails: 1,
+          screw: 4,
+          lobbyVisitors: [],
+          warehouseLevel: 5,
+        },
+      };
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithState)
+        .mockResolvedValueOnce({ ...mockPlayer });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.state.warehouseLevel).toBe(5);
+    });
+
     it('should default tools to 1 each when state is null', async () => {
       prisma.player.findUnique
         .mockResolvedValueOnce({ ...mockPlayer, state: null })
