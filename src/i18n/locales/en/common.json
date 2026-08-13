@@ -20,7 +20,8 @@
     "need": "Need",
     "missing": "Missing",
     "goToShop": "Go to Shop",
-    "exchangeGems": "Exchange {{gems}} 💎 → {{coins}} coins",
+    "exchangeGems_pre": "Exchange {{gems}}",
+    "exchangeGems_post": "→ {{coins}} coins",
     "close": "Close"
   }
 }

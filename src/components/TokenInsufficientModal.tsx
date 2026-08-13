@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Modal, Dimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal, Dimensions, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
@@ -26,6 +26,7 @@ const TOKEN_ICONS: Record<FloorType, ReturnType<typeof require>> = {
 
 export default function TokenInsufficientModal({ asOverlay = false }: { asOverlay?: boolean }) {
   const { t } = useTranslation('hotel');
+  const isDark = useColorScheme() === 'dark';
   const payload = useGameStore((s) => s.tokenInsufficient);
   const clearTokenInsufficient = useGameStore((s) => s.clearTokenInsufficient);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
@@ -58,33 +59,36 @@ export default function TokenInsufficientModal({ asOverlay = false }: { asOverla
     <Animated.View style={[styles.scrim, scrimStyle]}>
       <Pressable style={StyleSheet.absoluteFill} onPress={clearTokenInsufficient} />
       <Animated.View style={[styles.card, cardStyle]}>
-        <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={styles.cardGradient}>
+        <LinearGradient
+          colors={isDark ? ['#1E2026', '#252930'] : ['#F0F4FA', '#E4EAF2']}
+          style={styles.cardGradient}
+        >
 
-          <View style={styles.iconWrap}>
+          <View style={[styles.iconWrap, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
             <Image source={TOKEN_ICONS[ft]} style={styles.tokenImg} contentFit="contain" />
           </View>
 
-          <Text style={styles.title}>{t('myBusiness.notEnoughTokens')}</Text>
+          <Text style={[styles.title, isDark && { color: '#DDE8D8' }]}>{t('myBusiness.notEnoughTokens')}</Text>
 
-          <View style={styles.deficitCard}>
+          <View style={[styles.deficitCard, isDark && { backgroundColor: '#2A2F38' }]}>
             <View style={styles.deficitRow}>
               <View style={styles.deficitCell}>
-                <Text style={styles.deficitLabel}>{t('myBusiness.have')}</Text>
+                <Text style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('myBusiness.have')}</Text>
                 <View style={styles.deficitValueRow}>
                   <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
                   <Text style={[styles.deficitValue, { color }]}>{formatNum(payload.have)}</Text>
                 </View>
               </View>
-              <Text style={styles.arrow}>→</Text>
+              <Text style={[styles.arrow, isDark && { color: '#4A5060' }]}>→</Text>
               <View style={styles.deficitCell}>
-                <Text style={styles.deficitLabel}>{t('myBusiness.need')}</Text>
+                <Text style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('myBusiness.need')}</Text>
                 <View style={styles.deficitValueRow}>
                   <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
                   <Text style={[styles.deficitValue, { color }]}>{formatNum(payload.need)}</Text>
                 </View>
               </View>
             </View>
-            <View style={styles.missingRow}>
+            <View style={[styles.missingRow, isDark && { borderTopColor: 'rgba(255,255,255,0.08)' }]}>
               <Text style={styles.missingLabel}>{t('myBusiness.missing')}:</Text>
               <View style={styles.deficitValueRow}>
                 <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
@@ -104,7 +108,7 @@ export default function TokenInsufficientModal({ asOverlay = false }: { asOverla
           </Pressable>
 
           <Pressable onPress={clearTokenInsufficient} style={styles.closeBtn}>
-            <Text style={styles.closeBtnText}>{t('myBusiness.cancel')}</Text>
+            <Text style={[styles.closeBtnText, isDark && { color: '#5A6472' }]}>{t('myBusiness.cancel')}</Text>
           </Pressable>
 
         </LinearGradient>

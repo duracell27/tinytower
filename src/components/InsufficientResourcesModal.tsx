@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Pressable, Modal, StyleSheet, Dimensions, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -39,6 +39,7 @@ function GemIcon() {
 
 export default function InsufficientResourcesModal({ asOverlay = false }: { asOverlay?: boolean }) {
   const { t } = useTranslation('common');
+  const isDark = useColorScheme() === 'dark';
   const payload = useGameStore((s) => s.insufficientResources);
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
   const exchangeGemsForCoins = useGameStore((s) => s.exchangeGemsForCoins);
@@ -93,10 +94,13 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
         <Pressable style={StyleSheet.absoluteFill} onPress={clearInsufficientResources} />
 
         <Animated.View style={[styles.card, cardStyle]}>
-          <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={styles.cardGradient}>
+          <LinearGradient
+            colors={isDark ? ['#1E2026', '#252930'] : ['#F0F4FA', '#E4EAF2']}
+            style={styles.cardGradient}
+          >
 
             {/* Icon */}
-            <View style={styles.iconWrap}>
+            <View style={[styles.iconWrap, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
               {isCoins && <Image source={require('../../assets/img/coin.png')} style={styles.coinLarge} contentFit="contain" />}
               {isGems && <View style={styles.gemLarge} />}
               {isTools && (
@@ -114,14 +118,14 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
             </View>
 
             {/* Title */}
-            <Text style={styles.title}>{title}</Text>
+            <Text style={[styles.title, isDark && { color: '#DDE8D8' }]}>{title}</Text>
 
             {/* Currency deficit card */}
             {(isCoins || isGems) && (
-              <View style={styles.deficitCard}>
+              <View style={[styles.deficitCard, isDark && { backgroundColor: '#2A2F38' }]}>
                 <View style={styles.deficitRow}>
                   <View style={styles.deficitCell}>
-                    <Text style={styles.deficitLabel}>{t('insufficientResources.have')}</Text>
+                    <Text style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('insufficientResources.have')}</Text>
                     <View style={styles.deficitValueRow}>
                       {isCoins ? <CoinIcon /> : <GemIcon />}
                       <Text style={[styles.deficitValue, isCoins ? styles.coinText : styles.gemText]}>
@@ -129,9 +133,9 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
                       </Text>
                     </View>
                   </View>
-                  <Text style={styles.arrow}>→</Text>
+                  <Text style={[styles.arrow, isDark && { color: '#4A5060' }]}>→</Text>
                   <View style={styles.deficitCell}>
-                    <Text style={styles.deficitLabel}>{t('insufficientResources.need')}</Text>
+                    <Text style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('insufficientResources.need')}</Text>
                     <View style={styles.deficitValueRow}>
                       {isCoins ? <CoinIcon /> : <GemIcon />}
                       <Text style={[styles.deficitValue, isCoins ? styles.coinText : styles.gemText]}>
@@ -140,7 +144,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
                     </View>
                   </View>
                 </View>
-                <View style={styles.missingRow}>
+                <View style={[styles.missingRow, isDark && { backgroundColor: 'rgba(217,83,79,0.15)' }]}>
                   <Text style={styles.missingLabel}>{t('insufficientResources.missing')}:</Text>
                   <View style={styles.deficitValueRow}>
                     {isCoins ? <CoinIcon /> : <GemIcon />}
@@ -152,7 +156,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
 
             {/* Tools list */}
             {isTools && (
-              <View style={styles.toolsCard}>
+              <View style={[styles.toolsCard, isDark && { backgroundColor: '#2A2F38' }]}>
                 {payload.missingTools!.map((tool) => (
                   <View key={tool.key} style={styles.toolItemRow}>
                     <Image
@@ -160,11 +164,11 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
                       style={styles.toolItemIcon}
                       contentFit="contain"
                     />
-                    <Text style={styles.toolItemLabel}>{TOOL_META[tool.key].label}</Text>
+                    <Text style={[styles.toolItemLabel, isDark && { color: '#DDE8D8' }]}>{TOOL_META[tool.key].label}</Text>
                     <View style={styles.toolItemCounts}>
-                      <Text style={styles.toolHave}>{tool.have}</Text>
-                      <Text style={styles.toolSlash}>/</Text>
-                      <Text style={styles.toolNeed}>{tool.need}</Text>
+                      <Text style={[styles.toolHave, isDark && { color: '#5A6472' }]}>{tool.have}</Text>
+                      <Text style={[styles.toolSlash, isDark && { color: '#3A4050' }]}>/</Text>
+                      <Text style={[styles.toolNeed, isDark && { color: '#9BAABB' }]}>{tool.need}</Text>
                     </View>
                     <Text style={styles.toolMissing}>-{tool.need - tool.have}</Text>
                   </View>
@@ -189,12 +193,15 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
                   colors={['#E5A41C', '#C98A10']}
                   style={styles.shopBtnGradient}
                 >
-                  <Text style={styles.shopBtnText}>
-                    {t('insufficientResources.exchangeGems', {
-                      gems: gemsNeeded,
-                      coins: formatNum(gemsNeeded * COINS_PER_GEM),
-                    })}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Text style={styles.shopBtnText}>
+                      {t('insufficientResources.exchangeGems_pre', { gems: gemsNeeded })}
+                    </Text>
+                    <GemIcon />
+                    <Text style={styles.shopBtnText}>
+                      {t('insufficientResources.exchangeGems_post', { coins: formatNum(gemsNeeded * COINS_PER_GEM) })}
+                    </Text>
+                  </View>
                 </LinearGradient>
                 <View style={[styles.shopBtnShadow, { backgroundColor: '#A06A00' }]} />
               </Pressable>
@@ -218,7 +225,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
 
             {/* Close */}
             <Pressable onPress={clearInsufficientResources} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>{t('insufficientResources.close')}</Text>
+              <Text style={[styles.closeBtnText, isDark && { color: '#5A6472' }]}>{t('insufficientResources.close')}</Text>
             </Pressable>
 
           </LinearGradient>

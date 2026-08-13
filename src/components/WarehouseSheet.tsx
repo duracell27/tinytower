@@ -65,7 +65,11 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
   const isMaxLevel = warehouseLevel >= WAREHOUSE_MAX_LEVEL;
   const nextCost   = !isMaxLevel ? WAREHOUSE_UPGRADE_COSTS[warehouseLevel + 1] : null;
 
-  const barColor = fillRatio >= 1 ? '#E53E3E' : fillRatio >= 0.8 ? '#DD8C00' : '#48BB78';
+  const pillBg = fillRatio > 0.9
+    ? (isDark ? '#E86060' : '#E05050')
+    : fillRatio > 0.7
+      ? (isDark ? '#F0B030' : '#E7A52B')
+      : (isDark ? '#6BA34A' : '#5E8F42');
 
   useEffect(() => {
     if (visible) {
@@ -122,18 +126,31 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                   contentFit="contain"
                 />
                 <Text style={styles.title}>{t('menu.warehouseTitle')}</Text>
-                <View style={styles.barTrack}>
-                  <View style={[styles.barFill, { width: `${fillRatio * 100}%`, backgroundColor: barColor }]} />
+                <View style={[styles.capacityPill, { backgroundColor: pillBg }]}>
+                  <Text style={styles.capacityPillText}>{total}/{capacity}</Text>
                 </View>
-                <Text style={styles.capacityLabel}>
-                  {t('warehouse.capacity', { current: total, max: capacity })}
-                </Text>
                 <Pressable onPress={onClose} style={styles.closeBtn}>
                   <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                     <Path d="M18 6L6 18M6 6l12 12" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" />
                   </Svg>
                 </Pressable>
               </View>
+              {!isMaxLevel && nextCost && (
+                <Pressable
+                  onPress={() => setShowUpgradeConfirm(true)}
+                  style={({ pressed }) => [styles.upgradeChipRow, pressed && { opacity: 0.75 }]}
+                >
+                  <Image
+                    source={require('../../assets/img/greenArrowUp.png')}
+                    style={{ width: 16, height: 16 }}
+                    contentFit="contain"
+                  />
+                  {nextCost.currency === 'coins'
+                    ? <CoinIcon size={13} />
+                    : <GemIcon size={13} />}
+                  <Text style={styles.upgradeChipText}>{formatNum(nextCost.amount)}</Text>
+                </Pressable>
+              )}
             </View>
 
             {/* Tool grid */}
@@ -149,32 +166,6 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                   </View>
                 ))}
               </View>
-            </View>
-
-            {/* Upgrade button */}
-            <View style={styles.upgradeRow}>
-              {isMaxLevel ? (
-                <View style={[styles.upgradeBtn, styles.upgradeBtnDisabled]}>
-                  <Text style={styles.upgradeBtnText}>{t('warehouse.maxLevel')}</Text>
-                </View>
-              ) : (
-                <Pressable
-                  onPress={() => setShowUpgradeConfirm(true)}
-                  style={({ pressed }) => [styles.upgradeBtn, pressed && { opacity: 0.8 }]}
-                >
-                  <Text style={styles.upgradeBtnText}>{t('warehouse.upgrade')}</Text>
-                  {nextCost && (
-                    <View style={styles.costRow}>
-                      {nextCost.currency === 'coins'
-                        ? <CoinIcon size={14} />
-                        : <GemIcon size={14} />}
-                      <Text style={styles.upgradeCostText}>
-                        {formatNum(nextCost.amount)}
-                      </Text>
-                    </View>
-                  )}
-                </Pressable>
-              )}
             </View>
           </Animated.View>
         </GestureDetector>
@@ -243,21 +234,20 @@ const styles = StyleSheet.create({
     width: 38, height: 4, borderRadius: 2,
     backgroundColor: 'rgba(255,255,255,0.5)',
   },
-  titleRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18, paddingBottom: 14, gap: 10 },
-  title: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#fff' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18, paddingTop: 2, paddingBottom: 10, gap: 10 },
+  title: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#fff', flex: 1 },
   closeBtn: {
     width: 32, height: 32, borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center', justifyContent: 'center',
   },
-  capacityLabel: {
-    fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: 'rgba(255,255,255,0.75)',
+  capacityPill: {
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4,
   },
-  barTrack: {
-    flex: 1, height: 8, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.15)', overflow: 'hidden',
+  capacityPillText: {
+    fontFamily: 'Fredoka_700Bold', fontSize: 13, color: '#fff',
   },
-  barFill: { height: '100%', borderRadius: 4 },
-  body: { padding: 16 },
+  body: { padding: 16, paddingBottom: 36 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   cell: {
     width: CELL_W, backgroundColor: '#fff', borderRadius: 14,
@@ -269,15 +259,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 2,
   },
   countText: { fontFamily: 'Fredoka_700Bold', fontSize: 13, color: '#5B6472' },
-  upgradeRow: { paddingHorizontal: 16, paddingBottom: 24, paddingTop: 4 },
-  upgradeBtn: {
-    backgroundColor: '#5B6472', borderRadius: 14,
-    paddingVertical: 13, alignItems: 'center', gap: 2,
+  upgradeChipRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    marginHorizontal: 18, marginBottom: 12,
+    borderRadius: 14, paddingVertical: 7,
   },
-  upgradeBtnDisabled: { backgroundColor: '#9BA3B0' },
-  upgradeBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#fff' },
-  costRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  upgradeCostText: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#fff' },
+  upgradeChipText: { fontFamily: 'Fredoka_700Bold', fontSize: 13, color: '#fff' },
   confirmScrim: { backgroundColor: 'rgba(18,26,44,0.55)', alignItems: 'center', justifyContent: 'center' },
   confirmCard: {
     width: SCREEN_WIDTH * 0.82,
