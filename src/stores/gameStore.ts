@@ -1084,13 +1084,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const taskConfig = DAILY_TASKS.find((t) => t.key === taskKey);
     if (!taskConfig) return;
     const state = get();
-    const tokenCount = Math.floor(Math.random() * 5) + 1;
     const tokenColor = COLORS[Math.floor(Math.random() * COLORS.length)];
     const materialType = taskConfig.rewards.hasMaterials
       ? (state.dailyTasks.dailyMaterialType ?? MATERIAL_TYPES[Math.floor(Math.random() * MATERIAL_TYPES.length)])
       : undefined;
     const multiplier = getCoinMultiplier(state.playerLevel);
     const doubleMultiplier = state.dailyTasks.doubleRewardActive ? 2 : 1;
+    const tokenCount = (Math.floor(Math.random() * 5) + 1) * doubleMultiplier;
     const coins = taskConfig.rewards.baseCoins * multiplier * doubleMultiplier;
     const matCount = taskConfig.rewards.hasMaterials
       ? getMaterialCount(state.playerLevel) * doubleMultiplier
