@@ -12,9 +12,13 @@ import ForumCommentComponent from '../src/components/ForumComment';
 import ReportSheet from '../src/components/ReportSheet';
 import { useForumStore } from '../src/stores/forumStore';
 import { useAuthStore } from '../src/stores/authStore';
+import { useGameStore } from '../src/stores/gameStore';
 import { getUserIcon } from '../src/utils/userIcon';
 import type { ReportTargetType } from '../src/stores/reportStore';
 import { useBlockStore } from '../src/stores/blockStore';
+
+const CHAT_ICON = require('../assets/img/menu/chat.png');
+const LVL_ICON  = require('../assets/img/lvlIcon.png');
 
 type SelectedItem = { id: string; body: string; isOwn: boolean; type: 'post' | 'comment' };
 
@@ -36,6 +40,7 @@ export default function ForumPostScreen() {
   const player = useAuthStore(s => s.player);
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const isAdmin = player?.isAdmin ?? false;
+  const currentPlayerLevel = useGameStore(s => s.playerLevel);
 
   const isDark = useColorScheme() === 'dark';
   const [commentText, setCommentText] = useState('');
@@ -151,7 +156,12 @@ export default function ForumPostScreen() {
           <Image source={getUserIcon(activePost.playerLevel)} style={[styles.postAvatar, isDark && { backgroundColor: '#3A3F4A' }, isPostBlocked && { borderColor: '#E05A4A', borderWidth: 2 }]} contentFit="cover" />
         </Pressable>
         <View>
-          <Text style={[styles.postAuthor, isDark && { color: '#DDE8D8' }]}>{activePost.playerName} · Lv.{activePost.playerLevel}</Text>
+          <View style={styles.postAuthorRow}>
+            <Text style={[styles.postAuthor, isDark && { color: '#DDE8D8' }]}>{activePost.playerName}</Text>
+            <Text style={[styles.postAuthorSep, isDark && { color: '#5A6470' }]}>·</Text>
+            <Image source={LVL_ICON} style={styles.postMetaIcon} contentFit="contain" />
+            <Text style={[styles.postAuthor, isDark && { color: '#DDE8D8' }]}>{activePost.playerId === player?.id ? currentPlayerLevel : activePost.playerLevel}</Text>
+          </View>
           <Text style={styles.postDate}>{formatDate(activePost.createdAt)}</Text>
         </View>
         {canModifyPost && (
@@ -196,7 +206,10 @@ export default function ForumPostScreen() {
         </View>
       )}
       <View style={[styles.divider, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
-      <Text style={styles.commentsLabel}>💬 {activePost.commentCount} comments</Text>
+      <View style={styles.commentsLabel}>
+        <Image source={CHAT_ICON} style={styles.commentsLabelIcon} contentFit="contain" />
+        <Text style={styles.commentsLabelText}>{activePost.commentCount} comments</Text>
+      </View>
     </View>
   ) : null;
 
@@ -390,7 +403,10 @@ const styles = StyleSheet.create({
   postCard: { backgroundColor: '#fff', padding: 16, marginBottom: 8 },
   postMeta: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   postAvatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#e8e8e8' },
+  postAuthorRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   postAuthor: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#2A3344' },
+  postAuthorSep: { fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#aaa' },
+  postMetaIcon: { width: 14, height: 14 },
   postDate: { fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#aaa' },
   postMenuBtn: { marginLeft: 'auto' },
   postMenuIcon: { fontSize: 16, color: '#aaa', letterSpacing: 1 },
@@ -405,7 +421,9 @@ const styles = StyleSheet.create({
   adminBtnActive: { backgroundColor: '#EAF5E9', borderColor: '#3C9A34' },
   adminBtnText: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#2A3344' },
   divider: { height: 1, backgroundColor: '#f0f0f0', marginVertical: 14 },
-  commentsLabel: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#888' },
+  commentsLabel: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  commentsLabelIcon: { width: 15, height: 15 },
+  commentsLabelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#888' },
   loadMore: {
     margin: 16, padding: 12, borderRadius: 12,
     backgroundColor: '#fff', alignItems: 'center',

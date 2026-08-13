@@ -4,6 +4,8 @@ import { Image } from 'expo-image';
 import type { ForumComment as ForumCommentType } from '../stores/forumStore';
 import { getUserIcon } from '../utils/userIcon';
 import { useBlockStore } from '../stores/blockStore';
+import { useAuthStore } from '../stores/authStore';
+import { useGameStore } from '../stores/gameStore';
 
 interface Props {
   comment: ForumCommentType;
@@ -26,6 +28,9 @@ export default function ForumComment({ comment, isOwn, isAdmin, canReport, onLon
   const canInteract = isOwn || isAdmin || canReport;
   const isDark = useColorScheme() === 'dark';
   const blocked = useBlockStore(s => s.isBlocked(comment.playerId));
+  const playerId = useAuthStore(s => s.player?.id);
+  const currentPlayerLevel = useGameStore(s => s.playerLevel);
+  const displayLevel = comment.playerId === playerId ? currentPlayerLevel : comment.playerLevel;
   return (
     <View style={styles.row}>
       <Pressable onPress={onAvatarPress} disabled={!onAvatarPress} hitSlop={6}>
@@ -38,7 +43,7 @@ export default function ForumComment({ comment, isOwn, isAdmin, canReport, onLon
       >
         <View style={styles.header}>
           <Text style={styles.name}>{comment.playerName}</Text>
-          <Text style={[styles.level, isDark && { color: '#5A6470' }]}>Lv.{comment.playerLevel}</Text>
+          <Text style={[styles.level, isDark && { color: '#5A6470' }]}>Lv.{displayLevel}</Text>
           <Text style={[styles.time, isDark && { color: '#5A6470' }]}>{formatTime(comment.createdAt)}</Text>
         </View>
         <Text style={[styles.body, isDark && { color: '#DDE8D8' }]}>

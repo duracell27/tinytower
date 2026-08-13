@@ -12,6 +12,16 @@ export interface MailMessageDto {
   createdAt: string;
 }
 
+export interface SentMailMessageDto {
+  id: string;
+  toId: string;
+  toName: string;
+  toLevel: number;
+  subject: string;
+  body: string;
+  createdAt: string;
+}
+
 @Injectable()
 export class MailService {
   constructor(private prisma: PrismaService) {}
@@ -57,6 +67,24 @@ export class MailService {
       subject: m.subject,
       body: m.body,
       isRead: m.isRead,
+      createdAt: m.createdAt.toISOString(),
+    }));
+  }
+
+  async getSent(myId: string): Promise<SentMailMessageDto[]> {
+    const messages = await this.prisma.mailMessage.findMany({
+      where: { fromId: myId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: { to: { select: { playerName: true, playerLevel: true } } },
+    });
+    return messages.map((m) => ({
+      id: m.id,
+      toId: m.toId,
+      toName: m.to.playerName,
+      toLevel: m.to.playerLevel,
+      subject: m.subject,
+      body: m.body,
       createdAt: m.createdAt.toISOString(),
     }));
   }

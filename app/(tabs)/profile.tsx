@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch } from 'react-native';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch, Dimensions } from 'react-native';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSpring, runOnJS, Easing } from 'react-native-reanimated';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Svg, { Path, Polyline } from 'react-native-svg';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -309,6 +310,43 @@ export default function ProfileScreen() {
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const xpNeeded = xpForLevel(playerLevel);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const SETTINGS_SHEET_HEIGHT = Dimensions.get('window').height * 0.6;
+  const settingsTranslateY = useSharedValue(SETTINGS_SHEET_HEIGHT);
+  const settingsScrimOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (settingsVisible) {
+      settingsTranslateY.value = withTiming(0, { duration: 380 });
+      settingsScrimOpacity.value = withTiming(1, { duration: 360 });
+    } else {
+      settingsTranslateY.value = withTiming(SETTINGS_SHEET_HEIGHT, { duration: 320 });
+      settingsScrimOpacity.value = withTiming(0, { duration: 300 });
+    }
+  }, [settingsVisible]);
+
+  const closeSettings = () => setSettingsVisible(false);
+
+  const settingsPanGesture = Gesture.Pan()
+    .enabled(settingsVisible)
+    .onUpdate((e) => {
+      if (e.translationY > 0) {
+        settingsTranslateY.value = e.translationY;
+        settingsScrimOpacity.value = 1 - e.translationY / SETTINGS_SHEET_HEIGHT;
+      }
+    })
+    .onEnd((e) => {
+      if (e.translationY > 100 || e.velocityY > 500) {
+        settingsTranslateY.value = withTiming(SETTINGS_SHEET_HEIGHT, { duration: 280 });
+        settingsScrimOpacity.value = withTiming(0, { duration: 260 });
+        runOnJS(closeSettings)();
+      } else {
+        settingsTranslateY.value = withSpring(0, { damping: 20, stiffness: 200 });
+        settingsScrimOpacity.value = withTiming(1, { duration: 200 });
+      }
+    });
+
+  const settingsScrimStyle = useAnimatedStyle(() => ({ opacity: settingsScrimOpacity.value }));
+  const settingsSheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: settingsTranslateY.value }] }));
   const liftSimplifiedRewards = useSettingsStore((s) => s.liftSimplifiedRewards);
   const setLiftSimplifiedRewards = useSettingsStore((s) => s.setLiftSimplifiedRewards);
   const totalWorkers = workers.length;
@@ -721,37 +759,43 @@ export default function ProfileScreen() {
         <Modal
           visible={settingsVisible}
           transparent
-          animationType="slide"
-          onRequestClose={() => setSettingsVisible(false)}
+          animationType="none"
+          onRequestClose={closeSettings}
         >
-          <View style={settingsStyles.overlay}>
-            <Pressable style={StyleSheet.absoluteFill} onPress={() => setSettingsVisible(false)} />
-            <View style={[settingsStyles.sheet, { backgroundColor: theme.surface }]}>
-              <View style={settingsStyles.handle} />
-              <Text style={[settingsStyles.title, { color: theme.text }]}>{t('profile.settings.title')}</Text>
+          <GestureHandlerRootView style={settingsStyles.overlay}>
+            <Animated.View style={[settingsStyles.scrim, settingsScrimStyle]}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={closeSettings} />
+            </Animated.View>
+            <GestureDetector gesture={settingsPanGesture}>
+              <Animated.View
+                style={[settingsStyles.sheet, { backgroundColor: theme.surface }, settingsSheetStyle]}
+              >
+                <View style={settingsStyles.handle} />
+                <Text style={[settingsStyles.title, { color: theme.text }]}>{t('profile.settings.title')}</Text>
 
-              <Text style={[settingsStyles.sectionHeader, { color: theme.textMuted }]}>
-                {t('profile.settings.liftSection')}
-              </Text>
+                <Text style={[settingsStyles.sectionHeader, { color: theme.textMuted }]}>
+                  {t('profile.settings.liftSection')}
+                </Text>
 
-              <View style={[settingsStyles.row, { borderBottomColor: theme.divider }]}>
-                <View style={settingsStyles.rowLeft}>
-                  <Text style={[settingsStyles.rowTitle, { color: theme.text }]}>
-                    {t('profile.settings.simplifiedRewards')}
-                  </Text>
-                  <Text style={[settingsStyles.rowDesc, { color: theme.textMuted }]}>
-                    {t('profile.settings.simplifiedRewardsDesc')}
-                  </Text>
+                <View style={[settingsStyles.row, { borderBottomColor: theme.divider }]}>
+                  <View style={settingsStyles.rowLeft}>
+                    <Text style={[settingsStyles.rowTitle, { color: theme.text }]}>
+                      {t('profile.settings.simplifiedRewards')}
+                    </Text>
+                    <Text style={[settingsStyles.rowDesc, { color: theme.textMuted }]}>
+                      {t('profile.settings.simplifiedRewardsDesc')}
+                    </Text>
+                  </View>
+                  <Switch
+                    value={liftSimplifiedRewards}
+                    onValueChange={setLiftSimplifiedRewards}
+                    trackColor={{ true: '#72C24F', false: undefined }}
+                    thumbColor="#fff"
+                  />
                 </View>
-                <Switch
-                  value={liftSimplifiedRewards}
-                  onValueChange={setLiftSimplifiedRewards}
-                  trackColor={{ true: '#72C24F', false: undefined }}
-                  thumbColor="#fff"
-                />
-              </View>
-            </View>
-          </View>
+              </Animated.View>
+            </GestureDetector>
+          </GestureHandlerRootView>
         </Modal>
 
         {/* Sync status card */}
@@ -1364,6 +1408,10 @@ const settingsStyles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'flex-end',
+  },
+  scrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(18,26,44,0.45)',
   },
   sheet: {
     borderTopLeftRadius: 24,

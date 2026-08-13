@@ -166,12 +166,12 @@ export default function MyFriendsScreen() {
     <AppBackground style={{ flex: 1 }}>
 
       <View style={headerStyles.header}>
-        <Text style={headerStyles.title}>My Friends</Text>
+        <Text style={[headerStyles.title, { color: theme.text }]}>My Friends</Text>
         <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
           <Image source={INFO_ICON} style={headerStyles.infoIcon} contentFit="contain" />
         </Pressable>
       </View>
-      <Text style={headerStyles.subtitle}>Friends list and incoming requests</Text>
+      <Text style={[headerStyles.subtitle, { color: theme.textMuted }]}>Friends list and incoming requests</Text>
 
       {/* Tab bar */}
       <View style={[tabStyles.bar, { borderBottomColor: theme.divider }]}>
@@ -260,7 +260,7 @@ export default function MyFriendsScreen() {
       {infoVisible && (
         <View style={headerStyles.overlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-          <View style={headerStyles.infoCard}>
+          <View style={[headerStyles.infoCard, { backgroundColor: theme.surface }]}>
             <LinearGradient colors={['#3FA535', '#2C7A25']} style={headerStyles.infoCardHeader}>
               <Text style={headerStyles.infoCardTitle}>My Friends</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
@@ -313,15 +313,15 @@ export default function MyFriendsScreen() {
 
 const headerStyles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', marginTop: 60, marginHorizontal: 20, gap: 12 },
-  title: { fontFamily: 'Fredoka_700Bold', fontSize: 24, color: '#27331F' },
-  subtitle: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#7C8A6E', marginHorizontal: 20, marginTop: 6, marginBottom: 10 },
+  title: { fontFamily: 'Fredoka_700Bold', fontSize: 24 },
+  subtitle: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, marginHorizontal: 20, marginTop: 6, marginBottom: 10 },
   infoIcon: { width: 20, height: 20, opacity: 0.8 },
   overlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(18,26,44,0.45)',
     justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 20,
   },
-  infoCard: { width: '100%', backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden' },
+  infoCard: { width: '100%', borderRadius: 20, overflow: 'hidden' },
   infoCardHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 18, paddingVertical: 13,

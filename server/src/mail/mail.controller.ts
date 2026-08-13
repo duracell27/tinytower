@@ -25,6 +25,12 @@ export class MailController {
     return this.mailService.getInbox(req.user.playerId);
   }
 
+  @Get('sent')
+  @UseGuards(JwtAuthGuard)
+  getSent(@Req() req: AuthReq) {
+    return this.mailService.getSent(req.user.playerId);
+  }
+
   @Get('unread-count')
   @UseGuards(JwtAuthGuard)
   getUnreadCount(@Req() req: AuthReq) {

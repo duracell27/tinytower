@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { useGameClock } from '../hooks/useGameClock';
@@ -56,19 +57,26 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
         </View>
       </View>
 
-      <View style={[styles.body, { backgroundColor: isDark ? '#3A2A2E' : BODY_BG }]}>
+      <LinearGradient
+        colors={isDark ? ['#3A2A2E', '#2E1E24'] : ['#FBEAEF', '#F5D6E0']}
+        style={styles.body}
+      >
         <View style={styles.techContent}>
           <Image
             source={require('../../assets/img/hotel.png')}
-            style={styles.techImage}
+            style={styles.techImageHotel}
             contentFit="contain"
           />
           <View style={styles.techInfo}>
             <View style={styles.infoRow}>
               {/* Left: vacancy pill */}
-              <View style={[styles.statusPill, hasVacancy ? styles.statusGreen : styles.statusRed]}>
-                <View style={[styles.statusDot, { backgroundColor: hasVacancy ? '#5BA63C' : '#D14343' }]} />
-                <Text style={[styles.statusText, { color: hasVacancy ? '#3C7A2A' : '#A13030' }]}>
+              <View style={[
+                styles.statusPill,
+                hasVacancy ? styles.statusGreen : styles.statusRed,
+                !hasVacancy && isDark && styles.statusRedDark,
+              ]}>
+                <View style={[styles.statusDot, { backgroundColor: hasVacancy ? '#5BA63C' : (isDark ? '#FF6B6B' : '#D14343') }]} />
+                <Text style={[styles.statusText, { color: hasVacancy ? '#3C7A2A' : (isDark ? '#FF8A8A' : '#A13030') }]}>
                   {hasVacancy ? t('technicalFloor.hotel.hasVacancy') : t('technicalFloor.hotel.full')}
                 </Text>
               </View>
@@ -93,7 +101,7 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
             )}
           </View>
         </View>
-      </View>
+      </LinearGradient>
     </Pressable>
   );
 }
@@ -129,7 +137,10 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
         </View>
       </View>
 
-      <View style={[styles.body, { backgroundColor: isDark ? '#3A2A2E' : BODY_BG }]}>
+      <LinearGradient
+        colors={isDark ? ['#3A2A2E', '#2E1E24'] : ['#FBEAEF', '#F5D6E0']}
+        style={styles.body}
+      >
         <View style={styles.techContent}>
           <Image
             source={require('../../assets/img/reception.png')}
@@ -155,7 +166,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
             </View>
           </View>
         </View>
-      </View>
+      </LinearGradient>
     </Pressable>
   );
 }
@@ -254,6 +265,16 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  techImageHotel: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    shadowColor: 'rgba(140,50,75,1)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.30,
+    shadowRadius: 8,
+    elevation: 5,
+  },
   techInfo: {
     flex: 1,
     gap: 8,
@@ -276,6 +297,9 @@ const styles = StyleSheet.create({
   },
   statusRed: {
     backgroundColor: 'rgba(209,67,67,0.12)',
+  },
+  statusRedDark: {
+    backgroundColor: 'rgba(255,100,100,0.18)',
   },
   statusDot: {
     width: 7,

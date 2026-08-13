@@ -1,14 +1,16 @@
 import { create } from 'zustand';
-import { api, type MailMessage } from '../services/api';
+import { api, type MailMessage, type SentMailMessage } from '../services/api';
 
 interface MailState {
   unreadCount: number;
   mails: MailMessage[];
+  sentMails: SentMailMessage[];
 }
 
 interface MailActions {
   fetchUnreadCount: () => Promise<void>;
   fetchInbox: () => Promise<void>;
+  fetchSent: () => Promise<void>;
   sendMail: (toId: string, subject: string, body: string) => Promise<void>;
   markRead: (id: string) => Promise<void>;
   deleteMail: (id: string) => Promise<void>;
@@ -17,6 +19,7 @@ interface MailActions {
 export const useMailStore = create<MailState & MailActions>((set, get) => ({
   unreadCount: 0,
   mails: [],
+  sentMails: [],
 
   fetchUnreadCount: async () => {
     try {
@@ -31,6 +34,15 @@ export const useMailStore = create<MailState & MailActions>((set, get) => ({
     try {
       const mails = await api.getMailInbox();
       set({ mails });
+    } catch {
+      // silent
+    }
+  },
+
+  fetchSent: async () => {
+    try {
+      const sentMails = await api.getMailSent();
+      set({ sentMails });
     } catch {
       // silent
     }

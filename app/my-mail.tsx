@@ -9,10 +9,12 @@ import { useAppTheme } from '../src/hooks/useAppTheme';
 import { InfoSection } from '../src/components/InfoSection';
 import { useMailStore } from '../src/stores/mailStore';
 import { getUserIcon } from '../src/utils/userIcon';
-import type { MailMessage } from '../src/services/api';
+import type { MailMessage, SentMailMessage } from '../src/services/api';
 
-const DELETE_ICON = require('../assets/img/CancellIcon.png');
-const INFO_ICON   = require('../assets/img/InformationIcon.png');
+const DELETE_ICON   = require('../assets/img/CancellIcon.png');
+const INFO_ICON     = require('../assets/img/InformationIcon.png');
+const INBOX_ICON    = require('../assets/img/incomeMailIcon.png');
+const SENT_ICON     = require('../assets/img/sendMailIcon.png');
 
 function formatDate(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -52,12 +54,15 @@ function MailRow({
     >
       {/* Avatar */}
       <View style={styles.avatarWrap}>
-        <Image
-          source={getUserIcon(mail.fromLevel)}
-          style={styles.avatar}
-          contentFit="cover"
-        />
-        {!mail.isRead && <View style={styles.unreadDot} />}
+        <Image source={INBOX_ICON} style={styles.directionBadge} contentFit="contain" />
+        <View style={styles.avatarInner}>
+          <Image
+            source={getUserIcon(mail.fromLevel)}
+            style={styles.avatar}
+            contentFit="cover"
+          />
+          {!mail.isRead && <View style={styles.unreadDot} />}
+        </View>
       </View>
 
       {/* Content */}
@@ -107,18 +112,59 @@ function MailRow({
   );
 }
 
+function SentRow({ mail, theme }: { mail: SentMailMessage; theme: ReturnType<typeof useAppTheme> }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.row, { borderBottomColor: theme.divider }, pressed && { opacity: 0.85 }]}
+      onPress={() => setExpanded(v => !v)}
+    >
+      <View style={styles.avatarWrap}>
+        <Image source={SENT_ICON} style={styles.directionBadge} contentFit="contain" />
+        <View style={styles.avatarInner}>
+          <Image source={getUserIcon(mail.toLevel)} style={styles.avatar} contentFit="cover" />
+        </View>
+      </View>
+      <View style={styles.content}>
+        <View style={styles.headerRow}>
+          <Text style={[styles.fromName, { color: theme.text }]} numberOfLines={1}>{mail.toName}</Text>
+          <Text style={[styles.date, { color: theme.textMuted }]}>{formatDate(mail.createdAt)}</Text>
+        </View>
+        <Text style={[styles.subject, { color: theme.textMuted as string }]} numberOfLines={expanded ? undefined : 1}>
+          {mail.subject}
+        </Text>
+        {expanded && (
+          <View style={[styles.bodyWrap, { borderTopColor: theme.divider }]}>
+            <Text style={[styles.body, { color: theme.text }]}>{mail.body}</Text>
+          </View>
+        )}
+      </View>
+    </Pressable>
+  );
+}
+
 export default function MyMailScreen() {
   const theme = useAppTheme();
   const mails = useMailStore((s) => s.mails);
+  const sentMails = useMailStore((s) => s.sentMails);
   const fetchInbox = useMailStore((s) => s.fetchInbox);
+  const fetchSent = useMailStore((s) => s.fetchSent);
   const markRead = useMailStore((s) => s.markRead);
   const deleteMail = useMailStore((s) => s.deleteMail);
+  const [tab, setTab] = useState<'all' | 'inbox' | 'sent'>('all');
   const [loading, setLoading] = useState(true);
   const [infoVisible, setInfoVisible] = useState(false);
 
   useEffect(() => {
-    fetchInbox().finally(() => setLoading(false));
-  }, [fetchInbox]);
+    setLoading(true);
+    const p =
+      tab === 'all'
+        ? Promise.all([fetchInbox(), fetchSent()])
+        : tab === 'inbox'
+        ? fetchInbox()
+        : fetchSent();
+    p.finally(() => setLoading(false));
+  }, [tab, fetchInbox, fetchSent]);
 
   return (
     <AppBackground style={{ flex: 1 }}>
@@ -132,32 +178,99 @@ export default function MyMailScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <Text style={styles.screenTitle}>My Mail</Text>
+            <Text style={[styles.screenTitle, { color: theme.text }]}>My Mail</Text>
             <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
               <Image source={INFO_ICON} style={styles.infoIcon} contentFit="contain" />
             </Pressable>
           </View>
-          <Text style={styles.screenSubtitle}>Messages from other players</Text>
+
+          {/* Tabs */}
+          <View style={styles.tabRow}>
+            <Pressable
+              style={[styles.tab, tab === 'all' && styles.tabActive]}
+              onPress={() => setTab('all')}
+            >
+              <Text style={[styles.tabText, tab === 'all' && styles.tabTextActive]}>All</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.tab, tab === 'inbox' && styles.tabActive]}
+              onPress={() => setTab('inbox')}
+            >
+              <Text style={[styles.tabText, tab === 'inbox' && styles.tabTextActive]}>Inbox</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.tab, tab === 'sent' && styles.tabActive]}
+              onPress={() => setTab('sent')}
+            >
+              <Text style={[styles.tabText, tab === 'sent' && styles.tabTextActive]}>Sent</Text>
+            </Pressable>
+          </View>
 
           <View style={[styles.card, { backgroundColor: theme.surface }]}>
-            {mails.length === 0 ? (
-              <View style={styles.emptyWrap}>
-                <Text style={styles.emptyEmoji}>📭</Text>
-                <Text style={[styles.emptyTitle, { color: theme.text }]}>No messages yet</Text>
-                <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
-                  When someone sends you a message it'll show up here
-                </Text>
-              </View>
+            {tab === 'all' ? (() => {
+              type AllItem =
+                | { kind: 'inbox'; mail: MailMessage }
+                | { kind: 'sent'; mail: SentMailMessage };
+              const combined: AllItem[] = [
+                ...mails.map((m): AllItem => ({ kind: 'inbox', mail: m })),
+                ...sentMails.map((m): AllItem => ({ kind: 'sent', mail: m })),
+              ].sort((a, b) => new Date(b.mail.createdAt).getTime() - new Date(a.mail.createdAt).getTime());
+              if (combined.length === 0) return (
+                <View style={styles.emptyWrap}>
+                  <Text style={styles.emptyEmoji}>📭</Text>
+                  <Text style={[styles.emptyTitle, { color: theme.text }]}>No messages yet</Text>
+                  <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
+                    When someone sends you a message it'll show up here
+                  </Text>
+                </View>
+              );
+              return combined.map((item) =>
+                item.kind === 'inbox' ? (
+                  <MailRow
+                    key={`in-${item.mail.id}`}
+                    mail={item.mail}
+                    theme={theme}
+                    onMarkRead={() => markRead(item.mail.id)}
+                    onDelete={() => deleteMail(item.mail.id).catch(() => {})}
+                  />
+                ) : (
+                  <SentRow key={`sent-${item.mail.id}`} mail={item.mail} theme={theme} />
+                )
+              );
+            })() : tab === 'inbox' ? (
+              mails.length === 0 ? (
+                <View style={styles.emptyWrap}>
+                  <Text style={styles.emptyEmoji}>📭</Text>
+                  <Text style={[styles.emptyTitle, { color: theme.text }]}>No messages yet</Text>
+                  <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
+                    When someone sends you a message it'll show up here
+                  </Text>
+                </View>
+              ) : (
+                mails.map((mail) => (
+                  <MailRow
+                    key={mail.id}
+                    mail={mail}
+                    theme={theme}
+                    onMarkRead={() => markRead(mail.id)}
+                    onDelete={() => deleteMail(mail.id).catch(() => {})}
+                  />
+                ))
+              )
             ) : (
-              mails.map((mail, idx) => (
-                <MailRow
-                  key={mail.id}
-                  mail={mail}
-                  theme={theme}
-                  onMarkRead={() => markRead(mail.id)}
-                  onDelete={() => deleteMail(mail.id).catch(() => {})}
-                />
-              ))
+              sentMails.length === 0 ? (
+                <View style={styles.emptyWrap}>
+                  <Text style={styles.emptyEmoji}>📤</Text>
+                  <Text style={[styles.emptyTitle, { color: theme.text }]}>No sent messages</Text>
+                  <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
+                    Messages you send to other players will appear here
+                  </Text>
+                </View>
+              ) : (
+                sentMails.map((mail) => (
+                  <SentRow key={mail.id} mail={mail} theme={theme} />
+                ))
+              )
             )}
           </View>
         </ScrollView>
@@ -166,7 +279,7 @@ export default function MyMailScreen() {
       {infoVisible && (
         <View style={styles.infoOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-          <View style={styles.infoCard}>
+          <View style={[styles.infoCard, { backgroundColor: theme.surface }]}>
             <LinearGradient colors={['#3FA535', '#2C7A25']} style={styles.infoCardHeader}>
               <Text style={styles.infoCardTitle}>My Mail</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
@@ -224,8 +337,34 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: 110 },
 
   header: { flexDirection: 'row', alignItems: 'center', marginTop: 60, marginHorizontal: 20, gap: 12 },
-  screenTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 24, color: '#27331F' },
+  screenTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 24 },
   screenSubtitle: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#7C8A6E', marginHorizontal: 20, marginTop: 6, marginBottom: 6 },
+
+  tabRow: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 6,
+    gap: 8,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: 'rgba(63,165,53,0.08)',
+  },
+  tabActive: {
+    backgroundColor: '#3FA535',
+  },
+  tabText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: '#3FA535',
+  },
+  tabTextActive: {
+    color: '#fff',
+  },
   infoIcon: { width: 20, height: 20, opacity: 0.8 },
   infoOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
@@ -235,7 +374,7 @@ const styles = StyleSheet.create({
     padding: 24,
     zIndex: 20,
   },
-  infoCard: { width: '100%', backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden' },
+  infoCard: { width: '100%', borderRadius: 20, overflow: 'hidden' },
   infoCardHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 18, paddingVertical: 13,
@@ -262,18 +401,19 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
-    gap: 12,
+    gap: 8,
   },
   rowUnread: {
     backgroundColor: 'rgba(63,165,53,0.13)',
   },
 
   /* Avatar */
-  avatarWrap: { position: 'relative', flexShrink: 0 },
+  avatarWrap: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  avatarInner: { position: 'relative' },
   avatar: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     borderWidth: 2,
     borderColor: '#fff',
     overflow: 'hidden',
@@ -288,6 +428,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#3FA535',
     borderWidth: 2,
     borderColor: '#fff',
+  },
+  directionBadge: {
+    width: 26,
+    height: 26,
+    alignSelf: 'center',
   },
 
   /* Content */

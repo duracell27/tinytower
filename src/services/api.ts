@@ -82,6 +82,16 @@ export interface MailMessage {
   createdAt: string;
 }
 
+export interface SentMailMessage {
+  id: string;
+  toId: string;
+  toName: string;
+  toLevel: number;
+  subject: string;
+  body: string;
+  createdAt: string;
+}
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? (
   __DEV__ ? 'http://localhost:3000' : 'https://api.tinytower.com'
 );
@@ -224,6 +234,8 @@ export const api = {
     request<{ id: string }>('POST', `/mail/send/${toId}`, { subject, body }),
   getMailInbox: () =>
     request<MailMessage[]>('GET', '/mail/inbox'),
+  getMailSent: () =>
+    request<SentMailMessage[]>('GET', '/mail/sent'),
   getMailUnreadCount: () =>
     request<{ count: number }>('GET', '/mail/unread-count'),
   markMailRead: (id: string) =>
