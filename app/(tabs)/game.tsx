@@ -49,6 +49,7 @@ import {
 import { getProductionStatus } from '../../shared/engine/productionStatus';
 import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { hasAnyBetterCandidate } from '../../src/utils/workerCandidate';
+import { getWorkerForSlot } from '../../shared/engine/workerUtils';
 
 type FloorItem =
   | { type: 'production'; id: number }
@@ -546,6 +547,7 @@ export default function GameScreen() {
         if (!prod.typeId) return;
         const tc = gameConfig.productionTypes[prod.typeId];
         if (!tc) return;
+        if (!getWorkerForSlot(liveWorkers, liveBottomFloor.id, slotIdx)) return;
         if (getProductionStatus(prod, tc, liveNow, liveBalance, tc.sellDuration * collectStarMult.time).effectiveStage === 'READY_TO_COLLECT') {
           slots.push([liveBottomFloor.id, slotIdx]);
         }

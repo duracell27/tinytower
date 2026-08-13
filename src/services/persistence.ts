@@ -65,6 +65,7 @@ export function loadGameState(): PersistedGameState | null {
       tokens: parsed.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
       businessUpgrades: parsed.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
       floorStars: parsed.floorStars ?? {},
+      warehouseLevel: parsed.warehouseLevel ?? 0,
       dailyTasks: parsed.dailyTasks ?? {
         progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
         claimed: [],
@@ -126,6 +127,7 @@ export function saveGameState(state: PersistedGameState): void {
     tokens: state.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     businessUpgrades: state.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     floorStars: state.floorStars ?? {},
+    warehouseLevel: state.warehouseLevel ?? 0,
     dailyTasks: state.dailyTasks ?? {
       progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
       claimed: [],

@@ -107,7 +107,8 @@ export function getFloorActionInfo(
         if (!tc) return sum;
         if (derivedStage(prod, now, starMult.time) !== 'READY_TO_COLLECT') return sum;
         const worker = getWorkerForSlot(workers, floor.id, slotIdx);
-        const workerMultiplier = worker ? getRevenueMultiplier(worker, floorType, prod.typeId) : 1;
+        if (!worker) return sum;
+        const workerMultiplier = getRevenueMultiplier(worker, floorType, prod.typeId);
         return sum + Math.floor(tc.batchValue * starMult.value * coinMultiplier * workerMultiplier);
       }, 0);
       return totalCoins > 0 ? { mode: 'collect', totalCoins } : null;
