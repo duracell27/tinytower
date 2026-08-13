@@ -4,12 +4,22 @@ import { processLobbyCommand } from './lobbyCommands';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress } from '../config/dailyTasksConfig';
 import { BUSINESS_UPGRADE_COSTS } from '../config/businessUpgradeCosts';
 import { FLOOR_STAR_MULTIPLIERS, FLOOR_UPGRADE_COSTS } from '../config/floorUpgradeConfig';
+import {
+  WAREHOUSE_UPGRADE_COSTS,
+  WAREHOUSE_MAX_LEVEL,
+  warehouseCapacity,
+} from '../config/warehouseUpgradeConfig';
 
 export interface ProcessResult {
   success: boolean;
   state: GameState;
   error?: string;
   xpGained?: number;
+}
+
+function toolsTotal(tools: GameState['tools']): number {
+  return (tools.briks ?? 0) + (tools.glass ?? 0) + (tools.nails ?? 0)
+       + (tools.screw ?? 0) + (tools.wood  ?? 0) + (tools.cement ?? 0);
 }
 
 export function processCommand(
@@ -57,6 +67,30 @@ export function processCommand(
     case 'evict_low_level_workers':
     case 'buy_daily_gems':
       return processLobbyCommand(state, command, config, playerLevel);
+    case 'upgrade_warehouse': {
+      const nextLevel = (state.warehouseLevel ?? 0) + 1;
+      if (nextLevel > WAREHOUSE_MAX_LEVEL) {
+        return { success: false, state, error: 'Max warehouse level reached' };
+      }
+      const cost = WAREHOUSE_UPGRADE_COSTS[nextLevel]!;
+      if (cost.currency === 'coins') {
+        if (state.balance < cost.amount) {
+          return { success: false, state, error: 'Insufficient coins' };
+        }
+        return {
+          success: true,
+          state: { ...state, balance: state.balance - cost.amount, warehouseLevel: nextLevel },
+        };
+      } else {
+        if (state.gems < cost.amount) {
+          return { success: false, state, error: 'Insufficient gems' };
+        }
+        return {
+          success: true,
+          state: { ...state, gems: state.gems - cost.amount, warehouseLevel: nextLevel },
+        };
+      }
+    }
     case 'dev_add_gems':
       return { success: true, state: { ...state, gems: state.gems + command.amount } };
     case 'shop_purchase': {
@@ -418,6 +452,10 @@ function handleClaimDailyTask(
   let tools = state.tools;
   if (taskConfig.rewards.hasMaterials && command.materialType) {
     const matCount = getMaterialCount(playerLevel) * doubleMultiplier;
+    const cap = warehouseCapacity(state.warehouseLevel ?? 0);
+    if (toolsTotal(state.tools) + matCount > cap) {
+      return { success: false, state, error: 'WAREHOUSE_FULL' };
+    }
     tools = { ...tools, [command.materialType]: (tools[command.materialType] ?? 0) + matCount };
   }
 

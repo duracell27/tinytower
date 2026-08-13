@@ -130,6 +130,10 @@ export const UpgradeLobbyCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('upgrade_lobby'),
 });
 
+export const UpgradeWarehouseCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('upgrade_warehouse'),
+});
+
 export const ClaimDailyRewardCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('claim_daily_reward'),
   stage: z.union([z.literal(1), z.literal(2)]),
@@ -259,6 +263,7 @@ export const CommandSchema = z.discriminatedUnion('type', [
   DeliverAllCommandSchema,
   UpgradeElevatorCommandSchema,
   UpgradeLobbyCommandSchema,
+  UpgradeWarehouseCommandSchema,
   ClaimDailyRewardCommandSchema,
   ExpandHotelCommandSchema,
   FillLobbyCommandSchema,

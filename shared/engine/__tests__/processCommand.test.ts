@@ -1,6 +1,8 @@
 import { processCommand } from '../processCommand';
-import { createInitialState } from '../../config/gameConfig';
+import { createInitialState, gameConfig } from '../../config/gameConfig';
 import type { GameState, GameConfig, Command, Worker } from '../../types';
+import { WAREHOUSE_MAX_LEVEL } from '../../config/warehouseUpgradeConfig';
+import { DAILY_TASKS } from '../../config/dailyTasksConfig';
 
 const testConfig: GameConfig = {
   floorTypes: {
@@ -1650,5 +1652,110 @@ describe('floor star multipliers', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBe('Floor not found');
     });
+  });
+});
+
+describe('upgrade_warehouse command', () => {
+  const baseState = createInitialState(gameConfig);
+
+  it('increments warehouseLevel and deducts coins at level 0→1', () => {
+    const state = { ...baseState, balance: 20_000, warehouseLevel: 0 };
+    const result = processCommand(
+      state,
+      { id: '1', type: 'upgrade_warehouse', timestamp: 0 },
+      gameConfig, 0, 1, { coinPercent: 0, xpPercent: 0 },
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.warehouseLevel).toBe(1);
+    expect(result.state.balance).toBe(0);
+  });
+
+  it('increments warehouseLevel and deducts gems at level 1→2', () => {
+    const state = { ...baseState, balance: 0, gems: 20, warehouseLevel: 1 };
+    const result = processCommand(
+      state,
+      { id: '1', type: 'upgrade_warehouse', timestamp: 0 },
+      gameConfig, 0, 1, { coinPercent: 0, xpPercent: 0 },
+    );
+    expect(result.success).toBe(true);
+    expect(result.state.warehouseLevel).toBe(2);
+    expect(result.state.gems).toBe(0);
+  });
+
+  it('fails with insufficient coins', () => {
+    const state = { ...baseState, balance: 100, warehouseLevel: 0 };
+    const result = processCommand(
+      state,
+      { id: '1', type: 'upgrade_warehouse', timestamp: 0 },
+      gameConfig, 0, 1, { coinPercent: 0, xpPercent: 0 },
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient coins');
+  });
+
+  it('fails when already at max level', () => {
+    const state = { ...baseState, balance: 999_999_999_999, warehouseLevel: WAREHOUSE_MAX_LEVEL };
+    const result = processCommand(
+      state,
+      { id: '1', type: 'upgrade_warehouse', timestamp: 0 },
+      gameConfig, 0, 1, { coinPercent: 0, xpPercent: 0 },
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Max warehouse level reached');
+  });
+});
+
+describe('warehouse capacity enforcement in claim_daily_task', () => {
+  it('blocks material reward when warehouse is full', () => {
+    // Fill the warehouse to exactly capacity at level 0 (cap = 30)
+    const state: GameState = {
+      ...createInitialState(gameConfig),
+      warehouseLevel: 0,
+      tools: { briks: 30, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
+      dailyTasks: {
+        ...createInitialState(gameConfig).dailyTasks,
+        progress: {
+          ...createInitialState(gameConfig).dailyTasks.progress,
+          floorsBuilt: 1, // satisfy build_floor task threshold (progressSource: floorsBuilt, threshold: 1)
+        },
+        claimed: [],
+      },
+    };
+    // Find a daily task that awards materials
+    const matTask = DAILY_TASKS.find((t) => t.rewards.hasMaterials);
+    if (!matTask) return; // skip if no such task in config
+
+    const result = processCommand(
+      state,
+      { id: '1', type: 'claim_daily_task', taskKey: matTask.key, materialType: 'briks', tokenColor: 'green', tokenCount: 1, timestamp: state.lastDailyReset + 1 },
+      gameConfig, state.lastDailyReset + 1, 1, { coinPercent: 0, xpPercent: 0 },
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('WAREHOUSE_FULL');
+  });
+
+  it('allows material reward when warehouse has space', () => {
+    const state: GameState = {
+      ...createInitialState(gameConfig),
+      warehouseLevel: 0,
+      tools: { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
+      dailyTasks: {
+        ...createInitialState(gameConfig).dailyTasks,
+        progress: {
+          ...createInitialState(gameConfig).dailyTasks.progress,
+          floorsBuilt: 1,
+        },
+        claimed: [],
+      },
+    };
+    const matTask = DAILY_TASKS.find((t) => t.rewards.hasMaterials);
+    if (!matTask) return;
+
+    const result = processCommand(
+      state,
+      { id: '1', type: 'claim_daily_task', taskKey: matTask.key, materialType: 'briks', tokenColor: 'green', tokenCount: 1, timestamp: state.lastDailyReset + 1 },
+      gameConfig, state.lastDailyReset + 1, 1, { coinPercent: 0, xpPercent: 0 },
+    );
+    expect(result.success).toBe(true);
   });
 });
