@@ -168,6 +168,7 @@ interface UIState {
   pendingTaskReward: PendingTaskReward | null;
   pendingDeliverAll: DeliverAllSummary | null;
   hotelFullNotice: boolean;
+  warehouseFullNotice: boolean;
   pendingOpenHotel: boolean;
   pendingPurchaseSuccess: PurchaseSuccessPayload | null;
   isHydrated: boolean;
@@ -248,6 +249,8 @@ interface GameActions {
   clearPendingDeliverAll: () => void;
   showHotelFullNotice: () => void;
   dismissHotelFullNotice: () => void;
+  upgradeWarehouse: () => void;
+  dismissWarehouseFullNotice: () => void;
   clearPendingOpenHotel: () => void;
   openSheet: () => void;
   closeSheet: () => void;
@@ -271,7 +274,7 @@ function executeCommand(
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks, floorStars,
+    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks, floorStars, warehouseLevel,
   } = store;
   let gameState: GameState = {
     balance, gems, floors, commandQueue, workers, hotelCapacity,
@@ -279,6 +282,7 @@ function executeCommand(
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
     coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks, floorStars: floorStars ?? {},
+    warehouseLevel: warehouseLevel ?? 0,
   };
   // Use real wall-clock time so daily reset fires even when spawn_visitor
   // timestamps are from yesterday (catch-up cadence).
@@ -304,6 +308,9 @@ function executeCommand(
     { coinPercent: store.coinBonusPercent, xpPercent: store.xpBonusPercent },
   );
   if (!result.success) {
+    if (result.error === 'WAREHOUSE_FULL') {
+      set({ warehouseFullNotice: true });
+    }
     const curLog = get().failedCommandLog;
     set({
       failedCommandLog: [
@@ -371,6 +378,7 @@ function executeCommand(
     lobbyVisitors: result.state.lobbyVisitors,
     lobbyCapacity: result.state.lobbyCapacity,
     elevatorLevel: result.state.elevatorLevel,
+    warehouseLevel: result.state.warehouseLevel ?? get().warehouseLevel,
     elevatorFloor: result.state.elevatorFloor,
     dailyTips: result.state.dailyTips,
     dailyGemsCollected: result.state.dailyGemsCollected,
@@ -424,6 +432,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   pendingTaskReward: null,
   pendingDeliverAll: null,
   hotelFullNotice: false,
+  warehouseFullNotice: false,
   pendingOpenHotel: false,
   pendingPurchaseSuccess: null,
   isHydrated: false,
@@ -617,6 +626,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     pendingWorkerFocus: null,
     pendingDailyLoginReward: null,
     hotelFullNotice: false,
+    warehouseFullNotice: false,
     pendingOpenHotel: false,
     dailyTasks: { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
     isHydrated: false,
@@ -1004,6 +1014,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
+  upgradeWarehouse: () => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'upgrade_warehouse',
+      timestamp: clock.now(),
+    });
+  },
+
+  dismissWarehouseFullNotice: () => set({ warehouseFullNotice: false }),
+
   expandHotel: () => {
     executeCommand(get, set, {
       id: uuid(),
@@ -1069,6 +1089,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     lobbyVisitors: state.lobbyVisitors ?? [],
     lobbyCapacity: state.lobbyCapacity ?? 10,
     elevatorLevel: state.elevatorLevel ?? 1,
+    warehouseLevel: state.warehouseLevel ?? 0,
     elevatorFloor: state.elevatorFloor ?? 0,
     dailyTips: state.dailyTips ?? 0,
     dailyGemsCollected: state.dailyGemsCollected ?? 0,
@@ -1146,6 +1167,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     lobbyVisitors: serverState.lobbyVisitors,
     lobbyCapacity: serverState.lobbyCapacity,
     elevatorLevel: serverState.elevatorLevel,
+    warehouseLevel: serverState.warehouseLevel ?? 0,
     elevatorFloor: serverState.elevatorFloor,
     dailyTips: serverState.dailyTips,
     dailyGemsCollected: serverState.dailyGemsCollected,
