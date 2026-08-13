@@ -230,5 +230,16 @@
       "adult_content": "Adult Content (18+)",
       "other": "Other"
     }
+  },
+  "warehouse": {
+    "fullPopup": {
+      "title": "Warehouse Full",
+      "subtitle": "Upgrade your warehouse to receive more materials",
+      "open": "Open Warehouse",
+      "dismiss": "Dismiss"
+    },
+    "capacity": "{{current}} / {{max}}",
+    "upgrade": "Upgrade",
+    "maxLevel": "Max Level"
   }
 }

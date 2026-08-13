@@ -10,6 +10,7 @@ import TaskRewardModal from './TaskRewardModal';
 import PurchaseSuccessModal from './PurchaseSuccessModal';
 import FloorUpgradeModal from './FloorUpgradeModal';
 import ProductionDetailModal from './ProductionDetailModal';
+import WarehouseFullModal from './WarehouseFullModal';
 
 export default function GlobalOverlay() {
   return (
@@ -24,6 +25,7 @@ export default function GlobalOverlay() {
       <PurchaseSuccessModal />
       <FloorUpgradeModal />
       <ProductionDetailModal />
+      <WarehouseFullModal />
     </View>
   );
 }
