@@ -170,6 +170,7 @@ interface UIState {
   hotelFullNotice: boolean;
   warehouseFullNotice: boolean;
   pendingOpenHotel: boolean;
+  pendingOpenWarehouse: boolean;
   pendingPurchaseSuccess: PurchaseSuccessPayload | null;
   isHydrated: boolean;
   activeSheetCount: number;
@@ -252,6 +253,7 @@ interface GameActions {
   upgradeWarehouse: () => void;
   dismissWarehouseFullNotice: () => void;
   clearPendingOpenHotel: () => void;
+  clearPendingOpenWarehouse: () => void;
   openSheet: () => void;
   closeSheet: () => void;
   reset: () => void;
@@ -434,6 +436,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   hotelFullNotice: false,
   warehouseFullNotice: false,
   pendingOpenHotel: false,
+  pendingOpenWarehouse: false,
   pendingPurchaseSuccess: null,
   isHydrated: false,
   activeSheetCount: 0,
@@ -554,6 +557,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   showHotelFullNotice: () => set({ hotelFullNotice: true }),
   dismissHotelFullNotice: () => set({ hotelFullNotice: false }),
   clearPendingOpenHotel: () => set({ pendingOpenHotel: false }),
+  clearPendingOpenWarehouse: () => set({ pendingOpenWarehouse: false }),
   openSheet: () => set((s) => ({ activeSheetCount: s.activeSheetCount + 1 })),
   closeSheet: () => set((s) => ({ activeSheetCount: Math.max(0, s.activeSheetCount - 1) })),
   setPendingWorkerFocus: (workerId) => set({ pendingWorkerFocus: workerId }),
@@ -628,6 +632,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     hotelFullNotice: false,
     warehouseFullNotice: false,
     pendingOpenHotel: false,
+    pendingOpenWarehouse: false,
     dailyTasks: { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
     isHydrated: false,
     activeSheetCount: 0,

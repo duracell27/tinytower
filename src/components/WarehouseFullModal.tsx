@@ -12,6 +12,10 @@ export default function WarehouseFullModal() {
   const { t } = useTranslation('tabs');
   const visible = useGameStore((s) => s.warehouseFullNotice);
   const dismiss = useGameStore((s) => s.dismissWarehouseFullNotice);
+  const openWarehouse = () => {
+    dismiss();
+    useGameStore.setState({ pendingOpenWarehouse: true });
+  };
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={dismiss}>
@@ -30,7 +34,7 @@ export default function WarehouseFullModal() {
               <Text style={styles.subtitle}>{t('warehouse.fullPopup.subtitle')}</Text>
             </View>
             <Pressable
-              onPress={dismiss}
+              onPress={openWarehouse}
               style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
             >
               <LinearGradient colors={['#6B7A8D', '#4A5568']} style={styles.btnGradient}>

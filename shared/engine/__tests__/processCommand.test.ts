@@ -1722,7 +1722,7 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
       },
     };
     // Find a daily task that awards materials
-    const matTask = DAILY_TASKS.find((t) => t.rewards.hasMaterials);
+    const matTask = DAILY_TASKS.find((t) => t.key === 'build_floor');
     if (!matTask) return; // skip if no such task in config
 
     const result = processCommand(
@@ -1748,7 +1748,7 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
         claimed: [],
       },
     };
-    const matTask = DAILY_TASKS.find((t) => t.rewards.hasMaterials);
+    const matTask = DAILY_TASKS.find((t) => t.key === 'build_floor');
     if (!matTask) return;
 
     const result = processCommand(

@@ -21,12 +21,21 @@ export default function MenuScreen() {
   const [usersOpen, setUsersOpen] = useState(false);
   const [onlineCount, setOnlineCount] = useState<number | null>(null);
   const pendingWorkerFocus = useGameStore((s) => s.pendingWorkerFocus);
+  const pendingOpenWarehouse = useGameStore((s) => s.pendingOpenWarehouse);
+  const clearPendingOpenWarehouse = useGameStore((s) => s.clearPendingOpenWarehouse);
 
   useEffect(() => {
     if (pendingWorkerFocus) {
       setWorkersOpen(true);
     }
   }, [pendingWorkerFocus]);
+
+  useEffect(() => {
+    if (pendingOpenWarehouse) {
+      setInventoryOpen(true);
+      clearPendingOpenWarehouse();
+    }
+  }, [pendingOpenWarehouse, clearPendingOpenWarehouse]);
 
   useFocusEffect(
     React.useCallback(() => {

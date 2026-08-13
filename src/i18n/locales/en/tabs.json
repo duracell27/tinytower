@@ -240,6 +240,6 @@
     },
     "capacity": "{{current}} / {{max}}",
     "upgrade": "Upgrade",
-    "maxLevel": "Max Level"
+    "maxLevel": "Max level"
   }
 }
