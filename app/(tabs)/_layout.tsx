@@ -14,7 +14,7 @@ export default function TabsLayout() {
 
   return (
     <NativeTabs
-      blurEffect="systemChromeMaterialLight"
+      blurEffect="systemChromeMaterial"
       disableTransparentOnScrollEdge={true}
     >
       <NativeTabs.Trigger name="game">

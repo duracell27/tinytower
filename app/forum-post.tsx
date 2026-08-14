@@ -231,7 +231,7 @@ export default function ForumPostScreen() {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={insets.top + 56}
+        keyboardVerticalOffset={0}
       >
         <FlatList
           data={comments}
@@ -286,11 +286,13 @@ export default function ForumPostScreen() {
                 maxLength={1000}
               />
               <Pressable
-                style={[styles.sendBtn, (!commentText.trim() || isSending) && styles.sendBtnDisabled]}
-                onPress={handleSendComment}
-                disabled={!commentText.trim() || isSending}
+                style={[styles.sendBtn, (!commentText.trim() && !keyboardVisible) && styles.sendBtnDisabled]}
+                onPress={!commentText.trim() && keyboardVisible ? () => Keyboard.dismiss() : handleSendComment}
+                disabled={!commentText.trim() && !keyboardVisible || isSending}
               >
-                <Text style={styles.sendIcon}>{editingCommentId ? '✓' : '➤'}</Text>
+                <Text style={styles.sendIcon}>
+                  {!commentText.trim() && keyboardVisible ? '▼' : editingCommentId ? '✓' : '➤'}
+                </Text>
               </Pressable>
             </View>
           </View>

@@ -46,7 +46,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
   const isLoading = useAuthStore((s) => s.isLoading);
   const balance = useGameStore((s) => s.balance);
   const gems = useGameStore((s) => s.gems);
-  const floorCount = useGameStore((s) => s.floors.length);
+  const floorCount = useGameStore((s) => s.floors.length + 1); // +1 for hotel floor
   const playerLevel = useGameStore((s) => s.playerLevel);
   const player = useAuthStore((s) => s.player);
 
