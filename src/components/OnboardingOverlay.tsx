@@ -42,6 +42,10 @@ export default function OnboardingOverlay() {
     );
   }, [bounceY]);
 
+  const animatedArrow = useAnimatedStyle(() => ({
+    transform: [{ translateY: bounceY.value }],
+  }));
+
   if (!isActive || !step || step === 'done') return null;
 
   const config = ONBOARDING_STEPS[step];
@@ -54,10 +58,6 @@ export default function OnboardingOverlay() {
     : py - ARROW_SIZE - 8 - 130; // 130 ≈ card height estimate
 
   const arrowTop = config.arrowDir === 'up' ? py : py - ARROW_SIZE;
-
-  const animatedArrow = useAnimatedStyle(() => ({
-    transform: [{ translateY: bounceY.value }],
-  }));
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
