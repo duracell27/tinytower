@@ -174,8 +174,8 @@ function handleSpeedUpConstruction(
   const timeLeft = uc.startedAt + uc.durationMs - command.timestamp;
   if (timeLeft <= 0) return { success: false, state, error: 'Construction already complete' };
 
-  const cost = Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));
-  if (state.gems < cost) return { success: false, state, error: 'Insufficient gems' };
+  const cost = command.freeSpeedup ? 0 : Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));
+  if (cost > 0 && state.gems < cost) return { success: false, state, error: 'Insufficient gems' };
 
   const updatedUc = { ...uc, startedAt: command.timestamp - uc.durationMs };
   return {

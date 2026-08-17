@@ -177,6 +177,7 @@ export const ExchangeGemsCommandSchema = TimestampedBaseSchema.extend({
 export const SpeedUpConstructionCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('speed_up_construction'),
   floorId: z.number().int().positive(),
+  freeSpeedup: z.boolean().optional(),
 });
 
 export const SpeedUpDeliveryCommandSchema = TimestampedBaseSchema.extend({
