@@ -3,6 +3,7 @@ import { createMMKV } from 'react-native-mmkv';
 import i18n from '../i18n';
 import { api } from '../services/api';
 import { setupUserPersistence, teardownPersistence } from '../services/persistence';
+import { useOnboardingStore } from './onboardingStore';
 
 void i18n;
 
@@ -71,6 +72,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
       setupUserPersistence(data.player.id);
+      useOnboardingStore.getState().start();
     } catch (e) {
       set({ isLoading: false });
       throw e;
@@ -129,6 +131,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
       setupUserPersistence(data.player.id);
+      useOnboardingStore.getState().start();
     } catch (e) {
       set({ isLoading: false });
       throw e;
