@@ -27,6 +27,7 @@ import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useFriendStore } from '../../src/stores/friendStore';
+import { useOnboardingStore } from '../../src/stores/onboardingStore';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getExhaustedFloorTypes } from '../../shared/engine/floorTypeUtils';
@@ -653,7 +654,10 @@ export default function GameScreen() {
             visitorCount={lobbyVisitors.length}
             lobbyCapacity={lobbyCapacity}
             nextVisitorAt={nextVisitorAt}
-            onPress={() => setLobbyOpen(true)}
+            onPress={() => {
+              setLobbyOpen(true);
+              useOnboardingStore.getState().notifyElevatorOpened();
+            }}
           />
           {isTemporary && (
             <Pressable
