@@ -15,6 +15,7 @@ import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategorie
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount } from '../../shared/config/dailyTasksConfig';
 import { FLOOR_UPGRADE_COSTS, FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { WAREHOUSE_UPGRADE_COSTS } from '../../shared/config/warehouseUpgradeConfig';
+import { useOnboardingStore } from './onboardingStore';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -414,6 +415,15 @@ function executeCommand(
   });
 }
 
+function advanceOnboardingIfStep(
+  ...steps: import('./onboardingStore').OnboardingStep[]
+) {
+  const ob = useOnboardingStore.getState();
+  if (ob.isActive && ob.step !== null && (steps as string[]).includes(ob.step)) {
+    ob.advance();
+  }
+}
+
 export const useGameStore = create<GameStore>((set, get) => ({
   ...createInitialState(gameConfig),
   playerLevel: 1,
@@ -498,8 +508,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!uc) return;
     const timeLeft = uc.startedAt + uc.durationMs - now;
     if (timeLeft <= 0) return;
-    const cost = Math.max(1, Math.ceil(timeLeft / 3_600_000));
-    if (state.gems < cost) {
+
+    const isOnboarding = useOnboardingStore.getState().step === 'speed_up_construction';
+    const cost = isOnboarding ? 0 : Math.max(1, Math.ceil(timeLeft / 3_600_000));
+    if (!isOnboarding && state.gems < cost) {
       state.showInsufficientResources({ currency: 'gems', need: cost, have: state.gems });
       return;
     }
@@ -508,7 +520,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       type: 'speed_up_construction',
       timestamp: now,
       floorId,
+      freeSpeedup: isOnboarding || undefined,
     });
+    advanceOnboardingIfStep('speed_up_construction');
   },
   speedUpDelivery: (floorId, slotIdx) => {
     executeCommand(get, set, {
@@ -655,6 +669,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       typeId,
       timestamp: clock.now(),
     });
+    advanceOnboardingIfStep('buy_goods_1', 'buy_goods_2');
   },
 
   list: (floorId, slotIdx) => {
@@ -675,6 +690,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       slotIdx,
       timestamp: clock.now(),
     });
+    advanceOnboardingIfStep('collect_slot_1', 'collect_slot_2');
   },
 
   assignWorker: (workerId, floorId, slotIdx) => {
@@ -686,6 +702,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       slotIdx,
       timestamp: clock.now(),
     });
+    advanceOnboardingIfStep('assign_worker');
   },
 
   fireWorker: (workerId) => {
@@ -851,6 +868,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       builderTool,
       builderTools,
     });
+    advanceOnboardingIfStep('deliver_visitor', 'deliver_worker');
 
     const visitorLeft = get().lobbyVisitors.length < prevVisitorCount;
 
@@ -1314,6 +1332,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         uc.floorId === floorId ? { ...uc, selectedFloorType: floorType } : uc,
       ),
     }));
+    advanceOnboardingIfStep('choose_floor_type');
   },
 
   openFloor: (floorId, floorType) => {
@@ -1324,6 +1343,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       floorType,
       timestamp: clock.now(),
     });
+    advanceOnboardingIfStep('open_business');
   },
 
   clearFailedCommandLog: () => set({ failedCommandLog: [] }),
