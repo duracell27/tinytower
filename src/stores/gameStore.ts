@@ -1425,12 +1425,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   openFloor: (floorId, floorType) => {
+    const isOnboarding = useOnboardingStore.getState().step === 'open_business';
     executeCommand(get, set, {
       id: uuid(),
       type: 'open_floor',
       floorId,
       floorType,
       timestamp: clock.now(),
+      freeOpen: isOnboarding || undefined,
     });
     advanceOnboardingIfStep('open_business');
   },

@@ -174,6 +174,7 @@ export const OpenFloorCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('open_floor'),
   floorId: z.number().int(),
   floorType: z.string(),
+  freeOpen: z.boolean().optional(),
 });
 
 export const ExchangeGemsCommandSchema = TimestampedBaseSchema.extend({

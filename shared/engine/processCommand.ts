@@ -288,11 +288,13 @@ function handleOpenFloor(
 ): ProcessResult {
   const uc = state.underConstruction.find((u) => u.floorId === command.floorId);
   if (!uc) return { success: false, state, error: 'Floor not under construction' };
-  if (command.timestamp - uc.startedAt < uc.durationMs) return { success: false, state, error: 'Construction not complete' };
+  if (!command.freeOpen && command.timestamp - uc.startedAt < uc.durationMs) return { success: false, state, error: 'Construction not complete' };
 
   const currentTools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 };
-  const hasAllTools = uc.requiredTools.every(({ tool, count }) => (currentTools[tool] ?? 0) >= count);
-  if (!hasAllTools) return { success: false, state, error: 'Insufficient tools' };
+  if (!command.freeOpen) {
+    const hasAllTools = uc.requiredTools.every(({ tool, count }) => (currentTools[tool] ?? 0) >= count);
+    if (!hasAllTools) return { success: false, state, error: 'Insufficient tools' };
+  }
 
   const floorTypeConfig = config.floorTypes[command.floorType];
   if (!floorTypeConfig) return { success: false, state, error: 'Unknown floor type' };
