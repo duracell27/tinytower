@@ -399,12 +399,8 @@ export default function GameScreen() {
     setHotelOpen(false);
     useOnboardingStore.getState().setTargetRect(null);
     const scrollTimer = setTimeout(() => {
-      const idx = floorListRef.current.findIndex((i) => i.type === 'buyFloor');
-      if (idx >= 0) {
-        // animated:false avoids measuring mid-animation which would give the wrong
-        // screen coords and put the spotlight in the wrong place (blocking the tap).
-        listRef.current?.scrollToIndex({ index: idx, animated: false, viewPosition: 0.8 });
-      }
+      // buyFloor is always index 0 — scroll to top is simpler and more reliable.
+      listRef.current?.scrollToOffset({ offset: 0, animated: false });
     }, 300);
     const measureTimer = setTimeout(() => {
       buyFloorRef.current?.measureInWindow((x, y, width, height) => {
@@ -945,7 +941,7 @@ export default function GameScreen() {
                   onboardingStep === 'assign_worker' && { paddingBottom: 280 },
                 ]}
                 showsVerticalScrollIndicator={false}
-                scrollEnabled={!isOnboarding || onboardingStep === 'assign_worker'}
+                scrollEnabled={!isOnboarding || onboardingStep === 'assign_worker' || onboardingStep === 'buy_floor'}
                 onContentSizeChange={(_w, h) => {
                   if (!hasRevealedRef.current && h > 0 && viewHeightRef.current > 0) {
                     hasRevealedRef.current = true;
