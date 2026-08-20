@@ -86,12 +86,13 @@ export default function UnderConstructionBanner({
     return () => clearTimeout(timer);
   }, [onboardingStep, isReady]);
 
-  // Force collapsed state when entering expand_floor_card step.
+  // Force collapsed state on entering expand_floor_card — run only when step changes,
+  // NOT when collapsed changes (otherwise it fights the user's tap).
   useEffect(() => {
-    if (onboardingStep === 'expand_floor_card' && !collapsed) {
+    if (onboardingStep === 'expand_floor_card') {
       setCollapsed(true);
     }
-  }, [onboardingStep, collapsed]);
+  }, [onboardingStep]);
 
   // Measure the collapsed row for expand_floor_card spotlight.
   useEffect(() => {
@@ -103,7 +104,7 @@ export default function UnderConstructionBanner({
       });
     }, 600);
     return () => clearTimeout(timer);
-  }, [onboardingStep, collapsed]);
+  }, [onboardingStep]);
 
   // Measure expanded card (spotlight) + open button (arrow) for open_business.
   useEffect(() => {
@@ -130,7 +131,7 @@ export default function UnderConstructionBanner({
     const next = !collapsed;
     setCollapsed(next);
     uiStorage.set(`uc-collapsed-${floorId}`, next);
-    if (onboardingStep === 'expand_floor_card' && !collapsed) {
+    if (onboardingStep === 'expand_floor_card' && !next) {
       useOnboardingStore.getState().advance();
     }
   };
