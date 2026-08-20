@@ -38,7 +38,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     dismissable: false,
   },
   buy_goods_1: {
-    text: 'Поповни запаси — виробництво не зупиняється',
+    text: 'Закупи товари щоб виробництво не зупинялось',
     arrowDir: 'down',
     dismissable: false,
   },

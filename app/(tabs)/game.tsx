@@ -401,14 +401,16 @@ export default function GameScreen() {
     const scrollTimer = setTimeout(() => {
       const idx = floorListRef.current.findIndex((i) => i.type === 'buyFloor');
       if (idx >= 0) {
-        listRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 1 });
+        // animated:false avoids measuring mid-animation which would give the wrong
+        // screen coords and put the spotlight in the wrong place (blocking the tap).
+        listRef.current?.scrollToIndex({ index: idx, animated: false, viewPosition: 0.8 });
       }
-    }, 400);
+    }, 300);
     const measureTimer = setTimeout(() => {
       buyFloorRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
       });
-    }, 1000);
+    }, 700);
     return () => { clearTimeout(scrollTimer); clearTimeout(measureTimer); };
   }, [onboardingStep]);
 
@@ -506,8 +508,8 @@ export default function GameScreen() {
   );
 
   const listExtraData = React.useMemo(
-    () => ({ nextFloorUnlock, towerCollapsed }),
-    [nextFloorUnlock, towerCollapsed],
+    () => ({ nextFloorUnlock, towerCollapsed, onboardingStep }),
+    [nextFloorUnlock, towerCollapsed, onboardingStep],
   );
 
   // The bottom-most floor (last in sorted-descending list = lowest ID = nearest the bar)
@@ -797,7 +799,8 @@ export default function GameScreen() {
             price={nextFloorUnlock.price}
             currency={nextFloorUnlock.currency}
             onPress={() => {
-              if (onboardingStep !== 'buy_floor') {
+              const liveStep = useOnboardingStore.getState().step;
+              if (liveStep !== 'buy_floor') {
                 const currentAmount = nextFloorUnlock.currency === 'gems' ? gems : balance;
                 if (currentAmount < nextFloorUnlock.price) {
                   showInsufficientResources({
@@ -809,9 +812,8 @@ export default function GameScreen() {
                 }
               }
               buyFloor(nextFloorId);
-              if (onboardingStep === 'buy_floor') {
+              if (liveStep === 'buy_floor') {
                 useOnboardingStore.getState().advance();
-                // Auto-open the floor type picker for the just-bought floor
                 setPickerOpenFor(nextFloorId);
               }
             }}

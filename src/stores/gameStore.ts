@@ -803,9 +803,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const cur = get();
     if (cur.lobbyVisitors.length > 0) set({ lobbyVisitors: [] });
     const { hairColor, female } = generateVisitorAppearance();
-    const floorTypeKeys = Object.keys(gameConfig.floorTypes);
+    // Onboarding visitor to floor 1 always goes to the green (pastries) floor.
     const pendingFloorType = (role === 'guest' && targetFloor === 1)
-      ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
+      ? 'green'
       : undefined;
     executeCommand(get, set, {
       id: uuid(),
