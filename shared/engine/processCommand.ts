@@ -47,6 +47,8 @@ export function processCommand(
       return processProductionCommand(state, command, config, now, bonuses);
     case 'buy_floor':
       return handleBuyFloor(state, command, config);
+    case 'select_floor_type':
+      return handleSelectFloorType(state, command);
     case 'open_floor':
       return handleOpenFloor(state, command, config);
     case 'exchange_gems':
@@ -233,8 +235,6 @@ function handleBuyFloor(
 ): ProcessResult {
   const unlockConfig = config.floorUnlocks?.find((f) => f.floorId === command.floorId);
   if (!unlockConfig) return { success: false, state, error: 'Floor not available for purchase' };
-  if (state.underConstruction.some((uc) => uc.floorId === command.floorId)) return { success: false, state, error: 'Floor already under construction' };
-  if (state.floors.some((f) => f.id === command.floorId)) return { success: false, state, error: 'Floor already exists' };
 
   const newUc = {
     floorId: command.floorId,
@@ -244,6 +244,17 @@ function handleBuyFloor(
     selectedFloorType: null,
   };
 
+  if (command.freeFloor) {
+    // During onboarding the floor may already exist or be under construction — skip adding it again.
+    const alreadyPresent =
+      state.underConstruction.some((uc) => uc.floorId === command.floorId) ||
+      state.floors.some((f) => f.id === command.floorId);
+    if (alreadyPresent) return { success: true, state };
+    return { success: true, state: { ...state, underConstruction: [...state.underConstruction, newUc] } };
+  }
+
+  if (state.underConstruction.some((uc) => uc.floorId === command.floorId)) return { success: false, state, error: 'Floor already under construction' };
+  if (state.floors.some((f) => f.id === command.floorId)) return { success: false, state, error: 'Floor already exists' };
   if (unlockConfig.currency === 'gems') {
     if (state.gems < unlockConfig.price) return { success: false, state, error: 'Insufficient gems' };
     return {
@@ -256,6 +267,18 @@ function handleBuyFloor(
     success: true,
     state: { ...state, balance: state.balance - unlockConfig.price, underConstruction: [...state.underConstruction, newUc] },
   };
+}
+
+function handleSelectFloorType(
+  state: GameState,
+  command: Extract<Command, { type: 'select_floor_type' }>,
+): ProcessResult {
+  const idx = state.underConstruction.findIndex((uc) => uc.floorId === command.floorId);
+  if (idx === -1) return { success: false, state, error: 'Floor not under construction' };
+  const updated = state.underConstruction.map((uc) =>
+    uc.floorId === command.floorId ? { ...uc, selectedFloorType: command.floorType } : uc,
+  );
+  return { success: true, state: { ...state, underConstruction: updated } };
 }
 
 function handleOpenFloor(

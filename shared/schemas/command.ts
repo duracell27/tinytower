@@ -161,6 +161,13 @@ export const BuyFloorCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('buy_floor'),
   floorId: z.number().int(),
   requiredTools: z.array(z.object({ tool: z.enum(['briks', 'glass', 'nails', 'screw', 'wood', 'cement']) })),
+  freeFloor: z.boolean().optional(),
+});
+
+export const SelectFloorTypeCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('select_floor_type'),
+  floorId: z.number().int(),
+  floorType: z.string(),
 });
 
 export const OpenFloorCommandSchema = TimestampedBaseSchema.extend({
@@ -269,6 +276,7 @@ export const CommandSchema = z.discriminatedUnion('type', [
   ExpandHotelCommandSchema,
   FillLobbyCommandSchema,
   BuyFloorCommandSchema,
+  SelectFloorTypeCommandSchema,
   OpenFloorCommandSchema,
   ExchangeGemsCommandSchema,
   SpeedUpConstructionCommandSchema,

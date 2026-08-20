@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { createMMKV } from 'react-native-mmkv';
 import { shadeColor } from '../utils/color';
 import { useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { useGameClock } from '../hooks/useGameClock';
 
 const uiStorage = createMMKV({ id: 'ui-prefs' });
@@ -61,25 +62,77 @@ export default function UnderConstructionBanner({
   const tools = useGameStore((s) => s.tools);
   const speedUpConstruction = useGameStore((s) => s.speedUpConstruction);
   const [confirming, setConfirming] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(
+    () => uiStorage.getBoolean(`uc-collapsed-${floorId}`) ?? false,
+  );
+  const onboardingStep = useOnboardingStore((s) => s.step);
+  const speedUpBtnRef = useRef<View>(null);
+  const collapsedRowRef = useRef<View>(null);
+  const expandedCardRef = useRef<View>(null);
+  const openBtnRef = useRef<View>(null);
 
   const timeLeft = Math.max(0, endsAt - now);
   const isReady = timeLeft === 0;
 
   useEffect(() => { setConfirming(false); }, [floorId, isReady]);
 
+  useEffect(() => {
+    if (onboardingStep !== 'speed_up_construction' || isReady) return;
+    const timer = setTimeout(() => {
+      speedUpBtnRef.current?.measureInWindow((x, y, width, height) => {
+        if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
+      });
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [onboardingStep, isReady]);
+
+  // Force collapsed state when entering expand_floor_card step.
+  useEffect(() => {
+    if (onboardingStep === 'expand_floor_card' && !collapsed) {
+      setCollapsed(true);
+    }
+  }, [onboardingStep, collapsed]);
+
+  // Measure the collapsed row for expand_floor_card spotlight.
+  useEffect(() => {
+    if (onboardingStep !== 'expand_floor_card') return;
+    useOnboardingStore.getState().setTargetRect(null);
+    const timer = setTimeout(() => {
+      collapsedRowRef.current?.measureInWindow((x, y, width, height) => {
+        if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
+      });
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [onboardingStep, collapsed]);
+
+  // Measure expanded card (spotlight) + open button (arrow) for open_business.
+  useEffect(() => {
+    if (onboardingStep !== 'open_business') return;
+    useOnboardingStore.getState().setTargetRect(null);
+    useOnboardingStore.getState().setArrowRect(null);
+    const timer = setTimeout(() => {
+      expandedCardRef.current?.measureInWindow((x, y, width, height) => {
+        if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
+      });
+      openBtnRef.current?.measureInWindow((x, y, width, height) => {
+        if (height > 0) useOnboardingStore.getState().setArrowRect({ x, y, width, height });
+      });
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [onboardingStep]);
+
   const MS_PER_HOUR = 3_600_000;
   const speedUpCost = Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));
   const canStart = requiredTools.every(({ tool, count }) => (tools?.[tool as keyof typeof tools] ?? 0) >= count);
 
   const isDark = useColorScheme() === 'dark';
-
-  const [collapsed, setCollapsed] = useState<boolean>(
-    () => uiStorage.getBoolean(`uc-collapsed-${floorId}`) ?? false,
-  );
   const toggleCollapse = () => {
     const next = !collapsed;
     setCollapsed(next);
     uiStorage.set(`uc-collapsed-${floorId}`, next);
+    if (onboardingStep === 'expand_floor_card' && !collapsed) {
+      useOnboardingStore.getState().advance();
+    }
   };
 
   // State: type selected — full card layout
@@ -103,7 +156,7 @@ export default function UnderConstructionBanner({
     // Collapsed: compact row
     if (collapsed) {
       return (
-        <View style={[styles.collapsedRow, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
+        <View ref={collapsedRowRef} collapsable={false} style={[styles.collapsedRow, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
           <Text style={[styles.collapsedTitle, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>
             {'Floor '}
             <Text style={{ color: typeColor }}>{typeName}</Text>
@@ -119,7 +172,7 @@ export default function UnderConstructionBanner({
     }
 
     return (
-      <View style={[styles.card, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
+      <View ref={expandedCardRef} collapsable={false} style={[styles.card, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
         {/* Header row with collapse button */}
         <View style={styles.cardHeader}>
           <Text style={[styles.cardTitle, { flex: 1 }, isDark && { color: '#DDE8D8' }]}>
@@ -168,6 +221,8 @@ export default function UnderConstructionBanner({
 
         {/* Start button — full width below tools */}
         <Pressable
+          ref={openBtnRef}
+          collapsable={false}
           onPress={canStart ? onStartBusiness : undefined}
           style={({ pressed }) => [
             styles.startBtn,
@@ -230,7 +285,15 @@ export default function UnderConstructionBanner({
                 </Text>
               </View>
               <Pressable
-                onPress={() => setConfirming(true)}
+                ref={speedUpBtnRef}
+                collapsable={false}
+                onPress={() => {
+                  if (onboardingStep === 'speed_up_construction') {
+                    speedUpConstruction(floorId);
+                  } else {
+                    setConfirming(true);
+                  }
+                }}
                 style={[styles.speedUpBtn, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}
                 hitSlop={6}
               >

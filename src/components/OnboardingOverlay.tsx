@@ -1,35 +1,54 @@
 // src/components/OnboardingOverlay.tsx
 import React, { useEffect } from 'react';
 import {
-  View, Text, StyleSheet, Pressable, Dimensions, Image,
+  View, Text, StyleSheet, Pressable, Dimensions, Image, TouchableWithoutFeedback,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import Animated, {
   useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, Easing,
 } from 'react-native-reanimated';
+import { usePathname } from 'expo-router';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { ONBOARDING_STEPS } from '../config/onboardingSteps';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 const CARD_WIDTH = SW * 0.82;
-const ARROW_SIZE = 36;
+const ARROW_SIZE = 48;
+const CARD_RADIUS = 24;   // matches FloorCard borderRadius
+const SPOTLIGHT_PAD_SIDE = 9;
+const SPOTLIGHT_PAD_TOP = 41;   // card header (31) + small gap
+const SPOTLIGHT_PAD_BOTTOM = 8;
+const DIM_COLOR = 'rgba(0,0,0,0.55)';
 
-// Arrows as SVG-free Unicode triangles styled via View borders
+const ARROW_ICON = require('../../assets/img/greenArrowUp.png');
+
+const ARROW_ROTATION: Record<'up' | 'down' | 'left' | 'right', string> = {
+  up:    '0deg',
+  down:  '180deg',
+  left:  '-90deg',
+  right: '90deg',
+};
+
 function Arrow({ dir }: { dir: 'up' | 'down' | 'left' | 'right' }) {
-  const borderStyle = {
-    up:    { borderBottomWidth: ARROW_SIZE, borderBottomColor: '#fff', borderLeftWidth: ARROW_SIZE / 2, borderRightWidth: ARROW_SIZE / 2, borderLeftColor: 'transparent', borderRightColor: 'transparent' },
-    down:  { borderTopWidth: ARROW_SIZE, borderTopColor: '#fff', borderLeftWidth: ARROW_SIZE / 2, borderRightWidth: ARROW_SIZE / 2, borderLeftColor: 'transparent', borderRightColor: 'transparent' },
-    left:  { borderRightWidth: ARROW_SIZE, borderRightColor: '#fff', borderTopWidth: ARROW_SIZE / 2, borderBottomWidth: ARROW_SIZE / 2, borderTopColor: 'transparent', borderBottomColor: 'transparent' },
-    right: { borderLeftWidth: ARROW_SIZE, borderLeftColor: '#fff', borderTopWidth: ARROW_SIZE / 2, borderBottomWidth: ARROW_SIZE / 2, borderTopColor: 'transparent', borderBottomColor: 'transparent' },
-  }[dir];
-  return <View style={[styles.arrow, borderStyle]} />;
+  return (
+    <Image
+      source={ARROW_ICON}
+      style={[styles.arrowImg, { transform: [{ rotate: ARROW_ROTATION[dir] }] }]}
+      resizeMode="contain"
+    />
+  );
 }
 
 export default function OnboardingOverlay() {
-  const step = useOnboardingStore((s) => s.step);
-  const isActive = useOnboardingStore((s) => s.isActive);
-  const advance = useOnboardingStore((s) => s.advance);
+  const step      = useOnboardingStore((s) => s.step);
+  const isActive  = useOnboardingStore((s) => s.isActive);
+  const advance   = useOnboardingStore((s) => s.advance);
+  const targetRect = useOnboardingStore((s) => s.targetRect);
+  const arrowRect  = useOnboardingStore((s) => s.arrowRect);
+  const pathname  = usePathname();
 
   const bounceY = useSharedValue(0);
+  const spotlightOpacity = useSharedValue(0);
 
   useEffect(() => {
     bounceY.value = withRepeat(
@@ -42,44 +61,171 @@ export default function OnboardingOverlay() {
     );
   }, [bounceY]);
 
+  useEffect(() => {
+    if (targetRect) {
+      spotlightOpacity.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.quad) });
+    } else {
+      spotlightOpacity.value = 0;
+    }
+  }, [targetRect, spotlightOpacity]);
+
+  // Advance past any step that was removed from ONBOARDING_STEPS after a redesign.
+  const config = step && step !== 'done' ? ONBOARDING_STEPS[step] : undefined;
+  useEffect(() => {
+    if (step && step !== 'done' && !ONBOARDING_STEPS[step]) advance();
+  }, [step, advance]);
+
   const animatedArrow = useAnimatedStyle(() => ({
     transform: [{ translateY: bounceY.value }],
   }));
 
+  const animatedSpotlight = useAnimatedStyle(() => ({
+    opacity: spotlightOpacity.value,
+  }));
+
   if (!isActive || !step || step === 'done') return null;
+  if (!pathname.includes('/game')) return null;
+  // choose_floor_type hint is rendered inside BusinessTypePickerSheet Modal — skip overlay entirely.
+  if (step === 'choose_floor_type') return null;
+  if (!config) return null;
 
-  const config = ONBOARDING_STEPS[step];
-  const px = config.pointer.x * SW;
-  const py = config.pointer.y * SH;
+  // Use measured position if available, fallback to config fractions.
+  // When neither is available (collect steps waiting for measurement), arrow is hidden.
+  let px: number | undefined;
+  let arrowTop: number | undefined;
+  let spotlightRect: { x: number; y: number; w: number; h: number } | null = null;
 
-  // Place card above pointer for 'down' arrow, below for 'up'
-  const cardTop = config.arrowDir === 'up'
-    ? py + ARROW_SIZE + 8
-    : py - ARROW_SIZE - 8 - 130; // 130 ≈ card height estimate
+  if (targetRect) {
+    px = targetRect.x + targetRect.width / 2;
+    const padTop = config.spotlightPadTop ?? SPOTLIGHT_PAD_TOP;
+    spotlightRect = {
+      x: targetRect.x - SPOTLIGHT_PAD_SIDE,
+      y: targetRect.y - padTop,
+      w: targetRect.width  + SPOTLIGHT_PAD_SIDE * 2,
+      h: targetRect.height + padTop + SPOTLIGHT_PAD_BOTTOM,
+    };
+    if (config.arrowAboveSpotlight && spotlightRect) {
+      arrowTop = spotlightRect.y - ARROW_SIZE - 4;
+    } else if (config.arrowDir === 'down') {
+      arrowTop = targetRect.y + targetRect.height - ARROW_SIZE - (config.arrowBottomOffset ?? 60);
+    } else {
+      arrowTop = targetRect.y + targetRect.height + 4;
+    }
+  } else if (config.pointer) {
+    const py = config.pointer.y * SH;
+    px = config.pointer.x * SW;
+    arrowTop = config.arrowDir === 'up' ? py : py - ARROW_SIZE;
+  }
 
-  const arrowTop = config.arrowDir === 'up' ? py : py - ARROW_SIZE;
+  // arrowRect overrides arrow position independently of the spotlight rect.
+  // Used when the spotlight covers a large area (e.g. whole card) but the
+  // arrow should point at a specific element inside it (e.g. a button).
+  if (arrowRect) {
+    px = arrowRect.x + arrowRect.width / 2 + (config.arrowOffsetX ?? 0);
+    arrowTop = arrowRect.y - ARROW_SIZE - 4;
+  } else if (config.arrowOffsetX && px !== undefined) {
+    px = px + config.arrowOffsetX;
+  }
+
+  // Hint card: below spotlight when hintBelowSpotlight, above spotlight (and above arrow when arrowAboveSpotlight) or below arrow.
+  const cardTop = config.hintBelowSpotlight && spotlightRect
+    ? spotlightRect.y + spotlightRect.h + 12
+    : config.arrowDir === 'down'
+      ? (config.arrowAboveSpotlight && arrowTop !== undefined
+          ? arrowTop - 8 - 130
+          : spotlightRect ? spotlightRect.y - 8 - 130 : (arrowTop ?? SH * 0.35) - 8 - 130)
+      : (arrowTop ?? SH * 0.5) + ARROW_SIZE + 8;
+
+  // Blocks swipe/scroll gestures on the overlay without passing them through.
+  const noop = () => {};
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      {/* Dark backdrop */}
-      <View style={styles.backdrop} pointerEvents="none" />
 
-      {/* Animated arrow */}
-      <Animated.View
-        pointerEvents="none"
-        style={[animatedArrow, {
-          position: 'absolute',
-          left: px - ARROW_SIZE / 2,
-          top: arrowTop,
-        }]}
-      >
-        <Arrow dir={config.arrowDir} />
-      </Animated.View>
+      {/* Spotlight backdrop — SVG evenodd fill punches a rounded-rect hole */}
+      {spotlightRect ? (
+        <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, animatedSpotlight]}>
+        <Svg
+          pointerEvents="none"
+          width={SW}
+          height={SH}
+          style={StyleSheet.absoluteFill}
+        >
+          <Path
+            fillRule="evenodd"
+            d={[
+              `M0 0 H${SW} V${SH} H0 Z`,
+              `M${spotlightRect.x + CARD_RADIUS} ${spotlightRect.y}`,
+              `H${spotlightRect.x + spotlightRect.w - CARD_RADIUS}`,
+              `Q${spotlightRect.x + spotlightRect.w} ${spotlightRect.y} ${spotlightRect.x + spotlightRect.w} ${spotlightRect.y + CARD_RADIUS}`,
+              `V${spotlightRect.y + spotlightRect.h - CARD_RADIUS}`,
+              `Q${spotlightRect.x + spotlightRect.w} ${spotlightRect.y + spotlightRect.h} ${spotlightRect.x + spotlightRect.w - CARD_RADIUS} ${spotlightRect.y + spotlightRect.h}`,
+              `H${spotlightRect.x + CARD_RADIUS}`,
+              `Q${spotlightRect.x} ${spotlightRect.y + spotlightRect.h} ${spotlightRect.x} ${spotlightRect.y + spotlightRect.h - CARD_RADIUS}`,
+              `V${spotlightRect.y + CARD_RADIUS}`,
+              `Q${spotlightRect.x} ${spotlightRect.y} ${spotlightRect.x + CARD_RADIUS} ${spotlightRect.y}`,
+              'Z',
+            ].join(' ')}
+            fill={DIM_COLOR}
+          />
+        </Svg>
+        </Animated.View>
+      ) : (config.pointer || config.dismissable) ? (
+        <View pointerEvents="none" style={[styles.dim, StyleSheet.absoluteFill]} />
+      ) : null}
+
+      {/* Touch-blocking rectangles around the spotlight — 4 strips that swallow all taps outside */}
+      {spotlightRect && (
+        <>
+          {/* Top */}
+          <TouchableWithoutFeedback onPress={noop}>
+            <View style={{ position: 'absolute', left: 0, top: 0, width: SW, height: spotlightRect.y }} />
+          </TouchableWithoutFeedback>
+          {/* Bottom */}
+          <TouchableWithoutFeedback onPress={noop}>
+            <View style={{ position: 'absolute', left: 0, top: spotlightRect.y + spotlightRect.h, width: SW, height: Math.max(0, SH - spotlightRect.y - spotlightRect.h) }} />
+          </TouchableWithoutFeedback>
+          {/* Left */}
+          <TouchableWithoutFeedback onPress={noop}>
+            <View style={{ position: 'absolute', left: 0, top: spotlightRect.y, width: spotlightRect.x, height: spotlightRect.h }} />
+          </TouchableWithoutFeedback>
+          {/* Right */}
+          <TouchableWithoutFeedback onPress={noop}>
+            <View style={{ position: 'absolute', left: spotlightRect.x + spotlightRect.w, top: spotlightRect.y, width: Math.max(0, SW - spotlightRect.x - spotlightRect.w), height: spotlightRect.h }} />
+          </TouchableWithoutFeedback>
+        </>
+      )}
+      {/* For dismissable steps without a spotlight (e.g. construction_tip, final_message):
+          block the full screen so only the hint card's OK button works. */}
+      {!spotlightRect && config.dismissable && (
+        <TouchableWithoutFeedback onPress={noop}>
+          <View style={StyleSheet.absoluteFill} />
+        </TouchableWithoutFeedback>
+      )}
+
+      {/* Animated arrow — hidden while waiting for targetRect measurement, fades in with spotlight */}
+      {px !== undefined && arrowTop !== undefined && (
+        <Animated.View
+          pointerEvents="none"
+          style={[animatedSpotlight, {
+            position: 'absolute',
+            left: px - ARROW_SIZE / 2,
+            top: arrowTop,
+          }]}
+        >
+          <Animated.View style={animatedArrow}>
+            <Arrow dir={config.arrowDir} />
+          </Animated.View>
+        </Animated.View>
+      )}
 
       {/* Hint card */}
       <View
         pointerEvents={config.dismissable ? 'auto' : 'none'}
-        style={[styles.card, { top: Math.max(60, Math.min(SH - 200, cardTop)), left: (SW - CARD_WIDTH) / 2 }]}
+        style={[styles.card, {
+          top: Math.max(60, Math.min(SH - 200, cardTop)),
+          left: (SW - CARD_WIDTH) / 2,
+        }]}
       >
         <View style={styles.cardRow}>
           {config.iconSource && (
@@ -98,15 +244,13 @@ export default function OnboardingOverlay() {
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+  dim: {
+    position: 'absolute',
+    backgroundColor: DIM_COLOR,
   },
-  arrow: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
+  arrowImg: {
+    width: ARROW_SIZE,
+    height: ARROW_SIZE,
   },
   card: {
     position: 'absolute',

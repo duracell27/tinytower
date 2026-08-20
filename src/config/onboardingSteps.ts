@@ -3,10 +3,21 @@ import type { OnboardingStep } from '../stores/onboardingStore';
 export interface StepConfig {
   text: string;
   iconSource?: ReturnType<typeof require>;
-  pointer: { x: number; y: number };
+  /** Omit for steps that wait for a measured targetRect — arrow hides until measurement arrives */
+  pointer?: { x: number; y: number };
   arrowDir: 'up' | 'down' | 'left' | 'right';
   dismissable: boolean;
   dismissLabel?: string;
+  /** Override spotlight top padding (default 41 = slot body measurement; use 8 for full-card measurement) */
+  spotlightPadTop?: number;
+  /** Override arrow bottom offset inside spotlight (default 60) */
+  arrowBottomOffset?: number;
+  /** Shift arrow horizontally by this many pixels (positive = right) */
+  arrowOffsetX?: number;
+  /** Place arrow just above the spotlight instead of inside it (for full-card tap targets) */
+  arrowAboveSpotlight?: boolean;
+  /** Place hint card below the spotlight instead of above it */
+  hintBelowSpotlight?: boolean;
 }
 
 // Pointer positions are approximate fractions of screen dimensions.
@@ -17,89 +28,88 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   collect_slot_1: {
     text: 'Збери виручку з виробництва',
     iconSource: require('../../assets/img/coin.png'),
-    pointer: { x: 0.5, y: 0.42 },
     arrowDir: 'down',
     dismissable: false,
   },
   collect_slot_2: {
     text: 'Збери виручку ще з одного поверху',
     iconSource: require('../../assets/img/coin.png'),
-    pointer: { x: 0.5, y: 0.55 },
     arrowDir: 'down',
     dismissable: false,
   },
   buy_goods_1: {
     text: 'Поповни запаси — виробництво не зупиняється',
-    pointer: { x: 0.5, y: 0.42 },
     arrowDir: 'down',
     dismissable: false,
   },
   buy_goods_2: {
     text: 'Закупи ще одне виробництво',
-    pointer: { x: 0.5, y: 0.55 },
     arrowDir: 'down',
     dismissable: false,
   },
   open_elevator_1: {
     text: 'Відкрий ліфт — там чекають відвідувачі',
-    pointer: { x: 0.5, y: 0.85 },
+    pointer: { x: 0.5, y: 0.78 },
     arrowDir: 'down',
     dismissable: false,
+    spotlightPadTop: 8,
+    arrowAboveSpotlight: true,
   },
   deliver_visitor: {
-    text: 'Відвези гостя на потрібний поверх',
-    pointer: { x: 0.5, y: 0.5 },
-    arrowDir: 'up',
-    dismissable: false,
-  },
-  open_elevator_2: {
-    text: 'Новий робітник чекає — забери його',
-    pointer: { x: 0.5, y: 0.85 },
+    text: 'Відкрий ліфт та відвези гостя на потрібний поверх',
+    pointer: { x: 0.5, y: 0.78 },
     arrowDir: 'down',
     dismissable: false,
-  },
-  deliver_worker: {
-    text: 'Відвези робітника та знайди йому роботу',
-    pointer: { x: 0.5, y: 0.5 },
-    arrowDir: 'up',
-    dismissable: false,
+    spotlightPadTop: 8,
+    arrowAboveSpotlight: true,
   },
   assign_worker: {
-    text: 'Щасливий робітник дає 2х виручку — стеж за його настроєм!',
+    text: 'Натисни на слот робітника — призначте першого працівника на поверх!',
     iconSource: require('../../assets/img/happySmile.png'),
-    pointer: { x: 0.5, y: 0.5 },
     arrowDir: 'down',
     dismissable: false,
+  },
+  buy_floor: {
+    text: 'Купи новий поверх щоб розширити вежу!',
+    iconSource: require('../../assets/img/coin.png'),
+    arrowDir: 'up',
+    dismissable: false,
+    spotlightPadTop: 8,
   },
   choose_floor_type: {
     text: 'Всі категорії рівні по виручці. Зелені — треба часто доглядати, червоні — рідше',
-    pointer: { x: 0.5, y: 0.5 },
     arrowDir: 'down',
     dismissable: false,
   },
   speed_up_construction: {
     text: 'Пришвидш будівництво щоб не чекати',
     iconSource: require('../../assets/img/diamond.png'),
-    pointer: { x: 0.5, y: 0.45 },
     arrowDir: 'down',
     dismissable: false,
+    spotlightPadTop: 8,
+    arrowAboveSpotlight: true,
+    hintBelowSpotlight: true,
   },
-  construction_tip: {
-    text: 'Будівельники їдуть ліфтом — доправ їх. Матеріали зі складу йдуть на будівництво',
-    pointer: { x: 0.5, y: 0.5 },
-    arrowDir: 'up',
-    dismissable: true,
-    dismissLabel: 'Зрозумів',
+  expand_floor_card: {
+    text: 'Розкрий поверх і подивись які матеріали потрібні',
+    arrowDir: 'down',
+    dismissable: false,
+    spotlightPadTop: 8,
+    arrowAboveSpotlight: true,
+    hintBelowSpotlight: true,
   },
   open_business: {
-    text: 'Поповни ресурси і відкрий свій перший бізнес',
-    pointer: { x: 0.5, y: 0.45 },
+    text: 'Ресурси є! Тисни — відкрий бізнес',
+    iconSource: require('../../assets/img/coin.png'),
     arrowDir: 'down',
     dismissable: false,
+    spotlightPadTop: 8,
+    hintBelowSpotlight: true,
+    arrowOffsetX: 70,
   },
   final_message: {
-    text: 'Шукай робітників мрії, вози відвідувачів у ліфті, розвивай вежу — і доберись до топу!',
-    pointer: { x: 0.5, y: 0.5 },
+    text: 'Вітаємо! Тепер розвивай свою вежу — залучай найкращих робітників, обслуговуй гостей і підкоряй топ рейтингу!',
+    iconSource: require('../../assets/img/happySmile.png'),
     arrowDir: 'up',
     dismissable: true,
     dismissLabel: 'Погнали!',

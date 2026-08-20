@@ -6,27 +6,25 @@ export type OnboardingStep =
   | 'buy_goods_1'    | 'buy_goods_2'
   | 'open_elevator_1'
   | 'deliver_visitor'
-  | 'open_elevator_2'
-  | 'deliver_worker'
   | 'assign_worker'
+  | 'buy_floor'
   | 'choose_floor_type'
   | 'speed_up_construction'
-  | 'construction_tip'
+  | 'expand_floor_card'
   | 'open_business'
   | 'final_message'
   | 'done';
 
-const SEQUENCE: OnboardingStep[] = [
+export const SEQUENCE: OnboardingStep[] = [
   'collect_slot_1', 'collect_slot_2',
   'buy_goods_1',    'buy_goods_2',
   'open_elevator_1',
   'deliver_visitor',
-  'open_elevator_2',
-  'deliver_worker',
   'assign_worker',
+  'buy_floor',
   'choose_floor_type',
   'speed_up_construction',
-  'construction_tip',
+  'expand_floor_card',
   'open_business',
   'final_message',
 ];
@@ -48,13 +46,22 @@ function saveStep(step: OnboardingStep) {
   getStorage().set(MMKV_KEY, step);
 }
 
+export interface TargetRect { x: number; y: number; width: number; height: number }
+
 interface OnboardingState {
   step: OnboardingStep | null;
   isActive: boolean;
+  targetRect: TargetRect | null;
+  /** Optional separate rect used to position the arrow, independent of the spotlight rect. */
+  arrowRect: TargetRect | null;
+  reset: () => void;
   start: () => void;
   advance: () => void;
   complete: () => void;
   notifyElevatorOpened: () => void;
+  setTargetRect: (rect: TargetRect | null) => void;
+  setArrowRect: (rect: TargetRect | null) => void;
+  goToStep: (step: OnboardingStep) => void;
 }
 
 const saved = loadStep();
@@ -62,6 +69,13 @@ const saved = loadStep();
 export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   step: saved,
   isActive: saved !== null && saved !== 'done',
+  targetRect: null,
+  arrowRect: null,
+
+  reset: () => {
+    getStorage().remove(MMKV_KEY);
+    set({ step: null, isActive: false, targetRect: null, arrowRect: null });
+  },
 
   start: () => {
     const { step } = get();
@@ -75,23 +89,30 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     if (step === null || step === 'done') return;
     const idx = SEQUENCE.indexOf(step);
     if (idx === SEQUENCE.length - 1) {
-      // final_message → done
       get().complete();
       return;
     }
     const next = SEQUENCE[idx + 1];
     saveStep(next);
-    set({ step: next });
+    set({ step: next, targetRect: null, arrowRect: null });
   },
 
   complete: () => {
     saveStep('done');
-    set({ step: 'done', isActive: false });
+    set({ step: 'done', isActive: false, targetRect: null, arrowRect: null });
+  },
+
+  setTargetRect: (rect) => set({ targetRect: rect }),
+  setArrowRect: (rect) => set({ arrowRect: rect }),
+
+  goToStep: (step) => {
+    saveStep(step);
+    set({ step, isActive: step !== 'done', targetRect: null, arrowRect: null });
   },
 
   notifyElevatorOpened: () => {
     const { step } = get();
-    if (step === 'open_elevator_1' || step === 'open_elevator_2') {
+    if (step === 'open_elevator_1') {
       get().advance();
     }
   },

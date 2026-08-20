@@ -27,7 +27,7 @@ import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useFriendStore } from '../../src/stores/friendStore';
-import { useOnboardingStore } from '../../src/stores/onboardingStore';
+import { useOnboardingStore, SEQUENCE } from '../../src/stores/onboardingStore';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getExhaustedFloorTypes } from '../../shared/engine/floorTypeUtils';
@@ -111,6 +111,9 @@ export default function GameScreen() {
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
   const isTemporary = player?.isTemporary ?? false;
 
+  const isOnboarding = useOnboardingStore((s) => s.isActive);
+  const onboardingStep = useOnboardingStore((s) => s.step);
+
   const unreadMailCount = useMailStore((s) => s.unreadCount);
   const incomingFriendCount = useFriendStore((s) => s.incomingRequests.length);
 
@@ -121,6 +124,24 @@ export default function GameScreen() {
   const [pickerOpenFor, setPickerOpenFor] = useState<number | null>(null);
 
   const floors = useGameStore((s) => s.floors);
+
+  // Ensure tutorial floors show READY_TO_COLLECT regardless of server state or
+  // stale bundle cache. Re-runs whenever floors or step change so a sync that
+  // sends IDLE can't quietly revert the tutorial state before the user collects.
+  useEffect(() => {
+    if (onboardingStep === 'collect_slot_1') {
+      const floor2 = floors.find((f) => f.id === 2);
+      if (floor2?.productions[0]?.stage !== 'SELLING') {
+        useGameStore.getState().initOnboardingProductions();
+      }
+    } else if (onboardingStep === 'collect_slot_2') {
+      const floor3 = floors.find((f) => f.id === 3);
+      if (floor3?.productions[0]?.stage !== 'SELLING') {
+        useGameStore.getState().initOnboardingProductions();
+      }
+    }
+  }, [floors, onboardingStep]);
+
   const workers = useGameStore((s) => s.workers);
   const openedFloorTypes  = useGameStore((s) => s.openedFloorTypes);
   const coinBonusPercent  = useGameStore((s) => s.coinBonusPercent);
@@ -265,6 +286,8 @@ export default function GameScreen() {
   const [lobbyOpen, setLobbyOpen] = useState(false);
   const listRef = useRef<FlashListRef<FloorItem>>(null);
   const qaListRef = useRef<FlashListRef<FloorItem>>(null);
+  const lobbyCardRef = useRef<View>(null);
+  const buyFloorRef = useRef<View>(null);
   const collapsedScrollRef = useRef<ScrollView>(null);
   const hotelCardYRef = useRef(0);
   const lastTabPressRef = useRef(0);
@@ -286,6 +309,143 @@ export default function GameScreen() {
     });
   }, []);
 
+
+  // When advancing to collect_slot_2, scroll back to offset 0 so floor3 is visible.
+  // Only depends on step (not floorList) — avoids oscillation from data updates.
+  useEffect(() => {
+    if (onboardingStep !== 'collect_slot_2') return;
+    const handle = requestAnimationFrame(() => {
+      listRef.current?.scrollToOffset({ offset: 0, animated: false });
+    });
+    return () => cancelAnimationFrame(handle);
+  }, [onboardingStep]);
+
+  // For elevator/delivery steps: scroll to lobby so it's always reachable.
+  useEffect(() => {
+    const elevatorSteps = ['open_elevator_1', 'deliver_visitor'];
+    if (!elevatorSteps.includes(onboardingStep ?? '')) return;
+    // Scroll on next frame — lobby card may not be rendered yet but FlashList can still position
+    const scrollFrame = requestAnimationFrame(() => {
+      const idx = floorListRef.current.findIndex((i) => i.type === 'lobby');
+      if (idx >= 0) {
+        listRef.current?.scrollToIndex({ index: idx, animated: false, viewPosition: 0.5 });
+      }
+    });
+    // Spotlight measurement only for steps where user needs to find and tap the lobby card
+    const needsSpotlight = onboardingStep === 'open_elevator_1';
+    const measureTimer = setTimeout(() => {
+      const idx = floorListRef.current.findIndex((i) => i.type === 'lobby');
+      if (idx >= 0) {
+        listRef.current?.scrollToIndex({ index: idx, animated: false, viewPosition: 0.5 });
+      }
+      if (!needsSpotlight) return;
+      requestAnimationFrame(() => {
+        lobbyCardRef.current?.measureInWindow((x, y, width, height) => {
+          if (width > 0 && height > 0) {
+            useOnboardingStore.getState().setTargetRect({ x, y, width, height });
+          }
+        });
+      });
+    }, 700);
+    return () => {
+      cancelAnimationFrame(scrollFrame);
+      clearTimeout(measureTimer);
+    };
+  }, [onboardingStep]);
+
+  // On delivery steps: spotlight lobby card when lobby is closed (so user knows to reopen it).
+  useEffect(() => {
+    const deliverySteps = ['deliver_visitor'];
+    if (!deliverySteps.includes(onboardingStep ?? '')) return;
+    if (lobbyOpen) {
+      // Lobby is open — clear spotlight (overlay not visible inside Modal anyway)
+      useOnboardingStore.getState().setTargetRect(null);
+      return;
+    }
+    // Lobby closed — measure and spotlight the lobby card
+    const timer = setTimeout(() => {
+      const idx = floorListRef.current.findIndex((i) => i.type === 'lobby');
+      if (idx >= 0) {
+        listRef.current?.scrollToIndex({ index: idx, animated: false, viewPosition: 0.5 });
+      }
+      requestAnimationFrame(() => {
+        lobbyCardRef.current?.measureInWindow((x, y, width, height) => {
+          if (width > 0 && height > 0) {
+            useOnboardingStore.getState().setTargetRect({ x, y, width, height });
+          }
+        });
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [lobbyOpen, onboardingStep]);
+
+  // When assign_worker step starts, close the lobby and scroll to top so production floors are visible.
+  useEffect(() => {
+    if (onboardingStep !== 'assign_worker') return;
+    setLobbyOpen(false);
+    const scrollTimer = setTimeout(() => {
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }, 300);
+    // Auto-open the hotel so the user sees the worker slot spotlight.
+    const hotelTimer = setTimeout(() => {
+      setHotelOpen(true);
+    }, 500);
+    return () => { clearTimeout(scrollTimer); clearTimeout(hotelTimer); };
+  }, [onboardingStep]);
+
+  // When buy_floor step starts, close hotel, scroll to BuyFloorBanner, then measure for spotlight.
+  useEffect(() => {
+    if (onboardingStep !== 'buy_floor') return;
+    setHotelOpen(false);
+    useOnboardingStore.getState().setTargetRect(null);
+    const scrollTimer = setTimeout(() => {
+      const idx = floorListRef.current.findIndex((i) => i.type === 'buyFloor');
+      if (idx >= 0) {
+        listRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 1 });
+      }
+    }, 400);
+    const measureTimer = setTimeout(() => {
+      buyFloorRef.current?.measureInWindow((x, y, width, height) => {
+        if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
+      });
+    }, 1000);
+    return () => { clearTimeout(scrollTimer); clearTimeout(measureTimer); };
+  }, [onboardingStep]);
+
+  // When speed_up_construction / expand_floor_card / open_business steps start,
+  // scroll to the under-construction banner so it's visible and measurable.
+  useEffect(() => {
+    const ucSteps = ['speed_up_construction', 'expand_floor_card', 'open_business'] as const;
+    if (!ucSteps.includes(onboardingStep as typeof ucSteps[number])) return;
+    const scrollTimer = setTimeout(() => {
+      const idx = floorListRef.current.findIndex((i) => i.type === 'underConstruction');
+      if (idx >= 0) {
+        listRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+      }
+    }, 300);
+    return () => clearTimeout(scrollTimer);
+  }, [onboardingStep]);
+
+  // When choose_floor_type is reached, ensure the picker is open for the under-construction floor.
+  // This is a safety net for cases where setPickerOpenFor in onPress didn't produce a visible picker.
+  useEffect(() => {
+    if (onboardingStep !== 'choose_floor_type') return;
+    setPickerOpenFor((cur) => {
+      if (cur !== null) return cur;
+      const uc = useGameStore.getState().underConstruction;
+      return uc.length > 0 ? uc[uc.length - 1].floorId : null;
+    });
+  }, [onboardingStep]);
+
+  // Ensure hotel guest (floor 1) is present for elevator onboarding steps so collectTip creates a worker.
+  useEffect(() => {
+    const state = useGameStore.getState();
+    const firstVisitor = state.lobbyVisitors[0];
+    if (onboardingStep === 'open_elevator_1' || onboardingStep === 'deliver_visitor') {
+      if (firstVisitor?.targetFloor !== 1) state.spawnOnboardingVisitor('guest', 1);
+    }
+  }, [onboardingStep, lobbyVisitors.length]);
+
   const scrollToHotel = useCallback(() => {
     if (towerCollapsed && floors.length >= 10) {
       collapsedScrollRef.current?.scrollTo({ y: hotelCardYRef.current, animated: true });
@@ -296,6 +456,7 @@ export default function GameScreen() {
       }
     }
   }, [towerCollapsed, floors.length]);
+
 
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
   const [qaBarVisible, setQaBarVisible] = useState(false);
@@ -321,8 +482,8 @@ export default function GameScreen() {
 
   // Highest-priority mode currently available — only computed when not already in a mode
   const availableMode = React.useMemo(
-    () => (quickActionMode !== null ? null : getAvailableMode(floors, workers, now, floorStars ?? {})),
-    [quickActionMode, floors, workers, now, floorStars],
+    () => (quickActionMode !== null || isOnboarding ? null : getAvailableMode(floors, workers, now, floorStars ?? {})),
+    [quickActionMode, isOnboarding, floors, workers, now, floorStars],
   );
 
   // Count of floors for the FAB badge (only when not yet in a mode)
@@ -383,6 +544,9 @@ export default function GameScreen() {
 
   useEffect(() => {
     if (now <= 0) return;
+    // During onboarding elevator steps the correct visitor is managed by the spawn effect below.
+    const elevatorOnboardingSteps = ['open_elevator_1', 'deliver_visitor'];
+    if (elevatorOnboardingSteps.includes(onboardingStep ?? '')) return;
     let s = useGameStore.getState();
     while (
       (s.nextVisitorAt === 0 || now >= s.nextVisitorAt) &&
@@ -393,7 +557,7 @@ export default function GameScreen() {
       s = useGameStore.getState();
       if (s.nextVisitorAt === prevNextAt) break;
     }
-  }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor]);
+  }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor, onboardingStep]);
 
   // Auto-exit when the filtered list empties after the last action
   useEffect(() => {
@@ -617,24 +781,39 @@ export default function GameScreen() {
         </View>
       );
     }
-    if (item.type === 'buyFloor' && nextFloorUnlock) {
+    if (item.type === 'buyFloor' && nextFloorUnlock && (!isOnboarding || onboardingStep === 'buy_floor')) {
       return (
-        <View style={styles.floorWrapper}>
+        <View
+          style={styles.floorWrapper}
+          ref={(node) => {
+            if (onboardingStep === 'buy_floor') {
+              (buyFloorRef as React.MutableRefObject<View | null>).current = node;
+            }
+          }}
+          collapsable={false}
+        >
           <BuyFloorBanner
             nextFloorNumber={nextFloorId}
             price={nextFloorUnlock.price}
             currency={nextFloorUnlock.currency}
             onPress={() => {
-              const currentAmount = nextFloorUnlock.currency === 'gems' ? gems : balance;
-              if (currentAmount < nextFloorUnlock.price) {
-                showInsufficientResources({
-                  currency: nextFloorUnlock.currency,
-                  need: nextFloorUnlock.price,
-                  have: currentAmount,
-                });
-                return;
+              if (onboardingStep !== 'buy_floor') {
+                const currentAmount = nextFloorUnlock.currency === 'gems' ? gems : balance;
+                if (currentAmount < nextFloorUnlock.price) {
+                  showInsufficientResources({
+                    currency: nextFloorUnlock.currency,
+                    need: nextFloorUnlock.price,
+                    have: currentAmount,
+                  });
+                  return;
+                }
               }
               buyFloor(nextFloorId);
+              if (onboardingStep === 'buy_floor') {
+                useOnboardingStore.getState().advance();
+                // Auto-open the floor type picker for the just-bought floor
+                setPickerOpenFor(nextFloorId);
+              }
             }}
           />
         </View>
@@ -648,18 +827,35 @@ export default function GameScreen() {
       );
     }
     if (item.type === 'lobby') {
+      const showForElevator = onboardingStep === 'open_elevator_1';
+      const showForDelivery = onboardingStep === 'deliver_visitor';
+      if (isOnboarding && !showForElevator && !showForDelivery) return null;
       return (
-        <View style={styles.floorWrapper}>
+        <View
+          style={styles.floorWrapper}
+          ref={(showForElevator || showForDelivery) ? lobbyCardRef : undefined}
+          collapsable={false}
+        >
           <LobbyFloor
             visitorCount={lobbyVisitors.length}
             lobbyCapacity={lobbyCapacity}
             nextVisitorAt={nextVisitorAt}
             onPress={() => {
+              if (isOnboarding) {
+                const step = useOnboardingStore.getState().step;
+                const gs = useGameStore.getState();
+                const firstVisitor = gs.lobbyVisitors[0];
+                if (step === 'open_elevator_1' || step === 'deliver_visitor') {
+                  if (firstVisitor?.targetFloor == null) gs.spawnOnboardingVisitor('guest', 1);
+                } else if (gs.lobbyVisitors.length === 0) {
+                  gs.spawnVisitor();
+                }
+              }
               setLobbyOpen(true);
               useOnboardingStore.getState().notifyElevatorOpened();
             }}
           />
-          {isTemporary && (
+          {isTemporary && !isOnboarding && (
             <Pressable
               onPress={() => router.navigate('/(tabs)/profile')}
               style={({ pressed }) => [styles.registerBanner, pressed && { opacity: 0.82 }]}
@@ -683,7 +879,7 @@ export default function GameScreen() {
     return null;
   }, [balance, hotelOccupied, hotelTotal, hasBetterWorker, lobbyVisitors.length, nextVisitorAt,
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
-      showInsufficientResources, towerCollapsed, isTemporary]);
+      showInsufficientResources, towerCollapsed, isTemporary, isOnboarding, onboardingStep]);
 
   const renderQaItem = useCallback(({ item }: { item: FloorItem }) => {
     if (item.type === 'production') {
@@ -737,13 +933,34 @@ export default function GameScreen() {
                 getItemType={(item) => item.type}
                 drawDistance={1500}
                 extraData={listExtraData}
-                contentContainerStyle={styles.listContent}
+                contentContainerStyle={[
+                  styles.listContent,
+                  // Extra space so content exceeds viewport and onboarding targets are reachable.
+                  (onboardingStep === 'collect_slot_1' || onboardingStep === 'collect_slot_2')
+                    && { paddingBottom: 280 },
+                  (['open_elevator_1', 'deliver_visitor'].includes(onboardingStep ?? ''))
+                    && { paddingBottom: 160 },
+                  onboardingStep === 'assign_worker' && { paddingBottom: 280 },
+                ]}
                 showsVerticalScrollIndicator={false}
+                scrollEnabled={!isOnboarding || onboardingStep === 'assign_worker'}
                 onContentSizeChange={(_w, h) => {
                   if (!hasRevealedRef.current && h > 0 && viewHeightRef.current > 0) {
                     hasRevealedRef.current = true;
                     requestAnimationFrame(() => {
-                      scrollToBottom();
+                      const onbStep = useOnboardingStore.getState().step;
+                      if (onbStep === 'collect_slot_1') {
+                        // Scroll floor2 toward top; paddingBottom makes this possible.
+                        const idx = floorListRef.current.findIndex(
+                          (item) => item.type === 'production' && item.id === 2,
+                        );
+                        if (idx >= 0) {
+                          listRef.current?.scrollToIndex({ index: idx, animated: false, viewPosition: 0 });
+                        }
+                      } else if (onbStep !== 'collect_slot_2') {
+                        scrollToBottom();
+                      }
+                      // collect_slot_2 offset handled by the step-transition useEffect above.
                       towerOpacity.value = withTiming(1, {
                         duration: 350,
                         easing: ReanimatedEasing.out(ReanimatedEasing.quad),
@@ -793,13 +1010,13 @@ export default function GameScreen() {
           revenuePerMin={revenuePerMin}
         />
 
-        <QuickActionFAB
+        {!isOnboarding && <QuickActionFAB
           availableMode={availableMode}
           activeMode={quickActionMode}
           count={availableFloorCount}
           onPress={handleFABPress}
-        />
-        {quickActionMode === null && !qaBarVisible && (() => {
+        />}
+        {!isOnboarding && quickActionMode === null && !qaBarVisible && (() => {
           const qaSlot = availableMode !== null ? 1 : 0;
           const hasDaily = unclaimedDailyTasksCount > 0;
           const hasMail  = unreadMailCount > 0;
@@ -836,6 +1053,35 @@ export default function GameScreen() {
           />
         )}
       </ImageBackground>
+
+      {__DEV__ && (() => {
+        const curIdx = onboardingStep ? SEQUENCE.indexOf(onboardingStep) : -1;
+        const hasPrev = curIdx > 0;
+        const hasNext = curIdx >= 0 && curIdx < SEQUENCE.length - 1;
+        const btnBase: object = { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, alignItems: 'center', justifyContent: 'center' };
+        return (
+          <View style={{ position: 'absolute', top: 55, right: 6, zIndex: 9999, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,0,0,0.65)', borderRadius: 10, padding: 4 }}>
+            <Pressable
+              onPress={() => hasPrev && useOnboardingStore.getState().goToStep(SEQUENCE[curIdx - 1])}
+              style={[btnBase, { backgroundColor: hasPrev ? '#555' : '#333', opacity: hasPrev ? 1 : 0.4 }]}
+            >
+              <Text style={{ color: '#fff', fontSize: 14 }}>{'←'}</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => useOnboardingStore.getState().goToStep(SEQUENCE[0])}
+              style={[btnBase, { backgroundColor: '#c0392b' }]}
+            >
+              <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{onboardingStep ?? 'off'}</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => hasNext && useOnboardingStore.getState().goToStep(SEQUENCE[curIdx + 1])}
+              style={[btnBase, { backgroundColor: hasNext ? '#555' : '#333', opacity: hasNext ? 1 : 0.4 }]}
+            >
+              <Text style={{ color: '#fff', fontSize: 14 }}>{'→'}</Text>
+            </Pressable>
+          </View>
+        );
+      })()}
 
       <HotelPanel visible={hotelOpen} onClose={() => setHotelOpen(false)} />
       <LobbyPanel

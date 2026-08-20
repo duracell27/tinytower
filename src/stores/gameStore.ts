@@ -192,6 +192,7 @@ interface GameActions {
   upgradeToSpecialist: (workerId: string) => void;
   fireAndEvictWorker: (workerId: string) => void;
   spawnVisitor: () => void;
+  spawnOnboardingVisitor: (role: 'guest', targetFloor: number) => void;
   liftVisitor: () => void;
   collectTip: () => void;
   deliverAll: () => void;
@@ -261,6 +262,7 @@ interface GameActions {
   openSheet: () => void;
   closeSheet: () => void;
   reset: () => void;
+  initOnboardingProductions: () => void;
   upgradeFloor: (floorId: number) => void;
   openFloorUpgradeModal: (floorId: number) => void;
   closeFloorUpgradeModal: () => void;
@@ -660,6 +662,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
     productionDetailModal: null,
   }),
 
+  initOnboardingProductions: () => set((cur) => {
+    const step = useOnboardingStore.getState().step;
+    const initFloor2 = step === 'collect_slot_1';
+    const initFloor3 = step === 'collect_slot_1' || step === 'collect_slot_2';
+    return {
+      floors: cur.floors.map((floor) => {
+        if (floor.id === 2 && initFloor2) {
+          return { ...floor, productions: floor.productions.map((p, i) => i === 0 ? { ...p, stage: 'SELLING' as const, stageStartedAt: 0 } : p) };
+        }
+        if (floor.id === 3 && initFloor3) {
+          return { ...floor, productions: floor.productions.map((p, i) => i === 0 ? { ...p, stage: 'SELLING' as const, stageStartedAt: 0 } : p) };
+        }
+        return floor;
+      }),
+    };
+  }),
+
   buy: (floorId, slotIdx, typeId) => {
     executeCommand(get, set, {
       id: uuid(),
@@ -779,6 +798,29 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
+  spawnOnboardingVisitor: (role, targetFloor) => {
+    // Clear any stale visitors so the onboarding visitor always lands at position 0.
+    const cur = get();
+    if (cur.lobbyVisitors.length > 0) set({ lobbyVisitors: [] });
+    const { hairColor, female } = generateVisitorAppearance();
+    const floorTypeKeys = Object.keys(gameConfig.floorTypes);
+    const pendingFloorType = (role === 'guest' && targetFloor === 1)
+      ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
+      : undefined;
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'spawn_visitor',
+      visitorId: uuid(),
+      timestamp: clock.now(),
+      role,
+      targetFloor,
+      isVip: false,
+      hairColor,
+      female,
+      pendingFloorType,
+    });
+  },
+
   liftVisitor: () => {
     const state = get();
     const active = state.lobbyVisitors[0];
@@ -868,7 +910,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       builderTool,
       builderTools,
     });
-    advanceOnboardingIfStep('deliver_visitor', 'deliver_worker');
+    advanceOnboardingIfStep('deliver_visitor');
 
     const visitorLeft = get().lobbyVisitors.length < prevVisitorCount;
 
@@ -1219,7 +1261,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
     hotelCapacity: serverState.hotelCapacity + cur.commandQueue.filter(
       (cmd) => !sentIds.has(cmd.id) && cmd.type === 'expand_hotel',
     ).length,
-    lobbyVisitors: serverState.lobbyVisitors,
+    lobbyVisitors: (() => {
+      // Skip visitors without targetFloor — legacy data from old spawn commands that didn't store it eagerly.
+      const serverMapped = serverState.lobbyVisitors
+        .filter((sv) => sv.targetFloor != null)
+        .map((sv) => {
+          const local = cur.lobbyVisitors.find((lv) => lv.id === sv.id);
+          return {
+            ...sv,
+            role: sv.role ?? local?.role,
+            targetFloor: sv.targetFloor ?? local?.targetFloor,
+          };
+        });
+      // Preserve locally-spawned visitors not yet seen by server (spawn command arrived after sync was sent).
+      const serverIds = new Set(serverState.lobbyVisitors.map((sv) => sv.id));
+      const pendingSpawnIds = new Set(
+        cur.commandQueue
+          .filter((cmd) => cmd.type === 'spawn_visitor' && !sentIds.has(cmd.id))
+          .map((cmd) => (cmd as Extract<Command, { type: 'spawn_visitor' }>).visitorId),
+      );
+      const pendingLocal = cur.lobbyVisitors.filter(
+        (lv) => pendingSpawnIds.has(lv.id) && !serverIds.has(lv.id),
+      );
+      return [...serverMapped, ...pendingLocal];
+    })(),
     lobbyCapacity: serverState.lobbyCapacity,
     elevatorLevel: serverState.elevatorLevel,
     warehouseLevel: serverState.warehouseLevel ?? 0,
@@ -1277,7 +1342,27 @@ export const useGameStore = create<GameStore>((set, get) => ({
           if (f && !base.some((b) => b.id === cmd.floorId)) extra.push(f);
         }
       }
-      return extra.length > 0 ? [...base, ...extra] : base;
+      const merged = extra.length > 0 ? [...base, ...extra] : base;
+      // During the collect onboarding steps, preserve READY_TO_COLLECT on the
+      // initial tutorial slots so the server's IDLE doesn't wipe our forced state.
+      const onboardingStep = useOnboardingStore.getState().step;
+      if (onboardingStep === 'collect_slot_1' || onboardingStep === 'collect_slot_2') {
+        return merged.map((floor) => {
+          if (floor.id !== 2 && floor.id !== 3) return floor;
+          const local = cur.floors.find((f) => f.id === floor.id);
+          if (!local) return floor;
+          return {
+            ...floor,
+            productions: floor.productions.map((prod, i) => {
+              if (i !== 0) return prod;
+              const localProd = local.productions[0];
+              if ((localProd?.stage === 'SELLING' || localProd?.stage === 'READY_TO_COLLECT') && prod.stage === 'IDLE') return localProd;
+              return prod;
+            }),
+          };
+        });
+      }
+      return merged;
     })(),
     stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     tokens:     serverState.tokens     ?? cur.tokens,
@@ -1317,21 +1402,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const slots = unlock?.requiredToolSlots ?? 1;
     const shuffled = [...TOOLS].sort(() => Math.random() - 0.5);
     const requiredTools = shuffled.slice(0, slots).map((tool) => ({ tool }));
+    const isOnboarding = useOnboardingStore.getState().step === 'buy_floor';
     executeCommand(get, set, {
       id: uuid(),
       type: 'buy_floor',
       floorId,
       requiredTools,
       timestamp: clock.now(),
+      freeFloor: isOnboarding || undefined,
     });
   },
 
   selectFloorType: (floorId, floorType) => {
-    set((cur) => ({
-      underConstruction: cur.underConstruction.map((uc) =>
-        uc.floorId === floorId ? { ...uc, selectedFloorType: floorType } : uc,
-      ),
-    }));
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'select_floor_type',
+      floorId,
+      floorType,
+      timestamp: clock.now(),
+    });
     advanceOnboardingIfStep('choose_floor_type');
   },
 
