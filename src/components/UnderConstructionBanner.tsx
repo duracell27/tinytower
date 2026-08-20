@@ -83,7 +83,7 @@ export default function UnderConstructionBanner({
       speedUpBtnRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
       });
-    }, 700);
+    }, 450);
     return () => clearTimeout(timer);
   }, [onboardingStep, isReady]);
 

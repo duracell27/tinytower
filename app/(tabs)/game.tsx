@@ -346,7 +346,7 @@ export default function GameScreen() {
           }
         });
       });
-    }, 700);
+    }, 300);
     return () => {
       cancelAnimationFrame(scrollFrame);
       clearTimeout(measureTimer);
@@ -384,12 +384,12 @@ export default function GameScreen() {
     if (onboardingStep !== 'assign_worker') return;
     setLobbyOpen(false);
     const scrollTimer = setTimeout(() => {
-      listRef.current?.scrollToOffset({ offset: 0, animated: true });
-    }, 300);
+      listRef.current?.scrollToOffset({ offset: 0, animated: false });
+    }, 150);
     // Auto-open the hotel so the user sees the worker slot spotlight.
     const hotelTimer = setTimeout(() => {
       setHotelOpen(true);
-    }, 500);
+    }, 250);
     return () => { clearTimeout(scrollTimer); clearTimeout(hotelTimer); };
   }, [onboardingStep]);
 
@@ -406,7 +406,7 @@ export default function GameScreen() {
       buyFloorRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
       });
-    }, 700);
+    }, 450);
     return () => { clearTimeout(scrollTimer); clearTimeout(measureTimer); };
   }, [onboardingStep]);
 
@@ -418,7 +418,7 @@ export default function GameScreen() {
     const scrollTimer = setTimeout(() => {
       const idx = floorListRef.current.findIndex((i) => i.type === 'underConstruction');
       if (idx >= 0) {
-        listRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+        listRef.current?.scrollToIndex({ index: idx, animated: false, viewPosition: 0.5 });
       }
     }, 300);
     return () => clearTimeout(scrollTimer);

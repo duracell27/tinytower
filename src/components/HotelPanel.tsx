@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -19,12 +19,15 @@ import Animated, {
   useSharedValue,
   withTiming,
   withSpring,
+  withRepeat,
+  withSequence,
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
 import { getHotelExpansionCost } from '../../shared/engine/lobbyCommands';
@@ -35,6 +38,7 @@ import InsufficientResourcesModal from './InsufficientResourcesModal';
 import { GemIcon } from './CurrencyIcons';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_WIDTH = Dimensions.get('window').width;
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
 const DISMISS_THRESHOLD = 120;
 const SHEET_TIMING = { duration: 420, easing: Easing.bezier(0.4, 0, 0.2, 1) };
@@ -58,6 +62,14 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
   const [infoVisible, setInfoVisible] = useState(false);
   const isDark = useColorScheme() === 'dark';
+
+  // Onboarding overlay inside hotel modal
+  const firstWorkerRowRef = useRef<View>(null);
+  const findJobBtnRef = useRef<View>(null);
+  const [workerCardPos, setWorkerCardPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [findJobBtnPos, setFindJobBtnPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const hotelBounceY = useSharedValue(0);
+  const hotelArrowStyle = useAnimatedStyle(() => ({ transform: [{ translateY: hotelBounceY.value }] }));
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -95,6 +107,39 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
     setExpandedWorkerId(null);
     if (!visible) clearInsufficientResources();
   }, [visible, clearInsufficientResources]);
+
+  // During assign_worker: auto-expand first worker card, then measure it for overlay.
+  const onboardingStep = useOnboardingStore((s) => s.step);
+  useEffect(() => {
+    if (!visible || onboardingStep !== 'assign_worker') {
+      setWorkerCardPos(null);
+      setFindJobBtnPos(null);
+      return;
+    }
+    const expandTimer = setTimeout(() => {
+      const firstFree = useGameStore.getState().workers
+        .filter((w) => w.assignedFloorId === null)
+        .sort((a, b) => a.id.localeCompare(b.id))[0];
+      if (firstFree) setExpandedWorkerId(firstFree.id);
+    }, 150);
+    const measureTimer = setTimeout(() => {
+      firstWorkerRowRef.current?.measureInWindow((x, y, width, height) => {
+        if (height > 0) setWorkerCardPos({ x, y, width, height });
+      });
+      findJobBtnRef.current?.measureInWindow((x, y, width, height) => {
+        if (height > 0) setFindJobBtnPos({ x, y, width, height });
+      });
+    }, 350);
+    return () => { clearTimeout(expandTimer); clearTimeout(measureTimer); };
+  }, [visible, onboardingStep]);
+
+  useEffect(() => {
+    if (!findJobBtnPos && !workerCardPos) return;
+    hotelBounceY.value = withRepeat(
+      withSequence(withTiming(-8, { duration: 400 }), withTiming(0, { duration: 400 })),
+      -1, true,
+    );
+  }, [findJobBtnPos, workerCardPos]);
 
   useEffect(() => {
     if (!visible) return;
@@ -211,12 +256,17 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           }
           onFindJob={() => handleFindJob(item.worker)}
           onEvict={() => handleEvict(item.worker.id, item.worker.name)}
+          findJobRef={index === 0 && item.kind === 'worker' ? findJobBtnRef as React.RefObject<View> : undefined}
         />
       ) : (
         <EmptySlotCard t={t} />
       );
       return (
-        <View style={styles.roomRow}>
+        <View
+          style={styles.roomRow}
+          ref={index === 0 && item.kind === 'worker' ? firstWorkerRowRef : undefined}
+          collapsable={false}
+        >
           <View style={styles.roomBadge}>
             <Text style={styles.roomNumber}>{roomNumber}</Text>
           </View>
@@ -391,6 +441,52 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
         </Animated.View>
 
         <InsufficientResourcesModal asOverlay />
+
+        {/* Onboarding overlay — dim + spotlight on first worker card + arrow pointing at Find Job */}
+        {onboardingStep === 'assign_worker' && workerCardPos !== null && (() => {
+          const PAD = 8; const R = 14;
+          const sx = workerCardPos.x - PAD;
+          const sy = workerCardPos.y - PAD;
+          const sw = workerCardPos.width + PAD * 2;
+          const sh = workerCardPos.height + PAD * 2;
+          const cx = workerCardPos.x + workerCardPos.width / 2;
+
+          // Arrow just below the Find Job button (pointing UP at it), fallback to below the card.
+          const btnY = findJobBtnPos ? findJobBtnPos.y + findJobBtnPos.height : sy + sh - 10;
+          const arrowTop = btnY + 4;
+          const hintTop = arrowTop + 150;
+
+          return (
+            <View style={StyleSheet.absoluteFill} pointerEvents="none">
+              <Svg width={SCREEN_WIDTH} height={SCREEN_HEIGHT} style={StyleSheet.absoluteFill} pointerEvents="none">
+                <Path
+                  fillRule="evenodd"
+                  d={[
+                    `M0 0 H${SCREEN_WIDTH} V${SCREEN_HEIGHT} H0 Z`,
+                    `M${sx + R} ${sy} H${sx + sw - R} Q${sx + sw} ${sy} ${sx + sw} ${sy + R}`,
+                    `V${sy + sh - R} Q${sx + sw} ${sy + sh} ${sx + sw - R} ${sy + sh}`,
+                    `H${sx + R} Q${sx} ${sy + sh} ${sx} ${sy + sh - R}`,
+                    `V${sy + R} Q${sx} ${sy} ${sx + R} ${sy} Z`,
+                  ].join(' ')}
+                  fill="rgba(0,0,0,0.55)"
+                />
+              </Svg>
+              <Animated.View style={[hotelArrowStyle, { position: 'absolute', left: cx - 24, top: arrowTop }]}>
+                <Image
+                  source={require('../../assets/img/greenArrowUp.png')}
+                  style={{ width: 48, height: 48 }}
+                  contentFit="contain"
+                />
+              </Animated.View>
+              <View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop }]}>
+                <Image source={require('../../assets/img/happySmile.png')} style={hotelHintStyles.icon} />
+                <Text style={hotelHintStyles.text}>
+                  {'Натисни «Знайти роботу» щоб призначити воркера на поверх'}
+                </Text>
+              </View>
+            </View>
+          );
+        })()}
       </GestureHandlerRootView>
     </Modal>
   );
@@ -801,6 +897,22 @@ const styles = StyleSheet.create({
   list: {
     flex: 1,
   },
+  onboardingBanner: {
+    marginHorizontal: 14,
+    marginTop: 10,
+    marginBottom: 2,
+    backgroundColor: '#FFF7E0',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: '#F5C842',
+  },
+  onboardingBannerText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 14,
+    color: '#7A5A00',
+  },
   listContent: {
     padding: 14,
     gap: 10,
@@ -827,5 +939,33 @@ const styles = StyleSheet.create({
   },
   roomCard: {
     flex: 1,
+  },
+});
+
+const hotelHintStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  icon: {
+    width: 28,
+    height: 28,
+    flexShrink: 0,
+  },
+  text: {
+    flex: 1,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 15,
+    color: '#1a1a1a',
+    lineHeight: 22,
   },
 });

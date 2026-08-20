@@ -1,8 +1,9 @@
-import React, { memo } from 'react';
+import React, { memo, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerForSlot, getFloorDiscount, getFloorSpecialistBonus } from '../../shared/engine/workerUtils';
 import { shadeColor } from '../utils/color';
@@ -145,6 +146,37 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
   const floorStars = useGameStore((s) => s.floorStars);
   const openFloorUpgradeModal = useGameStore((s) => s.openFloorUpgradeModal);
   const openProductionDetailModal = useGameStore((s) => s.openProductionDetailModal);
+  const onboardingStep = useOnboardingStore((s) => s.step);
+  const onboardingSlot0Ready =
+    (onboardingStep === 'collect_slot_1' && floorId === 2) ||
+    (onboardingStep === 'collect_slot_2' && floorId === 3) ||
+    (onboardingStep === 'buy_goods_1'    && floorId === 2) ||
+    (onboardingStep === 'buy_goods_2'    && floorId === 3) ||
+    (onboardingStep === 'assign_worker'  && floorId === 2);
+
+  // Force SELLING only for collect steps (so collect button is visible)
+  const onboardingForceSellingSlot0 =
+    (onboardingStep === 'collect_slot_1' && floorId === 2) ||
+    (onboardingStep === 'collect_slot_2' && floorId === 3);
+
+  const slot0Ref = useRef<View>(null);
+  const measureSlot0 = () => {
+    requestAnimationFrame(() => {
+      slot0Ref.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0 && height > 0) {
+          useOnboardingStore.getState().setTargetRect({ x, y, width, height });
+        }
+      });
+    });
+  };
+  // Single measurement after FlashList fully settles — no onLayout to avoid catching
+  // transitional positions during cell recycling / layout recalculation.
+  useEffect(() => {
+    if (!onboardingSlot0Ready) return;
+    const timer = setTimeout(measureSlot0, 350);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onboardingSlot0Ready]);
   const starCount = floorStars?.[String(floorId)] ?? 0;
   const dynamicFloorType = openedFloorTypes?.[String(floorId)];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
@@ -211,10 +243,20 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
       <View style={[styles.cardsContainer, { backgroundColor: effectiveBodyColor }]}>
         {floor.productions.map((production, idx) => {
           const slotWorker = getWorkerForSlot(workers, floorId, idx);
+          const effectiveProduction =
+            idx === 0 && onboardingForceSellingSlot0 && (production.stage === 'IDLE' || production.stage === 'SELLING')
+              ? { ...production, stage: 'SELLING' as const, stageStartedAt: 0 }
+              : production;
+          const onboardingTargetIdx = onboardingStep === 'assign_worker' ? 1 : 0;
           return (
-            <ProductionCard
+            <View
               key={idx}
-              production={production}
+              style={{ flex: 1 }}
+              ref={idx === onboardingTargetIdx && onboardingSlot0Ready ? slot0Ref : undefined}
+              collapsable={false}
+            >
+            <ProductionCard
+              production={effectiveProduction}
               balance={balance}
               floorId={floorId}
               floorType={floorType}
@@ -239,6 +281,7 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
                   : undefined
               }
             />
+            </View>
           );
         })}
       </View>
