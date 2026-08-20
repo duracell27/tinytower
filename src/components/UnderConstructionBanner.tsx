@@ -139,6 +139,9 @@ export default function UnderConstructionBanner({
     if (onboardingStep === 'expand_floor_card' && !next) {
       useOnboardingStore.getState().advance();
     }
+    if (onboardingStep === 'open_business' && next) {
+      useOnboardingStore.getState().goToStep('expand_floor_card');
+    }
   };
 
   // State: type selected — full card layout
