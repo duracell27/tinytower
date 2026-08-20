@@ -245,10 +245,13 @@ export default function OnboardingOverlay() {
           </View>
         )}
         {config.bullets && config.bullets.map((b: BulletItem, i: number) => (
-          <View key={i} style={styles.bulletRow}>
-            <Image source={b.icon} style={styles.bulletIcon} resizeMode="contain" />
-            <Text style={styles.bulletText}>{b.text}</Text>
-          </View>
+          <React.Fragment key={i}>
+            {i > 0 && <View style={styles.bulletDivider} />}
+            <View style={styles.bulletRow}>
+              <Image source={b.icon} style={styles.bulletIcon} resizeMode="contain" />
+              <Text style={styles.bulletText}>{b.text}</Text>
+            </View>
+          </React.Fragment>
         ))}
         {config.dismissable && (
           <Pressable style={styles.dismissBtn} onPress={advance}>
@@ -323,11 +326,15 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     lineHeight: 22,
   },
+  bulletDivider: {
+    height: 1,
+    backgroundColor: '#E8F0E5',
+    marginVertical: 8,
+  },
   bulletRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginTop: 12,
   },
   bulletIcon: {
     width: 26,
