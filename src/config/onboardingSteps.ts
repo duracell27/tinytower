@@ -1,5 +1,10 @@
 import type { OnboardingStep } from '../stores/onboardingStore';
 
+export interface BulletItem {
+  icon: ReturnType<typeof require>;
+  text: string;
+}
+
 export interface StepConfig {
   text: string;
   iconSource?: ReturnType<typeof require>;
@@ -18,6 +23,10 @@ export interface StepConfig {
   arrowAboveSpotlight?: boolean;
   /** Place hint card below the spotlight instead of above it */
   hintBelowSpotlight?: boolean;
+  /** Center the card on screen — no spotlight, no arrow */
+  centered?: boolean;
+  /** Bullet list with icon + text rows rendered below the main text */
+  bullets?: BulletItem[];
 }
 
 // Pointer positions are approximate fractions of screen dimensions.
@@ -107,10 +116,17 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowOffsetX: 70,
   },
   final_message: {
-    text: 'Вітаємо! Тепер розвивай свою вежу — залучай найкращих робітників, обслуговуй гостей і підкоряй топ рейтингу!',
+    text: 'Вітаємо! Твоя вежа чекає на розвиток 🎉',
     iconSource: require('../../assets/img/happySmile.png'),
     arrowDir: 'up',
     dismissable: true,
     dismissLabel: 'Погнали!',
+    centered: true,
+    bullets: [
+      { icon: require('../../assets/img/coin.png'),      text: 'Будуй нові поверхи та збирай виручку' },
+      { icon: require('../../assets/img/worker.png'),    text: 'Наймай та прокачуй робітників' },
+      { icon: require('../../assets/img/hotel.png'),     text: 'Відвози гостей ліфтом — отримуй чайові' },
+      { icon: require('../../assets/img/starFull.png'),  text: 'Підкоряй топ рейтингу' },
+    ],
   },
 };

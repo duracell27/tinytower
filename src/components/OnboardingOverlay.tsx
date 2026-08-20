@@ -9,7 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { usePathname } from 'expo-router';
 import { useOnboardingStore } from '../stores/onboardingStore';
-import { ONBOARDING_STEPS } from '../config/onboardingSteps';
+import { ONBOARDING_STEPS, type BulletItem } from '../config/onboardingSteps';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 const CARD_WIDTH = SW * 0.82;
@@ -222,10 +222,12 @@ export default function OnboardingOverlay() {
       {/* Hint card */}
       <View
         pointerEvents={config.dismissable ? 'auto' : 'none'}
-        style={[styles.card, {
-          top: Math.max(60, Math.min(SH - 200, cardTop)),
-          left: (SW - CARD_WIDTH) / 2,
-        }]}
+        style={[
+          styles.card,
+          config.centered
+            ? styles.cardCentered
+            : { top: Math.max(60, Math.min(SH - 200, cardTop)), left: (SW - CARD_WIDTH) / 2 },
+        ]}
       >
         <View style={styles.cardRow}>
           {config.iconSource && (
@@ -233,6 +235,12 @@ export default function OnboardingOverlay() {
           )}
           <Text style={styles.cardText}>{config.text}</Text>
         </View>
+        {config.bullets && config.bullets.map((b: BulletItem, i: number) => (
+          <View key={i} style={styles.bulletRow}>
+            <Image source={b.icon} style={styles.bulletIcon} resizeMode="contain" />
+            <Text style={styles.bulletText}>{b.text}</Text>
+          </View>
+        ))}
         {config.dismissable && (
           <Pressable style={styles.dismissBtn} onPress={advance}>
             <Text style={styles.dismissLabel}>{config.dismissLabel ?? 'OK'}</Text>
@@ -264,6 +272,10 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
+  cardCentered: {
+    top: SH / 2 - 180,
+    left: (SW - CARD_WIDTH) / 2,
+  },
   cardRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -280,6 +292,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1a1a1a',
     lineHeight: 22,
+  },
+  bulletRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 12,
+  },
+  bulletIcon: {
+    width: 26,
+    height: 26,
+    flexShrink: 0,
+  },
+  bulletText: {
+    flex: 1,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
   },
   dismissBtn: {
     marginTop: 14,
