@@ -107,7 +107,7 @@ export default function UnderConstructionBanner({
       chevronRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) useOnboardingStore.getState().setArrowRect({ x, y, width, height });
       });
-    }, 600);
+    }, 150);
     return () => clearTimeout(timer);
   }, [onboardingStep]);
 
@@ -123,7 +123,7 @@ export default function UnderConstructionBanner({
       openBtnRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) useOnboardingStore.getState().setArrowRect({ x, y, width, height });
       });
-    }, 600);
+    }, 150);
     return () => clearTimeout(timer);
   }, [onboardingStep]);
 
