@@ -229,12 +229,21 @@ export default function OnboardingOverlay() {
             : { top: Math.max(60, Math.min(SH - 200, cardTop)), left: (SW - CARD_WIDTH) / 2 },
         ]}
       >
-        <View style={styles.cardRow}>
-          {config.iconSource && (
-            <Image source={config.iconSource} style={styles.icon} resizeMode="contain" />
-          )}
-          <Text style={styles.cardText}>{config.text}</Text>
-        </View>
+        {config.centered ? (
+          <View style={styles.centeredHeader}>
+            {config.iconSource && (
+              <Image source={config.iconSource} style={styles.centeredIcon} resizeMode="contain" />
+            )}
+            <Text style={styles.centeredTitle}>{config.text}</Text>
+          </View>
+        ) : (
+          <View style={styles.cardRow}>
+            {config.iconSource && (
+              <Image source={config.iconSource} style={styles.icon} resizeMode="contain" />
+            )}
+            <Text style={styles.cardText}>{config.text}</Text>
+          </View>
+        )}
         {config.bullets && config.bullets.map((b: BulletItem, i: number) => (
           <View key={i} style={styles.bulletRow}>
             <Image source={b.icon} style={styles.bulletIcon} resizeMode="contain" />
@@ -275,6 +284,27 @@ const styles = StyleSheet.create({
   cardCentered: {
     top: SH / 2 - 180,
     left: (SW - CARD_WIDTH) / 2,
+  },
+  centeredHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingBottom: 14,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#E8F0E5',
+    marginBottom: 4,
+  },
+  centeredIcon: {
+    width: 34,
+    height: 34,
+    flexShrink: 0,
+  },
+  centeredTitle: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 20,
+    color: '#1a1a1a',
+    flexShrink: 1,
   },
   cardRow: {
     flexDirection: 'row',
