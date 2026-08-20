@@ -81,9 +81,9 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   buy_floor: {
     text: 'Купи новий поверх щоб розширити вежу!',
     iconSource: require('../../assets/img/coin.png'),
+    pointer: { x: 0.5, y: 0.15 },
     arrowDir: 'up',
     dismissable: false,
-    spotlightPadTop: 8,
   },
   choose_floor_type: {
     text: 'Всі категорії рівні по виручці. Зелені — треба часто доглядати, червоні — рідше',

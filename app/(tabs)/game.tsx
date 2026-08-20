@@ -393,21 +393,16 @@ export default function GameScreen() {
     return () => { clearTimeout(scrollTimer); clearTimeout(hotelTimer); };
   }, [onboardingStep]);
 
-  // When buy_floor step starts, close hotel, scroll to BuyFloorBanner, then measure for spotlight.
+  // When buy_floor step starts, close hotel and scroll to BuyFloorBanner.
+  // No spotlight measurement — pointer config drives the arrow position so there
+  // are no blocking strips and the banner tap always goes through.
   useEffect(() => {
     if (onboardingStep !== 'buy_floor') return;
     setHotelOpen(false);
-    useOnboardingStore.getState().setTargetRect(null);
     const scrollTimer = setTimeout(() => {
-      // buyFloor is always index 0 — scroll to top is simpler and more reliable.
       listRef.current?.scrollToOffset({ offset: 0, animated: false });
-    }, 300);
-    const measureTimer = setTimeout(() => {
-      buyFloorRef.current?.measureInWindow((x, y, width, height) => {
-        if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
-      });
-    }, 450);
-    return () => { clearTimeout(scrollTimer); clearTimeout(measureTimer); };
+    }, 200);
+    return () => clearTimeout(scrollTimer);
   }, [onboardingStep]);
 
   // When speed_up_construction / expand_floor_card / open_business steps start,
