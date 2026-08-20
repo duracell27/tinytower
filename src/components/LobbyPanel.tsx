@@ -17,11 +17,14 @@ import Animated, {
   useSharedValue,
   withTiming,
   withSpring,
+  withRepeat,
+  withSequence,
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useGameStore, useLobbyState, useBalance } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { WORKER_NAME_POOLS } from '../../shared/config/workerNames';
 import { useGameClock } from '../hooks/useGameClock';
@@ -71,6 +74,7 @@ const WORKER_IMAGES: Record<string, { male: ReturnType<typeof require>; female: 
 };
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_WIDTH = Dimensions.get('window').width;
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
 const DISMISS_THRESHOLD = 120;
 const SHEET_TIMING = { duration: 420, easing: Easing.bezier(0.4, 0, 0.2, 1) };
@@ -397,10 +401,6 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     setInlineReward(payload);
   }, []);
 
-  useEffect(() => {
-    if (!lobbyVisitors?.length) setInlineReward(null);
-  }, [lobbyVisitors]);
-
   const isDark = useColorScheme() === 'dark';
 
   const {
@@ -421,6 +421,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const balance = useBalance();
   const now = useGameClock(1000);
   const playerLevel = useGameStore((s) => s.playerLevel);
+  useEffect(() => {
+    if (!lobbyVisitors?.length) setInlineReward(null);
+  }, [lobbyVisitors]);
+
+  const onboardingStep = useOnboardingStore((s) => s.step);
+  const onboardingHint =
+    onboardingStep === 'deliver_visitor' ? 'Відвези гостя на потрібний поверх — натисни підняти' :
+    null;
 
   const fillLobby = useGameStore((s) => s.fillLobby);
   const liftVisitor = useGameStore((s) => s.liftVisitor);
@@ -602,8 +610,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     const isHotelGuest = (active?.role ?? 'guest') === 'guest' && (active?.targetFloor ?? 1) === 1;
     const hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
     const isHotelFull = isHotelGuest && hotelOccupied >= state.hotelCapacity;
+    // During deliver_visitor onboarding, auto-open hotel after check-in so user sees their new worker.
+    const autoOpenHotelAfter = isHotelGuest && !isHotelFull
+      && useOnboardingStore.getState().step === 'deliver_visitor';
 
+    if (autoOpenHotelAfter) suppressNewWorkerPopup.current = true;
     collectTip();
+    if (autoOpenHotelAfter) suppressNewWorkerPopup.current = false;
 
     if (isHotelFull) {
       if (liftSimplifiedRewards) {
@@ -619,8 +632,11 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       } else {
         setHotelFullPopup(true);
       }
+    } else if (autoOpenHotelAfter) {
+      // Close lobby; hotel opens automatically at assign_worker step.
+      setTimeout(() => onClose(), 350);
     }
-  }, [collectTip, liftSimplifiedRewards, showInlineReward]);
+  }, [collectTip, liftSimplifiedRewards, showInlineReward, onClose]);
 
   // Determine action button for active visitor
   const getActionButton = useCallback(() => {
@@ -691,6 +707,42 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   }, [activeVisitor, arrived, elevatorLevel, effectiveDailyGemsCollected, dailyGemLimit, liftVisitor, handleCollectTip]);
 
   const actionButton = getActionButton();
+
+  const visitorCardRef = useRef<View>(null);
+  const actionButtonRef = useRef<View>(null);
+  const [cardPos, setCardPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [actionButtonPos, setActionButtonPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const lobbyBounceY = useSharedValue(0);
+  const lobbyAnimatedArrow = useAnimatedStyle(() => ({ transform: [{ translateY: lobbyBounceY.value }] }));
+
+  useEffect(() => {
+    lobbyBounceY.value = withRepeat(
+      withSequence(
+        withTiming(-10, { duration: 400, easing: Easing.out(Easing.quad) }),
+        withTiming(0,   { duration: 400, easing: Easing.in(Easing.quad) }),
+      ),
+      -1,
+      false,
+    );
+  }, [lobbyBounceY]);
+
+  useEffect(() => {
+    if (!onboardingHint || !visible) {
+      setCardPos(null);
+      setActionButtonPos(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      visitorCardRef.current?.measureInWindow((x, y, width, height) => {
+        if (height > 0) setCardPos({ x, y, width, height });
+      });
+      actionButtonRef.current?.measureInWindow((x, y, width, height) => {
+        if (height > 0) setActionButtonPos({ x, y, width, height });
+      });
+    }, 480);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onboardingHint, visible, activeVisitor?.id, arrived]);
 
   return (
     <>
@@ -786,11 +838,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            scrollEnabled={onboardingStep !== 'deliver_visitor'}
           >
             {view === 'operate' ? (
               <>
                 {/* Visitor + Shaft Card / Empty State */}
-                <View style={[styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+                <View ref={visitorCardRef} collapsable={false} style={[styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
                   {activeVisitor ? (
                     <View style={styles.visitorShaftRow}>
                       {/* Left column */}
@@ -838,6 +891,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         {/* Action button */}
                         {actionButton && (
                           <Pressable
+                            ref={actionButtonRef}
+                            collapsable={false}
                             onPress={() => {
                               const style = activeVisitor?.isVip
                                 ? Haptics.ImpactFeedbackStyle.Heavy
@@ -1122,8 +1177,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   )}
                 </View>
 
-                {/* Upgrade elevator entry button */}
-                <Pressable
+                {/* Upgrade elevator entry button — hidden during onboarding deliver step */}
+                {onboardingStep !== 'deliver_visitor' && <Pressable
                   onPress={() => setView('upgrade')}
                   style={({ pressed }) => [
                     styles.upgradeEntryButton,
@@ -1138,10 +1193,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <Text style={styles.upgradeEntryText}>{t('elevator.upgradeEntry')}</Text>
                   </LinearGradient>
                   {!isDark && <View style={styles.upgradeEntryShadow} />}
-                </Pressable>
-                <Text style={[styles.upgradeCaption, isDark && { color: '#8A9A80' }]}>
+                </Pressable>}
+                {onboardingStep !== 'deliver_visitor' && <Text style={[styles.upgradeCaption, isDark && { color: '#8A9A80' }]}>
                   {t('elevator.upgradeCaption')}
-                </Text>
+                </Text>}
               </>
             ) : (
               /* UPGRADE VIEW */
@@ -1501,6 +1556,75 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         )}
 
         <InsufficientResourcesModal asOverlay />
+
+        {/* Onboarding overlay — dim + spotlight + arrow + card inside Modal for deliver steps */}
+        {onboardingHint && cardPos !== null && (() => {
+          const PAD = 8;
+          const R = 16;
+          const sx = cardPos.x - PAD;
+          const sy = cardPos.y - PAD;
+          const sw = cardPos.width + PAD * 2;
+          const sh = cardPos.height + PAD * 2;
+          const cx = actionButtonPos
+            ? actionButtonPos.x + actionButtonPos.width / 2
+            : cardPos.x + cardPos.width / 2;
+          // Arrow sits inside the spotlight, just below the action button, pointing up
+          const arrowTop = actionButtonPos
+            ? actionButtonPos.y + actionButtonPos.height + 4
+            : sy + sh - 60;
+          const hintTop = sy + sh + PAD + 8;
+          return (
+            <View style={StyleSheet.absoluteFill} pointerEvents="none">
+              <Svg
+                width={SCREEN_WIDTH}
+                height={SCREEN_HEIGHT}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="none"
+              >
+                <Path
+                  fillRule="evenodd"
+                  d={[
+                    `M0 0 H${SCREEN_WIDTH} V${SCREEN_HEIGHT} H0 Z`,
+                    `M${sx + R} ${sy}`,
+                    `H${sx + sw - R}`,
+                    `Q${sx + sw} ${sy} ${sx + sw} ${sy + R}`,
+                    `V${sy + sh - R}`,
+                    `Q${sx + sw} ${sy + sh} ${sx + sw - R} ${sy + sh}`,
+                    `H${sx + R}`,
+                    `Q${sx} ${sy + sh} ${sx} ${sy + sh - R}`,
+                    `V${sy + R}`,
+                    `Q${sx} ${sy} ${sx + R} ${sy}`,
+                    'Z',
+                  ].join(' ')}
+                  fill="rgba(0,0,0,0.55)"
+                />
+              </Svg>
+              <Animated.View
+                style={[
+                  lobbyAnimatedArrow,
+                  { position: 'absolute', left: cx - 24, top: arrowTop },
+                ]}
+              >
+                <Image
+                  source={require('../../assets/img/greenArrowUp.png')}
+                  style={{ width: 48, height: 48 }}
+                  contentFit="contain"
+                />
+              </Animated.View>
+              <View style={[
+                onboardingHintStyles.card,
+                { position: 'absolute', left: 20, right: 20, top: hintTop },
+              ]}>
+                <Image
+                  source={require('../../assets/img/coin.png')}
+                  style={onboardingHintStyles.icon}
+                  contentFit="contain"
+                />
+                <Text style={onboardingHintStyles.text}>{onboardingHint}</Text>
+              </View>
+            </View>
+          );
+        })()}
       </GestureHandlerRootView>
     </Modal>
     </>
@@ -2384,5 +2508,33 @@ const infoStyles = StyleSheet.create({
     fontSize: 12.5,
     color: '#6A7485',
     lineHeight: 18,
+  },
+});
+
+const onboardingHintStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  icon: {
+    width: 28,
+    height: 28,
+    flexShrink: 0,
+  },
+  text: {
+    flex: 1,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 15,
+    color: '#1a1a1a',
+    lineHeight: 22,
   },
 });
