@@ -95,7 +95,6 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowDir: 'down',
     dismissable: false,
     spotlightPadTop: 8,
-    arrowAboveSpotlight: true,
     hintBelowSpotlight: true,
   },
   open_business: {

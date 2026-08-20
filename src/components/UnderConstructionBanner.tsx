@@ -68,6 +68,7 @@ export default function UnderConstructionBanner({
   const onboardingStep = useOnboardingStore((s) => s.step);
   const speedUpBtnRef = useRef<View>(null);
   const collapsedRowRef = useRef<View>(null);
+  const chevronRef = useRef<View>(null);
   const expandedCardRef = useRef<View>(null);
   const openBtnRef = useRef<View>(null);
 
@@ -94,13 +95,17 @@ export default function UnderConstructionBanner({
     }
   }, [onboardingStep]);
 
-  // Measure the collapsed row for expand_floor_card spotlight.
+  // Measure the collapsed row (spotlight) + chevron (arrow) for expand_floor_card.
   useEffect(() => {
     if (onboardingStep !== 'expand_floor_card') return;
     useOnboardingStore.getState().setTargetRect(null);
+    useOnboardingStore.getState().setArrowRect(null);
     const timer = setTimeout(() => {
       collapsedRowRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
+      });
+      chevronRef.current?.measureInWindow((x, y, width, height) => {
+        if (height > 0) useOnboardingStore.getState().setArrowRect({ x, y, width, height });
       });
     }, 600);
     return () => clearTimeout(timer);
@@ -163,7 +168,7 @@ export default function UnderConstructionBanner({
             <Text style={{ color: typeColor }}>{typeName}</Text>
             {' awaits opening'}
           </Text>
-          <Pressable onPress={toggleCollapse} hitSlop={8}>
+          <Pressable ref={chevronRef as React.RefObject<View>} collapsable={false} onPress={toggleCollapse} hitSlop={8}>
             <View style={[styles.chevronCircle, { backgroundColor: typeColor }]}>
               <View style={[styles.chevronShape, styles.chevronDown]} />
             </View>
