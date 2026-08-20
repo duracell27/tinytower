@@ -116,7 +116,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowOffsetX: 70,
   },
   final_message: {
-    text: 'Вітаємо! Твоя вежа чекає на розвиток 🎉',
+    text: 'Вітаємо! Вежа в твоїх руках! 🎉',
     iconSource: require('../../assets/img/happySmile.png'),
     arrowDir: 'up',
     dismissable: true,
