@@ -24,6 +24,7 @@ interface WorkerCardProps {
   onToggle: () => void;
   onFindJob: () => void;
   onEvict: () => void;
+  findJobRef?: React.RefObject<View>;
 }
 
 const TIMING_CONFIG = { duration: 300, easing: Easing.bezier(0.4, 0, 0.2, 1) };
@@ -36,6 +37,7 @@ export default function WorkerCard({
   onToggle,
   onFindJob,
   onEvict,
+  findJobRef,
 }: WorkerCardProps) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
@@ -200,6 +202,7 @@ export default function WorkerCard({
 
           {/* Find job button */}
           <Pressable
+            ref={findJobRef as React.RefObject<View>}
             onPress={onFindJob}
             style={({ pressed }) => [
               styles.actionButton,

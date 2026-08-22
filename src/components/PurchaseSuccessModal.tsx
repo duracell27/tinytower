@@ -6,6 +6,7 @@ import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing,
 } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -30,6 +31,7 @@ export default function PurchaseSuccessModal() {
   const payload = useGameStore((s) => s.pendingPurchaseSuccess);
   const clear   = useGameStore((s) => s.clearPurchaseSuccess);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
+  const isOnboarding = useOnboardingStore((s) => s.isActive);
 
   const scale = useSharedValue(0.6);
 
@@ -40,7 +42,7 @@ export default function PurchaseSuccessModal() {
     scale.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
   }, [scale]);
 
-  if (!payload || activeSheetCount > 0) return null;
+  if (!payload || activeSheetCount > 0 || isOnboarding) return null;
 
   const { packName, price, rewards } = payload;
 

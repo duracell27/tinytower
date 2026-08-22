@@ -6,6 +6,7 @@ import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing,
 } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { formatNum } from '../utils/format';
 
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -36,6 +37,7 @@ export default function TaskRewardModal() {
   const reward       = useGameStore((s) => s.pendingTaskReward);
   const clearReward  = useGameStore((s) => s.clearTaskReward);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
+  const isOnboarding = useOnboardingStore((s) => s.isActive);
 
   const scale = useSharedValue(0.6);
 
@@ -46,7 +48,7 @@ export default function TaskRewardModal() {
     scale.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
   }, [scale]);
 
-  if (!reward || activeSheetCount > 0) return null;
+  if (!reward || activeSheetCount > 0 || isOnboarding) return null;
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={clearReward} onShow={runIn}>

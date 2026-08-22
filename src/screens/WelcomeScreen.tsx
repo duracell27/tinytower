@@ -43,6 +43,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const lastPlayer = useAuthStore((s) => s.lastPlayer);
   const quickLogin = useAuthStore((s) => s.quickLogin);
+  const clearLastPlayer = useAuthStore((s) => s.clearLastPlayer);
   const isLoading = useAuthStore((s) => s.isLoading);
   const balance = useGameStore((s) => s.balance);
   const gems = useGameStore((s) => s.gems);
@@ -266,31 +267,43 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
 
         {/* ── Case 1 & 2: known player ── */}
         {(isAuthenticated || hasLastAccount) && (
-          <Pressable
-            onPress={handleMainAction}
-            style={({ pressed }) => [styles.continueButton, pressed && { opacity: 0.88 }]}
-          >
-            <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.continueGradient}>
-              <PlayerAvatar level={playerLevel} size={36} />
-              <View style={styles.continueMeta}>
-                <Text style={styles.continueName}>{activePlayerName}</Text>
-                <Text style={styles.continueLabel}>
-                  {isAuthenticated ? t('welcome.continueLabel.authenticated') : t('welcome.continueLabel.hasAccount')}
-                </Text>
-              </View>
-              {hasLastAccount && (
-                <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-                  <Rect x={5} y={11} width={14} height={10} rx={2} />
-                  <Path d="M8 11V7a4 4 0 0 1 8 0v4" />
-                </Svg>
-              )}
-              {isAuthenticated && (
-                <Svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                  <Path d="M5 12h14M13 6l6 6-6 6" />
-                </Svg>
-              )}
-            </LinearGradient>
-          </Pressable>
+          <View style={styles.continueRow}>
+            <Pressable
+              onPress={handleMainAction}
+              style={({ pressed }) => [styles.continueButton, { flex: 1 }, pressed && { opacity: 0.88 }]}
+            >
+              <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.continueGradient}>
+                <PlayerAvatar level={playerLevel} size={36} />
+                <View style={styles.continueMeta}>
+                  <Text style={styles.continueName}>{activePlayerName}</Text>
+                  <Text style={styles.continueLabel}>
+                    {isAuthenticated ? t('welcome.continueLabel.authenticated') : t('welcome.continueLabel.hasAccount')}
+                  </Text>
+                </View>
+                {hasLastAccount && (
+                  <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                    <Rect x={5} y={11} width={14} height={10} rx={2} />
+                    <Path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                  </Svg>
+                )}
+                {isAuthenticated && (
+                  <Svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                    <Path d="M5 12h14M13 6l6 6-6 6" />
+                  </Svg>
+                )}
+              </LinearGradient>
+            </Pressable>
+
+            <Pressable
+              onPress={isAuthenticated ? () => useAuthStore.getState().logout() : clearLastPlayer}
+              style={({ pressed }) => [styles.trashButton, pressed && { opacity: 0.75 }]}
+            >
+              <Svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <Path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                <Path d="M10 11v6M14 11v6" />
+              </Svg>
+            </Pressable>
+          </View>
         )}
 
         {/* ── Case 3: first time → guest ── */}
@@ -764,5 +777,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  continueRow: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'stretch',
+  },
+  trashButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
 });

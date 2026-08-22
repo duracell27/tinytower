@@ -10,6 +10,7 @@ import Animated, {
 import { usePathname } from 'expo-router';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { ONBOARDING_STEPS, type BulletItem } from '../config/onboardingSteps';
+import { getOnboardingDismissAction, getOnboardingSpotlightAction } from '../utils/onboardingCallback';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 const CARD_WIDTH = SW * 0.82;
@@ -69,6 +70,7 @@ export default function OnboardingOverlay() {
     }
   }, [targetRect, spotlightOpacity]);
 
+
   // Advance past any step that was removed from ONBOARDING_STEPS after a redesign.
   const config = step && step !== 'done' ? ONBOARDING_STEPS[step] : undefined;
   useEffect(() => {
@@ -106,6 +108,8 @@ export default function OnboardingOverlay() {
     };
     if (config.arrowAboveSpotlight && spotlightRect) {
       arrowTop = spotlightRect.y - ARROW_SIZE - 4;
+    } else if (config.arrowBelowSpotlight && spotlightRect) {
+      arrowTop = spotlightRect.y + spotlightRect.h + 4 + (config.arrowBelowOffset ?? 0);
     } else if (config.arrowDir === 'down') {
       arrowTop = targetRect.y + targetRect.height - ARROW_SIZE - (config.arrowBottomOffset ?? 60);
     } else {
@@ -127,17 +131,24 @@ export default function OnboardingOverlay() {
     px = px + config.arrowOffsetX;
   }
 
-  // Hint card: below spotlight when hintBelowSpotlight, above spotlight (and above arrow when arrowAboveSpotlight) or below arrow.
+  // Hint card: below spotlight+arrow when hintBelowSpotlight, above spotlight (and above arrow when arrowAboveSpotlight) or below arrow.
   const cardTop = config.hintBelowSpotlight && spotlightRect
-    ? spotlightRect.y + spotlightRect.h + 12
+    ? Math.max(
+        spotlightRect.y + spotlightRect.h + 12,
+        arrowTop !== undefined ? arrowTop + ARROW_SIZE + 8 : 0,
+      )
     : config.arrowDir === 'down'
       ? (config.arrowAboveSpotlight && arrowTop !== undefined
           ? arrowTop - 8 - 130
           : spotlightRect ? spotlightRect.y - 8 - 130 : (arrowTop ?? SH * 0.35) - 8 - 130)
       : (arrowTop ?? SH * 0.5) + ARROW_SIZE + 8;
 
-  // Blocks swipe/scroll gestures on the overlay without passing them through.
   const noop = () => {};
+  const noopTop = noop;
+  const noopBottom = noop;
+  const noopLeft = noop;
+  const noopRight = noop;
+  const noopFull = noop;
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
@@ -174,50 +185,74 @@ export default function OnboardingOverlay() {
         <View pointerEvents="none" style={[styles.dim, StyleSheet.absoluteFill]} />
       ) : null}
 
-      {/* Touch-blocking rectangles around the spotlight — 4 strips that swallow all taps outside */}
+      {/* Touch-blocking rectangles around the spotlight — 4 strips that swallow all taps outside. */}
       {spotlightRect && (
         <>
           {/* Top */}
-          <TouchableWithoutFeedback onPress={noop}>
+          <TouchableWithoutFeedback onPress={noopTop}>
             <View style={{ position: 'absolute', left: 0, top: 0, width: SW, height: spotlightRect.y }} />
           </TouchableWithoutFeedback>
           {/* Bottom */}
-          <TouchableWithoutFeedback onPress={noop}>
+          <TouchableWithoutFeedback onPress={noopBottom}>
             <View style={{ position: 'absolute', left: 0, top: spotlightRect.y + spotlightRect.h, width: SW, height: Math.max(0, SH - spotlightRect.y - spotlightRect.h) }} />
           </TouchableWithoutFeedback>
           {/* Left */}
-          <TouchableWithoutFeedback onPress={noop}>
+          <TouchableWithoutFeedback onPress={noopLeft}>
             <View style={{ position: 'absolute', left: 0, top: spotlightRect.y, width: spotlightRect.x, height: spotlightRect.h }} />
           </TouchableWithoutFeedback>
           {/* Right */}
-          <TouchableWithoutFeedback onPress={noop}>
+          <TouchableWithoutFeedback onPress={noopRight}>
             <View style={{ position: 'absolute', left: spotlightRect.x + spotlightRect.w, top: spotlightRect.y, width: Math.max(0, SW - spotlightRect.x - spotlightRect.w), height: spotlightRect.h }} />
           </TouchableWithoutFeedback>
         </>
       )}
-      {/* For dismissable steps without a spotlight (e.g. construction_tip, final_message):
-          block the full screen so only the hint card's OK button works. */}
-      {!spotlightRect && config.dismissable && (
-        <TouchableWithoutFeedback onPress={noop}>
+      {/* Full-screen touch block when there is no spotlight hole and no pointer target.
+          Pointer-based steps (open_elevator_1, deliver_visitor) are exempt — their
+          spotlight arrives after measurement; if it never arrives they fall back to the
+          pointer arrow with no block (acceptable because other modals are closed).
+          Rendered before the hint card so the card's Pressable (OK button) stays on top. */}
+      {!spotlightRect && !config.pointer && (
+        <TouchableWithoutFeedback onPress={noopFull}>
           <View style={StyleSheet.absoluteFill} />
         </TouchableWithoutFeedback>
       )}
 
-      {/* Animated arrow — hidden while waiting for targetRect measurement, fades in with spotlight */}
+      {/* Animated arrow.
+          - Spotlight steps (targetRect set): wrapped in Animated.View that fades in with the
+            spotlight via animatedSpotlight (opacity 0→1). Arrow is hidden during measurement wait.
+          - Pointer-only steps (no targetRect): wrapped in a plain View so it is always at full
+            opacity and has no Reanimated-driven native opacity that could interfere with iOS
+            hit-testing on underlying content when opacity=0. */}
       {px !== undefined && arrowTop !== undefined && (
-        <Animated.View
-          pointerEvents="none"
-          style={[animatedSpotlight, {
-            position: 'absolute',
-            left: px - ARROW_SIZE / 2,
-            top: arrowTop,
-          }]}
-        >
-          <Animated.View style={animatedArrow}>
-            <Arrow dir={config.arrowDir} />
+        targetRect ? (
+          <Animated.View
+            pointerEvents="none"
+            style={[animatedSpotlight, {
+              position: 'absolute',
+              left: px - ARROW_SIZE / 2,
+              top: arrowTop,
+            }]}
+          >
+            <Animated.View style={animatedArrow}>
+              <Arrow dir={config.arrowDir} />
+            </Animated.View>
           </Animated.View>
-        </Animated.View>
+        ) : (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              left: px - ARROW_SIZE / 2,
+              top: arrowTop,
+            }}
+          >
+            <Animated.View style={animatedArrow}>
+              <Arrow dir={config.arrowDir} />
+            </Animated.View>
+          </View>
+        )
       )}
+
 
       {/* Hint card */}
       <View
@@ -254,7 +289,13 @@ export default function OnboardingOverlay() {
           </React.Fragment>
         ))}
         {config.dismissable && (
-          <Pressable style={styles.dismissBtn} onPress={advance}>
+          <Pressable
+            style={styles.dismissBtn}
+            onPress={() => {
+              const action = getOnboardingDismissAction();
+              if (action) { action(); } else { advance(); }
+            }}
+          >
             <Text style={styles.dismissLabel}>{config.dismissLabel ?? 'OK'}</Text>
           </Pressable>
         )}

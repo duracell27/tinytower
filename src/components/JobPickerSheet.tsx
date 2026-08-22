@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState, useCallback } from 'react';
+import React, { useMemo, useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,15 +10,19 @@ import {
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  withRepeat,
+  withSequence,
   Easing,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerForSlot } from '../../shared/engine/workerUtils';
 import { clock } from '../services/clock';
@@ -76,6 +80,14 @@ export default function JobPickerSheet({
 }: JobPickerSheetProps) {
   const scrimOpacity = useSharedValue(0);
   const sheetTranslateY = useSharedValue(102);
+  const firstAssignBtnRef = useRef<View>(null);
+  const firstAssignRowRef = useRef<View>(null);
+  const firstSectionHeaderRef = useRef<View>(null);
+  const [firstAssignBtnPos, setFirstAssignBtnPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [firstAssignRowPos, setFirstAssignRowPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [firstSectionHeaderPos, setFirstSectionHeaderPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const assignBounceY = useSharedValue(0);
+  const assignArrowStyle = useAnimatedStyle(() => ({ transform: [{ translateY: assignBounceY.value }] }));
 
   const workers = useGameStore((s) => s.workers);
   const storeFloors = useGameStore((s) => s.floors);
@@ -270,6 +282,36 @@ export default function JobPickerSheet({
     : '';
 
   const isEmpty = sections.length === 0;
+  const onboardingStep = useOnboardingStore((s) => s.step);
+
+  useEffect(() => {
+    if (!visible || onboardingStep !== 'assign_worker') {
+      setFirstAssignBtnPos(null);
+      setFirstAssignRowPos(null);
+      setFirstSectionHeaderPos(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      firstAssignBtnRef.current?.measureInWindow((x, y, w, h) => {
+        if (h > 0) setFirstAssignBtnPos({ x, y, width: w, height: h });
+      });
+      firstAssignRowRef.current?.measureInWindow((x, y, w, h) => {
+        if (h > 0) setFirstAssignRowPos({ x, y, width: w, height: h });
+      });
+      firstSectionHeaderRef.current?.measureInWindow((x, y, w, h) => {
+        if (h > 0) setFirstSectionHeaderPos({ x, y, width: w, height: h });
+      });
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [visible, onboardingStep]);
+
+  useEffect(() => {
+    if (!firstAssignBtnPos) return;
+    assignBounceY.value = withRepeat(
+      withSequence(withTiming(-8, { duration: 400 }), withTiming(0, { duration: 400 })),
+      -1, true,
+    );
+  }, [firstAssignBtnPos]);
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -337,12 +379,27 @@ export default function JobPickerSheet({
             keyExtractor={(item) =>
               `${item.floorId}-${item.slotIdx}`
             }
-            renderSectionHeader={({ section }) => (
-              <SectionHeader section={section} />
-            )}
-            renderItem={({ item }) => (
-              <SlotRow item={item} onAssign={handleAssign} onReplace={handleReplace} />
-            )}
+            renderSectionHeader={({ section }) => {
+              const isFirstSection = onboardingStep === 'assign_worker' && sections[0] === section && !section.isOccupied;
+              return (
+                <SectionHeader
+                  section={section}
+                  headerRef={isFirstSection ? firstSectionHeaderRef as React.RefObject<View> : undefined}
+                />
+              );
+            }}
+            renderItem={({ item, index, section }) => {
+              const isFirst = onboardingStep === 'assign_worker' && sections[0] === section && index === 0 && !section.isOccupied;
+              return (
+                <SlotRow
+                  item={item}
+                  onAssign={handleAssign}
+                  onReplace={handleReplace}
+                  rowRef={isFirst ? firstAssignRowRef as React.RefObject<View> : undefined}
+                  assignRef={isFirst ? firstAssignBtnRef as React.RefObject<View> : undefined}
+                />
+              );
+            }}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             style={styles.list}
@@ -350,6 +407,63 @@ export default function JobPickerSheet({
           />
         )}
       </Animated.View>
+
+      {/* Onboarding spotlight overlay — arrow + spotlight on first Assign button */}
+      {onboardingStep === 'assign_worker' && firstAssignBtnPos && (() => {
+        const SW = Dimensions.get('window').width;
+        const SH = Dimensions.get('window').height;
+        const PAD = 6; const R = 10;
+
+        // Spotlight: from top of section header (if measured) to bottom of slot row (if measured), else just the assign btn
+        const spotTop = firstSectionHeaderPos
+          ? firstSectionHeaderPos.y - PAD
+          : (firstAssignRowPos ? firstAssignRowPos.y - PAD : firstAssignBtnPos.y - PAD);
+        const spotBottom = firstAssignRowPos
+          ? firstAssignRowPos.y + firstAssignRowPos.height + PAD
+          : firstAssignBtnPos.y + firstAssignBtnPos.height + PAD;
+        const spotLeft = firstAssignRowPos ? firstAssignRowPos.x - PAD : 8;
+        const spotWidth = firstAssignRowPos ? firstAssignRowPos.width + PAD * 2 : SW - 16;
+
+        const sx = spotLeft;
+        const sy = spotTop;
+        const sw = spotWidth;
+        const sh = spotBottom - spotTop;
+
+        // Arrow just below the Assign button, pointing UP at it
+        const cx = firstAssignBtnPos.x + firstAssignBtnPos.width / 2;
+        const arrowTop = firstAssignBtnPos.y + firstAssignBtnPos.height + 4;
+        const hintTop = arrowTop + 56;
+        return (
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            <Svg width={SW} height={SH} style={StyleSheet.absoluteFill} pointerEvents="none">
+              <Path
+                fillRule="evenodd"
+                d={[
+                  `M0 0 H${SW} V${SH} H0 Z`,
+                  `M${sx + R} ${sy} H${sx + sw - R} Q${sx + sw} ${sy} ${sx + sw} ${sy + R}`,
+                  `V${sy + sh - R} Q${sx + sw} ${sy + sh} ${sx + sw - R} ${sy + sh}`,
+                  `H${sx + R} Q${sx} ${sy + sh} ${sx} ${sy + sh - R}`,
+                  `V${sy + R} Q${sx} ${sy} ${sx + R} ${sy} Z`,
+                ].join(' ')}
+                fill="rgba(0,0,0,0.55)"
+              />
+            </Svg>
+            <Animated.View style={[assignArrowStyle, { position: 'absolute', left: cx - 24, top: arrowTop }]}>
+              <Image
+                source={require('../../assets/img/greenArrowUp.png')}
+                style={{ width: 48, height: 48 }}
+                contentFit="contain"
+              />
+            </Animated.View>
+            <View style={[pickerHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop }]}>
+              <Image source={require('../../assets/img/happySmile.png')} style={pickerHintStyles.icon} />
+              <Text style={pickerHintStyles.text}>
+                {'Tap «Assign» to place a worker on a floor'}
+              </Text>
+            </View>
+          </View>
+        );
+      })()}
       </View>
     </Modal>
   );
@@ -370,7 +484,7 @@ function resolveSectionName(
   );
 }
 
-function SectionHeader({ section }: { section: FloorSection }) {
+function SectionHeader({ section, headerRef }: { section: FloorSection; headerRef?: React.RefObject<View> }) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
 
@@ -389,7 +503,7 @@ function SectionHeader({ section }: { section: FloorSection }) {
   const floorName = resolveSectionName(section, tContent);
 
   return (
-    <View style={sectionStyles.container}>
+    <View ref={headerRef} style={sectionStyles.container} collapsable={false}>
       <View style={[sectionStyles.header, { backgroundColor: headerColor }]}>
         <View style={sectionStyles.numberBadge}>
           <Text style={sectionStyles.numberText}>{section.floorId}</Text>
@@ -404,10 +518,14 @@ function SlotRow({
   item,
   onAssign,
   onReplace,
+  rowRef,
+  assignRef,
 }: {
   item: SlotItem;
   onAssign: (floorId: number, slotIdx: number) => void;
   onReplace: (floorId: number, slotIdx: number, occupantId: string) => void;
+  rowRef?: React.RefObject<View>;
+  assignRef?: React.RefObject<View>;
 }) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
@@ -454,7 +572,7 @@ function SlotRow({
   }
 
   return (
-    <View style={slotStyles.row}>
+    <View ref={rowRef} style={slotStyles.row} collapsable={false}>
       <Text style={slotStyles.productName} numberOfLines={1}>
         {productName}
       </Text>
@@ -466,6 +584,7 @@ function SlotRow({
       </View>
 
       <Pressable
+        ref={assignRef as React.RefObject<View>}
         onPress={() => onAssign(item.floorId, item.slotIdx)}
         style={({ pressed }) => [
           slotStyles.assignButton,
@@ -593,6 +712,34 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_500Medium',
     fontSize: 14,
     color: '#9098A6',
+  },
+});
+
+const pickerHintStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  icon: {
+    width: 28,
+    height: 28,
+    flexShrink: 0,
+  },
+  text: {
+    flex: 1,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 15,
+    color: '#1a1a1a',
+    lineHeight: 22,
   },
 });
 

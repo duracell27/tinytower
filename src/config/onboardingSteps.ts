@@ -21,8 +21,14 @@ export interface StepConfig {
   arrowOffsetX?: number;
   /** Place arrow just above the spotlight instead of inside it (for full-card tap targets) */
   arrowAboveSpotlight?: boolean;
+  /** Place arrow just below the spotlight, pointing upward at the highlighted element */
+  arrowBelowSpotlight?: boolean;
+  /** Extra px to push arrow further below the spotlight bottom (used with arrowBelowSpotlight) */
+  arrowBelowOffset?: number;
   /** Place hint card below the spotlight instead of above it */
   hintBelowSpotlight?: boolean;
+  /** If true, SpotlightTapTarget renders over the spotlight hole and fires the registered action on tap */
+  spotlightPressEnabled?: boolean;
   /** Center the card on screen — no spotlight, no arrow */
   centered?: boolean;
   /** Bullet list with icon + text rows rendered below the main text */
@@ -35,29 +41,29 @@ export interface StepConfig {
 // Tune these values after visual testing.
 export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfig> = {
   collect_slot_1: {
-    text: 'Збери виручку з виробництва',
+    text: 'Collect revenue from your business',
     iconSource: require('../../assets/img/coin.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   collect_slot_2: {
-    text: 'Збери виручку ще з одного поверху',
+    text: 'Collect revenue from one more floor',
     iconSource: require('../../assets/img/coin.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   buy_goods_1: {
-    text: 'Закупи товари щоб виробництво не зупинялось',
+    text: 'Restock goods so production keeps running',
     arrowDir: 'down',
     dismissable: false,
   },
   buy_goods_2: {
-    text: 'Закупи ще одне виробництво',
+    text: 'Restock another production',
     arrowDir: 'down',
     dismissable: false,
   },
   open_elevator_1: {
-    text: 'Відкрий ліфт — там чекають відвідувачі',
+    text: 'Open the elevator — visitors are waiting',
     pointer: { x: 0.5, y: 0.78 },
     arrowDir: 'down',
     dismissable: false,
@@ -65,7 +71,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowAboveSpotlight: true,
   },
   deliver_visitor: {
-    text: 'Відкрий ліфт та відвези гостя на потрібний поверх',
+    text: 'Open the elevator and take the guest to their floor',
     pointer: { x: 0.5, y: 0.78 },
     arrowDir: 'down',
     dismissable: false,
@@ -73,25 +79,27 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowAboveSpotlight: true,
   },
   assign_worker: {
-    text: 'Натисни на слот робітника — призначте першого працівника на поверх!',
+    text: 'Tap a worker slot — assign your first employee to a floor!',
     iconSource: require('../../assets/img/happySmile.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   buy_floor: {
-    text: 'Купи новий поверх щоб розширити вежу!',
+    text: 'Buy a new floor to expand your tower!',
     iconSource: require('../../assets/img/coin.png'),
-    pointer: { x: 0.5, y: 0.15 },
     arrowDir: 'up',
     dismissable: false,
+    spotlightPadTop: 8,
+    hintBelowSpotlight: true,
+    spotlightPressEnabled: true,
   },
   choose_floor_type: {
-    text: 'Всі категорії рівні по виручці. Зелені — треба часто доглядати, червоні — рідше',
+    text: 'All types earn equally. Green floors need frequent attention, red ones less often',
     arrowDir: 'down',
     dismissable: false,
   },
   speed_up_construction: {
-    text: 'Пришвидш будівництво щоб не чекати',
+    text: 'Speed up construction so you don\'t have to wait',
     iconSource: require('../../assets/img/diamond.png'),
     arrowDir: 'down',
     dismissable: false,
@@ -100,14 +108,17 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     hintBelowSpotlight: true,
   },
   expand_floor_card: {
-    text: 'Розкрий поверх і подивись які матеріали потрібні',
-    arrowDir: 'down',
+    text: 'Expand the floor card to see which materials are needed',
+    arrowDir: 'up',
     dismissable: false,
     spotlightPadTop: 8,
     hintBelowSpotlight: true,
+    arrowBelowSpotlight: true,
+    arrowBelowOffset: 3,
+    arrowOffsetX: 162,
   },
   open_business: {
-    text: 'Ресурси є! Тисни — відкрий бізнес',
+    text: 'You have the resources! Tap to open the business',
     iconSource: require('../../assets/img/coin.png'),
     arrowDir: 'down',
     dismissable: false,
@@ -116,17 +127,17 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowOffsetX: 70,
   },
   final_message: {
-    text: 'Вітаємо! Вежа в твоїх руках! 🎉',
+    text: 'Welcome! The tower is yours! 🎉',
     iconSource: require('../../assets/img/happySmile.png'),
     arrowDir: 'up',
     dismissable: true,
-    dismissLabel: 'Погнали!',
+    dismissLabel: 'Let\'s go!',
     centered: true,
     bullets: [
-      { icon: require('../../assets/img/coin.png'),      text: 'Будуй нові поверхи та збирай виручку' },
-      { icon: require('../../assets/img/worker.png'),    text: 'Наймай та прокачуй робітників' },
-      { icon: require('../../assets/img/hotel.png'),     text: 'Відвози гостей ліфтом — отримуй чайові' },
-      { icon: require('../../assets/img/starFull.png'),  text: 'Підкоряй топ рейтингу' },
+      { icon: require('../../assets/img/coin.png'),      text: 'Build new floors and collect revenue' },
+      { icon: require('../../assets/img/worker.png'),    text: 'Hire and upgrade workers' },
+      { icon: require('../../assets/img/hotel.png'),     text: 'Take guests by elevator — earn tips' },
+      { icon: require('../../assets/img/starFull.png'),  text: 'Climb to the top of the leaderboard' },
     ],
   },
 };

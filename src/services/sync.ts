@@ -3,6 +3,7 @@ import { api } from './api';
 import { clock } from './clock';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import type { GameState } from '../../shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 
@@ -77,7 +78,9 @@ async function doSync(): Promise<void> {
       (response.stateVersion !== store.stateVersion && response.stateVersion > 0) ||
       (store.workers.length === 0 && response.state.workers.length > 0);
 
-    if (needsReconcile) {
+    const onboarding = useOnboardingStore.getState();
+    const duringOnboarding = onboarding.isActive && onboarding.step !== 'done';
+    if (needsReconcile && !duringOnboarding) {
       store.reconcile(response.state, response.stateVersion, response.ackCursor, sentIds, response.playerLevel, response.playerXp);
     } else {
       store.clearAckedCommands(response.ackCursor, sentIds, response.playerLevel, response.playerXp);

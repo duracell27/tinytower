@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, LayoutChangeEvent, useColorScheme, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, LayoutChangeEvent, useColorScheme, LayoutAnimation, Platform, UIManager, Modal } from 'react-native';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -27,7 +27,7 @@ import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useFriendStore } from '../../src/stores/friendStore';
-import { useOnboardingStore, SEQUENCE } from '../../src/stores/onboardingStore';
+import { useOnboardingStore } from '../../src/stores/onboardingStore';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getExhaustedFloorTypes } from '../../shared/engine/floorTypeUtils';
@@ -113,6 +113,7 @@ export default function GameScreen() {
 
   const isOnboarding = useOnboardingStore((s) => s.isActive);
   const onboardingStep = useOnboardingStore((s) => s.step);
+  const onboardingTargetRect = useOnboardingStore((s) => s.targetRect);
 
   const unreadMailCount = useMailStore((s) => s.unreadCount);
   const incomingFriendCount = useFriendStore((s) => s.incomingRequests.length);
@@ -212,7 +213,9 @@ export default function GameScreen() {
 
   const floorList: FloorItem[] = React.useMemo(() => {
     const items: FloorItem[] = [];
-    if (nextFloorUnlock && (isHydrated || lastSyncAt > 0)) {
+    const showBuyFloor = nextFloorUnlock && (isHydrated || lastSyncAt > 0) &&
+      (!isOnboarding || onboardingStep === 'buy_floor');
+    if (showBuyFloor) {
       items.push({ type: 'buyFloor' });
     }
 
@@ -280,7 +283,7 @@ export default function GameScreen() {
     items.push({ type: 'lobby' });
     items.push({ type: 'bottomAnchor' });
     return items;
-  }, [underConstruction, floors, nextFloorUnlock, isHydrated, lastSyncAt, towerCollapsed]);
+  }, [underConstruction, floors, nextFloorUnlock, isHydrated, lastSyncAt, towerCollapsed, isOnboarding, onboardingStep]);
 
   const [hotelOpen, setHotelOpen] = useState(false);
   const [lobbyOpen, setLobbyOpen] = useState(false);
@@ -288,6 +291,8 @@ export default function GameScreen() {
   const qaListRef = useRef<FlashListRef<FloorItem>>(null);
   const lobbyCardRef = useRef<View>(null);
   const buyFloorRef = useRef<View>(null);
+  const nextFloorIdRef = useRef(nextFloorId);
+  nextFloorIdRef.current = nextFloorId;
   const collapsedScrollRef = useRef<ScrollView>(null);
   const hotelCardYRef = useRef(0);
   const lastTabPressRef = useRef(0);
@@ -393,17 +398,77 @@ export default function GameScreen() {
     return () => { clearTimeout(scrollTimer); clearTimeout(hotelTimer); };
   }, [onboardingStep]);
 
-  // When buy_floor step starts, close hotel and scroll to BuyFloorBanner.
-  // No spotlight measurement — pointer config drives the arrow position so there
-  // are no blocking strips and the banner tap always goes through.
+  // Capture how many workers are already assigned at the moment assign_worker step starts.
+  // Done during render (ref mutation is safe) so it's ready before the first effect run.
+  const prevStepForWorkerRef = useRef('');
+  const workerCountAtStepStartRef = useRef(0);
+  if (prevStepForWorkerRef.current !== onboardingStep) {
+    if (onboardingStep === 'assign_worker') {
+      workerCountAtStepStartRef.current = useGameStore
+        .getState()
+        .workers.filter((w) => w.assignedFloorId !== null).length;
+    }
+    prevStepForWorkerRef.current = onboardingStep;
+  }
+
+  // Current assigned count — only subscribes while step is assign_worker.
+  const assignedWorkerCountInStep = useGameStore((s) =>
+    isOnboarding && onboardingStep === 'assign_worker'
+      ? s.workers.filter((w) => w.assignedFloorId !== null).length
+      : 0,
+  );
+
+  // True only when the user has assigned a NEW worker during this step (not pre-existing ones).
+  const workerNewlyAssigned =
+    isOnboarding &&
+    onboardingStep === 'assign_worker' &&
+    assignedWorkerCountInStep > workerCountAtStepStartRef.current;
+
+  // Step 1: worker assigned → close hotel immediately.
+  useEffect(() => {
+    if (!workerNewlyAssigned) return;
+    setHotelOpen(false);
+  }, [workerNewlyAssigned]);
+
+  // Step 2: hotel closed → wait 400ms then advance to buy_floor.
+  useEffect(() => {
+    if (hotelOpen) return;
+    if (!workerNewlyAssigned) return;
+    const id = setTimeout(() => {
+      useOnboardingStore.getState().advance();
+    }, 400);
+    return () => clearTimeout(id);
+  }, [hotelOpen, workerNewlyAssigned]);
+
+  // RAF-based measurement helper (reusable).
+  const startBuyFloorMeasurement = useCallback(() => {
+    let cancelled = false;
+    const attempt = () => {
+      if (cancelled) return;
+      listRef.current?.scrollToOffset({ offset: 0, animated: false });
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        const node = buyFloorRef.current;
+        if (!node) { requestAnimationFrame(attempt); return; }
+        node.measureInWindow((x, y, width, height) => {
+          if (cancelled) return;
+          if (width > 0 && height > 0 && y >= 0) {
+            useOnboardingStore.getState().setTargetRect({ x, y, width, height });
+          } else {
+            requestAnimationFrame(attempt);
+          }
+        });
+      });
+    };
+    requestAnimationFrame(attempt);
+    return () => { cancelled = true; };
+  }, []);
+
+  // Step 3: when step is buy_floor, scroll to top and measure BuyFloorBanner.
   useEffect(() => {
     if (onboardingStep !== 'buy_floor') return;
-    setHotelOpen(false);
-    const scrollTimer = setTimeout(() => {
-      listRef.current?.scrollToOffset({ offset: 0, animated: false });
-    }, 200);
-    return () => clearTimeout(scrollTimer);
-  }, [onboardingStep]);
+    return startBuyFloorMeasurement();
+  }, [onboardingStep, startBuyFloorMeasurement]);
 
   // When speed_up_construction / expand_floor_card / open_business steps start,
   // scroll to the under-construction banner so it's visible and measurable.
@@ -502,6 +567,8 @@ export default function GameScreen() {
     () => ({ nextFloorUnlock, towerCollapsed, onboardingStep }),
     [nextFloorUnlock, towerCollapsed, onboardingStep],
   );
+
+  const buyFloorListHeader = null;
 
   // The bottom-most floor (last in sorted-descending list = lowest ID = nearest the bar)
   const bottomFloor = filteredFloors.length > 0 ? filteredFloors[filteredFloors.length - 1] : null;
@@ -774,15 +841,11 @@ export default function GameScreen() {
         </View>
       );
     }
-    if (item.type === 'buyFloor' && nextFloorUnlock && (!isOnboarding || onboardingStep === 'buy_floor')) {
+    if (item.type === 'buyFloor' && nextFloorUnlock) {
       return (
         <View
           style={styles.floorWrapper}
-          ref={(node) => {
-            if (onboardingStep === 'buy_floor') {
-              (buyFloorRef as React.MutableRefObject<View | null>).current = node;
-            }
-          }}
+          ref={(node) => { (buyFloorRef as React.MutableRefObject<View | null>).current = node; }}
           collapsable={false}
         >
           <BuyFloorBanner
@@ -917,6 +980,7 @@ export default function GameScreen() {
                   ))}
               </ScrollView>
             ) : (
+              <>
               <FlashList
                 ref={listRef as any}
                 data={floorList}
@@ -926,6 +990,7 @@ export default function GameScreen() {
                 getItemType={(item) => item.type}
                 drawDistance={1500}
                 extraData={listExtraData}
+                ListHeaderComponent={buyFloorListHeader}
                 contentContainerStyle={[
                   styles.listContent,
                   // Extra space so content exceeds viewport and onboarding targets are reachable.
@@ -963,6 +1028,7 @@ export default function GameScreen() {
                 }}
                 onLayout={(e) => { viewHeightRef.current = e.nativeEvent.layout.height; }}
               />
+              </>
             )}
 
             {/* QA overlay — always mounted so floors are pre-rendered in the background.
@@ -1047,34 +1113,6 @@ export default function GameScreen() {
         )}
       </ImageBackground>
 
-      {__DEV__ && (() => {
-        const curIdx = onboardingStep ? SEQUENCE.indexOf(onboardingStep) : -1;
-        const hasPrev = curIdx > 0;
-        const hasNext = curIdx >= 0 && curIdx < SEQUENCE.length - 1;
-        const btnBase: object = { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, alignItems: 'center', justifyContent: 'center' };
-        return (
-          <View style={{ position: 'absolute', top: 55, right: 6, zIndex: 9999, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,0,0,0.65)', borderRadius: 10, padding: 4 }}>
-            <Pressable
-              onPress={() => hasPrev && useOnboardingStore.getState().goToStep(SEQUENCE[curIdx - 1])}
-              style={[btnBase, { backgroundColor: hasPrev ? '#555' : '#333', opacity: hasPrev ? 1 : 0.4 }]}
-            >
-              <Text style={{ color: '#fff', fontSize: 14 }}>{'←'}</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => useOnboardingStore.getState().goToStep(SEQUENCE[0])}
-              style={[btnBase, { backgroundColor: '#c0392b' }]}
-            >
-              <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{onboardingStep ?? 'off'}</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => hasNext && useOnboardingStore.getState().goToStep(SEQUENCE[curIdx + 1])}
-              style={[btnBase, { backgroundColor: hasNext ? '#555' : '#333', opacity: hasNext ? 1 : 0.4 }]}
-            >
-              <Text style={{ color: '#fff', fontSize: 14 }}>{'→'}</Text>
-            </Pressable>
-          </View>
-        );
-      })()}
 
       <HotelPanel visible={hotelOpen} onClose={() => setHotelOpen(false)} />
       <LobbyPanel

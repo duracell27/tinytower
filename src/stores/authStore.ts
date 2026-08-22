@@ -4,6 +4,7 @@ import i18n from '../i18n';
 import { api } from '../services/api';
 import { setupUserPersistence, teardownPersistence } from '../services/persistence';
 import { useOnboardingStore } from './onboardingStore';
+import { useGameStore } from './gameStore';
 
 void i18n;
 
@@ -27,6 +28,7 @@ interface AuthActions {
   register: (email: string, password: string, playerName: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   quickLogin: (password: string) => Promise<void>;
+  clearLastPlayer: () => void;
   logout: () => void;
   loadTokens: () => void;
   enterAsGuest: () => Promise<void>;
@@ -72,7 +74,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
       setupUserPersistence(data.player.id);
+      useOnboardingStore.getState().reset();
       useOnboardingStore.getState().start();
+      useGameStore.getState().initOnboardingProductions();
     } catch (e) {
       set({ isLoading: false });
       throw e;
@@ -93,10 +97,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
       setupUserPersistence(data.player.id);
+      useOnboardingStore.getState().reset();
     } catch (e) {
       set({ isLoading: false });
       throw e;
     }
+  },
+
+  clearLastPlayer: () => {
+    getStorage().remove('lastPlayer');
+    set({ lastPlayer: null });
   },
 
   quickLogin: async (password) => {
@@ -131,7 +141,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
       setupUserPersistence(data.player.id);
+      useOnboardingStore.getState().reset();
       useOnboardingStore.getState().start();
+      useGameStore.getState().initOnboardingProductions();
     } catch (e) {
       set({ isLoading: false });
       throw e;

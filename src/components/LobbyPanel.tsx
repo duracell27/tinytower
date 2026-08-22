@@ -386,6 +386,7 @@ function InfoSection({ icon, title, text }: { icon: ReturnType<typeof require>; 
 export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanelProps) {
   const { t } = useTranslation('lobby');
   const { t: tContent } = useTranslation('gameContent');
+
   const [view, setView] = useState<'operate' | 'upgrade'>('operate');
   const [newWorkerPopup, setNewWorkerPopup] = useState<Worker | null>(null);
   const [vipHotelFillCount, setVipHotelFillCount] = useState<number | null>(null);
@@ -427,7 +428,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
   const onboardingStep = useOnboardingStore((s) => s.step);
   const onboardingHint =
-    onboardingStep === 'deliver_visitor' ? 'Відвези гостя на потрібний поверх — натисни підняти' :
+    onboardingStep === 'deliver_visitor' ? 'Take the guest to their floor — tap Lift' :
     null;
 
   const fillLobby = useGameStore((s) => s.fillLobby);
@@ -560,6 +561,15 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       }
     });
 
+  // Play slide-out animation then call onClose so GHRV unmounts only after it's off-screen.
+  const handleAnimatedClose = useCallback(() => {
+    translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, (finished) => {
+      'worklet';
+      if (finished) runOnJS(onClose)();
+    });
+    scrimOpacity.value = withTiming(0, { duration: 300 });
+  }, [onClose]);
+
   const scrimStyle = useAnimatedStyle(() => ({
     opacity: scrimOpacity.value,
   }));
@@ -634,9 +644,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       }
     } else if (autoOpenHotelAfter) {
       // Close lobby; hotel opens automatically at assign_worker step.
-      setTimeout(() => onClose(), 350);
+      setTimeout(() => handleAnimatedClose(), 350);
     }
-  }, [collectTip, liftSimplifiedRewards, showInlineReward, onClose]);
+  }, [collectTip, liftSimplifiedRewards, showInlineReward, onClose, handleAnimatedClose]);
 
   // Determine action button for active visitor
   const getActionButton = useCallback(() => {
@@ -746,12 +756,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
   return (
     <>
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <GestureHandlerRootView style={styles.overlay}>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={handleAnimatedClose}>
+      {visible && <GestureHandlerRootView style={styles.overlay}>
 
         {/* Scrim */}
         <Animated.View style={[styles.scrim, scrimStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleAnimatedClose} />
         </Animated.View>
 
         {/* Sheet */}
@@ -786,7 +796,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                   <View style={styles.headerRight}>
                     {/* Close button */}
-                    <Pressable onPress={onClose} style={styles.closeButton}>
+                    <Pressable onPress={handleAnimatedClose} style={styles.closeButton}>
                       <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                         <Path
                           d="M18 6L6 18M6 6l12 12"
@@ -1162,7 +1172,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   <Text style={styles.dailyGemsValue}>
                     {effectiveDailyGemsCollected} / {dailyGemLimit}
                   </Text>
-                  {gemsRemaining > 0 && (
+                  {gemsRemaining > 0 && onboardingStep !== 'deliver_visitor' && (
                     <Pressable
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1357,7 +1367,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
               <Pressable
                 onPress={() => {
                   setNewWorkerPopup(null);
-                  onClose();
+                  handleAnimatedClose();
                   onOpenHotel?.();
                 }}
                 style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
@@ -1406,7 +1416,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <Text style={popupStyles.subtitle}>{t('hotelFullPopup.subtitle')}</Text>
               </View>
               <Pressable
-                onPress={() => { setHotelFullPopup(false); onClose(); onOpenHotel?.(); }}
+                onPress={() => { setHotelFullPopup(false); handleAnimatedClose(); onOpenHotel?.(); }}
                 style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
               >
                 <LinearGradient colors={['#C9637E', '#A8475F']} style={popupStyles.findJobGradient}>
@@ -1625,11 +1635,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             </View>
           );
         })()}
-      </GestureHandlerRootView>
+      </GestureHandlerRootView>}
     </Modal>
     </>
   );
 }
+
 
 /* ---------- New Worker Popup Styles ---------- */
 

@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -12,13 +13,14 @@ export default function WarehouseFullModal() {
   const { t } = useTranslation('tabs');
   const visible = useGameStore((s) => s.warehouseFullNotice);
   const dismiss = useGameStore((s) => s.dismissWarehouseFullNotice);
+  const isOnboarding = useOnboardingStore((s) => s.isActive);
   const openWarehouse = () => {
     dismiss();
     useGameStore.setState({ pendingOpenWarehouse: true });
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={dismiss}>
+    <Modal visible={visible && !isOnboarding} transparent animationType="fade" onRequestClose={dismiss}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Pressable style={styles.scrim} onPress={dismiss}>
           <Pressable style={styles.card} onPress={() => {}}>

@@ -64,10 +64,13 @@ function handleSpawnVisitor(
   if (state.lobbyVisitors.length >= state.lobbyCapacity) {
     return { success: false, state, error: 'Lobby is full' };
   }
+  const role = command.role ?? 'guest';
   const visitor: Visitor = {
     id: command.visitorId,
-    role: command.role,
-    targetFloor: command.targetFloor,
+    role,
+    // Old spawn commands didn't include targetFloor; fall back to floor 1 for guests
+    // (liftVisitor also defaults to 1 for back-compat). Other roles get it on first lift.
+    targetFloor: command.targetFloor ?? (role === 'guest' ? 1 : undefined),
     hairColor: command.hairColor,
     female: command.female,
     isVip: command.isVip,

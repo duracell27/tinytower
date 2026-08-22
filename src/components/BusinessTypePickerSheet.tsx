@@ -3,6 +3,7 @@ import {
   View, Text, Pressable, Modal, ScrollView, StyleSheet, Dimensions, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { useOnboardingStore } from '../stores/onboardingStore';
 
 const ICON_FLOOR  = require('../../assets/img/floor.png');
 
@@ -22,7 +23,7 @@ const WORKER_ICONS: Record<string, ReturnType<typeof require>> = {
   red:    require('../../assets/img/workers/man-red.png'),
 };
 import Animated, {
-  useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS,
+  useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence, Easing, runOnJS,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { gameConfig } from '../../shared/config/gameConfig';
@@ -101,11 +102,35 @@ export default function BusinessTypePickerSheet({
     });
 
   const floorTypes = Object.keys(gameConfig.floorTypes);
+  const onboardingStep = useOnboardingStore((s) => s.step);
+
+  const arrowX = useSharedValue(0);
+  useEffect(() => {
+    if (onboardingStep !== 'choose_floor_type') { arrowX.value = 0; return; }
+    arrowX.value = withRepeat(
+      withSequence(
+        withTiming(-10, { duration: 350, easing: Easing.out(Easing.quad) }),
+        withTiming(0,   { duration: 350, easing: Easing.in(Easing.quad) }),
+      ),
+      -1,
+      false,
+    );
+  }, [onboardingStep]);
+  const arrowStyle = useAnimatedStyle(() => ({ transform: [{ translateX: arrowX.value }] }));
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <Pressable style={styles.scrim} onPress={onClose} />
       <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2026' }]}>
+
+        {onboardingStep === 'choose_floor_type' && (
+          <View style={pickerHint.card}>
+            <Image source={require('../../assets/img/happySmile.png')} style={pickerHint.icon} contentFit="contain" />
+            <Text style={pickerHint.text}>
+              {'All types earn equally. Green floors need frequent attention, red ones less often'}
+            </Text>
+          </View>
+        )}
 
         <GestureDetector gesture={panGesture}>
           <View style={styles.handleRow}>
@@ -124,9 +149,10 @@ export default function BusinessTypePickerSheet({
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
           {floorTypes.map((ft) => {
             const isExhausted = exhaustedTypes.has(ft);
+            const showArrow = ft === 'yellow' && onboardingStep === 'choose_floor_type';
             return (
+              <View key={ft} style={showArrow ? { position: 'relative' } : undefined}>
               <Pressable
-                key={ft}
                 onPress={isExhausted ? undefined : () => onSelectType(ft)}
                 accessibilityState={{ disabled: isExhausted }}
                 style={({ pressed }) => [
@@ -158,6 +184,16 @@ export default function BusinessTypePickerSheet({
                   )}
                 </View>
               </Pressable>
+              {showArrow && (
+                <Animated.View pointerEvents="none" style={[pickerHint.arrowOverlay, arrowStyle]}>
+                  <Image
+                    source={require('../../assets/img/greenArrowUp.png')}
+                    style={pickerHint.arrowImg}
+                    contentFit="contain"
+                  />
+                </Animated.View>
+              )}
+              </View>
             );
           })}
         </ScrollView>
@@ -283,3 +319,48 @@ const styles = StyleSheet.create({
     color: '#C0C8D4',
   },
 });
+
+const pickerHint = StyleSheet.create({
+  card: {
+    marginHorizontal: 14,
+    marginTop: 12,
+    marginBottom: 0,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.14,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    flexShrink: 0,
+  },
+  text: {
+    flex: 1,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 14,
+    color: '#1a1a1a',
+    lineHeight: 20,
+  },
+  arrowOverlay: {
+    position: 'absolute',
+    right: 12,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
+  arrowImg: {
+    width: 36,
+    height: 36,
+    transform: [{ rotate: '-90deg' }],
+  },
+});
+

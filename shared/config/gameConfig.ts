@@ -506,18 +506,18 @@ export function createInitialState(config: GameConfig): GameState {
     gems: 10,
     floors: config.floors.map((floorConfig): Floor => ({
       id: floorConfig.id,
-      productions: floorConfig.availableTypes.map((typeId) => ({
+      productions: floorConfig.availableTypes.map((typeId, i) => ({
         typeId,
-        stage: 'IDLE' as const,
+        stage: (floorConfig.id === 2 || floorConfig.id === 3) && i === 0
+          ? 'SELLING' as const
+          : 'IDLE' as const,
         stageStartedAt: 0,
       })),
     })),
     commandQueue: [],
     workers: [
-      makeStartingWorker('green', 'pastries', 2, 1),
-      makeStartingWorker('green', 'cakes',    2, 2),
-      makeStartingWorker('blue',  'accounts', 3, 2),
-      ...generateRandomWorkers(5, config),
+      makeStartingWorker('green', 'buns',  2, 0),
+      makeStartingWorker('blue',  'cards', 3, 0),
     ],
     hotelCapacity: config.hotelCapacity,
     lobbyVisitors: Array.from({ length: config.lobbyConfig.defaultLobbyCapacity }, () => generateVisitorAppearance()),

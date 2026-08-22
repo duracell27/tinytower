@@ -58,6 +58,7 @@ type ListItem =
 export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
+
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
   const [infoVisible, setInfoVisible] = useState(false);
@@ -122,6 +123,8 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
         .sort((a, b) => a.id.localeCompare(b.id))[0];
       if (firstFree) setExpandedWorkerId(firstFree.id);
     }, 150);
+    // Wait for both the sheet slide-in (420ms) and card expand animation (150ms + 300ms)
+    // to finish before measuring, so translateY=0 and maxHeight=440 are committed.
     const measureTimer = setTimeout(() => {
       firstWorkerRowRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) setWorkerCardPos({ x, y, width, height });
@@ -129,7 +132,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
       findJobBtnRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) setFindJobBtnPos({ x, y, width, height });
       });
-    }, 350);
+    }, 500);
     return () => { clearTimeout(expandTimer); clearTimeout(measureTimer); };
   }, [visible, onboardingStep]);
 
@@ -158,6 +161,17 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
     }
   }, [visible]);
 
+  // Play the slide-out animation first, then call onClose so the Modal unmounts
+  // only after the GHRV has visually left the screen. This prevents the GHRV from
+  // blocking touches on the main screen during the animation.
+  const handleAnimatedClose = useCallback(() => {
+    translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, (finished) => {
+      'worklet';
+      if (finished) runOnJS(onClose)();
+    });
+    scrimOpacity.value = withTiming(0, { duration: 300 });
+  }, [onClose]);
+
   const panGesture = Gesture.Pan()
     .enabled(visible)
     .onUpdate((e) => {
@@ -168,9 +182,11 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
     })
     .onEnd((e) => {
       if (e.translationY > DISMISS_THRESHOLD || e.velocityY > 500) {
-        translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 });
+        translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, (finished) => {
+          'worklet';
+          if (finished) runOnJS(onClose)();
+        });
         scrimOpacity.value = withTiming(0, { duration: 300 });
-        runOnJS(onClose)();
       } else {
         translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
         scrimOpacity.value = withTiming(1, { duration: 200 });
@@ -285,11 +301,11 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   }, []);
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <GestureHandlerRootView style={styles.overlay}>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={handleAnimatedClose}>
+      {visible && <GestureHandlerRootView style={styles.overlay}>
         {/* Scrim */}
         <Animated.View style={[styles.scrim, scrimStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleAnimatedClose} />
         </Animated.View>
 
         {/* Sheet */}
@@ -333,7 +349,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                   </View>
 
                   {/* Close button */}
-                  <Pressable onPress={onClose} style={styles.closeButton}>
+                  <Pressable onPress={handleAnimatedClose} style={styles.closeButton}>
                     <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                       <Path
                         d="M18 6L6 18M6 6l12 12"
@@ -481,16 +497,17 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
               <View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop }]}>
                 <Image source={require('../../assets/img/happySmile.png')} style={hotelHintStyles.icon} />
                 <Text style={hotelHintStyles.text}>
-                  {'Натисни «Знайти роботу» щоб призначити воркера на поверх'}
+                  {'Tap «Find Job» to assign a worker to a floor'}
                 </Text>
               </View>
             </View>
           );
         })()}
-      </GestureHandlerRootView>
+      </GestureHandlerRootView>}
     </Modal>
   );
 }
+
 
 
 function InfoSection({ icon, title, text }: { icon: number; title: string; text: string }) {

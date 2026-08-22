@@ -95,21 +95,26 @@ export default function UnderConstructionBanner({
     }
   }, [onboardingStep]);
 
-  // Measure the collapsed row (spotlight) + chevron (arrow) for expand_floor_card.
+  // Clear stale spotlight immediately when expand_floor_card step starts.
   useEffect(() => {
     if (onboardingStep !== 'expand_floor_card') return;
     useOnboardingStore.getState().setTargetRect(null);
     useOnboardingStore.getState().setArrowRect(null);
+  }, [onboardingStep]);
+
+  // Measure the collapsed row for expand_floor_card — but only once isReady=true.
+  // speedUpConstruction sets endsAt=now, but useGameClock(1000) may lag up to ~1s,
+  // so isReady can still be false when the step first renders. Waiting for isReady
+  // ensures collapsedRowRef is mounted before we attempt measureInWindow.
+  useEffect(() => {
+    if (onboardingStep !== 'expand_floor_card' || !isReady) return;
     const timer = setTimeout(() => {
       collapsedRowRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
       });
-      chevronRef.current?.measureInWindow((x, y, width, height) => {
-        if (height > 0) useOnboardingStore.getState().setArrowRect({ x, y, width, height });
-      });
     }, 150);
     return () => clearTimeout(timer);
-  }, [onboardingStep]);
+  }, [onboardingStep, isReady]);
 
   // Measure expanded card (spotlight) + open button (arrow) for open_business.
   useEffect(() => {
