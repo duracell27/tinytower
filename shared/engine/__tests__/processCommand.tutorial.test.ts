@@ -38,8 +38,9 @@ describe('claim_tutorial_task', () => {
     const result = processCommand(state, { ...baseCmd, type: 'claim_tutorial_task', taskIndex: 0 }, testConfig, Date.now());
     expect(result.success).toBe(true);
     expect(result.state.balance).toBe(state.balance + task0.reward.coins);
+    expect(result.state.gems).toBe(state.gems + task0.reward.gems);
     expect(result.state.tutorialTasks.currentIndex).toBe(1);
-    expect(result.state.tutorialTasks.snapshot['visitorsLifted']).toBeDefined();
+    expect(result.state.tutorialTasks.snapshot[TUTORIAL_TASKS[1]!.progressSource]).toBeDefined();
   });
 
   it('rejects already claimed (index already past)', () => {

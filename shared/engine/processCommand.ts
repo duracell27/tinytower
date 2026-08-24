@@ -962,7 +962,7 @@ function handleClaimTutorialTask(
   if (!task) return { success: false, state, error: 'Unknown task index' };
 
   const delta = getTutorialDelta(
-    state.tutorialProgress as any,
+    state.tutorialProgress,
     state.tutorialTasks.snapshot,
     task.progressSource,
   );
@@ -973,7 +973,7 @@ function handleClaimTutorialTask(
   const nextIndex = taskIndex + 1;
   const nextTask = TUTORIAL_TASKS[nextIndex];
   const nextSnapshot = nextTask
-    ? { ...state.tutorialTasks.snapshot, [nextTask.progressSource]: (state.tutorialProgress as any)[nextTask.progressSource] ?? 0 }
+    ? { ...state.tutorialTasks.snapshot, [nextTask.progressSource]: state.tutorialProgress[nextTask.progressSource] ?? 0 }
     : state.tutorialTasks.snapshot;
 
   return {
