@@ -9,6 +9,7 @@ import {
   WAREHOUSE_MAX_LEVEL,
   warehouseCapacity,
 } from '../config/warehouseUpgradeConfig';
+import { TUTORIAL_TASKS, FINAL_REWARD, getTutorialDelta } from '../config/tutorialTasksConfig';
 
 export interface ProcessResult {
   success: boolean;
@@ -139,6 +140,10 @@ export function processCommand(
       return handleUpgradeBusinessCategory(state, command);
     case 'upgrade_floor':
       return handleUpgradeFloor(state, command, config);
+    case 'claim_tutorial_task':
+      return handleClaimTutorialTask(state, command, playerLevel);
+    case 'claim_tutorial_final':
+      return handleClaimTutorialFinal(state);
     default:
       const exhaustive: never = command;
       return { success: false, state, error: `Unknown command type: ${(exhaustive as any).type}` };
@@ -940,6 +945,66 @@ function handleUpgradeFloor(
         ...state.tutorialProgress,
         floorUpgraded: (state.tutorialProgress.floorUpgraded ?? 0) + 1,
       },
+    },
+  };
+}
+
+function handleClaimTutorialTask(
+  state: GameState,
+  command: Extract<Command, { type: 'claim_tutorial_task' }>,
+  _playerLevel: number,
+): ProcessResult {
+  const { taskIndex } = command;
+  if (taskIndex !== state.tutorialTasks.currentIndex) {
+    return { success: false, state, error: 'Wrong task index' };
+  }
+  const task = TUTORIAL_TASKS[taskIndex];
+  if (!task) return { success: false, state, error: 'Unknown task index' };
+
+  const delta = getTutorialDelta(
+    state.tutorialProgress as any,
+    state.tutorialTasks.snapshot,
+    task.progressSource,
+  );
+  if (delta < task.threshold) {
+    return { success: false, state, error: 'Task not complete' };
+  }
+
+  const nextIndex = taskIndex + 1;
+  const nextTask = TUTORIAL_TASKS[nextIndex];
+  const nextSnapshot = nextTask
+    ? { ...state.tutorialTasks.snapshot, [nextTask.progressSource]: (state.tutorialProgress as any)[nextTask.progressSource] ?? 0 }
+    : state.tutorialTasks.snapshot;
+
+  return {
+    success: true,
+    state: {
+      ...state,
+      balance: state.balance + task.reward.coins,
+      gems: state.gems + task.reward.gems,
+      tutorialTasks: {
+        ...state.tutorialTasks,
+        currentIndex: nextIndex,
+        snapshot: nextSnapshot,
+      },
+    },
+  };
+}
+
+function handleClaimTutorialFinal(state: GameState): ProcessResult {
+  if (state.tutorialTasks.currentIndex < TUTORIAL_TASKS.length) {
+    return { success: false, state, error: 'Not all tasks complete' };
+  }
+  if (state.tutorialTasks.claimedFinal) {
+    return { success: false, state, error: 'Already claimed' };
+  }
+  return {
+    success: true,
+    state: {
+      ...state,
+      balance: state.balance + FINAL_REWARD.coins,
+      gems: state.gems + FINAL_REWARD.gems,
+      tutorialTasks: { ...state.tutorialTasks, claimedFinal: true },
     },
   };
 }
