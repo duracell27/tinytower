@@ -14,6 +14,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-na
 import Svg, { Path } from 'react-native-svg';
 import { useReferralStore, type ReferralEntry } from '../stores/referralStore';
 import { getUserIcon } from '../utils/userIcon';
+import { useGameStore } from '../stores/gameStore';
 
 const DEEP_LINK_BASE = 'tinytower://ref?code=';
 const authStorage = createMMKV({ id: 'auth' });
@@ -119,6 +120,8 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
 export default function ReferralScreen() {
   const { code, referrals, isLoading, hasUsedCode, referrerName, isApplying, fetchReferral, applyReferralCode } = useReferralStore();
   const isDark = useColorScheme() === 'dark';
+  const recordInviteSent = useGameStore((s) => s.recordInviteSent);
+  const tutorialInviteDone = useGameStore((s) => s.tutorialProgress.inviteSent > 0);
   const [copied, setCopied] = React.useState(false);
   const [inputCode, setInputCode] = React.useState('');
   const [applyError, setApplyError] = React.useState('');
@@ -158,7 +161,11 @@ export default function ReferralScreen() {
     if (!shareLink) return;
     Share.share({
       message: `Play TinyTower with me! My referral code: ${code}\n${shareLink}`,
-    });
+    }).then(() => {
+      if (!tutorialInviteDone) {
+        recordInviteSent();
+      }
+    }).catch(() => {});
   };
 
   const handleApplyCode = async () => {

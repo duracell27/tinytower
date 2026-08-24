@@ -23,7 +23,7 @@ import BusinessTypePickerSheet from '../../src/components/BusinessTypePickerShee
 import { HotelFloor, LobbyFloor } from '../../src/components/TechnicalFloor';
 import HotelPanel from '../../src/components/HotelPanel';
 import LobbyPanel from '../../src/components/LobbyPanel';
-import { useGameStore, useBalance } from '../../src/stores/gameStore';
+import { useGameStore, useBalance, useTutorialTaskStore } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useFriendStore } from '../../src/stores/friendStore';
@@ -40,6 +40,8 @@ import QuickActionBar from '../../src/components/QuickActionBar';
 import QaAnimatedFloor from '../../src/components/QaAnimatedFloor';
 import DailyTasksFAB from '../../src/components/DailyTasksFAB';
 import NotificationFAB from '../../src/components/NotificationFAB';
+import TutorialTaskFAB from '../../src/components/TutorialTaskFAB';
+import TutorialTaskSheet from '../../src/components/TutorialTaskSheet';
 import { DAILY_TASKS, getTaskProgress } from '../../shared/config/dailyTasksConfig';
 import {
   getAvailableMode,
@@ -113,6 +115,9 @@ export default function GameScreen() {
 
   const unreadMailCount = useMailStore((s) => s.unreadCount);
   const incomingFriendCount = useFriendStore((s) => s.incomingRequests.length);
+  const onboardingStep = useOnboardingStore((s) => s.step);
+  const { allDone, claimedFinal } = useTutorialTaskStore();
+  const [tutorialSheetOpen, setTutorialSheetOpen] = useState(false);
 
   const underConstruction = useGameStore((s) => s.underConstruction);
   const buyFloor = useGameStore((s) => s.buyFloor);
@@ -800,11 +805,15 @@ export default function GameScreen() {
           onPress={handleFABPress}
         />
         {quickActionMode === null && !qaBarVisible && (() => {
-          const qaSlot = availableMode !== null ? 1 : 0;
+          const hasTutorial = onboardingStep === 'done' && !(allDone && claimedFinal);
+          const qaSlot = (availableMode !== null ? 1 : 0) + (hasTutorial ? 1 : 0);
           const hasDaily = unclaimedDailyTasksCount > 0;
           const hasMail  = unreadMailCount > 0;
           return (
             <>
+              {hasTutorial && (
+                <TutorialTaskFAB slot={0} aboveBar={false} onPress={() => setTutorialSheetOpen(true)} />
+              )}
               <DailyTasksFAB unclaimedCount={unclaimedDailyTasksCount} slot={qaSlot} />
               <NotificationFAB
                 icon={MAIL_FAB_ICON}
@@ -825,15 +834,20 @@ export default function GameScreen() {
         })()}
 
         {(quickActionMode !== null || qaBarVisible) && (
-          <QuickActionBar
-            mode={quickActionMode ?? 'collect'}
-            info={bottomFloorInfo}
-            visible={qaBarVisible}
-            onHidden={handleQaHidden}
-            onPress={handleQuickAction}
-            onExit={handleQaExit}
-            onBulkAll={handleBulkAll}
-          />
+          <>
+            {onboardingStep === 'done' && !(allDone && claimedFinal) && (
+              <TutorialTaskFAB slot={0} aboveBar={true} onPress={() => setTutorialSheetOpen(true)} />
+            )}
+            <QuickActionBar
+              mode={quickActionMode ?? 'collect'}
+              info={bottomFloorInfo}
+              visible={qaBarVisible}
+              onHidden={handleQaHidden}
+              onPress={handleQuickAction}
+              onExit={handleQaExit}
+              onBulkAll={handleBulkAll}
+            />
+          </>
         )}
       </ImageBackground>
 
@@ -858,6 +872,7 @@ export default function GameScreen() {
           hotelWorkerCounts={hotelWorkerCounts}
         />
       ))}
+      <TutorialTaskSheet visible={tutorialSheetOpen} onClose={() => setTutorialSheetOpen(false)} />
     </View>
   );
 }
