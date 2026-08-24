@@ -250,15 +250,6 @@ export const api = {
     request<{ player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: false } }>(
       'POST', '/auth/convert', { email, password, playerName },
     ),
-  claimTutorialTask: async (taskIndex: number): Promise<void> => {
-    await request<void>('POST', '/game/command', { type: 'claim_tutorial_task', taskIndex, timestamp: Date.now() });
-  },
-  claimTutorialFinal: async (): Promise<void> => {
-    await request<void>('POST', '/game/command', { type: 'claim_tutorial_final', timestamp: Date.now() });
-  },
-  recordInviteSent: async (): Promise<void> => {
-    await request<void>('POST', '/game/command', { type: 'record_invite_sent', timestamp: Date.now() });
-  },
   setTokens,
   clearTokens,
   getAccessToken,

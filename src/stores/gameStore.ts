@@ -14,7 +14,7 @@ import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount } from '../../shared/config/dailyTasksConfig';
 import { TUTORIAL_TASKS, getTutorialDelta } from '../../shared/config/tutorialTasksConfig';
-import type { TutorialTaskConfig } from '../../shared/config/tutorialTasksConfig';
+import type { TutorialTaskConfig, TutorialProgressState } from '../../shared/config/tutorialTasksConfig';
 import { FLOOR_UPGRADE_COSTS, FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { WAREHOUSE_UPGRADE_COSTS } from '../../shared/config/warehouseUpgradeConfig';
 import { useOnboardingStore } from './onboardingStore';
@@ -208,6 +208,9 @@ interface GameActions {
   evictLowLevelWorkers: () => void;
   claimDailyReward: (stage: 1 | 2) => void;
   claimDailyTask: (taskKey: string, taskTitle: string) => void;
+  claimTutorialTask: (taskIndex: number) => void;
+  claimTutorialFinal: () => void;
+  recordInviteSent: () => void;
   dismissLevelUp: () => void;
   setToolInventory: (tools: ToolsState) => void;
   buyFloor: (floorId: number) => void;
@@ -1131,6 +1134,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ pendingTaskReward: { taskTitle, coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount, materialType } });
   },
 
+  claimTutorialTask: (taskIndex) => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'claim_tutorial_task',
+      taskIndex,
+      timestamp: clock.now(),
+    });
+  },
+
+  claimTutorialFinal: () => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'claim_tutorial_final',
+      timestamp: clock.now(),
+    });
+  },
+
+  recordInviteSent: () => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'record_invite_sent',
+      timestamp: clock.now(),
+    });
+  },
+
   dismissLevelUp: () => {
     set((state) => ({ levelUpQueue: state.levelUpQueue.slice(1) }));
   },
@@ -1389,15 +1417,15 @@ export function useLobbyState() {
 }
 
 export function useTutorialTaskStore() {
-  return useGameStore((s) => {
+  return useGameStore(useShallow((s) => {
     const { currentIndex, snapshot, claimedFinal } = s.tutorialTasks;
     const progress = s.tutorialProgress;
     const currentTask: TutorialTaskConfig | null = TUTORIAL_TASKS[currentIndex] ?? null;
     const delta = currentTask
-      ? getTutorialDelta(progress as any, snapshot, currentTask.progressSource)
+      ? getTutorialDelta(progress as TutorialProgressState, snapshot, currentTask.progressSource)
       : 0;
     const isComplete = currentTask !== null && delta >= currentTask.threshold;
     const allDone = currentIndex >= TUTORIAL_TASKS.length;
     return { currentTask, delta, currentIndex, isComplete, allDone, claimedFinal };
-  });
+  }));
 }
