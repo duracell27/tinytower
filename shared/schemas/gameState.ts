@@ -71,6 +71,25 @@ export const DailyTasksSchema = z.object({
   dailyMaterialType:  z.enum(['briks', 'glass', 'nails', 'screw', 'wood', 'cement']).optional(),
 });
 
+export const TutorialProgressSchema = z.object({
+  coinsCollected:    z.number().int().nonnegative().default(0),
+  visitorsLifted:    z.number().int().nonnegative().default(0),
+  workersHired:      z.number().int().nonnegative().default(0),
+  floorsBuilt:       z.number().int().nonnegative().default(0),
+  dailyTasksClaimed: z.number().int().nonnegative().default(0),
+  elevatorUpgraded:  z.number().int().nonnegative().default(0),
+  lobbyUpgraded:     z.number().int().nonnegative().default(0),
+  floorUpgraded:     z.number().int().nonnegative().default(0),
+  inviteSent:        z.number().int().nonnegative().default(0),
+  businessUpgraded:  z.number().int().nonnegative().default(0),
+});
+
+export const TutorialTasksSchema = z.object({
+  currentIndex: z.number().int().min(0).max(11).default(0),
+  snapshot:     z.record(z.string(), z.number()).default({}),
+  claimedFinal: z.boolean().default(false),
+});
+
 export const FloorStateSchema = z.object({
   id: z.number().int(),
   productions: z.array(ProductionSchema).min(1).max(3),
@@ -112,4 +131,10 @@ export const GameStateSchema = z.object({
     claimed: [],
     doubleRewardActive: false,
   }),
+  tutorialProgress: TutorialProgressSchema.default({
+    coinsCollected: 0, visitorsLifted: 0, workersHired: 0, floorsBuilt: 0,
+    dailyTasksClaimed: 0, elevatorUpgraded: 0, lobbyUpgraded: 0,
+    floorUpgraded: 0, inviteSent: 0, businessUpgraded: 0,
+  }),
+  tutorialTasks: TutorialTasksSchema.default({ currentIndex: 0, snapshot: {}, claimedFinal: false }),
 });
