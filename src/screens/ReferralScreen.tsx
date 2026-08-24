@@ -161,8 +161,8 @@ export default function ReferralScreen() {
     if (!shareLink) return;
     Share.share({
       message: `Play TinyTower with me! My referral code: ${code}\n${shareLink}`,
-    }).then(() => {
-      if (!tutorialInviteDone) {
+    }).then((result) => {
+      if (result.action === Share.sharedAction && !tutorialInviteDone) {
         recordInviteSent();
       }
     }).catch(() => {});
