@@ -144,6 +144,17 @@ export function processCommand(
       return handleClaimTutorialTask(state, command, playerLevel);
     case 'claim_tutorial_final':
       return handleClaimTutorialFinal(state);
+    case 'record_invite_sent':
+      return {
+        success: true,
+        state: {
+          ...state,
+          tutorialProgress: {
+            ...state.tutorialProgress,
+            inviteSent: (state.tutorialProgress.inviteSent ?? 0) + 1,
+          },
+        },
+      };
     default:
       const exhaustive: never = command;
       return { success: false, state, error: `Unknown command type: ${(exhaustive as any).type}` };

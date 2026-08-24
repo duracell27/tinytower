@@ -258,6 +258,10 @@ export const BuyDailyGemsCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('buy_daily_gems'),
 });
 
+export const RecordInviteSentCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('record_invite_sent'),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -294,4 +298,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   ClaimTutorialTaskCommandSchema,
   ClaimTutorialFinalCommandSchema,
   BuyDailyGemsCommandSchema,
+  RecordInviteSentCommandSchema,
 ]);

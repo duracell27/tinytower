@@ -13,6 +13,8 @@ import type { NewAchievementGrant, CategoryProgressState } from '../../shared/ty
 import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount } from '../../shared/config/dailyTasksConfig';
+import { TUTORIAL_TASKS, getTutorialDelta } from '../../shared/config/tutorialTasksConfig';
+import type { TutorialTaskConfig } from '../../shared/config/tutorialTasksConfig';
 import { FLOOR_UPGRADE_COSTS, FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { WAREHOUSE_UPGRADE_COSTS } from '../../shared/config/warehouseUpgradeConfig';
 import { useOnboardingStore } from './onboardingStore';
@@ -281,6 +283,7 @@ function executeCommand(
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
     coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks, floorStars, warehouseLevel,
+    tutorialProgress, tutorialTasks,
   } = store;
   let gameState: GameState = {
     balance, gems, floors, commandQueue, workers, hotelCapacity,
@@ -289,6 +292,7 @@ function executeCommand(
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
     coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, dailyTasks, floorStars: floorStars ?? {},
     warehouseLevel: warehouseLevel ?? 0,
+    tutorialProgress, tutorialTasks,
   };
   // Use real wall-clock time so daily reset fires even when spawn_visitor
   // timestamps are from yesterday (catch-up cadence).
@@ -401,6 +405,8 @@ function executeCommand(
     businessUpgrades: result.state.businessUpgrades,
     dailyTasks: result.state.dailyTasks,
     floorStars: result.state.floorStars,
+    tutorialProgress: result.state.tutorialProgress,
+    tutorialTasks: result.state.tutorialTasks,
     playerXp: xpResult.playerXp,
     playerLevel: xpResult.playerLevel,
     levelUpQueue: [...store.levelUpQueue, ...levelUps],
@@ -1169,6 +1175,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     businessUpgrades: state.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     dailyTasks: state.dailyTasks ?? { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
     floorStars: state.floorStars ?? {},
+    tutorialProgress: state.tutorialProgress ?? { coinsCollected: 0, visitorsLifted: 0, workersHired: 0, floorsBuilt: 0, dailyTasksClaimed: 0, elevatorUpgraded: 0, lobbyUpgraded: 0, floorUpgraded: 0, inviteSent: 0, businessUpgraded: 0 },
+    tutorialTasks: state.tutorialTasks ?? { currentIndex: 0, snapshot: {}, claimedFinal: false },
   }),
 
   reconcile: (serverState, newVersion, ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
@@ -1301,6 +1309,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (pendingClaims.length === 0) return base;
       return { ...base, claimed: [...new Set([...base.claimed, ...pendingClaims])] };
     })(),
+    tutorialProgress: serverState.tutorialProgress ?? cur.tutorialProgress,
+    tutorialTasks: serverState.tutorialTasks ?? cur.tutorialTasks,
     locallyGrantedAchievements: new Set<string>(),
   })),
 
@@ -1376,4 +1386,18 @@ export function useLobbyState() {
     dailyFillLobbyUses: state.dailyFillLobbyUses,
     floorsCount: state.floors.length,
   })));
+}
+
+export function useTutorialTaskStore() {
+  return useGameStore((s) => {
+    const { currentIndex, snapshot, claimedFinal } = s.tutorialTasks;
+    const progress = s.tutorialProgress;
+    const currentTask: TutorialTaskConfig | null = TUTORIAL_TASKS[currentIndex] ?? null;
+    const delta = currentTask
+      ? getTutorialDelta(progress as any, snapshot, currentTask.progressSource)
+      : 0;
+    const isComplete = currentTask !== null && delta >= currentTask.threshold;
+    const allDone = currentIndex >= TUTORIAL_TASKS.length;
+    return { currentTask, delta, currentIndex, isComplete, allDone, claimedFinal };
+  });
 }
