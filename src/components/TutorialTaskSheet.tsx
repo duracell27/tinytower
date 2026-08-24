@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Modal, View, Text, Pressable, StyleSheet, useColorScheme,
-  ActivityIndicator,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTutorialTaskStore, useGameStore } from '../stores/gameStore';
@@ -22,21 +21,14 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
   const { currentTask, delta, currentIndex, isComplete, allDone, claimedFinal } = useTutorialTaskStore();
   const claimTutorialTask = useGameStore((s) => s.claimTutorialTask);
   const claimTutorialFinal = useGameStore((s) => s.claimTutorialFinal);
-  const [loading, setLoading] = useState(false);
 
-  const handleClaim = async () => {
-    if (loading) return;
+  const handleClaim = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setLoading(true);
-    try {
-      if (allDone && !claimedFinal) {
-        claimTutorialFinal();
-        onClose();
-      } else if (currentTask && isComplete) {
-        claimTutorialTask(currentIndex);
-      }
-    } finally {
-      setLoading(false);
+    if (allDone && !claimedFinal) {
+      claimTutorialFinal();
+      onClose();
+    } else if (currentTask && isComplete) {
+      claimTutorialTask(currentIndex);
     }
   };
 
@@ -78,9 +70,7 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
               onPress={handleClaim}
               style={[styles.claimBtn, styles.claimBtnActive]}
             >
-              {loading
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={styles.claimBtnText}>Claim Final Reward</Text>}
+              <Text style={styles.claimBtnText}>Claim Final Reward</Text>
             </Pressable>
           </View>
         ) : claimedFinal ? (
@@ -94,7 +84,7 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
             <Text style={[styles.taskDesc, { color: textSecondary }]}>{currentTask.description}</Text>
 
             {/* Progress bar */}
-            <View style={styles.progressTrack}>
+            <View style={[styles.progressTrack, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)' }]}>
               <View style={[styles.progressFill, { width: `${progressRatio * 100}%` }]} />
             </View>
             <Text style={[styles.progressLabel, { color: textSecondary }]}>
@@ -120,11 +110,9 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
             {/* Claim button */}
             <Pressable
               onPress={isComplete ? handleClaim : undefined}
-              style={[styles.claimBtn, isComplete ? styles.claimBtnActive : styles.claimBtnInactive]}
+              style={[styles.claimBtn, isComplete ? styles.claimBtnActive : { backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)' }]}
             >
-              {loading
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={styles.claimBtnText}>{isComplete ? 'Claim reward' : 'In progress…'}</Text>}
+              <Text style={styles.claimBtnText}>{isComplete ? 'Claim reward' : 'In progress…'}</Text>
             </Pressable>
           </View>
         ) : null}
@@ -180,7 +168,6 @@ const styles = StyleSheet.create({
   progressTrack: {
     height: 10,
     borderRadius: 5,
-    backgroundColor: 'rgba(0,0,0,0.08)',
     overflow: 'hidden',
   },
   progressFill: {
@@ -210,9 +197,6 @@ const styles = StyleSheet.create({
   },
   claimBtnActive: {
     backgroundColor: '#3FA535',
-  },
-  claimBtnInactive: {
-    backgroundColor: 'rgba(0,0,0,0.12)',
   },
   claimBtnText: {
     fontFamily: 'Fredoka_700Bold',
