@@ -112,7 +112,15 @@ function handleLiftVisitor(
   }
   return {
     success: true,
-    state: { ...state, elevatorFloor: state.elevatorFloor + move, lobbyVisitors: updatedVisitors },
+    state: {
+      ...state,
+      elevatorFloor: state.elevatorFloor + move,
+      lobbyVisitors: updatedVisitors,
+      tutorialProgress: {
+        ...state.tutorialProgress,
+        visitorsLifted: (state.tutorialProgress.visitorsLifted ?? 0) + 1,
+      },
+    },
   };
 }
 
@@ -423,7 +431,15 @@ function handleUpgradeElevator(state: GameState, config: GameConfig): ProcessRes
   }
   return {
     success: true,
-    state: { ...state, gems: state.gems - cost, elevatorLevel: state.elevatorLevel + 1 },
+    state: {
+      ...state,
+      gems: state.gems - cost,
+      elevatorLevel: state.elevatorLevel + 1,
+      tutorialProgress: {
+        ...state.tutorialProgress,
+        elevatorUpgraded: (state.tutorialProgress.elevatorUpgraded ?? 0) + 1,
+      },
+    },
   };
 }
 
@@ -442,6 +458,10 @@ function handleUpgradeLobby(state: GameState, config: GameConfig): ProcessResult
       ...state,
       gems: state.gems - cost,
       lobbyCapacity: state.lobbyCapacity + 1,
+      tutorialProgress: {
+        ...state.tutorialProgress,
+        lobbyUpgraded: (state.tutorialProgress.lobbyUpgraded ?? 0) + 1,
+      },
     },
   };
 }

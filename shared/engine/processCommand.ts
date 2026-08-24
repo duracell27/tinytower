@@ -248,13 +248,29 @@ function handleBuyFloor(
     if (state.gems < unlockConfig.price) return { success: false, state, error: 'Insufficient gems' };
     return {
       success: true,
-      state: { ...state, gems: state.gems - unlockConfig.price, underConstruction: [...state.underConstruction, newUc] },
+      state: {
+        ...state,
+        gems: state.gems - unlockConfig.price,
+        underConstruction: [...state.underConstruction, newUc],
+        tutorialProgress: {
+          ...state.tutorialProgress,
+          floorsBuilt: (state.tutorialProgress.floorsBuilt ?? 0) + 1,
+        },
+      },
     };
   }
   if (state.balance < unlockConfig.price) return { success: false, state, error: 'Insufficient balance' };
   return {
     success: true,
-    state: { ...state, balance: state.balance - unlockConfig.price, underConstruction: [...state.underConstruction, newUc] },
+    state: {
+      ...state,
+      balance: state.balance - unlockConfig.price,
+      underConstruction: [...state.underConstruction, newUc],
+      tutorialProgress: {
+        ...state.tutorialProgress,
+        floorsBuilt: (state.tutorialProgress.floorsBuilt ?? 0) + 1,
+      },
+    },
   };
 }
 
@@ -351,6 +367,10 @@ function handleAssignWorker(
           ? { ...w, assignedFloorId: command.floorId, assignedSlotIdx: command.slotIdx }
           : w,
       ),
+      tutorialProgress: {
+        ...state.tutorialProgress,
+        workersHired: (state.tutorialProgress.workersHired ?? 0) + 1,
+      },
     },
   };
 }
@@ -475,6 +495,10 @@ function handleClaimDailyTask(
       dailyTasks: {
         ...state.dailyTasks,
         claimed: [...state.dailyTasks.claimed, command.taskKey],
+      },
+      tutorialProgress: {
+        ...state.tutorialProgress,
+        dailyTasksClaimed: (state.tutorialProgress.dailyTasksClaimed ?? 0) + 1,
       },
     },
   };
@@ -681,6 +705,10 @@ function handleCollect(
         ...state.dailyTasks,
         progress: { ...state.dailyTasks.progress, goodsCollected: state.dailyTasks.progress.goodsCollected + 1 },
       } : state.dailyTasks,
+      tutorialProgress: {
+        ...state.tutorialProgress,
+        coinsCollected: (state.tutorialProgress.coinsCollected ?? 0) + 1,
+      },
     },
   };
 }
@@ -844,7 +872,15 @@ function handleUpgradeBusinessCategory(
     return {
       success: true,
       xpGained: 0,
-      state: { ...state, gems: state.gems - cost.gems, businessUpgrades: upgradedBusinessUpgrades },
+      state: {
+        ...state,
+        gems: state.gems - cost.gems,
+        businessUpgrades: upgradedBusinessUpgrades,
+        tutorialProgress: {
+          ...state.tutorialProgress,
+          businessUpgraded: (state.tutorialProgress.businessUpgraded ?? 0) + 1,
+        },
+      },
     };
   }
   if (state.balance < cost.coins) {
@@ -862,6 +898,10 @@ function handleUpgradeBusinessCategory(
       balance: state.balance - cost.coins,
       tokens: { ...state.tokens, [floorType]: tokenBalance - cost.tokens },
       businessUpgrades: upgradedBusinessUpgrades,
+      tutorialProgress: {
+        ...state.tutorialProgress,
+        businessUpgraded: (state.tutorialProgress.businessUpgraded ?? 0) + 1,
+      },
     },
   };
 }
@@ -896,6 +936,10 @@ function handleUpgradeFloor(
       gems: state.gems - cost.gems,
       tokens: { ...state.tokens, [tokenKey]: tokenBalance - cost.tokens },
       floorStars: { ...state.floorStars, [String(floorId)]: currentStars + 1 },
+      tutorialProgress: {
+        ...state.tutorialProgress,
+        floorUpgraded: (state.tutorialProgress.floorUpgraded ?? 0) + 1,
+      },
     },
   };
 }
