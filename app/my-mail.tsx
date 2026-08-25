@@ -53,7 +53,11 @@ function MailRow({
       onPress={handlePress}
     >
       {/* Avatar */}
-      <View style={styles.avatarWrap}>
+      <Pressable
+        onPress={() => router.push(`/user-profile/${mail.fromId}`)}
+        style={styles.avatarWrap}
+        hitSlop={4}
+      >
         <Image source={INBOX_ICON} style={styles.directionBadge} contentFit="contain" />
         <View style={styles.avatarInner}>
           <Image
@@ -63,7 +67,7 @@ function MailRow({
           />
           {!mail.isRead && <View style={styles.unreadDot} />}
         </View>
-      </View>
+      </Pressable>
 
       {/* Content */}
       <View style={styles.content}>
@@ -127,12 +131,16 @@ function SentRow({ mail, theme }: { mail: SentMailMessage; theme: ReturnType<typ
       style={({ pressed }) => [styles.row, { borderBottomColor: theme.divider }, pressed && { opacity: 0.85 }]}
       onPress={() => setExpanded(v => !v)}
     >
-      <View style={styles.avatarWrap}>
+      <Pressable
+        onPress={() => router.push(`/user-profile/${mail.toId}`)}
+        style={styles.avatarWrap}
+        hitSlop={4}
+      >
         <Image source={SENT_ICON} style={styles.directionBadge} contentFit="contain" />
         <View style={styles.avatarInner}>
           <Image source={getUserIcon(mail.toLevel)} style={styles.avatar} contentFit="cover" />
         </View>
-      </View>
+      </Pressable>
       <View style={styles.content}>
         <View style={styles.headerRow}>
           <Pressable
