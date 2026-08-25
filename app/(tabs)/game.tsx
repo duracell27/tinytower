@@ -922,7 +922,7 @@ export default function GameScreen() {
           />
           {isTemporary && !isOnboarding && (
             <Pressable
-              onPress={() => router.navigate('/(tabs)/profile')}
+              onPress={() => router.navigate({ pathname: '/(tabs)/profile', params: { openConvert: 'true' } })}
               style={({ pressed }) => [styles.registerBanner, pressed && { opacity: 0.82 }]}
             >
               <Text style={styles.registerBannerText}>Save Progress — get </Text>
