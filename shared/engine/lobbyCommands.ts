@@ -324,6 +324,10 @@ function handleCollectTip(
     elevatorFloor: 0,
     nextVisitorAt,
     stats: { ...newState.stats, totalPassengersLifted: newState.stats.totalPassengersLifted + 1 },
+    tutorialProgress: {
+      ...newState.tutorialProgress,
+      visitorsLifted: (newState.tutorialProgress.visitorsLifted ?? 0) + 1,
+    },
     dailyTasks: now >= state.lastDailyReset ? {
       ...newState.dailyTasks,
       progress: {
