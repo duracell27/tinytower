@@ -68,16 +68,22 @@ function MailRow({
       {/* Content */}
       <View style={styles.content}>
         <View style={styles.headerRow}>
-          <Text
-            style={[
-              styles.fromName,
-              { color: theme.text },
-              !mail.isRead && styles.fromNameBold,
-            ]}
-            numberOfLines={1}
+          <Pressable
+            onPress={() => router.push(`/user-profile/${mail.fromId}`)}
+            hitSlop={6}
+            style={styles.fromNameBtn}
           >
-            {mail.fromName}
-          </Text>
+            <Text
+              style={[
+                styles.fromName,
+                { color: theme.text },
+                !mail.isRead && styles.fromNameBold,
+              ]}
+              numberOfLines={1}
+            >
+              {mail.fromName}
+            </Text>
+          </Pressable>
           <Text style={[styles.date, { color: theme.textMuted }]}>
             {formatDate(mail.createdAt)}
           </Text>
@@ -98,13 +104,6 @@ function MailRow({
           <View style={[styles.bodyWrap, { borderTopColor: theme.divider }]}>
             <Text style={[styles.body, { color: theme.text }]}>{mail.body}</Text>
             <View style={styles.bodyActions}>
-              <Pressable
-                onPress={() => router.push(`/user-profile/${mail.fromId}`)}
-                style={({ pressed }) => [styles.profileBtn, pressed && { opacity: 0.7 }]}
-                hitSlop={6}
-              >
-                <Text style={styles.profileBtnText}>View Profile</Text>
-              </Pressable>
               <Pressable
                 onPress={onDelete}
                 style={({ pressed }) => [styles.deleteBtn, pressed && { opacity: 0.7 }]}
@@ -136,7 +135,13 @@ function SentRow({ mail, theme }: { mail: SentMailMessage; theme: ReturnType<typ
       </View>
       <View style={styles.content}>
         <View style={styles.headerRow}>
-          <Text style={[styles.fromName, { color: theme.text }]} numberOfLines={1}>{mail.toName}</Text>
+          <Pressable
+            onPress={() => router.push(`/user-profile/${mail.toId}`)}
+            hitSlop={6}
+            style={styles.fromNameBtn}
+          >
+            <Text style={[styles.fromName, { color: theme.text }]} numberOfLines={1}>{mail.toName}</Text>
+          </Pressable>
           <Text style={[styles.date, { color: theme.textMuted }]}>{formatDate(mail.createdAt)}</Text>
         </View>
         <Text style={[styles.subject, { color: theme.textMuted as string }]} numberOfLines={expanded ? undefined : 1}>
@@ -145,13 +150,6 @@ function SentRow({ mail, theme }: { mail: SentMailMessage; theme: ReturnType<typ
         {expanded && (
           <View style={[styles.bodyWrap, { borderTopColor: theme.divider }]}>
             <Text style={[styles.body, { color: theme.text }]}>{mail.body}</Text>
-            <Pressable
-              onPress={() => router.push(`/user-profile/${mail.toId}`)}
-              style={({ pressed }) => [styles.profileBtn, pressed && { opacity: 0.7 }]}
-              hitSlop={6}
-            >
-              <Text style={styles.profileBtnText}>View Profile</Text>
-            </Pressable>
           </View>
         )}
       </View>
@@ -459,11 +457,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 2,
   },
+  fromNameBtn: {
+    flex: 1,
+    marginRight: 6,
+  },
   fromName: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 15,
-    flex: 1,
-    marginRight: 6,
   },
   fromNameBold: { fontFamily: 'Fredoka_700Bold' },
   date: {
@@ -493,16 +493,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  profileBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  profileBtnText: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 13,
-    color: '#3FA535',
   },
   deleteBtn: {
     alignSelf: 'flex-end',

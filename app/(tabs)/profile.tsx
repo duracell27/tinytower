@@ -497,7 +497,7 @@ export default function ProfileScreen() {
             />
             <View style={styles.profileInfo}>
               <Text style={[styles.name, { color: theme.text }]}>{player?.playerName ?? t('profile.guestFallbackName')}</Text>
-              <Text style={[styles.email, { color: theme.textMuted }]}>{player?.email ?? ''}</Text>
+              <Text style={[styles.email, { color: theme.textMuted }]}>{isTemporary ? 'Guest account' : (player?.email ?? '')}</Text>
             </View>
           </View>
 
