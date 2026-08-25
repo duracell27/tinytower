@@ -106,9 +106,14 @@ export class PlayerService {
   }
 
   async convertToRegistered(playerId: string, email: string, passwordHash: string, playerName: string) {
-    return this.prisma.player.update({
+    const player = await this.prisma.player.update({
       where: { id: playerId },
-      data: { email, passwordHash, playerName, isTemporary: false, gems: { increment: 5 } },
+      data: { email, passwordHash, playerName, isTemporary: false },
     });
+    await this.prisma.playerState.update({
+      where: { playerId },
+      data: { gems: { increment: 5 } },
+    });
+    return player;
   }
 }

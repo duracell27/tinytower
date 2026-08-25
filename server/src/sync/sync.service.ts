@@ -688,7 +688,12 @@ export class SyncService {
         doubleRewardActive: s?.dailyTasksDoubleReward ?? false,
       },
       floorStars: (s?.floorStars as Record<string, number>) ?? {},
-      tutorialProgress: (s?.tutorialProgress as Record<string, number>) ?? {},
+      tutorialProgress: {
+        coinsCollected: 0, visitorsLifted: 0, workersHired: 0, floorsBuilt: 0,
+        dailyTasksClaimed: 0, elevatorUpgraded: 0, lobbyUpgraded: 0,
+        floorUpgraded: 0, inviteSent: 0, businessUpgraded: 0,
+        ...(s?.tutorialProgress as Record<string, number> ?? {}),
+      },
       tutorialTasks: {
         currentIndex: (s?.tutorialTasks as any)?.currentIndex ?? 0,
         snapshot: (s?.tutorialTasks as any)?.snapshot ?? {},
