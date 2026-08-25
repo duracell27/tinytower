@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ImageBackground, ScrollView, LayoutChangeEvent, useColorScheme, LayoutAnimation, Platform, UIManager, Modal } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Image, ImageBackground, ScrollView, LayoutChangeEvent, useColorScheme, LayoutAnimation, Platform, UIManager, Modal } from 'react-native';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -18,6 +18,7 @@ import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import TopBar from '../../src/components/TopBar';
 import FloorCard from '../../src/components/FloorCard';
 import BuyFloorBanner from '../../src/components/BuyFloorBanner';
+import BuyFloorConfirmModal from '../../src/components/BuyFloorConfirmModal';
 import UnderConstructionBanner from '../../src/components/UnderConstructionBanner';
 import BusinessTypePickerSheet from '../../src/components/BusinessTypePickerSheet';
 import { HotelFloor, LobbyFloor } from '../../src/components/TechnicalFloor';
@@ -120,7 +121,6 @@ export default function GameScreen() {
 
   const unreadMailCount = useMailStore((s) => s.unreadCount);
   const incomingFriendCount = useFriendStore((s) => s.incomingRequests.length);
-  const onboardingStep = useOnboardingStore((s) => s.step);
   const tutorialComplete = useGameStore((s) =>
     s.tutorialTasks.currentIndex >= TUTORIAL_TASKS.length && s.tutorialTasks.claimedFinal
   );
@@ -131,6 +131,7 @@ export default function GameScreen() {
   const selectFloorType = useGameStore((s) => s.selectFloorType);
   const openFloor = useGameStore((s) => s.openFloor);
   const [pickerOpenFor, setPickerOpenFor] = useState<number | null>(null);
+  const [buyFloorConfirm, setBuyFloorConfirm] = useState(false);
 
   const floors = useGameStore((s) => s.floors);
 
@@ -548,8 +549,8 @@ export default function GameScreen() {
 
   // Highest-priority mode currently available — only computed when not already in a mode
   const availableMode = React.useMemo(
-    () => (quickActionMode !== null || isOnboarding ? null : getAvailableMode(floors, workers, now, floorStars ?? {})),
-    [quickActionMode, isOnboarding, floors, workers, now, floorStars],
+    () => (quickActionMode !== null || isOnboarding || isTemporary ? null : getAvailableMode(floors, workers, now, floorStars ?? {})),
+    [quickActionMode, isOnboarding, isTemporary, floors, workers, now, floorStars],
   );
 
   // Count of floors for the FAB badge (only when not yet in a mode)
@@ -862,22 +863,22 @@ export default function GameScreen() {
             currency={nextFloorUnlock.currency}
             onPress={() => {
               const liveStep = useOnboardingStore.getState().step;
-              if (liveStep !== 'buy_floor') {
-                const currentAmount = nextFloorUnlock.currency === 'gems' ? gems : balance;
-                if (currentAmount < nextFloorUnlock.price) {
-                  showInsufficientResources({
-                    currency: nextFloorUnlock.currency,
-                    need: nextFloorUnlock.price,
-                    have: currentAmount,
-                  });
-                  return;
-                }
-              }
-              buyFloor(nextFloorId);
               if (liveStep === 'buy_floor') {
+                buyFloor(nextFloorId);
                 useOnboardingStore.getState().advance();
                 setPickerOpenFor(nextFloorId);
+                return;
               }
+              const currentAmount = nextFloorUnlock.currency === 'gems' ? gems : balance;
+              if (currentAmount < nextFloorUnlock.price) {
+                showInsufficientResources({
+                  currency: nextFloorUnlock.currency,
+                  need: nextFloorUnlock.price,
+                  have: currentAmount,
+                });
+                return;
+              }
+              setBuyFloorConfirm(true);
             }}
           />
         </View>
@@ -924,7 +925,13 @@ export default function GameScreen() {
               onPress={() => router.navigate('/(tabs)/profile')}
               style={({ pressed }) => [styles.registerBanner, pressed && { opacity: 0.82 }]}
             >
-              <Text style={styles.registerBannerText}>{t('game.registerBanner')}</Text>
+              <Text style={styles.registerBannerText}>Save Progress — get </Text>
+              <Image
+                source={require('../../assets/img/diamond.png')}
+                style={styles.registerBannerGem}
+                resizeMode="contain"
+              />
+              <Text style={styles.registerBannerText}> 5 free gems!</Text>
             </Pressable>
           )}
         </View>
@@ -1077,7 +1084,7 @@ export default function GameScreen() {
           revenuePerMin={revenuePerMin}
         />
 
-        {!isOnboarding && <QuickActionFAB
+        {!isOnboarding && !isTemporary && <QuickActionFAB
           availableMode={availableMode}
           activeMode={quickActionMode}
           count={availableFloorCount}
@@ -1112,7 +1119,7 @@ export default function GameScreen() {
           );
         })()}
 
-        {(quickActionMode !== null || qaBarVisible) && (
+        {!isTemporary && (quickActionMode !== null || qaBarVisible) && (
           <>
             {onboardingStep === 'done' && !(tutorialComplete) && (
               <TutorialTaskFAB slot={0} aboveBar={true} onPress={() => setTutorialSheetOpen(true)} />
@@ -1153,6 +1160,19 @@ export default function GameScreen() {
         />
       ))}
       <TutorialTaskSheet visible={tutorialSheetOpen} onClose={() => setTutorialSheetOpen(false)} />
+      {nextFloorUnlock && (
+        <BuyFloorConfirmModal
+          visible={buyFloorConfirm}
+          floorId={nextFloorId}
+          price={nextFloorUnlock.price}
+          currency={nextFloorUnlock.currency}
+          onCancel={() => setBuyFloorConfirm(false)}
+          onConfirm={() => {
+            setBuyFloorConfirm(false);
+            buyFloor(nextFloorId);
+          }}
+        />
+      )}
     </View>
   );
 }
@@ -1293,11 +1313,17 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 16,
     backgroundColor: '#3FA535',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   registerBannerText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
     color: '#fff',
+  },
+  registerBannerGem: {
+    width: 16,
+    height: 16,
   },
 });

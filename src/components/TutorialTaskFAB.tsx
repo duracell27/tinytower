@@ -1,51 +1,123 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Circle } from 'react-native-svg';
 import { useTutorialTaskStore } from '../stores/gameStore';
 
 interface Props {
-  slot: number;        // used when aboveBar=false: bottom = 96 + slot * 62
-  aboveBar: boolean;   // true = QA bar is visible; position above it
+  slot: number;
+  aboveBar: boolean;
   onPress: () => void;
 }
 
+// The button itself is 54×54. The ring lives on an outer 58×58 wrapper so the
+// button's borderRadius clip never touches the SVG.
+const BTN = 54;
+const WRAP = 58;
+const STROKE = 3;
+// Ring centered on the 58×58 wrapper, radius chosen so the ring sits just
+// outside the button edge (button edge = WRAP/2 - 2 = 27; ring inner = cx - r + stroke/2)
+const CX = WRAP / 2;  // 29
+const R = 25;          // outer edge at 29+1.5=30.5, inner at 23.5 — clear of clip
+const CIRCUMFERENCE = 2 * Math.PI * R;
+
 function StarIcon() {
   return (
-    <Svg viewBox="0 0 24 24" width={26} height={26} fill="#F2AC40">
+    <Svg viewBox="0 0 24 24" width={24} height={24} fill="#F2AC40">
       <Path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
     </Svg>
   );
 }
 
 export default function TutorialTaskFAB({ slot, aboveBar, onPress }: Props) {
-  const { allDone, claimedFinal, isComplete } = useTutorialTaskStore();
+  const { allDone, claimedFinal, isComplete, delta, currentTask } = useTutorialTaskStore();
 
   if (allDone && claimedFinal) return null;
 
   const bottomPos = aboveBar ? 160 : 96 + slot * 62;
 
+  const ratio = !allDone && currentTask
+    ? Math.min(1, delta / currentTask.threshold)
+    : allDone ? 1 : 0;
+
+  const ringColor = (isComplete || allDone) ? '#3FA535' : '#F2AC40';
+  const filledLength = CIRCUMFERENCE * ratio;
+
   return (
-    <Pressable
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        onPress();
-      }}
-      style={({ pressed }) => [styles.fab, { bottom: bottomPos }, pressed && { opacity: 0.82 }]}
-    >
-      <StarIcon />
-      {isComplete && !allDone && <View style={styles.badge} />}
-    </Pressable>
+    // Outer wrapper — 58×58, no overflow clip, so the SVG ring is never clipped
+    <View style={[styles.wrapper, { bottom: bottomPos }]}>
+      {/* Button */}
+      <Pressable
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onPress();
+        }}
+        style={({ pressed }) => [styles.fab, pressed && { opacity: 0.82 }]}
+      >
+        <StarIcon />
+        {isComplete && !allDone && <View style={styles.badge} />}
+      </Pressable>
+
+      {/* Progress ring — sibling of Pressable, drawn on top, not clipped */}
+      <Svg
+        width={WRAP}
+        height={WRAP}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      >
+        {/* Gray track — always visible */}
+        <Circle
+          cx={CX}
+          cy={CX}
+          r={R}
+          stroke="rgba(0,0,0,0.12)"
+          strokeWidth={STROKE}
+          fill="none"
+        />
+        {/* Filled arc — only when there is progress */}
+        {ratio > 0 && ratio < 1 && (
+          <Circle
+            cx={CX}
+            cy={CX}
+            r={R}
+            stroke={ringColor}
+            strokeWidth={STROKE}
+            fill="none"
+            strokeDasharray={[filledLength, CIRCUMFERENCE - filledLength]}
+            strokeLinecap="round"
+            rotation={-90}
+            origin={`${CX}, ${CX}`}
+          />
+        )}
+        {/* Full circle at 100% — no dasharray to avoid gap from rounded caps */}
+        {ratio >= 1 && (
+          <Circle
+            cx={CX}
+            cy={CX}
+            r={R}
+            stroke={ringColor}
+            strokeWidth={STROKE}
+            fill="none"
+          />
+        )}
+      </Svg>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fab: {
+  wrapper: {
     position: 'absolute',
-    right: 16,
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    right: 16 - (WRAP - BTN) / 2,   // compensate 2px so button stays at right:16
+    width: WRAP,
+    height: WRAP,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fab: {
+    width: BTN,
+    height: BTN,
+    borderRadius: BTN / 2,
     backgroundColor: '#F8F9FA',
     alignItems: 'center',
     justifyContent: 'center',
@@ -59,11 +131,11 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    top: 7,
+    right: 7,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#3FA535',
     borderWidth: 1.5,
     borderColor: '#fff',

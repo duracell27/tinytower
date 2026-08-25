@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import ForumCategoryCard from '../src/components/ForumCategoryCard';
 import { useForumStore, type ForumCategory } from '../src/stores/forumStore';
 import { useAuthStore } from '../src/stores/authStore';
+import GuestWall from '../src/components/GuestWall';
 
 const CATEGORIES: ForumCategory[] = ['NEWS', 'HELP', 'GENERAL', 'CITIES', 'PURCHASES'];
 
@@ -15,7 +16,7 @@ export default function ForumScreen() {
   const insets = useSafeAreaInsets();
   const isDark = useColorScheme() === 'dark';
   const { fetchUnreadCounts, unreadCounts } = useForumStore();
-  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,6 +48,9 @@ export default function ForumScreen() {
         )}
         contentContainerStyle={styles.list}
       />
+      {!isAuthenticated && (
+        <GuestWall message="Create a free account to read and post in the forum" />
+      )}
     </View>
   );
 }

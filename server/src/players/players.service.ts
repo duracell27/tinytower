@@ -75,12 +75,19 @@ export class PlayersService {
 
   async getNoCityPlayers(page: number): Promise<UsersListResult> {
     const skip = (page - 1) * PAGE_SIZE;
-    const where = { OR: [{ city: null }, { city: '' }] };
+    const since = new Date(Date.now() - ONLINE_THRESHOLD_MS);
+    const where = {
+      AND: [
+        { OR: [{ city: null }, { city: '' }] },
+        { lastSeenAt: { gte: since } },
+        { openedFloorsCount: { gte: 10 } },
+      ],
+    };
     const [rows, total] = await Promise.all([
       this.prisma.player.findMany({
         where,
         select: USER_SELECT,
-        orderBy: { playerLevel: 'desc' },
+        orderBy: { lastSeenAt: 'desc' },
         skip,
         take: PAGE_SIZE,
       }),

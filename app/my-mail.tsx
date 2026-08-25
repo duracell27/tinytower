@@ -97,14 +97,23 @@ function MailRow({
         {expanded && (
           <View style={[styles.bodyWrap, { borderTopColor: theme.divider }]}>
             <Text style={[styles.body, { color: theme.text }]}>{mail.body}</Text>
-            <Pressable
-              onPress={onDelete}
-              style={({ pressed }) => [styles.deleteBtn, pressed && { opacity: 0.7 }]}
-              hitSlop={6}
-            >
-              <Image source={DELETE_ICON} style={styles.deleteIcon} contentFit="contain" />
-              <Text style={styles.deleteBtnText}>Delete</Text>
-            </Pressable>
+            <View style={styles.bodyActions}>
+              <Pressable
+                onPress={() => router.push(`/user-profile/${mail.fromId}`)}
+                style={({ pressed }) => [styles.profileBtn, pressed && { opacity: 0.7 }]}
+                hitSlop={6}
+              >
+                <Text style={styles.profileBtnText}>View Profile</Text>
+              </Pressable>
+              <Pressable
+                onPress={onDelete}
+                style={({ pressed }) => [styles.deleteBtn, pressed && { opacity: 0.7 }]}
+                hitSlop={6}
+              >
+                <Image source={DELETE_ICON} style={styles.deleteIcon} contentFit="contain" />
+                <Text style={styles.deleteBtnText}>Delete</Text>
+              </Pressable>
+            </View>
           </View>
         )}
       </View>
@@ -136,6 +145,13 @@ function SentRow({ mail, theme }: { mail: SentMailMessage; theme: ReturnType<typ
         {expanded && (
           <View style={[styles.bodyWrap, { borderTopColor: theme.divider }]}>
             <Text style={[styles.body, { color: theme.text }]}>{mail.body}</Text>
+            <Pressable
+              onPress={() => router.push(`/user-profile/${mail.toId}`)}
+              style={({ pressed }) => [styles.profileBtn, pressed && { opacity: 0.7 }]}
+              hitSlop={6}
+            >
+              <Text style={styles.profileBtnText}>View Profile</Text>
+            </Pressable>
           </View>
         )}
       </View>
@@ -472,6 +488,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 12,
+  },
+  bodyActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  profileBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  profileBtnText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: '#3FA535',
   },
   deleteBtn: {
     alignSelf: 'flex-end',

@@ -119,10 +119,6 @@ function handleLiftVisitor(
       ...state,
       elevatorFloor: state.elevatorFloor + move,
       lobbyVisitors: updatedVisitors,
-      tutorialProgress: {
-        ...state.tutorialProgress,
-        visitorsLifted: (state.tutorialProgress.visitorsLifted ?? 0) + 1,
-      },
     },
   };
 }
@@ -411,6 +407,10 @@ function handleDeliverAll(
     elevatorFloor: 0,
     nextVisitorAt,
     stats: { ...newState.stats, totalPassengersLifted: newState.stats.totalPassengersLifted + passengersDelivered },
+    tutorialProgress: {
+      ...newState.tutorialProgress,
+      visitorsLifted: (newState.tutorialProgress.visitorsLifted ?? 0) + passengersDelivered,
+    },
     dailyTasks: now >= state.lastDailyReset ? {
       ...newState.dailyTasks,
       progress: {

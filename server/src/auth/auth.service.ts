@@ -86,7 +86,7 @@ export class AuthService {
 
   async registerAsGuest() {
     const playerName = await this.generateUniqueGuestName();
-    const email = `guest-${randomUUID()}@tmp.tinytower`;
+    const email = `g-${randomUUID().split('-')[0]}@tmp.tinytower`;
     const passwordHash = await bcrypt.hash(randomUUID(), 10);
 
     const player = await this.playerService.createWithInitialState(email, passwordHash, playerName, true);
@@ -111,6 +111,7 @@ export class AuthService {
     const player = await this.playerService.convertToRegistered(playerId, email, passwordHash, playerName);
     return {
       player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin, isTemporary: false },
+      registrationGems: 5,
     };
   }
 

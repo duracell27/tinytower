@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
 
@@ -19,6 +20,7 @@ export default function DailyLoginRewardModal() {
   const reward = useGameStore((s) => s.pendingDailyLoginReward);
   const dismiss = useGameStore((s) => s.dismissDailyLoginReward);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
+  const isOnboarding = useOnboardingStore((s) => s.isActive);
 
   const scale = useSharedValue(0.5);
 
@@ -31,7 +33,7 @@ export default function DailyLoginRewardModal() {
 
   return (
     <Modal
-      visible={!!reward && activeSheetCount === 0}
+      visible={!!reward && activeSheetCount === 0 && !isOnboarding}
       transparent
       animationType="none"
       onRequestClose={dismiss}

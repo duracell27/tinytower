@@ -158,6 +158,14 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('player', JSON.stringify(player));
       saveLastPlayer(player);
       set({ player, lastPlayer: player, isLoading: false });
+      const gems = data.registrationGems ?? 5;
+      useGameStore.getState().setTaskReward({
+        taskTitle: 'Account created!',
+        coins: 0,
+        gems,
+        tokenCount: 0,
+        tokenColor: 'green',
+      });
     } catch (e) {
       set({ isLoading: false });
       throw e;

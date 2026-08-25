@@ -54,16 +54,19 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   },
   buy_goods_1: {
     text: 'Restock goods so production keeps running',
+    iconSource: require('../../assets/img/ForkliftIcon.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   buy_goods_2: {
     text: 'Restock another production',
+    iconSource: require('../../assets/img/ForkliftIcon.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   open_elevator_1: {
     text: 'Open the elevator — visitors are waiting',
+    iconSource: require('../../assets/img/lift/visitor.png'),
     pointer: { x: 0.5, y: 0.78 },
     arrowDir: 'down',
     dismissable: false,
@@ -72,6 +75,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   },
   deliver_visitor: {
     text: 'Open the elevator and take the guest to their floor',
+    iconSource: require('../../assets/img/lift/visitor.png'),
     pointer: { x: 0.5, y: 0.78 },
     arrowDir: 'down',
     dismissable: false,
@@ -80,13 +84,13 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   },
   assign_worker: {
     text: 'Tap a worker slot — assign your first employee to a floor!',
-    iconSource: require('../../assets/img/happySmile.png'),
+    iconSource: require('../../assets/img/workers/man-green.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   buy_floor: {
     text: 'Buy a new floor to expand your tower!',
-    iconSource: require('../../assets/img/coin.png'),
+    iconSource: require('../../assets/img/workers/builder.png'),
     arrowDir: 'up',
     dismissable: false,
     spotlightPadTop: 8,
@@ -95,6 +99,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   },
   choose_floor_type: {
     text: 'All types earn equally. Green floors need frequent attention, red ones less often',
+    iconSource: require('../../assets/img/menu/myBusiness.png'),
     arrowDir: 'down',
     dismissable: false,
   },
@@ -109,6 +114,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   },
   expand_floor_card: {
     text: 'Expand the floor card to see which materials are needed',
+    iconSource: require('../../assets/img/sandClock.png'),
     arrowDir: 'up',
     dismissable: false,
     spotlightPadTop: 8,
@@ -119,7 +125,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   },
   open_business: {
     text: 'You have the resources! Tap to open the business',
-    iconSource: require('../../assets/img/coin.png'),
+    iconSource: require('../../assets/img/tools/briks.png'),
     arrowDir: 'down',
     dismissable: false,
     spotlightPadTop: 8,
@@ -128,7 +134,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   },
   final_message: {
     text: 'Welcome! The tower is yours! 🎉',
-    iconSource: require('../../assets/img/happySmile.png'),
+    iconSource: require('../../assets/img/managerIcon.png'),
     arrowDir: 'up',
     dismissable: true,
     dismissLabel: 'Let\'s go!',

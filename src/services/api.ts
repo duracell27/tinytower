@@ -247,7 +247,7 @@ export const api = {
       'POST', '/auth/guest',
     ),
   convertAccount: (email: string, password: string, playerName: string) =>
-    request<{ player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: false } }>(
+    request<{ player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: false }; registrationGems: number }>(
       'POST', '/auth/convert', { email, password, playerName },
     ),
   setTokens,

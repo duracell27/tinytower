@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { GemIcon } from './CurrencyIcons';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 
@@ -43,6 +44,7 @@ export default function AchievementModal() {
   const grant = useGameStore((s) => s.achievementQueue[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissAchievement);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
+  const isOnboarding = useOnboardingStore((s) => s.isActive);
 
   const scale = useSharedValue(0.5);
 
@@ -55,7 +57,7 @@ export default function AchievementModal() {
 
   return (
     <Modal
-      visible={!!grant && activeSheetCount === 0}
+      visible={!!grant && activeSheetCount === 0 && !isOnboarding}
       transparent
       animationType="none"
       onRequestClose={dismiss}

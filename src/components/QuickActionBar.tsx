@@ -125,9 +125,9 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
       case 'list': {
         if (info.count === 1 && info.typeId) {
           const name = tContent(`productionTypes.${info.typeId}.displayName`, { defaultValue: info.typeId });
-          return `List ${name}`;
+          return `Sell ${name}`;
         }
-        return info.count === 1 ? 'List Item' : `List Items (${info.count})`;
+        return info.count === 1 ? 'Sell Item' : `Sell Items (${info.count})`;
       }
       case 'buy':
         return buyInfo!.name;

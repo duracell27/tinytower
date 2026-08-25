@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import {
   View, Text, StyleSheet, Pressable, Dimensions, Image, TouchableWithoutFeedback,
+  useColorScheme,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
@@ -41,6 +42,12 @@ function Arrow({ dir }: { dir: 'up' | 'down' | 'left' | 'right' }) {
 }
 
 export default function OnboardingOverlay() {
+  const isDark = useColorScheme() === 'dark';
+  const cardBg      = isDark ? '#1C2028' : '#fff';
+  const textMain    = isDark ? '#E8EDE4' : '#1a1a1a';
+  const textSub     = isDark ? '#B0BEC5' : '#333';
+  const dividerCol  = isDark ? 'rgba(255,255,255,0.08)' : '#E8F0E5';
+
   const step      = useOnboardingStore((s) => s.step);
   const isActive  = useOnboardingStore((s) => s.isActive);
   const advance   = useOnboardingStore((s) => s.advance);
@@ -259,32 +266,33 @@ export default function OnboardingOverlay() {
         pointerEvents={config.dismissable ? 'auto' : 'none'}
         style={[
           styles.card,
+          { backgroundColor: cardBg },
           config.centered
             ? styles.cardCentered
             : { top: Math.max(60, Math.min(SH - 200, cardTop)), left: (SW - CARD_WIDTH) / 2 },
         ]}
       >
         {config.centered ? (
-          <View style={styles.centeredHeader}>
+          <View style={[styles.centeredHeader, { borderBottomColor: dividerCol }]}>
             {config.iconSource && (
               <Image source={config.iconSource} style={styles.centeredIcon} resizeMode="contain" />
             )}
-            <Text style={styles.centeredTitle}>{config.text}</Text>
+            <Text style={[styles.centeredTitle, { color: textMain }]}>{config.text}</Text>
           </View>
         ) : (
           <View style={styles.cardRow}>
             {config.iconSource && (
               <Image source={config.iconSource} style={styles.icon} resizeMode="contain" />
             )}
-            <Text style={styles.cardText}>{config.text}</Text>
+            <Text style={[styles.cardText, { color: textMain }]}>{config.text}</Text>
           </View>
         )}
         {config.bullets && config.bullets.map((b: BulletItem, i: number) => (
           <React.Fragment key={i}>
-            {i > 0 && <View style={styles.bulletDivider} />}
+            {i > 0 && <View style={[styles.bulletDivider, { backgroundColor: dividerCol }]} />}
             <View style={styles.bulletRow}>
               <Image source={b.icon} style={styles.bulletIcon} resizeMode="contain" />
-              <Text style={styles.bulletText}>{b.text}</Text>
+              <Text style={[styles.bulletText, { color: textSub }]}>{b.text}</Text>
             </View>
           </React.Fragment>
         ))}
@@ -316,7 +324,6 @@ const styles = StyleSheet.create({
   card: {
     position: 'absolute',
     width: CARD_WIDTH,
-    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
     shadowColor: '#000',
@@ -336,7 +343,6 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingBottom: 14,
     borderBottomWidth: 1.5,
-    borderBottomColor: '#E8F0E5',
     marginBottom: 4,
   },
   centeredIcon: {
@@ -347,7 +353,6 @@ const styles = StyleSheet.create({
   centeredTitle: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 20,
-    color: '#1a1a1a',
     flexShrink: 1,
   },
   cardRow: {
@@ -364,12 +369,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: 'Nunito_700Bold',
     fontSize: 15,
-    color: '#1a1a1a',
     lineHeight: 22,
   },
   bulletDivider: {
     height: 1,
-    backgroundColor: '#E8F0E5',
     marginVertical: 8,
   },
   bulletRow: {
@@ -386,7 +389,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: 'Nunito_700Bold',
     fontSize: 14,
-    color: '#333',
     lineHeight: 20,
   },
   dismissBtn: {

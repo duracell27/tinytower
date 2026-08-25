@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { type LevelUpEvent } from '../../shared/engine/xp';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
@@ -21,6 +22,7 @@ export default function LevelUpModal() {
   const event = useGameStore((s) => s.levelUpQueue[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissLevelUp);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
+  const isOnboarding = useOnboardingStore((s) => s.isActive);
 
   const scale = useSharedValue(0.5);
 
@@ -35,7 +37,7 @@ export default function LevelUpModal() {
 
   return (
     <Modal
-      visible={!!event && activeSheetCount === 0}
+      visible={!!event && activeSheetCount === 0 && !isOnboarding}
       transparent
       animationType="none"
       onRequestClose={dismiss}

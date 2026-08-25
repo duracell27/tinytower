@@ -3,6 +3,7 @@ import { View, Text, Pressable, Modal, StyleSheet, Dimensions, ActivityIndicator
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 import { useGameStore } from '../stores/gameStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { api } from '../services/api';
 import { syncService } from '../services/sync';
@@ -13,6 +14,7 @@ export default function ReferralNotificationModal() {
   const notification = useGameStore((s) => s.pendingReferralNotifications[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissReferralNotification);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
+  const isOnboarding = useOnboardingStore((s) => s.isActive);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -50,7 +52,7 @@ export default function ReferralNotificationModal() {
 
   return (
     <Modal
-      visible={!!notification && activeSheetCount === 0}
+      visible={!!notification && activeSheetCount === 0 && !isOnboarding}
       transparent
       animationType="none"
       onRequestClose={isClaimModal ? undefined : dismiss}

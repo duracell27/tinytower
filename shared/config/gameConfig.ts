@@ -389,12 +389,12 @@ const rawConfig = {
     defaultLobbyCapacity: 10,
   },
   floorUnlocks: [
-    { floorId: 4,  price: 300,   currency: 'coins' as const, constructionDurationMs: 15  * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 1 },
-    { floorId: 5,  price: 3,     currency: 'gems'  as const, constructionDurationMs: 20  * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 1 },
-    { floorId: 6,  price: 500,   currency: 'coins' as const, constructionDurationMs: 30  * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 2 },
-    { floorId: 7,  price: 750,   currency: 'coins' as const, constructionDurationMs: 45  * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 2 },
-    { floorId: 8,  price: 1200,  currency: 'coins' as const, constructionDurationMs: 60  * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 2 },
-    { floorId: 9,  price: 1700,  currency: 'coins' as const, constructionDurationMs: 90  * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 2 },
+    { floorId: 4,  price: 300,   currency: 'coins' as const, constructionDurationMs:   2 * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 1 },
+    { floorId: 5,  price: 3,     currency: 'gems'  as const, constructionDurationMs:   5 * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 1 },
+    { floorId: 6,  price: 500,   currency: 'coins' as const, constructionDurationMs:  10 * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 2 },
+    { floorId: 7,  price: 750,   currency: 'coins' as const, constructionDurationMs:  20 * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 2 },
+    { floorId: 8,  price: 1200,  currency: 'coins' as const, constructionDurationMs:  30 * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 2 },
+    { floorId: 9,  price: 1700,  currency: 'coins' as const, constructionDurationMs:  60 * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 2 },
     { floorId: 10, price: 15,    currency: 'gems'  as const, constructionDurationMs: 120 * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 2 },
     // Era 2: floors 11-20 (gem milestone at 20) — slots: 2, count: 2
     { floorId: 11, price: 4000,  currency: 'coins' as const, constructionDurationMs: 240 * 60 * 1000, requiredToolSlots: 2, requiredToolCount: 2 },

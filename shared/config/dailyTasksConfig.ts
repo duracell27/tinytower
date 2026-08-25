@@ -32,7 +32,7 @@ export const DAILY_TASKS: DailyTaskConfig[] = [
   { key: 'build_floor',     title: 'Higher and higher!',     description: 'Build 1 new floor in your tower',          progressSource: 'floorsBuilt',        threshold: 1,    rewards: { baseCoins: 1600, gems: 5,   hasMaterials: true  } },
   { key: 'major_investor',  title: 'Major investor',         description: 'Purchase 1,000 gems in the store',         progressSource: 'gemsPurchased',      threshold: 1000, rewards: { baseCoins: 3200, gems: 200, hasMaterials: false } },
   { key: 'hasta_la_vista',  title: 'Hasta la vista, Baby!', description: 'Evict 15 residents from your hotel',       progressSource: 'residentsEvicted',   threshold: 15,   rewards: { baseCoins: 1300, gems: 1,   hasMaterials: false } },
-  { key: 'goods_to_sell',   title: 'Goods to sell',         description: 'List 100 products for sale',               progressSource: 'goodsListed',        threshold: 100,  rewards: { baseCoins: 1100, gems: 1,   hasMaterials: false } },
+  { key: 'goods_to_sell',   title: 'Goods to sell',         description: 'Sell 100 products for sale',               progressSource: 'goodsListed',        threshold: 100,  rewards: { baseCoins: 1100, gems: 1,   hasMaterials: false } },
 ];
 
 export function getCoinMultiplier(playerLevel: number): number {

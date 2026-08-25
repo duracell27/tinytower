@@ -151,8 +151,7 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
     (onboardingStep === 'collect_slot_1' && floorId === 2) ||
     (onboardingStep === 'collect_slot_2' && floorId === 3) ||
     (onboardingStep === 'buy_goods_1'    && floorId === 2) ||
-    (onboardingStep === 'buy_goods_2'    && floorId === 3) ||
-    (onboardingStep === 'assign_worker'  && floorId === 2);
+    (onboardingStep === 'buy_goods_2'    && floorId === 3);
 
   // Force SELLING only for collect steps (so collect button is visible)
   const onboardingForceSellingSlot0 =

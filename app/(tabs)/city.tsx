@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import TopBar from '../../src/components/TopBar';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
+import GuestWall from '../../src/components/GuestWall';
 import { xpForLevel } from '../../shared/engine/xp';
 import { formatNum } from '../../src/utils/format';
 import { useGameClock } from '../../src/hooks/useGameClock';
@@ -19,6 +20,7 @@ export default function CityScreen() {
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
   const player = useAuthStore((s) => s.player);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
   const floors = useGameStore((s) => s.floors);
   const workers = useGameStore((s) => s.workers);
@@ -104,6 +106,9 @@ export default function CityScreen() {
           </TouchableOpacity>
         </ScrollView>
       </AppBackground>
+      {!isAuthenticated && (
+        <GuestWall message="Create a free account to access city features" />
+      )}
     </View>
   );
 }

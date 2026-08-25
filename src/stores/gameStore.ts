@@ -730,7 +730,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       slotIdx,
       timestamp: clock.now(),
     });
-    advanceOnboardingIfStep('assign_worker');
+    // Step advances in game.tsx after hotel closes (sequential flow).
   },
 
   fireWorker: (workerId) => {
@@ -886,8 +886,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
           maxBizIdx = Math.min(builtCount + WORKER_LOOKAHEAD - 1, gameConfig.floorTypes[pendingFloorType].businesses.length - 1);
         }
         const generated = generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0];
+        const isOnboarding = useOnboardingStore.getState().isActive;
+        const workerBase = (isOnboarding && pendingFloorType === 'green')
+          ? { ...generated, dreamJob: 'pastries' }
+          : generated;
         // Worker gender matches visitor appearance shown in elevator
-        newWorker = { ...generated, female: active?.female ?? generated.female };
+        newWorker = { ...workerBase, female: active?.female ?? generated.female };
       }
     }
 

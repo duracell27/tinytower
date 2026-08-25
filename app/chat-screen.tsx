@@ -14,6 +14,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { useGameStore } from '../src/stores/gameStore';
 import ChatMessage from '../src/components/ChatMessage';
 import ReportSheet from '../src/components/ReportSheet';
+import GuestWall from '../src/components/GuestWall';
 import type { ReportTargetType } from '../src/stores/reportStore';
 
 type Channel = 'global' | 'country';
@@ -329,6 +330,9 @@ export default function ChatScreen() {
           onSuccess={() => Alert.alert(t('report.success'))}
           onAlreadyReported={() => Alert.alert(t('report.alreadyReported'))}
         />
+      )}
+      {!isAuthenticated && (
+        <GuestWall message="Create a free account to read and write messages" />
       )}
     </View>
   );
