@@ -22,6 +22,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isGuest: boolean;
   isLoading: boolean;
+  pendingConvertModal: boolean;
 }
 
 interface AuthActions {
@@ -33,6 +34,8 @@ interface AuthActions {
   loadTokens: () => void;
   enterAsGuest: () => Promise<void>;
   convertAccount: (email: string, password: string, playerName: string) => Promise<void>;
+  requestConvertModal: () => void;
+  clearConvertModal: () => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -59,6 +62,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   isAuthenticated: false,
   isGuest: false,
   isLoading: false,
+  pendingConvertModal: false,
+  requestConvertModal: () => set({ pendingConvertModal: true }),
+  clearConvertModal: () => set({ pendingConvertModal: false }),
 
   register: async (email, password, playerName) => {
     set({ isLoading: true });

@@ -6,7 +6,7 @@ import AppBackground from '../../src/components/AppBackground';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSpring, runOnJS, Easing } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Svg, { Path, Polyline } from 'react-native-svg';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../src/i18n';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -418,12 +418,16 @@ export default function ProfileScreen() {
 
   const [syncExpanded, setSyncExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { openConvert } = useLocalSearchParams<{ openConvert?: string }>();
+  const pendingConvertModal = useAuthStore((s) => s.pendingConvertModal);
+  const clearConvertModal = useAuthStore((s) => s.clearConvertModal);
   const [convertOpen, setConvertOpen] = useState(false);
 
   useEffect(() => {
-    if (openConvert === 'true' && isTemporary) setConvertOpen(true);
-  }, [openConvert, isTemporary]);
+    if (pendingConvertModal && isTemporary) {
+      setConvertOpen(true);
+      clearConvertModal();
+    }
+  }, [pendingConvertModal, isTemporary]);
   const [convertEmail, setConvertEmail] = useState('');
   const [convertPassword, setConvertPassword] = useState('');
   const [convertName, setConvertName] = useState(player?.playerName ?? '');
