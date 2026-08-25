@@ -44,6 +44,7 @@ export default function ChatScreen() {
     useChatStore();
   const player = useAuthStore((s) => s.player);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isTemporary = useAuthStore((s) => s.player?.isTemporary ?? false);
   const playerLevel = useGameStore((s) => s.playerLevel);
   const isAdmin = player?.isAdmin === true;
 
@@ -331,7 +332,7 @@ export default function ChatScreen() {
           onAlreadyReported={() => Alert.alert(t('report.alreadyReported'))}
         />
       )}
-      {!isAuthenticated && (
+      {(!isAuthenticated || isTemporary) && (
         <GuestWall message="Create a free account to read and write messages" />
       )}
     </View>

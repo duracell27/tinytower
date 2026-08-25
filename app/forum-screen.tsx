@@ -17,6 +17,7 @@ export default function ForumScreen() {
   const isDark = useColorScheme() === 'dark';
   const { fetchUnreadCounts, unreadCounts } = useForumStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isTemporary = useAuthStore((s) => s.player?.isTemporary ?? false);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,7 +49,7 @@ export default function ForumScreen() {
         )}
         contentContainerStyle={styles.list}
       />
-      {!isAuthenticated && (
+      {(!isAuthenticated || isTemporary) && (
         <GuestWall message="Create a free account to read and post in the forum" />
       )}
     </View>

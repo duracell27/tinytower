@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native'
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useAuthStore } from '../stores/authStore';
 
 interface GuestWallProps {
   message?: string;
@@ -11,6 +12,17 @@ interface GuestWallProps {
 export default function GuestWall({ message = 'Create a free account to join the community' }: GuestWallProps) {
   const router = useRouter();
   const isDark = useColorScheme() === 'dark';
+  const isTemporary = useAuthStore((s) => s.player?.isTemporary ?? false);
+  const requestConvertModal = useAuthStore((s) => s.requestConvertModal);
+
+  const handleAction = () => {
+    if (isTemporary) {
+      requestConvertModal();
+      router.navigate('/(tabs)/profile');
+    } else {
+      router.push('/login');
+    }
+  };
 
   return (
     <View style={styles.overlay}>
@@ -25,7 +37,7 @@ export default function GuestWall({ message = 'Create a free account to join the
         </Text>
         <Text style={[styles.subtitle, isDark && { color: '#8A9A80' }]}>{message}</Text>
         <Pressable
-          onPress={() => router.push('/login')}
+          onPress={handleAction}
           style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
         >
           <LinearGradient colors={['#72C24F', '#5BA63C']} style={styles.btnGradient}>
