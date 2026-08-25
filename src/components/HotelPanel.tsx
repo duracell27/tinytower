@@ -164,10 +164,12 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   // Play the slide-out animation first, then call onClose so the Modal unmounts
   // only after the GHRV has visually left the screen. This prevents the GHRV from
   // blocking touches on the main screen during the animation.
+  // No `if (finished)` guard: pan onUpdate can cancel this animation mid-flight (finished=false);
+  // without the guard onClose fires anyway — avoiding an invisible GHRV touch blocker.
   const handleAnimatedClose = useCallback(() => {
-    translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, (finished) => {
+    translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, () => {
       'worklet';
-      if (finished) runOnJS(onClose)();
+      runOnJS(onClose)();
     });
     scrimOpacity.value = withTiming(0, { duration: 300 });
   }, [onClose]);

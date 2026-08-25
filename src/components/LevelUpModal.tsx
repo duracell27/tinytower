@@ -35,9 +35,12 @@ export default function LevelUpModal() {
     transform: [{ scale: scale.value }],
   }));
 
+  const showModal = !!event && activeSheetCount === 0 && !isOnboarding;
+  if (!showModal) return null;
+
   return (
     <Modal
-      visible={!!event && activeSheetCount === 0 && !isOnboarding}
+      visible
       transparent
       animationType="none"
       onRequestClose={dismiss}

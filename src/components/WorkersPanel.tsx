@@ -159,6 +159,7 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
   const flatListRef = useRef<FlatList<Worker>>(null);
   const pendingScrollReset = useRef(false);
 
+  const [mounted, setMounted] = useState(false);
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
 
@@ -187,10 +188,13 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
 
   useEffect(() => {
     if (visible) {
+      setMounted(true);
       translateY.value = withTiming(0, SHEET_TIMING);
       scrimOpacity.value = withTiming(1, SCRIM_TIMING);
     } else {
-      translateY.value = withTiming(SHEET_HEIGHT, SHEET_TIMING);
+      translateY.value = withTiming(SHEET_HEIGHT, SHEET_TIMING, (finished) => {
+        if (finished) runOnJS(setMounted)(false);
+      });
       scrimOpacity.value = withTiming(0, SCRIM_TIMING);
     }
   }, [visible]);
@@ -410,8 +414,9 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
     [activeTab, expandedWorkerId, assignedWorkers, floors, openedFloorTypes, handleFireFromJob, handleTrain, t, tContent],
   );
 
+  if (!mounted) return null;
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal visible transparent animationType="none" onRequestClose={onClose}>
       <GestureHandlerRootView style={styles.overlay}>
         <Animated.View style={[styles.scrim, scrimStyle]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />

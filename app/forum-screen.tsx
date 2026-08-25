@@ -25,6 +25,21 @@ export default function ForumScreen() {
     }, [isAuthenticated, fetchUnreadCounts]),
   );
 
+  if (!isAuthenticated || isTemporary) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }, isDark && { backgroundColor: '#1A1E24' }]}>
+        <View style={[styles.header, isDark && { backgroundColor: '#1E2028', borderBottomColor: 'rgba(255,255,255,0.08)' }]}>
+          <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
+            <Text style={styles.backIcon}>‹</Text>
+          </Pressable>
+          <Text style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>{t('menu.forum')}</Text>
+          <View style={styles.backBtn} />
+        </View>
+        <GuestWall message="Create a free account to read and post in the forum" />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }, isDark && { backgroundColor: '#1A1E24' }]}>
       <View style={[styles.header, isDark && { backgroundColor: '#1E2028', borderBottomColor: 'rgba(255,255,255,0.08)' }]}>
@@ -49,9 +64,6 @@ export default function ForumScreen() {
         )}
         contentContainerStyle={styles.list}
       />
-      {(!isAuthenticated || isTemporary) && (
-        <GuestWall message="Create a free account to read and post in the forum" />
-      )}
     </View>
   );
 }

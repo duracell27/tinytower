@@ -44,6 +44,7 @@ interface WarehouseSheetProps {
 export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps) {
   const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
+  const [mounted, setMounted] = useState(false);
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SCREEN_HEIGHT);
 
@@ -73,12 +74,15 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
 
   useEffect(() => {
     if (visible) {
+      setMounted(true);
       translateY.value = withTiming(0, TIMING);
       scrimOpacity.value = withTiming(1, { duration: 300, easing: Easing.linear });
       openSheet();
       return closeSheet;
     } else {
-      translateY.value = withTiming(SCREEN_HEIGHT, TIMING);
+      translateY.value = withTiming(SCREEN_HEIGHT, TIMING, (finished) => {
+        if (finished) runOnJS(setMounted)(false);
+      });
       scrimOpacity.value = withTiming(0, { duration: 280, easing: Easing.linear });
     }
   }, [visible]);
@@ -107,8 +111,9 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
   const scrimStyle = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
 
+  if (!mounted) return null;
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal visible transparent animationType="none" onRequestClose={onClose}>
       <GestureHandlerRootView style={styles.overlay}>
         <Animated.View style={[styles.scrim, scrimStyle]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />

@@ -19,8 +19,11 @@ export default function WarehouseFullModal() {
     useGameStore.setState({ pendingOpenWarehouse: true });
   };
 
+  const showModal = visible && !isOnboarding;
+  if (!showModal) return null;
+
   return (
-    <Modal visible={visible && !isOnboarding} transparent animationType="fade" onRequestClose={dismiss}>
+    <Modal visible transparent animationType="fade" onRequestClose={dismiss}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Pressable style={styles.scrim} onPress={dismiss}>
           <Pressable style={styles.card} onPress={() => {}}>

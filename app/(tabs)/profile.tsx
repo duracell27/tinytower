@@ -310,6 +310,7 @@ export default function ProfileScreen() {
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const xpNeeded = xpForLevel(playerLevel);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [settingsMounted, setSettingsMounted] = useState(false);
   const SETTINGS_SHEET_HEIGHT = Dimensions.get('window').height * 0.6;
   const settingsTranslateY = useSharedValue(SETTINGS_SHEET_HEIGHT);
   const settingsScrimOpacity = useSharedValue(0);
@@ -319,12 +320,14 @@ export default function ProfileScreen() {
       settingsTranslateY.value = withTiming(0, { duration: 380 });
       settingsScrimOpacity.value = withTiming(1, { duration: 360 });
     } else {
-      settingsTranslateY.value = withTiming(SETTINGS_SHEET_HEIGHT, { duration: 320 });
+      settingsTranslateY.value = withTiming(SETTINGS_SHEET_HEIGHT, { duration: 320 }, (finished) => {
+        if (finished) runOnJS(setSettingsMounted)(false);
+      });
       settingsScrimOpacity.value = withTiming(0, { duration: 300 });
     }
   }, [settingsVisible]);
 
-  const closeSettings = () => setSettingsVisible(false);
+  const closeSettings = useCallback(() => setSettingsVisible(false), []);
 
   const settingsPanGesture = Gesture.Pan()
     .enabled(settingsVisible)
@@ -691,7 +694,7 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Pressable
-          onPress={() => setSettingsVisible(true)}
+          onPress={() => { setSettingsMounted(true); setSettingsVisible(true); }}
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/settingsIcon.png')} style={styles.achievementsIcon} />
@@ -773,8 +776,8 @@ export default function ProfileScreen() {
         </Modal>
 
         {/* Settings bottom sheet */}
-        <Modal
-          visible={settingsVisible}
+        {settingsMounted && <Modal
+          visible
           transparent
           animationType="none"
           onRequestClose={closeSettings}
@@ -813,7 +816,7 @@ export default function ProfileScreen() {
               </Animated.View>
             </GestureDetector>
           </GestureHandlerRootView>
-        </Modal>
+        </Modal>}
 
         {/* Sync status card */}
         <Pressable

@@ -147,6 +147,23 @@ export default function ChatScreen() {
     }
   }, [player?.id, router]);
 
+  if (!isAuthenticated || isTemporary) {
+    return (
+      <View style={[styles.container, isDark && { backgroundColor: '#1A1E24' }]}>
+        <View style={[styles.topBar, { paddingTop: insets.top }, isDark && { backgroundColor: '#1E2028' }]}>
+          <View style={styles.header}>
+            <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
+              <Text style={styles.backIcon}>‹</Text>
+            </Pressable>
+            <Text style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>{t('chat.title')}</Text>
+            <View style={styles.headerBtn} />
+          </View>
+        </View>
+        <GuestWall message="Create a free account to read and write messages" />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, isDark && { backgroundColor: '#1A1E24' }]}>
       {/* Top bar */}
@@ -331,9 +348,6 @@ export default function ChatScreen() {
           onSuccess={() => Alert.alert(t('report.success'))}
           onAlreadyReported={() => Alert.alert(t('report.alreadyReported'))}
         />
-      )}
-      {(!isAuthenticated || isTemporary) && (
-        <GuestWall message="Create a free account to read and write messages" />
       )}
     </View>
   );

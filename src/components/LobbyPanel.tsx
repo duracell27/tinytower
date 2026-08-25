@@ -562,10 +562,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     });
 
   // Play slide-out animation then call onClose so GHRV unmounts only after it's off-screen.
+  // No `if (finished)` guard: if the pan gesture's onUpdate cancels this animation mid-flight
+  // (finished=false), onClose must still fire — otherwise GHRV stays mounted as an invisible
+  // touch blocker. handleAnimatedClose is only ever called from intentional close actions
+  // (scrim tap, X button, hardware back), never from the bounce-back path.
   const handleAnimatedClose = useCallback(() => {
-    translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, (finished) => {
+    translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, () => {
       'worklet';
-      if (finished) runOnJS(onClose)();
+      runOnJS(onClose)();
     });
     scrimOpacity.value = withTiming(0, { duration: 300 });
   }, [onClose]);
