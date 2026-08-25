@@ -253,8 +253,21 @@ export const UpgradeFloorCommandSchema = TimestampedBaseSchema.extend({
   floorId: z.number().int().positive(),
 });
 
+export const ClaimTutorialTaskCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('claim_tutorial_task'),
+  taskIndex: z.number().int().min(0).max(9),
+});
+
+export const ClaimTutorialFinalCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('claim_tutorial_final'),
+});
+
 export const BuyDailyGemsCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('buy_daily_gems'),
+});
+
+export const RecordInviteSentCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('record_invite_sent'),
 });
 
 export const CommandSchema = z.discriminatedUnion('type', [
@@ -291,5 +304,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
   ClaimDailyTaskCommandSchema,
   UpgradeBusinessCategoryCommandSchema,
   UpgradeFloorCommandSchema,
+  ClaimTutorialTaskCommandSchema,
+  ClaimTutorialFinalCommandSchema,
   BuyDailyGemsCommandSchema,
+  RecordInviteSentCommandSchema,
 ]);

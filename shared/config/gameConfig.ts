@@ -554,5 +554,22 @@ export function createInitialState(config: GameConfig): GameState {
       claimed: [],
       doubleRewardActive: false,
     },
+    tutorialProgress: {
+      coinsCollected: 0,
+      visitorsLifted: 0,
+      workersHired: 0,
+      floorsBuilt: 0,
+      dailyTasksClaimed: 0,
+      elevatorUpgraded: 0,
+      lobbyUpgraded: 0,
+      floorUpgraded: 0,
+      inviteSent: 0,
+      businessUpgraded: 0,
+    },
+    tutorialTasks: {
+      currentIndex: 0,
+      snapshot: {},
+      claimedFinal: false,
+    },
   };
 }

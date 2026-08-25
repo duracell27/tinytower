@@ -71,6 +71,8 @@ export function loadGameState(): PersistedGameState | null {
         claimed: [],
         doubleRewardActive: false,
       },
+      tutorialProgress: parsed.tutorialProgress ?? {},
+      tutorialTasks: parsed.tutorialTasks ?? { currentIndex: 0, snapshot: {}, claimedFinal: false },
     };
     const result = GameStateSchema.safeParse(withDefaults);
     if (result.success) {
@@ -133,6 +135,8 @@ export function saveGameState(state: PersistedGameState): void {
       claimed: [],
       doubleRewardActive: false,
     },
+    tutorialProgress: state.tutorialProgress ?? {},
+    tutorialTasks: state.tutorialTasks ?? { currentIndex: 0, snapshot: {}, claimedFinal: false },
   }));
 }
 

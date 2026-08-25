@@ -112,10 +112,16 @@ export class SyncService {
 
     for (const command of newCommands) {
       const prevBalance = gameState.balance;
-      const result = processCommand(
-        gameState, command, gameConfig, command.timestamp, player.playerLevel,
-        { coinPercent: gameState.coinBonusPercent, xpPercent: gameState.xpBonusPercent },
-      );
+      let result: ReturnType<typeof processCommand>;
+      try {
+        result = processCommand(
+          gameState, command, gameConfig, command.timestamp, player.playerLevel,
+          { coinPercent: gameState.coinBonusPercent, xpPercent: gameState.xpBonusPercent },
+        );
+      } catch (e) {
+        this.logger.error(`Command ${command.id} (${command.type}) threw: ${e}`);
+        continue;
+      }
       if (result.success) {
         const xp = result.xpGained !== undefined
           ? result.xpGained
@@ -317,6 +323,8 @@ export class SyncService {
             dailyTasksClaimed:      gameState.dailyTasks.claimed,
             dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
             floorStars:             gameState.floorStars,
+            tutorialProgress:       gameState.tutorialProgress ?? {},
+            tutorialTasks:          gameState.tutorialTasks ?? { currentIndex: 0, snapshot: {}, claimedFinal: false },
           },
           update: {
             gems: gameState.gems,
@@ -354,6 +362,8 @@ export class SyncService {
             dailyTasksClaimed:      gameState.dailyTasks.claimed,
             dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
             floorStars:             gameState.floorStars,
+            tutorialProgress:       gameState.tutorialProgress ?? {},
+            tutorialTasks:          gameState.tutorialTasks ?? { currentIndex: 0, snapshot: {}, claimedFinal: false },
           },
         });
 
@@ -678,6 +688,12 @@ export class SyncService {
         doubleRewardActive: s?.dailyTasksDoubleReward ?? false,
       },
       floorStars: (s?.floorStars as Record<string, number>) ?? {},
+      tutorialProgress: (s?.tutorialProgress as Record<string, number>) ?? {},
+      tutorialTasks: {
+        currentIndex: (s?.tutorialTasks as any)?.currentIndex ?? 0,
+        snapshot: (s?.tutorialTasks as any)?.snapshot ?? {},
+        claimedFinal: (s?.tutorialTasks as any)?.claimedFinal ?? false,
+      },
     };
   }
 }
