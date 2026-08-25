@@ -714,9 +714,10 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Modal visible={convertOpen} transparent animationType="fade" onRequestClose={() => setConvertOpen(false)}>
-          <KeyboardAvoidingView style={styles.convertOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <KeyboardAvoidingView style={styles.convertOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={16}>
             <Pressable style={styles.convertBackdrop} onPress={() => setConvertOpen(false)} />
             <View style={[styles.convertCard, { backgroundColor: theme.surface }]}>
+            <ScrollView bounces={false} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               <View style={styles.convertHeader}>
                 <Image source={require('../../assets/img/managerIcon.png')} style={styles.convertManagerIcon} contentFit="contain" />
                 <View style={styles.convertHeaderText}>
@@ -760,6 +761,7 @@ export default function ProfileScreen() {
                   : <Text style={styles.convertSubmitText}>{t('profile.convert.submit')}</Text>
                 }
               </Pressable>
+            </ScrollView>
             </View>
           </KeyboardAvoidingView>
         </Modal>
