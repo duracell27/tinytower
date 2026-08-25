@@ -37,7 +37,7 @@ const SAND_CLOCK    = require('../../assets/img/sandClock.png');
 
 const COMMAND_LABELS: Record<string, string> = {
   buy: 'Buy product',
-  list: 'List product',
+  list: 'Sell product',
   collect: 'Collect revenue',
   assign_worker: 'Assign worker',
   fire_worker: 'Fire worker',
@@ -422,12 +422,14 @@ export default function ProfileScreen() {
   const clearConvertModal = useAuthStore((s) => s.clearConvertModal);
   const [convertOpen, setConvertOpen] = useState(false);
 
-  useEffect(() => {
-    if (pendingConvertModal && isTemporary) {
-      setConvertOpen(true);
-      clearConvertModal();
-    }
-  }, [pendingConvertModal, isTemporary]);
+  useFocusEffect(
+    useCallback(() => {
+      if (pendingConvertModal && isTemporary) {
+        setConvertOpen(true);
+        clearConvertModal();
+      }
+    }, [pendingConvertModal, isTemporary, clearConvertModal]),
+  );
   const [convertEmail, setConvertEmail] = useState('');
   const [convertPassword, setConvertPassword] = useState('');
   const [convertName, setConvertName] = useState(player?.playerName ?? '');

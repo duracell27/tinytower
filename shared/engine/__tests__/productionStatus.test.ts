@@ -59,7 +59,7 @@ describe('getProductionStatus', () => {
       expect(status.effectiveStage).toBe('READY_TO_LIST');
       expect(status.timeRemaining).toBe(0);
       expect(status.canAct).toBe(true);
-      expect(status.actionLabel).toBe('List');
+      expect(status.actionLabel).toBe('Sell');
     });
 
     it('returns READY_TO_LIST when timer overdue', () => {
@@ -124,7 +124,7 @@ describe('getProductionStatus', () => {
       const status = getProductionStatus(prod, coffeeConfig, 1000, 100);
       expect(status.effectiveStage).toBe('READY_TO_LIST');
       expect(status.canAct).toBe(true);
-      expect(status.actionLabel).toBe('List');
+      expect(status.actionLabel).toBe('Sell');
     });
 
     it('handles stored READY_TO_COLLECT', () => {

@@ -23,13 +23,13 @@ export function getProductionStatus(
     case 'DELIVERING': {
       const remaining = Math.max(0, typeConfig.deliveryDuration - (now - production.stageStartedAt));
       if (remaining <= 0) {
-        return { effectiveStage: 'READY_TO_LIST', timeRemaining: 0, canAct: true, actionLabel: 'List' };
+        return { effectiveStage: 'READY_TO_LIST', timeRemaining: 0, canAct: true, actionLabel: 'Sell' };
       }
       return { effectiveStage: 'DELIVERING', timeRemaining: remaining, canAct: false, actionLabel: null };
     }
 
     case 'READY_TO_LIST':
-      return { effectiveStage: 'READY_TO_LIST', timeRemaining: 0, canAct: true, actionLabel: 'List' };
+      return { effectiveStage: 'READY_TO_LIST', timeRemaining: 0, canAct: true, actionLabel: 'Sell' };
 
     case 'SELLING': {
       const sellDuration = sellDurationOverride ?? typeConfig.sellDuration;
