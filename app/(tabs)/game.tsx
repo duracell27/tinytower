@@ -23,7 +23,8 @@ import BusinessTypePickerSheet from '../../src/components/BusinessTypePickerShee
 import { HotelFloor, LobbyFloor } from '../../src/components/TechnicalFloor';
 import HotelPanel from '../../src/components/HotelPanel';
 import LobbyPanel from '../../src/components/LobbyPanel';
-import { useGameStore, useBalance, useTutorialTaskStore } from '../../src/stores/gameStore';
+import { useGameStore, useBalance } from '../../src/stores/gameStore';
+import { TUTORIAL_TASKS } from '../../shared/config/tutorialTasksConfig';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useFriendStore } from '../../src/stores/friendStore';
@@ -116,7 +117,9 @@ export default function GameScreen() {
   const unreadMailCount = useMailStore((s) => s.unreadCount);
   const incomingFriendCount = useFriendStore((s) => s.incomingRequests.length);
   const onboardingStep = useOnboardingStore((s) => s.step);
-  const { allDone, claimedFinal } = useTutorialTaskStore();
+  const tutorialComplete = useGameStore((s) =>
+    s.tutorialTasks.currentIndex >= TUTORIAL_TASKS.length && s.tutorialTasks.claimedFinal
+  );
   const [tutorialSheetOpen, setTutorialSheetOpen] = useState(false);
 
   const underConstruction = useGameStore((s) => s.underConstruction);
@@ -805,14 +808,14 @@ export default function GameScreen() {
           onPress={handleFABPress}
         />
         {quickActionMode === null && !qaBarVisible && (() => {
-          const hasTutorial = onboardingStep === 'done' && !(allDone && claimedFinal);
+          const hasTutorial = onboardingStep === 'done' && !(tutorialComplete);
           const qaSlot = (availableMode !== null ? 1 : 0) + (hasTutorial ? 1 : 0);
           const hasDaily = unclaimedDailyTasksCount > 0;
           const hasMail  = unreadMailCount > 0;
           return (
             <>
               {hasTutorial && (
-                <TutorialTaskFAB slot={0} aboveBar={false} onPress={() => setTutorialSheetOpen(true)} />
+                <TutorialTaskFAB slot={availableMode !== null ? 1 : 0} aboveBar={false} onPress={() => setTutorialSheetOpen(true)} />
               )}
               <DailyTasksFAB unclaimedCount={unclaimedDailyTasksCount} slot={qaSlot} />
               <NotificationFAB
@@ -835,7 +838,7 @@ export default function GameScreen() {
 
         {(quickActionMode !== null || qaBarVisible) && (
           <>
-            {onboardingStep === 'done' && !(allDone && claimedFinal) && (
+            {onboardingStep === 'done' && !(tutorialComplete) && (
               <TutorialTaskFAB slot={0} aboveBar={true} onPress={() => setTutorialSheetOpen(true)} />
             )}
             <QuickActionBar

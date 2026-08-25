@@ -1,0 +1,3 @@
+-- AddColumn
+ALTER TABLE "PlayerState" ADD COLUMN IF NOT EXISTS "tutorialProgress" JSONB NOT NULL DEFAULT '{}';
+ALTER TABLE "PlayerState" ADD COLUMN IF NOT EXISTS "tutorialTasks" JSONB NOT NULL DEFAULT '{}';
