@@ -717,11 +717,13 @@ export default function ProfileScreen() {
           <KeyboardAvoidingView style={styles.convertOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <Pressable style={styles.convertBackdrop} onPress={() => setConvertOpen(false)} />
             <View style={[styles.convertCard, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.convertTitle, { color: theme.text }]}>{t('profile.convert.title')}</Text>
-              <Text style={[styles.convertSub, { color: theme.textMuted }]}>{t('profile.convert.subtitle')}</Text>
+              <View style={styles.convertHeader}>
+                <Image source={require('../../assets/img/managerIcon.png')} style={styles.convertManagerIcon} contentFit="contain" />
+                <Text style={[styles.convertTitle, { color: theme.text }]}>{t('profile.convert.title')}</Text>
+                <Text style={[styles.convertSub, { color: theme.textMuted }]}>Save your account to unlock all game features</Text>
+              </View>
 
               {convertError ? <Text style={styles.convertErrorText}>{convertError}</Text> : null}
-
               <Text style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelName')}</Text>
               <TextInput
                 style={[styles.convertInput, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
@@ -1339,24 +1341,32 @@ const styles = StyleSheet.create({
   convertCard: {
     width: '100%',
     borderRadius: 24,
-    padding: 24,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.25,
     shadowRadius: 24,
     elevation: 12,
   },
+  convertHeader: {
+    alignItems: 'center',
+    marginBottom: 18,
+    gap: 6,
+  },
+  convertManagerIcon: {
+    width: 64,
+    height: 64,
+    marginBottom: 4,
+  },
   convertTitle: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 22,
     textAlign: 'center',
-    marginBottom: 4,
   },
   convertSub: {
     fontFamily: 'Nunito_600SemiBold',
     fontSize: 13,
     textAlign: 'center',
-    marginBottom: 18,
   },
   convertErrorText: {
     fontFamily: 'Nunito_600SemiBold',
