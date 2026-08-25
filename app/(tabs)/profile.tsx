@@ -719,8 +719,10 @@ export default function ProfileScreen() {
             <View style={[styles.convertCard, { backgroundColor: theme.surface }]}>
               <View style={styles.convertHeader}>
                 <Image source={require('../../assets/img/managerIcon.png')} style={styles.convertManagerIcon} contentFit="contain" />
-                <Text style={[styles.convertTitle, { color: theme.text }]}>{t('profile.convert.title')}</Text>
-                <Text style={[styles.convertSub, { color: theme.textMuted }]}>Save your account to unlock all game features</Text>
+                <View style={styles.convertHeaderText}>
+                  <Text style={[styles.convertTitle, { color: theme.text }]}>{t('profile.convert.title')}</Text>
+                  <Text style={[styles.convertSub, { color: theme.textMuted }]}>Save your account to unlock all game features</Text>
+                </View>
               </View>
 
               {convertError ? <Text style={styles.convertErrorText}>{convertError}</Text> : null}
@@ -1349,24 +1351,28 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   convertHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 14,
     marginBottom: 18,
-    gap: 6,
   },
   convertManagerIcon: {
-    width: 64,
-    height: 64,
-    marginBottom: 4,
+    width: 60,
+    height: 60,
+    flexShrink: 0,
+  },
+  convertHeaderText: {
+    flex: 1,
+    gap: 4,
   },
   convertTitle: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 22,
-    textAlign: 'center',
+    fontSize: 20,
   },
   convertSub: {
     fontFamily: 'Nunito_600SemiBold',
     fontSize: 13,
-    textAlign: 'center',
+    lineHeight: 18,
   },
   convertErrorText: {
     fontFamily: 'Nunito_600SemiBold',
