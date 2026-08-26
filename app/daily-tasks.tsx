@@ -339,10 +339,10 @@ const styles = StyleSheet.create({
   completionBarBg: { alignSelf: 'stretch', height: 6, borderRadius: 3, backgroundColor: 'rgba(63,165,53,0.2)', overflow: 'hidden' },
   completionBarFill: { height: '100%', borderRadius: 3, backgroundColor: '#3FA535' },
 
-  doubleBanner: { backgroundColor: 'rgba(255,255,255,0.55)', borderRadius: 14, padding: 12, alignItems: 'center', gap: 8, marginBottom: 4 },
+  doubleBanner: { backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 14, padding: 12, alignItems: 'center', gap: 8, marginBottom: 4, shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 2 },
   doubleBannerActive: { backgroundColor: '#FFF4D6' },
   doubleBannerGoal:   { backgroundColor: '#E8F7E4', gap: 4 },
-  doubleBannerText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', textAlign: 'center' },
+  doubleBannerText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#6A7A8A', textAlign: 'center' },
   doubleBannerTextActive: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#B07A00' },
   doubleBannerTomorrow: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#B07A00', textAlign: 'center' },
   doubleBannerGoalEmoji: { fontSize: 28, lineHeight: 34 },
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
   doubleBannerGoalSub:   { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#4A8A43', textAlign: 'center' },
 
   card: { backgroundColor: '#fff', borderRadius: 20, padding: 16, gap: 10, shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
-  cardClaimed: { opacity: 0.55 },
+  cardClaimed: { opacity: 0.72 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   taskIcon: { width: 36, height: 36, borderRadius: 8 },
   cardTitleBlock: { flex: 1, gap: 2 },

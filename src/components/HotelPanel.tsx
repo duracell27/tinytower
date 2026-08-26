@@ -50,8 +50,8 @@ interface HotelPanelProps {
 }
 
 type ListItem =
-  | { kind: 'worker'; worker: Worker }
-  | { kind: 'empty'; index: number }
+  | { kind: 'worker'; worker: Worker; roomNumber: number }
+  | { kind: 'empty'; index: number; roomNumber: number }
   | { kind: 'elevator-hint' }
   | { kind: 'evict-low' }
   | { kind: 'buy' };
@@ -100,9 +100,9 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const { claimedFinal: tutorialDone } = useTutorialTaskStore();
 
   const listData: ListItem[] = [
-    ...unemployedWorkers.map((w): ListItem => ({ kind: 'worker', worker: w })),
+    ...unemployedWorkers.map((w, i): ListItem => ({ kind: 'worker', worker: w, roomNumber: i + 1 })),
     ...(!tutorialDone && freeSeats > 0 ? [{ kind: 'elevator-hint' } as ListItem] : []),
-    ...Array.from({ length: freeSeats }, (_, i): ListItem => ({ kind: 'empty', index: i })),
+    ...Array.from({ length: freeSeats }, (_, i): ListItem => ({ kind: 'empty', index: i, roomNumber: unemployedWorkers.length + i + 1 })),
     ...(hasLowLevelWorkers ? [{ kind: 'evict-low' } as ListItem] : []),
     { kind: 'buy' },
   ];
@@ -259,19 +259,19 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
       }
       if (item.kind === 'elevator-hint') {
         return (
-          <View style={[styles.elevatorHintCard, isDark && { backgroundColor: 'rgba(82,166,226,0.08)', borderColor: 'rgba(82,166,226,0.2)' }]}>
+          <View style={[styles.elevatorHintCard, isDark && { backgroundColor: 'rgba(150,48,80,0.15)', borderColor: 'rgba(201,99,126,0.2)' }]}>
             <Image
               source={require('../../assets/img/achivment/achivLiftCategory.png')}
               style={styles.elevatorHintIcon}
               contentFit="contain"
             />
-            <Text style={[styles.elevatorHintText, isDark && { color: '#8AAABB' }]}>
+            <Text style={[styles.elevatorHintText, isDark && { color: '#C9899E' }]}>
               {t('hotelPanel.elevatorHint')}
             </Text>
           </View>
         );
       }
-      const roomNumber = index + 1;
+      const roomNumber = item.roomNumber;
       const workerDreamJob = item.kind === 'worker' ? item.worker.dreamJob : null;
       let dreamFloorName: string | undefined;
       if (workerDreamJob) {
@@ -961,9 +961,9 @@ const styles = StyleSheet.create({
     gap: 10,
     marginHorizontal: 4,
     marginBottom: 12,
-    backgroundColor: 'rgba(82,166,226,0.1)',
+    backgroundColor: '#F0DCE3',
     borderWidth: 1,
-    borderColor: 'rgba(82,166,226,0.22)',
+    borderColor: 'rgba(201,99,126,0.35)',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -973,7 +973,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: 'Nunito_600SemiBold',
     fontSize: 13,
-    color: '#4A6070',
+    color: '#7A3A50',
     lineHeight: 18,
   },
   roomRow: {
