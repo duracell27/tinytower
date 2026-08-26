@@ -202,6 +202,7 @@ interface GameActions {
   listAll: () => void;
   buyAll: () => void;
   fillLobby: () => void;
+  fillLobbyOnboarding: () => void;
   upgradeElevator: () => void;
   upgradeLobby: () => void;
   buyAllDailyGems: () => void;
@@ -1061,6 +1062,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
       state.showInsufficientResources({ currency: 'gems', need: cost, have: state.gems });
       return;
     }
+    const floorTypeKeys = Object.keys(gameConfig.floorTypes);
+    const visitors = Array.from({ length: slotsToFill }, () => {
+      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
+      const { hairColor, female } = generateVisitorAppearance();
+      const pendingFloorType = (role === 'guest' && targetFloor === 1)
+        ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
+        : undefined;
+      return { visitorId: uuid(), role, targetFloor, isVip, hairColor, female, pendingFloorType };
+    });
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'fill_lobby',
+      timestamp: now,
+      visitors,
+    });
+  },
+
+  fillLobbyOnboarding: () => {
+    const state = get();
+    if (state.lobbyVisitors.length >= state.lobbyCapacity) return;
+    const slotsToFill = state.lobbyCapacity - state.lobbyVisitors.length;
+    const now = clock.now();
     const floorTypeKeys = Object.keys(gameConfig.floorTypes);
     const visitors = Array.from({ length: slotsToFill }, () => {
       const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);

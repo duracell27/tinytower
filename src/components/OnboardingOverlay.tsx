@@ -10,8 +10,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { usePathname } from 'expo-router';
 import { useOnboardingStore } from '../stores/onboardingStore';
+import { useGameStore } from '../stores/gameStore';
 import { ONBOARDING_STEPS, type BulletItem } from '../config/onboardingSteps';
 import { getOnboardingDismissAction, getOnboardingSpotlightAction } from '../utils/onboardingCallback';
+const CHECKLIST_ICON = require('../../assets/img/quicActions/checklist.png');
 
 const { width: SW, height: SH } = Dimensions.get('window');
 const CARD_WIDTH = SW * 0.82;
@@ -300,12 +302,24 @@ export default function OnboardingOverlay() {
           <Pressable
             style={styles.dismissBtn}
             onPress={() => {
+              if (step === 'final_message') {
+                useGameStore.getState().fillLobbyOnboarding();
+              }
               const action = getOnboardingDismissAction();
               if (action) { action(); } else { advance(); }
             }}
           >
             <Text style={styles.dismissLabel}>{config.dismissLabel ?? 'OK'}</Text>
           </Pressable>
+        )}
+
+        {step === 'final_message' && (
+          <View style={[styles.nextTasksBlock, { backgroundColor: isDark ? 'rgba(242,172,64,0.09)' : 'rgba(242,172,64,0.10)', borderColor: isDark ? 'rgba(242,172,64,0.22)' : 'rgba(242,172,64,0.35)' }]}>
+            <Image source={CHECKLIST_ICON} style={styles.nextTasksIcon} resizeMode="contain" />
+            <Text style={[styles.nextTasksText, { color: textMain }]}>
+              Complete newcomer tasks and level up your character
+            </Text>
+          </View>
         )}
       </View>
     </View>
@@ -402,5 +416,26 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#fff',
+  },
+  nextTasksBlock: {
+    marginTop: 14,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  nextTasksIcon: {
+    width: 32,
+    height: 32,
+    flexShrink: 0,
+  },
+  nextTasksText: {
+    flex: 1,
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
+    lineHeight: 20,
   },
 });

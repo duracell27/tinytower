@@ -101,7 +101,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
 
   const listData: ListItem[] = [
     ...unemployedWorkers.map((w, i): ListItem => ({ kind: 'worker', worker: w, roomNumber: i + 1 })),
-    ...(!tutorialDone && freeSeats > 0 ? [{ kind: 'elevator-hint' } as ListItem] : []),
+    ...(!tutorialDone && occupiedSeats === 0 ? [{ kind: 'elevator-hint' } as ListItem] : []),
     ...Array.from({ length: freeSeats }, (_, i): ListItem => ({ kind: 'empty', index: i, roomNumber: unemployedWorkers.length + i + 1 })),
     ...(hasLowLevelWorkers ? [{ kind: 'evict-low' } as ListItem] : []),
     { kind: 'buy' },
