@@ -7,6 +7,7 @@
     "paths": {
       "@shared/*": ["./shared/*"]
     },
-    "types": ["jest", "@types/jest"]
-  }
+    "types": ["jest", "@types/jest", "node"]
+  },
+  "exclude": ["node_modules", "server", "admin"]
 }
