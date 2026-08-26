@@ -47,9 +47,9 @@ describe('onboardingStore', () => {
     // Fast-forward to final_message
     const sequence: OnboardingStep[] = [
       'collect_slot_1','collect_slot_2','buy_goods_1','buy_goods_2',
-      'open_elevator_1','deliver_visitor','open_elevator_2','deliver_worker',
-      'assign_worker','choose_floor_type','speed_up_construction',
-      'construction_tip','open_business','final_message',
+      'open_elevator_1','deliver_visitor',
+      'assign_worker','buy_floor','choose_floor_type','speed_up_construction',
+      'expand_floor_card','open_business','final_message',
     ];
     for (let i = 0; i < sequence.length - 1; i++) {
       act(() => useOnboardingStore.getState().advance());
