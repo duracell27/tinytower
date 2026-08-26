@@ -189,6 +189,7 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
   useEffect(() => {
     if (visible) {
       setMounted(true);
+      translateY.value = SHEET_HEIGHT;
       translateY.value = withTiming(0, SHEET_TIMING);
       scrimOpacity.value = withTiming(1, SCRIM_TIMING);
     } else {

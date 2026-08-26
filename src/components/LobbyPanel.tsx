@@ -551,8 +551,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     })
     .onEnd((e) => {
       if (e.translationY > DISMISS_THRESHOLD || e.velocityY > 500) {
-        translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, () => {
-          runOnJS(onClose)();
+        translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, (finished) => {
+          if (finished) runOnJS(onClose)();
         });
         scrimOpacity.value = withTiming(0, { duration: 300 });
       } else {

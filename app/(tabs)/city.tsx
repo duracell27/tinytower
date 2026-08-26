@@ -107,7 +107,9 @@ export default function CityScreen() {
         </ScrollView>
       </AppBackground>
       {!isAuthenticated && (
-        <GuestWall message="Create a free account to access city features" />
+        <View style={StyleSheet.absoluteFill}>
+          <GuestWall message="Create a free account to access city features" />
+        </View>
       )}
     </View>
   );

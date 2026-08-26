@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -36,6 +36,11 @@ export default function LevelUpModal() {
   }));
 
   const showModal = !!event && activeSheetCount === 0 && !isOnboarding;
+
+  useEffect(() => {
+    if (showModal) triggerAnimations();
+  }, [showModal, triggerAnimations]);
+
   if (!showModal) return null;
 
   return (
@@ -44,7 +49,6 @@ export default function LevelUpModal() {
       transparent
       animationType="none"
       onRequestClose={dismiss}
-      onShow={triggerAnimations}
     >
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.scrim}>

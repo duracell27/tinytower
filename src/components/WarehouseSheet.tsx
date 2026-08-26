@@ -75,6 +75,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
   useEffect(() => {
     if (visible) {
       setMounted(true);
+      translateY.value = SCREEN_HEIGHT;
       translateY.value = withTiming(0, TIMING);
       scrimOpacity.value = withTiming(1, { duration: 300, easing: Easing.linear });
       openSheet();

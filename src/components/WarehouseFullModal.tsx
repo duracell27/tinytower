@@ -20,11 +20,10 @@ export default function WarehouseFullModal() {
   };
 
   const showModal = visible && !isOnboarding;
-  if (!showModal) return null;
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={dismiss}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+    <Modal visible={showModal} transparent animationType="fade" onRequestClose={dismiss}>
+      {showModal && <GestureHandlerRootView style={{ flex: 1 }}>
         <Pressable style={styles.scrim} onPress={dismiss}>
           <Pressable style={styles.card} onPress={() => {}}>
             <View style={styles.avatarWrap}>
@@ -51,7 +50,7 @@ export default function WarehouseFullModal() {
             </Pressable>
           </Pressable>
         </Pressable>
-      </GestureHandlerRootView>
+      </GestureHandlerRootView>}
     </Modal>
   );
 }

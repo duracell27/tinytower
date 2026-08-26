@@ -62,9 +62,10 @@ export default function ChatScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      if (!isAuthenticated || isTemporary) return;
       startPolling(activeCountry);
       return () => stopPolling();
-    }, [activeCountry, startPolling, stopPolling]),
+    }, [activeCountry, isAuthenticated, isTemporary, startPolling, stopPolling]),
   );
 
   React.useEffect(() => {
