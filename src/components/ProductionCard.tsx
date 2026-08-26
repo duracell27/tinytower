@@ -1,6 +1,6 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedProps, useAnimatedStyle, withTiming, withRepeat, withSequence, cancelAnimation, Easing } from 'react-native-reanimated';
 import { useClockNow } from '../context/ClockContext';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -355,19 +355,41 @@ export default function ProductionCard({
 
   const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
   const dashOffset = useSharedValue(99999);
-  const layoutReady = useRef(false);
 
-  useEffect(() => { layoutReady.current = false; }, [effectiveStage]);
+  const btnScale = useSharedValue(1);
+  const shouldPulse = canAct && !isTimer && !isDeliveryLocked;
 
   useEffect(() => {
-    if (stageEndsAt === 0 || btnSize.width === 0 || totalDur === 0) return;
+    if (shouldPulse) {
+      btnScale.value = withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1600 }),
+          withTiming(1.06, { duration: 280, easing: Easing.out(Easing.quad) }),
+          withTiming(1, { duration: 280, easing: Easing.in(Easing.quad) }),
+        ),
+        -1,
+        false,
+      );
+    } else {
+      cancelAnimation(btnScale);
+      btnScale.value = withTiming(1, { duration: 120 });
+    }
+  }, [shouldPulse]);
+
+  const btnPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: btnScale.value }],
+  }));
+
+  useEffect(() => {
+    if (stageEndsAt === 0 || btnSize.width === 0 || totalDur === 0) {
+      cancelAnimation(dashOffset);
+      return;
+    }
     const perim = calcPerimeter(btnSize.width, btnSize.height);
     const remaining = Math.max(0, stageEndsAt - Date.now());
     const startOffset = perim * Math.min(1, remaining / totalDur);
-    if (!layoutReady.current) {
-      layoutReady.current = true;
-      dashOffset.value = startOffset;
-    }
+    cancelAnimation(dashOffset);
+    dashOffset.value = startOffset;
     dashOffset.value = withTiming(0, { duration: Math.max(remaining, 80), easing: Easing.linear });
   }, [stageEndsAt, btnSize.width, btnSize.height, totalDur]);
 
@@ -548,7 +570,7 @@ export default function ProductionCard({
         )}
       </View>
 
-      <View onLayout={(e) => setBtnSize(e.nativeEvent.layout)}>
+      <Animated.View style={btnPulseStyle} onLayout={(e) => setBtnSize(e.nativeEvent.layout)}>
         <Pressable
           onPress={isDeliveryLocked ? undefined : (canAct ? handleAction : undefined)}
           onLongPress={onLongPress}
@@ -588,7 +610,7 @@ export default function ProductionCard({
             </Svg>
           </View>
         )}
-      </View>
+      </Animated.View>
 
       <View style={styles.subContainer}>
         {isDeliveryLocked ? (
