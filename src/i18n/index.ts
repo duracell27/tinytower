@@ -38,7 +38,6 @@ const initialLanguage = pickLanguage(
 i18next.use(initReactI18next).init({
   lng: initialLanguage,
   fallbackLng: DEFAULT_LANGUAGE,
-  initImmediate: false,
   ns: ['common', 'auth', 'tabs', 'hotel', 'lobby', 'gameContent'],
   defaultNS: 'common',
   resources: {

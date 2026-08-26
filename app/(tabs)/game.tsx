@@ -417,7 +417,7 @@ export default function GameScreen() {
         .getState()
         .workers.filter((w) => w.assignedFloorId !== null).length;
     }
-    prevStepForWorkerRef.current = onboardingStep;
+    prevStepForWorkerRef.current = onboardingStep ?? '';
   }
 
   // Current assigned count — only subscribes while step is assign_worker.
@@ -1001,7 +1001,6 @@ export default function GameScreen() {
                 data={floorList}
                 renderItem={renderItem}
                 keyExtractor={keyExtractor}
-                estimatedItemSize={216}
                 getItemType={(item) => item.type}
                 drawDistance={1500}
                 extraData={listExtraData}
@@ -1062,7 +1061,6 @@ export default function GameScreen() {
                   data={qaItems}
                   renderItem={renderQaItem}
                   keyExtractor={keyExtractor}
-                  estimatedItemSize={216}
                   getItemType={(item) => item.type}
                   contentContainerStyle={styles.listContentQA}
                   showsVerticalScrollIndicator={false}

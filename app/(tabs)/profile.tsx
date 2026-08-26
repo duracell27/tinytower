@@ -1442,7 +1442,7 @@ const settingsStyles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(18,26,44,0.45)',
   },
   sheet: {

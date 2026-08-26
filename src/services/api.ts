@@ -148,7 +148,7 @@ async function refreshTokens(): Promise<boolean> {
 }
 
 async function request<T>(
-  method: 'GET' | 'POST' | 'DELETE',
+  method: 'GET' | 'POST' | 'DELETE' | 'PATCH',
   path: string,
   body?: unknown,
   retry = true,

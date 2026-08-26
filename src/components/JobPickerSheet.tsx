@@ -471,7 +471,7 @@ export default function JobPickerSheet({
 
 function resolveSectionName(
   section: FloorSection,
-  tContent: (key: string, opts?: object) => string,
+  tContent: (key: string, opts?: Record<string, unknown>) => string,
 ): string {
   const translated = tContent(`floors.${section.floorId}.name`, { defaultValue: '' });
   if (translated) return translated;
