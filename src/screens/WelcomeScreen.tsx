@@ -100,19 +100,18 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
   return (
     <View style={styles.container}>
       <Image
-        source={require('../../assets/welcome-bg.png')}
+        source={require('../../assets/img/bgFirstpage.png')}
         style={StyleSheet.absoluteFill}
         contentFit="cover"
-        contentPosition={{ bottom: 0, left: '50%' }}
       />
 
       <LinearGradient
         colors={[
-          'rgba(30,60,90,0.14)',
+          'rgba(30,60,90,0.08)',
           'rgba(30,60,90,0)',
           'rgba(15,35,25,0)',
-          'rgba(15,35,25,0.32)',
-          'rgba(12,30,20,0.58)',
+          'rgba(15,35,25,0.22)',
+          'rgba(12,30,20,0.45)',
         ]}
         locations={[0, 0.2, 0.56, 0.8, 1]}
         style={[StyleSheet.absoluteFill, { zIndex: 1 }]}
@@ -133,7 +132,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         </Pressable>
         <Pressable
           onPress={() => Linking.openURL('https://www.reddit.com/r/TinyTowerGame/')}
-          style={({ pressed }) => [styles.discordButton, { marginTop: 10 }, pressed && { opacity: 0.75 }]}
+          style={({ pressed }) => [styles.discordButton, pressed && { opacity: 0.75 }]}
         >
           <Image
             source={require('../../assets/img/reddit.png')}
@@ -145,17 +144,25 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
 
       {/* Logo */}
       <View style={styles.logoContainer}>
-        <Text style={styles.logoTiny}>TINY</Text>
-        <Text style={styles.logoTower}>TOWER</Text>
+        <Image
+          source={require('../../assets/img/LogoInFirstPage.png')}
+          style={{ width: '100%', height: 190 }}
+          contentFit="contain"
+          contentPosition="center"
+        />
       </View>
 
       {/* Speech bubble */}
       <View style={styles.bubbleWrapper}>
         <View style={styles.bubble}>
-          <Text style={styles.bubbleText}>
-            {t('welcome.bubble')}
-            <View style={styles.bubbleCoinInline} />
-          </Text>
+          <View style={styles.bubbleContent}>
+            <Text style={styles.bubbleText}>{t('welcome.bubble')}</Text>
+            <Image
+              source={require('../../assets/img/coin.png')}
+              style={{ width: 13, height: 13 }}
+              contentFit="contain"
+            />
+          </View>
           <View style={styles.bubbleTail} />
         </View>
       </View>
@@ -319,10 +326,6 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
           </Pressable>
         )}
 
-        <View style={styles.orContainer}>
-          <Text style={styles.orText}>{t('common:actions.or')}</Text>
-        </View>
-
         <View style={styles.secondaryRow}>
           <Pressable onPress={onLogin} style={styles.secondaryButton}>
             <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="#2C4A2A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -374,35 +377,16 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     position: 'absolute',
-    top: 60,
+    top: 64,
     left: 0,
     right: 0,
     zIndex: 2,
     alignItems: 'center',
   },
-  logoTiny: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 52,
-    letterSpacing: 1,
-    color: '#fff',
-    textShadowColor: '#3E8FD8',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 6,
-  },
-  logoTower: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 52,
-    letterSpacing: 1,
-    color: '#FFC83D',
-    marginTop: -4,
-    textShadowColor: '#C77A12',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 6,
-  },
   bubbleWrapper: {
     position: 'absolute',
-    top: 198,
-    left: 0,
+    top: 270,
+    left: 230,
     right: 0,
     zIndex: 2,
     alignItems: 'center',
@@ -410,10 +394,10 @@ const styles = StyleSheet.create({
   bubble: {
     position: 'relative',
     backgroundColor: 'rgba(255,255,255,0.94)',
-    paddingHorizontal: 26,
-    paddingVertical: 13,
-    borderRadius: 22,
-    maxWidth: 272,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 16,
+    alignSelf: 'center',
     shadowColor: 'rgba(40,70,40,1)',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.28,
@@ -422,26 +406,21 @@ const styles = StyleSheet.create({
   },
   bubbleText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 17,
+    fontSize: 11,
     color: '#2C4A2A',
     textAlign: 'center',
-    lineHeight: 23,
+    lineHeight: 15,
   },
-  bubbleCoinInline: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#F2B330',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.55)',
-    transform: [{ translateY: 3 }],
+  bubbleContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 4,
   },
   bubbleTail: {
     position: 'absolute',
     bottom: -7,
     alignSelf: 'center',
-    left: '50%',
-    marginLeft: -7.5,
+    marginLeft: 20,
     width: 15,
     height: 15,
     backgroundColor: 'rgba(255,255,255,0.94)',
@@ -450,8 +429,9 @@ const styles = StyleSheet.create({
   },
   chipsContainer: {
     position: 'absolute',
-    right: 16,
-    top: 352,
+    left: 16,
+    right: '55%',
+    top: 330,
     zIndex: 2,
     gap: 9,
   },
@@ -459,7 +439,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    width: 150,
     backgroundColor: 'rgba(255,255,255,0.95)',
     paddingVertical: 8,
     paddingLeft: 10,
@@ -696,7 +675,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 22,
     right: 22,
-    bottom: 38,
+    bottom: 20,
     zIndex: 2,
     gap: 12,
   },
@@ -764,10 +743,12 @@ const styles = StyleSheet.create({
   discordWrapper: {
     position: 'absolute',
     left: 16,
-    top: 0,
-    bottom: 0,
+    right: '55%',
+    top: 530,
     zIndex: 2,
+    flexDirection: 'row',
     justifyContent: 'center',
+    gap: 12,
     pointerEvents: 'box-none',
   },
   discordButton: {

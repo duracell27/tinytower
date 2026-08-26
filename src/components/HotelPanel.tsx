@@ -26,7 +26,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
-import { useGameStore } from '../stores/gameStore';
+import { useGameStore, useTutorialTaskStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import WorkerCard from './WorkerCard';
 import JobPickerSheet from './JobPickerSheet';
@@ -52,6 +52,7 @@ interface HotelPanelProps {
 type ListItem =
   | { kind: 'worker'; worker: Worker }
   | { kind: 'empty'; index: number }
+  | { kind: 'elevator-hint' }
   | { kind: 'evict-low' }
   | { kind: 'buy' };
 
@@ -96,9 +97,11 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   ).length;
   const expansionCost = getHotelExpansionCost(hotelCapacity);
   const hasLowLevelWorkers = unemployedWorkers.some((w: Worker) => w.level < 9);
+  const { claimedFinal: tutorialDone } = useTutorialTaskStore();
 
   const listData: ListItem[] = [
     ...unemployedWorkers.map((w): ListItem => ({ kind: 'worker', worker: w })),
+    ...(!tutorialDone && freeSeats > 0 ? [{ kind: 'elevator-hint' } as ListItem] : []),
     ...Array.from({ length: freeSeats }, (_, i): ListItem => ({ kind: 'empty', index: i })),
     ...(hasLowLevelWorkers ? [{ kind: 'evict-low' } as ListItem] : []),
     { kind: 'buy' },
@@ -254,6 +257,20 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
       if (item.kind === 'evict-low') {
         return <EvictLowLevelCard onPress={handleEvictLowLevel} t={t} />;
       }
+      if (item.kind === 'elevator-hint') {
+        return (
+          <View style={[styles.elevatorHintCard, isDark && { backgroundColor: 'rgba(82,166,226,0.08)', borderColor: 'rgba(82,166,226,0.2)' }]}>
+            <Image
+              source={require('../../assets/img/achivment/achivLiftCategory.png')}
+              style={styles.elevatorHintIcon}
+              contentFit="contain"
+            />
+            <Text style={[styles.elevatorHintText, isDark && { color: '#8AAABB' }]}>
+              {t('hotelPanel.elevatorHint')}
+            </Text>
+          </View>
+        );
+      }
       const roomNumber = index + 1;
       const workerDreamJob = item.kind === 'worker' ? item.worker.dreamJob : null;
       let dreamFloorName: string | undefined;
@@ -298,6 +315,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const keyExtractor = useCallback((item: ListItem) => {
     if (item.kind === 'worker') return `w-${item.worker.id}`;
     if (item.kind === 'empty') return `e-${item.index}`;
+    if (item.kind === 'elevator-hint') return 'elevator-hint';
     if (item.kind === 'evict-low') return 'evict-low';
     return 'buy';
   }, []);
@@ -936,6 +954,27 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 10,
     paddingBottom: 40,
+  },
+  elevatorHintCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginHorizontal: 4,
+    marginBottom: 12,
+    backgroundColor: 'rgba(82,166,226,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(82,166,226,0.22)',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  elevatorHintIcon: { width: 42, height: 42 },
+  elevatorHintText: {
+    flex: 1,
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    color: '#4A6070',
+    lineHeight: 18,
   },
   roomRow: {
     flexDirection: 'row',

@@ -1,8 +1,11 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Circle } from 'react-native-svg';
 import { useTutorialTaskStore } from '../stores/gameStore';
+
+const CHECKLIST_ICON = require('../../assets/img/checklist.png');
 
 interface Props {
   slot: number;
@@ -21,13 +24,6 @@ const CX = WRAP / 2;  // 29
 const R = 25;          // outer edge at 29+1.5=30.5, inner at 23.5 — clear of clip
 const CIRCUMFERENCE = 2 * Math.PI * R;
 
-function StarIcon() {
-  return (
-    <Svg viewBox="0 0 24 24" width={24} height={24} fill="#F2AC40">
-      <Path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-    </Svg>
-  );
-}
 
 export default function TutorialTaskFAB({ slot, aboveBar, onPress }: Props) {
   const { allDone, claimedFinal, isComplete, delta, currentTask } = useTutorialTaskStore();
@@ -54,7 +50,7 @@ export default function TutorialTaskFAB({ slot, aboveBar, onPress }: Props) {
         }}
         style={({ pressed }) => [styles.fab, pressed && { opacity: 0.82 }]}
       >
-        <StarIcon />
+        <Image source={CHECKLIST_ICON} style={{ width: 34, height: 34 }} contentFit="contain" />
         {isComplete && !allDone && <View style={styles.badge} />}
       </Pressable>
 

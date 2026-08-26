@@ -83,6 +83,7 @@
       "title": "Vacant",
       "subtitle": "Empty room"
     },
+    "elevatorHint": "Ride guests in the elevator — workers sometimes appear on the way!",
     "expandCard": {
       "title": "Expand hotel by 1 room",
       "buy": "Expand",
