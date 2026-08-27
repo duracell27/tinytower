@@ -327,6 +327,15 @@ export default function ProfileScreen() {
     }
   }, [settingsVisible]);
 
+  // Safety net: if animation callback fires with finished=false (race condition),
+  // force-unmount after animation should have completed to prevent invisible GHRV blocking all touches.
+  useEffect(() => {
+    if (settingsMounted && !settingsVisible) {
+      const timer = setTimeout(() => setSettingsMounted(false), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [settingsMounted, settingsVisible]);
+
   const closeSettings = useCallback(() => setSettingsVisible(false), []);
 
   const settingsPanGesture = Gesture.Pan()
