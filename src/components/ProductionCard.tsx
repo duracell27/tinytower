@@ -353,6 +353,8 @@ export default function ProductionCard({
   // --- Progress border animation ---
   // Kicked off ONCE per stage start; Reanimated drives it on the UI thread.
 
+  const isTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING' || effectiveStage === 'READY_TO_LIST';
+
   const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
   const dashOffset = useSharedValue(99999);
 
@@ -363,7 +365,7 @@ export default function ProductionCard({
     if (shouldPulse) {
       btnScale.value = withRepeat(
         withSequence(
-          withTiming(1, { duration: 1600 }),
+          withTiming(1, { duration: 5000 }),
           withTiming(1.06, { duration: 280, easing: Easing.out(Easing.quad) }),
           withTiming(1, { duration: 280, easing: Easing.in(Easing.quad) }),
         ),
@@ -444,7 +446,6 @@ export default function ProductionCard({
 
   const { t } = useTranslation('hotel');
   const isHire = effectiveStage === 'EMPTY';
-  const isTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING' || effectiveStage === 'READY_TO_LIST';
   const isLocked = !worker;
 
   let labelText = '';
