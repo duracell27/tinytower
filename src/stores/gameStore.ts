@@ -1080,25 +1080,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   fillLobbyOnboarding: () => {
-    const state = get();
-    if (state.lobbyVisitors.length >= state.lobbyCapacity) return;
-    const slotsToFill = state.lobbyCapacity - state.lobbyVisitors.length;
     const now = clock.now();
     const floorTypeKeys = Object.keys(gameConfig.floorTypes);
-    const visitors = Array.from({ length: slotsToFill }, () => {
-      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
+    // Fill each empty slot with an individual spawn_visitor command.
+    // spawn_visitor is already preserved by reconciliation (pendingSpawnIds),
+    // so these visitors survive server syncs that arrive before the server
+    // acknowledges the commands.
+    let cur = get();
+    while (cur.lobbyVisitors.length < cur.lobbyCapacity) {
+      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...cur }, gameConfig, now, cur.playerLevel);
       const { hairColor, female } = generateVisitorAppearance();
       const pendingFloorType = (role === 'guest' && targetFloor === 1)
         ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
         : undefined;
-      return { visitorId: uuid(), role, targetFloor, isVip, hairColor, female, pendingFloorType };
-    });
-    executeCommand(get, set, {
-      id: uuid(),
-      type: 'fill_lobby',
-      timestamp: now,
-      visitors,
-    });
+      executeCommand(get, set, {
+        id: uuid(),
+        type: 'spawn_visitor',
+        visitorId: uuid(),
+        timestamp: now,
+        role,
+        targetFloor,
+        isVip,
+        hairColor,
+        female,
+        pendingFloorType,
+      });
+      cur = get();
+    }
   },
 
   upgradeElevator: () => {
@@ -1325,27 +1333,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
       (cmd) => !sentIds.has(cmd.id) && cmd.type === 'expand_hotel',
     ).length,
     lobbyVisitors: (() => {
-      // Skip visitors without targetFloor — legacy data from old spawn commands that didn't store it eagerly.
+      // Map all server visitors; supply defaults for legacy visitors that lack role/targetFloor
+      // (created by createInitialState before eager generation was added).
       const serverMapped = serverState.lobbyVisitors
-        .filter((sv) => sv.targetFloor != null)
         .map((sv) => {
           const local = cur.lobbyVisitors.find((lv) => lv.id === sv.id);
           return {
             ...sv,
-            role: sv.role ?? local?.role,
-            targetFloor: sv.targetFloor ?? local?.targetFloor,
+            role: sv.role ?? local?.role ?? ('guest' as const),
+            targetFloor: sv.targetFloor ?? local?.targetFloor ?? 1,
           };
         });
-      // Preserve locally-spawned visitors not yet seen by server (spawn command arrived after sync was sent).
+      // Preserve locally-spawned visitors not yet acknowledged by the server.
+      // Include both unsent AND already-sent commands: the server may not have processed
+      // them before this sync response was computed, so the visitor would be wiped even
+      // though it was legitimately spawned.  The !serverIds check avoids duplicates when
+      // the server does include the visitor in its response.
       const serverIds = new Set(serverState.lobbyVisitors.map((sv) => sv.id));
       const pendingSpawnIds = new Set(
         cur.commandQueue
-          .filter((cmd) => cmd.type === 'spawn_visitor' && !sentIds.has(cmd.id))
+          .filter((cmd) => cmd.type === 'spawn_visitor')
           .map((cmd) => (cmd as Extract<Command, { type: 'spawn_visitor' }>).visitorId),
       );
-      const pendingLocal = cur.lobbyVisitors.filter(
-        (lv) => pendingSpawnIds.has(lv.id) && !serverIds.has(lv.id),
-      );
+      // Cap pendingLocal to free lobby slots so we never exceed capacity.
+      const freeSlots = Math.max(0, cur.lobbyCapacity - serverMapped.length);
+      const pendingLocal = cur.lobbyVisitors
+        .filter((lv) => pendingSpawnIds.has(lv.id) && !serverIds.has(lv.id))
+        .slice(0, freeSlots);
       return [...serverMapped, ...pendingLocal];
     })(),
     lobbyCapacity: serverState.lobbyCapacity,

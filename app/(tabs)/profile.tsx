@@ -1337,7 +1337,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderRadius: 18,
     padding: 16,
-    backgroundColor: '#3FA535',
+    backgroundColor: '#7B5EA7',
   },
   convertBannerTitle: {
     fontFamily: 'Fredoka_700Bold',

@@ -2,8 +2,8 @@
 import React, { useEffect } from 'react';
 import {
   View, Text, StyleSheet, Pressable, Dimensions, Image, TouchableWithoutFeedback,
-  useColorScheme,
 } from 'react-native';
+import { useAppTheme } from '../hooks/useAppTheme';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, Easing,
@@ -44,11 +44,12 @@ function Arrow({ dir }: { dir: 'up' | 'down' | 'left' | 'right' }) {
 }
 
 export default function OnboardingOverlay() {
-  const isDark = useColorScheme() === 'dark';
-  const cardBg      = isDark ? '#1C2028' : '#fff';
+  const theme = useAppTheme();
+  const { isDark } = theme;
+  const cardBg      = theme.surface;
   const textMain    = isDark ? '#E8EDE4' : '#1a1a1a';
   const textSub     = isDark ? '#B0BEC5' : '#333';
-  const dividerCol  = isDark ? 'rgba(255,255,255,0.08)' : '#E8F0E5';
+  const dividerCol  = theme.divider;
 
   const step      = useOnboardingStore((s) => s.step);
   const isActive  = useOnboardingStore((s) => s.isActive);
@@ -387,12 +388,13 @@ const styles = StyleSheet.create({
   },
   bulletDivider: {
     height: 1,
-    marginVertical: 8,
+    marginVertical: 10,
   },
   bulletRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    paddingVertical: 4,
   },
   bulletIcon: {
     width: 26,

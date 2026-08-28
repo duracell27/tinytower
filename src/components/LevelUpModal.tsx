@@ -14,11 +14,13 @@ import { useOnboardingStore } from '../stores/onboardingStore';
 import { type LevelUpEvent } from '../../shared/engine/xp';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
 export default function LevelUpModal() {
   const { t } = useTranslation('hotel');
+  const { isDark } = useAppTheme();
   const event = useGameStore((s) => s.levelUpQueue[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissLevelUp);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
@@ -56,7 +58,7 @@ export default function LevelUpModal() {
 
           {event && (
             <Animated.View style={[styles.card, cardStyle]}>
-              <LinearGradient colors={['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
+              <LinearGradient colors={isDark ? ['#1E2410', '#161C0A'] : ['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
                 <View style={styles.starsRow}>
                   <Text style={[styles.starText, styles.starSmall]}>★</Text>
                   <Text style={[styles.starText, styles.starLarge]}>★</Text>
@@ -69,15 +71,15 @@ export default function LevelUpModal() {
                   </LinearGradient>
                 </View>
 
-                <Text style={styles.title}>{t('levelUp.title')}</Text>
-                <Text style={styles.subtitle}>{t('levelUp.subtitle', { level: event.newLevel })}</Text>
+                <Text style={[styles.title, { color: isDark ? '#A8E07A' : '#3D6B1E' }]}>{t('levelUp.title')}</Text>
+                <Text style={[styles.subtitle, { color: isDark ? '#7BAF55' : '#7C9A5E' }]}>{t('levelUp.subtitle', { level: event.newLevel })}</Text>
 
                 <View style={styles.rewardsContainer}>
-                  <View style={styles.rewardRow}>
+                  <View style={[styles.rewardRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : '#fff' }]}>
                     <CoinIcon size={20} />
                     <Text style={styles.rewardText}>+{formatNum(event.coinReward)}</Text>
                   </View>
-                  <View style={styles.rewardRow}>
+                  <View style={[styles.rewardRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : '#fff' }]}>
                     <GemIcon size={16} />
                     <Text style={styles.rewardTextGem}>+{event.gemReward}</Text>
                   </View>

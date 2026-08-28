@@ -17,6 +17,7 @@ import { formatNum } from '../utils/format';
 import type { Production, EffectiveStage, Worker } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -167,6 +168,22 @@ function TimerText({ stageEndsAt, style }: { stageEndsAt: number; style: object 
   return <Text style={style}>{formatTime(Math.max(0, stageEndsAt - now))}</Text>;
 }
 
+// Static layout-only styles shared with DeliveryLockPill (no color dependencies).
+const pillStyles = StyleSheet.create({
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+  },
+  pillText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 10.5,
+  },
+});
+
 // Tiny sub-component: delivery lock countdown pill.
 // Re-renders every second so the countdown ticks, without touching the parent.
 function DeliveryLockPill({ deliveryLockUntil, accentColor }: { deliveryLockUntil: number; accentColor: string }) {
@@ -174,8 +191,8 @@ function DeliveryLockPill({ deliveryLockUntil, accentColor }: { deliveryLockUnti
   const remaining = Math.max(0, deliveryLockUntil - now);
   if (remaining <= 0) return null;
   return (
-    <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
-      <Text style={[styles.pillText, { color: accentColor }]}>{formatTime(remaining)}</Text>
+    <View style={[pillStyles.pill, { backgroundColor: accentColor + '20' }]}>
+      <Text style={[pillStyles.pillText, { color: accentColor }]}>{formatTime(remaining)}</Text>
     </View>
   );
 }
@@ -222,6 +239,9 @@ export default function ProductionCard({
   onLongPress,
 }: ProductionCardProps) {
   const router = useRouter();
+  const theme = useAppTheme();
+  const { isDark } = theme;
+  const styles = getStyles(theme);
 
   const typeConfig = production.typeId
     ? gameConfig.productionTypes[production.typeId] ?? null
@@ -353,7 +373,7 @@ export default function ProductionCard({
   // --- Progress border animation ---
   // Kicked off ONCE per stage start; Reanimated drives it on the UI thread.
 
-  const isTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING' || effectiveStage === 'READY_TO_LIST';
+  const isTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING';
 
   const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
   const dashOffset = useSharedValue(99999);
@@ -648,160 +668,163 @@ export default function ProductionCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flex: 1,
-    flexDirection: 'column',
-    gap: 6,
-    borderRadius: 18,
-    paddingTop: 8,
-    paddingHorizontal: 7,
-    paddingBottom: 7,
-    shadowColor: 'rgba(60,70,45,1)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  title: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 11.5,
-    lineHeight: 13,
-    textAlign: 'center',
-    textTransform: 'capitalize',
-  },
-  imageContainer: {
-    width: '100%',
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingRight: 10,
-  },
-  hireSlot: {
-    width: 54,
-    height: 54,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    backgroundColor: 'rgba(0,0,0,0.02)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hirePlusBadge: {
-    position: 'absolute',
-    top: -5,
-    right: -5,
-    width: 17,
-    height: 17,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: 'rgba(40,90,25,1)',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.45,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-  productImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    shadowColor: 'rgba(60,70,45,1)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.28,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 5,
-    paddingVertical: 6,
-    paddingHorizontal: 7,
-    borderRadius: 12,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  actionButtonDisabled: {
-    opacity: 0.5,
-  },
-  actionButtonPressed: {
-    opacity: 0.9,
-    shadowOpacity: 0.1,
-    elevation: 1,
-  },
-  actionLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 11.5,
-    color: '#fff',
-    textShadowColor: 'rgba(0,0,0,0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
-  },
-  subContainer: {
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 10,
-  },
-  pillText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 10.5,
-  },
-  workerBadgeColumn: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    alignItems: 'center',
-    gap: 2,
-  },
-  workerBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#E7EBF1',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#fff',
-    overflow: 'hidden',
-  },
-  workerLevelBadge: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#fff',
-    marginTop: -7,
-  },
-  workerLevelText: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 8,
-    color: '#fff',
-    lineHeight: 8,
-  },
-  bonusBubble: {
-    borderRadius: 8,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderWidth: 1,
-    borderColor: '#fff',
-  },
-  bonusBubbleText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 8,
-    color: '#fff',
-  },
-});
+function getStyles(theme: ReturnType<typeof useAppTheme>) {
+  const { isDark } = theme;
+  return StyleSheet.create({
+    card: {
+      flex: 1,
+      flexDirection: 'column',
+      gap: 6,
+      borderRadius: 18,
+      paddingTop: 8,
+      paddingHorizontal: 7,
+      paddingBottom: 7,
+      shadowColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(60,70,45,1)',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    title: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 11.5,
+      lineHeight: 13,
+      textAlign: 'center',
+      textTransform: 'capitalize',
+    },
+    imageContainer: {
+      width: '100%',
+      height: 56,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingRight: 10,
+    },
+    hireSlot: {
+      width: 54,
+      height: 54,
+      borderRadius: 16,
+      borderWidth: 2,
+      borderStyle: 'dashed',
+      backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    hirePlusBadge: {
+      position: 'absolute',
+      top: -5,
+      right: -5,
+      width: 17,
+      height: 17,
+      borderRadius: 9,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(40,90,25,1)',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.45,
+      shadowRadius: 2,
+      elevation: 3,
+    },
+    productImage: {
+      width: 56,
+      height: 56,
+      borderRadius: 14,
+      shadowColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(60,70,45,1)',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.28,
+      shadowRadius: 3,
+      elevation: 3,
+    },
+    actionButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 5,
+      paddingVertical: 6,
+      paddingHorizontal: 7,
+      borderRadius: 12,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.3,
+      shadowRadius: 3,
+      elevation: 4,
+    },
+    actionButtonDisabled: {
+      opacity: 0.5,
+    },
+    actionButtonPressed: {
+      opacity: 0.9,
+      shadowOpacity: 0.1,
+      elevation: 1,
+    },
+    actionLabel: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 11.5,
+      color: '#fff',
+      textShadowColor: 'rgba(0,0,0,0.2)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 1,
+    },
+    subContainer: {
+      height: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    pill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingVertical: 2,
+      paddingHorizontal: 8,
+      borderRadius: 10,
+    },
+    pillText: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 10.5,
+    },
+    workerBadgeColumn: {
+      position: 'absolute',
+      top: -4,
+      right: -4,
+      alignItems: 'center',
+      gap: 2,
+    },
+    workerBadge: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : '#E7EBF1',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: theme.surface,
+      overflow: 'hidden',
+    },
+    workerLevelBadge: {
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: theme.surface,
+      marginTop: -7,
+    },
+    workerLevelText: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 8,
+      color: '#fff',
+      lineHeight: 8,
+    },
+    bonusBubble: {
+      borderRadius: 8,
+      paddingHorizontal: 4,
+      paddingVertical: 1,
+      borderWidth: 1,
+      borderColor: theme.surface,
+    },
+    bonusBubbleText: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 8,
+      color: '#fff',
+    },
+  });
+}

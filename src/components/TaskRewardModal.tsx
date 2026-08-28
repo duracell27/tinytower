@@ -8,6 +8,7 @@ import Animated, {
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { formatNum } from '../utils/format';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -36,6 +37,9 @@ const COIN_ICON    = require('../../assets/img/coin.png');
 const DIAMOND_ICON = require('../../assets/img/diamond.png');
 
 export default function TaskRewardModal() {
+  const theme = useAppTheme();
+  const { isDark } = theme;
+  const styles = getStyles(theme);
   const reward       = useGameStore((s) => s.pendingTaskReward);
   const clearReward  = useGameStore((s) => s.clearTaskReward);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
@@ -58,7 +62,7 @@ export default function TaskRewardModal() {
         <Pressable style={StyleSheet.absoluteFill} onPress={clearReward} />
 
         <Animated.View style={[styles.card, cardStyle]}>
-          <LinearGradient colors={['#F0FBE8', '#E2F5D0']} style={styles.cardInner}>
+          <LinearGradient colors={isDark ? ['#1C2B18', '#142010'] : ['#F0FBE8', '#E2F5D0']} style={styles.cardInner}>
             <View style={styles.starsRow}>
               <Text style={[styles.star, styles.starSm]}>★</Text>
               <Text style={[styles.star, styles.starLg]}>★</Text>
@@ -107,7 +111,8 @@ export default function TaskRewardModal() {
   );
 }
 
-const styles = StyleSheet.create({
+function getStyles(theme: ReturnType<typeof useAppTheme>) {
+  return StyleSheet.create({
   scrim: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.55)',
@@ -138,12 +143,12 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 24,
-    color: '#2E6B12',
+    color: theme.isDark ? '#9EE87E' : '#2E6B12',
   },
   subtitle: {
     fontFamily: 'Nunito_600SemiBold',
     fontSize: 14,
-    color: '#5A7A4A',
+    color: theme.isDark ? '#7BAF65' : '#5A7A4A',
     textAlign: 'center',
     marginBottom: 4,
   },
@@ -158,7 +163,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 7,
@@ -201,4 +206,5 @@ const styles = StyleSheet.create({
     height: 3,
     backgroundColor: 'rgba(20,60,0,0.3)',
   },
-});
+  });
+}

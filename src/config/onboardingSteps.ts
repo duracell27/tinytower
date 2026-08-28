@@ -133,7 +133,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowOffsetX: 70,
   },
   final_message: {
-    text: 'Welcome! The tower is yours! 🎉',
+    text: 'Welcome!\nThe tower is yours! 🎉',
     iconSource: require('../../assets/img/managerIcon.png'),
     arrowDir: 'up',
     dismissable: true,

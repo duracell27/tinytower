@@ -9,7 +9,6 @@ import {
   Modal,
   StyleSheet,
   Dimensions,
-  useColorScheme,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
@@ -36,6 +35,7 @@ import type { Worker, Floor } from '../../shared/types';
 import { isBetterCandidate } from '../utils/workerCandidate';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
 import { GemIcon } from './CurrencyIcons';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -63,7 +63,8 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
   const [infoVisible, setInfoVisible] = useState(false);
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
 
   // Onboarding overlay inside hotel modal
   const firstWorkerRowRef = useRef<View>(null);
@@ -428,7 +429,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           {infoVisible && (
             <View style={styles.infoOverlayScrim}>
               <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-              <View style={[styles.infoCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+              <View style={[styles.infoCard, { backgroundColor: theme.surface }]}>
                 <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.infoCardHeader}>
                   <Text style={styles.infoCardTitle}>About the Hotel</Text>
                   <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
@@ -514,9 +515,9 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                   contentFit="contain"
                 />
               </Animated.View>
-              <View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop }]}>
+              <View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop, backgroundColor: theme.surface }]}>
                 <Image source={require('../../assets/img/happySmile.png')} style={hotelHintStyles.icon} />
-                <Text style={hotelHintStyles.text}>
+                <Text style={[hotelHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
                   {'Tap «Find Job» to assign a worker to a floor'}
                 </Text>
               </View>
@@ -531,13 +532,13 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
 
 
 function InfoSection({ icon, title, text }: { icon: number; title: string; text: string }) {
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
   return (
     <View style={infoStyles.section}>
       <Image source={icon} style={infoStyles.sectionIcon} contentFit="contain" />
       <View style={infoStyles.sectionBody}>
-        <Text style={[infoStyles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{title}</Text>
-        <Text style={[infoStyles.sectionText, isDark && { color: '#8A9A80' }]}>{text}</Text>
+        <Text style={[infoStyles.sectionTitle, { color: theme.text }]}>{title}</Text>
+        <Text style={[infoStyles.sectionText, { color: theme.textMuted }]}>{text}</Text>
       </View>
     </View>
   );
@@ -574,10 +575,10 @@ const infoStyles = StyleSheet.create({
 });
 
 function EmptySlotCard({ t }: { t: (key: string) => string }) {
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
   return (
-    <View style={[slotStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
-      <View style={[slotStyles.avatarPlaceholder, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+    <View style={[slotStyles.card, { backgroundColor: theme.surface }]}>
+      <View style={[slotStyles.avatarPlaceholder, { backgroundColor: theme.divider }]}>
         <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
           <Path
             d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
@@ -606,16 +607,16 @@ function BuySlotCard({
   onPress: () => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
   if (cost === null) {
     return (
-      <View style={[buyStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+      <View style={[buyStyles.card, { backgroundColor: theme.surface }]}>
         <Text style={buyStyles.maxedText}>{t('hotelPanel.expandCard.maxed')}</Text>
       </View>
     );
   }
   return (
-    <View style={[buyStyles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+    <View style={[buyStyles.card, { backgroundColor: theme.surface }]}>
       <View style={buyStyles.left}>
         <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
           <Path
@@ -630,7 +631,7 @@ function BuySlotCard({
           <Rect x={7} y={15} width={4} height={4} rx={0.5} stroke="#C9637E" strokeWidth={1.5} />
           <Rect x={13} y={15} width={4} height={4} rx={0.5} stroke="#C9637E" strokeWidth={1.5} />
         </Svg>
-        <Text style={[buyStyles.title, isDark && { color: '#DDE8D8' }]}>{t('hotelPanel.expandCard.title')}</Text>
+        <Text style={[buyStyles.title, { color: theme.text }]}>{t('hotelPanel.expandCard.title')}</Text>
       </View>
       <Pressable
         onPress={onPress}
@@ -653,9 +654,9 @@ function EvictLowLevelCard({
   onPress: () => void;
   t: (key: string) => string;
 }) {
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
   return (
-    <View style={[buyStyles.card, { paddingVertical: 5 }, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+    <View style={[buyStyles.card, { paddingVertical: 5 }, { backgroundColor: theme.surface }]}>
       <View style={buyStyles.left}>
         <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
           <Path
@@ -674,7 +675,7 @@ function EvictLowLevelCard({
           />
           <Circle cx={12} cy={5} r={3} stroke="#C9637E" strokeWidth={2} />
         </Svg>
-        <Text style={[buyStyles.title, { fontSize: 13 }, isDark && { color: '#DDE8D8' }]}>{t('hotelPanel.evictLowLevelCard.title')}</Text>
+        <Text style={[buyStyles.title, { fontSize: 13 }, { color: theme.text }]}>{t('hotelPanel.evictLowLevelCard.title')}</Text>
       </View>
       <Pressable
         onPress={onPress}

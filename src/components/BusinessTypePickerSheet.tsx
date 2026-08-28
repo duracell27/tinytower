@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import {
-  View, Text, Pressable, Modal, ScrollView, StyleSheet, Dimensions, useColorScheme,
+  View, Text, Pressable, Modal, ScrollView, StyleSheet, Dimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useOnboardingStore } from '../stores/onboardingStore';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const ICON_FLOOR  = require('../../assets/img/floor.png');
 
@@ -70,7 +71,8 @@ export default function BusinessTypePickerSheet({
   builtFloorCounts = {},
   hotelWorkerCounts = {},
 }: BusinessTypePickerSheetProps) {
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const translateY = useSharedValue(SHEET_HEIGHT);
 
   useEffect(() => {
@@ -124,12 +126,12 @@ export default function BusinessTypePickerSheet({
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={isLocked ? undefined : onClose}>
       <Pressable style={styles.scrim} onPress={isLocked ? undefined : onClose} />
-      <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2026' }]}>
+      <Animated.View style={[styles.sheet, sheetStyle, { backgroundColor: isDark ? 'rgba(22,26,22,0.99)' : theme.surfaceSub }]}>
 
         {onboardingStep === 'choose_floor_type' && (
-          <View style={pickerHint.card}>
+          <View style={[pickerHint.card, { backgroundColor: theme.surface }, isDark && { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }]}>
             <Image source={require('../../assets/img/happySmile.png')} style={pickerHint.icon} contentFit="contain" />
-            <Text style={pickerHint.text}>
+            <Text style={[pickerHint.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
               {'All types earn equally. Green floors need frequent attention, red ones less often'}
             </Text>
           </View>
@@ -142,9 +144,9 @@ export default function BusinessTypePickerSheet({
         </GestureDetector>
 
         <View style={styles.titleRow}>
-          <Text style={[styles.title, isDark && { color: '#DDE8D8' }]}>Choose business type</Text>
+          <Text style={[styles.title, { color: theme.text }]}>Choose business type</Text>
           {!isLocked && (
-            <Pressable onPress={onClose} style={[styles.closeBtn, isDark && { backgroundColor: 'rgba(255,255,255,0.10)' }]} hitSlop={8}>
+            <Pressable onPress={onClose} style={[styles.closeBtn, isDark && { backgroundColor: theme.divider }]} hitSlop={8}>
               <Text style={[styles.closeBtnText, isDark && { color: '#A0AABC' }]}>✕</Text>
             </Pressable>
           )}
@@ -162,7 +164,8 @@ export default function BusinessTypePickerSheet({
                 accessibilityState={{ disabled: isExhausted }}
                 style={({ pressed }) => [
                   styles.typeRow,
-                  isDark && { backgroundColor: '#2A2F38' },
+                  { backgroundColor: theme.surface },
+                  isDark && { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
                   isExhausted && styles.typeRowExhausted,
                   !isExhausted && pressed && { opacity: 0.82 },
                 ]}
@@ -181,11 +184,11 @@ export default function BusinessTypePickerSheet({
                   ) : (
                     <View style={styles.typeStatsRow}>
                       <Image source={ICON_FLOOR} style={styles.typeStatIcon} contentFit="contain" />
-                      <Text style={[styles.typeStatBuilt, isDark ? { color: '#8A9A80' } : { color: '#2A3344' }]}>Built </Text>
+                      <Text style={[styles.typeStatBuilt, { color: isDark ? theme.textMuted : '#2A3344' }]}>Built </Text>
                       <Text style={[styles.typeStatBuilt, { color: TYPE_COLORS[ft] }]}>{builtFloorCounts[ft] ?? 0}</Text>
                       <Text style={[styles.typeStatSep, isDark && { color: 'rgba(255,255,255,0.2)' }]}>·</Text>
                       <Image source={WORKER_ICONS[ft]} style={styles.typeStatIcon} contentFit="contain" />
-                      <Text style={[styles.typeStat, isDark && { color: '#6A7A88' }]}>{hotelWorkerCounts[ft] ?? 0} waiting in the hotel</Text>
+                      <Text style={[styles.typeStat, { color: isDark ? theme.textMuted : '#7A8899' }]}>{hotelWorkerCounts[ft] ?? 0} waiting in the hotel</Text>
                     </View>
                   )}
                 </View>
@@ -218,7 +221,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#F4ECEF',
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     maxHeight: SHEET_HEIGHT,
@@ -272,7 +274,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: '#fff',
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 14,
@@ -331,7 +332,6 @@ const pickerHint = StyleSheet.create({
     marginHorizontal: 14,
     marginTop: 12,
     marginBottom: 0,
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 14,
     flexDirection: 'row',
