@@ -886,9 +886,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                     const role = activeVisitor.role ?? 'guest';
                                     if (role === 'guest' && activeVisitor.targetFloor === 1) {
                                       const ft = activeVisitor.pendingFloorType;
-                                      return ft ? (gameConfig.floorTypes[ft]?.shirtColor ?? (isDark ? '#DDE8D8' : '#4A5568')) : (isDark ? '#DDE8D8' : '#4A5568');
+                                      return ft ? (gameConfig.floorTypes[ft]?.shirtColor ?? ROLE_COLORS.guest) : ROLE_COLORS.guest;
                                     }
-                                    return isDark ? '#DDE8D8' : ROLE_COLORS[role] ?? '#4A5568';
+                                    return ROLE_COLORS[role] ?? ROLE_COLORS.guest;
                                   })() }]}>
                                     {t(`roles.${activeVisitor.isVip ? `vip_${activeVisitor.role ?? 'guest'}` : (activeVisitor.role ?? 'guest')}`)}
                                   </Text>
