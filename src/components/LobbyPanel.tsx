@@ -206,8 +206,9 @@ function EmptyElevatorIcon() {
 
 function VisitorAvatar({ role, targetFloor, pendingFloorType, female }: { role: string; targetFloor?: number; pendingFloorType?: string; female: boolean }) {
   const isHotelGuest = role === 'guest' && targetFloor === 1;
-  if (isHotelGuest && pendingFloorType) {
-    const src = WORKER_IMAGES[pendingFloorType]?.[female ? 'female' : 'male'] ?? VISITOR_IMAGES.guest;
+  if (isHotelGuest) {
+    const floorType = pendingFloorType ?? 'green';
+    const src = WORKER_IMAGES[floorType]?.[female ? 'female' : 'male'] ?? VISITOR_IMAGES.guest;
     return <Image source={src} style={{ width: 48, height: 48 }} contentFit="contain" />;
   }
   const src = VISITOR_IMAGES[(role as VisitorRole)] ?? VISITOR_IMAGES.guest;
