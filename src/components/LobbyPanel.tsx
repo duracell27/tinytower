@@ -884,11 +884,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                 <Text style={[styles.speechText, { color: theme.text }]}>
                                   <Text style={[styles.speechRoleLabel, { color: (() => {
                                     const role = activeVisitor.role ?? 'guest';
-                                    if (role === 'guest' && activeVisitor.targetFloor === 1) {
-                                      const ft = activeVisitor.pendingFloorType;
-                                      return ft ? (gameConfig.floorTypes[ft]?.shirtColor ?? ROLE_COLORS.guest) : ROLE_COLORS.guest;
+                                    if (role === 'guest') {
+                                      if (activeVisitor.targetFloor === 1) {
+                                        const ft = activeVisitor.pendingFloorType;
+                                        return ft ? (gameConfig.floorTypes[ft]?.shirtColor ?? theme.textMuted) : theme.textMuted;
+                                      }
+                                      return theme.textMuted;
                                     }
-                                    return ROLE_COLORS[role] ?? ROLE_COLORS.guest;
+                                    return ROLE_COLORS[role] ?? theme.textMuted;
                                   })() }]}>
                                     {t(`roles.${activeVisitor.isVip ? `vip_${activeVisitor.role ?? 'guest'}` : (activeVisitor.role ?? 'guest')}`)}
                                   </Text>
