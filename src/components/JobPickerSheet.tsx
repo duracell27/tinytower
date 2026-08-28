@@ -68,11 +68,13 @@ function formatTimeShort(ms: number): string {
   return `${hours}h ${min}m`;
 }
 
-const MATCH_BADGE_STYLES = {
-  dream: { bg: 'rgba(82,184,71,0.15)', text: '#4E9A2E' },
-  match: { bg: 'rgba(240,185,42,0.15)', text: '#B07F12' },
-  other: { bg: 'rgba(0,0,0,0.05)', text: '#9098A6' },
-} as const;
+function getMatchBadgeStyles(isDark: boolean) {
+  return {
+    dream: { bg: isDark ? 'rgba(82,184,71,0.22)' : 'rgba(82,184,71,0.15)', text: isDark ? '#7ED85F' : '#4E9A2E' },
+    match: { bg: isDark ? 'rgba(240,185,42,0.22)' : 'rgba(240,185,42,0.15)', text: isDark ? '#E0C040' : '#B07F12' },
+    other: { bg: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', text: isDark ? '#8A9AB0' : '#9098A6' },
+  } as const;
+}
 
 export default function JobPickerSheet({
   visible,
@@ -535,6 +537,7 @@ function SlotRow({
   assignRef?: React.RefObject<View>;
 }) {
   const theme = useAppTheme();
+  const { isDark } = theme;
   const slotStyles = getSlotStyles(theme);
 
   const { t } = useTranslation('hotel');
@@ -542,7 +545,7 @@ function SlotRow({
   const productName = tContent(`productionTypes.${item.typeId}.displayName`, {
     defaultValue: item.typeId,
   });
-  const badgeStyle = MATCH_BADGE_STYLES[item.matchLevel];
+  const badgeStyle = getMatchBadgeStyles(isDark)[item.matchLevel];
   const badgeLabel = t(`jobPicker.matchBadges.${item.matchLevel}`);
 
   if (item.occupant) {
