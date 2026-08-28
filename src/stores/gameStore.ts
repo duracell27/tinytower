@@ -1335,14 +1335,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
     lobbyVisitors: (() => {
       // Map all server visitors; supply defaults for legacy visitors that lack role/targetFloor
       // (created by createInitialState before eager generation was added).
+      const floorTypeKeys = Object.keys(gameConfig.floorTypes);
       const serverMapped = serverState.lobbyVisitors
         .map((sv) => {
           const local = cur.lobbyVisitors.find((lv) => lv.id === sv.id);
-          return {
-            ...sv,
-            role: sv.role ?? local?.role ?? ('guest' as const),
-            targetFloor: sv.targetFloor ?? local?.targetFloor ?? 1,
-          };
+          const role = sv.role ?? local?.role ?? ('guest' as const);
+          const targetFloor = sv.targetFloor ?? local?.targetFloor ?? 1;
+          // Legacy hotel guests have no pendingFloorType — assign one deterministically
+          // from the visitor id so each legacy visitor gets a stable, distinct color.
+          const pendingFloorType = sv.pendingFloorType ?? local?.pendingFloorType ??
+            (role === 'guest' && targetFloor === 1
+              ? floorTypeKeys[sv.id.charCodeAt(0) % floorTypeKeys.length]
+              : undefined);
+          return { ...sv, role, targetFloor, pendingFloorType };
         });
       // Preserve locally-spawned visitors not yet acknowledged by the server.
       // Include both unsent AND already-sent commands: the server may not have processed
