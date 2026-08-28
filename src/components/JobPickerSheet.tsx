@@ -23,6 +23,7 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerForSlot } from '../../shared/engine/workerUtils';
 import { clock } from '../services/clock';
@@ -78,6 +79,9 @@ export default function JobPickerSheet({
   worker,
   onClose,
 }: JobPickerSheetProps) {
+  const theme = useAppTheme();
+  const { isDark } = theme;
+
   const scrimOpacity = useSharedValue(0);
   const sheetTranslateY = useSharedValue(102);
   const firstAssignBtnRef = useRef<View>(null);
@@ -313,6 +317,9 @@ export default function JobPickerSheet({
     );
   }, [firstAssignBtnPos]);
 
+  const styles = getStyles(theme);
+  const pickerHintStyles = getPickerHintStyles(theme);
+
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -527,6 +534,9 @@ function SlotRow({
   rowRef?: React.RefObject<View>;
   assignRef?: React.RefObject<View>;
 }) {
+  const theme = useAppTheme();
+  const slotStyles = getSlotStyles(theme);
+
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
   const productName = tContent(`productionTypes.${item.typeId}.displayName`, {
@@ -602,146 +612,153 @@ function SlotRow({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-  },
-  scrim: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(18,26,44,0.5)',
-  },
-  sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    top: 56,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    backgroundColor: '#EAEDF2',
-    overflow: 'hidden',
-  },
-  header: {
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    paddingBottom: 14,
-  },
-  handleRow: {
-    alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 8,
-  },
-  handle: {
-    width: 38,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.55)',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-  },
-  titleLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  titleInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  nameText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 16,
-    color: '#fff',
-    textTransform: 'capitalize',
-  },
-  pillRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  typePill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  typePillText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 11,
-    color: '#fff',
-  },
-  dreamPill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-  },
-  dreamPillText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 11,
-  },
-  closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    padding: 14,
-    paddingBottom: 40,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 14,
-    color: '#9098A6',
-  },
-});
+type AppTheme = ReturnType<typeof useAppTheme>;
 
-const pickerHintStyles = StyleSheet.create({
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  icon: {
-    width: 28,
-    height: 28,
-    flexShrink: 0,
-  },
-  text: {
-    flex: 1,
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 15,
-    color: '#1a1a1a',
-    lineHeight: 22,
-  },
-});
+function getStyles(theme: AppTheme) {
+  const { isDark } = theme;
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+    },
+    scrim: {
+      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(18,26,44,0.5)',
+    },
+    sheet: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      top: 56,
+      borderTopLeftRadius: 26,
+      borderTopRightRadius: 26,
+      backgroundColor: isDark ? '#1E2132' : '#EAEDF2',
+      overflow: 'hidden',
+    },
+    header: {
+      borderTopLeftRadius: 26,
+      borderTopRightRadius: 26,
+      paddingBottom: 14,
+    },
+    handleRow: {
+      alignItems: 'center',
+      paddingTop: 10,
+      paddingBottom: 8,
+    },
+    handle: {
+      width: 38,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: 'rgba(255,255,255,0.55)',
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 18,
+    },
+    titleLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      flex: 1,
+    },
+    titleInfo: {
+      flex: 1,
+      gap: 4,
+    },
+    nameText: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 16,
+      color: '#fff',
+      textTransform: 'capitalize',
+    },
+    pillRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 6,
+    },
+    typePill: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 8,
+    },
+    typePillText: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 11,
+      color: '#fff',
+    },
+    dreamPill: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 8,
+      backgroundColor: 'rgba(255,255,255,0.9)',
+    },
+    dreamPillText: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 11,
+    },
+    closeButton: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: 'rgba(255,255,255,0.18)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    list: {
+      flex: 1,
+    },
+    listContent: {
+      padding: 14,
+      paddingBottom: 40,
+    },
+    emptyContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 60,
+    },
+    emptyText: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 14,
+      color: theme.textMuted,
+    },
+  });
+}
+
+function getPickerHintStyles(theme: AppTheme) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: theme.surface,
+      borderRadius: 20,
+      padding: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.18,
+      shadowRadius: 12,
+      elevation: 8,
+    },
+    icon: {
+      width: 28,
+      height: 28,
+      flexShrink: 0,
+    },
+    text: {
+      flex: 1,
+      fontFamily: 'Nunito_700Bold',
+      fontSize: 15,
+      color: theme.text,
+      lineHeight: 22,
+    },
+  });
+}
 
 const sectionStyles = StyleSheet.create({
   container: {
@@ -784,65 +801,67 @@ const sectionStyles = StyleSheet.create({
   },
 });
 
-const slotStyles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 6,
-    gap: 8,
-  },
-  productName: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13.5,
-    color: '#2A3344',
-    flex: 1,
-    minWidth: 0,
-    textTransform: 'capitalize',
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  badgeText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 10.5,
-  },
-  assignButton: {
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  assignButtonPressed: {
-    opacity: 0.85,
-  },
-  assignButtonGradient: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.5)',
-  },
-  assignButtonText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 12,
-    color: '#fff',
-    textShadowColor: 'rgba(0,0,0,0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
-  },
-  occupiedInfo: {
-    flex: 1,
-    minWidth: 0,
-    gap: 2,
-  },
-  occupantText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 11,
-    color: '#9098A6',
-    textTransform: 'capitalize',
-  },
-});
+function getSlotStyles(theme: AppTheme) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      marginBottom: 6,
+      gap: 8,
+    },
+    productName: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 13.5,
+      color: theme.text,
+      flex: 1,
+      minWidth: 0,
+      textTransform: 'capitalize',
+    },
+    badge: {
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+    },
+    badgeText: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 10.5,
+    },
+    assignButton: {
+      borderRadius: 10,
+      overflow: 'hidden',
+    },
+    assignButtonPressed: {
+      opacity: 0.85,
+    },
+    assignButtonGradient: {
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      borderRadius: 10,
+      borderWidth: 1.5,
+      borderColor: 'rgba(255,255,255,0.5)',
+    },
+    assignButtonText: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 12,
+      color: '#fff',
+      textShadowColor: 'rgba(0,0,0,0.2)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 1,
+    },
+    occupiedInfo: {
+      flex: 1,
+      minWidth: 0,
+      gap: 2,
+    },
+    occupantText: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 11,
+      color: theme.textMuted,
+      textTransform: 'capitalize',
+    },
+  });
+}

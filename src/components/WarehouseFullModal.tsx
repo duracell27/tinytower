@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { Image } from 'expo-image';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,6 +12,7 @@ const { width: SCREEN_W } = Dimensions.get('window');
 
 export default function WarehouseFullModal() {
   const { t } = useTranslation('tabs');
+  const theme = useAppTheme();
   const visible = useGameStore((s) => s.warehouseFullNotice);
   const dismiss = useGameStore((s) => s.dismissWarehouseFullNotice);
   const isOnboarding = useOnboardingStore((s) => s.isActive);
@@ -26,8 +28,8 @@ export default function WarehouseFullModal() {
     <Modal visible transparent animationType="none" onRequestClose={dismiss}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Pressable style={styles.scrim} onPress={dismiss}>
-          <Pressable style={styles.card} onPress={() => {}}>
-            <View style={styles.avatarWrap}>
+          <Pressable style={[styles.card, { backgroundColor: theme.surface }]} onPress={() => {}}>
+            <View style={[styles.avatarWrap, { backgroundColor: theme.isDark ? 'rgba(255,255,255,0.07)' : '#F0F4F8' }]}>
               <Image
                 source={require('../../assets/img/menu/werehouse.png')}
                 style={{ width: 38, height: 38 }}
@@ -35,8 +37,8 @@ export default function WarehouseFullModal() {
               />
             </View>
             <View style={styles.info}>
-              <Text style={styles.title}>{t('warehouse.fullPopup.title')}</Text>
-              <Text style={styles.subtitle}>{t('warehouse.fullPopup.subtitle')}</Text>
+              <Text style={[styles.title, { color: theme.isDark ? '#DDE8D8' : '#2A3344' }]}>{t('warehouse.fullPopup.title')}</Text>
+              <Text style={[styles.subtitle, { color: theme.isDark ? '#8A9A80' : '#9BA3B0' }]}>{t('warehouse.fullPopup.subtitle')}</Text>
             </View>
             <Pressable
               onPress={openWarehouse}
@@ -47,7 +49,7 @@ export default function WarehouseFullModal() {
               </LinearGradient>
             </Pressable>
             <Pressable onPress={dismiss} style={styles.dismissBtn}>
-              <Text style={styles.dismissText}>{t('warehouse.fullPopup.dismiss')}</Text>
+              <Text style={[styles.dismissText, { color: theme.isDark ? '#8A9A80' : '#9BA3B0' }]}>{t('warehouse.fullPopup.dismiss')}</Text>
             </Pressable>
           </Pressable>
         </Pressable>
@@ -66,7 +68,6 @@ const styles = StyleSheet.create({
   },
   card: {
     width: SCREEN_W * 0.85,
-    backgroundColor: '#fff',
     borderRadius: 22,
     padding: 20,
     alignItems: 'center',
@@ -81,7 +82,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#F0F4F8',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
@@ -90,12 +90,10 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 18,
-    color: '#2A3344',
   },
   subtitle: {
     fontFamily: 'Fredoka_400Regular',
     fontSize: 13,
-    color: '#9BA3B0',
     marginTop: 2,
     textAlign: 'center',
   },
@@ -114,6 +112,5 @@ const styles = StyleSheet.create({
   dismissText: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 14,
-    color: '#9BA3B0',
   },
 });

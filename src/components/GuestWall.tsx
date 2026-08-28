@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../stores/authStore';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface GuestWallProps {
   message?: string;
@@ -11,7 +12,8 @@ interface GuestWallProps {
 
 export default function GuestWall({ message = 'Create a free account to join the community' }: GuestWallProps) {
   const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const isTemporary = useAuthStore((s) => s.player?.isTemporary ?? false);
   const requestConvertModal = useAuthStore((s) => s.requestConvertModal);
 
@@ -26,16 +28,16 @@ export default function GuestWall({ message = 'Create a free account to join the
 
   return (
     <View style={styles.overlay}>
-      <View style={[styles.card, isDark && { backgroundColor: '#2A2F38' }]}>
+      <View style={[styles.card, { backgroundColor: theme.surface }]}>
         <Image
           source={require('../../assets/img/users.png')}
           style={styles.icon}
           contentFit="contain"
         />
-        <Text style={[styles.title, isDark && { color: '#DDE8D8' }]}>
+        <Text style={[styles.title, { color: theme.text }]}>
           Registered players only
         </Text>
-        <Text style={[styles.subtitle, isDark && { color: '#8A9A80' }]}>{message}</Text>
+        <Text style={[styles.subtitle, { color: theme.textMuted }]}>{message}</Text>
         <Pressable
           onPress={handleAction}
           style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}

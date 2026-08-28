@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
+import { useAppTheme } from '../src/hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +15,8 @@ export default function ForumScreen() {
   const router = useRouter();
   const { t } = useTranslation('tabs');
   const insets = useSafeAreaInsets();
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const { fetchUnreadCounts, unreadCounts } = useForumStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isTemporary = useAuthStore((s) => s.player?.isTemporary ?? false);
@@ -28,11 +30,11 @@ export default function ForumScreen() {
   if (!isAuthenticated || isTemporary) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }, isDark && { backgroundColor: '#1A1E24' }]}>
-        <View style={[styles.header, isDark && { backgroundColor: '#1E2028', borderBottomColor: 'rgba(255,255,255,0.08)' }]}>
+        <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.divider }]}>
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
             <Text style={styles.backIcon}>‹</Text>
           </Pressable>
-          <Text style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>{t('menu.forum')}</Text>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>{t('menu.forum')}</Text>
           <View style={styles.backBtn} />
         </View>
         <GuestWall message="Create a free account to read and post in the forum" />
@@ -42,11 +44,11 @@ export default function ForumScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }, isDark && { backgroundColor: '#1A1E24' }]}>
-      <View style={[styles.header, isDark && { backgroundColor: '#1E2028', borderBottomColor: 'rgba(255,255,255,0.08)' }]}>
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.divider }]}>
         <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
           <Text style={styles.backIcon}>‹</Text>
         </Pressable>
-        <Text style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>{t('menu.forum')}</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{t('menu.forum')}</Text>
         <View style={styles.backBtn} />
       </View>
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import type { QuickActionMode } from '../utils/quickAction';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface Props {
   availableMode: QuickActionMode | null;
@@ -21,6 +22,8 @@ const MODE_META: Record<QuickActionMode, {
 };
 
 export default function QuickActionFAB({ availableMode, activeMode, count, onPress }: Props) {
+  const theme = useAppTheme();
+  const styles = getStyles(theme);
   if (activeMode !== null) return null;
   if (availableMode === null) return null;
 
@@ -50,41 +53,43 @@ export default function QuickActionFAB({ availableMode, activeMode, count, onPre
   );
 }
 
-const styles = StyleSheet.create({
-  btn: {
-    position: 'absolute',
-    right: 16,
-    bottom: 96,
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: '#F8F9FA',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.9)',
-  },
-  icon: {
-    width: 28,
-    height: 28,
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
-    paddingHorizontal: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#fff',
-  },
-  badgeText: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 11,
-    color: '#fff',
-    lineHeight: 13,
-  },
-});
+function getStyles(theme: ReturnType<typeof useAppTheme>) {
+  return StyleSheet.create({
+    btn: {
+      position: 'absolute',
+      right: 16,
+      bottom: 96,
+      width: 54,
+      height: 54,
+      borderRadius: 27,
+      backgroundColor: theme.isDark ? theme.surface : '#F8F9FA',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: 'rgba(255,255,255,0.9)',
+    },
+    icon: {
+      width: 28,
+      height: 28,
+    },
+    badge: {
+      position: 'absolute',
+      top: -4,
+      right: -4,
+      minWidth: 20,
+      height: 20,
+      borderRadius: 10,
+      paddingHorizontal: 4,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: '#fff',
+    },
+    badgeText: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 11,
+      color: '#fff',
+      lineHeight: 13,
+    },
+  });
+}

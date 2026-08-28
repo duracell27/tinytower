@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import {
-  View, Text, Modal, Pressable, StyleSheet, ScrollView, Dimensions, useColorScheme,
+  View, Text, Modal, Pressable, StyleSheet, ScrollView, Dimensions,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS,
@@ -9,6 +9,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
@@ -47,7 +48,8 @@ export default function ProductionDetailModal() {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
 
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
 
   const modal = useGameStore((s) => s.productionDetailModal);
   const close = useGameStore((s) => s.closeProductionDetailModal);
@@ -199,7 +201,7 @@ export default function ProductionDetailModal() {
     >
       <Pressable style={styles.scrim} onPress={close} />
 
-      <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2026' }]}>
+      <Animated.View style={[styles.sheet, sheetStyle, { backgroundColor: theme.surface }]}>
         {/* Colored top: handle + header */}
         <View style={[styles.topSection, { backgroundColor: headerBg }]}>
           <GestureDetector gesture={panGesture}>
@@ -239,11 +241,11 @@ export default function ProductionDetailModal() {
           {/* Worker row */}
           <View style={styles.section}>
             <View style={styles.workerRow}>
-              <View style={[styles.avatarWrap, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.1)' }, worker.isSpecialist && { borderColor: '#F5C842' }]}>
+              <View style={[styles.avatarWrap, isDark && { backgroundColor: theme.surface, borderColor: theme.divider }, worker.isSpecialist && { borderColor: '#F5C842' }]}>
                 <WorkerAvatar worker={worker} size={40} />
               </View>
               <View style={styles.workerInfo}>
-                <Text style={[styles.workerName, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>
+                <Text style={[styles.workerName, { color: theme.text }]} numberOfLines={1}>
                   {worker.name}
                 </Text>
                 <Text style={[styles.workerLevel, isDark && { color: '#6A7284' }]}>Lv{worker.level}</Text>
@@ -262,7 +264,7 @@ export default function ProductionDetailModal() {
           </View>
 
           {/* Divider */}
-          <View style={[styles.divider, isDark && { backgroundColor: 'rgba(255,255,255,0.06)' }]} />
+          <View style={[styles.divider, { backgroundColor: theme.divider }]} />
 
           {/* Revenue breakdown */}
           <View style={styles.section}>
@@ -271,14 +273,14 @@ export default function ProductionDetailModal() {
             <BreakdownRow
               isDark={isDark}
               label={t('productionDetail.revenue.base')}
-              value={<><Text style={[styles.rowValue, isDark && { color: '#DDE8D8' }]}>{formatNum(baseRevenue)}</Text><CoinIcon size={13} /></>}
+              value={<><Text style={[styles.rowValue, { color: theme.text }]}>{formatNum(baseRevenue)}</Text><CoinIcon size={13} /></>}
             />
 
             {stars > 0 && (
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.revenue.stars')}
-                value={<Text style={[styles.rowValue, isDark && { color: '#DDE8D8' }]}>×{starValueMult.toFixed(1)}</Text>}
+                value={<Text style={[styles.rowValue, { color: theme.text }]}>×{starValueMult.toFixed(1)}</Text>}
               />
             )}
 
@@ -292,7 +294,7 @@ export default function ProductionDetailModal() {
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.revenue.specialist')}
-                value={<Text style={[styles.rowValue, isDark && { color: '#DDE8D8' }]}>+{specialistBonusPercent}%</Text>}
+                value={<Text style={[styles.rowValue, { color: theme.text }]}>+{specialistBonusPercent}%</Text>}
               />
             )}
 
@@ -300,7 +302,7 @@ export default function ProductionDetailModal() {
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.revenue.category')}
-                value={<Text style={[styles.rowValue, isDark && { color: '#DDE8D8' }]}>+{categoryBonus}%</Text>}
+                value={<Text style={[styles.rowValue, { color: theme.text }]}>+{categoryBonus}%</Text>}
               />
             )}
 
@@ -308,16 +310,16 @@ export default function ProductionDetailModal() {
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.revenue.global')}
-                value={<Text style={[styles.rowValue, isDark && { color: '#DDE8D8' }]}>+{coinBonusPercent}%</Text>}
+                value={<Text style={[styles.rowValue, { color: theme.text }]}>+{coinBonusPercent}%</Text>}
               />
             )}
 
-            <View style={[styles.rowDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
+            <View style={[styles.rowDivider, { backgroundColor: theme.divider }]} />
 
             <View style={styles.totalRow}>
-              <Text style={[styles.totalLabel, isDark && { color: '#DDE8D8' }]}>{t('productionDetail.revenue.total')}</Text>
+              <Text style={[styles.totalLabel, { color: theme.text }]}>{t('productionDetail.revenue.total')}</Text>
               <View style={styles.totalValueRow}>
-                <Text style={[styles.totalValue, isDark && { color: '#DDE8D8' }]}>{formatNum(effectiveRevenue)}</Text>
+                <Text style={[styles.totalValue, { color: theme.text }]}>{formatNum(effectiveRevenue)}</Text>
                 <CoinIcon size={14} />
                 {revenuePerMin > 0 && (
                   <Text style={styles.perMin}>
@@ -329,7 +331,7 @@ export default function ProductionDetailModal() {
           </View>
 
           {/* Divider */}
-          <View style={[styles.divider, isDark && { backgroundColor: 'rgba(255,255,255,0.06)' }]} />
+          <View style={[styles.divider, { backgroundColor: theme.divider }]} />
 
           {/* Timings + cost */}
           <View style={styles.section}>
@@ -337,14 +339,14 @@ export default function ProductionDetailModal() {
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.timing.delivery')}
-                value={<Text style={[styles.rowValue, isDark && { color: '#DDE8D8' }]}>{formatDuration(deliveryDuration)}</Text>}
+                value={<Text style={[styles.rowValue, { color: theme.text }]}>{formatDuration(deliveryDuration)}</Text>}
               />
             )}
             {effectiveSellDuration > 0 && (
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.timing.sell')}
-                value={<Text style={[styles.rowValue, isDark && { color: '#DDE8D8' }]}>{formatDuration(effectiveSellDuration)}</Text>}
+                value={<Text style={[styles.rowValue, { color: theme.text }]}>{formatDuration(effectiveSellDuration)}</Text>}
               />
             )}
             {effectiveCost > 0 && (
@@ -353,7 +355,7 @@ export default function ProductionDetailModal() {
                 label={t('productionDetail.cost.buy')}
                 value={
                   <View style={styles.costValueRow}>
-                    <Text style={[styles.rowValue, isDark && { color: '#DDE8D8' }]}>{formatNum(effectiveCost)}</Text>
+                    <Text style={[styles.rowValue, { color: theme.text }]}>{formatNum(effectiveCost)}</Text>
                     <CoinIcon size={13} />
                     {discountPercent > 0 && (
                       <Text style={styles.discountLabel}>

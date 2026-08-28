@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import type { ForumCategory } from '../stores/forumStore';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface Props {
   category: ForumCategory;
@@ -20,9 +21,10 @@ const CATEGORY_ICONS: Record<ForumCategory, ReturnType<typeof require>> = {
 };
 
 export default function ForumCategoryCard({ category, label, description, unreadCount, onPress }: Props) {
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   return (
-    <Pressable style={[styles.card, isDark && { backgroundColor: '#2A2F38' }]} onPress={onPress}>
+    <Pressable style={[styles.card, isDark && { backgroundColor: theme.surface }]} onPress={onPress}>
       <Image
         source={CATEGORY_ICONS[category]}
         style={styles.folderIcon}
@@ -30,16 +32,16 @@ export default function ForumCategoryCard({ category, label, description, unread
       />
       <View style={styles.info}>
         <View style={styles.titleRow}>
-          <Text style={[styles.label, isDark && { color: '#DDE8D8' }]}>{label}</Text>
+          <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
         </View>
-        <Text style={[styles.description, isDark && { color: '#8A9A80' }]} numberOfLines={1}>{description}</Text>
+        <Text style={[styles.description, { color: theme.textMuted }]} numberOfLines={1}>{description}</Text>
       </View>
       {unreadCount > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
         </View>
       )}
-      <Text style={[styles.arrow, isDark && { color: '#5A6470' }]}>›</Text>
+      <Text style={[styles.arrow, { color: isDark ? '#5A6470' : '#ccc' }]}>›</Text>
     </Pressable>
   );
 }

@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import type { ChatMessage as ChatMessageType } from '../stores/chatStore';
 import { getUserIcon } from '../utils/userIcon';
 import { useBlockStore } from '../stores/blockStore';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface Props {
   message: ChatMessageType;
@@ -23,7 +24,8 @@ function formatTime(iso: string): string {
 
 export default function ChatMessage({ message, isOwn, isAdmin, canReport, onLongPress, onAvatarPress }: Props) {
   const canInteract = isOwn || isAdmin || !!canReport;
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const blocked = useBlockStore(s => s.isBlocked(message.playerId));
 
   return (
@@ -38,13 +40,13 @@ export default function ChatMessage({ message, isOwn, isAdmin, canReport, onLong
       <Pressable
         onLongPress={canInteract && onLongPress ? () => onLongPress(message.id, message.body, isOwn) : undefined}
         delayLongPress={350}
-        style={[styles.bubble, isOwn ? styles.bubbleOwn : [styles.bubbleOther, isDark && { backgroundColor: '#2A2F38' }]]}
+        style={[styles.bubble, isOwn ? styles.bubbleOwn : [styles.bubbleOther, isDark && { backgroundColor: theme.surface }]]}
       >
         <View style={styles.header}>
           <Text style={[styles.name, isOwn && styles.nameOwn]}>{message.playerName}</Text>
-          <Text style={[styles.time, isOwn ? styles.timeOwn : isDark && { color: '#5A6470' }]}>{formatTime(message.createdAt)}</Text>
+          <Text style={[styles.time, isOwn ? styles.timeOwn : { color: isDark ? '#5A6470' : '#aaa' }]}>{formatTime(message.createdAt)}</Text>
         </View>
-        <Text style={[styles.body, isOwn ? styles.bodyOwn : isDark && { color: '#DDE8D8' }]}>
+        <Text style={[styles.body, isOwn ? styles.bodyOwn : { color: theme.text }]}>
           {blocked ? <Text style={styles.blockedText}>From blocked user</Text> : message.body}
         </Text>
       </Pressable>

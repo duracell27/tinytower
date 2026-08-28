@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import {
-  Modal, View, Text, Pressable, StyleSheet, useColorScheme,
+  Modal, View, Text, Pressable, StyleSheet,
   Dimensions, Image,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
@@ -16,6 +16,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-g
 import { useTutorialTaskStore, useGameStore } from '../stores/gameStore';
 import { TUTORIAL_TASKS, FINAL_REWARD } from '../../shared/config/tutorialTasksConfig';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface Props {
   visible: boolean;
@@ -41,11 +42,11 @@ const TASK_ICONS: Record<string, ReturnType<typeof require>> = {
 };
 
 export default function TutorialTaskSheet({ visible, onClose }: Props) {
-  const isDark = useColorScheme() === 'dark';
-  const bg = isDark ? '#1C2028' : '#FFFFFF';
-  const textPrimary = isDark ? '#E8EDE4' : '#1A202C';
-  const textSecondary = isDark ? '#8A9BAE' : '#6A7585';
-  const divider = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+  const theme = useAppTheme();
+  const { isDark } = theme;
+  const textPrimary = theme.text;
+  const textSecondary = theme.textMuted;
+  const divider = theme.divider;
   const trackBg = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)';
 
   const { currentTask, delta, currentIndex, isComplete, allDone, claimedFinal } = useTutorialTaskStore();
@@ -107,7 +108,7 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
           {/* Transparent backdrop — tap to close */}
           <Pressable style={StyleSheet.absoluteFill} onPress={handleAnimatedClose} />
 
-          <Animated.View style={[styles.sheet, sheetStyle, { backgroundColor: bg }]}>
+          <Animated.View style={[styles.sheet, sheetStyle, { backgroundColor: theme.surface }]}>
             {/* Header area — GestureDetector covers handle + section row + close btn */}
             <GestureDetector gesture={panGesture}>
               <View style={styles.sheetHeader}>

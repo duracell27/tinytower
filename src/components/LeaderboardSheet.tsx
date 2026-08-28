@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal, useColorScheme,
+  View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal,
 } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
@@ -15,6 +15,7 @@ import { getUserIcon } from '../utils/userIcon';
 import { useBlockStore } from '../stores/blockStore';
 import { api, type LeaderboardResponse, type LeaderboardEntry } from '../services/api';
 import { formatNum } from '../utils/format';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
@@ -34,12 +35,11 @@ const VALUE_LABELS: Record<Tab, string> = {
   revenue: '/MIN',
 };
 
-function rankStyle(rank: number, isDark: boolean): { borderWidth: number; borderColor: string; backgroundColor: string } {
-  const bg = isDark ? '#2A2F38' : '#fff';
-  if (rank === 1) return { borderWidth: 2, borderColor: '#E8B800', backgroundColor: bg };
-  if (rank === 2) return { borderWidth: 2, borderColor: '#A0AABA', backgroundColor: bg };
-  if (rank === 3) return { borderWidth: 2, borderColor: '#B87040', backgroundColor: bg };
-  return { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(40,60,90,0.06)', backgroundColor: bg };
+function rankStyle(rank: number, surface: string, divider: string): { borderWidth: number; borderColor: string; backgroundColor: string } {
+  if (rank === 1) return { borderWidth: 2, borderColor: '#E8B800', backgroundColor: surface };
+  if (rank === 2) return { borderWidth: 2, borderColor: '#A0AABA', backgroundColor: surface };
+  if (rank === 3) return { borderWidth: 2, borderColor: '#B87040', backgroundColor: surface };
+  return { borderWidth: 1, borderColor: divider, backgroundColor: surface };
 }
 
 interface Props {
@@ -49,7 +49,8 @@ interface Props {
 
 export default function LeaderboardSheet({ visible, onClose }: Props) {
   const { t } = useTranslation('tabs');
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const [mounted, setMounted] = useState(false);
   const [tab, setTab] = useState<Tab>('level');
   const [page, setPage] = useState(1);
@@ -134,7 +135,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     const isMe = item.playerId === myId;
     const accent = TAB_ACTIVE_COLORS[tab];
     return (
-      <View style={[styles.row, isMe ? [styles.rowMe, isDark && { backgroundColor: '#2A2F38' }] : rankStyle(item.rank, isDark)]}>
+      <View style={[styles.row, isMe ? [styles.rowMe, { backgroundColor: theme.surface }] : rankStyle(item.rank, theme.surface, theme.divider)]}>
         {item.rank <= 3 ? (
           <View style={styles.trophyWrap}>
             <Text style={styles.trophyRankNum}>#{item.rank}</Text>
@@ -160,7 +161,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
           />
         </Pressable>
         <View style={styles.nameBlock}>
-          <Text style={[styles.name, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>{item.playerName}</Text>
+          <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>{item.playerName}</Text>
           <Text style={styles.cityText} numberOfLines={1}>{item.city ?? 'no city'}</Text>
         </View>
         <View style={styles.valueBlock}>
@@ -169,7 +170,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         </View>
       </View>
     );
-  }, [myId, tab, isDark, handleAvatarPress]);
+  }, [myId, tab, theme, handleAvatarPress]);
 
   if (!mounted) return null;
 
@@ -179,7 +180,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]} />
       </Pressable>
 
-      <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2028' }]}>
+      <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: theme.surface }]}>
         <LinearGradient colors={isDark ? ['#6A4A10', '#4A3208'] : ['#E7A52B', '#C08A1E']} style={styles.gradientHeader}>
           <View style={styles.header}>
             <View>
@@ -200,7 +201,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
                   style={[
                     styles.tab,
                     isActive && styles.tabActive,
-                    isActive && isDark && { backgroundColor: '#1E2028' },
+                    isActive && isDark && { backgroundColor: theme.surface },
                   ]}
                   onPress={() => setTab(tabItem.key)}
                 >
@@ -241,7 +242,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         )}
 
         {!loading && !error && data && !isOnPage && (
-          <View style={[styles.row, styles.rowMe, isDark && { backgroundColor: '#2A2F38' }, styles.pinnedRow]}>
+          <View style={[styles.row, styles.rowMe, { backgroundColor: theme.surface }, styles.pinnedRow]}>
             <Text style={styles.rankNum}>#{data.currentPlayer.rank}</Text>
             <Pressable onPress={myId ? () => handleAvatarPress(myId) : undefined} hitSlop={6}>
               <Image
@@ -251,7 +252,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
               />
             </Pressable>
             <View style={styles.nameBlock}>
-              <Text style={[styles.name, isDark && { color: '#DDE8D8' }]}>{t('leaderboard.you')}</Text>
+              <Text style={[styles.name, { color: theme.text }]}>{t('leaderboard.you')}</Text>
               <Text style={styles.cityText}>no city</Text>
             </View>
             <View style={styles.valueBlock}>
@@ -264,7 +265,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         )}
 
         {!loading && !error && data && (
-          <View style={[styles.pagination, isDark && { borderTopColor: 'rgba(255,255,255,0.08)' }]}>
+          <View style={[styles.pagination, { borderTopColor: theme.divider }]}>
             <Pressable
               style={[styles.pageBtn, page === 1 && styles.pageBtnDisabled]}
               onPress={() => setPage(p => Math.max(1, p - 1))}
@@ -272,7 +273,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
             >
               <Text style={styles.pageBtnText}>◀</Text>
             </Pressable>
-            <Text style={[styles.pageLabel, isDark && { color: '#DDE8D8' }]}>{page} / {totalPages}</Text>
+            <Text style={[styles.pageLabel, { color: theme.text }]}>{page} / {totalPages}</Text>
             <Pressable
               style={[styles.pageBtn, page >= totalPages && styles.pageBtnDisabled]}
               onPress={() => setPage(p => Math.min(totalPages, p + 1))}

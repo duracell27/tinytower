@@ -25,6 +25,15 @@ export interface IncomingRequestDto {
   createdAt: string;
 }
 
+export interface OutgoingRequestDto {
+  requestId: string;
+  toId: string;
+  playerName: string;
+  playerLevel: number;
+  city: string | null;
+  createdAt: string;
+}
+
 @Injectable()
 export class FriendsService {
   constructor(private prisma: PrismaService) {}
@@ -121,6 +130,24 @@ export class FriendsService {
     if (req.status !== FriendRequestStatus.ACCEPTED) throw new BadRequestException('Not friends');
     await this.prisma.friendRequest.delete({ where: { id: requestId } });
     return { success: true } as const;
+  }
+
+  async getOutgoingRequests(myId: string): Promise<OutgoingRequestDto[]> {
+    const requests = await this.prisma.friendRequest.findMany({
+      where: { fromId: myId, status: FriendRequestStatus.PENDING },
+      include: {
+        to: { select: { id: true, playerName: true, playerLevel: true, city: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return requests.map(r => ({
+      requestId: r.id,
+      toId: r.toId,
+      playerName: r.to.playerName,
+      playerLevel: r.to.playerLevel,
+      city: r.to.city,
+      createdAt: r.createdAt.toISOString(),
+    }));
   }
 
   async getFriends(myId: string): Promise<FriendEntryDto[]> {

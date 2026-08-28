@@ -10,6 +10,7 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { GemIcon } from './CurrencyIcons';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 
@@ -41,6 +42,9 @@ const { width: SCREEN_W } = Dimensions.get('window');
 
 export default function AchievementModal() {
   const { t } = useTranslation('hotel');
+  const theme = useAppTheme();
+  const { isDark } = theme;
+  const styles = getStyles(theme);
   const grant = useGameStore((s) => s.achievementQueue[0] ?? null);
   const dismiss = useGameStore((s) => s.dismissAchievement);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
@@ -129,7 +133,8 @@ export default function AchievementModal() {
   );
 }
 
-const styles = StyleSheet.create({
+function getStyles(theme: ReturnType<typeof useAppTheme>) {
+  return StyleSheet.create({
   scrim: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.55)',
@@ -196,11 +201,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#fff',
     paddingVertical: 6,
     paddingLeft: 8,
     paddingRight: 14,
     borderRadius: 14,
+    backgroundColor: theme.surface,
     shadowColor: 'rgba(30,60,120,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
@@ -243,4 +248,5 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     height: 3, backgroundColor: 'rgba(20,60,100,0.35)',
   },
-});
+  });
+}

@@ -1,10 +1,11 @@
 import { create } from 'zustand';
-import { api, type FriendEntry, type IncomingRequest, type FriendStatusResponse } from '../services/api';
+import { api, type FriendEntry, type IncomingRequest, type OutgoingRequest, type FriendStatusResponse } from '../services/api';
 
 interface FriendState {
   statusCache: Record<string, FriendStatusResponse>;
   friends: FriendEntry[];
   incomingRequests: IncomingRequest[];
+  outgoingRequests: OutgoingRequest[];
   pendingCount: number;
 }
 
@@ -12,6 +13,7 @@ interface FriendActions {
   fetchStatus: (playerId: string) => Promise<void>;
   fetchFriends: () => Promise<void>;
   fetchIncoming: () => Promise<void>;
+  fetchOutgoing: () => Promise<void>;
   sendRequest: (toId: string) => Promise<void>;
   cancelRequest: (requestId: string, toId: string) => Promise<void>;
   acceptRequest: (requestId: string, fromId: string) => Promise<void>;
@@ -23,6 +25,7 @@ export const useFriendStore = create<FriendState & FriendActions>((set, get) => 
   statusCache: {},
   friends: [],
   incomingRequests: [],
+  outgoingRequests: [],
   pendingCount: 0,
 
   fetchStatus: async (playerId: string) => {
@@ -52,6 +55,15 @@ export const useFriendStore = create<FriendState & FriendActions>((set, get) => 
     }
   },
 
+  fetchOutgoing: async () => {
+    try {
+      const outgoingRequests = await api.getOutgoingFriendRequests();
+      set({ outgoingRequests });
+    } catch {
+      // silent
+    }
+  },
+
   sendRequest: async (toId: string) => {
     set(s => ({ statusCache: { ...s.statusCache, [toId]: { status: 'pending_sent' } } }));
     try {
@@ -65,11 +77,15 @@ export const useFriendStore = create<FriendState & FriendActions>((set, get) => 
 
   cancelRequest: async (requestId: string, toId: string) => {
     const prev = get().statusCache[toId];
-    set(s => ({ statusCache: { ...s.statusCache, [toId]: { status: 'none' } } }));
+    set(s => ({
+      statusCache: { ...s.statusCache, [toId]: { status: 'none' } },
+      outgoingRequests: s.outgoingRequests.filter(r => r.requestId !== requestId),
+    }));
     try {
       await api.cancelFriendRequest(requestId);
     } catch (e) {
       if (prev) set(s => ({ statusCache: { ...s.statusCache, [toId]: prev } }));
+      await get().fetchOutgoing();
       throw e;
     }
   },

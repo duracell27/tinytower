@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { useGameClock } from '../hooks/useGameClock';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { shadeColor } from '../utils/color';
 
 const HEADER_COLORS: [string, string] = ['#C9637E', '#A8475F'];
@@ -40,11 +41,12 @@ interface HotelFloorProps {
 
 export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false, onPress }: HotelFloorProps) {
   const { t } = useTranslation('hotel');
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const hasVacancy = hotelOccupied < hotelTotal;
 
   return (
-    <Pressable onPress={onPress} style={styles.container}>
+    <Pressable onPress={onPress} style={[styles.container, { backgroundColor: theme.surface }]}>
       <View style={[styles.header, { backgroundColor: HEADER_COLORS[0] }]}>
         <View style={styles.headerEdge} />
         <View style={styles.numberBadge}>
@@ -116,7 +118,8 @@ interface LobbyFloorProps {
 export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress }: LobbyFloorProps) {
   const now = useGameClock(1000);
   const { t } = useTranslation('hotel');
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const isFull = visitorCount >= lobbyCapacity;
   const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));
   const minutes = Math.floor(secondsLeft / 60);
@@ -124,7 +127,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
   const timerText = isFull ? t('technicalFloor.lobby.full') : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
   return (
-    <Pressable onPress={onPress} style={styles.container}>
+    <Pressable onPress={onPress} style={[styles.container, { backgroundColor: theme.surface }]}>
       <View style={[styles.header, { backgroundColor: HEADER_COLORS[0] }]}>
         <View style={styles.headerEdge} />
         <View style={styles.numberBadge}>
@@ -151,7 +154,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
             <View style={styles.infoRow}>
               <Text style={[styles.visitorLabel, isDark && { color: '#C4849A' }]}>{t('technicalFloor.lobby.waiting')}</Text>
               {/* Visitor count pill */}
-              <View style={[styles.visitorPill, isDark && { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: 'rgba(168,71,95,0.3)' }]}>
+              <View style={[styles.visitorPill, { backgroundColor: theme.surface }, isDark && { backgroundColor: theme.divider, borderColor: 'rgba(168,71,95,0.3)' }]}>
                 <View style={styles.visitorAvatarCircle}>
                   <PersonMiniIcon />
                 </View>
@@ -180,7 +183,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 16,
     elevation: 6,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -360,7 +362,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#fff',
     paddingVertical: 3,
     paddingLeft: 4,
     paddingRight: 11,

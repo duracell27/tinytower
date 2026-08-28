@@ -11,7 +11,7 @@ import { useAppTheme } from '../src/hooks/useAppTheme';
 import { InfoSection } from '../src/components/InfoSection';
 import { useFriendStore } from '../src/stores/friendStore';
 import { getUserIcon } from '../src/utils/userIcon';
-import type { FriendEntry, IncomingRequest } from '../src/services/api';
+import type { FriendEntry, IncomingRequest, OutgoingRequest } from '../src/services/api';
 
 const INFO_ICON    = require('../assets/img/InformationIcon.png');
 const CANCEL_ICON  = require('../assets/img/CancellIcon.png');
@@ -133,24 +133,54 @@ const rStyles = StyleSheet.create({
   rejectText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#E05A4A' },
 });
 
+function OutgoingRow({ entry, onCancel, theme }: {
+  entry: OutgoingRequest;
+  onCancel: () => void;
+  theme: ReturnType<typeof useAppTheme>;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [fStyles.row, { borderBottomColor: theme.divider }, pressed && { opacity: 0.75 }]}
+      onPress={() => router.push(`/user-profile/${entry.toId}` as any)}
+    >
+      <Image source={getUserIcon(entry.playerLevel)} style={fStyles.avatar} contentFit="cover" />
+      <View style={fStyles.info}>
+        <Text style={[fStyles.name, { color: theme.text }]}>{entry.playerName}</Text>
+        <Text style={[fStyles.level, { color: theme.textMuted }]}>Lv {entry.playerLevel}</Text>
+      </View>
+      <Pressable
+        style={({ pressed }) => [fStyles.removeBtn, pressed && { opacity: 0.7 }]}
+        onPress={onCancel}
+        hitSlop={8}
+      >
+        <Image source={CANCEL_ICON} style={fStyles.removeIcon} contentFit="contain" />
+        <Text style={fStyles.removeBtnText}>Cancel</Text>
+      </Pressable>
+    </Pressable>
+  );
+}
+
 export default function MyFriendsScreen() {
   const theme = useAppTheme();
   const friends = useFriendStore(s => s.friends);
   const incomingRequests = useFriendStore(s => s.incomingRequests);
+  const outgoingRequests = useFriendStore(s => s.outgoingRequests);
   const pendingCount = useFriendStore(s => s.pendingCount);
   const fetchFriends = useFriendStore(s => s.fetchFriends);
   const fetchIncoming = useFriendStore(s => s.fetchIncoming);
+  const fetchOutgoing = useFriendStore(s => s.fetchOutgoing);
   const acceptRequest = useFriendStore(s => s.acceptRequest);
   const rejectRequest = useFriendStore(s => s.rejectRequest);
   const removeFriend = useFriendStore(s => s.removeFriend);
+  const cancelRequest = useFriendStore(s => s.cancelRequest);
 
-  const [activeTab, setActiveTab] = useState<'friends' | 'requests'>('friends');
+  const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'sent'>('friends');
   const [loading, setLoading] = useState(true);
   const [infoVisible, setInfoVisible] = useState(false);
 
   useEffect(() => {
-    Promise.all([fetchFriends(), fetchIncoming()]).finally(() => setLoading(false));
-  }, [fetchFriends, fetchIncoming]);
+    Promise.all([fetchFriends(), fetchIncoming(), fetchOutgoing()]).finally(() => setLoading(false));
+  }, [fetchFriends, fetchIncoming, fetchOutgoing]);
 
   // Switch to requests tab automatically if no friends but requests exist
   useEffect(() => {
@@ -201,6 +231,18 @@ export default function MyFriendsScreen() {
             {activeTab === 'requests' && <View style={tabStyles.indicator} />}
           </Pressable>
         )}
+
+        {outgoingRequests.length > 0 && (
+          <Pressable
+            style={[tabStyles.tab, activeTab === 'sent' && tabStyles.tabActive]}
+            onPress={() => setActiveTab('sent')}
+          >
+            <Text style={[tabStyles.tabText, { color: activeTab === 'sent' ? '#3FA535' : theme.textMuted }]}>
+              Sent ({outgoingRequests.length})
+            </Text>
+            {activeTab === 'sent' && <View style={tabStyles.indicator} />}
+          </Pressable>
+        )}
       </View>
 
       {loading ? (
@@ -246,6 +288,26 @@ export default function MyFriendsScreen() {
                     }}
                     onReject={async () => {
                       try { await rejectRequest(entry.requestId, entry.fromId); }
+                      catch { /* already handled by store */ }
+                    }}
+                  />
+                ))
+              )}
+            </View>
+          )}
+
+          {activeTab === 'sent' && (
+            <View style={[listStyles.card, { backgroundColor: theme.surface }]}>
+              {outgoingRequests.length === 0 ? (
+                <Text style={[listStyles.emptyText, { color: theme.textMuted }]}>No sent requests</Text>
+              ) : (
+                outgoingRequests.map((entry) => (
+                  <OutgoingRow
+                    key={entry.requestId}
+                    entry={entry}
+                    theme={theme}
+                    onCancel={async () => {
+                      try { await cancelRequest(entry.requestId, entry.toId); }
                       catch { /* already handled by store */ }
                     }}
                   />

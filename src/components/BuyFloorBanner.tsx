@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { shadeColor } from '../utils/color';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { formatNum } from '../utils/format';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 
@@ -23,18 +24,18 @@ function CurrencyIcon({ currency, size = 14 }: { currency: 'coins' | 'gems'; siz
 
 export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPress }: BuyFloorBannerProps) {
   const { t } = useTranslation('tabs');
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.ribbon, { backgroundColor: isDark ? '#2A2E34' : BANNER_BG }, pressed && styles.pressed]}>
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.ribbon, { backgroundColor: theme.isDark ? theme.surface : BANNER_BG }, pressed && styles.pressed]}>
       <View style={styles.ribbonLeft}>
         <Image
           source={require('../../assets/img/workers/builder.png')}
           style={{ width: 28, height: 28 }}
           contentFit="contain"
         />
-        <Text style={[styles.ribbonTitle, isDark && { color: '#9BA4B0' }]} numberOfLines={1}>{t('game.buyFloor', { number: nextFloorNumber })}</Text>
+        <Text style={[styles.ribbonTitle, { color: theme.isDark ? '#9BA4B0' : BANNER_COLOR }]} numberOfLines={1}>{t('game.buyFloor', { number: nextFloorNumber })}</Text>
       </View>
-      <View style={[styles.ribbonPricePill, isDark && { backgroundColor: 'rgba(255,255,255,0.10)' }]}>
+      <View style={[styles.ribbonPricePill, { backgroundColor: theme.isDark ? theme.divider : 'rgba(255,255,255,0.85)' }]}>
         <CurrencyIcon currency={currency} size={13} />
         <Text style={[styles.ribbonPriceText, { color: currency === 'gems' ? '#2592AB' : '#C28A22' }]}>{formatNum(price)}</Text>
       </View>
@@ -79,7 +80,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(255,255,255,0.85)',
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 11,

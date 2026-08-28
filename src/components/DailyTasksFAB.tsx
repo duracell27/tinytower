@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const DAILY_ICON = require('../../assets/img/profile/dayliQuests.png');
 
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export default function DailyTasksFAB({ unclaimedCount, slot }: Props) {
+  const theme = useAppTheme();
+
   if (unclaimedCount === 0) return null;
 
   const handlePress = () => router.push('/daily-tasks');
@@ -18,10 +21,18 @@ export default function DailyTasksFAB({ unclaimedCount, slot }: Props) {
   return (
     <Pressable
       onPress={handlePress}
-      style={({ pressed }) => [styles.fab, { bottom: 96 + slot * 62 }, pressed && { opacity: 0.82 }]}
+      style={({ pressed }) => [
+        styles.fab,
+        {
+          bottom: 96 + slot * 62,
+          backgroundColor: theme.surface,
+          borderColor: theme.isDark ? theme.divider : 'rgba(255,255,255,0.9)',
+        },
+        pressed && { opacity: 0.82 },
+      ]}
     >
       <Image source={DAILY_ICON} style={styles.icon} contentFit="contain" />
-      <View style={styles.fabBadge}>
+      <View style={[styles.fabBadge, { borderColor: theme.surface }]}>
         <Text style={styles.badgeText}>{unclaimedCount}</Text>
       </View>
     </Pressable>
@@ -36,11 +47,9 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: '#F8F9FA',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.9)',
   },
   icon: { width: 28, height: 28 },
   fabBadge: {
@@ -55,7 +64,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#fff',
   },
   badgeText: {
     fontFamily: 'Fredoka_700Bold',

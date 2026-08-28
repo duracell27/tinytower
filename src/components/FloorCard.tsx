@@ -1,5 +1,6 @@
 import React, { memo, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
@@ -200,14 +201,15 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
     return business?.name ?? null;
   })();
   const floorName = dynamicFloorName ?? tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const effectiveColor = isDark ? scheme.dark.color : scheme.color;
   const effectiveBodyColor = isDark ? scheme.dark.bodyColor : scheme.bodyColor;
   const effectiveCardBg = isDark ? scheme.dark.cardBg : scheme.cardBg;
   const effectiveNameColor = isDark ? scheme.dark.nameColor : scheme.nameColor;
 
   return (
-    <View style={[styles.floorContainer, isDark && styles.floorContainerDark]}>
+    <View style={[styles.floorContainer, { backgroundColor: theme.surface }, isDark && styles.floorContainerDark]}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: effectiveColor }]}>
         <View style={[styles.headerEdge, { backgroundColor: shadeColor(effectiveColor, -22) }]} />
@@ -301,7 +303,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 16,
     elevation: 6,
-    backgroundColor: '#fff',
   },
   floorContainerDark: {
     shadowColor: 'rgba(0,0,0,0.8)',

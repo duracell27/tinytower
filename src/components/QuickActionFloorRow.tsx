@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { formatNum } from '../utils/format';
 import type { QuickActionMode, FloorActionInfo } from '../utils/quickAction';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface Props {
   floorId: number;
@@ -28,16 +29,17 @@ const MODE_CHIP_COLOR: Record<QuickActionMode, string> = {
 };
 
 export default function QuickActionFloorRow({ floorId, floorName, mode, info }: Props) {
+  const theme = useAppTheme();
+  const styles = getStyles(theme);
   const chipColor = MODE_CHIP_COLOR[mode];
   const summary = summaryText(mode, info);
-  const isDark = useColorScheme() === 'dark';
 
   return (
-    <View style={[styles.row, isDark && styles.rowDark]}>
+    <View style={styles.row}>
       <View style={[styles.badge, { borderColor: chipColor }]}>
         <Text style={[styles.badgeText, { color: chipColor }]}>{floorId}</Text>
       </View>
-      <Text style={[styles.name, isDark && styles.nameDark]} numberOfLines={1}>{floorName}</Text>
+      <Text style={styles.name} numberOfLines={1}>{floorName}</Text>
       {summary !== '' && (
         <View style={[styles.chip, { backgroundColor: chipColor }]}>
           <Text style={styles.chipText}>{summary}</Text>
@@ -47,53 +49,49 @@ export default function QuickActionFloorRow({ floorId, floorName, mode, info }: 
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 10,
-    shadowColor: 'rgba(60,80,45,1)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.10,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  badge: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeText: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 13,
-  },
-  name: {
-    flex: 1,
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 15,
-    color: '#2A3040',
-  },
-  rowDark: {
-    backgroundColor: 'rgba(52,55,52,0.97)',
-  },
-  nameDark: {
-    color: '#DDE8D8',
-  },
-  chip: {
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  chipText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 12,
-    color: '#fff',
-  },
-});
+function getStyles(theme: ReturnType<typeof useAppTheme>) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.surface,
+      borderRadius: 16,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      gap: 10,
+      shadowColor: 'rgba(60,80,45,1)',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.10,
+      shadowRadius: 8,
+      elevation: 3,
+    },
+    badge: {
+      width: 28,
+      height: 28,
+      borderRadius: 8,
+      borderWidth: 1.5,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    badgeText: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 13,
+    },
+    name: {
+      flex: 1,
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 15,
+      color: theme.isDark ? '#DDE8D8' : '#2A3040',
+    },
+    chip: {
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    chipText: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 12,
+      color: '#fff',
+    },
+  });
+}

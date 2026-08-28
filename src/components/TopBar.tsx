@@ -61,7 +61,7 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
             <ProgressRing progress={progress} size={50} />
             <Image
               source={getUserIcon(level)}
-              style={styles.avatarInner}
+              style={[styles.avatarInner, { borderColor: theme.surface }]}
               contentFit="cover"
             />
             <View style={styles.levelBadge}>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, Pressable, Modal, StyleSheet, Dimensions, useColorScheme } from 'react-native';
+import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -12,6 +12,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { formatNum } from '../utils/format';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const COINS_PER_GEM = 1000;
 
@@ -39,7 +40,8 @@ function GemIcon() {
 
 export default function InsufficientResourcesModal({ asOverlay = false }: { asOverlay?: boolean }) {
   const { t } = useTranslation('common');
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const payload = useGameStore((s) => s.insufficientResources);
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
   const exchangeGemsForCoins = useGameStore((s) => s.exchangeGemsForCoins);
@@ -50,6 +52,8 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
   const visible = payload !== null;
   const scale = useSharedValue(0.5);
   const opacity = useSharedValue(0);
+
+  const styles = getStyles(theme);
 
   useEffect(() => {
     if (visible) {
@@ -95,12 +99,12 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
 
         <Animated.View style={[styles.card, cardStyle]}>
           <LinearGradient
-            colors={isDark ? ['#1E2026', '#252930'] : ['#F0F4FA', '#E4EAF2']}
+            colors={isDark ? [theme.surface, '#252930'] : ['#F0F4FA', '#E4EAF2']}
             style={styles.cardGradient}
           >
 
             {/* Icon */}
-            <View style={[styles.iconWrap, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+            <View style={styles.iconWrap}>
               {isCoins && <Image source={require('../../assets/img/coin.png')} style={styles.coinLarge} contentFit="contain" />}
               {isGems && <View style={styles.gemLarge} />}
               {isTools && (
@@ -118,11 +122,11 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
             </View>
 
             {/* Title */}
-            <Text style={[styles.title, isDark && { color: '#DDE8D8' }]}>{title}</Text>
+            <Text style={styles.title}>{title}</Text>
 
             {/* Currency deficit card */}
             {(isCoins || isGems) && (
-              <View style={[styles.deficitCard, isDark && { backgroundColor: '#2A2F38' }]}>
+              <View style={styles.deficitCard}>
                 <View style={styles.deficitRow}>
                   <View style={styles.deficitCell}>
                     <Text style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('insufficientResources.have')}</Text>
@@ -144,7 +148,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
                     </View>
                   </View>
                 </View>
-                <View style={[styles.missingRow, isDark && { backgroundColor: 'rgba(217,83,79,0.15)' }]}>
+                <View style={styles.missingRow}>
                   <Text style={styles.missingLabel}>{t('insufficientResources.missing')}:</Text>
                   <View style={styles.deficitValueRow}>
                     {isCoins ? <CoinIcon /> : <GemIcon />}
@@ -156,7 +160,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
 
             {/* Tools list */}
             {isTools && (
-              <View style={[styles.toolsCard, isDark && { backgroundColor: '#2A2F38' }]}>
+              <View style={styles.toolsCard}>
                 {payload.missingTools!.map((tool) => (
                   <View key={tool.key} style={styles.toolItemRow}>
                     <Image
@@ -164,7 +168,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
                       style={styles.toolItemIcon}
                       contentFit="contain"
                     />
-                    <Text style={[styles.toolItemLabel, isDark && { color: '#DDE8D8' }]}>{TOOL_META[tool.key].label}</Text>
+                    <Text style={styles.toolItemLabel}>{TOOL_META[tool.key].label}</Text>
                     <View style={styles.toolItemCounts}>
                       <Text style={[styles.toolHave, isDark && { color: '#5A6472' }]}>{tool.have}</Text>
                       <Text style={[styles.toolSlash, isDark && { color: '#3A4050' }]}>/</Text>
@@ -264,228 +268,230 @@ const icons = StyleSheet.create({
   },
 });
 
-const styles = StyleSheet.create({
-  scrim: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  card: {
-    width: SCREEN_W * 0.82,
-    borderRadius: 28,
-    overflow: 'hidden',
-    shadowColor: 'rgba(30,50,80,1)',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.28,
-    shadowRadius: 30,
-    elevation: 12,
-  },
-  cardGradient: {
-    alignItems: 'center',
-    paddingTop: 28,
-    paddingBottom: 20,
-    paddingHorizontal: 22,
-    gap: 12,
-  },
-  iconWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#EEF1F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 2,
-  },
-  coinLarge: {
-    width: 48,
-    height: 48,
-  },
-  gemLarge: {
-    width: 32,
-    height: 32,
-    backgroundColor: '#3FB8D6',
-    borderRadius: 7,
-    transform: [{ rotate: '45deg' }],
-    borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.6)',
-  },
-  toolIconRow: {
-    flexDirection: 'row',
-    gap: 4,
-    alignItems: 'center',
-  },
-  toolIconSmall: {
-    width: 22,
-    height: 22,
-  },
-  title: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 22,
-    color: '#2A3344',
-    textAlign: 'center',
-  },
-  deficitCard: {
-    width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    gap: 10,
-    shadowColor: 'rgba(40,60,90,1)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  deficitRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  deficitCell: {
-    alignItems: 'center',
-    gap: 4,
-    flex: 1,
-  },
-  deficitLabel: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 12,
-    color: '#9BA3B0',
-  },
-  deficitValueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  deficitValue: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 18,
-  },
-  arrow: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 18,
-    color: '#C5CAD4',
-    marginHorizontal: 4,
-  },
-  missingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#FEF3F2',
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-  },
-  missingLabel: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 13,
-    color: '#D9534F',
-  },
-  missingValue: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 16,
-    color: '#D9534F',
-  },
-  coinText: {
-    color: '#C28A22',
-  },
-  gemText: {
-    color: '#2592AB',
-  },
-  toolsCard: {
-    width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    gap: 10,
-    shadowColor: 'rgba(40,60,90,1)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  toolItemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  toolItemIcon: {
-    width: 28,
-    height: 28,
-  },
-  toolItemLabel: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 14,
-    color: '#2A3344',
-    flex: 1,
-  },
-  toolItemCounts: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  toolHave: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13,
-    color: '#9BA3B0',
-  },
-  toolSlash: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 12,
-    color: '#C5CAD4',
-  },
-  toolNeed: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13,
-    color: '#5A6478',
-  },
-  toolMissing: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 13,
-    color: '#D9534F',
-    minWidth: 26,
-    textAlign: 'right',
-  },
-  shopBtn: {
-    width: '100%',
-    borderRadius: 14,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  shopBtnGradient: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 13,
-    borderRadius: 14,
-    zIndex: 1,
-  },
-  shopBtnText: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 16,
-    color: '#fff',
-    textShadowColor: 'rgba(0,0,0,0.15)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
-  },
-  shopBtnShadow: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#2E72A8',
-    borderBottomLeftRadius: 14,
-    borderBottomRightRadius: 14,
-  },
-  closeBtn: {
-    paddingVertical: 6,
-  },
-  closeBtnText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 14,
-    color: '#9BA3B0',
-  },
-});
+function getStyles(theme: ReturnType<typeof useAppTheme>) {
+  return StyleSheet.create({
+    scrim: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    card: {
+      width: SCREEN_W * 0.82,
+      borderRadius: 28,
+      overflow: 'hidden',
+      shadowColor: 'rgba(30,50,80,1)',
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.28,
+      shadowRadius: 30,
+      elevation: 12,
+    },
+    cardGradient: {
+      alignItems: 'center',
+      paddingTop: 28,
+      paddingBottom: 20,
+      paddingHorizontal: 22,
+      gap: 12,
+    },
+    iconWrap: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: theme.isDark ? theme.divider : theme.surfaceSub,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 2,
+    },
+    coinLarge: {
+      width: 48,
+      height: 48,
+    },
+    gemLarge: {
+      width: 32,
+      height: 32,
+      backgroundColor: '#3FB8D6',
+      borderRadius: 7,
+      transform: [{ rotate: '45deg' }],
+      borderWidth: 3,
+      borderColor: 'rgba(255,255,255,0.6)',
+    },
+    toolIconRow: {
+      flexDirection: 'row',
+      gap: 4,
+      alignItems: 'center',
+    },
+    toolIconSmall: {
+      width: 22,
+      height: 22,
+    },
+    title: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 22,
+      color: theme.text,
+      textAlign: 'center',
+    },
+    deficitCard: {
+      width: '100%',
+      backgroundColor: theme.surface,
+      borderRadius: 16,
+      paddingVertical: 14,
+      paddingHorizontal: 18,
+      gap: 10,
+      shadowColor: 'rgba(40,60,90,1)',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      elevation: 2,
+    },
+    deficitRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    deficitCell: {
+      alignItems: 'center',
+      gap: 4,
+      flex: 1,
+    },
+    deficitLabel: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 12,
+      color: '#9BA3B0',
+    },
+    deficitValueRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+    },
+    deficitValue: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 18,
+    },
+    arrow: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 18,
+      color: '#C5CAD4',
+      marginHorizontal: 4,
+    },
+    missingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      backgroundColor: theme.surfaceDanger,
+      borderRadius: 10,
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+    },
+    missingLabel: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 13,
+      color: '#D9534F',
+    },
+    missingValue: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 16,
+      color: '#D9534F',
+    },
+    coinText: {
+      color: '#C28A22',
+    },
+    gemText: {
+      color: '#2592AB',
+    },
+    toolsCard: {
+      width: '100%',
+      backgroundColor: theme.surface,
+      borderRadius: 16,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      gap: 10,
+      shadowColor: 'rgba(40,60,90,1)',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      elevation: 2,
+    },
+    toolItemRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    toolItemIcon: {
+      width: 28,
+      height: 28,
+    },
+    toolItemLabel: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 14,
+      color: theme.text,
+      flex: 1,
+    },
+    toolItemCounts: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+    },
+    toolHave: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 13,
+      color: '#9BA3B0',
+    },
+    toolSlash: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 12,
+      color: '#C5CAD4',
+    },
+    toolNeed: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 13,
+      color: '#5A6478',
+    },
+    toolMissing: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 13,
+      color: '#D9534F',
+      minWidth: 26,
+      textAlign: 'right',
+    },
+    shopBtn: {
+      width: '100%',
+      borderRadius: 14,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    shopBtnGradient: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 13,
+      borderRadius: 14,
+      zIndex: 1,
+    },
+    shopBtnText: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 16,
+      color: '#fff',
+      textShadowColor: 'rgba(0,0,0,0.15)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 1,
+    },
+    shopBtnShadow: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: 3,
+      backgroundColor: '#2E72A8',
+      borderBottomLeftRadius: 14,
+      borderBottomRightRadius: 14,
+    },
+    closeBtn: {
+      paddingVertical: 6,
+    },
+    closeBtnText: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 14,
+      color: '#9BA3B0',
+    },
+  });
+}

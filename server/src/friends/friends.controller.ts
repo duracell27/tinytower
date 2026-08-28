@@ -20,6 +20,12 @@ export class FriendsController {
     return this.friendsService.getIncomingRequests(req.user.playerId);
   }
 
+  @Get('requests/outgoing')
+  @UseGuards(JwtAuthGuard)
+  getOutgoing(@Req() req: AuthReq) {
+    return this.friendsService.getOutgoingRequests(req.user.playerId);
+  }
+
   @Get()
   @UseGuards(JwtAuthGuard)
   getFriends(@Req() req: AuthReq) {

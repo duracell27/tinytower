@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -58,8 +59,9 @@ export default function BusinessCategoryScreen() {
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const showTokenInsufficient     = useGameStore((s) => s.showTokenInsufficient);
 
-  const isDark = useColorScheme() === 'dark';
-  const gradColors = isDark ? TYPE_DARK_GRADIENTS[ft] : TYPE_LIGHT_GRADIENTS[ft];
+  const theme = useAppTheme();
+  const { isDark } = theme;
+  const gradColors = theme.isDark ? TYPE_DARK_GRADIENTS[ft] : TYPE_LIGHT_GRADIENTS[ft];
   const level    = businessUpgrades?.[ft] ?? 0;
   const tokenBal = tokens?.[ft] ?? 0;
   const color    = TYPE_COLORS[ft];
@@ -97,8 +99,8 @@ export default function BusinessCategoryScreen() {
         </View>
 
         {/* Level + progress */}
-        <View style={[styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
-          <Text style={[styles.levelText, isDark && { color: '#8A9A80' }]}>{tHotel('myBusiness.level', { level })}</Text>
+        <View style={[styles.card, { backgroundColor: theme.surface }]}>
+          <Text style={[styles.levelText, { color: theme.textMuted }]}>{tHotel('myBusiness.level', { level })}</Text>
           <Text style={[styles.bonusText, { color }]}>
             {isMaxed ? tHotel('myBusiness.maxLevel') : tHotel('myBusiness.profitBonus', { percent: level * 5 })}
           </Text>
@@ -109,17 +111,17 @@ export default function BusinessCategoryScreen() {
         </View>
 
         {/* Balance */}
-        <View style={[styles.balanceCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+        <View style={[styles.balanceCard, { backgroundColor: theme.surface }]}>
           <View style={styles.balanceChip}>
             <CoinIcon size={16} />
             <Text style={styles.balanceCoin}>{formatNum(balance)}</Text>
           </View>
-          <View style={[styles.balanceDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
+          <View style={[styles.balanceDivider, { backgroundColor: theme.divider }]} />
           <View style={styles.balanceChip}>
             <GemIcon size={14} />
             <Text style={styles.balanceGem}>{formatNum(gems)}</Text>
           </View>
-          <View style={[styles.balanceDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
+          <View style={[styles.balanceDivider, { backgroundColor: theme.divider }]} />
           <View style={styles.balanceChip}>
             <Image source={TOKEN_ICONS[ft]} style={styles.tokenIcon} contentFit="contain" />
             <Text style={[styles.balanceToken, { color }]}>{formatNum(tokenBal)}</Text>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { createMMKV } from 'react-native-mmkv';
@@ -7,6 +7,7 @@ import { shadeColor } from '../utils/color';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useGameClock } from '../hooks/useGameClock';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const uiStorage = createMMKV({ id: 'ui-prefs' });
 
@@ -136,7 +137,8 @@ export default function UnderConstructionBanner({
   const speedUpCost = Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));
   const canStart = requiredTools.every(({ tool, count }) => (tools?.[tool as keyof typeof tools] ?? 0) >= count);
 
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const toggleCollapse = () => {
     const next = !collapsed;
     setCollapsed(next);
@@ -171,7 +173,7 @@ export default function UnderConstructionBanner({
     if (collapsed) {
       return (
         <View ref={collapsedRowRef} collapsable={false} style={[styles.collapsedRow, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
-          <Text style={[styles.collapsedTitle, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>
+          <Text style={[styles.collapsedTitle, { color: theme.text }]} numberOfLines={1}>
             {'Floor '}
             <Text style={{ color: typeColor }}>{typeName}</Text>
             {' awaits opening'}
@@ -189,7 +191,7 @@ export default function UnderConstructionBanner({
       <View ref={expandedCardRef} collapsable={false} style={[styles.card, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
         {/* Header row with collapse button */}
         <View style={styles.cardHeader}>
-          <Text style={[styles.cardTitle, { flex: 1 }, isDark && { color: '#DDE8D8' }]}>
+          <Text style={[styles.cardTitle, { flex: 1 }, { color: theme.text }]}>
             {'Floor '}
             <Text style={[styles.cardTitleType, { color: typeColor }]}>{typeName}</Text>
             {' awaits opening.'}
@@ -200,7 +202,7 @@ export default function UnderConstructionBanner({
             </View>
           </Pressable>
         </View>
-        <Text style={[styles.cardHint, isDark && { color: '#8A9A80' }]}>
+        <Text style={[styles.cardHint, { color: theme.textMuted }]}>
           Gather all required materials to open the business
         </Text>
 
@@ -211,7 +213,7 @@ export default function UnderConstructionBanner({
             const met = have >= count;
             return (
               <View key={tool} style={styles.toolCircleWrap}>
-                <View style={[styles.toolCircle, { borderColor: met ? '#49AA38' : '#C8CDD6', backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)' }]}>
+                <View style={[styles.toolCircle, { borderColor: met ? '#49AA38' : '#C8CDD6', backgroundColor: isDark ? theme.divider : 'rgba(255,255,255,0.6)' }]}>
                   <Image
                     source={TOOL_IMAGES[tool] ?? TOOL_IMAGES.briks}
                     style={{ width: 28, height: 28 }}
@@ -221,14 +223,14 @@ export default function UnderConstructionBanner({
                 <Text style={[styles.toolCount, { color: met ? '#49AA38' : '#E05050' }]}>
                   {`${have}/${count}`}
                 </Text>
-                <Text style={[styles.toolLabel, isDark && { color: '#8A9A80' }]}>{TOOL_NAMES[tool] ?? tool}</Text>
+                <Text style={[styles.toolLabel, { color: theme.textMuted }]}>{TOOL_NAMES[tool] ?? tool}</Text>
               </View>
             );
           })}
         </View>
 
         {!canStart && (
-          <Text style={[styles.materialsHint, isDark && { color: '#8A9A80' }]}>
+          <Text style={[styles.materialsHint, { color: theme.textMuted }]}>
             🛗 Ride the elevator — the builder delivers materials to your warehouse
           </Text>
         )}
@@ -293,7 +295,7 @@ export default function UnderConstructionBanner({
             </View>
           ) : (
             <View style={styles.timerRow}>
-              <View style={[styles.timerPill, isDark && { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: BANNER_COLOR }]}>
+              <View style={[styles.timerPill, isDark && { backgroundColor: theme.divider, borderColor: BANNER_COLOR }]}>
                 <Text style={[styles.timerText, { color: BANNER_COLOR }]}>
                   {formatCountdown(timeLeft)}
                 </Text>
@@ -308,7 +310,7 @@ export default function UnderConstructionBanner({
                     setConfirming(true);
                   }
                 }}
-                style={[styles.speedUpBtn, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}
+                style={[styles.speedUpBtn, isDark && { backgroundColor: theme.divider }]}
                 hitSlop={6}
               >
                 <Image source={require('../../assets/img/speedUp.png')} style={{ width: 13, height: 13 }} contentFit="contain" />

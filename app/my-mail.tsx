@@ -62,10 +62,10 @@ function MailRow({
         <View style={styles.avatarInner}>
           <Image
             source={getUserIcon(mail.fromLevel)}
-            style={styles.avatar}
+            style={[styles.avatar, { borderColor: theme.surface }]}
             contentFit="cover"
           />
-          {!mail.isRead && <View style={styles.unreadDot} />}
+          {!mail.isRead && <View style={[styles.unreadDot, { borderColor: theme.surface }]} />}
         </View>
       </Pressable>
 
@@ -138,7 +138,7 @@ function SentRow({ mail, theme }: { mail: SentMailMessage; theme: ReturnType<typ
       >
         <Image source={SENT_ICON} style={styles.directionBadge} contentFit="contain" />
         <View style={styles.avatarInner}>
-          <Image source={getUserIcon(mail.toLevel)} style={styles.avatar} contentFit="cover" />
+          <Image source={getUserIcon(mail.toLevel)} style={[styles.avatar, { borderColor: theme.surface }]} contentFit="cover" />
         </View>
       </Pressable>
       <View style={styles.content}>
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
 
   header: { flexDirection: 'row', alignItems: 'center', marginTop: 60, marginHorizontal: 20, gap: 12 },
   screenTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 24 },
-  screenSubtitle: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#7C8A6E', marginHorizontal: 20, marginTop: 6, marginBottom: 6 },
+  screenSubtitle: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, marginHorizontal: 20, marginTop: 6, marginBottom: 6 },
 
   tabRow: {
     flexDirection: 'row',

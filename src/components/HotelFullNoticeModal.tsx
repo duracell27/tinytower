@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -18,6 +19,8 @@ function HotelIcon({ size = 18, color = '#A8475F' }: { size?: number; color?: st
 }
 
 export default function HotelFullNoticeModal() {
+  const theme = useAppTheme();
+  const styles = getStyles(theme);
   const { t } = useTranslation('lobby');
   const visible = useGameStore((s) => s.hotelFullNotice);
   const dismiss = useGameStore((s) => s.dismissHotelFullNotice);
@@ -58,76 +61,79 @@ export default function HotelFullNoticeModal() {
   );
 }
 
-const styles = StyleSheet.create({
-  scrim: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  card: {
-    width: SCREEN_W * 0.85,
-    backgroundColor: '#fff',
-    borderRadius: 22,
-    padding: 20,
-    alignItems: 'center',
-    gap: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 12,
-  },
-  avatarWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#FDEEF2',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  info: {
-    alignItems: 'center',
-    gap: 3,
-  },
-  title: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 18,
-    color: '#2A3344',
-  },
-  subtitle: {
-    fontFamily: 'Fredoka_400Regular',
-    fontSize: 13,
-    color: '#9BA3B0',
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  btn: {
-    width: '100%',
-    borderRadius: 14,
-    overflow: 'hidden',
-    marginTop: 12,
-  },
-  btnGradient: {
-    paddingVertical: 13,
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnText: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 16,
-    color: '#fff',
-  },
-  dismissBtn: {
-    paddingVertical: 8,
-  },
-  dismissText: {
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 14,
-    color: '#9BA3B0',
-  },
-});
+function getStyles(theme: ReturnType<typeof useAppTheme>) {
+  const { isDark } = theme;
+  return StyleSheet.create({
+    scrim: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+    },
+    card: {
+      width: SCREEN_W * 0.85,
+      backgroundColor: theme.surface,
+      borderRadius: 22,
+      padding: 20,
+      alignItems: 'center',
+      gap: 6,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.18,
+      shadowRadius: 24,
+      elevation: 12,
+    },
+    avatarWrap: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: isDark ? 'rgba(168,71,95,0.2)' : '#FDEEF2',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 4,
+    },
+    info: {
+      alignItems: 'center',
+      gap: 3,
+    },
+    title: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 18,
+      color: isDark ? '#DDE8D8' : '#2A3344',
+    },
+    subtitle: {
+      fontFamily: 'Fredoka_400Regular',
+      fontSize: 13,
+      color: isDark ? '#8A9A80' : '#9BA3B0',
+      marginTop: 2,
+      textAlign: 'center',
+    },
+    btn: {
+      width: '100%',
+      borderRadius: 14,
+      overflow: 'hidden',
+      marginTop: 12,
+    },
+    btnGradient: {
+      paddingVertical: 13,
+      flexDirection: 'row',
+      gap: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    btnText: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 16,
+      color: '#fff',
+    },
+    dismissBtn: {
+      paddingVertical: 8,
+    },
+    dismissText: {
+      fontFamily: 'Fredoka_500Medium',
+      fontSize: 14,
+      color: isDark ? '#8A9A80' : '#9BA3B0',
+    },
+  });
+}

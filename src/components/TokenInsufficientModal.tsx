@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Modal, Dimensions, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { formatNum } from '../utils/format';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -26,7 +27,9 @@ const TOKEN_ICONS: Record<FloorType, ReturnType<typeof require>> = {
 
 export default function TokenInsufficientModal({ asOverlay = false }: { asOverlay?: boolean }) {
   const { t } = useTranslation('hotel');
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
+  const styles = getStyles(theme);
   const payload = useGameStore((s) => s.tokenInsufficient);
   const clearTokenInsufficient = useGameStore((s) => s.clearTokenInsufficient);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
@@ -64,31 +67,31 @@ export default function TokenInsufficientModal({ asOverlay = false }: { asOverla
           style={styles.cardGradient}
         >
 
-          <View style={[styles.iconWrap, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+          <View style={styles.iconWrap}>
             <Image source={TOKEN_ICONS[ft]} style={styles.tokenImg} contentFit="contain" />
           </View>
 
-          <Text style={[styles.title, isDark && { color: '#DDE8D8' }]}>{t('myBusiness.notEnoughTokens')}</Text>
+          <Text style={styles.title}>{t('myBusiness.notEnoughTokens')}</Text>
 
-          <View style={[styles.deficitCard, isDark && { backgroundColor: '#2A2F38' }]}>
+          <View style={styles.deficitCard}>
             <View style={styles.deficitRow}>
               <View style={styles.deficitCell}>
-                <Text style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('myBusiness.have')}</Text>
+                <Text style={styles.deficitLabel}>{t('myBusiness.have')}</Text>
                 <View style={styles.deficitValueRow}>
                   <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
                   <Text style={[styles.deficitValue, { color }]}>{formatNum(payload.have)}</Text>
                 </View>
               </View>
-              <Text style={[styles.arrow, isDark && { color: '#4A5060' }]}>→</Text>
+              <Text style={styles.arrow}>→</Text>
               <View style={styles.deficitCell}>
-                <Text style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('myBusiness.need')}</Text>
+                <Text style={styles.deficitLabel}>{t('myBusiness.need')}</Text>
                 <View style={styles.deficitValueRow}>
                   <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
                   <Text style={[styles.deficitValue, { color }]}>{formatNum(payload.need)}</Text>
                 </View>
               </View>
             </View>
-            <View style={[styles.missingRow, isDark && { borderTopColor: 'rgba(255,255,255,0.08)' }]}>
+            <View style={styles.missingRow}>
               <Text style={styles.missingLabel}>{t('myBusiness.missing')}:</Text>
               <View style={styles.deficitValueRow}>
                 <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
@@ -108,7 +111,7 @@ export default function TokenInsufficientModal({ asOverlay = false }: { asOverla
           </Pressable>
 
           <Pressable onPress={clearTokenInsufficient} style={styles.closeBtn}>
-            <Text style={[styles.closeBtnText, isDark && { color: '#5A6472' }]}>{t('myBusiness.cancel')}</Text>
+            <Text style={styles.closeBtnText}>{t('myBusiness.cancel')}</Text>
           </Pressable>
 
         </LinearGradient>
@@ -125,128 +128,131 @@ export default function TokenInsufficientModal({ asOverlay = false }: { asOverla
   );
 }
 
-const styles = StyleSheet.create({
-  scrim: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  card: {
-    width: SCREEN_W * 0.82,
-    borderRadius: 28,
-    overflow: 'hidden',
-    shadowColor: 'rgba(0,0,0,1)',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 10,
-  },
-  cardGradient: {
-    alignItems: 'center',
-    paddingTop: 28,
-    paddingBottom: 20,
-    paddingHorizontal: 24,
-    gap: 14,
-  },
-  iconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tokenImg: { width: 40, height: 40 },
-  title: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 20,
-    color: '#3D3D3D',
-    textAlign: 'center',
-  },
-  deficitCard: {
-    width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    gap: 10,
-  },
-  deficitRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-  },
-  deficitCell: { alignItems: 'center', gap: 4 },
-  deficitLabel: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 12,
-    color: '#9BA3B0',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  deficitValueRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  deficitIcon: { width: 18, height: 18 },
-  deficitValue: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 22,
-  },
-  arrow: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 20,
-    color: '#9BA3B0',
-  },
-  missingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(100,110,120,0.12)',
-  },
-  missingLabel: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 14,
-    color: '#E05A4A',
-  },
-  missingValue: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 16,
-    color: '#E05A4A',
-  },
-  shopBtn: {
-    width: '100%',
-    borderRadius: 14,
-    overflow: 'hidden',
-  },
-  shopBtnGradient: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    zIndex: 1,
-  },
-  shopBtnText: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 17,
-    color: '#fff',
-    textShadowColor: 'rgba(0,0,0,0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  shopBtnShadow: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-  },
-  closeBtn: {
-    paddingVertical: 6,
-  },
-  closeBtnText: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 14,
-    color: '#9BA3B0',
-  },
-});
+function getStyles(theme: ReturnType<typeof useAppTheme>) {
+  const { isDark } = theme;
+  return StyleSheet.create({
+    scrim: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    card: {
+      width: SCREEN_W * 0.82,
+      borderRadius: 28,
+      overflow: 'hidden',
+      shadowColor: 'rgba(0,0,0,1)',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.18,
+      shadowRadius: 24,
+      elevation: 10,
+    },
+    cardGradient: {
+      alignItems: 'center',
+      paddingTop: 28,
+      paddingBottom: 20,
+      paddingHorizontal: 24,
+      gap: 14,
+    },
+    iconWrap: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: isDark ? theme.divider : 'rgba(255,255,255,0.7)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tokenImg: { width: 40, height: 40 },
+    title: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 20,
+      color: theme.text,
+      textAlign: 'center',
+    },
+    deficitCard: {
+      width: '100%',
+      backgroundColor: theme.surface,
+      borderRadius: 16,
+      padding: 16,
+      gap: 10,
+    },
+    deficitRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-around',
+    },
+    deficitCell: { alignItems: 'center', gap: 4 },
+    deficitLabel: {
+      fontFamily: 'Nunito_600SemiBold',
+      fontSize: 12,
+      color: theme.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    deficitValueRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    deficitIcon: { width: 18, height: 18 },
+    deficitValue: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 22,
+    },
+    arrow: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 20,
+      color: isDark ? '#4A5060' : '#9BA3B0',
+    },
+    missingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      paddingTop: 4,
+      borderTopWidth: 1,
+      borderTopColor: theme.divider,
+    },
+    missingLabel: {
+      fontFamily: 'Nunito_600SemiBold',
+      fontSize: 14,
+      color: '#E05A4A',
+    },
+    missingValue: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 16,
+      color: '#E05A4A',
+    },
+    shopBtn: {
+      width: '100%',
+      borderRadius: 14,
+      overflow: 'hidden',
+    },
+    shopBtnGradient: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 12,
+      zIndex: 1,
+    },
+    shopBtnText: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 17,
+      color: '#fff',
+      textShadowColor: 'rgba(0,0,0,0.2)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+    },
+    shopBtnShadow: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: 3,
+      backgroundColor: 'rgba(0,0,0,0.25)',
+    },
+    closeBtn: {
+      paddingVertical: 6,
+    },
+    closeBtnText: {
+      fontFamily: 'Nunito_600SemiBold',
+      fontSize: 14,
+      color: isDark ? '#5A6472' : '#9BA3B0',
+    },
+  });
+}

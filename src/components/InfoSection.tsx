@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface InfoSectionProps {
   icon: ReturnType<typeof require>;
@@ -11,13 +12,13 @@ interface InfoSectionProps {
 }
 
 export function InfoSection({ icon, title, text, accentColor = 'rgba(100,110,130,0.18)', isLast = false }: InfoSectionProps) {
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
   return (
     <View style={[styles.section, !isLast && { borderBottomWidth: 1, borderBottomColor: accentColor }]}>
       <Image source={icon} style={styles.icon} contentFit="contain" />
       <View style={styles.body}>
-        <Text style={[styles.title, isDark && { color: '#DDE8D8' }]}>{title}</Text>
-        <Text style={[styles.text, isDark && { color: '#8A9A80' }]}>{text}</Text>
+        <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
+        <Text style={[styles.text, { color: theme.textMuted }]}>{text}</Text>
       </View>
     </View>
   );

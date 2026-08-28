@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, Pressable, useColorScheme,
+  View, Text, ScrollView, StyleSheet, Pressable,
 } from 'react-native';
 import AppBackground from '../src/components/AppBackground';
+import { useAppTheme } from '../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { InfoSection } from '../src/components/InfoSection';
@@ -78,7 +79,8 @@ export default function DailyTasksScreen() {
   const claimDailyTask     = useGameStore((s) => s.claimDailyTask);
   const playerLevel        = useGameStore((s) => s.playerLevel);
 
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30_000);
@@ -101,7 +103,7 @@ export default function DailyTasksScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.headingRow}>
-          <Text style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('dailyTasks.title')}</Text>
+          <Text style={[styles.heading, { color: theme.text }]}>{t('dailyTasks.title')}</Text>
           <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -112,7 +114,7 @@ export default function DailyTasksScreen() {
 
         <View style={styles.tokenRow}>
           {(['green', 'blue', 'yellow', 'purple', 'red'] as const).map((color) => (
-            <View key={color} style={[styles.tokenChip, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+            <View key={color} style={[styles.tokenChip, { backgroundColor: theme.surface }]}>
               <Image source={TOKEN_ICONS[color]} style={styles.tokenIcon} contentFit="contain" />
               <Text style={[styles.tokenCount, { color: TOKEN_COLORS[color] }]}>
                 {tokens[color]}
@@ -128,7 +130,7 @@ export default function DailyTasksScreen() {
 
           if (dailyTasks.doubleRewardActive) {
             return (
-              <View style={[styles.doubleBanner, styles.doubleBannerActive, isDark && { backgroundColor: 'rgba(80,60,0,0.45)' }]}>
+              <View style={[styles.doubleBanner, styles.doubleBannerActive, { backgroundColor: isDark ? 'rgba(80,60,0,0.45)' : '#FFF4D6' }]}>
                 <Text style={[styles.doubleBannerText, styles.doubleBannerTextActive]}>
                   {t('dailyTasks.doubleReward')}
                 </Text>
@@ -149,7 +151,7 @@ export default function DailyTasksScreen() {
 
           if (goalReached) {
             return (
-              <View style={[styles.doubleBanner, styles.doubleBannerGoal, isDark && { backgroundColor: 'rgba(20,60,15,0.45)' }]}>
+              <View style={[styles.doubleBanner, styles.doubleBannerGoal, { backgroundColor: isDark ? 'rgba(20,60,15,0.45)' : '#E8F7E4' }]}>
                 <Text style={styles.doubleBannerGoalEmoji}>🎉</Text>
                 <Text style={styles.doubleBannerGoalTitle}>{t('dailyTasks.goalReachedTitle')}</Text>
                 <Text style={styles.doubleBannerGoalSub}>{t('dailyTasks.goalReachedSub')}</Text>
@@ -158,7 +160,7 @@ export default function DailyTasksScreen() {
           }
 
           return (
-            <View style={[styles.doubleBanner, isDark && { backgroundColor: 'rgba(52,55,52,0.6)' }]}>
+            <View style={[styles.doubleBanner, { backgroundColor: isDark ? 'rgba(52,55,52,0.6)' : 'rgba(255,255,255,0.92)' }]}>
               <Text style={styles.doubleBannerText}>{t('dailyTasks.doubleRewardHint')}</Text>
               <View style={styles.completionBarBg}>
                 <View style={[styles.completionBarFill, { width: `${(claimedCount / 7) * 100}%` }]} />
@@ -184,16 +186,16 @@ export default function DailyTasksScreen() {
           const coins     = task.rewards.baseCoins * multiplier * (dailyTasks.doubleRewardActive ? 2 : 1);
 
           return (
-            <View key={task.key} style={[styles.card, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }, claimed && styles.cardClaimed]}>
+            <View key={task.key} style={[styles.card, { backgroundColor: theme.surface }, claimed && styles.cardClaimed]}>
               <View style={styles.cardHeader}>
                 {TASK_ICONS[task.key] && (
                   <Image source={TASK_ICONS[task.key]!} style={styles.taskIcon} contentFit="contain" />
                 )}
                 <View style={styles.cardTitleBlock}>
-                  <Text style={[styles.cardTitle, isDark && { color: '#DDE8D8' }, claimed && styles.cardTitleClaimed]}>
+                  <Text style={[styles.cardTitle, { color: theme.text }, claimed && styles.cardTitleClaimed]}>
                     {task.title}
                   </Text>
-                  <Text style={[styles.cardDesc, isDark && { color: '#8A9A80' }, claimed && styles.cardDescClaimed]}>
+                  <Text style={[styles.cardDesc, { color: theme.textMuted }, claimed && styles.cardDescClaimed]}>
                     {task.description}
                   </Text>
                 </View>
@@ -213,16 +215,16 @@ export default function DailyTasksScreen() {
 
               {!claimed && (
                 <View style={styles.rewardRow}>
-                  <View style={[styles.rewardChip, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+                  <View style={[styles.rewardChip, { backgroundColor: theme.surfaceElevated }]}>
                     <Image source={COIN_ICON} style={styles.rewardIcon} contentFit="contain" />
                     <Text style={styles.rewardCoins}>+{formatNum(coins)}</Text>
                   </View>
-                  <View style={[styles.rewardChip, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+                  <View style={[styles.rewardChip, { backgroundColor: theme.surfaceElevated }]}>
                     <Image source={DIAMOND_ICON} style={styles.rewardIcon} contentFit="contain" />
                     <Text style={styles.rewardGems}>+{task.rewards.gems}</Text>
                   </View>
                   {task.rewards.hasMaterials && dailyTasks.dailyMaterialType && (
-                    <View style={[styles.rewardChip, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+                    <View style={[styles.rewardChip, { backgroundColor: theme.surfaceElevated }]}>
                       <Image
                         source={MATERIAL_ICONS[dailyTasks.dailyMaterialType]}
                         style={styles.rewardIcon}
@@ -265,7 +267,7 @@ export default function DailyTasksScreen() {
       {infoVisible && (
         <View style={styles.infoOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-          <View style={[styles.infoCard, isDark && { backgroundColor: '#2A2F38' }]}>
+          <View style={[styles.infoCard, { backgroundColor: isDark ? '#2A2F38' : '#fff' }]}>
             <LinearGradient colors={['#E5A72E', '#C48A18']} style={styles.infoCardHeader}>
               <Text style={styles.infoCardTitle}>{t('dailyTasks.title')}</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>

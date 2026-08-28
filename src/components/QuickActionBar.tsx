@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   useSharedValue,
@@ -15,6 +15,7 @@ import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { formatNum } from '../utils/format';
 import type { QuickActionMode, FloorActionInfo } from '../utils/quickAction';
 import { GemIcon, CoinIcon } from './CurrencyIcons';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface Props {
   mode: QuickActionMode;
@@ -42,7 +43,7 @@ const BULK_LABEL: Partial<Record<QuickActionMode, string>> = {
 function ModeIcon({ mode }: { mode: QuickActionMode }) {
   switch (mode) {
     case 'collect':
-      return <View style={styles.coinCircle} />;
+      return <View style={staticStyles.coinCircle} />;
     case 'list':
       return (
         <Svg viewBox="0 0 24 24" width={18} height={18}>
@@ -71,9 +72,8 @@ function ModeIcon({ mode }: { mode: QuickActionMode }) {
 export default function QuickActionBar({ mode, info, visible, onHidden, onPress, onExit, onBulkAll }: Props) {
   const { t: tContent } = useTranslation('gameContent');
   const { colors } = MODE_COLORS[mode];
-  const isDark = useColorScheme() === 'dark';
-  const pillBg = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.92)';
-  const pillTextColor = isDark ? '#E8EDE4' : undefined;
+  const theme = useAppTheme();
+  const styles = getStyles(theme);
 
   const bulkLabel = BULK_LABEL[mode];
 
@@ -140,18 +140,18 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
     <Animated.View style={[styles.wrapper, animatedStyle]}>
       <Pressable
         onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onExit(); }}
-        style={({ pressed }) => [styles.exitBtn, { backgroundColor: pillBg }, pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => [styles.exitBtn, pressed && { opacity: 0.7 }]}
       >
-        <Text style={[styles.exitIcon, pillTextColor && { color: pillTextColor }]}>✕</Text>
+        <Text style={styles.exitIcon}>✕</Text>
       </Pressable>
 
       {onBulkAll && bulkLabel && (
         <Pressable
           onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onBulkAll(); }}
-          style={({ pressed }) => [styles.bulkBtn, { backgroundColor: pillBg }, pressed && { opacity: 0.7 }]}
+          style={({ pressed }) => [styles.bulkBtn, pressed && { opacity: 0.7 }]}
         >
           <View style={styles.bulkContent}>
-            <Text style={[styles.bulkLabelText, pillTextColor && { color: pillTextColor }]}>{bulkLabel}</Text>
+            <Text style={styles.bulkLabelText}>{bulkLabel}</Text>
             <GemIcon size={12} />
             <Text style={styles.bulkCostText}>1</Text>
           </View>
@@ -189,70 +189,8 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   );
 }
 
-const styles = StyleSheet.create({
-  wrapper: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingBottom: 90,
-    paddingTop: 8,
-  },
-  exitBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  exitIcon: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 20,
-    color: '#6A7585',
-  },
-  actionBtn: {
-    flex: 1,
-    borderRadius: 27,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  btnGradient: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 27,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  btnLabel: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 17,
-    color: '#fff',
-    letterSpacing: 0.3,
-  },
-  btnLabelFlex: {
-    flexShrink: 1,
-    minWidth: 0,
-  },
+// Static styles that don't depend on theme (used by ModeIcon sub-component)
+const staticStyles = StyleSheet.create({
   coinCircle: {
     width: 16,
     height: 16,
@@ -261,32 +199,103 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.6)',
   },
-  bulkBtn: {
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  bulkContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  bulkCostText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 17,
-    color: '#2592AB',
-  },
-  bulkLabelText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 17,
-    color: '#4A5568',
-  },
 });
+
+function getStyles(theme: ReturnType<typeof useAppTheme>) {
+  const { isDark } = theme;
+  const pillBg = isDark ? theme.surfaceElevated : 'rgba(255,255,255,0.92)';
+  const pillTextColor = isDark ? theme.text : theme.textMuted;
+  return StyleSheet.create({
+    wrapper: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: 10,
+      paddingHorizontal: 16,
+      paddingBottom: 90,
+      paddingTop: 8,
+    },
+    exitBtn: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: pillBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 6,
+    },
+    exitIcon: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 20,
+      color: pillTextColor,
+    },
+    actionBtn: {
+      flex: 1,
+      borderRadius: 27,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.22,
+      shadowRadius: 6,
+      elevation: 8,
+    },
+    btnGradient: {
+      paddingVertical: 16,
+      paddingHorizontal: 24,
+      borderRadius: 27,
+      borderWidth: 1.5,
+      borderColor: 'rgba(255,255,255,0.4)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    btnContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    btnLabel: {
+      fontFamily: 'Fredoka_700Bold',
+      fontSize: 17,
+      color: '#fff',
+      letterSpacing: 0.3,
+    },
+    btnLabelFlex: {
+      flexShrink: 1,
+      minWidth: 0,
+    },
+    bulkBtn: {
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: pillBg,
+      paddingHorizontal: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 6,
+    },
+    bulkContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    bulkCostText: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 17,
+      color: '#2592AB',
+    },
+    bulkLabelText: {
+      fontFamily: 'Fredoka_600SemiBold',
+      fontSize: 17,
+      color: pillTextColor,
+    },
+  });
+}

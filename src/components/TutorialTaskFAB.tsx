@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import Svg, { Circle } from 'react-native-svg';
@@ -26,6 +27,7 @@ const CIRCUMFERENCE = 2 * Math.PI * R;
 
 
 export default function TutorialTaskFAB({ slot, aboveBar, onPress }: Props) {
+  const theme = useAppTheme();
   const { allDone, claimedFinal, isComplete, delta, currentTask } = useTutorialTaskStore();
 
   if (allDone && claimedFinal) return null;
@@ -48,10 +50,10 @@ export default function TutorialTaskFAB({ slot, aboveBar, onPress }: Props) {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           onPress();
         }}
-        style={({ pressed }) => [styles.fab, pressed && { opacity: 0.82 }]}
+        style={({ pressed }) => [styles.fab, { backgroundColor: theme.surface, borderColor: theme.isDark ? theme.divider : 'rgba(255,255,255,0.9)' }, pressed && { opacity: 0.82 }]}
       >
         <Image source={CHECKLIST_ICON} style={{ width: 34, height: 34 }} contentFit="contain" />
-        {isComplete && !allDone && <View style={styles.badge} />}
+        {isComplete && !allDone && <View style={[styles.badge, { borderColor: theme.surface }]} />}
       </Pressable>
 
       {/* Progress ring — sibling of Pressable, drawn on top, not clipped */}
@@ -114,11 +116,11 @@ const styles = StyleSheet.create({
     width: BTN,
     height: BTN,
     borderRadius: BTN / 2,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F8F9FA', // overridden inline via theme.surface
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.9)',
+    borderColor: 'rgba(255,255,255,0.9)', // overridden inline via theme
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,

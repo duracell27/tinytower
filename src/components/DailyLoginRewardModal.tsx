@@ -12,11 +12,14 @@ import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
 export default function DailyLoginRewardModal() {
   const { t } = useTranslation('hotel');
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const reward = useGameStore((s) => s.pendingDailyLoginReward);
   const dismiss = useGameStore((s) => s.dismissDailyLoginReward);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
@@ -55,11 +58,11 @@ export default function DailyLoginRewardModal() {
               <Text style={styles.subtitle}>{t('dailyLoginReward.subtitle')}</Text>
 
               <View style={styles.rewardsContainer}>
-                <View style={styles.rewardRow}>
+                <View style={[styles.rewardRow, { backgroundColor: theme.surface }]}>
                   <CoinIcon size={20} />
                   <Text style={styles.rewardText}>+{formatNum(reward.coins)}</Text>
                 </View>
-                <View style={styles.rewardRow}>
+                <View style={[styles.rewardRow, { backgroundColor: theme.surface }]}>
                   <GemIcon size={16} />
                   <Text style={styles.rewardTextGem}>+{reward.gems}</Text>
                 </View>

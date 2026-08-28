@@ -2,8 +2,9 @@ import React, { useCallback, useState } from 'react';
 import {
   View, Text, FlatList, Pressable, RefreshControl,
   Modal, TextInput, KeyboardAvoidingView, Platform,
-  Alert, StyleSheet, useColorScheme,
+  Alert, StyleSheet,
 } from 'react-native';
+import { useAppTheme } from '../src/hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -27,7 +28,8 @@ export default function ForumCategoryScreen() {
   const isAdmin = player?.isAdmin ?? false;
   const canPost = isAuthenticated && (cat !== 'NEWS' || isAdmin);
 
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const [modalVisible, setModalVisible] = useState(false);
   const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: string } | null>(null);
   const [newTitle, setNewTitle] = useState('');
@@ -69,11 +71,11 @@ export default function ForumCategoryScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }, isDark && { backgroundColor: '#1A1E24' }]}>
-      <View style={[styles.header, isDark && { backgroundColor: '#1E2028', borderBottomColor: 'rgba(255,255,255,0.08)' }]}>
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.divider }]}>
         <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
           <Text style={styles.backIcon}>‹</Text>
         </Pressable>
-        <Text style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>{t(`forum.categories.${cat}`)}</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{t(`forum.categories.${cat}`)}</Text>
         {canPost ? (
           <Pressable onPress={() => setModalVisible(true)} style={styles.headerBtn} hitSlop={8}>
             <Text style={styles.addBtn}>+</Text>
@@ -113,7 +115,7 @@ export default function ForumCategoryScreen() {
         }
         ListFooterComponent={
           postsHasMore ? (
-            <Pressable style={[styles.loadMore, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.08)' }]} onPress={() => void fetchPosts(cat)}>
+            <Pressable style={[styles.loadMore, { backgroundColor: theme.surface, borderColor: theme.divider }]} onPress={() => void fetchPosts(cat)}>
               <Text style={styles.loadMoreText}>{t('forum.loadMore')}</Text>
             </Pressable>
           ) : null
@@ -139,7 +141,7 @@ export default function ForumCategoryScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View style={[styles.modalInner, { paddingTop: insets.top }]}>
-            <LinearGradient colors={isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.modalHeader}>
+            <LinearGradient colors={theme.isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.modalHeader}>
               <Pressable onPress={handleCloseModal} style={styles.modalClose} hitSlop={10}>
                 <Text style={styles.modalCloseText}>✕</Text>
               </Pressable>
@@ -156,19 +158,19 @@ export default function ForumCategoryScreen() {
             </LinearGradient>
 
             <TextInput
-              style={[styles.titleInput, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.08)', color: '#DDE8D8' }]}
+              style={[styles.titleInput, { backgroundColor: theme.surface, borderColor: theme.divider, color: theme.text }]}
               value={newTitle}
               onChangeText={v => setNewTitle(v.slice(0, 200))}
               placeholder={t('forum.categories.' + cat)}
-              placeholderTextColor={isDark ? '#4A5468' : '#bbb'}
+              placeholderTextColor={theme.isDark ? '#4A5468' : '#bbb'}
               maxLength={200}
             />
             <TextInput
-              style={[styles.bodyInput, isDark && { backgroundColor: '#2A2F38', borderColor: 'rgba(255,255,255,0.08)', color: '#DDE8D8' }]}
+              style={[styles.bodyInput, { backgroundColor: theme.surface, borderColor: theme.divider, color: theme.text }]}
               value={newBody}
               onChangeText={v => setNewBody(v.slice(0, 5000))}
               placeholder={t('forum.commentPlaceholder')}
-              placeholderTextColor={isDark ? '#4A5468' : '#bbb'}
+              placeholderTextColor={theme.isDark ? '#4A5468' : '#bbb'}
               multiline
               maxLength={5000}
               textAlignVertical="top"

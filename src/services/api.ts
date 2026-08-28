@@ -66,6 +66,15 @@ export interface IncomingRequest {
   createdAt: string;
 }
 
+export interface OutgoingRequest {
+  requestId: string;
+  toId: string;
+  playerName: string;
+  playerLevel: number;
+  city: string | null;
+  createdAt: string;
+}
+
 export interface FriendStatusResponse {
   status: 'none' | 'pending_sent' | 'pending_received' | 'friends';
   requestId?: string;
@@ -214,6 +223,8 @@ export const api = {
     request<FriendEntry[]>('GET', '/friends'),
   getIncomingFriendRequests: () =>
     request<IncomingRequest[]>('GET', '/friends/requests/incoming'),
+  getOutgoingFriendRequests: () =>
+    request<OutgoingRequest[]>('GET', '/friends/requests/outgoing'),
   sendFriendRequest: (toId: string) =>
     request<{ requestId: string }>('POST', `/friends/request/${toId}`),
   cancelFriendRequest: (requestId: string) =>

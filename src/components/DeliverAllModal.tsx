@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, Dimensions, Modal } from 'react-native';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -24,6 +25,7 @@ interface DeliverAllModalProps {
 
 export default function DeliverAllModal({ visible, summary, onDismiss, asOverlay = false }: DeliverAllModalProps) {
   const { t } = useTranslation('hotel');
+  const theme = useAppTheme();
   const scale = useSharedValue(0.5);
   const opacity = useSharedValue(0);
 
@@ -49,32 +51,35 @@ export default function DeliverAllModal({ visible, summary, onDismiss, asOverlay
     <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]}>
       <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
         <Animated.View style={[styles.card, cardStyle]}>
-            <LinearGradient colors={['#F0F4FA', '#E4EAF2']} style={styles.cardGradient}>
-              <Text style={styles.title}>{t('deliverAll.title')}</Text>
+            <LinearGradient
+              colors={theme.isDark ? ['#1E2028', '#252930'] : ['#F0F4FA', '#E4EAF2']}
+              style={styles.cardGradient}
+            >
+              <Text style={[styles.title, { color: theme.isDark ? '#8ACE6A' : '#3D6B1E' }]}>{t('deliverAll.title')}</Text>
 
               {summary.guestCount > 0 && (
                 <View style={styles.row}>
-                  <Text style={styles.rowLabel}>{t('deliverAll.rows.guests', { count: summary.guestCount })}</Text>
+                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.guests', { count: summary.guestCount })}</Text>
                 </View>
               )}
               {summary.businessmanCount > 0 && (
                 <View style={styles.row}>
-                  <Text style={styles.rowLabel}>{t('deliverAll.rows.businessmen', { count: summary.businessmanCount })}</Text>
+                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.businessmen', { count: summary.businessmanCount })}</Text>
                 </View>
               )}
               {summary.delivererCount > 0 && (
                 <View style={styles.row}>
-                  <Text style={styles.rowLabel}>{t('deliverAll.rows.deliverers', { count: summary.delivererCount })}</Text>
+                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.deliverers', { count: summary.delivererCount })}</Text>
                 </View>
               )}
               {summary.sellerCount > 0 && (
                 <View style={styles.row}>
-                  <Text style={styles.rowLabel}>{t('deliverAll.rows.sellers', { count: summary.sellerCount })}</Text>
+                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.sellers', { count: summary.sellerCount })}</Text>
                 </View>
               )}
               {summary.builderCount > 0 && (
                 <View style={styles.row}>
-                  <Text style={styles.rowLabel}>{t('deliverAll.rows.builders', { count: summary.builderCount })}</Text>
+                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.builders', { count: summary.builderCount })}</Text>
                 </View>
               )}
               {(['guest', 'businessman', 'deliverer', 'seller', 'builder'] as const).map((role) => {
@@ -82,13 +87,13 @@ export default function DeliverAllModal({ visible, summary, onDismiss, asOverlay
                 if (!count) return null;
                 return (
                   <View key={role} style={styles.row}>
-                    <Text style={styles.rowLabel}>{t(`deliverAll.rows.vip_${role}`, { count })}</Text>
+                    <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t(`deliverAll.rows.vip_${role}`, { count })}</Text>
                   </View>
                 );
               })}
               {summary.newWorkers > 0 && (
                 <View style={styles.row}>
-                  <Text style={styles.rowLabel}>{t('deliverAll.rows.newWorkers', { count: summary.newWorkers })}</Text>
+                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.newWorkers', { count: summary.newWorkers })}</Text>
                 </View>
               )}
 
@@ -96,13 +101,13 @@ export default function DeliverAllModal({ visible, summary, onDismiss, asOverlay
 
               <View style={styles.totalRow}>
                 {summary.totalCoins > 0 && (
-                  <View style={styles.totalChip}>
+                  <View style={[styles.totalChip, { backgroundColor: theme.surface }]}>
                     <CoinIcon size={16} />
                     <Text style={styles.totalCoinsText}>+{formatNum(summary.totalCoins)}</Text>
                   </View>
                 )}
                 {summary.totalGems > 0 && (
-                  <View style={styles.totalChip}>
+                  <View style={[styles.totalChip, { backgroundColor: theme.surface }]}>
                     <GemIcon size={14} />
                     <Text style={styles.totalGemsText}>+{summary.totalGems}</Text>
                   </View>
@@ -155,7 +160,6 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 24,
-    color: '#3D6B1E',
     marginBottom: 16,
   },
   row: {
@@ -165,7 +169,6 @@ const styles = StyleSheet.create({
   rowLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
-    color: '#5A6478',
     textAlign: 'center',
   },
   divider: {
@@ -184,7 +187,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#fff',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 14,

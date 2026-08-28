@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, Modal, Pressable, StyleSheet, Dimensions, useColorScheme,
+  View, Text, Modal, Pressable, StyleSheet, Dimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
@@ -9,6 +9,7 @@ import Animated, {
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { useGameStore } from '../stores/gameStore';
 import {
   warehouseCapacity,
@@ -43,7 +44,7 @@ interface WarehouseSheetProps {
 
 export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps) {
   const { t } = useTranslation('tabs');
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme(); const { isDark } = theme;
   const [mounted, setMounted] = useState(false);
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SCREEN_HEIGHT);
@@ -121,9 +122,9 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
         </Animated.View>
 
         <GestureDetector gesture={pan}>
-          <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2026' }]}>
+          <Animated.View style={[styles.sheet, sheetStyle, { backgroundColor: isDark ? theme.surface : '#EAEDF2' }]}>
             {/* Header */}
-            <View style={[styles.header, isDark && { backgroundColor: '#2E333D' }]}>
+            <View style={[styles.header, isDark && { backgroundColor: theme.surface }]}>
               <View style={styles.handle} />
               <View style={styles.titleRow}>
                 <Image
@@ -163,11 +164,11 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
             <View style={styles.body}>
               <View style={styles.grid}>
                 {TOOLS.map((tool) => (
-                  <View key={tool.key} style={[styles.cell, isDark && { backgroundColor: '#2A2F38' }]}>
+                  <View key={tool.key} style={[styles.cell, { backgroundColor: theme.surface }]}>
                     <Image source={tool.image} style={{ width: 40, height: 40 }} contentFit="contain" />
-                    <Text style={[styles.cellLabel, isDark && { color: '#DDE8D8' }]}>{tool.label}</Text>
-                    <View style={[styles.countBadge, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-                      <Text style={[styles.countText, isDark && { color: '#A0AABC' }]}>{counts[tool.key]}</Text>
+                    <Text style={[styles.cellLabel, { color: theme.text }]}>{tool.label}</Text>
+                    <View style={[styles.countBadge, { backgroundColor: isDark ? theme.divider : '#F0F2F5' }]}>
+                      <Text style={[styles.countText, { color: isDark ? '#A0AABC' : '#5B6472' }]}>{counts[tool.key]}</Text>
                     </View>
                   </View>
                 ))}
@@ -179,7 +180,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
         {/* Upgrade confirmation popup */}
         {showUpgradeConfirm && nextCost && (
           <Pressable style={[StyleSheet.absoluteFill, styles.confirmScrim]} onPress={() => setShowUpgradeConfirm(false)}>
-            <Pressable style={[styles.confirmCard, isDark && { backgroundColor: 'rgba(30,32,38,0.98)' }]} onPress={() => {}}>
+            <Pressable style={[styles.confirmCard, { backgroundColor: theme.surface }]} onPress={() => {}}>
               <View style={styles.confirmIconWrap}>
                 <Image
                   source={require('../../assets/img/menu/werehouse.png')}
@@ -187,7 +188,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                   contentFit="contain"
                 />
               </View>
-              <Text style={[styles.confirmTitle, isDark && { color: '#DDE8D8' }]}>
+              <Text style={[styles.confirmTitle, { color: theme.text }]}>
                 {t('warehouse.upgradeConfirmTitle')}
               </Text>
               <View style={styles.confirmCostRow}>
@@ -209,7 +210,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                 <Text style={styles.confirmBtnText}>{t('warehouse.upgradeConfirmOk')}</Text>
               </Pressable>
               <Pressable onPress={() => setShowUpgradeConfirm(false)} style={styles.confirmCancelBtn}>
-                <Text style={[styles.confirmCancelText, isDark && { color: '#8A9A80' }]}>
+                <Text style={[styles.confirmCancelText, { color: isDark ? theme.textMuted : '#5A6478' }]}>
                   {t('warehouse.upgradeConfirmCancel')}
                 </Text>
               </Pressable>

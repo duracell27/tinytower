@@ -30,8 +30,8 @@ export const TUTORIAL_TASKS: TutorialTaskConfig[] = [
   { key: 'upgrade_elevator',      title: 'Speed Boost',        description: 'Upgrade the elevator',                         progressSource: 'elevatorUpgraded',   threshold: 1,   reward: { coins: 0,   gems: 2 } },
   { key: 'upgrade_lobby',         title: 'Grand Lobby',        description: 'Upgrade the lobby',                            progressSource: 'lobbyUpgraded',      threshold: 1,   reward: { coins: 0,   gems: 1 } },
   { key: 'upgrade_floor',         title: 'Level Up',           description: 'Upgrade one of your floors to level 2',        progressSource: 'floorUpgraded',      threshold: 1,   reward: { coins: 0,   gems: 1 } },
-  { key: 'invite_friend',         title: 'Bring a Friend',     description: 'Send an invite link to a friend',              progressSource: 'inviteSent',         threshold: 1,   reward: { coins: 0,   gems: 3 } },
-  { key: 'upgrade_business',      title: 'Business Pro',       description: 'Upgrade one business category',                progressSource: 'businessUpgraded',   threshold: 1,   reward: { coins: 0,   gems: 5 } },
+  { key: 'invite_friend',         title: 'Bring a Friend',     description: 'Send a friend request to any player. Find them in the leaderboard, chat, forum, or visit their profile.',              progressSource: 'inviteSent',         threshold: 1,   reward: { coins: 0,   gems: 3 } },
+  { key: 'upgrade_business',      title: 'Business Pro',       description: 'Upgrade one business category. You can do it in your profile.',                progressSource: 'businessUpgraded',   threshold: 1,   reward: { coins: 0,   gems: 5 } },
 ];
 
 export type TutorialProgressState = Record<TutorialProgressSource, number>;

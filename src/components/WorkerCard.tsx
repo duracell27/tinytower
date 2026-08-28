@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import Svg, { Path } from 'react-native-svg';
@@ -41,7 +42,8 @@ export default function WorkerCard({
 }: WorkerCardProps) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const ft = gameConfig.floorTypes[worker.floorType];
   const accent = ft?.accent ?? '#888';
   const shirtColor = ft?.shirtColor ?? '#999';
@@ -99,10 +101,10 @@ export default function WorkerCard({
     <View
       style={[
         styles.card,
-        isDark && { backgroundColor: 'rgba(52,55,52,0.97)' },
+        isDark && { backgroundColor: theme.surface },
         expanded
           ? { borderWidth: 2, borderColor: shirtColor }
-          : { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(40,60,90,0.06)' },
+          : { borderWidth: 1, borderColor: isDark ? theme.divider : 'rgba(40,60,90,0.06)' },
       ]}
     >
       {/* Collapsed row */}
@@ -112,7 +114,7 @@ export default function WorkerCard({
         <View style={styles.infoColumn}>
           {/* Name row */}
           <View style={styles.nameRow}>
-            <Text style={[styles.nameText, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>
+            <Text style={[styles.nameText, isDark && { color: theme.text }]} numberOfLines={1}>
               {worker.name}
             </Text>
 {isBetterCandidate && (
@@ -190,7 +192,7 @@ export default function WorkerCard({
       <Animated.View style={[styles.expandedSection, expandedStyle]}>
         <View style={styles.expandedContent}>
           {/* Info rows */}
-          <View style={[styles.infoRows, isDark && { backgroundColor: 'rgba(255,255,255,0.07)' }]}>
+          <View style={[styles.infoRows, isDark && { backgroundColor: theme.surfaceSub }]}>
             <InfoRow label={t('workerCard.info.skill')} value={`${category} · ${worker.level}`} />
             <InfoRow label={t('workerCard.info.dreamJob')} value={`${dreamFloorName ?? dreamBusinessName ?? category} · ${dreamJobName}`} valueColor={dreamAccent} />
             <InfoRow
@@ -256,11 +258,12 @@ export default function WorkerCard({
 }
 
 function InfoRow({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   return (
     <View style={styles.infoRow}>
-      <Text style={[styles.infoRowLabel, isDark && { color: '#8A9A80' }]}>{label}</Text>
-      <Text style={[styles.infoRowValue, isDark && { color: '#DDE8D8' }, valueColor ? { color: valueColor } : undefined]}>{value}</Text>
+      <Text style={[styles.infoRowLabel, isDark && { color: theme.textMuted }]}>{label}</Text>
+      <Text style={[styles.infoRowValue, isDark && { color: theme.text }, valueColor ? { color: valueColor } : undefined]}>{value}</Text>
     </View>
   );
 }

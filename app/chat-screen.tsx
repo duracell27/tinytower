@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View, Text, FlatList, TextInput, Pressable, Modal, ScrollView,
-  StyleSheet, KeyboardAvoidingView, Platform, Alert, Keyboard, useColorScheme,
+  StyleSheet, KeyboardAvoidingView, Platform, Alert, Keyboard,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
@@ -16,6 +16,7 @@ import ChatMessage from '../src/components/ChatMessage';
 import ReportSheet from '../src/components/ReportSheet';
 import GuestWall from '../src/components/GuestWall';
 import type { ReportTargetType } from '../src/stores/reportStore';
+import { useAppTheme } from '../src/hooks/useAppTheme';
 
 type Channel = 'global' | 'country';
 type SelectedMessage = { id: string; body: string; isOwn: boolean };
@@ -24,13 +25,14 @@ const regionToFlag = (code: string) =>
   code.toUpperCase().replace(/./g, (c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65));
 
 function InfoSection({ emoji, title, text }: { emoji: string; title: string; text: string }) {
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   return (
-    <View style={[infoStyles.section, isDark && { borderBottomColor: 'rgba(255,255,255,0.08)' }]}>
+    <View style={[infoStyles.section, isDark && { borderBottomColor: theme.divider }]}>
       <Text style={infoStyles.sectionEmoji}>{emoji}</Text>
       <View style={infoStyles.sectionBody}>
-        <Text style={[infoStyles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{title}</Text>
-        <Text style={[infoStyles.sectionText, isDark && { color: '#8A9A80' }]}>{text}</Text>
+        <Text style={[infoStyles.sectionTitle, isDark && { color: theme.text }]}>{title}</Text>
+        <Text style={[infoStyles.sectionText, isDark && { color: theme.textMuted }]}>{text}</Text>
       </View>
     </View>
   );
@@ -48,7 +50,8 @@ export default function ChatScreen() {
   const playerLevel = useGameStore((s) => s.playerLevel);
   const isAdmin = player?.isAdmin === true;
 
-  const isDark = useColorScheme() === 'dark';
+  const theme = useAppTheme();
+  const { isDark } = theme;
   const [inputText, setInputText] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [channel, setChannel] = useState<Channel>('global');
@@ -151,12 +154,12 @@ export default function ChatScreen() {
   if (!isAuthenticated || isTemporary) {
     return (
       <View style={[styles.container, isDark && { backgroundColor: '#1A1E24' }]}>
-        <View style={[styles.topBar, { paddingTop: insets.top }, isDark && { backgroundColor: '#1E2028' }]}>
+        <View style={[styles.topBar, { paddingTop: insets.top }, isDark && { backgroundColor: theme.surface }]}>
           <View style={styles.header}>
             <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
               <Text style={styles.backIcon}>‹</Text>
             </Pressable>
-            <Text style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>{t('chat.title')}</Text>
+            <Text style={[styles.headerTitle, isDark && { color: theme.text }]}>{t('chat.title')}</Text>
             <View style={styles.headerBtn} />
           </View>
         </View>
@@ -168,12 +171,12 @@ export default function ChatScreen() {
   return (
     <View style={[styles.container, isDark && { backgroundColor: '#1A1E24' }]}>
       {/* Top bar */}
-      <View style={[styles.topBar, { paddingTop: insets.top }, isDark && { backgroundColor: '#1E2028' }]}>
+      <View style={[styles.topBar, { paddingTop: insets.top }, isDark && { backgroundColor: theme.surface }]}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
             <Text style={styles.backIcon}>‹</Text>
           </Pressable>
-          <Text style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>{t('chat.title')}</Text>
+          <Text style={[styles.headerTitle, isDark && { color: theme.text }]}>{t('chat.title')}</Text>
           <Pressable onPress={() => setInfoVisible(true)} style={styles.headerBtn} hitSlop={8}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -246,9 +249,9 @@ export default function ChatScreen() {
                 </Pressable>
               </View>
             )}
-            <View style={[styles.inputBar, { paddingBottom: keyboardVisible ? 8 : Math.max(insets.bottom + 8, 16) }, isDark && { backgroundColor: '#1E2028', borderTopColor: 'rgba(255,255,255,0.08)' }]}>
+            <View style={[styles.inputBar, { paddingBottom: keyboardVisible ? 8 : Math.max(insets.bottom + 8, 16) }, isDark && { backgroundColor: theme.surface, borderTopColor: theme.divider }]}>
               <TextInput
-                style={[styles.input, isDark && { backgroundColor: '#2A2F38', color: '#DDE8D8' }]}
+                style={[styles.input, isDark && { backgroundColor: theme.surface, color: theme.text }]}
                 value={inputText}
                 onChangeText={(v) => setInputText(v.slice(0, 300))}
                 placeholder={t('chat.placeholder')}
@@ -276,7 +279,7 @@ export default function ChatScreen() {
             </View>
           </View>
         ) : (
-          <View style={[styles.guestBanner, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: '#1E2028', borderTopColor: 'rgba(255,255,255,0.08)' }]}>
+          <View style={[styles.guestBanner, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: theme.surface, borderTopColor: theme.divider }]}>
             <Text style={styles.guestText}>{t('chat.guestBanner')}</Text>
           </View>
         )}
@@ -286,7 +289,7 @@ export default function ChatScreen() {
       {infoVisible && (
         <View style={styles.infoScrim}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-          <View style={[styles.infoCard, isDark && { backgroundColor: '#2A2F38' }]}>
+          <View style={[styles.infoCard, isDark && { backgroundColor: theme.surface }]}>
             <LinearGradient colors={isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.infoCardHeader}>
               <Text style={styles.infoCardTitle}>{t('chat.infoTitle')}</Text>
               <Pressable onPress={() => setInfoVisible(false)} style={styles.infoCardClose} hitSlop={10}>
@@ -314,17 +317,17 @@ export default function ChatScreen() {
         onRequestClose={() => setSelectedMessage(null)}
       >
         <Pressable style={styles.overlay} onPress={() => setSelectedMessage(null)}>
-          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: '#2A2F38' }]}>
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: theme.surface }]}>
             {selectedMessage?.isOwn && (
               <Pressable style={styles.sheetItem} onPress={handleActionEdit}>
                 <Image source={require('../assets/img/edit.png')} style={styles.sheetItemIcon} contentFit="contain" />
-                <Text style={[styles.sheetItemText, isDark && { color: '#DDE8D8' }]}>{t('chat.actionEdit')}</Text>
+                <Text style={[styles.sheetItemText, isDark && { color: theme.text }]}>{t('chat.actionEdit')}</Text>
               </Pressable>
             )}
             {!selectedMessage?.isOwn && isAuthenticated && (
               <Pressable style={styles.sheetItem} onPress={handleActionReport}>
                 <Image source={require('../assets/img/warningIcon.png')} style={styles.sheetItemIcon} contentFit="contain" />
-                <Text style={[styles.sheetItemText, isDark && { color: '#DDE8D8' }]}>{t('chat.actionReport')}</Text>
+                <Text style={[styles.sheetItemText, isDark && { color: theme.text }]}>{t('chat.actionReport')}</Text>
               </Pressable>
             )}
             {(selectedMessage?.isOwn || isAdmin) && (
@@ -333,7 +336,7 @@ export default function ChatScreen() {
                 <Text style={[styles.sheetItemText, styles.sheetItemDanger]}>{t('chat.actionDelete')}</Text>
               </Pressable>
             )}
-            <View style={[styles.sheetDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
+            <View style={[styles.sheetDivider, isDark && { backgroundColor: theme.divider }]} />
             <Pressable style={styles.sheetItem} onPress={() => setSelectedMessage(null)}>
               <Text style={[styles.sheetItemText, styles.sheetItemCancel]}>{t('chat.cancel')}</Text>
             </Pressable>

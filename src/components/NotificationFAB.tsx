@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface Props {
   icon: ReturnType<typeof require>;
@@ -11,15 +12,25 @@ interface Props {
 }
 
 export default function NotificationFAB({ icon, count, slot, badgeColor = '#3FA535', onPress }: Props) {
+  const theme = useAppTheme();
+
   if (count === 0) return null;
 
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.fab, { bottom: 96 + slot * 62 }, pressed && { opacity: 0.82 }]}
+      style={({ pressed }) => [
+        styles.fab,
+        {
+          bottom: 96 + slot * 62,
+          backgroundColor: theme.surface,
+          borderColor: theme.isDark ? theme.divider : 'rgba(255,255,255,0.9)',
+        },
+        pressed && { opacity: 0.82 },
+      ]}
     >
       <Image source={icon} style={styles.icon} contentFit="contain" />
-      <View style={[styles.badge, { backgroundColor: badgeColor }]}>
+      <View style={[styles.badge, { backgroundColor: badgeColor, borderColor: theme.surface }]}>
         <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
       </View>
     </Pressable>
@@ -33,11 +44,9 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: '#F8F9FA',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.9)',
   },
   icon: { width: 28, height: 28 },
   badge: {
@@ -51,7 +60,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#fff',
   },
   badgeText: {
     fontFamily: 'Fredoka_700Bold',

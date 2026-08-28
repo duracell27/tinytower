@@ -12,6 +12,7 @@ import { formatNum } from '../../src/utils/format';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useFriendStore } from '../../src/stores/friendStore';
+import { useGameStore } from '../../src/stores/gameStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useBlockStore } from '../../src/stores/blockStore';
 
@@ -123,6 +124,7 @@ export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const theme = useAppTheme();
+  const { isDark } = theme;
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,6 +135,7 @@ export default function UserProfileScreen() {
   const statusCache = useFriendStore(s => s.statusCache);
   const fetchStatus = useFriendStore(s => s.fetchStatus);
   const sendRequest = useFriendStore(s => s.sendRequest);
+  const recordInviteSent = useGameStore(s => s.recordInviteSent);
   const cancelRequest = useFriendStore(s => s.cancelRequest);
   const acceptRequest = useFriendStore(s => s.acceptRequest);
   const rejectRequest = useFriendStore(s => s.rejectRequest);
@@ -241,7 +244,7 @@ export default function UserProfileScreen() {
             <View style={pStyles.profileCenter}>
               <Image
                 source={getUserIcon(profile.playerLevel)}
-                style={[pStyles.avatar, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]}
+                style={[pStyles.avatar, { borderColor: theme.surface }, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]}
                 contentFit="cover"
               />
               <Text style={[pStyles.name, { color: theme.text }]}>{profile.playerName}</Text>
@@ -306,7 +309,7 @@ export default function UserProfileScreen() {
                   style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
                   onPress={async () => {
                     setFriendActionLoading(true);
-                    try { await sendRequest(id); } catch { /* silent */ }
+                    try { await sendRequest(id); recordInviteSent(); } catch { /* silent */ }
                     setFriendActionLoading(false);
                   }}
                   disabled={friendActionLoading}
@@ -321,7 +324,7 @@ export default function UserProfileScreen() {
                   <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
                   <Text style={[pStyles.actionBtnText, { flex: 1, color: theme.textMuted }]}>Request Sent</Text>
                   <Pressable
-                    style={pStyles.cancelBtn}
+                    style={[pStyles.cancelBtn, { backgroundColor: isDark ? '#2A3040' : '#F0EDE5' }]}
                     onPress={async () => {
                       if (!friendStatus.requestId) return;
                       setFriendActionLoading(true);
@@ -330,7 +333,7 @@ export default function UserProfileScreen() {
                     }}
                     disabled={friendActionLoading}
                   >
-                    <Text style={pStyles.cancelBtnText}>Cancel</Text>
+                    <Text style={[pStyles.cancelBtnText, { color: theme.textMuted }]}>Cancel</Text>
                   </Pressable>
                 </View>
               )}
@@ -557,11 +560,11 @@ export default function UserProfileScreen() {
 
                 <View style={cStyles.btnRow}>
                   <Pressable
-                    style={({ pressed }) => [cStyles.cancelBtn, pressed && { opacity: 0.7 }]}
+                    style={({ pressed }) => [cStyles.cancelBtn, { borderColor: theme.divider }, pressed && { opacity: 0.7 }]}
                     onPress={closeCompose}
                     disabled={sendLoading}
                   >
-                    <Text style={cStyles.cancelBtnText}>Cancel</Text>
+                    <Text style={[cStyles.cancelBtnText, { color: theme.textMuted }]}>Cancel</Text>
                   </Pressable>
                   <Pressable
                     style={({ pressed }) => [cStyles.sendBtn, pressed && { opacity: 0.85 }]}
