@@ -81,12 +81,14 @@ export default function TaskRewardModal() {
                 <Image source={DIAMOND_ICON} style={styles.chipIcon} contentFit="contain" />
                 <Text style={styles.chipGems}>+{reward.gems}</Text>
               </View>
-              <View style={styles.chip}>
-                <Image source={TOKEN_ICONS[reward.tokenColor]} style={styles.chipIcon} contentFit="contain" />
-                <Text style={[styles.chipToken, { color: TOKEN_COLORS[reward.tokenColor] }]}>
-                  +{reward.tokenCount}
-                </Text>
-              </View>
+              {reward.tokenCount > 0 && (
+                <View style={styles.chip}>
+                  <Image source={TOKEN_ICONS[reward.tokenColor]} style={styles.chipIcon} contentFit="contain" />
+                  <Text style={[styles.chipToken, { color: TOKEN_COLORS[reward.tokenColor] }]}>
+                    +{reward.tokenCount}
+                  </Text>
+                </View>
+              )}
               {reward.matCount != null && reward.materialType && (
                 <View style={styles.chip}>
                   <Image source={MATERIAL_ICONS[reward.materialType]} style={styles.chipIcon} contentFit="contain" />

@@ -33,7 +33,7 @@ interface AuthActions {
   logout: () => void;
   loadTokens: () => void;
   enterAsGuest: () => Promise<void>;
-  convertAccount: (email: string, password: string, playerName: string) => Promise<void>;
+  convertAccount: (email: string, password: string, playerName: string) => Promise<number>;
   requestConvertModal: () => void;
   clearConvertModal: () => void;
 }
@@ -164,14 +164,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('player', JSON.stringify(player));
       saveLastPlayer(player);
       set({ player, lastPlayer: player, isLoading: false });
-      const gems = data.registrationGems ?? 5;
-      useGameStore.getState().setTaskReward({
-        taskTitle: 'Account created!',
-        coins: 0,
-        gems,
-        tokenCount: 0,
-        tokenColor: 'green',
-      });
+      return data.registrationGems ?? 5;
     } catch (e) {
       set({ isLoading: false });
       throw e;

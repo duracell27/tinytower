@@ -460,8 +460,20 @@ export default function ProfileScreen() {
     setConvertLoading(true);
     setConvertError('');
     try {
-      await convertAccount(convertEmail.trim(), convertPassword, convertName.trim());
+      const gems = await convertAccount(convertEmail.trim(), convertPassword, convertName.trim());
       setConvertOpen(false);
+      // Defer the reward modal until after the convert modal's fade animation completes.
+      // Showing two modals simultaneously (convert still visible + TaskRewardModal) causes
+      // iOS to fail dismissing the parent VC, freezing all UI interaction.
+      setTimeout(() => {
+        useGameStore.getState().setTaskReward({
+          taskTitle: 'Account created!',
+          coins: 1000,
+          gems,
+          tokenCount: 0,
+          tokenColor: 'green',
+        });
+      }, 450);
     } catch (e) {
       setConvertError(e instanceof Error ? e.message : t('profile.convert.errorGeneric'));
     } finally {
