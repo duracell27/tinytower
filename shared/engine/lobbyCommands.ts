@@ -27,16 +27,22 @@ export function processLobbyCommand(
   command: LobbyCommand,
   config: GameConfig,
   playerLevel: number,
+  bonuses: {
+    tipPercent?: number;
+    extraLobbyCapacity?: number;
+    extraGemExchangeLimit?: number;
+    xpPerVisitor?: number;
+  } = {},
 ): ProcessResult {
   state = checkDailyReset(state, command.timestamp);
 
   switch (command.type) {
     case 'spawn_visitor':
-      return handleSpawnVisitor(state, command, config);
+      return handleSpawnVisitor(state, command, config, bonuses.extraLobbyCapacity ?? 0);
     case 'lift_visitor':
       return handleLiftVisitor(state, command);
     case 'collect_tip':
-      return handleCollectTip(state, config, playerLevel, command.timestamp, command);
+      return handleCollectTip(state, config, playerLevel, command.timestamp, command, bonuses);
     case 'deliver_all':
       return handleDeliverAll(state, config, playerLevel, command.timestamp, command);
     case 'upgrade_elevator':
@@ -60,8 +66,10 @@ function handleSpawnVisitor(
   state: GameState,
   command: Extract<Command, { type: 'spawn_visitor' }>,
   config: GameConfig,
+  extraLobbyCapacity: number = 0,
 ): ProcessResult {
-  if (state.lobbyVisitors.length >= state.lobbyCapacity) {
+  const effectiveCapacity = state.lobbyCapacity + extraLobbyCapacity;
+  if (state.lobbyVisitors.length >= effectiveCapacity) {
     return { success: false, state, error: 'Lobby is full' };
   }
   const role = command.role ?? 'guest';
@@ -77,7 +85,7 @@ function handleSpawnVisitor(
     pendingFloorType: command.pendingFloorType,
   };
   const newVisitors = [...state.lobbyVisitors, visitor];
-  const willBeFull = newVisitors.length >= state.lobbyCapacity;
+  const willBeFull = newVisitors.length >= effectiveCapacity;
   return {
     success: true,
     state: {
@@ -131,11 +139,13 @@ function applyVisitorEffect(
   now: number,
   preGeneratedWorkerBatch?: { id: string; name: string; female: boolean; floorType: string; dreamJob: string; level: number; hairColor: string }[],
   preGeneratedTools?: string[],
+  bonuses: { tipPercent?: number; extraGemExchangeLimit?: number } = {},
 ): GameState {
   const role = visitor.role ?? 'guest';
   const isVip = visitor.isVip ?? false;
   const targetFloor = visitor.targetFloor ?? 1;
   const tip = calculateTip(role, targetFloor, state.elevatorLevel, config);
+  const tipMultiplier = 1 + (bonuses.tipPercent ?? 0) / 100;
   const vipMultiplier = isVip ? 10 : 1;
   const isToday = now >= state.lastDailyReset;
   let { balance, gems, dailyTips, dailyGemsCollected, workers, floors } = state;
@@ -144,13 +154,13 @@ function applyVisitorEffect(
   const workersBefore = workers.length;
 
   if (role === 'businessman') {
-    const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel;
+    const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel + (bonuses.extraGemExchangeLimit ?? 0);
     if (dailyGemsCollected < gemLimit) {
       gems += 1;
       dailyGemsCollected += 1; // accumulates for limit correctness; callers restore if not today
     } else {
-      balance += tip * vipMultiplier;
-      if (isToday) dailyTips += tip * vipMultiplier;
+      balance += Math.floor(tip * tipMultiplier * vipMultiplier);
+      if (isToday) dailyTips += Math.floor(tip * tipMultiplier * vipMultiplier);
     }
   } else if (role === 'builder') {
     const toolsTotal = (t: typeof tools) =>
@@ -178,8 +188,8 @@ function applyVisitorEffect(
       }
     }
   } else {
-    balance += tip * vipMultiplier;
-    if (isToday) dailyTips += tip * vipMultiplier;
+    balance += Math.floor(tip * tipMultiplier * vipMultiplier);
+    if (isToday) dailyTips += Math.floor(tip * tipMultiplier * vipMultiplier);
   }
 
   if (role === 'guest' && targetFloor === 1) {
@@ -296,6 +306,7 @@ function handleCollectTip(
   playerLevel: number,
   now: number,
   command: Extract<Command, { type: 'collect_tip' }>,
+  bonuses: { tipPercent?: number; extraGemExchangeLimit?: number; xpPerVisitor?: number } = {},
 ): ProcessResult {
   if (state.lobbyVisitors.length === 0) {
     return { success: false, state, error: 'No visitors' };
@@ -309,7 +320,7 @@ function handleCollectTip(
     ?? (command.newWorker ? [command.newWorker] : undefined);
   const toolBatch = command.builderTools
     ?? (command.builderTool ? [command.builderTool] : undefined);
-  let newState = applyVisitorEffect(state, active, config, playerLevel, now, workerBatch, toolBatch);
+  let newState = applyVisitorEffect(state, active, config, playerLevel, now, workerBatch, toolBatch, bonuses);
   // For yesterday's commands don't let the gem counter bleed into today's tracking
   if (now < state.lastDailyReset) {
     newState = { ...newState, dailyGemsCollected: state.dailyGemsCollected };
@@ -337,7 +348,7 @@ function handleCollectTip(
       },
     } : newState.dailyTasks,
   };
-  return { success: true, state: newState };
+  return { success: true, state: newState, xpGained: bonuses.xpPerVisitor ?? 0 };
 }
 
 function handleDeliverAll(

@@ -83,7 +83,12 @@ export function processCommand(
     case 'fill_lobby':
     case 'evict_low_level_workers':
     case 'buy_daily_gems':
-      return processLobbyCommand(state, command, config, playerLevel);
+      return processLobbyCommand(state, command, config, playerLevel, {
+        tipPercent: bonuses.tipPercent,
+        extraLobbyCapacity: bonuses.extraLobbyCapacity,
+        extraGemExchangeLimit: bonuses.extraGemExchangeLimit,
+        xpPerVisitor: bonuses.xpPerVisitor,
+      });
     case 'upgrade_warehouse': {
       const nextLevel = (state.warehouseLevel ?? 0) + 1;
       if (nextLevel > WAREHOUSE_MAX_LEVEL) {

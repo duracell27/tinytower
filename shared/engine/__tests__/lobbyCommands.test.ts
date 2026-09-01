@@ -635,3 +635,47 @@ describe('vipsLifted stat tracking', () => {
     expect(result.state.dailyTasks.progress.visitorsLifted).toBe(1);
   });
 });
+
+describe('vehicle bonus integration — lobby', () => {
+  const lobbyBonuses = {
+    coinPercent: 0, xpPercent: 0,
+    tipPercent: 100,
+    extraLobbyCapacity: 10,
+    extraGemExchangeLimit: 3,
+    baseCoinBoostPercent: 0, baseXpBoostPercent: 0,
+    salesSpeedPercent: 0, deliverySpeedPercent: 0,
+    xpPerSell: 0, xpPerBuy: 0, xpPerVisitor: 5_000,
+  };
+
+  it('spawn_visitor: respects extraLobbyCapacity', () => {
+    const state = makeState({
+      lobbyCapacity: 1,
+      lobbyVisitors: Array.from({ length: 1 }, (_, i) => ({
+        id: `v${i}`, role: 'guest' as const, targetFloor: 1,
+        hairColor: '#000', female: false, isVip: false, pendingFloorType: undefined,
+      })),
+    });
+    const cmd: Command = {
+      id: 'sv', type: 'spawn_visitor', timestamp: 1000,
+      visitorId: 'new', role: 'guest', targetFloor: 1,
+      hairColor: '#000', female: false, isVip: false, pendingFloorType: undefined,
+    } as Command;
+    const result = processCommand(state, cmd, testConfig, 1000, 1, lobbyBonuses);
+    expect(result.success).toBe(true);
+  });
+
+  it('collect_tip: xpPerVisitor returned as xpGained', () => {
+    const visitor = {
+      id: 'v1', role: 'guest' as const, targetFloor: 1,
+      hairColor: '#000', female: false, isVip: false, pendingFloorType: undefined,
+    };
+    const state = makeState({
+      lobbyVisitors: [visitor],
+      elevatorFloor: 1,
+    });
+    const cmd: Command = { id: 'ct', type: 'collect_tip', timestamp: 1000 } as Command;
+    const result = processCommand(state, cmd, testConfig, 1000, 1, lobbyBonuses);
+    expect(result.success).toBe(true);
+    expect(result.xpGained).toBe(5_000);
+  });
+});
