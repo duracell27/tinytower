@@ -8,7 +8,6 @@ export interface VehicleDefinition {
   description: string;
   gemCost: number;
   accentColor: string;
-  iconAsset: ReturnType<typeof require>;
   bonus1Label: (count: number) => string;
   bonus2Label: (count: number) => string;
 }
@@ -25,7 +24,6 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
       'Each taxi increases the number of free gem exchanges in the elevator by 1 and gives +1,000 experience for each visitor.',
     gemCost: 1_000,
     accentColor: '#E5A72E',
-    iconAsset: require('../../assets/img/TaxiIcon.png'),
     bonus1Label: (n) => `+${n} 💎 exchange limit`,
     bonus2Label: (n) => `+${(n * 1_000).toLocaleString()} XP/visitor`,
   },
@@ -36,7 +34,6 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
       'Each forklift speeds up sales of all goods by +1% and gives +5,000 extra experience for each product listed.',
     gemCost: 1_000,
     accentColor: '#3FA535',
-    iconAsset: require('../../assets/img/ForkliftIcon.png'),
     bonus1Label: (n) => `-${n}% sell time`,
     bonus2Label: (n) => `+${(n * 5_000).toLocaleString()} XP/sell`,
   },
@@ -47,7 +44,6 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
       'Each armored truck increases base production profit by +5% and base experience by +10%. These bonuses apply before all other multipliers.',
     gemCost: 2_500,
     accentColor: '#9A6FD0',
-    iconAsset: require('../../assets/img/ArmoredtruckIcon.png'),
     bonus1Label: (n) => `+${n * 5}% base profit`,
     bonus2Label: (n) => `+${n * 10}% base XP`,
   },
@@ -58,7 +54,6 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
       'Each truck speeds up the delivery of all goods by +1% and gives +5,000 extra experience for each product you buy.',
     gemCost: 1_000,
     accentColor: '#3376E5',
-    iconAsset: require('../../assets/img/DeliverytruckIcon.png'),
     bonus1Label: (n) => `-${n}% delivery time`,
     bonus2Label: (n) => `+${(n * 5_000).toLocaleString()} XP/buy`,
   },
@@ -69,7 +64,6 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
       'Each bus increases the number of visitors in the elevator by 5 and increases tips by +5%.',
     gemCost: 1_000,
     accentColor: '#E05A4A',
-    iconAsset: require('../../assets/img/BusIcon.png'),
     bonus1Label: (n) => `+${n * 5} visitor slots`,
     bonus2Label: (n) => `+${n * 5}% tips`,
   },

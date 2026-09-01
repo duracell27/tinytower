@@ -8,6 +8,14 @@ import { useGameStore } from '../src/stores/gameStore';
 import { VEHICLE_CONFIG, VEHICLE_TYPES } from '../shared/config/vehicleConfig';
 import type { VehicleType } from '../shared/config/vehicleConfig';
 
+const VEHICLE_ICONS: Record<VehicleType, ReturnType<typeof require>> = {
+  taxi: require('../assets/img/TaxiIcon.png'),
+  forklift: require('../assets/img/ForkliftIcon.png'),
+  armored_truck: require('../assets/img/ArmoredtruckIcon.png'),
+  delivery_truck: require('../assets/img/DeliverytruckIcon.png'),
+  bus: require('../assets/img/BusIcon.png'),
+};
+
 export default function AutoparkScreen() {
   const theme = useAppTheme();
   const vehicles = useGameStore((s) => s.vehicles);
@@ -44,7 +52,7 @@ export default function AutoparkScreen() {
               <View style={[styles.accentStrip, { backgroundColor: def.accentColor }]} />
 
               {/* Icon */}
-              <Image source={def.iconAsset} style={styles.icon} contentFit="contain" />
+              <Image source={VEHICLE_ICONS[key]} style={styles.icon} contentFit="contain" />
 
               {/* Info */}
               <View style={styles.info}>

@@ -10,6 +10,14 @@ import { formatNum } from '../../src/utils/format';
 import { VEHICLE_CONFIG } from '../../shared/config/vehicleConfig';
 import type { VehicleType } from '../../shared/config/vehicleConfig';
 
+const VEHICLE_ICONS: Record<VehicleType, ReturnType<typeof require>> = {
+  taxi: require('../../assets/img/TaxiIcon.png'),
+  forklift: require('../../assets/img/ForkliftIcon.png'),
+  armored_truck: require('../../assets/img/ArmoredtruckIcon.png'),
+  delivery_truck: require('../../assets/img/DeliverytruckIcon.png'),
+  bus: require('../../assets/img/BusIcon.png'),
+};
+
 const VALID_VEHICLE_KEYS: VehicleType[] = ['taxi', 'forklift', 'armored_truck', 'delivery_truck', 'bus'];
 
 export default function VehicleDetailScreen() {
@@ -55,7 +63,7 @@ export default function VehicleDetailScreen() {
 
         {/* Banner */}
         <View style={[styles.banner, { backgroundColor: def.accentColor }]}>
-          <Image source={def.iconAsset} style={styles.bannerIcon} contentFit="contain" />
+          <Image source={VEHICLE_ICONS[key]} style={styles.bannerIcon} contentFit="contain" />
           <View style={styles.bannerText}>
             <Text style={styles.bannerName}>{def.name}</Text>
             <Text style={styles.bannerCount}>You bought {count} of 10</Text>
