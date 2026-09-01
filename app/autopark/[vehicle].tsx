@@ -70,12 +70,9 @@ export default function VehicleDetailScreen() {
         </View>
 
         {/* Description — highlighted with left border */}
-        <View style={[styles.descSection, { backgroundColor: theme.surface }]}>
-          <View style={[styles.descBorder, { backgroundColor: def.accentColor }]} />
-          <View style={styles.descContent}>
-            <Text style={[styles.descLabel, { color: def.accentColor }]}>About</Text>
-            <Text style={[styles.description, { color: theme.text }]}>{def.description}</Text>
-          </View>
+        <View style={[styles.descSection, { backgroundColor: theme.surface, borderLeftColor: def.accentColor }]}>
+          <Text style={[styles.descLabel, { color: def.accentColor }]}>About</Text>
+          <Text style={[styles.description, { color: theme.text }]}>{def.description}</Text>
         </View>
 
         {/* Bonus cards */}
@@ -174,11 +171,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 14,
     borderRadius: 16,
-    flexDirection: 'row',
-    overflow: 'hidden',
+    padding: 16,
+    gap: 6,
+    borderLeftWidth: 2,
   },
-  descBorder: { width: 2 },
-  descContent: { flex: 1, padding: 16, gap: 6 },
   descLabel: {
     fontFamily: 'Nunito_700Bold',
     fontSize: 11,
