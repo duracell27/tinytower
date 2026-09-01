@@ -23,7 +23,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     description:
       'Each taxi increases the number of free gem exchanges in the elevator by 1 and gives +1,000 experience for each visitor.',
     gemCost: 1_000,
-    accentColor: '#E5A72E',
+    accentColor: '#22C55E',
     bonus1Label: (n) => `+${n} 💎 exchange limit`,
     bonus2Label: (n) => `+${(n * 1_000).toLocaleString()} XP/visitor`,
   },
@@ -33,7 +33,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     description:
       'Each forklift speeds up sales of all goods by +1% and gives +5,000 extra experience for each product listed.',
     gemCost: 1_000,
-    accentColor: '#3FA535',
+    accentColor: '#3B82F6',
     bonus1Label: (n) => `-${n}% sell time`,
     bonus2Label: (n) => `+${(n * 5_000).toLocaleString()} XP/sell`,
   },
@@ -43,7 +43,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     description:
       'Each armored truck increases base production profit by +5% and base experience by +10%. These bonuses apply before all other multipliers.',
     gemCost: 2_500,
-    accentColor: '#9A6FD0',
+    accentColor: '#EAB308',
     bonus1Label: (n) => `+${n * 5}% base profit`,
     bonus2Label: (n) => `+${n * 10}% base XP`,
   },
@@ -63,7 +63,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     description:
       'Each bus increases the number of visitors in the elevator by 5 and increases tips by +5%.',
     gemCost: 1_000,
-    accentColor: '#E05A4A',
+    accentColor: '#8B5CF6',
     bonus1Label: (n) => `+${n * 5} visitor slots`,
     bonus2Label: (n) => `+${n * 5}% tips`,
   },

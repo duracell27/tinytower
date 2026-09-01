@@ -56,24 +56,26 @@ export default function VehicleDetailScreen() {
     <AppBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* Back button */}
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
-          <Text style={[styles.backText, { color: theme.textMuted }]}>← Back</Text>
-        </Pressable>
-
         {/* Banner */}
         <View style={[styles.banner, { backgroundColor: def.accentColor }]}>
           <Image source={VEHICLE_ICONS[key]} style={styles.bannerIcon} contentFit="contain" />
           <View style={styles.bannerText}>
             <Text style={styles.bannerName}>{def.name}</Text>
-            <Text style={styles.bannerCount}>You bought {count} of 10</Text>
+            {/* Owned count pill */}
+            <View style={styles.countPill}>
+              <Text style={styles.countPillNumber}>{count}</Text>
+              <Text style={styles.countPillOf}> / 10</Text>
+            </View>
           </View>
         </View>
 
-        {/* Description */}
-        <View style={[styles.section, { backgroundColor: theme.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.textMuted }]}>About</Text>
-          <Text style={[styles.description, { color: theme.text }]}>{def.description}</Text>
+        {/* Description — highlighted with left border */}
+        <View style={[styles.descSection, { backgroundColor: theme.surface }]}>
+          <View style={[styles.descBorder, { backgroundColor: def.accentColor }]} />
+          <View style={styles.descContent}>
+            <Text style={[styles.descLabel, { color: def.accentColor }]}>About</Text>
+            <Text style={[styles.description, { color: theme.text }]}>{def.description}</Text>
+          </View>
         </View>
 
         {/* Bonus cards */}
@@ -131,6 +133,13 @@ export default function VehicleDetailScreen() {
         </View>
 
       </ScrollView>
+
+      {/* Close button — bottom center, black circle */}
+      <View style={styles.closeBtnWrap} pointerEvents="box-none">
+        <Pressable onPress={() => router.back()} style={styles.closeBtn} hitSlop={8}>
+          <Text style={styles.closeIcon}>✕</Text>
+        </Pressable>
+      </View>
     </AppBackground>
   );
 }
@@ -138,10 +147,9 @@ export default function VehicleDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { paddingBottom: 120 },
-  backBtn: { marginTop: 60, marginHorizontal: 20, marginBottom: 8, alignSelf: 'flex-start' },
-  backText: { fontFamily: 'Nunito_600SemiBold', fontSize: 14 },
   banner: {
     marginHorizontal: 20,
+    marginTop: 60,
     borderRadius: 20,
     padding: 20,
     flexDirection: 'row',
@@ -149,16 +157,33 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   bannerIcon: { width: 80, height: 80, flexShrink: 0 },
-  bannerText: { flex: 1, gap: 4 },
+  bannerText: { flex: 1, gap: 10 },
   bannerName: { fontFamily: 'Fredoka_700Bold', fontSize: 26, color: '#fff' },
-  bannerCount: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: 'rgba(255,255,255,0.85)' },
-  section: {
-    marginHorizontal: 20, marginTop: 14, borderRadius: 16,
-    padding: 16, gap: 8,
+  countPill: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    backgroundColor: 'rgba(0,0,0,0.22)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
-  sectionTitle: {
-    fontFamily: 'Nunito_600SemiBold', fontSize: 11,
-    textTransform: 'uppercase', letterSpacing: 0.5,
+  countPillNumber: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#fff' },
+  countPillOf: { fontFamily: 'Nunito_600SemiBold', fontSize: 14, color: 'rgba(255,255,255,0.75)' },
+  descSection: {
+    marginHorizontal: 20,
+    marginTop: 14,
+    borderRadius: 16,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  descBorder: { width: 4 },
+  descContent: { flex: 1, padding: 16, gap: 6 },
+  descLabel: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
   description: { fontFamily: 'Nunito_400Regular', fontSize: 14, lineHeight: 20 },
   bonusGrid: {
@@ -186,4 +211,16 @@ const styles = StyleSheet.create({
   buyBtnText: {
     fontFamily: 'Fredoka_600SemiBold', fontSize: 18, color: '#fff',
   },
+  closeBtnWrap: {
+    position: 'absolute', bottom: 36, left: 0, right: 0,
+    alignItems: 'center', zIndex: 10,
+  },
+  closeBtn: {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: '#1A2030',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 8, elevation: 6,
+  },
+  closeIcon: { fontSize: 18, color: 'rgba(255,255,255,0.85)' },
 });
