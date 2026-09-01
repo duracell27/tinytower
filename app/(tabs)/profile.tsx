@@ -304,6 +304,10 @@ export default function ProfileScreen() {
   const workers = useGameStore((s) => s.workers);
   const dailyTasks = useGameStore((s) => s.dailyTasks);
   const floors = useGameStore((s) => s.floors);
+  const vehicles = useGameStore((s) => s.vehicles);
+  const totalVehicles = vehicles
+    ? (vehicles.taxi + vehicles.forklift + vehicles.armored_truck + vehicles.delivery_truck + vehicles.bus)
+    : 0;
   const floorStars = useGameStore((s) => s.floorStars);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
   const tokens = useGameStore((s) => s.tokens);
@@ -681,12 +685,15 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Pressable
+          onPress={() => router.push('/autopark')}
           style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/TrucksProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
             <Text style={[styles.menuTitle, { color: theme.text }]}>Autopark</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Manage your vehicles</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>
+              {totalVehicles > 0 ? `${totalVehicles} of 50 vehicles owned` : 'Manage your vehicles'}
+            </Text>
           </View>
         </Pressable>
 
