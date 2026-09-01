@@ -129,21 +129,21 @@ export default function VehicleDetailScreen() {
           </Pressable>
         </View>
 
-      </ScrollView>
+        {/* Close button — bottom center, black circle */}
+        <View style={styles.closeBtnWrap}>
+          <Pressable onPress={() => router.back()} style={styles.closeBtn} hitSlop={8}>
+            <Text style={styles.closeIcon}>✕</Text>
+          </Pressable>
+        </View>
 
-      {/* Close button — bottom center, black circle */}
-      <View style={styles.closeBtnWrap} pointerEvents="box-none">
-        <Pressable onPress={() => router.back()} style={styles.closeBtn} hitSlop={8}>
-          <Text style={styles.closeIcon}>✕</Text>
-        </Pressable>
-      </View>
+      </ScrollView>
     </AppBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { paddingBottom: 120 },
+  scroll: { paddingBottom: 40 },
   banner: {
     marginHorizontal: 20,
     marginTop: 60,
@@ -208,8 +208,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold', fontSize: 18, color: '#fff',
   },
   closeBtnWrap: {
-    position: 'absolute', bottom: 36, left: 0, right: 0,
-    alignItems: 'center', zIndex: 10,
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 12,
   },
   closeBtn: {
     width: 48, height: 48, borderRadius: 24,
