@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
   },
-  descBorder: { width: 4 },
+  descBorder: { width: 3 },
   descContent: { flex: 1, padding: 16, gap: 6 },
   descLabel: {
     fontFamily: 'Nunito_700Bold',
