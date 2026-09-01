@@ -91,6 +91,7 @@ export function generateRandomVisitorRole(
   config: GameConfig,
   now: number,
   playerLevel = 1,
+  extraGemExchangeLimit = 0,
 ): { role: VisitorRole; targetFloor: number; isVip: boolean } {
   const totalFloors = config.floors.length + 1;
   const isVip = Math.random() < 0.02;
@@ -118,7 +119,7 @@ export function generateRandomVisitorRole(
     return { role: 'builder', targetFloor, isVip };
   }
 
-  const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel;
+  const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel + extraGemExchangeLimit;
   const hasGemsLeft = state.dailyGemsCollected < gemLimit;
   // businessman appears more often while daily gems are still available
   const businessmanChance = hasGemsLeft ? 0.10 : 0.01;

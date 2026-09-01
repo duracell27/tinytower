@@ -1866,7 +1866,8 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
         { coinPercent: 0, xpPercent: 0, ...vehicleBonuses },
       );
       expect(result.success).toBe(true);
-      expect(result.xpGained).toBe(25_000);
+      // base list XP (10) + xpPerSell bonus (25_000)
+      expect(result.xpGained).toBe(25_010);
     });
 
     it('handleList: delivery truck reduces required delivery time', () => {
@@ -1902,7 +1903,8 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
         { coinPercent: 0, xpPercent: 0, ...vehicleBonuses },
       );
       expect(result.success).toBe(true);
-      expect(result.xpGained).toBe(25_000);
+      // effectiveCost = floor(10 * 0.95) = 9; xpPerBuy bonus = 25_000; total = 25_009
+      expect(result.xpGained).toBe(25_009);
     });
   });
 });

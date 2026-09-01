@@ -676,6 +676,8 @@ describe('vehicle bonus integration — lobby', () => {
     const cmd: Command = { id: 'ct', type: 'collect_tip', timestamp: 1000 } as Command;
     const result = processCommand(state, cmd, testConfig, 1000, 1, lobbyBonuses);
     expect(result.success).toBe(true);
-    expect(result.xpGained).toBe(5_000);
+    // tip = guestTipBase(10) * elevatorLevel(1) * floor(1) * tipMultiplier(1+100/100=2) = 20
+    // xpGained = coinDelta(20) + xpPerVisitor(5_000) = 5_020
+    expect(result.xpGained).toBe(5_020);
   });
 });

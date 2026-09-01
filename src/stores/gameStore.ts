@@ -795,7 +795,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const timestamp = (state.nextVisitorAt > 0 && state.nextVisitorAt < now)
       ? state.nextVisitorAt
       : now;
-    const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
+    const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel, computeVehicleBonuses(state.vehicles).extraGemExchangeLimit);
     const { hairColor, female } = generateVisitorAppearance();
     const floorTypeKeys = Object.keys(gameConfig.floorTypes);
     const pendingFloorType = (role === 'guest' && targetFloor === 1)
@@ -959,7 +959,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (v.role != null && v.targetFloor != null) {
         return { role: v.role, isVip: v.isVip, targetFloor: v.targetFloor, pendingFloorType: v.pendingFloorType, female: v.female };
       }
-      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
+      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel, computeVehicleBonuses(state.vehicles).extraGemExchangeLimit);
       const { hairColor, female } = generateVisitorAppearance();
       const floorTypeKeys = Object.keys(gameConfig.floorTypes);
       const pendingFloorType = (role === 'guest' && targetFloor === 1)
@@ -1071,7 +1071,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
     const floorTypeKeys = Object.keys(gameConfig.floorTypes);
     const visitors = Array.from({ length: slotsToFill }, () => {
-      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel);
+      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel, computeVehicleBonuses(state.vehicles).extraGemExchangeLimit);
       const { hairColor, female } = generateVisitorAppearance();
       const pendingFloorType = (role === 'guest' && targetFloor === 1)
         ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
@@ -1094,8 +1094,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // so these visitors survive server syncs that arrive before the server
     // acknowledges the commands.
     let cur = get();
-    while (cur.lobbyVisitors.length < cur.lobbyCapacity) {
-      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...cur }, gameConfig, now, cur.playerLevel);
+    while (cur.lobbyVisitors.length < cur.lobbyCapacity + computeVehicleBonuses(cur.vehicles).extraLobbyCapacity) {
+      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...cur }, gameConfig, now, cur.playerLevel, computeVehicleBonuses(cur.vehicles).extraGemExchangeLimit);
       const { hairColor, female } = generateVisitorAppearance();
       const pendingFloorType = (role === 'guest' && targetFloor === 1)
         ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]

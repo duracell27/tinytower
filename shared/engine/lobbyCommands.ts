@@ -44,7 +44,7 @@ export function processLobbyCommand(
     case 'collect_tip':
       return handleCollectTip(state, config, playerLevel, command.timestamp, command, bonuses);
     case 'deliver_all':
-      return handleDeliverAll(state, config, playerLevel, command.timestamp, command);
+      return handleDeliverAll(state, config, playerLevel, command.timestamp, command, bonuses);
     case 'upgrade_elevator':
       return handleUpgradeElevator(state, config);
     case 'upgrade_lobby':
@@ -54,11 +54,11 @@ export function processLobbyCommand(
     case 'expand_hotel':
       return handleExpandHotel(state);
     case 'fill_lobby':
-      return handleFillLobby(state, command, config);
+      return handleFillLobby(state, command, config, bonuses.extraLobbyCapacity ?? 0);
     case 'evict_low_level_workers':
       return handleEvictLowLevelWorkers(state, command.timestamp);
     case 'buy_daily_gems':
-      return handleBuyDailyGems(state, config, playerLevel, command.timestamp);
+      return handleBuyDailyGems(state, config, playerLevel, command.timestamp, bonuses.extraGemExchangeLimit ?? 0);
   }
 }
 
@@ -348,7 +348,7 @@ function handleCollectTip(
       },
     } : newState.dailyTasks,
   };
-  return { success: true, state: newState, xpGained: bonuses.xpPerVisitor ?? 0 };
+  return { success: true, state: newState, xpGained: (newState.balance - state.balance) + (bonuses.xpPerVisitor ?? 0) };
 }
 
 function handleDeliverAll(
@@ -357,6 +357,7 @@ function handleDeliverAll(
   playerLevel: number,
   now: number,
   command: Extract<Command, { type: 'deliver_all' }>,
+  bonuses: Parameters<typeof handleCollectTip>[5] = {},
 ): ProcessResult {
   if (state.gems < 1) {
     return { success: false, state, error: 'Not enough gems' };
@@ -406,7 +407,7 @@ function handleDeliverAll(
       pendingFloorType: resolved.pendingFloorType,
       female: resolved.female ?? state.lobbyVisitors[i].female,
     };
-    newState = applyVisitorEffect(newState, visitorForEffect, config, playerLevel, now, preWorkerBatch, toolBatch);
+    newState = applyVisitorEffect(newState, visitorForEffect, config, playerLevel, now, preWorkerBatch, toolBatch, bonuses);
   }
   // For yesterday's commands don't let the gem counter bleed into today's tracking
   if (now < state.lastDailyReset) {
@@ -545,8 +546,9 @@ function handleBuyDailyGems(
   config: GameConfig,
   playerLevel: number,
   now: number,
+  extraGemExchangeLimit = 0,
 ): ProcessResult {
-  const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel;
+  const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel + extraGemExchangeLimit;
   const gemsRemaining = gemLimit - state.dailyGemsCollected;
   if (gemsRemaining <= 0) {
     return { success: false, state, error: 'Daily gem limit already reached' };
@@ -619,6 +621,7 @@ function handleFillLobby(
   state: GameState,
   command: Extract<Command, { type: 'fill_lobby' }>,
   config: GameConfig,
+  extraLobbyCapacity = 0,
 ): ProcessResult {
   if (state.lobbyVisitors.length > 0) {
     return { success: false, state, error: 'Lobby is not empty' };
@@ -627,7 +630,7 @@ function handleFillLobby(
   if (state.gems < cost) {
     return { success: false, state, error: 'Not enough gems' };
   }
-  const slots = state.lobbyCapacity - state.lobbyVisitors.length;
+  const slots = state.lobbyCapacity + extraLobbyCapacity - state.lobbyVisitors.length;
   const newVisitors: Visitor[] = command.visitors.slice(0, slots).map((v) => ({
     id: v.visitorId,
     role: v.role,

@@ -4,6 +4,8 @@ import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { getFloorDiscount, getFloorSpecialistBonus, getRevenueMultiplier, getWorkerForSlot } from '../../shared/engine/workerUtils';
 import type { Floor, Worker, Production } from '../../shared/types';
 
+type SpeedBonuses = { salesSpeedPercent?: number; deliverySpeedPercent?: number };
+
 export type QuickActionMode = 'collect' | 'list' | 'buy' | 'hire';
 
 export type FloorActionInfo =
@@ -12,18 +14,22 @@ export type FloorActionInfo =
   | { mode: 'buy'; slotIdx: number; typeId: string; buyCost: number }
   | { mode: 'hire' };
 
-function derivedStage(prod: Production, now: number, starTimeMultiplier = 1): string {
+function derivedStage(prod: Production, now: number, starTimeMultiplier = 1, bonuses: SpeedBonuses = {}): string {
   if (!prod.typeId) return 'EMPTY';
   const tc = gameConfig.productionTypes[prod.typeId];
   if (!tc) return 'EMPTY';
-  return getProductionStatus(prod, tc, now, 0, tc.sellDuration * starTimeMultiplier).effectiveStage;
+  const sellDur = Math.max(1_000, tc.sellDuration * starTimeMultiplier * (1 - (bonuses.salesSpeedPercent ?? 0) / 100));
+  const deliveryDur = Math.max(1_000, tc.deliveryDuration * (1 - (bonuses.deliverySpeedPercent ?? 0) / 100));
+  return getProductionStatus(prod, tc, now, 0, sellDur, deliveryDur).effectiveStage;
 }
 
-function hasActiveDelivery(floor: Floor, now: number): boolean {
+function hasActiveDelivery(floor: Floor, now: number, bonuses: SpeedBonuses = {}): boolean {
   return floor.productions.some((p) => {
     if (p.stage !== 'DELIVERING' || !p.typeId) return false;
     const tc = gameConfig.productionTypes[p.typeId];
-    return tc ? (now - p.stageStartedAt) < tc.deliveryDuration : false;
+    if (!tc) return false;
+    const dur = Math.max(1_000, tc.deliveryDuration * (1 - (bonuses.deliverySpeedPercent ?? 0) / 100));
+    return (now - p.stageStartedAt) < dur;
   });
 }
 
@@ -37,6 +43,7 @@ export function getAvailableMode(
   workers: Worker[],
   now: number,
   floorStars: Record<string, number> = {},
+  speedBonuses: SpeedBonuses = {},
 ): QuickActionMode | null {
   let hasList = false;
   let hasBuy = false;
@@ -46,11 +53,11 @@ export function getAvailableMode(
     const starTimeMultiplier = getStarMult(floor.id, floorStars).time;
     for (let slotIdx = 0; slotIdx < floor.productions.length; slotIdx++) {
       const prod = floor.productions[slotIdx];
-      const stage = derivedStage(prod, now, starTimeMultiplier);
+      const stage = derivedStage(prod, now, starTimeMultiplier, speedBonuses);
 
       if (stage === 'READY_TO_COLLECT' && !!getWorkerForSlot(workers, floor.id, slotIdx)) return 'collect';
       if (stage === 'READY_TO_LIST') hasList = true;
-      if (prod.stage === 'IDLE' && prod.typeId !== null && !hasActiveDelivery(floor, now) && !!getWorkerForSlot(workers, floor.id, slotIdx)) hasBuy = true;
+      if (prod.stage === 'IDLE' && prod.typeId !== null && !hasActiveDelivery(floor, now, speedBonuses) && !!getWorkerForSlot(workers, floor.id, slotIdx)) hasBuy = true;
       if (prod.typeId !== null && !getWorkerForSlot(workers, floor.id, slotIdx)) hasHire = true;
     }
   }
@@ -67,6 +74,7 @@ export function getFloorsForMode(
   workers: Worker[],
   now: number,
   floorStars: Record<string, number> = {},
+  speedBonuses: SpeedBonuses = {},
 ): Floor[] {
   return [...floors]
     .sort((a, b) => b.id - a.id)
@@ -74,9 +82,9 @@ export function getFloorsForMode(
       const starTimeMultiplier = getStarMult(floor.id, floorStars).time;
       return floor.productions.some((prod, slotIdx) => {
         switch (mode) {
-          case 'collect': return derivedStage(prod, now, starTimeMultiplier) === 'READY_TO_COLLECT' && !!getWorkerForSlot(workers, floor.id, slotIdx);
-          case 'list':    return derivedStage(prod, now, starTimeMultiplier) === 'READY_TO_LIST';
-          case 'buy':     return prod.stage === 'IDLE' && prod.typeId !== null && !hasActiveDelivery(floor, now) && !!getWorkerForSlot(workers, floor.id, slotIdx);
+          case 'collect': return derivedStage(prod, now, starTimeMultiplier, speedBonuses) === 'READY_TO_COLLECT' && !!getWorkerForSlot(workers, floor.id, slotIdx);
+          case 'list':    return derivedStage(prod, now, starTimeMultiplier, speedBonuses) === 'READY_TO_LIST';
+          case 'buy':     return prod.stage === 'IDLE' && prod.typeId !== null && !hasActiveDelivery(floor, now, speedBonuses) && !!getWorkerForSlot(workers, floor.id, slotIdx);
           case 'hire':    return prod.typeId !== null && !getWorkerForSlot(workers, floor.id, slotIdx);
         }
       });
@@ -92,6 +100,7 @@ export function getFloorActionInfo(
   openedFloorTypes: Record<string, string> = {},
   businessUpgrades: Record<string, number> = {},
   floorStars: Record<string, number> = {},
+  speedBonuses: SpeedBonuses = {},
 ): FloorActionInfo | null {
   const starMult = getStarMult(floor.id, floorStars);
   switch (mode) {
@@ -105,7 +114,7 @@ export function getFloorActionInfo(
         if (!prod.typeId) return sum;
         const tc = gameConfig.productionTypes[prod.typeId];
         if (!tc) return sum;
-        if (derivedStage(prod, now, starMult.time) !== 'READY_TO_COLLECT') return sum;
+        if (derivedStage(prod, now, starMult.time, speedBonuses) !== 'READY_TO_COLLECT') return sum;
         const worker = getWorkerForSlot(workers, floor.id, slotIdx);
         if (!worker) return sum;
         const workerMultiplier = getRevenueMultiplier(worker, floorType, prod.typeId);
@@ -116,7 +125,7 @@ export function getFloorActionInfo(
 
     case 'list': {
       const ready = floor.productions.filter(
-        (prod) => prod.typeId !== null && derivedStage(prod, now, starMult.time) === 'READY_TO_LIST',
+        (prod) => prod.typeId !== null && derivedStage(prod, now, starMult.time, speedBonuses) === 'READY_TO_LIST',
       );
       if (ready.length === 0) return null;
       const typeId = ready.length === 1 ? ready[0].typeId ?? undefined : undefined;

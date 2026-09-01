@@ -152,9 +152,9 @@ export function processCommand(
     case 'collect_all':
       return handleCollectAll(state, config, now, bonuses);
     case 'list_all':
-      return handleListAll(state, config, now);
+      return handleListAll(state, config, now, bonuses);
     case 'buy_all':
-      return handleBuyAll(state, config, now);
+      return handleBuyAll(state, config, now, bonuses);
     case 'claim_daily_task':
       return handleClaimDailyTask(state, command, playerLevel);
     case 'upgrade_business_category':
@@ -692,7 +692,7 @@ function handleBuy(
 
   return {
     success: true,
-    xpGained: bonuses.xpPerBuy ?? 0,
+    xpGained: effectiveCost + (bonuses.xpPerBuy ?? 0),
     state: {
       ...state,
       balance: state.balance - effectiveCost,
@@ -738,7 +738,7 @@ function handleList(
 
   return {
     success: true,
-    xpGained: bonuses.xpPerSell ?? 0,
+    xpGained: 10 + (bonuses.xpPerSell ?? 0),
     state: {
       ...state,
       floors: updateProduction(state.floors, floorIdx, slotIdx, {
@@ -849,13 +849,14 @@ function handleListAll(
   state: GameState,
   config: GameConfig,
   now: number,
+  bonuses: Parameters<typeof handleList>[6] = {},
 ): ProcessResult {
   if (state.gems < 1) return { success: false, state, error: 'Insufficient gems' };
   let current: GameState = { ...state, gems: state.gems - 1 };
   for (let fi = 0; fi < current.floors.length; fi++) {
     for (let si = 0; si < current.floors[fi].productions.length; si++) {
       const prod = current.floors[fi].productions[si];
-      const result = handleList(current, config, now, fi, si, prod);
+      const result = handleList(current, config, now, fi, si, prod, bonuses);
       if (result.success) {
         current = result.state;
       }
@@ -868,6 +869,7 @@ function handleBuyAll(
   state: GameState,
   config: GameConfig,
   now: number,
+  bonuses: Parameters<typeof handleBuy>[8] = {},
 ): ProcessResult {
   if (state.gems < 1) return { success: false, state, error: 'Insufficient gems' };
   let current: GameState = { ...state, gems: state.gems - 1 };
@@ -881,7 +883,7 @@ function handleBuyAll(
       const fakeCmd: Extract<Command, { type: 'buy' }> = {
         id: '', type: 'buy', floorId: floor.id, slotIdx: si, typeId: prod.typeId, timestamp: now,
       };
-      const result = handleBuy(current, fakeCmd, config, now, fi, si, prod, worker);
+      const result = handleBuy(current, fakeCmd, config, now, fi, si, prod, worker, bonuses);
       if (result.success) {
         current = result.state;
       }

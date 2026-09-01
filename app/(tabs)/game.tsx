@@ -53,6 +53,7 @@ import {
 } from '../../src/utils/quickAction';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
 import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import { hasAnyBetterCandidate } from '../../src/utils/workerCandidate';
 import { getWorkerForSlot } from '../../shared/engine/workerUtils';
 
@@ -110,6 +111,11 @@ export default function GameScreen() {
   const lobbyVisitors = useGameStore((s) => s.lobbyVisitors);
   const nextVisitorAt = useGameStore((s) => s.nextVisitorAt);
   const lobbyCapacity = useGameStore((s) => s.lobbyCapacity);
+  const vehicles = useGameStore((s) => s.vehicles);
+  const vehicleSpeedBonuses = React.useMemo(() => {
+    const vb = computeVehicleBonuses(vehicles);
+    return { salesSpeedPercent: vb.salesSpeedPercent, deliverySpeedPercent: vb.deliverySpeedPercent };
+  }, [vehicles]);
   const spawnVisitor = useGameStore((s) => s.spawnVisitor);
   const player = useAuthStore((s) => s.player);
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
@@ -549,22 +555,22 @@ export default function GameScreen() {
 
   // Highest-priority mode currently available — only computed when not already in a mode
   const availableMode = React.useMemo(
-    () => (quickActionMode !== null || isOnboarding || isTemporary ? null : getAvailableMode(floors, workers, now, floorStars ?? {})),
-    [quickActionMode, isOnboarding, isTemporary, floors, workers, now, floorStars],
+    () => (quickActionMode !== null || isOnboarding || isTemporary ? null : getAvailableMode(floors, workers, now, floorStars ?? {}, vehicleSpeedBonuses)),
+    [quickActionMode, isOnboarding, isTemporary, floors, workers, now, floorStars, vehicleSpeedBonuses],
   );
 
   // Count of floors for the FAB badge (only when not yet in a mode)
   const availableFloorCount = React.useMemo(
-    () => (availableMode !== null ? getFloorsForMode(availableMode, floors, workers, now, floorStars ?? {}).length : 0),
-    [availableMode, floors, workers, now, floorStars],
+    () => (availableMode !== null ? getFloorsForMode(availableMode, floors, workers, now, floorStars ?? {}, vehicleSpeedBonuses).length : 0),
+    [availableMode, floors, workers, now, floorStars, vehicleSpeedBonuses],
   );
 
   // Always compute QA floors — even before the mode is activated — so the overlay
   // is pre-rendered and pre-scrolled in the background before the user opens it.
   const precomputedMode = quickActionMode ?? availableMode;
   const filteredFloors = React.useMemo(
-    () => (precomputedMode !== null ? getFloorsForMode(precomputedMode, floors, workers, now, floorStars ?? {}) : []),
-    [precomputedMode, floors, workers, now, floorStars],
+    () => (precomputedMode !== null ? getFloorsForMode(precomputedMode, floors, workers, now, floorStars ?? {}, vehicleSpeedBonuses) : []),
+    [precomputedMode, floors, workers, now, floorStars, vehicleSpeedBonuses],
   );
 
   const qaItems = React.useMemo(
@@ -586,9 +592,9 @@ export default function GameScreen() {
   const bottomFloorInfo = React.useMemo(
     () =>
       bottomFloor !== null && quickActionMode !== null
-        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers, coinBonusPercent, openedFloorTypes ?? {}, businessUpgrades ?? {}, floorStars ?? {})
+        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers, coinBonusPercent, openedFloorTypes ?? {}, businessUpgrades ?? {}, floorStars ?? {}, vehicleSpeedBonuses)
         : null,
-    [bottomFloor, quickActionMode, now, workers, coinBonusPercent, openedFloorTypes, businessUpgrades, floorStars],
+    [bottomFloor, quickActionMode, now, workers, coinBonusPercent, openedFloorTypes, businessUpgrades, floorStars, vehicleSpeedBonuses],
   );
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -758,7 +764,9 @@ export default function GameScreen() {
       coinBonusPercent: liveCoinBonus, openedFloorTypes: liveOpenedTypes,
       businessUpgrades: liveUpgrades, floorStars: liveFloorStars } = useGameStore.getState();
 
-    const liveFilteredFloors = getFloorsForMode(quickActionMode, liveFloors, liveWorkers, liveNow, liveFloorStars ?? {});
+    const liveVehicles = useGameStore.getState().vehicles;
+    const liveSpeedBonuses = computeVehicleBonuses(liveVehicles);
+    const liveFilteredFloors = getFloorsForMode(quickActionMode, liveFloors, liveWorkers, liveNow, liveFloorStars ?? {}, liveSpeedBonuses);
     const liveBottomFloor = liveFilteredFloors.length > 0
       ? liveFilteredFloors[liveFilteredFloors.length - 1]
       : null;
@@ -782,7 +790,10 @@ export default function GameScreen() {
         const tc = gameConfig.productionTypes[prod.typeId];
         if (!tc) return;
         if (!getWorkerForSlot(liveWorkers, liveBottomFloor.id, slotIdx)) return;
-        if (getProductionStatus(prod, tc, liveNow, liveBalance, tc.sellDuration * collectStarMult.time).effectiveStage === 'READY_TO_COLLECT') {
+        if (getProductionStatus(prod, tc, liveNow, liveBalance,
+          Math.max(1_000, tc.sellDuration * collectStarMult.time * (1 - liveSpeedBonuses.salesSpeedPercent / 100)),
+          Math.max(1_000, tc.deliveryDuration * (1 - liveSpeedBonuses.deliverySpeedPercent / 100)),
+        ).effectiveStage === 'READY_TO_COLLECT') {
           slots.push([liveBottomFloor.id, slotIdx]);
         }
       });
@@ -795,7 +806,9 @@ export default function GameScreen() {
         if (!prod.typeId) return;
         const tc = gameConfig.productionTypes[prod.typeId];
         if (!tc) return;
-        if (getProductionStatus(prod, tc, liveNow, liveBalance).effectiveStage === 'READY_TO_LIST') {
+        if (getProductionStatus(prod, tc, liveNow, liveBalance, undefined,
+          Math.max(1_000, tc.deliveryDuration * (1 - liveSpeedBonuses.deliverySpeedPercent / 100)),
+        ).effectiveStage === 'READY_TO_LIST') {
           slots.push([liveBottomFloor.id, slotIdx]);
         }
       });
@@ -805,7 +818,7 @@ export default function GameScreen() {
     if (quickActionMode === 'buy') {
       const liveBuyInfo = getFloorActionInfo(
         'buy', liveBottomFloor, liveNow, liveWorkers,
-        liveCoinBonus, liveOpenedTypes ?? {}, liveUpgrades ?? {}, liveFloorStars ?? {},
+        liveCoinBonus, liveOpenedTypes ?? {}, liveUpgrades ?? {}, liveFloorStars ?? {}, liveSpeedBonuses,
       );
       if (!liveBuyInfo || liveBuyInfo.mode !== 'buy') return;
       if (liveBalance < liveBuyInfo.buyCost) {

@@ -146,20 +146,25 @@ export default function ProductionDetailModal() {
   const effectiveRevenue = typeConfig
     ? Math.floor(
         typeConfig.batchValue *
+          (1 + vb.baseCoinBoostPercent / 100) *
           starValueMult *
           (1 + (coinBonusPercent + specialistBonusPercent + categoryBonus) / 100) *
           multiplier,
       )
     : 0;
 
-  const deliveryDuration = typeConfig?.deliveryDuration ?? 0;
-  const effectiveSellDuration = typeConfig ? typeConfig.sellDuration * starMult.time : 0;
+  const deliveryDuration = typeConfig
+    ? Math.max(1_000, typeConfig.deliveryDuration * (1 - vb.deliverySpeedPercent / 100))
+    : 0;
+  const effectiveSellDuration = typeConfig
+    ? Math.max(1_000, typeConfig.sellDuration * starMult.time * (1 - vb.salesSpeedPercent / 100))
+    : 0;
   const revenuePerMin =
     effectiveSellDuration > 0
       ? Math.round((effectiveRevenue / effectiveSellDuration) * 60_000)
       : 0;
 
-  const status = getProductionStatus(production, typeConfig, Date.now(), balance, effectiveSellDuration || undefined);
+  const status = getProductionStatus(production, typeConfig, Date.now(), balance, effectiveSellDuration || undefined, deliveryDuration || undefined);
   const effectiveStage = status.effectiveStage;
 
   const effectiveCost = typeConfig

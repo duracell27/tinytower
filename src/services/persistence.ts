@@ -128,6 +128,7 @@ export function saveGameState(state: PersistedGameState): void {
     categoryProgress: state.categoryProgress ?? {},
     tokens: state.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     businessUpgrades: state.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+    vehicles: state.vehicles ?? { taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 },
     floorStars: state.floorStars ?? {},
     warehouseLevel: state.warehouseLevel ?? 0,
     dailyTasks: state.dailyTasks ?? {

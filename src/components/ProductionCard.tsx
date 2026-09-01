@@ -8,6 +8,7 @@ import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { getRevenueMultiplier } from '../../shared/engine/workerUtils';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import { useGameStore } from '../stores/gameStore';
 import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { gameConfig } from '../../shared/config/gameConfig';
@@ -250,7 +251,14 @@ export default function ProductionCard({
   const floorStars = useGameStore((s) => s.floorStars);
   const stars = floorStars?.[String(floorId)] ?? 0;
   const starMult = FLOOR_STAR_MULTIPLIERS[stars] ?? FLOOR_STAR_MULTIPLIERS[0];
-  const effectiveSellDuration = typeConfig ? typeConfig.sellDuration * starMult.time : 0;
+  const vehicles = useGameStore((s) => s.vehicles);
+  const vb = computeVehicleBonuses(vehicles);
+  const effectiveDeliveryDuration = typeConfig
+    ? Math.max(1_000, typeConfig.deliveryDuration * (1 - vb.deliverySpeedPercent / 100))
+    : 0;
+  const effectiveSellDuration = typeConfig
+    ? Math.max(1_000, typeConfig.sellDuration * starMult.time * (1 - vb.salesSpeedPercent / 100))
+    : 0;
 
   const shirtColor = floorType && gameConfig.floorTypes[floorType]
     ? gameConfig.floorTypes[floorType].shirtColor
@@ -268,14 +276,14 @@ export default function ProductionCard({
     setLocalCompleted(false);
     if ((production.stage !== 'DELIVERING' && production.stage !== 'SELLING') || !typeConfig) return;
     const duration = production.stage === 'DELIVERING'
-      ? typeConfig.deliveryDuration
+      ? effectiveDeliveryDuration
       : effectiveSellDuration;
     const endAt = production.stageStartedAt + duration;
     const delay = Math.max(0, endAt - Date.now());
     if (delay <= 0) { setLocalCompleted(true); return; }
     const id = setTimeout(() => setLocalCompleted(true), delay);
     return () => clearTimeout(id);
-  }, [production.stage, production.stageStartedAt, effectiveSellDuration, typeConfig]);
+  }, [production.stage, production.stageStartedAt, effectiveDeliveryDuration, effectiveSellDuration, typeConfig]);
 
   // Fires once when the delivery lock on an adjacent slot expires.
   const [lockExpired, setLockExpired] = useState(false);
@@ -338,7 +346,7 @@ export default function ProductionCard({
   // Stable absolute timestamp for the active timer — only changes when stage starts.
   const isProgressTimer = effectiveStage === 'DELIVERING' || effectiveStage === 'SELLING';
   const totalDur = isProgressTimer && typeConfig
-    ? (effectiveStage === 'DELIVERING' ? typeConfig.deliveryDuration : effectiveSellDuration)
+    ? (effectiveStage === 'DELIVERING' ? effectiveDeliveryDuration : effectiveSellDuration)
     : 0;
   const stageEndsAt = isProgressTimer && typeConfig
     ? production.stageStartedAt + totalDur
