@@ -27,6 +27,7 @@ import { FLOOR_TYPE_SCHEMES } from './FloorCard';
 import { shadeColor } from '../utils/color';
 import { formatNum } from '../utils/format';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.85;
@@ -57,6 +58,7 @@ export default function ProductionDetailModal() {
   const floors = useGameStore((s) => s.floors);
   const floorStars = useGameStore((s) => s.floorStars);
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
+  const vehicles = useGameStore((s) => s.vehicles);
   const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
   const balance = useGameStore((s) => s.balance);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
@@ -132,6 +134,12 @@ export default function ProductionDetailModal() {
   const categoryBonus = floorType
     ? (businessUpgrades?.[floorType as keyof typeof businessUpgrades] ?? 0) * 5
     : 0;
+
+  const vb = computeVehicleBonuses(vehicles);
+  const forkliftSalesSpeed = vb.salesSpeedPercent;
+  const armoredBaseCoin   = vb.baseCoinBoostPercent;
+  const armoredBaseXp     = vb.baseXpBoostPercent;
+  const hasVehicleBonus   = forkliftSalesSpeed > 0 || armoredBaseCoin > 0 || armoredBaseXp > 0;
 
   const baseRevenue = typeConfig?.batchValue ?? 0;
   const starValueMult = starMult.value;
@@ -312,6 +320,33 @@ export default function ProductionDetailModal() {
                 label={t('productionDetail.revenue.global')}
                 value={<Text style={[styles.rowValue, { color: theme.text }]}>+{coinBonusPercent}%</Text>}
               />
+            )}
+
+            {hasVehicleBonus && (
+              <View style={[styles.bonusSection, { borderTopColor: theme.divider }]}>
+                <Text style={[styles.bonusSectionTitle, { color: theme.textMuted }]}>Vehicle bonuses</Text>
+                {forkliftSalesSpeed > 0 && (
+                  <BreakdownRow
+                    isDark={isDark}
+                    label="Forklift"
+                    value={<Text style={[styles.rowValue, { color: '#3FA535' }]}>−{forkliftSalesSpeed}% sell time</Text>}
+                  />
+                )}
+                {armoredBaseCoin > 0 && (
+                  <BreakdownRow
+                    isDark={isDark}
+                    label="Armored truck"
+                    value={<Text style={[styles.rowValue, { color: '#9A6FD0' }]}>+{armoredBaseCoin}% base revenue</Text>}
+                  />
+                )}
+                {armoredBaseXp > 0 && (
+                  <BreakdownRow
+                    isDark={isDark}
+                    label="Armored truck XP"
+                    value={<Text style={[styles.rowValue, { color: '#9A6FD0' }]}>+{armoredBaseXp}% base XP</Text>}
+                  />
+                )}
+              </View>
             )}
 
             <View style={[styles.rowDivider, { backgroundColor: theme.divider }]} />
@@ -602,5 +637,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
     color: '#fff',
+  },
+  bonusSection: {
+    borderTopWidth: 1,
+    paddingTop: 10,
+    marginTop: 6,
+    gap: 6,
+  },
+  bonusSectionTitle: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
 });
