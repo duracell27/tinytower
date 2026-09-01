@@ -17,6 +17,8 @@ import { TUTORIAL_TASKS, getTutorialDelta } from '../../shared/config/tutorialTa
 import type { TutorialTaskConfig, TutorialProgressState } from '../../shared/config/tutorialTasksConfig';
 import { FLOOR_UPGRADE_COSTS, FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { WAREHOUSE_UPGRADE_COSTS } from '../../shared/config/warehouseUpgradeConfig';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
+import type { Vehicles } from '../../shared/types';
 import { useOnboardingStore } from './onboardingStore';
 
 function uuid(): string {
@@ -163,6 +165,8 @@ interface UIState {
   achievementQueue: NewAchievementGrant[];
   coinBonusPercent: number;
   xpBonusPercent: number;
+  vehicles: Vehicles;
+  buyVehicle: (vehicleType: keyof Vehicles) => void;
   categoryProgress: Record<string, CategoryProgressState>;
   locallyGrantedAchievements: Set<string>;
   failedCommandLog: FailedCommandEntry[];
@@ -319,9 +323,10 @@ function executeCommand(
       };
     }
   }
+  const vehicleBonuses = computeVehicleBonuses(store.vehicles);
   const result = processCommand(
     gameState, command, gameConfig, command.timestamp, store.playerLevel,
-    { coinPercent: store.coinBonusPercent, xpPercent: store.xpBonusPercent },
+    { coinPercent: store.coinBonusPercent, xpPercent: store.xpBonusPercent, ...vehicleBonuses },
   );
   if (!result.success) {
     if (result.error === 'WAREHOUSE_FULL') {
@@ -452,6 +457,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   locallyGrantedAchievements: new Set<string>(),
   coinBonusPercent: 0,
   xpBonusPercent: 0,
+  vehicles: { taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 },
   categoryProgress: {},
   failedCommandLog: [],
   pendingReferralNotifications: [],
@@ -1279,6 +1285,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     categoryProgress: state.categoryProgress ?? {},
     tokens: state.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     businessUpgrades: state.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+    vehicles: state.vehicles ?? { taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 },
     dailyTasks: state.dailyTasks ?? { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
     floorStars: state.floorStars ?? {},
     tutorialProgress: state.tutorialProgress ?? { coinsCollected: 0, visitorsLifted: 0, workersHired: 0, floorsBuilt: 0, dailyTasksClaimed: 0, elevatorUpgraded: 0, lobbyUpgraded: 0, floorUpgraded: 0, inviteSent: 0, businessUpgraded: 0 },
@@ -1450,6 +1457,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
     tokens:     serverState.tokens     ?? cur.tokens,
     businessUpgrades: serverState.businessUpgrades ?? cur.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+    vehicles: serverState.vehicles ?? cur.vehicles ?? { taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 },
     floorStars: (() => {
       const base = serverState.floorStars ?? cur.floorStars ?? {};
       const pending: Record<string, number> = {};
@@ -1481,6 +1489,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     commandQueue: cur.commandQueue.filter((cmd) => !sentIds.has(cmd.id)),
   })),
 
+  buyVehicle: (vehicleType) => {
+    executeCommand(get, set, { id: uuid(), type: 'buy_vehicle', vehicleType, timestamp: Date.now() });
+  },
   buyFloor: (floorId) => {
     const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'];
     const unlock = gameConfig.floorUnlocks.find((f) => f.floorId === floorId);
