@@ -91,6 +91,11 @@ model PlayerState {
   tutorialProgress       Json    @default("{}")
   tutorialTasks          Json    @default("{}")
   warehouseLevel         Int     @default(0)
+  vehicleTaxi          Int     @default(0)
+  vehicleForklift      Int     @default(0)
+  vehicleArmoredTruck  Int     @default(0)
+  vehicleDeliveryTruck Int     @default(0)
+  vehicleBus           Int     @default(0)
   player                 Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }
 

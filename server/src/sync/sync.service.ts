@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { processCommand } from '@shared/engine/processCommand';
+import { computeVehicleBonuses } from '@shared/engine/vehicleUtils';
 import { checkDailyReset } from '@shared/engine/lobbyUtils';
 import { xpForCommand, applyXpGain } from '@shared/engine/xp';
 import { gameConfig, createInitialState } from '@shared/config/gameConfig';
@@ -116,7 +117,11 @@ export class SyncService {
       try {
         result = processCommand(
           gameState, command, gameConfig, command.timestamp, player.playerLevel,
-          { coinPercent: gameState.coinBonusPercent, xpPercent: gameState.xpBonusPercent },
+          {
+            coinPercent: gameState.coinBonusPercent,
+            xpPercent: gameState.xpBonusPercent,
+            ...computeVehicleBonuses(gameState.vehicles),
+          },
         );
       } catch (e) {
         this.logger.error(`Command ${command.id} (${command.type}) threw: ${e}`);
@@ -319,6 +324,11 @@ export class SyncService {
             businessUpgradeYellow:  gameState.businessUpgrades.yellow,
             businessUpgradePurple:  gameState.businessUpgrades.purple,
             businessUpgradeRed:     gameState.businessUpgrades.red,
+            vehicleTaxi:          gameState.vehicles.taxi,
+            vehicleForklift:      gameState.vehicles.forklift,
+            vehicleArmoredTruck:  gameState.vehicles.armored_truck,
+            vehicleDeliveryTruck: gameState.vehicles.delivery_truck,
+            vehicleBus:           gameState.vehicles.bus,
             dailyTasksProgress:     gameState.dailyTasks.progress,
             dailyTasksClaimed:      gameState.dailyTasks.claimed,
             dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
@@ -358,6 +368,11 @@ export class SyncService {
             businessUpgradeYellow:  gameState.businessUpgrades.yellow,
             businessUpgradePurple:  gameState.businessUpgrades.purple,
             businessUpgradeRed:     gameState.businessUpgrades.red,
+            vehicleTaxi:          gameState.vehicles.taxi,
+            vehicleForklift:      gameState.vehicles.forklift,
+            vehicleArmoredTruck:  gameState.vehicles.armored_truck,
+            vehicleDeliveryTruck: gameState.vehicles.delivery_truck,
+            vehicleBus:           gameState.vehicles.bus,
             dailyTasksProgress:     gameState.dailyTasks.progress,
             dailyTasksClaimed:      gameState.dailyTasks.claimed,
             dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
@@ -698,6 +713,13 @@ export class SyncService {
         currentIndex: (s?.tutorialTasks as any)?.currentIndex ?? 0,
         snapshot: (s?.tutorialTasks as any)?.snapshot ?? {},
         claimedFinal: (s?.tutorialTasks as any)?.claimedFinal ?? false,
+      },
+      vehicles: {
+        taxi:           s?.vehicleTaxi          ?? 0,
+        forklift:       s?.vehicleForklift      ?? 0,
+        armored_truck:  s?.vehicleArmoredTruck  ?? 0,
+        delivery_truck: s?.vehicleDeliveryTruck ?? 0,
+        bus:            s?.vehicleBus           ?? 0,
       },
     };
   }
