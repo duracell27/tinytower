@@ -1794,4 +1794,115 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
       expect(result.state.vehicles?.armored_truck).toBe(1);
     });
   });
+
+  describe('vehicle bonus integration — production', () => {
+    const vehicleBonuses = {
+      baseCoinBoostPercent: 25,
+      baseXpBoostPercent: 50,
+      salesSpeedPercent: 5,
+      deliverySpeedPercent: 5,
+      xpPerSell: 25_000,
+      xpPerBuy: 25_000,
+      xpPerVisitor: 0,
+      tipPercent: 0,
+      extraLobbyCapacity: 0,
+      extraGemExchangeLimit: 0,
+    };
+
+    it('handleCollect: armored truck boosts base revenue', () => {
+      const s = stateWithWorker();
+      const after_buy = processCommand(s, buyCmd({ timestamp: 0 }), testConfig, 0);
+      const after_list = processCommand(after_buy.state, listCmd({ timestamp: 5001 }), testConfig, 5001);
+      const resultWithBoost = processCommand(
+        after_list.state,
+        collectCmd({ timestamp: 15002 }),
+        testConfig, 15002, 1,
+        { coinPercent: 0, xpPercent: 0, ...vehicleBonuses },
+      );
+      const resultNoBoost = processCommand(
+        after_list.state,
+        collectCmd({ timestamp: 15002 }),
+        testConfig, 15002, 1,
+        { coinPercent: 0, xpPercent: 0 },
+      );
+      expect(resultWithBoost.success).toBe(true);
+      // With 25% baseCoinBoostPercent, revenue should exceed no-boost revenue
+      expect(resultWithBoost.state.balance).toBeGreaterThan(resultNoBoost.state.balance);
+    });
+
+    it('handleCollect: forklift reduces required sell time', () => {
+      const s = stateWithWorker();
+      const after_buy = processCommand(s, buyCmd({ timestamp: 0 }), testConfig, 0);
+      const after_list = processCommand(after_buy.state, listCmd({ timestamp: 5001 }), testConfig, 5001);
+      const result = processCommand(
+        after_list.state,
+        collectCmd({ timestamp: 14502 }),
+        testConfig, 14502, 1,
+        { coinPercent: 0, xpPercent: 0, ...vehicleBonuses },
+      );
+      expect(result.success).toBe(true);
+    });
+
+    it('handleCollect: without forklift bonus, 9501ms is too early', () => {
+      const s = stateWithWorker();
+      const after_buy = processCommand(s, buyCmd({ timestamp: 0 }), testConfig, 0);
+      const after_list = processCommand(after_buy.state, listCmd({ timestamp: 5001 }), testConfig, 5001);
+      const result = processCommand(
+        after_list.state,
+        collectCmd({ timestamp: 14502 }),
+        testConfig, 14502, 1,
+        { coinPercent: 0, xpPercent: 0 },
+      );
+      expect(result.success).toBe(false);
+    });
+
+    it('handleList: forklift xpPerSell added to xpGained', () => {
+      const s = stateWithWorker();
+      const after_buy = processCommand(s, buyCmd({ timestamp: 0 }), testConfig, 0);
+      const result = processCommand(
+        after_buy.state,
+        listCmd({ timestamp: 5001 }),
+        testConfig, 5001, 1,
+        { coinPercent: 0, xpPercent: 0, ...vehicleBonuses },
+      );
+      expect(result.success).toBe(true);
+      expect(result.xpGained).toBe(25_000);
+    });
+
+    it('handleList: delivery truck reduces required delivery time', () => {
+      const s = stateWithWorker();
+      const after_buy = processCommand(s, buyCmd({ timestamp: 0 }), testConfig, 0);
+      const result = processCommand(
+        after_buy.state,
+        listCmd({ timestamp: 4751 }),
+        testConfig, 4751, 1,
+        { coinPercent: 0, xpPercent: 0, ...vehicleBonuses },
+      );
+      expect(result.success).toBe(true);
+    });
+
+    it('handleList: without delivery truck, 4751ms is too early', () => {
+      const s = stateWithWorker();
+      const after_buy = processCommand(s, buyCmd({ timestamp: 0 }), testConfig, 0);
+      const result = processCommand(
+        after_buy.state,
+        listCmd({ timestamp: 4751 }),
+        testConfig, 4751, 1,
+        { coinPercent: 0, xpPercent: 0 },
+      );
+      expect(result.success).toBe(false);
+    });
+
+    it('handleBuy: delivery truck xpPerBuy added to xpGained', () => {
+      const s = stateWithWorker();
+      const result = processCommand(
+        s,
+        buyCmd({ timestamp: 1000 }),
+        testConfig, 1000, 1,
+        { coinPercent: 0, xpPercent: 0, ...vehicleBonuses },
+      );
+      expect(result.success).toBe(true);
+      expect(result.xpGained).toBe(25_000);
+    });
+  });
 });
