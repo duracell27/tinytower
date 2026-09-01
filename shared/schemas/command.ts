@@ -270,6 +270,11 @@ export const RecordInviteSentCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('record_invite_sent'),
 });
 
+export const BuyVehicleCommandSchema = TimestampedBaseSchema.extend({
+  type: z.literal('buy_vehicle'),
+  vehicleType: z.enum(['taxi', 'forklift', 'armored_truck', 'delivery_truck', 'bus']),
+});
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -308,4 +313,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   ClaimTutorialFinalCommandSchema,
   BuyDailyGemsCommandSchema,
   RecordInviteSentCommandSchema,
+  BuyVehicleCommandSchema,
 ]);

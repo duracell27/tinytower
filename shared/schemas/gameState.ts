@@ -49,6 +49,14 @@ export const BusinessUpgradesSchema = z.object({
   red:    z.number().int().min(0).max(40).default(0),
 });
 
+export const VehiclesSchema = z.object({
+  taxi:          z.number().int().min(0).max(10).default(0),
+  forklift:      z.number().int().min(0).max(10).default(0),
+  armored_truck: z.number().int().min(0).max(10).default(0),
+  delivery_truck:z.number().int().min(0).max(10).default(0),
+  bus:           z.number().int().min(0).max(10).default(0),
+});
+
 export const DailyTaskProgressSchema = z.object({
   visitorsLifted:   z.number().int().nonnegative().default(0),
   vipsLifted:       z.number().int().nonnegative().default(0),
@@ -121,6 +129,7 @@ export const GameStateSchema = z.object({
   xpBonusPercent:   z.number().int().nonnegative().default(0),
   tokens:     TokensSchema.default({ green: 0, blue: 0, yellow: 0, purple: 0, red: 0 }),
   businessUpgrades: BusinessUpgradesSchema.default({ green: 0, blue: 0, yellow: 0, purple: 0, red: 0 }),
+  vehicles: VehiclesSchema.default({ taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 }),
   floorStars: z.record(z.string(), z.number().int().min(0).max(5)).default({}),
   warehouseLevel: z.number().int().nonnegative().default(0),
   dailyTasks: DailyTasksSchema.default({

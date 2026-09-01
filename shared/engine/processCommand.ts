@@ -157,6 +157,9 @@ export function processCommand(
           },
         },
       };
+    case 'buy_vehicle':
+      // Stub implementation for Task 1; logic will be added in Task 2
+      return { success: true, state };
     default:
       const exhaustive: never = command;
       return { success: false, state, error: `Unknown command type: ${(exhaustive as any).type}` };
