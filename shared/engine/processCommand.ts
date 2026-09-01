@@ -10,6 +10,7 @@ import {
   warehouseCapacity,
 } from '../config/warehouseUpgradeConfig';
 import { TUTORIAL_TASKS, FINAL_REWARD, getTutorialDelta } from '../config/tutorialTasksConfig';
+import { VEHICLE_CONFIG } from '../config/vehicleConfig';
 
 export interface ProcessResult {
   success: boolean;
@@ -157,9 +158,28 @@ export function processCommand(
           },
         },
       };
-    case 'buy_vehicle':
-      // Stub implementation for Task 1; logic will be added in Task 2
-      return { success: true, state };
+    case 'buy_vehicle': {
+      const vType = command.vehicleType;
+      const currentCount = state.vehicles?.[vType] ?? 0;
+      if (currentCount >= 10) {
+        return { success: false, state, error: 'Max vehicles reached' };
+      }
+      const cost = VEHICLE_CONFIG[vType].gemCost;
+      if (state.gems < cost) {
+        return { success: false, state, error: 'Insufficient gems' };
+      }
+      return {
+        success: true,
+        state: {
+          ...state,
+          gems: state.gems - cost,
+          vehicles: {
+            ...(state.vehicles ?? { taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 }),
+            [vType]: currentCount + 1,
+          },
+        },
+      };
+    }
     default:
       const exhaustive: never = command;
       return { success: false, state, error: `Unknown command type: ${(exhaustive as any).type}` };

@@ -1758,4 +1758,40 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
     );
     expect(result.success).toBe(true);
   });
+
+  describe('buy_vehicle', () => {
+    function buyVehicleCmd(vehicleType: string, id = 'bv-1'): Command {
+      return { id, type: 'buy_vehicle', vehicleType, timestamp: 1000 } as Command;
+    }
+
+    it('deducts gems and increments vehicle count', () => {
+      const state = makeState({ gems: 1_000 });
+      const result = processCommand(state, buyVehicleCmd('taxi'), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.gems).toBe(0);
+      expect(result.state.vehicles?.taxi).toBe(1);
+    });
+
+    it('fails when insufficient gems', () => {
+      const state = makeState({ gems: 500 });
+      const result = processCommand(state, buyVehicleCmd('taxi'), testConfig, 1000);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Insufficient gems');
+    });
+
+    it('fails when vehicle count is already 10', () => {
+      const state = makeState({ gems: 2_500, vehicles: { taxi: 10, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 } });
+      const result = processCommand(state, buyVehicleCmd('taxi'), testConfig, 1000);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Max vehicles reached');
+    });
+
+    it('armored_truck costs 2500 gems', () => {
+      const state = makeState({ gems: 2_500 });
+      const result = processCommand(state, buyVehicleCmd('armored_truck'), testConfig, 1000);
+      expect(result.success).toBe(true);
+      expect(result.state.gems).toBe(0);
+      expect(result.state.vehicles?.armored_truck).toBe(1);
+    });
+  });
 });
