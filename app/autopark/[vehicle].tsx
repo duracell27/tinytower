@@ -206,11 +206,11 @@ export default function VehicleDetailScreen() {
         {/* Buy button */}
         <View style={styles.buyWrap}>
           {feedback === 'success' && (
-            <Text style={[styles.feedbackText, { color: '#22C55E' }]}>Куплено!</Text>
+            <Text style={[styles.feedbackText, { color: '#22C55E' }]}>Purchased!</Text>
           )}
           {isMaxed ? (
             <View style={[styles.buyBtn, { backgroundColor: theme.surfaceSub }]}>
-              <Text style={[styles.buyBtnText, { color: theme.textMuted }]}>Максимум</Text>
+              <Text style={[styles.buyBtnText, { color: theme.textMuted }]}>Maxed out</Text>
             </View>
           ) : (
             <View>
@@ -225,7 +225,7 @@ export default function VehicleDetailScreen() {
                 style={({ pressed }) => [styles.buyBtn, { backgroundColor: def.accentColor, opacity: pressed ? 0.82 : 1 }]}
               >
                 <View style={styles.buyBtnRow}>
-                  <Text style={styles.buyBtnText}>Купити за </Text>
+                  <Text style={styles.buyBtnText}>Buy for </Text>
                   <GemIcon size={18} />
                   <Text style={styles.buyBtnText}> {formatNum(def.gemCost)}</Text>
                 </View>
