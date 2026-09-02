@@ -1318,7 +1318,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       end={{ x: 1, y: 0 }}
                       style={[
                         styles.upgradeProgressFill,
-                        { width: `${Math.min(100, (effectiveLobbyCapacity / maxLobbyCapacity) * 100)}%` as any },
+                        { width: `${Math.min(100, (lobbyCapacity / maxLobbyCapacity) * 100)}%` as any },
                       ]}
                     />
                   </View>
