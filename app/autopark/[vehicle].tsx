@@ -59,14 +59,14 @@ export default function VehicleDetailScreen() {
 
         {/* Banner */}
         <LinearGradient
-          colors={['#1C2333', '#252D42']}
+          colors={theme.isDark ? ['#1C2333', '#252D42'] : [`${def.accentColor}18`, `${def.accentColor}08`]}
           style={styles.banner}
         >
           <View style={[styles.bannerIconWrap, { backgroundColor: `${def.accentColor}22` }]}>
             <Image source={VEHICLE_ICONS[key]} style={styles.bannerIcon} contentFit="contain" />
           </View>
           <View style={styles.bannerText}>
-            <Text style={styles.bannerName}>{def.name}</Text>
+            <Text style={[styles.bannerName, { color: theme.isDark ? '#fff' : theme.text }]}>{def.name}</Text>
             {/* Owned count pill */}
             <View style={[styles.countPill, { backgroundColor: `${def.accentColor}30` }]}>
               <Text style={[styles.countPillNumber, { color: def.accentColor }]}>{count}</Text>
