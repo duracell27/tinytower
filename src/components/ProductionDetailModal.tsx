@@ -136,10 +136,11 @@ export default function ProductionDetailModal() {
     : 0;
 
   const vb = computeVehicleBonuses(vehicles);
-  const forkliftSalesSpeed = vb.salesSpeedPercent;
-  const armoredBaseCoin   = vb.baseCoinBoostPercent;
-  const armoredBaseXp     = vb.baseXpBoostPercent;
-  const hasVehicleBonus   = forkliftSalesSpeed > 0 || armoredBaseCoin > 0 || armoredBaseXp > 0;
+  const forkliftSalesSpeed    = vb.salesSpeedPercent;
+  const deliveryTruckSpeed    = vb.deliverySpeedPercent;
+  const armoredBaseCoin       = vb.baseCoinBoostPercent;
+  const armoredBaseXp         = vb.baseXpBoostPercent;
+  const hasVehicleBonus       = forkliftSalesSpeed > 0 || deliveryTruckSpeed > 0 || armoredBaseCoin > 0 || armoredBaseXp > 0;
 
   const baseRevenue = typeConfig?.batchValue ?? 0;
   const starValueMult = starMult.value;
@@ -335,6 +336,13 @@ export default function ProductionDetailModal() {
                     isDark={isDark}
                     label="Forklift"
                     value={<Text style={[styles.rowValue, { color: '#3FA535' }]}>−{forkliftSalesSpeed}% sell time</Text>}
+                  />
+                )}
+                {deliveryTruckSpeed > 0 && (
+                  <BreakdownRow
+                    isDark={isDark}
+                    label="Delivery truck"
+                    value={<Text style={[styles.rowValue, { color: '#8B5CF6' }]}>−{deliveryTruckSpeed}% delivery time</Text>}
                   />
                 )}
                 {armoredBaseCoin > 0 && (
