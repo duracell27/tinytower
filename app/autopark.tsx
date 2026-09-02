@@ -58,22 +58,15 @@ export default function AutoparkScreen() {
               <View style={styles.info}>
                 <View style={styles.nameRow}>
                   <Text style={[styles.vehicleName, { color: theme.text }]}>{def.name}</Text>
-                  <Text style={[styles.countLabel, { color: theme.textMuted }]}>
-                    {count} / 10
-                  </Text>
-                </View>
-                <View style={styles.bonusRow}>
-                  <View style={[styles.bonusChip, { backgroundColor: `${def.accentColor}18` }]}>
-                    <Text style={[styles.bonusChipText, { color: def.accentColor }]}>
-                      {def.bonus1Label(count)}
-                    </Text>
-                  </View>
-                  <View style={[styles.bonusChip, { backgroundColor: `${def.accentColor}18` }]}>
-                    <Text style={[styles.bonusChipText, { color: def.accentColor }]}>
-                      {def.bonus2Label(count)}
+                  <View style={[styles.countBadge, { backgroundColor: `${def.accentColor}22` }]}>
+                    <Text style={[styles.countBadgeText, { color: def.accentColor }]}>
+                      {count} / 10
                     </Text>
                   </View>
                 </View>
+                <Text style={[styles.descText, { color: theme.textMuted }]} numberOfLines={2}>
+                  {def.description}
+                </Text>
               </View>
 
               {/* Progress bar */}
@@ -114,7 +107,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingLeft: 20,
+    paddingLeft: 16,
     paddingRight: 14,
     paddingVertical: 14,
     shadowColor: 'rgba(60,80,45,1)',
@@ -124,23 +117,18 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardPressed: { opacity: 0.75 },
-  accentStrip: { position: 'absolute', top: 0, bottom: 0, left: 0, width: 8 },
+  accentStrip: { position: 'absolute', top: 0, bottom: 0, left: 0, width: 4 },
   icon: { width: 52, height: 52, flexShrink: 0 },
-  info: { flex: 1, gap: 6 },
+  info: { flex: 1, gap: 5 },
   nameRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   vehicleName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 17 },
-  countLabel: { fontFamily: 'Nunito_600SemiBold', fontSize: 13 },
-  bonusRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
-  bonusChip: {
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  bonusChipText: { fontFamily: 'Nunito_600SemiBold', fontSize: 11 },
+  countBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },
+  countBadgeText: { fontFamily: 'Nunito_700Bold', fontSize: 12 },
+  descText: { fontFamily: 'Nunito_400Regular', fontSize: 12, lineHeight: 17 },
   progressTrack: {
     position: 'absolute',
     bottom: 0,
-    left: 8,
+    left: 4,
     right: 0,
     height: 3,
     borderRadius: 2,
