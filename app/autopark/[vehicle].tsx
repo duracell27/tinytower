@@ -30,6 +30,32 @@ const BONUS_ICONS: Record<VehicleType, [ReturnType<typeof require>, ReturnType<t
 
 const VALID_VEHICLE_KEYS: VehicleType[] = ['taxi', 'forklift', 'armored_truck', 'delivery_truck', 'bus'];
 
+const TOKEN_ICONS: Record<string, ReturnType<typeof require>> = {
+  gem:     require('../../assets/img/diamond.png'),
+  xp:      require('../../assets/img/xpIcon.png'),
+  coin:    require('../../assets/img/coin.png'),
+  speed:   require('../../assets/img/speedUp.png'),
+  visitor: require('../../assets/img/BusIcon.png'),
+};
+
+function renderDesc(text: string): React.ReactNode {
+  const parts = text.split(/(\{[a-z]+\})/g);
+  return parts.map((part, i) => {
+    const token = part.match(/^\{([a-z]+)\}$/)?.[1];
+    if (token && TOKEN_ICONS[token]) {
+      return (
+        <Image
+          key={i}
+          source={TOKEN_ICONS[token]}
+          style={{ width: 14, height: 14 }}
+          contentFit="contain"
+        />
+      );
+    }
+    return <Text key={i}>{part}</Text>;
+  });
+}
+
 export default function VehicleDetailScreen() {
   const { vehicle } = useLocalSearchParams<{ vehicle: string }>();
   const theme = useAppTheme();
@@ -105,15 +131,9 @@ export default function VehicleDetailScreen() {
         {/* Description */}
         <View style={[styles.descCard, { backgroundColor: theme.surface, borderLeftColor: def.accentColor }]}>
           <Text style={[styles.descLabel, { color: def.accentColor }]}>About</Text>
-          <View style={styles.descRow}>
-            <Image source={icon1} style={styles.descRowIcon} contentFit="contain" />
-            <Text style={[styles.descRowText, { color: theme.text }]}>{def.bonus1Label(count)}</Text>
-          </View>
-          <View style={styles.descRow}>
-            <Image source={icon2} style={styles.descRowIcon} contentFit="contain" />
-            <Text style={[styles.descRowText, { color: theme.text }]}>{def.bonus2Label(count)}</Text>
-          </View>
-          <Text style={[styles.descText, { color: theme.textMuted }]}>{def.description}</Text>
+          <Text style={[styles.descText, { color: theme.text }]}>
+            {renderDesc(def.description)}
+          </Text>
         </View>
 
         {/* Buy button */}
@@ -190,10 +210,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
   },
   descLabel: { fontFamily: 'Nunito_700Bold', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.8 },
-  descRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  descRowIcon: { width: 18, height: 18, flexShrink: 0 },
-  descRowText: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, flex: 1 },
-  descText: { fontFamily: 'Nunito_400Regular', fontSize: 12, lineHeight: 17, marginTop: 2 },
+  descText: { fontFamily: 'Nunito_400Regular', fontSize: 13, lineHeight: 20 },
 
   buyWrap: { marginHorizontal: 20, marginTop: 20, gap: 8 },
   feedbackText: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, textAlign: 'center' },

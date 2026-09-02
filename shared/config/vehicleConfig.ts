@@ -22,7 +22,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     key: 'taxi',
     name: 'Taxi',
     description:
-      'Each taxi increases the number of free gem exchanges in the elevator by 1 and gives +1,000 experience for each visitor.',
+      'Each taxi adds +1 free {gem} exchange per day and gives +1,000 {xp} for each elevator visitor.',
     shortDescription: 'More gem exchanges & XP per lobby visitor',
     gemCost: 1_000,
     accentColor: '#22C55E',
@@ -33,7 +33,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     key: 'forklift',
     name: 'Forklift',
     description:
-      'Each forklift speeds up sales of all goods by +1% and gives +5,000 extra experience for each product listed.',
+      'Each forklift {speed} speeds up sales by 1% and gives +5,000 {xp} per listed product.',
     shortDescription: 'Faster sales & bonus XP per listing',
     gemCost: 1_000,
     accentColor: '#3B82F6',
@@ -44,7 +44,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     key: 'armored_truck',
     name: 'Armored Truck',
     description:
-      'Each armored truck increases base production profit by +5% and base experience by +10%. These bonuses apply before all other multipliers.',
+      'Each armored truck boosts base {coin} profit by 5% and base {xp} by 10%. These bonuses apply before all other multipliers.',
     shortDescription: 'Boosts base profit & XP before all multipliers',
     gemCost: 2_500,
     accentColor: '#EAB308',
@@ -55,7 +55,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     key: 'delivery_truck',
     name: 'Delivery Truck',
     description:
-      'Each truck speeds up the delivery of all goods by +1% and gives +5,000 extra experience for each product you buy.',
+      'Each truck {speed} speeds up delivery by 1% and gives +5,000 {xp} per purchased product.',
     shortDescription: 'Faster deliveries & bonus XP per purchase',
     gemCost: 1_000,
     accentColor: '#3376E5',
@@ -66,7 +66,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     key: 'bus',
     name: 'Bus',
     description:
-      'Each bus increases the number of visitors in the elevator by 5 and increases tips by +5%.',
+      'Each bus adds 5 {visitor} slots to the elevator and boosts {coin} tips by 5%.',
     shortDescription: 'More elevator visitors & higher tips',
     gemCost: 1_000,
     accentColor: '#8B5CF6',
