@@ -560,6 +560,7 @@ function handleBuyDailyGems(
   const isToday = now >= state.lastDailyReset;
   return {
     success: true,
+    xpGained: 0,
     state: {
       ...state,
       balance: state.balance - cost,
