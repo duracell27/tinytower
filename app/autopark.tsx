@@ -80,8 +80,8 @@ export default function AutoparkScreen() {
                     </Text>
                   </View>
                 </View>
-                <Text style={[styles.descText, { color: theme.textMuted }]} numberOfLines={2}>
-                  {def.description}
+                <Text style={[styles.descText, { color: theme.textMuted }]} numberOfLines={1}>
+                  {def.shortDescription}
                 </Text>
               </View>
 

@@ -6,6 +6,7 @@ export interface VehicleDefinition {
   key: VehicleType;
   name: string;
   description: string;
+  shortDescription: string;
   gemCost: number;
   accentColor: string;
   bonus1Label: (count: number) => string;
@@ -22,6 +23,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     name: 'Taxi',
     description:
       'Each taxi increases the number of free gem exchanges in the elevator by 1 and gives +1,000 experience for each visitor.',
+    shortDescription: 'More gem exchanges & XP per lobby visitor',
     gemCost: 1_000,
     accentColor: '#22C55E',
     bonus1Label: (n) => `+${n} 💎 exchange limit`,
@@ -32,6 +34,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     name: 'Forklift',
     description:
       'Each forklift speeds up sales of all goods by +1% and gives +5,000 extra experience for each product listed.',
+    shortDescription: 'Faster sales & bonus XP per listing',
     gemCost: 1_000,
     accentColor: '#3B82F6',
     bonus1Label: (n) => `-${n}% sell time`,
@@ -42,6 +45,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     name: 'Armored Truck',
     description:
       'Each armored truck increases base production profit by +5% and base experience by +10%. These bonuses apply before all other multipliers.',
+    shortDescription: 'Boosts base profit & XP before all multipliers',
     gemCost: 2_500,
     accentColor: '#EAB308',
     bonus1Label: (n) => `+${n * 5}% base profit`,
@@ -52,6 +56,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     name: 'Delivery Truck',
     description:
       'Each truck speeds up the delivery of all goods by +1% and gives +5,000 extra experience for each product you buy.',
+    shortDescription: 'Faster deliveries & bonus XP per purchase',
     gemCost: 1_000,
     accentColor: '#3376E5',
     bonus1Label: (n) => `-${n}% delivery time`,
@@ -62,6 +67,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     name: 'Bus',
     description:
       'Each bus increases the number of visitors in the elevator by 5 and increases tips by +5%.',
+    shortDescription: 'More elevator visitors & higher tips',
     gemCost: 1_000,
     accentColor: '#8B5CF6',
     bonus1Label: (n) => `+${n * 5} visitor slots`,
