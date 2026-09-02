@@ -29,6 +29,7 @@ import { WORKER_NAME_POOLS } from '../../shared/config/workerNames';
 import { useGameClock } from '../hooks/useGameClock';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { calculateTip, calculateElevatorUpgradeCost, calculateLobbyUpgradeCost, getMaxElevatorLevel, getMaxLobbyCapacity, getFillLobbyCost, getDailyTipsTargets } from '../../shared/engine/lobbyUtils';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
 import type { Visitor, VisitorRole, Worker } from '../../shared/types';
 import { Image } from 'expo-image';
@@ -423,6 +424,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const balance = useBalance();
   const now = useGameClock(1000);
   const playerLevel = useGameStore((s) => s.playerLevel);
+  const vehicles = useGameStore((s) => s.vehicles);
   useEffect(() => {
     if (!lobbyVisitors?.length) setInlineReward(null);
   }, [lobbyVisitors]);
@@ -489,7 +491,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const lobbyMaxed = lobbyCapacity >= maxLobbyCapacity;
 
   // Gem limit for businessman
-  const dailyGemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
+  const dailyGemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel + computeVehicleBonuses(vehicles).extraGemExchangeLimit;
   const gemsRemaining = Math.max(0, dailyGemLimit - effectiveDailyGemsCollected);
   const buyAllGemsCost = 100 * gemsRemaining * playerLevel;
 
