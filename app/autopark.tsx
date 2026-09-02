@@ -92,7 +92,7 @@ export default function AutoparkScreen() {
                     key={i}
                     style={[
                       styles.progressSegment,
-                      { backgroundColor: i < count ? def.accentColor : theme.surfaceSub },
+                      { backgroundColor: i < count ? def.accentColor : `${def.accentColor}30` },
                     ]}
                   />
                 ))}
