@@ -188,9 +188,9 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
     })
     .onEnd((e) => {
       if (e.translationY > DISMISS_THRESHOLD || e.velocityY > 500) {
-        translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, (finished) => {
+        translateY.value = withTiming(SHEET_HEIGHT, { duration: 300 }, () => {
           'worklet';
-          if (finished) runOnJS(onClose)();
+          runOnJS(onClose)();
         });
         scrimOpacity.value = withTiming(0, { duration: 300 });
       } else {

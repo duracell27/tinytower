@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
@@ -32,31 +31,29 @@ export default function HotelFullNoticeModal() {
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={dismiss}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Pressable style={styles.scrim} onPress={dismiss}>
-          <Pressable style={styles.card} onPress={() => {}}>
-            <View style={styles.avatarWrap}>
-              <HotelIcon size={32} color="#A8475F" />
-            </View>
-            <View style={styles.info}>
-              <Text style={styles.title}>{t('hotelFullPopup.title')}</Text>
-              <Text style={styles.subtitle}>{t('hotelFullPopup.subtitle')}</Text>
-            </View>
-            <Pressable
-              onPress={handleGoToHotel}
-              style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
-            >
-              <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.btnGradient}>
-                <HotelIcon size={16} color="#fff" />
-                <Text style={styles.btnText}>{t('hotelFullPopup.goToHotel')}</Text>
-              </LinearGradient>
-            </Pressable>
-            <Pressable onPress={dismiss} style={styles.dismissBtn}>
-              <Text style={styles.dismissText}>{t('hotelFullPopup.dismiss')}</Text>
-            </Pressable>
+      <Pressable style={styles.scrim} onPress={dismiss}>
+        <Pressable style={styles.card} onPress={() => {}}>
+          <View style={styles.avatarWrap}>
+            <HotelIcon size={32} color="#A8475F" />
+          </View>
+          <View style={styles.info}>
+            <Text style={styles.title}>{t('hotelFullPopup.title')}</Text>
+            <Text style={styles.subtitle}>{t('hotelFullPopup.subtitle')}</Text>
+          </View>
+          <Pressable
+            onPress={handleGoToHotel}
+            style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
+          >
+            <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.btnGradient}>
+              <HotelIcon size={16} color="#fff" />
+              <Text style={styles.btnText}>{t('hotelFullPopup.goToHotel')}</Text>
+            </LinearGradient>
+          </Pressable>
+          <Pressable onPress={dismiss} style={styles.dismissBtn}>
+            <Text style={styles.dismissText}>{t('hotelFullPopup.dismiss')}</Text>
           </Pressable>
         </Pressable>
-      </GestureHandlerRootView>
+      </Pressable>
     </Modal>
   );
 }
