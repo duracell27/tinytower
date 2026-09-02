@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { createMMKV } from 'react-native-mmkv';
 import { shadeColor } from '../utils/color';
 import { useGameStore } from '../stores/gameStore';
@@ -39,6 +40,7 @@ interface UnderConstructionBannerProps {
   selectedFloorType: string | null;
   onOpenPicker: () => void;
   onStartBusiness: () => void;
+  onOpenLobby: () => void;
 }
 
 function formatCountdown(ms: number): string {
@@ -58,6 +60,7 @@ export default function UnderConstructionBanner({
   selectedFloorType,
   onOpenPicker,
   onStartBusiness,
+  onOpenLobby,
 }: UnderConstructionBannerProps) {
   const now = useGameClock(1000);
   const tools = useGameStore((s) => s.tools);
@@ -229,31 +232,49 @@ export default function UnderConstructionBanner({
           })}
         </View>
 
-        {!canStart && (
-          <Text style={[styles.materialsHint, { color: theme.textMuted }]}>
-            🛗 Ride the elevator — the builder delivers materials to your warehouse
-          </Text>
-        )}
-
-        {/* Start button — full width below tools */}
-        <Pressable
-          ref={openBtnRef}
-          collapsable={false}
-          onPress={canStart ? onStartBusiness : undefined}
-          style={({ pressed }) => [
-            styles.startBtn,
-            !canStart && styles.startBtnDisabled,
-            pressed && canStart && { opacity: 0.85 },
-          ]}
-        >
-          <LinearGradient
-            colors={canStart ? ['#72C24F', '#5BA63C'] : ['#B7BDC8', '#A2A9B6']}
-            style={styles.startBtnGradient}
+        {canStart ? (
+          /* Open business button */
+          <Pressable
+            ref={openBtnRef}
+            collapsable={false}
+            onPress={onStartBusiness}
+            style={({ pressed }) => [styles.startBtn, pressed && { opacity: 0.85 }]}
           >
-            <Text style={styles.startBtnText}>Open business</Text>
-          </LinearGradient>
-          {canStart && <View style={styles.startBtnShadow} />}
-        </Pressable>
+            <LinearGradient colors={['#72C24F', '#5BA63C']} style={styles.startBtnGradient}>
+              <Text style={styles.startBtnText}>Open business</Text>
+            </LinearGradient>
+            <View style={styles.startBtnShadow} />
+          </Pressable>
+        ) : (
+          /* Two action buttons when materials are missing */
+          <>
+            <Text style={[styles.materialsHint, { color: theme.textMuted }]}>
+              Take people in the elevator to get materials, or buy them in the shop
+            </Text>
+            <View style={styles.twoButtonsRow}>
+              <Pressable
+                onPress={onOpenLobby}
+                style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}
+              >
+                <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.actionBtnGradient}>
+                  <Image source={require('../../assets/img/achivment/achivLiftCategory.png')} style={styles.actionBtnIcon} contentFit="contain" />
+                  <Text style={styles.actionBtnText}>Elevator</Text>
+                </LinearGradient>
+                <View style={[styles.actionBtnShadow, { backgroundColor: '#7A3A50' }]} />
+              </Pressable>
+              <Pressable
+                onPress={() => router.push('/shop')}
+                style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}
+              >
+                <LinearGradient colors={['#52A6E2', '#3B8BCB']} style={styles.actionBtnGradient}>
+                  <Image source={require('../../assets/img/diamondPig.png')} style={styles.actionBtnIcon} contentFit="contain" />
+                  <Text style={styles.actionBtnText}>Shop</Text>
+                </LinearGradient>
+                <View style={[styles.actionBtnShadow, { backgroundColor: '#2A6A9A' }]} />
+              </Pressable>
+            </View>
+          </>
+        )}
       </View>
     );
   }
@@ -429,14 +450,6 @@ const styles = StyleSheet.create({
     color: '#9BA3B0',
     lineHeight: 16,
   },
-  materialsHint: {
-    fontFamily: 'Fredoka_400Regular',
-    fontSize: 12,
-    color: '#9BA3B0',
-    lineHeight: 17,
-    textAlign: 'center',
-    marginTop: 10,
-  },
   toolsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -487,6 +500,49 @@ const styles = StyleSheet.create({
     bottom: 0, left: 0, right: 0,
     height: 3,
     backgroundColor: '#4A8A2E',
+    borderBottomLeftRadius: 13,
+    borderBottomRightRadius: 13,
+  },
+  materialsHint: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 12,
+    color: '#9BA3B0',
+    lineHeight: 17,
+    textAlign: 'center',
+  },
+  twoButtonsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionBtn: {
+    flex: 1,
+    borderRadius: 13,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  actionBtnGradient: {
+    flexDirection: 'row',
+    paddingVertical: 11,
+    paddingHorizontal: 10,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    zIndex: 1,
+  },
+  actionBtnIcon: {
+    width: 20,
+    height: 20,
+  },
+  actionBtnText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 14,
+    color: '#fff',
+  },
+  actionBtnShadow: {
+    position: 'absolute',
+    bottom: 0, left: 0, right: 0,
+    height: 3,
     borderBottomLeftRadius: 13,
     borderBottomRightRadius: 13,
   },

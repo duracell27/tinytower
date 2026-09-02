@@ -578,7 +578,7 @@ function EmptySlotCard({ t }: { t: (key: string) => string }) {
   const theme = useAppTheme();
   return (
     <View style={[slotStyles.card, { backgroundColor: theme.surface }]}>
-      <View style={[slotStyles.avatarPlaceholder, { backgroundColor: theme.divider }]}>
+      <View style={[slotStyles.avatarPlaceholder, theme.isDark && { backgroundColor: theme.divider }]}>
         <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
           <Path
             d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
@@ -707,7 +707,7 @@ const slotStyles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#F2F4F8',
+    backgroundColor: '#F8EEF3',
     alignItems: 'center',
     justifyContent: 'center',
   },

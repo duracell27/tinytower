@@ -859,6 +859,7 @@ export default function GameScreen() {
             onStartBusiness={() => {
               if (selType) openFloor(uc.floorId, selType);
             }}
+            onOpenLobby={() => setLobbyOpen(true)}
           />
         </View>
       );
