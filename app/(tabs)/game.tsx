@@ -625,7 +625,7 @@ export default function GameScreen() {
     let s = useGameStore.getState();
     while (
       (s.nextVisitorAt === 0 || now >= s.nextVisitorAt) &&
-      s.lobbyVisitors.length < s.lobbyCapacity
+      s.lobbyVisitors.length < s.lobbyCapacity + computeVehicleBonuses(s.vehicles).extraLobbyCapacity
     ) {
       const prevNextAt = s.nextVisitorAt;
       spawnVisitor();

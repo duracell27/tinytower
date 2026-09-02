@@ -1062,7 +1062,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   fillLobby: () => {
     const state = get();
-    const slotsToFill = state.lobbyCapacity - state.lobbyVisitors.length;
+    const slotsToFill = state.lobbyCapacity + computeVehicleBonuses(state.vehicles).extraLobbyCapacity - state.lobbyVisitors.length;
     const now = clock.now();
     const cost = getFillLobbyCost(state.dailyFillLobbyUses);
     if (state.gems < cost) {
@@ -1369,7 +1369,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           .map((cmd) => (cmd as Extract<Command, { type: 'spawn_visitor' }>).visitorId),
       );
       // Cap pendingLocal to free lobby slots so we never exceed capacity.
-      const freeSlots = Math.max(0, cur.lobbyCapacity - serverMapped.length);
+      const freeSlots = Math.max(0, cur.lobbyCapacity + computeVehicleBonuses(cur.vehicles).extraLobbyCapacity - serverMapped.length);
       const pendingLocal = cur.lobbyVisitors
         .filter((lv) => pendingSpawnIds.has(lv.id) && !serverIds.has(lv.id))
         .slice(0, freeSlots);
