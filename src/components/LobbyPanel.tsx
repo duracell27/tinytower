@@ -461,8 +461,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     ? elevatorFloor >= activeVisitor.targetFloor
     : false;
 
+  // Vehicle bonuses (needed for capacity and tip display)
+  const vehicleBonuses = computeVehicleBonuses(vehicles);
+  const effectiveLobbyCapacity = lobbyCapacity + vehicleBonuses.extraLobbyCapacity;
+  const tipMultiplier = 1 + vehicleBonuses.tipPercent / 100;
+
   // Timer
-  const isFull = lobbyVisitors.length >= lobbyCapacity;
+  const isFull = lobbyVisitors.length >= effectiveLobbyCapacity;
   const secondsLeft = Math.max(0, Math.ceil((nextVisitorAt - now) / 1000));
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
@@ -491,7 +496,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const lobbyMaxed = lobbyCapacity >= maxLobbyCapacity;
 
   // Gem limit for businessman
-  const dailyGemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel + computeVehicleBonuses(vehicles).extraGemExchangeLimit;
+  const dailyGemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel + vehicleBonuses.extraGemExchangeLimit;
   const gemsRemaining = Math.max(0, dailyGemLimit - effectiveDailyGemsCollected);
   const buyAllGemsCost = 100 * gemsRemaining * playerLevel;
 
@@ -711,7 +716,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
       };
     }
 
-    const tip = calculateTip(activeVisitor.role ?? 'guest', activeVisitor.targetFloor ?? 1, elevatorLevel, gameConfig) * (activeVisitor.isVip ? 10 : 1);
+    const tip = Math.floor(calculateTip(activeVisitor.role ?? 'guest', activeVisitor.targetFloor ?? 1, elevatorLevel, gameConfig) * tipMultiplier * (activeVisitor.isVip ? 10 : 1));
     return {
       label: t('actions.collectTip'),
       amount: `+${tip}` as string | null,
@@ -842,7 +847,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={styles.statPill}>
                       <PersonIcon size={13} />
                       <Text style={styles.statLabel}>{t('stats.waiting')}</Text>
-                      <Text style={styles.statValue}>{lobbyVisitors.length}/{lobbyCapacity}</Text>
+                      <Text style={styles.statValue}>{lobbyVisitors.length}/{effectiveLobbyCapacity}</Text>
                     </View>
                   </View>
                 </View>
