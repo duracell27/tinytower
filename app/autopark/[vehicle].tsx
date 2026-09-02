@@ -98,7 +98,6 @@ export default function VehicleDetailScreen() {
               <Text style={[styles.bonusValue, { color: def.accentColor }]}>
                 {idx === 0 ? def.bonus1Label(count) : def.bonus2Label(count)}
               </Text>
-              <Text style={[styles.bonusHint, { color: theme.textMuted }]}>current</Text>
             </View>
           ))}
         </View>
@@ -106,7 +105,15 @@ export default function VehicleDetailScreen() {
         {/* Description */}
         <View style={[styles.descCard, { backgroundColor: theme.surface, borderLeftColor: def.accentColor }]}>
           <Text style={[styles.descLabel, { color: def.accentColor }]}>About</Text>
-          <Text style={[styles.descText, { color: theme.text }]}>{def.description}</Text>
+          <View style={styles.descRow}>
+            <Image source={icon1} style={styles.descRowIcon} contentFit="contain" />
+            <Text style={[styles.descRowText, { color: theme.text }]}>{def.bonus1Label(count)}</Text>
+          </View>
+          <View style={styles.descRow}>
+            <Image source={icon2} style={styles.descRowIcon} contentFit="contain" />
+            <Text style={[styles.descRowText, { color: theme.text }]}>{def.bonus2Label(count)}</Text>
+          </View>
+          <Text style={[styles.descText, { color: theme.textMuted }]}>{def.description}</Text>
         </View>
 
         {/* Buy button */}
@@ -172,19 +179,21 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
   },
-  bonusIcon: { width: 28, height: 28 },
+  bonusIcon: { width: 26, height: 26 },
   bonusValue: { fontFamily: 'Fredoka_700Bold', fontSize: 14, textAlign: 'center' },
-  bonusHint: { fontFamily: 'Nunito_400Regular', fontSize: 11, textAlign: 'center' },
 
   descCard: {
     marginHorizontal: 20, marginTop: 10,
-    borderRadius: 16, padding: 14, gap: 6,
+    borderRadius: 16, padding: 14, gap: 8,
     borderLeftWidth: 2,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
   },
   descLabel: { fontFamily: 'Nunito_700Bold', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.8 },
-  descText: { fontFamily: 'Nunito_400Regular', fontSize: 13, lineHeight: 19 },
+  descRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  descRowIcon: { width: 18, height: 18, flexShrink: 0 },
+  descRowText: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, flex: 1 },
+  descText: { fontFamily: 'Nunito_400Regular', fontSize: 12, lineHeight: 17, marginTop: 2 },
 
   buyWrap: { marginHorizontal: 20, marginTop: 20, gap: 8 },
   feedbackText: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, textAlign: 'center' },
