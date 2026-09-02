@@ -30,7 +30,7 @@ export default function AutoparkScreen() {
 
         <View style={[styles.summaryCard, { backgroundColor: theme.surface }]}>
           <View style={styles.summaryTop}>
-            <Text style={[styles.summaryLabel, { color: theme.textMuted }]}>Vehicles owned</Text>
+            <Text style={[styles.summaryLabel, { color: theme.text }]}>Vehicles owned</Text>
             <View style={styles.summaryCountRow}>
               <Text style={[styles.summaryCount, { color: theme.text }]}>{totalOwned}</Text>
               <Text style={[styles.summaryOf, { color: theme.textMuted }]}> / 50</Text>
