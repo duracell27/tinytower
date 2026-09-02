@@ -206,7 +206,7 @@ export default function VehicleDetailScreen() {
         {/* Buy button */}
         <View style={styles.buyWrap}>
           {feedback === 'success' && (
-            <Text style={[styles.feedbackText, { color: '#22C55E' }]}>Purchased!</Text>
+            <Text style={[styles.feedbackText, { color: def.accentColor }]}>Purchased!</Text>
           )}
           {isMaxed ? (
             <View style={[styles.buyBtn, { backgroundColor: theme.surfaceSub }]}>
