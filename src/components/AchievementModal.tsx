@@ -79,7 +79,10 @@ export default function AchievementModal() {
           const tierImg = TIER_IMAGES[grant.level];
           return (
             <Animated.View style={[styles.card, cardStyle]}>
-              <LinearGradient colors={['#E8F4FF', '#D0E8FF']} style={styles.cardGradient}>
+              <LinearGradient
+                colors={isDark ? ['#1A2535', '#1E2D42'] : ['#E8F4FF', '#D0E8FF']}
+                style={styles.cardGradient}
+              >
                 {tierImg && <Image source={tierImg} style={styles.tierImage} resizeMode="contain" />}
                 <View style={styles.categoryRow}>
                   {categoryImg && <Image source={categoryImg} style={styles.categoryIcon} resizeMode="contain" />}
@@ -134,6 +137,7 @@ export default function AchievementModal() {
 }
 
 function getStyles(theme: ReturnType<typeof useAppTheme>) {
+  const { isDark } = theme;
   return StyleSheet.create({
   scrim: {
     flex: 1,
@@ -175,20 +179,20 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
   tierBadge: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 13,
-    color: '#5A8AB0',
+    color: isDark ? '#6AABDA' : '#5A8AB0',
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   thresholdText: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 12,
-    color: '#8AAECF',
+    color: isDark ? '#5A8AB0' : '#8AAECF',
     marginBottom: 6,
   },
   title: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 22,
-    color: '#1A3D6B',
+    color: isDark ? '#C8DEF5' : '#1A3D6B',
     marginBottom: 18,
     textAlign: 'center',
   },
@@ -205,12 +209,12 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
     paddingLeft: 8,
     paddingRight: 14,
     borderRadius: 14,
-    backgroundColor: theme.surface,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : theme.surface,
     shadowColor: 'rgba(30,60,120,1)',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
+    shadowOpacity: isDark ? 0 : 0.12,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: isDark ? 0 : 2,
   },
   coinIcon: {
     width: 20, height: 20, borderRadius: 10,
