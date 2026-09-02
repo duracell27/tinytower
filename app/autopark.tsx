@@ -89,6 +89,12 @@ export default function AutoparkScreen() {
           );
         })}
       </ScrollView>
+      <Pressable
+        onPress={() => router.back()}
+        style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
+      >
+        <Text style={styles.closeBtnText}>✕</Text>
+      </Pressable>
     </AppBackground>
   );
 }
@@ -141,4 +147,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   progressFill: { height: '100%', borderRadius: 2 },
+  closeBtn: { position: 'absolute', bottom: 40, alignSelf: 'center', width: 56, height: 56, borderRadius: 28, backgroundColor: '#1A1A1A', alignItems: 'center', justifyContent: 'center' },
+  closeBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 20, color: '#fff', lineHeight: 22 },
 });

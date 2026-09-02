@@ -129,21 +129,21 @@ export default function VehicleDetailScreen() {
           </Pressable>
         </View>
 
-        {/* Close button — bottom center, black circle */}
-        <View style={styles.closeBtnWrap}>
-          <Pressable onPress={() => router.back()} style={styles.closeBtn} hitSlop={8}>
-            <Text style={styles.closeIcon}>✕</Text>
-          </Pressable>
-        </View>
-
       </ScrollView>
+
+      <Pressable
+        onPress={() => router.back()}
+        style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
+      >
+        <Text style={styles.closeBtnText}>✕</Text>
+      </Pressable>
     </AppBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { paddingBottom: 40 },
+  scroll: { paddingBottom: 120 },
   banner: {
     marginHorizontal: 20,
     marginTop: 60,
@@ -207,17 +207,6 @@ const styles = StyleSheet.create({
   buyBtnText: {
     fontFamily: 'Fredoka_600SemiBold', fontSize: 18, color: '#fff',
   },
-  closeBtnWrap: {
-    alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 12,
-  },
-  closeBtn: {
-    width: 48, height: 48, borderRadius: 24,
-    backgroundColor: '#1A2030',
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25, shadowRadius: 8, elevation: 6,
-  },
-  closeIcon: { fontSize: 18, color: 'rgba(255,255,255,0.85)' },
+  closeBtn: { position: 'absolute', bottom: 40, alignSelf: 'center', width: 56, height: 56, borderRadius: 28, backgroundColor: '#1A1A1A', alignItems: 'center', justifyContent: 'center' },
+  closeBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 20, color: '#fff', lineHeight: 22 },
 });
