@@ -436,7 +436,8 @@ function handleDeliverAll(
       },
     } : newState.dailyTasks,
   };
-  return { success: true, state: newState };
+  const coinDelta = newState.balance - state.balance;
+  return { success: true, state: newState, xpGained: coinDelta + (bonuses.xpPerVisitor ?? 0) * passengersDelivered };
 }
 
 function handleUpgradeElevator(state: GameState, config: GameConfig): ProcessResult {

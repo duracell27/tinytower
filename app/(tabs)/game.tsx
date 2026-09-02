@@ -114,8 +114,9 @@ export default function GameScreen() {
   const vehicles = useGameStore((s) => s.vehicles);
   const vehicleSpeedBonuses = React.useMemo(() => {
     const vb = computeVehicleBonuses(vehicles);
-    return { salesSpeedPercent: vb.salesSpeedPercent, deliverySpeedPercent: vb.deliverySpeedPercent };
+    return { salesSpeedPercent: vb.salesSpeedPercent, deliverySpeedPercent: vb.deliverySpeedPercent, extraLobbyCapacity: vb.extraLobbyCapacity };
   }, [vehicles]);
+  const effectiveLobbyCapacity = lobbyCapacity + vehicleSpeedBonuses.extraLobbyCapacity;
   const spawnVisitor = useGameStore((s) => s.spawnVisitor);
   const player = useAuthStore((s) => s.player);
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
@@ -917,7 +918,7 @@ export default function GameScreen() {
         >
           <LobbyFloor
             visitorCount={lobbyVisitors.length}
-            lobbyCapacity={lobbyCapacity}
+            lobbyCapacity={effectiveLobbyCapacity}
             nextVisitorAt={nextVisitorAt}
             onPress={() => {
               if (isOnboarding) {
