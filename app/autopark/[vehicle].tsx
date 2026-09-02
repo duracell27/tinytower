@@ -85,7 +85,7 @@ function BuyParticles({ icon, color, visible }: { icon: ReturnType<typeof requir
             },
           ]}
         >
-          <Image source={icon} style={styles.particleIcon} contentFit="contain" tintColor={color} />
+          <Image source={icon} style={styles.particleIcon} contentFit="contain" />
         </Animated.View>
       ))}
     </View>
