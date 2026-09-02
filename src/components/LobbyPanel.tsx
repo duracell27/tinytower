@@ -529,7 +529,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     if (!visible) return;
     const { openSheet, closeSheet } = useGameStore.getState();
     openSheet();
-    return closeSheet;
+    // Delay closeSheet until after the close animation finishes (420ms) so
+    // GlobalOverlay modals (LevelUpModal etc.) don't mount while the sheet is
+    // still animating — two simultaneous modals with GHRV freeze all touches.
+    return () => { setTimeout(closeSheet, 450); };
   }, [visible]);
 
   useEffect(() => {
