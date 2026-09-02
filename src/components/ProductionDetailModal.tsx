@@ -12,6 +12,7 @@ import i18n from '../i18n';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useGameStore } from '../stores/gameStore';
 import { gameConfig } from '../../shared/config/gameConfig';
+import { VEHICLE_CONFIG } from '../../shared/config/vehicleConfig';
 import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import {
   getWorkerMood,
@@ -335,28 +336,28 @@ export default function ProductionDetailModal() {
                   <BreakdownRow
                     isDark={isDark}
                     label="Forklift"
-                    value={<Text style={[styles.rowValue, { color: '#3FA535' }]}>−{forkliftSalesSpeed}% sell time</Text>}
+                    value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.forklift.accentColor }]}>−{forkliftSalesSpeed}% sell time</Text>}
                   />
                 )}
                 {deliveryTruckSpeed > 0 && (
                   <BreakdownRow
                     isDark={isDark}
                     label="Delivery truck"
-                    value={<Text style={[styles.rowValue, { color: '#8B5CF6' }]}>−{deliveryTruckSpeed}% delivery time</Text>}
+                    value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.delivery_truck.accentColor }]}>−{deliveryTruckSpeed}% delivery time</Text>}
                   />
                 )}
                 {armoredBaseCoin > 0 && (
                   <BreakdownRow
                     isDark={isDark}
                     label="Armored truck"
-                    value={<Text style={[styles.rowValue, { color: '#9A6FD0' }]}>+{armoredBaseCoin}% base revenue</Text>}
+                    value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.armored_truck.accentColor }]}>+{armoredBaseCoin}% base revenue</Text>}
                   />
                 )}
                 {armoredBaseXp > 0 && (
                   <BreakdownRow
                     isDark={isDark}
                     label="Armored truck XP"
-                    value={<Text style={[styles.rowValue, { color: '#9A6FD0' }]}>+{armoredBaseXp}% base XP</Text>}
+                    value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.armored_truck.accentColor }]}>+{armoredBaseXp}% base XP</Text>}
                   />
                 )}
               </View>
