@@ -50,20 +50,20 @@ function BuyParticles({ icon, color, visible }: { icon: ReturnType<typeof requir
       a.x.setValue(0);
       a.opacity.setValue(0);
       a.scale.setValue(0);
-      const delay = i * 40;
+      const delay = i * 70;
       return Animated.sequence([
         Animated.delay(delay),
         Animated.parallel([
-          Animated.spring(a.scale, { toValue: 1, useNativeDriver: true, speed: 20, bounciness: 12 }),
-          Animated.timing(a.opacity, { toValue: 1, duration: 80, useNativeDriver: true }),
-          Animated.timing(a.x, { toValue: OFFSETS[i]!, duration: 500, useNativeDriver: true }),
+          Animated.spring(a.scale, { toValue: 1, useNativeDriver: true, speed: 14, bounciness: 14 }),
+          Animated.timing(a.opacity, { toValue: 1, duration: 100, useNativeDriver: true }),
+          Animated.timing(a.x, { toValue: OFFSETS[i]!, duration: 800, useNativeDriver: true }),
           Animated.sequence([
-            Animated.timing(a.y, { toValue: -180, duration: 400, useNativeDriver: true }),
-            Animated.timing(a.y, { toValue: -80, duration: 300, useNativeDriver: true }),
+            Animated.timing(a.y, { toValue: -260, duration: 600, useNativeDriver: true }),
+            Animated.timing(a.y, { toValue: -140, duration: 500, useNativeDriver: true }),
           ]),
           Animated.sequence([
-            Animated.delay(300),
-            Animated.timing(a.opacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+            Animated.delay(500),
+            Animated.timing(a.opacity, { toValue: 0, duration: 500, useNativeDriver: true }),
           ]),
         ]),
       ]);
@@ -148,7 +148,7 @@ export default function VehicleDetailScreen() {
     setParticlesKey((k) => k + 1);
     setParticlesVisible(true);
     setTimeout(() => setFeedback(null), 1500);
-    setTimeout(() => setParticlesVisible(false), 900);
+    setTimeout(() => setParticlesVisible(false), 1800);
   };
 
   const [icon1, icon2] = BONUS_ICONS[key];
