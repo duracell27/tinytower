@@ -1126,7 +1126,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   buyAllDailyGems: () => {
     const state = get();
-    const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + state.playerLevel;
+    const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + state.playerLevel + computeVehicleBonuses(state.vehicles).extraGemExchangeLimit;
     const gemsRemaining = gemLimit - state.dailyGemsCollected;
     if (gemsRemaining <= 0) return;
     const cost = calculateBuyDailyGemsCost(gemsRemaining, state.playerLevel);
