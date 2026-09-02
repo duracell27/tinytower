@@ -26,7 +26,7 @@ export const VEHICLE_CONFIG: Record<VehicleType, VehicleDefinition> = {
     shortDescription: 'More gem exchanges & XP per lobby visitor',
     gemCost: 1_000,
     accentColor: '#22C55E',
-    bonus1Label: (n) => `+${n} 💎 exchange limit`,
+    bonus1Label: (n) => `+${n} gem exchange limit`,
     bonus2Label: (n) => `+${(n * 1_000).toLocaleString()} XP/visitor`,
   },
   forklift: {
