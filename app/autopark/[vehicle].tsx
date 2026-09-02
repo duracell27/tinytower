@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
 import AppBackground from '../../src/components/AppBackground';
@@ -57,17 +58,22 @@ export default function VehicleDetailScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* Banner */}
-        <View style={[styles.banner, { backgroundColor: def.accentColor }]}>
-          <Image source={VEHICLE_ICONS[key]} style={styles.bannerIcon} contentFit="contain" />
+        <LinearGradient
+          colors={['#1C2333', '#252D42']}
+          style={styles.banner}
+        >
+          <View style={[styles.bannerIconWrap, { backgroundColor: `${def.accentColor}22` }]}>
+            <Image source={VEHICLE_ICONS[key]} style={styles.bannerIcon} contentFit="contain" />
+          </View>
           <View style={styles.bannerText}>
             <Text style={styles.bannerName}>{def.name}</Text>
             {/* Owned count pill */}
-            <View style={styles.countPill}>
-              <Text style={styles.countPillNumber}>{count}</Text>
-              <Text style={styles.countPillOf}> / 10</Text>
+            <View style={[styles.countPill, { backgroundColor: `${def.accentColor}30` }]}>
+              <Text style={[styles.countPillNumber, { color: def.accentColor }]}>{count}</Text>
+              <Text style={[styles.countPillOf, { color: def.accentColor }]}> / 10</Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* Description — highlighted with left border */}
         <View style={[styles.descSection, { backgroundColor: theme.surface, borderLeftColor: def.accentColor }]}>
@@ -153,20 +159,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
   },
-  bannerIcon: { width: 80, height: 80, flexShrink: 0 },
+  bannerIconWrap: {
+    width: 88, height: 88, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  bannerIcon: { width: 68, height: 68 },
   bannerText: { flex: 1, gap: 10 },
   bannerName: { fontFamily: 'Fredoka_700Bold', fontSize: 26, color: '#fff' },
   countPill: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    backgroundColor: 'rgba(0,0,0,0.22)',
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 20,
   },
-  countPillNumber: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#fff' },
-  countPillOf: { fontFamily: 'Nunito_600SemiBold', fontSize: 14, color: 'rgba(255,255,255,0.75)' },
+  countPillNumber: { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
+  countPillOf: { fontFamily: 'Nunito_600SemiBold', fontSize: 14 },
   descSection: {
     marginHorizontal: 20,
     marginTop: 14,
