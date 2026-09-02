@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import React, { useState, useRef, useCallback } from 'react';
+import { View, Text, Pressable, ScrollView, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -29,6 +29,68 @@ const BONUS_ICONS: Record<VehicleType, [ReturnType<typeof require>, ReturnType<t
 };
 
 const VALID_VEHICLE_KEYS: VehicleType[] = ['taxi', 'forklift', 'armored_truck', 'delivery_truck', 'bus'];
+
+const PARTICLE_COUNT = 6;
+const OFFSETS = [-100, -60, -20, 20, 60, 100];
+
+function BuyParticles({ icon, color, visible }: { icon: ReturnType<typeof require>; color: string; visible: boolean }) {
+  const anims = useRef(
+    Array.from({ length: PARTICLE_COUNT }, () => ({
+      y: new Animated.Value(0),
+      x: new Animated.Value(0),
+      opacity: new Animated.Value(0),
+      scale: new Animated.Value(0),
+    })),
+  ).current;
+
+  React.useEffect(() => {
+    if (!visible) return;
+    const animations = anims.map((a, i) => {
+      a.y.setValue(0);
+      a.x.setValue(0);
+      a.opacity.setValue(0);
+      a.scale.setValue(0);
+      const delay = i * 40;
+      return Animated.sequence([
+        Animated.delay(delay),
+        Animated.parallel([
+          Animated.spring(a.scale, { toValue: 1, useNativeDriver: true, speed: 20, bounciness: 12 }),
+          Animated.timing(a.opacity, { toValue: 1, duration: 80, useNativeDriver: true }),
+          Animated.timing(a.x, { toValue: OFFSETS[i]!, duration: 500, useNativeDriver: true }),
+          Animated.sequence([
+            Animated.timing(a.y, { toValue: -180, duration: 400, useNativeDriver: true }),
+            Animated.timing(a.y, { toValue: -80, duration: 300, useNativeDriver: true }),
+          ]),
+          Animated.sequence([
+            Animated.delay(300),
+            Animated.timing(a.opacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+          ]),
+        ]),
+      ]);
+    });
+    Animated.parallel(animations).start();
+  }, [visible]);
+
+  if (!visible) return null;
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {anims.map((a, i) => (
+        <Animated.View
+          key={i}
+          style={[
+            styles.particle,
+            {
+              transform: [{ translateX: a.x }, { translateY: a.y }, { scale: a.scale }],
+              opacity: a.opacity,
+            },
+          ]}
+        >
+          <Image source={icon} style={styles.particleIcon} contentFit="contain" tintColor={color} />
+        </Animated.View>
+      ))}
+    </View>
+  );
+}
 
 const TOKEN_ICONS: Record<string, ReturnType<typeof require>> = {
   gem:     require('../../assets/img/diamond.png'),
@@ -64,6 +126,8 @@ export default function VehicleDetailScreen() {
   const buyVehicle = useGameStore((s) => s.buyVehicle);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const [feedback, setFeedback] = useState<'success' | 'error' | null>(null);
+  const [particlesKey, setParticlesKey] = useState(0);
+  const [particlesVisible, setParticlesVisible] = useState(false);
 
   const key = VALID_VEHICLE_KEYS.includes(vehicle as VehicleType) ? (vehicle as VehicleType) : null;
   if (!key) return null;
@@ -81,7 +145,10 @@ export default function VehicleDetailScreen() {
     }
     buyVehicle(key);
     setFeedback('success');
+    setParticlesKey((k) => k + 1);
+    setParticlesVisible(true);
     setTimeout(() => setFeedback(null), 1500);
+    setTimeout(() => setParticlesVisible(false), 900);
   };
 
   const [icon1, icon2] = BONUS_ICONS[key];
@@ -139,23 +206,31 @@ export default function VehicleDetailScreen() {
         {/* Buy button */}
         <View style={styles.buyWrap}>
           {feedback === 'success' && (
-            <Text style={[styles.feedbackText, { color: '#22C55E' }]}>Purchased!</Text>
+            <Text style={[styles.feedbackText, { color: '#22C55E' }]}>Куплено!</Text>
           )}
           {isMaxed ? (
             <View style={[styles.buyBtn, { backgroundColor: theme.surfaceSub }]}>
-              <Text style={[styles.buyBtnText, { color: theme.textMuted }]}>Maxed out</Text>
+              <Text style={[styles.buyBtnText, { color: theme.textMuted }]}>Максимум</Text>
             </View>
           ) : (
-            <Pressable
-              onPress={handleBuy}
-              style={({ pressed }) => [styles.buyBtn, { backgroundColor: def.accentColor, opacity: pressed ? 0.82 : 1 }]}
-            >
-              <View style={styles.buyBtnRow}>
-                <Text style={styles.buyBtnText}>Buy for </Text>
-                <GemIcon size={18} />
-                <Text style={styles.buyBtnText}> {formatNum(def.gemCost)}</Text>
-              </View>
-            </Pressable>
+            <View>
+              <BuyParticles
+                key={particlesKey}
+                icon={VEHICLE_ICONS[key]}
+                color={def.accentColor}
+                visible={particlesVisible}
+              />
+              <Pressable
+                onPress={handleBuy}
+                style={({ pressed }) => [styles.buyBtn, { backgroundColor: def.accentColor, opacity: pressed ? 0.82 : 1 }]}
+              >
+                <View style={styles.buyBtnRow}>
+                  <Text style={styles.buyBtnText}>Купити за </Text>
+                  <GemIcon size={18} />
+                  <Text style={styles.buyBtnText}> {formatNum(def.gemCost)}</Text>
+                </View>
+              </Pressable>
+            </View>
           )}
         </View>
 
@@ -225,4 +300,7 @@ const styles = StyleSheet.create({
 
   closeBtn: { position: 'absolute', bottom: 40, alignSelf: 'center', width: 56, height: 56, borderRadius: 28, backgroundColor: '#1A1A1A', alignItems: 'center', justifyContent: 'center' },
   closeBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 20, color: '#fff', lineHeight: 22 },
+
+  particle: { position: 'absolute', bottom: 0, alignSelf: 'center' },
+  particleIcon: { width: 32, height: 32 },
 });
