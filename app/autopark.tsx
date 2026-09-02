@@ -85,14 +85,17 @@ export default function AutoparkScreen() {
                 </Text>
               </View>
 
-              {/* Progress bar */}
-              <View style={[styles.progressTrack, { backgroundColor: theme.surfaceSub }]}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    { backgroundColor: def.accentColor, width: `${count * 10}%` },
-                  ]}
-                />
+              {/* Segmented progress bar */}
+              <View style={styles.progressTrack}>
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.progressSegment,
+                      { backgroundColor: i < count ? def.accentColor : theme.surfaceSub },
+                    ]}
+                  />
+                ))}
               </View>
             </Pressable>
           );
@@ -199,10 +202,10 @@ const styles = StyleSheet.create({
     left: 4,
     right: 0,
     height: 3,
-    borderRadius: 2,
-    overflow: 'hidden',
+    flexDirection: 'row',
+    gap: 2,
   },
-  progressFill: { height: '100%', borderRadius: 2 },
+  progressSegment: { flex: 1, height: '100%' },
   closeBtn: { position: 'absolute', bottom: 40, alignSelf: 'center', width: 56, height: 56, borderRadius: 28, backgroundColor: '#1A1A1A', alignItems: 'center', justifyContent: 'center' },
   closeBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 20, color: '#fff', lineHeight: 22 },
   infoOverlay: {
