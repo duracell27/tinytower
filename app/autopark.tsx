@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
   },
   summaryTop: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  summaryLabel: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
+  summaryLabel: { fontFamily: 'Nunito_700Bold', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
   summaryCountRow: { flexDirection: 'row', alignItems: 'baseline' },
   summaryCount: { fontFamily: 'Fredoka_700Bold', fontSize: 26 },
   summaryOf: { fontFamily: 'Nunito_600SemiBold', fontSize: 14 },
