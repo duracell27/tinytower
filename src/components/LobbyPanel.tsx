@@ -1307,7 +1307,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <View style={[styles.card, { backgroundColor: theme.surface }]}>
                   <View style={styles.upgradeCardHeader}>
                     <Text style={[styles.upgradeCardTitle, { color: theme.text }]}>{t('lobbyUpgrade.cardTitle')}</Text>
-                    <Text style={[styles.upgradeCardCapacity, { color: '#2592AB' }]}>{t('lobbyUpgrade.seats', { count: lobbyCapacity })}</Text>
+                    <Text style={[styles.upgradeCardCapacity, { color: '#2592AB' }]}>{t('lobbyUpgrade.seats', { count: effectiveLobbyCapacity })}</Text>
                   </View>
 
                   {/* Progress */}
@@ -1318,7 +1318,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       end={{ x: 1, y: 0 }}
                       style={[
                         styles.upgradeProgressFill,
-                        { width: `${Math.min(100, (lobbyCapacity / maxLobbyCapacity) * 100)}%` as any },
+                        { width: `${Math.min(100, (effectiveLobbyCapacity / maxLobbyCapacity) * 100)}%` as any },
                       ]}
                     />
                   </View>
