@@ -26,14 +26,20 @@ export default function AutoparkScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.text }]}>Autopark</Text>
-          <Text style={[styles.subtitle, { color: theme.textMuted }]}>
-            {totalOwned} of 50 vehicles owned
-          </Text>
         </View>
 
-        <Text style={[styles.tagline, { color: theme.textMuted }]}>
-          Machines allow you to earn more and develop faster
-        </Text>
+        <View style={[styles.summaryCard, { backgroundColor: theme.surface }]}>
+          <View style={styles.summaryTop}>
+            <Text style={[styles.summaryLabel, { color: theme.textMuted }]}>Vehicles owned</Text>
+            <View style={styles.summaryCountRow}>
+              <Text style={[styles.summaryCount, { color: theme.text }]}>{totalOwned}</Text>
+              <Text style={[styles.summaryOf, { color: theme.textMuted }]}> / 50</Text>
+            </View>
+          </View>
+          <Text style={[styles.tagline, { color: theme.textMuted }]}>
+            Machines allow you to earn more and develop faster
+          </Text>
+        </View>
 
         {VEHICLE_TYPES.map((key: VehicleType) => {
           const def = VEHICLE_CONFIG[key];
@@ -95,10 +101,20 @@ export default function AutoparkScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { paddingBottom: 120 },
-  header: { marginHorizontal: 20, marginTop: 60, marginBottom: 4 },
+  header: { marginHorizontal: 20, marginTop: 60, marginBottom: 10 },
   title: { fontFamily: 'Fredoka_700Bold', fontSize: 28 },
-  subtitle: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, marginTop: 2 },
-  tagline: { fontFamily: 'Nunito_400Regular', fontSize: 13, marginHorizontal: 20, marginBottom: 16 },
+  summaryCard: {
+    marginHorizontal: 20, marginBottom: 14, borderRadius: 16,
+    paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 6,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
+  },
+  summaryTop: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  summaryLabel: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
+  summaryCountRow: { flexDirection: 'row', alignItems: 'baseline' },
+  summaryCount: { fontFamily: 'Fredoka_700Bold', fontSize: 26 },
+  summaryOf: { fontFamily: 'Nunito_600SemiBold', fontSize: 14 },
+  tagline: { fontFamily: 'Nunito_400Regular', fontSize: 13, lineHeight: 18 },
   card: {
     marginHorizontal: 20,
     marginTop: 12,
