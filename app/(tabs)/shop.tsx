@@ -83,17 +83,21 @@ const bdg = StyleSheet.create({
 
 // ─── Diamond card (2-column grid, white bg) ───────────────────────────────────
 
-function DiamondCard({ pack, onBuy, buying, disabled, cardWidth }: {
+function DiamondCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
   pack: ShopPack;
   onBuy: (pack: ShopPack) => void;
   buying: boolean;
   disabled: boolean;
   cardWidth: number;
+  btnColor: string;
 }) {
   const isDark = useColorScheme() === 'dark';
   const baseGems = pack.rewards.gems != null
     ? pack.rewards.gems - (pack.bonusGems ?? 0)
     : null;
+
+  const activeBtnColor = isDark ? (pack.btnColorDark ?? btnColor) : btnColor;
+  const btnTxtColor = pack.btnTextColor ?? (bgBrightness(activeBtnColor) < 148 ? '#FFF' : '#2D1A4E');
 
   return (
     <View style={[dc.card, { width: cardWidth }, isDark && { backgroundColor: '#252D42' }, buying && dc.buying]}>
@@ -120,13 +124,13 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth }: {
       <Text style={[dc.name, isDark && { color: '#DDE8D8' }]}>{pack.name}</Text>
 
       <Pressable
-        style={[dc.btn, disabled && dc.btnDisabled]}
+        style={[dc.btn, { backgroundColor: activeBtnColor }, disabled && dc.btnDisabled]}
         onPress={() => !disabled && onBuy(pack)}
         disabled={disabled}
       >
         {buying
-          ? <ActivityIndicator color="#FFF" size="small" />
-          : <Text style={dc.btnText}>{pack.price}</Text>
+          ? <ActivityIndicator color={btnTxtColor} size="small" />
+          : <Text style={[dc.btnText, { color: btnTxtColor }]}>{pack.price}</Text>
         }
       </Pressable>
     </View>
@@ -148,10 +152,10 @@ const dc = StyleSheet.create({
                 paddingHorizontal: 8, paddingVertical: 2 },
   baseText:   { fontFamily: 'Fredoka_500Medium', fontSize: 12, color: '#9A8BAA' },
   name:       { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#2D1A4E', textAlign: 'center' },
-  btn:        { backgroundColor: SECTION_THEME.diamonds.btn, borderRadius: 12,
+  btn:        { borderRadius: 12,
                 paddingHorizontal: 16, paddingVertical: 8, minWidth: 110, alignItems: 'center', marginTop: 2 },
   btnDisabled:{ opacity: 0.5 },
-  btnText:    { fontFamily: 'Fredoka_700Bold', fontSize: 14, color: '#FFF' },
+  btnText:    { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
 });
 
 // ─── Full-width card  (bundles & builder) ─────────────────────────────────────
@@ -173,7 +177,8 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
   fullWidth: number;
   btnColor: string;
 }) {
-  const bg = (pack.imageBg ?? ['#EEE8FF', '#D8CCFF']) as [string, string];
+  const isDark = useColorScheme() === 'dark';
+  const bg = (isDark ? (pack.imageBgDark ?? pack.imageBg) : pack.imageBg) ?? ['#EEE8FF', '#D8CCFF'] as [string, string];
 
   // Use average brightness of both gradient stops to decide text colour
   const avgBright = (bgBrightness(bg[0]) + bgBrightness(bg[1])) / 2;
@@ -303,7 +308,15 @@ function MaterialCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
   btnColor: string;
 }) {
   const { t } = useTranslation('tabs');
-  const bg = (pack.imageBg ?? ['#E8E0FF', '#C8B8F0']) as [string, string];
+  const isDark = useColorScheme() === 'dark';
+  const bg = (isDark ? (pack.imageBgDark ?? pack.imageBg) : pack.imageBg) ?? ['#E8E0FF', '#C8B8F0'] as [string, string];
+  const avgBright = (bgBrightness(bg[0]) + bgBrightness(bg[1])) / 2;
+  const onDark = avgBright < 148;
+  const txt    = onDark ? '#FFFFFF'               : '#2D1A4E';
+  const txtSub = onDark ? 'rgba(255,255,255,0.78)' : '#4A3060';
+
+  const activeBtnColor = isDark ? (pack.btnColorDark ?? btnColor) : btnColor;
+  const btnTxtColor = pack.btnTextColor ?? (bgBrightness(activeBtnColor) < 148 ? '#FFF' : '#2D1A4E');
 
   return (
     <LinearGradient
@@ -313,17 +326,19 @@ function MaterialCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
       style={[mc.card, { width: cardWidth }, buying && mc.buying]}
     >
       <Image source={pack.image} style={mc.icon} contentFit="contain" />
-      <Text style={mc.name}>{pack.name}</Text>
-      {pack.description && <Text style={mc.desc}>{pack.description}</Text>}
-      <Text style={mc.qty}>{t('shop.each5')}</Text>
+      <Text style={[mc.name, { color: txt }]}>{pack.name}</Text>
+      {pack.description && <Text style={[mc.desc, { color: txtSub }]}>{pack.description}</Text>}
+      <View style={[mc.qtyChip, { backgroundColor: onDark ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.42)' }]}>
+        <Text style={[mc.qty, { color: txt }]}>{t('shop.each5')}</Text>
+      </View>
       <Pressable
-        style={[mc.btn, { backgroundColor: btnColor }, disabled && mc.btnDisabled]}
+        style={[mc.btn, { backgroundColor: activeBtnColor }, disabled && mc.btnDisabled]}
         onPress={() => !disabled && onBuy(pack)}
         disabled={disabled}
       >
         {buying
-          ? <ActivityIndicator color="#FFF" size="small" />
-          : <Text style={mc.btnText}>{pack.price}</Text>
+          ? <ActivityIndicator color={btnTxtColor} size="small" />
+          : <Text style={[mc.btnText, { color: btnTxtColor }]}>{pack.price}</Text>
         }
       </Pressable>
     </LinearGradient>
@@ -336,12 +351,15 @@ const mc = StyleSheet.create({
   buying:     { opacity: 0.7 },
   icon:       { width: 72, height: 72 },
   name:       { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#2D1A4E', textAlign: 'center' },
+  nameLight:  { color: '#FFFFFF' },
   desc:       { fontFamily: 'Fredoka_400Regular', fontSize: 11, color: '#4A3060', textAlign: 'center', lineHeight: 15 },
-  qty:        { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#4A3060' },
+  descLight:  { color: 'rgba(255,255,255,0.75)' },
+  qtyChip:    { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 3 },
+  qty:        { fontFamily: 'Fredoka_700Bold', fontSize: 13 },
   btn:        { borderRadius: 12, paddingVertical: 11, alignSelf: 'stretch',
                 alignItems: 'center', marginTop: 2 },
   btnDisabled:{ opacity: 0.5 },
-  btnText:    { fontFamily: 'Fredoka_700Bold', fontSize: 14, color: '#FFF' },
+  btnText:    { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
 });
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -411,7 +429,7 @@ export default function ShopScreen() {
             {DIAMOND_PACKS.map((pack) => (
               <DiamondCard key={pack.id} pack={pack} onBuy={handleBuy}
                 buying={buyingId === pack.id} disabled={buyingId !== null}
-                cardWidth={cardWidth} />
+                cardWidth={cardWidth} btnColor={pack.btnColor ?? SECTION_THEME.diamonds.btn} />
             ))}
           </View>
 
@@ -421,7 +439,7 @@ export default function ShopScreen() {
             {BUNDLE_PACKS.map((pack) => (
               <FullWidthCard key={pack.id} pack={pack} onBuy={handleBuy}
                 buying={buyingId === pack.id} disabled={buyingId !== null}
-                fullWidth={fullWidth} btnColor={SECTION_THEME.bundles.btn} />
+                fullWidth={fullWidth} btnColor={pack.btnColor ?? SECTION_THEME.bundles.btn} />
             ))}
           </View>
 
@@ -431,7 +449,7 @@ export default function ShopScreen() {
             {BUILDER_PACKS.map((pack) => (
               <FullWidthCard key={pack.id} pack={pack} onBuy={handleBuy}
                 buying={buyingId === pack.id} disabled={buyingId !== null}
-                fullWidth={fullWidth} btnColor={SECTION_THEME.builder.btn} />
+                fullWidth={fullWidth} btnColor={pack.btnColor ?? SECTION_THEME.builder.btn} />
             ))}
           </View>
 
@@ -441,7 +459,7 @@ export default function ShopScreen() {
             {MATERIAL_PACKS.map((pack) => (
               <MaterialCard key={pack.id} pack={pack} onBuy={handleBuy}
                 buying={buyingId === pack.id} disabled={buyingId !== null}
-                cardWidth={cardWidth} btnColor={SECTION_THEME.materials.btn} />
+                cardWidth={cardWidth} btnColor={pack.btnColor ?? SECTION_THEME.materials.btn} />
             ))}
           </View>
 
