@@ -286,7 +286,7 @@ function executeCommand(
   get: () => GameStore,
   set: (partial: Partial<GameStore>) => void,
   command: Command,
-) {
+): boolean {
   const store = get();
   const { balance, gems, floors, commandQueue, workers, hotelCapacity,
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
@@ -339,7 +339,7 @@ function executeCommand(
         { id: uuid(), type: command.type, error: result.error ?? 'Unknown error', timestamp: Date.now() },
       ],
     });
-    return;
+    return false;
   }
 
   let newQueue = [...result.state.commandQueue, command];
@@ -431,6 +431,7 @@ function executeCommand(
       ]),
     } : {}),
   });
+  return true;
 }
 
 function advanceOnboardingIfStep(
@@ -1206,7 +1207,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const matCount = taskConfig.rewards.hasMaterials
       ? getMaterialCount(state.playerLevel) * doubleMultiplier
       : undefined;
-    executeCommand(get, set, {
+    const ok = executeCommand(get, set, {
       id: uuid(),
       type: 'claim_daily_task',
       taskKey,
@@ -1215,7 +1216,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       materialType,
       timestamp: clock.now(),
     });
-    set({ pendingTaskReward: { taskTitle, coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount, materialType } });
+    if (ok) {
+      set({ pendingTaskReward: { taskTitle, coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount, materialType } });
+    }
   },
 
   claimTutorialTask: (taskIndex) => {

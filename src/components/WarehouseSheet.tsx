@@ -80,7 +80,10 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
       translateY.value = withTiming(0, TIMING);
       scrimOpacity.value = withTiming(1, { duration: 300, easing: Easing.linear });
       openSheet();
-      return closeSheet;
+      // Delay closeSheet until after the close animation (380ms) so that
+      // GlobalOverlay modals (LevelUpModal etc.) don't open while this Modal
+      // is still animating away — two concurrent Modals freeze the app.
+      return () => { setTimeout(closeSheet, TIMING.duration + 70); };
     } else {
       translateY.value = withTiming(SCREEN_HEIGHT, TIMING, (finished) => {
         if (finished) runOnJS(setMounted)(false);
