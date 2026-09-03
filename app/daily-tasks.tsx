@@ -160,7 +160,7 @@ export default function DailyTasksScreen() {
           }
 
           return (
-            <View style={[styles.doubleBanner, { backgroundColor: isDark ? 'rgba(52,55,52,0.6)' : 'rgba(255,255,255,0.92)' }]}>
+            <View style={[styles.doubleBanner, { backgroundColor: isDark ? '#252D42' : 'rgba(255,255,255,0.92)' }]}>
               <Text style={styles.doubleBannerText}>{t('dailyTasks.doubleRewardHint')}</Text>
               <View style={styles.completionBarBg}>
                 <View style={[styles.completionBarFill, { width: `${(claimedCount / 7) * 100}%` }]} />

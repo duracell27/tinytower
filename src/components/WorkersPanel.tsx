@@ -465,7 +465,7 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
                       <Pressable
                         key={tab}
                         onPress={() => { setActiveTab(tab); setExpandedWorkerId(null); }}
-                        style={[styles.tabButton, isActive && styles.tabButtonActive, isActive && isDark && { backgroundColor: theme.surface }]}
+                        style={[styles.tabButton, isActive && styles.tabButtonActive, isActive && isDark && { backgroundColor: theme.surfaceCard }]}
                       >
                         <Text style={[styles.tabLabel, { color: isActive ? color : 'rgba(255,255,255,0.75)' }]}>
                           {t(`workersPanel.tabs.${tab}`)}

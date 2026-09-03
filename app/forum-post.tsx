@@ -152,7 +152,7 @@ export default function ForumPostScreen() {
   }, [player?.id, router]);
 
   const ListHeader = activePost ? (
-    <View style={[styles.postCard, isDark && { backgroundColor: theme.surface }]}>
+    <View style={[styles.postCard, isDark && { backgroundColor: theme.surfaceCard }]}>
       <View style={styles.postMeta}>
         <Pressable onPress={() => handleAvatarPress(activePost.playerId)} hitSlop={6}>
           <Image source={getUserIcon(activePost.playerLevel)} style={[styles.postAvatar, isDark && { backgroundColor: '#3A3F4A' }, isPostBlocked && { borderColor: '#E05A4A', borderWidth: 2 }]} contentFit="cover" />

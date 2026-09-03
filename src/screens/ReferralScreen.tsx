@@ -77,7 +77,7 @@ function MilestoneRow({
 function ReferralCard({ entry }: { entry: ReferralEntry }) {
   const isDark = useColorScheme() === 'dark';
   return (
-    <View style={[styles.referralCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+    <View style={[styles.referralCard, isDark && { backgroundColor: '#252D42' }]}>
       <View style={styles.referralNameRow}>
         <Image source={getUserIcon(entry.referredLevel)} style={styles.referralAvatar} contentFit="cover" />
         <Text style={[styles.referralName, isDark && { color: '#DDE8D8' }]}>{entry.referredName}</Text>
@@ -199,7 +199,7 @@ export default function ReferralScreen() {
           </View>
 
           {hasUsedCode === false && (
-            <View style={[styles.applyCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+            <View style={[styles.applyCard, isDark && { backgroundColor: '#252D42' }]}>
               <Pressable
                 onPress={handleToggle}
                 style={styles.applyHeader}
@@ -253,7 +253,7 @@ export default function ReferralScreen() {
           )}
 
           {hasUsedCode && referrerName && (
-            <View style={[styles.referredByCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+            <View style={[styles.referredByCard, isDark && { backgroundColor: '#252D42' }]}>
               <Text style={styles.referredByLabel}>Invited by</Text>
               <View style={styles.referredByRow}>
                 <Image
@@ -266,7 +266,7 @@ export default function ReferralScreen() {
             </View>
           )}
 
-          <View style={[styles.codeCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+          <View style={[styles.codeCard, isDark && { backgroundColor: '#252D42' }]}>
             <Text style={[styles.codeLabel, isDark && { color: '#8A9A80' }]}>Your code</Text>
             <View style={styles.codeRow}>
               <Text style={[styles.codeText, isDark && { color: '#DDE8D8' }]}>{code ?? '------'}</Text>
@@ -280,7 +280,7 @@ export default function ReferralScreen() {
           </View>
 
           {referrals.length === 0 ? (
-            <View style={[styles.emptyCard, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]}>
+            <View style={[styles.emptyCard, isDark && { backgroundColor: '#252D42' }]}>
               <Text style={styles.emptyText}>No invited players yet.{'\n'}Share your link!</Text>
             </View>
           ) : (

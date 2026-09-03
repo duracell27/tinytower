@@ -42,7 +42,7 @@ function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void })
   const blocked = useBlockStore(s => s.isBlocked(item.id));
   return (
     <Pressable
-      style={({ pressed }) => [styles.row, isDark && { backgroundColor: theme.surface, borderColor: theme.divider }, pressed && { opacity: 0.75 }]}
+      style={({ pressed }) => [styles.row, isDark && { backgroundColor: theme.surfaceCard, borderColor: theme.divider }, pressed && { opacity: 0.75 }]}
       onPress={onPress}
     >
       <Image
@@ -182,7 +182,7 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
               return (
                 <Pressable
                   key={t.key}
-                  style={[styles.tab, isActive && styles.tabActive, isActive && isDark && { backgroundColor: theme.surface }]}
+                  style={[styles.tab, isActive && styles.tabActive, isActive && isDark && { backgroundColor: theme.surfaceCard }]}
                   onPress={() => setTab(t.key)}
                 >
                   <Text style={[styles.tabText, isActive ? styles.tabTextActive : styles.tabTextInactive]}>
@@ -197,7 +197,7 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
         {tab === 'search' && (
           <View style={styles.searchContainer}>
             <TextInput
-              style={[styles.searchInput, isDark && { backgroundColor: theme.surface, borderColor: theme.divider, color: theme.text }]}
+              style={[styles.searchInput, isDark && { backgroundColor: theme.surfaceCard, borderColor: theme.divider, color: theme.text }]}
               placeholder={t('users.searchPlaceholder')}
               placeholderTextColor={isDark ? '#4A5468' : '#9CA3AF'}
               value={query}

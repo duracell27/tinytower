@@ -40,7 +40,7 @@ export default function ChatMessage({ message, isOwn, isAdmin, canReport, onLong
       <Pressable
         onLongPress={canInteract && onLongPress ? () => onLongPress(message.id, message.body, isOwn) : undefined}
         delayLongPress={350}
-        style={[styles.bubble, isOwn ? styles.bubbleOwn : [styles.bubbleOther, isDark && { backgroundColor: theme.surface }]]}
+        style={[styles.bubble, isOwn ? styles.bubbleOwn : [styles.bubbleOther, isDark && { backgroundColor: theme.surfaceCard }]]}
       >
         <View style={styles.header}>
           <Text style={[styles.name, isOwn && styles.nameOwn]}>{message.playerName}</Text>

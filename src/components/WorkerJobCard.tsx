@@ -164,12 +164,12 @@ export default function WorkerJobCard({
   const borderColor = worker.isSpecialist ? '#F5C842' : accent;
 
   return (
-    <View style={[styles.card, { borderColor, borderWidth: expanded ? 2 : 1 }, isDark && { backgroundColor: theme.surface }]}>
+    <View style={[styles.card, { borderColor, borderWidth: expanded ? 2 : 1 }, isDark && { backgroundColor: theme.surfaceCard }]}>
       <Pressable onPress={onToggle} style={styles.collapsedRow}>
         <View style={styles.avatarWrap}>
           <WorkerAvatar worker={worker} size={60} />
           {(isSpecialistTab || worker.level === 9) && (
-            <View style={[styles.starBadge, isDark && { backgroundColor: theme.surface }]}>
+            <View style={[styles.starBadge, isDark && { backgroundColor: theme.surfaceCard }]}>
               <StarIcon filled={worker.isSpecialist} />
             </View>
           )}

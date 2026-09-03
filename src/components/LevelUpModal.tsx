@@ -43,62 +43,62 @@ export default function LevelUpModal() {
     if (showModal) triggerAnimations();
   }, [showModal, triggerAnimations]);
 
-  if (!showModal) return null;
-
   return (
     <Modal
-      visible
+      visible={showModal}
       transparent
       animationType="none"
       onRequestClose={dismiss}
     >
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={styles.scrim}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
+      {showModal && (
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <View style={styles.scrim}>
+            <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
 
-          {event && (
-            <Animated.View style={[styles.card, cardStyle]}>
-              <LinearGradient colors={isDark ? ['#1E2410', '#161C0A'] : ['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
-                <View style={styles.starsRow}>
-                  <Text style={[styles.starText, styles.starSmall]}>★</Text>
-                  <Text style={[styles.starText, styles.starLarge]}>★</Text>
-                  <Text style={[styles.starText, styles.starSmall]}>★</Text>
-                </View>
-
-                <View style={styles.levelCircle}>
-                  <LinearGradient colors={['#74D44F', '#3FA535']} style={styles.levelCircleGradient}>
-                    <Text style={styles.levelNumber}>{event.newLevel}</Text>
-                  </LinearGradient>
-                </View>
-
-                <Text style={[styles.title, { color: isDark ? '#A8E07A' : '#3D6B1E' }]}>{t('levelUp.title')}</Text>
-                <Text style={[styles.subtitle, { color: isDark ? '#7BAF55' : '#7C9A5E' }]}>{t('levelUp.subtitle', { level: event.newLevel })}</Text>
-
-                <View style={styles.rewardsContainer}>
-                  <View style={[styles.rewardRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : '#fff' }]}>
-                    <CoinIcon size={20} />
-                    <Text style={styles.rewardText}>+{formatNum(event.coinReward)}</Text>
+            {event && (
+              <Animated.View style={[styles.card, cardStyle]}>
+                <LinearGradient colors={isDark ? ['#1E2410', '#161C0A'] : ['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
+                  <View style={styles.starsRow}>
+                    <Text style={[styles.starText, styles.starSmall]}>★</Text>
+                    <Text style={[styles.starText, styles.starLarge]}>★</Text>
+                    <Text style={[styles.starText, styles.starSmall]}>★</Text>
                   </View>
-                  <View style={[styles.rewardRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : '#fff' }]}>
-                    <GemIcon size={16} />
-                    <Text style={styles.rewardTextGem}>+{event.gemReward}</Text>
-                  </View>
-                </View>
 
-                <Pressable
-                  onPress={dismiss}
-                  style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-                >
-                  <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.buttonGradient}>
-                    <Text style={styles.buttonText}>{t('levelUp.claim')}</Text>
-                  </LinearGradient>
-                  <View style={styles.buttonShadow} />
-                </Pressable>
-              </LinearGradient>
-            </Animated.View>
-          )}
-        </View>
-      </GestureHandlerRootView>
+                  <View style={styles.levelCircle}>
+                    <LinearGradient colors={['#74D44F', '#3FA535']} style={styles.levelCircleGradient}>
+                      <Text style={styles.levelNumber}>{event.newLevel}</Text>
+                    </LinearGradient>
+                  </View>
+
+                  <Text style={[styles.title, { color: isDark ? '#A8E07A' : '#3D6B1E' }]}>{t('levelUp.title')}</Text>
+                  <Text style={[styles.subtitle, { color: isDark ? '#7BAF55' : '#7C9A5E' }]}>{t('levelUp.subtitle', { level: event.newLevel })}</Text>
+
+                  <View style={styles.rewardsContainer}>
+                    <View style={[styles.rewardRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : '#fff' }]}>
+                      <CoinIcon size={20} />
+                      <Text style={styles.rewardText}>+{formatNum(event.coinReward)}</Text>
+                    </View>
+                    <View style={[styles.rewardRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : '#fff' }]}>
+                      <GemIcon size={16} />
+                      <Text style={styles.rewardTextGem}>+{event.gemReward}</Text>
+                    </View>
+                  </View>
+
+                  <Pressable
+                    onPress={dismiss}
+                    style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+                  >
+                    <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.buttonGradient}>
+                      <Text style={styles.buttonText}>{t('levelUp.claim')}</Text>
+                    </LinearGradient>
+                    <View style={styles.buttonShadow} />
+                  </Pressable>
+                </LinearGradient>
+              </Animated.View>
+            )}
+          </View>
+        </GestureHandlerRootView>
+      )}
     </Modal>
   );
 }

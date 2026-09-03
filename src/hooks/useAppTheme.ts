@@ -3,6 +3,7 @@ import { useColorScheme } from 'react-native';
 export interface AppTheme {
   isDark: boolean;
   surface: string;
+  surfaceCard: string;      // cards that sit on top of a surface panel
   surfaceElevated: string;  // badges/pills that sit on top of a dark panel
   surfaceSub: string;
   surfaceDanger: string;
@@ -16,6 +17,7 @@ export interface AppTheme {
 const LIGHT: AppTheme = {
   isDark: false,
   surface: '#ffffff',
+  surfaceCard: '#ffffff',
   surfaceElevated: '#ffffff',
   surfaceSub: '#F5F3EC',
   surfaceDanger: '#FEF1EE',
@@ -28,7 +30,8 @@ const LIGHT: AppTheme = {
 
 const DARK: AppTheme = {
   isDark: true,
-  surface: 'rgba(52,55,52,0.97)',
+  surface: '#252D42',
+  surfaceCard: '#2E3B58',
   surfaceElevated: 'rgba(255,255,255,0.13)',
   surfaceSub: 'rgba(255,255,255,0.07)',
   surfaceDanger: 'rgba(220,50,30,0.15)',

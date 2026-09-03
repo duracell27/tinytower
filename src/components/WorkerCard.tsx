@@ -101,10 +101,10 @@ export default function WorkerCard({
     <View
       style={[
         styles.card,
-        isDark && { backgroundColor: theme.surface },
+        isDark && { backgroundColor: theme.surfaceCard },
         expanded
           ? { borderWidth: 2, borderColor: shirtColor }
-          : { borderWidth: 1, borderColor: isDark ? theme.divider : 'rgba(40,60,90,0.06)' },
+          : { borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(40,60,90,0.06)' },
       ]}
     >
       {/* Collapsed row */}

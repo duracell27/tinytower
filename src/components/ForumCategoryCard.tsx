@@ -24,7 +24,7 @@ export default function ForumCategoryCard({ category, label, description, unread
   const theme = useAppTheme();
   const { isDark } = theme;
   return (
-    <Pressable style={[styles.card, isDark && { backgroundColor: theme.surface }]} onPress={onPress}>
+    <Pressable style={[styles.card, isDark && { backgroundColor: theme.surfaceCard }]} onPress={onPress}>
       <Image
         source={CATEGORY_ICONS[category]}
         style={styles.folderIcon}

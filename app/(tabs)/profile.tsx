@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch, Dimensions, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch, Dimensions } from 'react-native';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
@@ -285,10 +285,7 @@ export default function ProfileScreen() {
   const { t } = useTranslation('tabs');
   const { t: tHotel } = useTranslation('hotel');
   const theme = useAppTheme();
-  const isDark = useColorScheme() === 'dark';
-  // TEST: experiment with #252D42 card color in dark mode
-  const cardBg = isDark ? '#252D42' : theme.surface;
-  const player = useAuthStore((s) => s.player);
+const player = useAuthStore((s) => s.player);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useAuthStore((s) => s.logout);
   const convertAccount = useAuthStore((s) => s.convertAccount);
@@ -518,7 +515,7 @@ export default function ProfileScreen() {
   return (
     <AppBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={[styles.card, { backgroundColor: cardBg }]}>
+        <View style={[styles.card, { backgroundColor: theme.surface }]}>
           <FloorStarsRow avg={isHydrated ? avgStars : 0} />
           <View style={styles.profileRow}>
             <Image
@@ -623,7 +620,7 @@ export default function ProfileScreen() {
 
         <Pressable
           onPress={() => router.push('/daily-tasks')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: cardBg }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/dayliQuests.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -639,7 +636,7 @@ export default function ProfileScreen() {
 
         <Pressable
           onPress={() => router.push('/my-mail')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: cardBg }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/mail.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -655,7 +652,7 @@ export default function ProfileScreen() {
 
         <Pressable
           onPress={() => router.push('/my-friends')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: cardBg }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/users.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -671,7 +668,7 @@ export default function ProfileScreen() {
 
         <Pressable
           onPress={() => router.push('/my-business')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: cardBg }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -689,7 +686,7 @@ export default function ProfileScreen() {
 
         <Pressable
           onPress={() => router.push('/autopark')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: cardBg }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/TrucksProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -702,7 +699,7 @@ export default function ProfileScreen() {
 
         <Pressable
           onPress={() => router.push('/achievements')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: cardBg }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/achivProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -715,7 +712,7 @@ export default function ProfileScreen() {
 
         <Pressable
           onPress={() => router.push('/referrals')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: cardBg }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/ReferralProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -726,7 +723,7 @@ export default function ProfileScreen() {
 
         <Pressable
           onPress={() => { setSettingsMounted(true); setSettingsVisible(true); }}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: cardBg }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/settingsIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -747,7 +744,7 @@ export default function ProfileScreen() {
 
         <Pressable onPress={handleLogout} style={({ pressed }) => [
           styles.logoutButton,
-          { backgroundColor: cardBg },
+          { backgroundColor: theme.surface },
           pressed && styles.logoutPressed,
         ]}>
           <Text style={styles.logoutText}>{t('profile.logout')}</Text>
@@ -756,7 +753,7 @@ export default function ProfileScreen() {
         <Modal visible={convertOpen} transparent animationType="fade" onRequestClose={() => setConvertOpen(false)}>
           <KeyboardAvoidingView style={styles.convertOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={16}>
             <Pressable style={styles.convertBackdrop} onPress={() => setConvertOpen(false)} />
-            <View style={[styles.convertCard, { backgroundColor: cardBg }]}>
+            <View style={[styles.convertCard, { backgroundColor: theme.surface }]}>
             <ScrollView bounces={false} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               <View style={styles.convertHeader}>
                 <Image source={require('../../assets/img/managerIcon.png')} style={styles.convertManagerIcon} contentFit="contain" />
@@ -819,7 +816,7 @@ export default function ProfileScreen() {
             </Animated.View>
             <GestureDetector gesture={settingsPanGesture}>
               <Animated.View
-                style={[settingsStyles.sheet, { backgroundColor: cardBg }, settingsSheetStyle]}
+                style={[settingsStyles.sheet, { backgroundColor: theme.surface }, settingsSheetStyle]}
               >
                 <View style={settingsStyles.handle} />
                 <Text style={[settingsStyles.title, { color: theme.text }]}>{t('profile.settings.title')}</Text>
@@ -852,7 +849,7 @@ export default function ProfileScreen() {
         {/* Sync status card */}
         <Pressable
           onPress={() => hasExpandContent && setSyncExpanded((v) => !v)}
-          style={({ pressed }) => [styles.syncCard, { backgroundColor: cardBg }, pressed && hasExpandContent && styles.syncCardPressed]}
+          style={({ pressed }) => [styles.syncCard, { backgroundColor: theme.surface }, pressed && hasExpandContent && styles.syncCardPressed]}
         >
           <View style={styles.syncRow}>
             <View style={[

@@ -135,7 +135,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     const isMe = item.playerId === myId;
     const accent = TAB_ACTIVE_COLORS[tab];
     return (
-      <View style={[styles.row, isMe ? [styles.rowMe, { backgroundColor: theme.surface }] : rankStyle(item.rank, theme.surface, theme.divider)]}>
+      <View style={[styles.row, isMe ? [styles.rowMe, { backgroundColor: theme.surfaceCard }] : rankStyle(item.rank, theme.surfaceCard, theme.divider)]}>
         {item.rank <= 3 ? (
           <View style={styles.trophyWrap}>
             <Text style={styles.trophyRankNum}>#{item.rank}</Text>
@@ -201,7 +201,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
                   style={[
                     styles.tab,
                     isActive && styles.tabActive,
-                    isActive && isDark && { backgroundColor: theme.surface },
+                    isActive && isDark && { backgroundColor: theme.surfaceCard },
                   ]}
                   onPress={() => setTab(tabItem.key)}
                 >
@@ -242,7 +242,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         )}
 
         {!loading && !error && data && !isOnPage && (
-          <View style={[styles.row, styles.rowMe, { backgroundColor: theme.surface }, styles.pinnedRow]}>
+          <View style={[styles.row, styles.rowMe, { backgroundColor: theme.surfaceCard }, styles.pinnedRow]}>
             <Text style={styles.rankNum}>#{data.currentPlayer.rank}</Text>
             <Pressable onPress={myId ? () => handleAvatarPress(myId) : undefined} hitSlop={6}>
               <Image

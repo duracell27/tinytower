@@ -289,7 +289,7 @@ export default function ChatScreen() {
       {infoVisible && (
         <View style={styles.infoScrim}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-          <View style={[styles.infoCard, isDark && { backgroundColor: theme.surface }]}>
+          <View style={[styles.infoCard, isDark && { backgroundColor: theme.surfaceCard }]}>
             <LinearGradient colors={isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.infoCardHeader}>
               <Text style={styles.infoCardTitle}>{t('chat.infoTitle')}</Text>
               <Pressable onPress={() => setInfoVisible(false)} style={styles.infoCardClose} hitSlop={10}>

@@ -164,7 +164,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
             <View style={styles.body}>
               <View style={styles.grid}>
                 {TOOLS.map((tool) => (
-                  <View key={tool.key} style={[styles.cell, { backgroundColor: theme.surface }]}>
+                  <View key={tool.key} style={[styles.cell, { backgroundColor: isDark ? theme.surfaceCard : '#fff' }]}>
                     <Image source={tool.image} style={{ width: 40, height: 40 }} contentFit="contain" />
                     <Text style={[styles.cellLabel, { color: theme.text }]}>{tool.label}</Text>
                     <View style={[styles.countBadge, { backgroundColor: isDark ? theme.divider : '#F0F2F5' }]}>
@@ -180,7 +180,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
         {/* Upgrade confirmation popup */}
         {showUpgradeConfirm && nextCost && (
           <Pressable style={[StyleSheet.absoluteFill, styles.confirmScrim]} onPress={() => setShowUpgradeConfirm(false)}>
-            <Pressable style={[styles.confirmCard, { backgroundColor: theme.surface }]} onPress={() => {}}>
+            <Pressable style={[styles.confirmCard, { backgroundColor: isDark ? theme.surfaceCard : '#fff' }]} onPress={() => {}}>
               <View style={styles.confirmIconWrap}>
                 <Image
                   source={require('../../assets/img/menu/werehouse.png')}

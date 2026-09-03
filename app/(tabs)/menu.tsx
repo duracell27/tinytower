@@ -50,7 +50,7 @@ export default function MenuScreen() {
       <View style={styles.content}>
         <Text style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('menu.heading')}</Text>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => setInventoryOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setInventoryOpen(true)}>
           <Image
             source={require('../../assets/img/menu/werehouse.png')}
             style={{ width: 56, height: 56 }}
@@ -59,7 +59,7 @@ export default function MenuScreen() {
           <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.inventory')}</Text>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => setWorkersOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setWorkersOpen(true)}>
           <Image
             source={require('../../assets/img/menu/myWorkers.png')}
             style={{ width: 56, height: 56 }}
@@ -68,7 +68,7 @@ export default function MenuScreen() {
           <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.workers')}</Text>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => setLeaderboardOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setLeaderboardOpen(true)}>
           <Image
             source={require('../../assets/img/menu/rating.png')}
             style={{ width: 56, height: 56 }}
@@ -77,7 +77,7 @@ export default function MenuScreen() {
           <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.leaderboard')}</Text>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => router.push('/chat-screen')}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => router.push('/chat-screen')}>
           <Image
             source={require('../../assets/img/menu/chat.png')}
             style={{ width: 56, height: 56 }}
@@ -86,7 +86,7 @@ export default function MenuScreen() {
           <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.chat')}</Text>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => router.push('/forum-screen')}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => router.push('/forum-screen')}>
           <Image
             source={require('../../assets/img/menu/forum.png')}
             style={{ width: 56, height: 56 }}
@@ -95,7 +95,7 @@ export default function MenuScreen() {
           <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.forum')}</Text>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }]} onPress={() => setUsersOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setUsersOpen(true)}>
           <Image
             source={require('../../assets/img/users.png')}
             style={{ width: 56, height: 56 }}

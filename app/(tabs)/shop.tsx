@@ -96,7 +96,7 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth }: {
     : null;
 
   return (
-    <View style={[dc.card, { width: cardWidth }, isDark && { backgroundColor: 'rgba(52,55,52,0.97)' }, buying && dc.buying]}>
+    <View style={[dc.card, { width: cardWidth }, isDark && { backgroundColor: '#252D42' }, buying && dc.buying]}>
       <Image source={pack.image} style={dc.img} contentFit="contain" />
 
       {pack.badge && <View style={dc.badgePos}><Badge kind={pack.badge} /></View>}
