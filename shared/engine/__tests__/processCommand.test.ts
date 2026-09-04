@@ -1960,6 +1960,7 @@ describe('buy_boost command', () => {
     const state = { ...baseState(), coinBoostPercent: 50, coinBoostExpiresAt: now - 1_000 };
     const result = processCommand(state, coinCmd({ percent: 50, durationMs: 108_000_000 }), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
     expect(result.state.coinBoostExpiresAt).toBe(now + 108_000_000);
+    expect(result.state.coinBoostPercent).toBe(50); // reset, not accumulated
   });
 
   it('handles xp boost independently from coin boost', () => {

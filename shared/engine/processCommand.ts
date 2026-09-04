@@ -1,4 +1,5 @@
 import type { GameState, Command, GameConfig, Worker } from '../types';
+import { BOOST_PACKAGES } from '../config/boostConfig';
 import { getWorkerForSlot, getFloorDiscount, getRevenueMultiplier, getFloorSpecialistBonus, getWorkerMood, SPECIALIST_UPGRADE_COST } from './workerUtils';
 import { processLobbyCommand } from './lobbyCommands';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress } from '../config/dailyTasksConfig';
@@ -1125,13 +1126,22 @@ function handleBuyBoost(
     return { success: false, state, error: 'Insufficient gems' };
   }
 
+  const knownPkg = BOOST_PACKAGES.find(
+    (p) => p.boostType === command.boostType && p.percent === command.percent && p.durationMs === command.durationMs && p.gemCost === command.gemCost
+  );
+  if (!knownPkg) {
+    return { success: false, state, error: 'Invalid boost package' };
+  }
+
   let { coinBoostPercent, xpBoostPercent, coinBoostExpiresAt, xpBoostExpiresAt } = state;
 
   if (command.boostType === 'coin') {
-    coinBoostPercent   = Math.min(300, coinBoostPercent + command.percent);
+    const active = now < coinBoostExpiresAt;
+    coinBoostPercent   = Math.min(300, (active ? coinBoostPercent : 0) + command.percent);
     coinBoostExpiresAt = Math.max(now, coinBoostExpiresAt) + command.durationMs;
   } else {
-    xpBoostPercent   = Math.min(300, xpBoostPercent + command.percent);
+    const active = now < xpBoostExpiresAt;
+    xpBoostPercent   = Math.min(300, (active ? xpBoostPercent : 0) + command.percent);
     xpBoostExpiresAt = Math.max(now, xpBoostExpiresAt) + command.durationMs;
   }
 
