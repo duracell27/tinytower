@@ -225,6 +225,7 @@ function ElevatorShaft({
   targetFloor?: number;
   currentFloor: number;
 }) {
+  const { isDark } = useAppTheme();
   // bottom range 6..102 → leaves 6px gap at top of shaft (shaft 148 - cabin 40 - top_pad 6)
   // targetFloor may be undefined before first liftVisitor; fall back to 0 so cabin stays at bottom
   const resolvedTarget = targetFloor ?? 0;
@@ -247,7 +248,7 @@ function ElevatorShaft({
 
   return (
     <View style={shaftStyles.container}>
-      <Text style={shaftStyles.targetLabel}>{targetFloor ?? '?'}</Text>
+      <Text style={[shaftStyles.targetLabel, isDark && { color: '#8AACCC' }]}>{targetFloor ?? '?'}</Text>
       <LinearGradient colors={['#3C4658', '#2C3445']} style={shaftStyles.shaft}>
         {/* Rails */}
         <View style={shaftStyles.railLeft} />
@@ -278,7 +279,7 @@ const shaftStyles = StyleSheet.create({
   targetLabel: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 11,
-    color: '#7B52BC',
+    color: '#5A7898',
     marginBottom: 4,
   },
   shaft: {
@@ -781,7 +782,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         </Animated.View>
 
         {/* Sheet */}
-        <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: 'rgba(28,32,28,0.97)' }]}>
+        <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2840' }]}>
           {/* Header with pan gesture */}
           <GestureDetector gesture={panGesture}>
             <Animated.View>
@@ -869,7 +870,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             {view === 'operate' ? (
               <>
                 {/* Visitor + Shaft Card / Empty State */}
-                <View ref={visitorCardRef} collapsable={false} style={[styles.card, { backgroundColor: theme.surface }]}>
+                <View ref={visitorCardRef} collapsable={false} style={[styles.card, { backgroundColor: theme.surfaceCard}]}>
                   {activeVisitor ? (
                     <View style={styles.visitorShaftRow}>
                       {/* Left column */}
@@ -1079,7 +1080,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       deliverAll();
                       suppressNewWorkerPopup.current = false;
                     }}
-                    style={({ pressed }) => [styles.deliverAllCard, { backgroundColor: theme.surface }, pressed && { opacity: 0.8 }]}
+                    style={({ pressed }) => [styles.deliverAllCard, { backgroundColor: theme.surfaceCard}, pressed && { opacity: 0.8 }]}
                   >
                     <PeopleGroupIcon size={20} color={isDark ? theme.textMuted : '#5A6478'} />
                     <Text style={[styles.deliverAllText, { color: theme.text }]}>{t('actions.deliverAll')}</Text>
@@ -1089,7 +1090,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 )}
 
                 {/* Daily tips card */}
-                <View style={[styles.dailyTipsCard, { backgroundColor: theme.surface }]}>
+                <View style={[styles.dailyTipsCard, { backgroundColor: theme.surfaceCard}]}>
                   <Text style={[styles.dailyTipsLabel, { color: theme.textMuted }]}>{t('dailyTips.label')}</Text>
 
                   {/* Labels above bar */}
@@ -1192,7 +1193,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 </View>
 
                 {/* Daily gems card */}
-                <View style={[styles.dailyGemsCard, { backgroundColor: theme.surface }]}>
+                <View style={[styles.dailyGemsCard, { backgroundColor: theme.surfaceCard}]}>
                   <GemIcon size={14} />
                   <Text style={[styles.dailyGemsLabel, { color: theme.textMuted }]}>{t('dailyGems.label')}</Text>
                   <Text style={styles.dailyGemsValue}>
@@ -1238,13 +1239,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
               /* UPGRADE VIEW */
               <>
                 {/* Back button */}
-                <Pressable onPress={() => setView('operate')} style={[styles.backButton, { backgroundColor: theme.surface }]}>
+                <Pressable onPress={() => setView('operate')} style={[styles.backButton, { backgroundColor: theme.surfaceCard}]}>
                   <ChevronLeftIcon />
                   <Text style={[styles.backButtonText, { color: theme.textMuted }]}>{t('elevator.backToElevator')}</Text>
                 </Pressable>
 
                 {/* Elevator upgrade card */}
-                <View style={[styles.card, { backgroundColor: theme.surface }]}>
+                <View style={[styles.card, { backgroundColor: theme.surfaceCard}]}>
                   <View style={styles.upgradeCardHeader}>
                     <View style={styles.upgradeCardTitleRow}>
                       <Text style={[styles.upgradeCardTitle, { color: theme.text }]}>{t('elevator.cardTitle')}</Text>
@@ -1308,7 +1309,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 </View>
 
                 {/* Lobby upgrade card */}
-                <View style={[styles.card, { backgroundColor: theme.surface }]}>
+                <View style={[styles.card, { backgroundColor: theme.surfaceCard}]}>
                   <View style={styles.upgradeCardHeader}>
                     <Text style={[styles.upgradeCardTitle, { color: theme.text }]}>{t('lobbyUpgrade.cardTitle')}</Text>
                     <Text style={[styles.upgradeCardCapacity, { color: '#2592AB' }]}>{t('lobbyUpgrade.seats', { count: effectiveLobbyCapacity })}</Text>
@@ -1375,7 +1376,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         {/* New worker popup — View overlay inside Modal */}
         {!liftSimplifiedRewards && newWorkerPopup && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setNewWorkerPopup(null)}>
-            <Pressable style={[popupStyles.card, { backgroundColor: theme.surface }]} onPress={() => {}}>
+            <Pressable style={[popupStyles.card, { backgroundColor: theme.surfaceCard}]} onPress={() => {}}>
               <View style={popupStyles.avatarWrap}>
                 <WorkerAvatar worker={newWorkerPopup} size={56} />
               </View>
@@ -1412,7 +1413,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         {/* VIP hotel fill popup */}
         {!liftSimplifiedRewards && vipHotelFillCount && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setVipHotelFillCount(null)}>
-            <Pressable style={[popupStyles.card, { backgroundColor: theme.surface }]} onPress={() => {}}>
+            <Pressable style={[popupStyles.card, { backgroundColor: theme.surfaceCard}]} onPress={() => {}}>
               <View style={[popupStyles.avatarWrap, { backgroundColor: '#FFF9E6' }]}>
                 <Text style={{ fontSize: 32 }}>🏨</Text>
               </View>
@@ -1430,7 +1431,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         {/* Hotel full popup */}
         {!liftSimplifiedRewards && hotelFullPopup && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setHotelFullPopup(false)}>
-            <Pressable style={[popupStyles.card, { backgroundColor: theme.surface }]} onPress={() => {}}>
+            <Pressable style={[popupStyles.card, { backgroundColor: theme.surfaceCard}]} onPress={() => {}}>
               <View style={[popupStyles.avatarWrap, { backgroundColor: '#FDEEF2' }]}>
                 <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
                   <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#A8475F" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -1459,7 +1460,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         {/* Builder tool drop popup */}
         {!liftSimplifiedRewards && builderToolDrop && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={clearBuilderToolDrop}>
-            <Pressable style={[popupStyles.card, { backgroundColor: theme.surface }]} onPress={() => {}}>
+            <Pressable style={[popupStyles.card, { backgroundColor: theme.surfaceCard}]} onPress={() => {}}>
               <View style={popupStyles.avatarWrap}>
                 <Image
                   source={TOOL_IMAGES[builderToolDrop]}
@@ -1482,7 +1483,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         {/* Builder warehouse full popup */}
         {!liftSimplifiedRewards && builderWarehouseFull && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={clearBuilderWarehouseFull}>
-            <Pressable style={[popupStyles.card, { backgroundColor: theme.surface }]} onPress={() => {}}>
+            <Pressable style={[popupStyles.card, { backgroundColor: theme.surfaceCard}]} onPress={() => {}}>
               <View style={[popupStyles.avatarWrap, { backgroundColor: 'rgba(229,82,82,0.12)' }]}>
                 <Image source={require('../../assets/img/warningIcon.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
               </View>
@@ -1509,7 +1510,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         {infoVisible && (
           <View style={infoStyles.scrim}>
             <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-            <View style={[infoStyles.card, { backgroundColor: theme.surface }]}>
+            <View style={[infoStyles.card, { backgroundColor: theme.surfaceCard}]}>
               <LinearGradient colors={['#C9637E', '#A8475F']} style={infoStyles.cardHeader}>
                 <Text style={infoStyles.cardTitle}>About the Lobby</Text>
                 <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
@@ -1558,7 +1559,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
         {/* Buy all gems confirmation popup */}
         {showBuyGemsConfirm && (
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setShowBuyGemsConfirm(false)}>
-            <Pressable style={[popupStyles.card, { backgroundColor: theme.surface }]} onPress={() => {}}>
+            <Pressable style={[popupStyles.card, { backgroundColor: theme.surfaceCard}]} onPress={() => {}}>
               <View style={[popupStyles.avatarWrap, { backgroundColor: 'rgba(82,166,226,0.12)' }]}>
                 <GemIcon size={36} />
               </View>
@@ -1649,7 +1650,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
               </Animated.View>
               <View style={[
                 onboardingHintStyles.card,
-                { position: 'absolute', left: 20, right: 20, top: hintTop, backgroundColor: theme.surface },
+                { position: 'absolute', left: 20, right: 20, top: hintTop, backgroundColor: theme.surfaceCard},
               ]}>
                 <Image
                   source={require('../../assets/img/coin.png')}

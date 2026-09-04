@@ -330,7 +330,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
         </Animated.View>
 
         {/* Sheet */}
-        <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: 'rgba(28,32,28,0.97)' }]}>
+        <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: '#1E2840' }]}>
           {/* Header with pan gesture for swipe-to-dismiss */}
           <GestureDetector gesture={panGesture}>
             <Animated.View>
@@ -429,7 +429,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           {infoVisible && (
             <View style={styles.infoOverlayScrim}>
               <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
-              <View style={[styles.infoCard, { backgroundColor: theme.surface }]}>
+              <View style={[styles.infoCard, { backgroundColor: theme.surfaceCard}]}>
                 <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.infoCardHeader}>
                   <Text style={styles.infoCardTitle}>About the Hotel</Text>
                   <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
@@ -515,7 +515,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                   contentFit="contain"
                 />
               </Animated.View>
-              <View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop, backgroundColor: theme.surface }]}>
+              <View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop, backgroundColor: theme.surfaceCard}]}>
                 <Image source={require('../../assets/img/happySmile.png')} style={hotelHintStyles.icon} />
                 <Text style={[hotelHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
                   {'Tap «Find Job» to assign a worker to a floor'}
@@ -577,7 +577,7 @@ const infoStyles = StyleSheet.create({
 function EmptySlotCard({ t }: { t: (key: string) => string }) {
   const theme = useAppTheme();
   return (
-    <View style={[slotStyles.card, { backgroundColor: theme.surface }]}>
+    <View style={[slotStyles.card, { backgroundColor: theme.surfaceCard}]}>
       <View style={[slotStyles.avatarPlaceholder, theme.isDark && { backgroundColor: theme.divider }]}>
         <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
           <Path
@@ -610,13 +610,13 @@ function BuySlotCard({
   const theme = useAppTheme();
   if (cost === null) {
     return (
-      <View style={[buyStyles.card, { backgroundColor: theme.surface }]}>
+      <View style={[buyStyles.card, { backgroundColor: theme.surfaceCard}]}>
         <Text style={buyStyles.maxedText}>{t('hotelPanel.expandCard.maxed')}</Text>
       </View>
     );
   }
   return (
-    <View style={[buyStyles.card, { backgroundColor: theme.surface }]}>
+    <View style={[buyStyles.card, { backgroundColor: theme.surfaceCard}]}>
       <View style={buyStyles.left}>
         <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
           <Path
@@ -656,7 +656,7 @@ function EvictLowLevelCard({
 }) {
   const theme = useAppTheme();
   return (
-    <View style={[buyStyles.card, { paddingVertical: 5 }, { backgroundColor: theme.surface }]}>
+    <View style={[buyStyles.card, { paddingVertical: 5 }, { backgroundColor: theme.surfaceCard}]}>
       <View style={buyStyles.left}>
         <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
           <Path

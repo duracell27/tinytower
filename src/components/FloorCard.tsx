@@ -209,7 +209,7 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
   const effectiveNameColor = isDark ? scheme.dark.nameColor : scheme.nameColor;
 
   return (
-    <View style={[styles.floorContainer, { backgroundColor: theme.surface }, isDark && styles.floorContainerDark]}>
+    <View style={[styles.floorContainer, { backgroundColor: theme.surfaceCard }, isDark && styles.floorContainerDark]}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: effectiveColor }]}>
         <View style={[styles.headerEdge, { backgroundColor: shadeColor(effectiveColor, -22) }]} />

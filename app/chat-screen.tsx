@@ -189,7 +189,7 @@ export default function ChatScreen() {
         <View style={styles.divider} />
         <View style={styles.pills}>
           <Pressable
-            style={[styles.pill, channel === 'global' && styles.pillActive, isDark && channel !== 'global' && { backgroundColor: '#252A36' }]}
+            style={[styles.pill, channel === 'global' && styles.pillActive, isDark && channel !== 'global' && { backgroundColor: '#2E3B58' }]}
             onPress={() => setChannel('global')}
           >
             <Text style={[styles.pillText, channel === 'global' && styles.pillTextActive]}>
@@ -198,7 +198,7 @@ export default function ChatScreen() {
           </Pressable>
           {countryCode && (
             <Pressable
-              style={[styles.pill, channel === 'country' && styles.pillActive, isDark && channel !== 'country' && { backgroundColor: '#252A36' }]}
+              style={[styles.pill, channel === 'country' && styles.pillActive, isDark && channel !== 'country' && { backgroundColor: '#2E3B58' }]}
               onPress={() => setChannel('country')}
             >
               <Text style={[styles.pillText, channel === 'country' && styles.pillTextActive]}>
