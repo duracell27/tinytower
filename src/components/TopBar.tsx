@@ -15,6 +15,8 @@ interface TopBarProps {
   coins: string;
   gems: string;
   revenuePerMin?: number;
+  activeCoinBoost?: number;
+  activeXpBoost?: number;
 }
 
 function ProgressRing({ progress, size = 50 }: { progress: number; size?: number }) {
@@ -49,7 +51,7 @@ function ProgressRing({ progress, size = 50 }: { progress: number; size?: number
   );
 }
 
-export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, revenuePerMin }: TopBarProps) {
+export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, revenuePerMin, activeCoinBoost, activeXpBoost }: TopBarProps) {
   const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
   const theme = useAppTheme();
 
@@ -74,6 +76,22 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
               <View style={[styles.revenuePill, { backgroundColor: theme.surfaceElevated }]}>
                 <CoinIcon size={12} />
                 <Text style={styles.revenuePillText}>{revenuePerMin} /min</Text>
+              </View>
+            )}
+            {((activeCoinBoost ?? 0) > 0 || (activeXpBoost ?? 0) > 0) && (
+              <View style={styles.boostRow}>
+                {(activeCoinBoost ?? 0) > 0 && (
+                  <View style={[styles.boostPill, { backgroundColor: theme.surfaceElevated }]}>
+                    <Image source={require('../../assets/img/MarketingIcon.png')} style={styles.boostIcon} contentFit="contain" />
+                    <Text style={styles.boostCoinText}>+{activeCoinBoost}%</Text>
+                  </View>
+                )}
+                {(activeXpBoost ?? 0) > 0 && (
+                  <View style={[styles.boostPill, { backgroundColor: theme.surfaceElevated }]}>
+                    <Image source={require('../../assets/img/PRIcon.png')} style={styles.boostIcon} contentFit="contain" />
+                    <Text style={styles.boostXpText}>+{activeXpBoost}%</Text>
+                  </View>
+                )}
               </View>
             )}
           </View>
@@ -254,5 +272,37 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
     color: '#2592AB',
+  },
+  boostRow: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  boostPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingVertical: 2,
+    paddingLeft: 4,
+    paddingRight: 6,
+    borderRadius: 9,
+    shadowColor: 'rgba(120,110,60,1)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.10,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  boostIcon: {
+    width: 13,
+    height: 13,
+  },
+  boostCoinText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 11,
+    color: '#C28A22',
+  },
+  boostXpText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 11,
+    color: '#7B4FBF',
   },
 });

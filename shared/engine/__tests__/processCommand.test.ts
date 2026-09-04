@@ -1908,3 +1908,73 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
     });
   });
 });
+
+describe('buy_boost command', () => {
+  const baseState = () => ({
+    ...makeState(),
+    gems: 100,
+    coinBoostPercent: 0,
+    xpBoostPercent: 0,
+    coinBoostExpiresAt: 0,
+    xpBoostExpiresAt: 0,
+  });
+
+  const coinCmd = (overrides = {}): Command => ({
+    type: 'buy_boost',
+    boostType: 'coin',
+    percent: 50,
+    durationMs: 108_000_000,
+    gemCost: 0,
+    timestamp: 1_000_000,
+    id: 'test-boost-1',
+    ...overrides,
+  } as Command);
+
+  it('deducts gems and sets coinBoostPercent + coinBoostExpiresAt', () => {
+    const now = 1_000_000;
+    const result = processCommand(baseState(), coinCmd(), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
+    expect(result.success).toBe(true);
+    expect(result.state.gems).toBe(100);                          // gemCost: 0
+    expect(result.state.coinBoostPercent).toBe(50);
+    expect(result.state.coinBoostExpiresAt).toBe(now + 108_000_000);
+    expect(result.state.xpBoostPercent).toBe(0);                  // unaffected
+  });
+
+  it('caps coinBoostPercent at 300 when stacking', () => {
+    const now = 2_000_000;
+    const state = { ...baseState(), coinBoostPercent: 200, coinBoostExpiresAt: now + 1_000 };
+    const result = processCommand(state, coinCmd({ percent: 200 }), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
+    expect(result.state.coinBoostPercent).toBe(300);
+  });
+
+  it('extends coinBoostExpiresAt when boost is still active', () => {
+    const now = 5_000_000;
+    const existing = now + 10_000_000;
+    const state = { ...baseState(), coinBoostPercent: 50, coinBoostExpiresAt: existing };
+    const result = processCommand(state, coinCmd({ percent: 50, durationMs: 108_000_000 }), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
+    expect(result.state.coinBoostExpiresAt).toBe(existing + 108_000_000);
+  });
+
+  it('resets timer base to now when existing boost is already expired', () => {
+    const now = 5_000_000;
+    const state = { ...baseState(), coinBoostPercent: 50, coinBoostExpiresAt: now - 1_000 };
+    const result = processCommand(state, coinCmd({ percent: 50, durationMs: 108_000_000 }), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
+    expect(result.state.coinBoostExpiresAt).toBe(now + 108_000_000);
+    expect(result.state.coinBoostPercent).toBe(50); // reset, not accumulated
+  });
+
+  it('handles xp boost independently from coin boost', () => {
+    const now = 1_000_000;
+    const result = processCommand(baseState(), { ...coinCmd(), boostType: 'xp' } as Command, gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
+    expect(result.state.xpBoostPercent).toBe(50);
+    expect(result.state.xpBoostExpiresAt).toBe(now + 108_000_000);
+    expect(result.state.coinBoostPercent).toBe(0);
+  });
+
+  it('fails with Insufficient gems when balance too low', () => {
+    const state = { ...baseState(), gems: 0 };
+    const result = processCommand(state, coinCmd({ gemCost: 10 }), gameConfig, 1_000_000, 1, { coinPercent: 0, xpPercent: 0 });
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Insufficient gems');
+  });
+});

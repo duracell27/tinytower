@@ -161,9 +161,15 @@ export default function GameScreen() {
 
   const workers = useGameStore((s) => s.workers);
   const openedFloorTypes  = useGameStore((s) => s.openedFloorTypes);
-  const coinBonusPercent  = useGameStore((s) => s.coinBonusPercent);
-  const businessUpgrades  = useGameStore((s) => s.businessUpgrades);
-  const floorStars        = useGameStore((s) => s.floorStars);
+  const coinBonusPercent    = useGameStore((s) => s.coinBonusPercent);
+  const businessUpgrades    = useGameStore((s) => s.businessUpgrades);
+  const floorStars          = useGameStore((s) => s.floorStars);
+  const coinBoostPercent    = useGameStore((s) => s.coinBoostPercent);
+  const xpBoostPercent      = useGameStore((s) => s.xpBoostPercent);
+  const coinBoostExpiresAt  = useGameStore((s) => s.coinBoostExpiresAt);
+  const xpBoostExpiresAt    = useGameStore((s) => s.xpBoostExpiresAt);
+  const activeCoinBoost = now < coinBoostExpiresAt ? coinBoostPercent : 0;
+  const activeXpBoost   = now < xpBoostExpiresAt   ? xpBoostPercent   : 0;
 
   const revenuePerMin = React.useMemo(
     () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, revenueNow, businessUpgrades, coinBonusPercent, floorStars),
@@ -1095,6 +1101,8 @@ export default function GameScreen() {
           coins={formatNum(balance)}
           gems={formatNum(gems)}
           revenuePerMin={revenuePerMin}
+          activeCoinBoost={activeCoinBoost}
+          activeXpBoost={activeXpBoost}
         />
 
         {!isOnboarding && !isTemporary && <QuickActionFAB

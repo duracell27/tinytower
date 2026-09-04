@@ -275,6 +275,15 @@ export const BuyVehicleCommandSchema = TimestampedBaseSchema.extend({
   vehicleType: z.enum(['taxi', 'forklift', 'armored_truck', 'delivery_truck', 'bus']),
 });
 
+export const BuyBoostCommandSchema = TimestampedBaseSchema.extend({
+  type:        z.literal('buy_boost'),
+  boostType:   z.enum(['coin', 'xp']),
+  percent:     z.number().int().min(50).max(300),
+  durationMs:  z.number().int().positive().max(7 * 24 * 60 * 60 * 1000),  // max 7 days
+  gemCost:     z.number().int().nonnegative(),
+});
+export type BuyBoostCommand = z.infer<typeof BuyBoostCommandSchema>;
+
 export const CommandSchema = z.discriminatedUnion('type', [
   BuyCommandSchema,
   ListCommandSchema,
@@ -314,4 +323,5 @@ export const CommandSchema = z.discriminatedUnion('type', [
   BuyDailyGemsCommandSchema,
   RecordInviteSentCommandSchema,
   BuyVehicleCommandSchema,
+  BuyBoostCommandSchema,
 ]);

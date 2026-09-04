@@ -20,6 +20,7 @@ import { WAREHOUSE_UPGRADE_COSTS } from '../../shared/config/warehouseUpgradeCon
 import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import type { Vehicles } from '../../shared/types';
 import { useOnboardingStore } from './onboardingStore';
+import type { BoostPackage } from '../../shared/config/boostConfig';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -260,6 +261,7 @@ interface GameActions {
   setTaskReward: (payload: PendingTaskReward) => void;
   clearTaskReward: () => void;
   shopPurchase: (pack: import('../data/shopPacks').ShopPack) => void;
+  buyBoost: (pkg: BoostPackage) => void;
   clearPurchaseSuccess: () => void;
   setPendingDeliverAll: (summary: DeliverAllSummary) => void;
   clearPendingDeliverAll: () => void;
@@ -292,7 +294,8 @@ function executeCommand(
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, vehicles, dailyTasks, floorStars, warehouseLevel,
+    coinBonusPercent, xpBonusPercent, coinBoostPercent, xpBoostPercent, coinBoostExpiresAt, xpBoostExpiresAt,
+    tokens, businessUpgrades, vehicles, dailyTasks, floorStars, warehouseLevel,
     tutorialProgress, tutorialTasks,
   } = store;
   let gameState: GameState = {
@@ -300,7 +303,8 @@ function executeCommand(
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, vehicles, dailyTasks, floorStars: floorStars ?? {},
+    coinBonusPercent, xpBonusPercent, coinBoostPercent, xpBoostPercent, coinBoostExpiresAt, xpBoostExpiresAt,
+    tokens, businessUpgrades, vehicles, dailyTasks, floorStars: floorStars ?? {},
     warehouseLevel: warehouseLevel ?? 0,
     tutorialProgress, tutorialTasks,
   };
@@ -326,7 +330,11 @@ function executeCommand(
   const vehicleBonuses = computeVehicleBonuses(store.vehicles);
   const result = processCommand(
     gameState, command, gameConfig, command.timestamp, store.playerLevel,
-    { coinPercent: store.coinBonusPercent, xpPercent: store.xpBonusPercent, ...vehicleBonuses },
+    {
+      coinPercent: store.coinBonusPercent + (command.timestamp < store.coinBoostExpiresAt ? (store.coinBoostPercent ?? 0) : 0),
+      xpPercent:   store.xpBonusPercent   + (command.timestamp < store.xpBoostExpiresAt   ? (store.xpBoostPercent   ?? 0) : 0),
+      ...vehicleBonuses,
+    },
   );
   if (!result.success) {
     if (result.error === 'WAREHOUSE_FULL') {
@@ -419,6 +427,10 @@ function executeCommand(
     floorStars: result.state.floorStars,
     tutorialProgress: result.state.tutorialProgress,
     tutorialTasks: result.state.tutorialTasks,
+    coinBoostPercent:   result.state.coinBoostPercent   ?? 0,
+    xpBoostPercent:     result.state.xpBoostPercent     ?? 0,
+    coinBoostExpiresAt: result.state.coinBoostExpiresAt ?? 0,
+    xpBoostExpiresAt:   result.state.xpBoostExpiresAt   ?? 0,
     playerXp: xpResult.playerXp,
     playerLevel: xpResult.playerLevel,
     levelUpQueue: [...store.levelUpQueue, ...levelUps],
@@ -479,6 +491,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
+  },
+  buyBoost: (pkg) => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'buy_boost',
+      boostType: pkg.boostType,
+      percent: pkg.percent,
+      durationMs: pkg.durationMs,
+      gemCost: pkg.gemCost,
+      timestamp: clock.now(),
+    });
   },
   upgradeBusinessCategory: (floorType) => {
     executeCommand(get, set, {
@@ -1285,6 +1308,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     achievementQueue: state.achievementQueue ?? [],
     coinBonusPercent: state.coinBonusPercent ?? 0,
     xpBonusPercent: state.xpBonusPercent ?? 0,
+    coinBoostPercent:   state.coinBoostPercent   ?? 0,
+    xpBoostPercent:     state.xpBoostPercent     ?? 0,
+    coinBoostExpiresAt: state.coinBoostExpiresAt ?? 0,
+    xpBoostExpiresAt:   state.xpBoostExpiresAt   ?? 0,
     categoryProgress: state.categoryProgress ?? {},
     tokens: state.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     businessUpgrades: state.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },

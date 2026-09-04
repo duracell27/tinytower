@@ -17,6 +17,7 @@ import { gameConfig } from '../../shared/config/gameConfig';
 import {
   DIAMOND_PACKS, BUNDLE_PACKS, BUILDER_PACKS, MATERIAL_PACKS, ShopPack,
 } from '../../src/data/shopPacks';
+import { BOOST_PACKAGES, BoostPackage } from '../../shared/config/boostConfig';
 
 const DIAMOND_ICON = require('../../assets/img/diamond.png');
 const TOKEN_ICONS: Record<string, ReturnType<typeof require>> = {
@@ -41,6 +42,7 @@ const SECTION_THEME: Record<string, { gradient: [string, string]; btn: string }>
   bundles:   { gradient: ['#2E6EC9', '#2E6EC9'], btn: '#2E6EC9' },
   builder:   { gradient: ['#E7A52B', '#E7A52B'], btn: '#E7A52B' },
   materials: { gradient: ['#9A6FD0', '#9A6FD0'], btn: '#9A6FD0' },
+  boosts:    { gradient: ['#F5A623', '#E8820C'] as [string, string], btn: '#F5A623' },
 };
 
 // ─── Section header ───────────────────────────────────────────────────────────
@@ -362,6 +364,81 @@ const mc = StyleSheet.create({
   btnText:    { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
 });
 
+// ─── Boost sub-section ───────────────────────────────────────────────────────
+
+function BoostSubSection({
+  label,
+  activePercent,
+  expiresAt,
+  packages,
+  gems,
+  now,
+  onBuy,
+}: {
+  label: string;
+  activePercent: number;
+  expiresAt: number;
+  packages: BoostPackage[];
+  gems: number;
+  now: number;
+  onBuy: (pkg: BoostPackage) => void;
+}) {
+  const isDark = useColorScheme() === 'dark';
+  const remaining = expiresAt > now ? (() => {
+    const ms = expiresAt - now;
+    const h = Math.floor(ms / 3_600_000);
+    const m = Math.floor((ms % 3_600_000) / 60_000);
+    return `${h}h ${m}m`;
+  })() : null;
+
+  const txt = isDark ? '#F0F0F0' : '#1A1A1A';
+  const sub = isDark ? '#9A9A9A' : '#666';
+  const cardBg = isDark ? '#2A2A2A' : '#F5F5F5';
+  const disabledBg = isDark ? '#1A1A1A' : '#E0E0E0';
+
+  return (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{ fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: txt, marginBottom: 4 }}>
+        {label}
+      </Text>
+      {remaining && (
+        <Text style={{ fontFamily: 'Fredoka_400Regular', fontSize: 13, color: '#F5A623', marginBottom: 8 }}>
+          Active: +{activePercent}% · {remaining} remaining
+        </Text>
+      )}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+        {packages.map((pkg) => {
+          const canAfford = gems >= pkg.gemCost;
+          return (
+            <Pressable
+              key={pkg.id}
+              onPress={() => canAfford && onBuy(pkg)}
+              style={{
+                backgroundColor: canAfford ? cardBg : disabledBg,
+                borderRadius: 12,
+                padding: 12,
+                minWidth: 90,
+                alignItems: 'center',
+                opacity: canAfford ? 1 : 0.5,
+              }}
+            >
+              <Text style={{ fontFamily: 'Fredoka_600SemiBold', fontSize: 18, color: '#F5A623' }}>
+                +{pkg.percent}%
+              </Text>
+              <Text style={{ fontFamily: 'Fredoka_400Regular', fontSize: 12, color: sub, marginTop: 2 }}>
+                30 hrs
+              </Text>
+              <Text style={{ fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: txt, marginTop: 4 }}>
+                💎 {pkg.gemCost}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
+
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ShopScreen() {
@@ -373,6 +450,11 @@ export default function ShopScreen() {
   const gems         = useGameStore((s) => s.gems);
   const player       = useAuthStore((s) => s.player);
   const shopPurchase = useGameStore((s) => s.shopPurchase);
+  const buyBoost     = useGameStore((s) => s.buyBoost);
+  const coinBoostPercent   = useGameStore((s) => s.coinBoostPercent);
+  const xpBoostPercent     = useGameStore((s) => s.xpBoostPercent);
+  const coinBoostExpiresAt = useGameStore((s) => s.coinBoostExpiresAt);
+  const xpBoostExpiresAt   = useGameStore((s) => s.xpBoostExpiresAt);
   const playerName   = player?.playerName ?? t('profile.guestFallbackName');
   const floors = useGameStore((s) => s.floors);
   const workers = useGameStore((s) => s.workers);
@@ -403,6 +485,10 @@ export default function ShopScreen() {
       shopPurchase(pack);
       setBuyingId(null);
     }, 3000);
+  };
+
+  const handleBuyBoost = (pkg: BoostPackage) => {
+    buyBoost(pkg);
   };
 
   return (
@@ -461,6 +547,29 @@ export default function ShopScreen() {
                 buying={buyingId === pack.id} disabled={buyingId !== null}
                 cardWidth={cardWidth} btnColor={pack.btnColor ?? SECTION_THEME.materials.btn} />
             ))}
+          </View>
+
+          {/* Boosts — coin and XP boost packages */}
+          <SectionHeader title="Boosts" sectionKey="boosts" />
+          <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+            <BoostSubSection
+              label="💰 Coin Boost"
+              activePercent={coinBoostPercent}
+              expiresAt={coinBoostExpiresAt}
+              packages={BOOST_PACKAGES.filter((p) => p.boostType === 'coin')}
+              gems={gems}
+              now={now}
+              onBuy={handleBuyBoost}
+            />
+            <BoostSubSection
+              label="⭐ XP Boost"
+              activePercent={xpBoostPercent}
+              expiresAt={xpBoostExpiresAt}
+              packages={BOOST_PACKAGES.filter((p) => p.boostType === 'xp')}
+              gems={gems}
+              now={now}
+              onBuy={handleBuyBoost}
+            />
           </View>
 
           <View style={{ height: 40 }} />
