@@ -135,7 +135,10 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     const isMe = item.playerId === myId;
     const accent = TAB_ACTIVE_COLORS[tab];
     return (
-      <View style={[styles.row, isMe ? [styles.rowMe, { backgroundColor: theme.surfaceCard }] : rankStyle(item.rank, theme.surfaceCard, theme.divider)]}>
+      <Pressable
+        style={({ pressed }) => [styles.row, isMe ? [styles.rowMe, { backgroundColor: theme.surfaceCard }] : rankStyle(item.rank, theme.surfaceCard, theme.divider), pressed && { opacity: 0.75 }]}
+        onPress={() => handleAvatarPress(item.playerId)}
+      >
         {item.rank <= 3 ? (
           <View style={styles.trophyWrap}>
             <Text style={styles.trophyRankNum}>#{item.rank}</Text>
@@ -153,13 +156,11 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         ) : (
           <Text style={styles.rankNum}>#{item.rank}</Text>
         )}
-        <Pressable onPress={() => handleAvatarPress(item.playerId)} hitSlop={6}>
-          <Image
-            source={getUserIcon(tab === 'level' ? item.value : 1)}
-            style={[styles.avatar, isBlocked(item.playerId) && { borderColor: '#E05A4A', borderWidth: 2 }]}
-            contentFit="cover"
-          />
-        </Pressable>
+        <Image
+          source={getUserIcon(tab === 'level' ? item.value : 1)}
+          style={[styles.avatar, isBlocked(item.playerId) && { borderColor: '#E05A4A', borderWidth: 2 }]}
+          contentFit="cover"
+        />
         <View style={styles.nameBlock}>
           <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>{item.playerName}</Text>
           <Text style={styles.cityText} numberOfLines={1}>{item.city ?? 'no city'}</Text>
@@ -168,7 +169,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
           <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
           <Text style={[styles.valueBig, { color: accent }]}>{formatValue(item.value)}</Text>
         </View>
-      </View>
+      </Pressable>
     );
   }, [myId, tab, theme, handleAvatarPress]);
 

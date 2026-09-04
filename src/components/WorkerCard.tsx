@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { FLOOR_TYPE_SCHEMES } from './FloorCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import Svg, { Path } from 'react-native-svg';
@@ -45,17 +46,21 @@ export default function WorkerCard({
   const theme = useAppTheme();
   const { isDark } = theme;
   const ft = gameConfig.floorTypes[worker.floorType];
-  const accent = ft?.accent ?? '#888';
   const shirtColor = ft?.shirtColor ?? '#999';
+  const workerScheme = FLOOR_TYPE_SCHEMES[worker.floorType];
+  const accent = isDark
+    ? (workerScheme?.dark.nameColor ?? '#888')
+    : (workerScheme?.nameColor ?? '#888');
   const category = tContent(`floorTypes.${worker.floorType}.category`, { defaultValue: worker.floorType });
   const dreamJobName = tContent(`productionTypes.${worker.dreamJob}.displayName`, { defaultValue: worker.dreamJob });
   let dreamBusinessName: string | undefined;
   let dreamAccent = accent;
-  for (const floorTypeEntry of Object.values(gameConfig.floorTypes)) {
-    const biz = floorTypeEntry.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
+  for (const [ftKey, ftEntry] of Object.entries(gameConfig.floorTypes)) {
+    const biz = ftEntry.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
     if (biz) {
       dreamBusinessName = biz.name;
-      dreamAccent = floorTypeEntry.accent ?? accent;
+      const dScheme = FLOOR_TYPE_SCHEMES[ftKey];
+      dreamAccent = isDark ? (dScheme?.dark.nameColor ?? accent) : (dScheme?.nameColor ?? accent);
       break;
     }
   }

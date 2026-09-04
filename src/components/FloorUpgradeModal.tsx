@@ -24,6 +24,7 @@ const TOKEN_ICONS: Record<string, ReturnType<typeof require>> = {
 export default function FloorUpgradeModal() {
   const { t } = useTranslation('hotel');
   const theme = useAppTheme();
+  const { isDark } = theme;
 
   const modal            = useGameStore((s) => s.floorUpgradeModal);
   const close            = useGameStore((s) => s.closeFloorUpgradeModal);
@@ -42,7 +43,8 @@ export default function FloorUpgradeModal() {
 
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
   const floorType   = (floorConfig?.floorType ?? openedFloorTypes?.[String(floorId)] ?? '') as keyof typeof tokens;
-  const scheme      = FLOOR_TYPE_SCHEMES[floorType as string] ?? FLOOR_TYPE_SCHEMES.green;
+  const baseScheme  = FLOOR_TYPE_SCHEMES[floorType as string] ?? FLOOR_TYPE_SCHEMES.green;
+  const scheme      = isDark ? { ...baseScheme, ...baseScheme.dark } : baseScheme;
 
   const storeFloor  = floors.find((f) => f.id === floorId);
   const firstTypeId = floorConfig?.availableTypes[0]
