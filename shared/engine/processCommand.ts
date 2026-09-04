@@ -198,6 +198,9 @@ export function processCommand(
         },
       };
     }
+    case 'buy_boost':
+      // TODO: Engine logic for buy_boost will be implemented in Task 2
+      return { success: true, state };
     default:
       const exhaustive: never = command;
       return { success: false, state, error: `Unknown command type: ${(exhaustive as any).type}` };

@@ -292,7 +292,8 @@ function executeCommand(
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, vehicles, dailyTasks, floorStars, warehouseLevel,
+    coinBonusPercent, xpBonusPercent, coinBoostPercent, xpBoostPercent, coinBoostExpiresAt, xpBoostExpiresAt,
+    tokens, businessUpgrades, vehicles, dailyTasks, floorStars, warehouseLevel,
     tutorialProgress, tutorialTasks,
   } = store;
   let gameState: GameState = {
@@ -300,7 +301,8 @@ function executeCommand(
     lobbyVisitors, lobbyCapacity, elevatorLevel, elevatorFloor,
     dailyTips, dailyGemsCollected, dailyTipsStage1Claimed, dailyTipsStage2Claimed, lastDailyReset, nextVisitorAt,
     tools, underConstruction, openedFloorTypes, stats, dailyFillLobbyUses,
-    coinBonusPercent, xpBonusPercent, tokens, businessUpgrades, vehicles, dailyTasks, floorStars: floorStars ?? {},
+    coinBonusPercent, xpBonusPercent, coinBoostPercent, xpBoostPercent, coinBoostExpiresAt, xpBoostExpiresAt,
+    tokens, businessUpgrades, vehicles, dailyTasks, floorStars: floorStars ?? {},
     warehouseLevel: warehouseLevel ?? 0,
     tutorialProgress, tutorialTasks,
   };
