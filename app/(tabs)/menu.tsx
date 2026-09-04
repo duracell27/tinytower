@@ -10,6 +10,7 @@ import { useGameStore } from '../../src/stores/gameStore';
 import WarehouseSheet from '../../src/components/WarehouseSheet';
 import WorkersPanel from '../../src/components/WorkersPanel';
 import LeaderboardSheet from '../../src/components/LeaderboardSheet';
+import BoostSheet from '../../src/components/BoostSheet';
 
 export default function MenuScreen() {
   const { t } = useTranslation('tabs');
@@ -19,6 +20,7 @@ export default function MenuScreen() {
   const [workersOpen, setWorkersOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [usersOpen, setUsersOpen] = useState(false);
+  const [boostsOpen, setBoostsOpen] = useState(false);
   const [onlineCount, setOnlineCount] = useState<number | null>(null);
   const pendingWorkerFocus = useGameStore((s) => s.pendingWorkerFocus);
   const pendingOpenWarehouse = useGameStore((s) => s.pendingOpenWarehouse);
@@ -49,6 +51,15 @@ export default function MenuScreen() {
     <AppBackground style={styles.container}>
       <View style={styles.content}>
         <Text style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('menu.heading')}</Text>
+
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setBoostsOpen(true)}>
+          <Image
+            source={require('../../assets/img/MarketingIcon.png')}
+            style={{ width: 56, height: 56 }}
+            contentFit="contain"
+          />
+          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>Boosts</Text>
+        </Pressable>
 
         <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setInventoryOpen(true)}>
           <Image
@@ -110,6 +121,7 @@ export default function MenuScreen() {
         </Pressable>
       </View>
 
+      <BoostSheet visible={boostsOpen} onClose={() => setBoostsOpen(false)} />
       <WarehouseSheet visible={inventoryOpen} onClose={() => setInventoryOpen(false)} />
       <WorkersPanel
         visible={workersOpen}

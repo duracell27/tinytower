@@ -17,7 +17,6 @@ import { gameConfig } from '../../shared/config/gameConfig';
 import {
   DIAMOND_PACKS, BUNDLE_PACKS, BUILDER_PACKS, MATERIAL_PACKS, ShopPack,
 } from '../../src/data/shopPacks';
-import { BOOST_PACKAGES, BoostPackage } from '../../shared/config/boostConfig';
 
 const DIAMOND_ICON = require('../../assets/img/diamond.png');
 const TOKEN_ICONS: Record<string, ReturnType<typeof require>> = {
@@ -364,151 +363,6 @@ const mc = StyleSheet.create({
   btnText:    { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
 });
 
-// ─── Boost confirm modal ─────────────────────────────────────────────────────
-
-function BoostConfirmModal({ pkg, gems, onConfirm, onCancel }: {
-  pkg: BoostPackage | null;
-  gems: number;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
-  const isDark = useColorScheme() === 'dark';
-  if (!pkg) return null;
-
-  const isCoin = pkg.boostType === 'coin';
-  const cardBg  = isDark ? '#1E2430' : '#FFFFFF';
-  const txt     = isDark ? '#F0F0F0' : '#1A1A1A';
-  const sub     = isDark ? '#8A8A8A' : '#666';
-
-  return (
-    <View style={bcm.scrim}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={onCancel} />
-      <View style={[bcm.card, { backgroundColor: cardBg }]}>
-        {/* Icon */}
-        <View style={[bcm.iconCircle, { backgroundColor: isCoin ? 'rgba(245,166,35,0.15)' : 'rgba(94,143,66,0.15)' }]}>
-          <Text style={{ fontSize: 32 }}>{isCoin ? '💰' : '⭐'}</Text>
-        </View>
-
-        {/* Title */}
-        <Text style={[bcm.title, { color: txt }]}>
-          {isCoin ? 'Coin Boost' : 'XP Boost'} +{pkg.percent}%
-        </Text>
-        <Text style={[bcm.sub, { color: sub }]}>30 hours · active immediately</Text>
-
-        {/* Price row */}
-        <View style={[bcm.priceRow, { backgroundColor: isDark ? '#2A2A3A' : '#F5F5F5' }]}>
-          <Image source={DIAMOND_ICON} style={{ width: 20, height: 20 }} contentFit="contain" />
-          <Text style={[bcm.price, { color: txt }]}>{pkg.gemCost}</Text>
-          <Text style={[bcm.balance, { color: sub }]}>· you have {gems}</Text>
-        </View>
-
-        {/* Buttons */}
-        <Pressable
-          style={[bcm.btnConfirm, { backgroundColor: isCoin ? '#F5A623' : '#5E8F42' }]}
-          onPress={onConfirm}
-        >
-          <Text style={bcm.btnConfirmText}>Activate Boost</Text>
-        </Pressable>
-        <Pressable style={bcm.btnCancel} onPress={onCancel}>
-          <Text style={[bcm.btnCancelText, { color: sub }]}>Cancel</Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-const bcm = StyleSheet.create({
-  scrim:       { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.55)',
-                 alignItems: 'center', justifyContent: 'center', zIndex: 100 },
-  card:        { width: 300, borderRadius: 24, padding: 24, alignItems: 'center', gap: 12,
-                 shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
-                 shadowOpacity: 0.22, shadowRadius: 20, elevation: 12 },
-  iconCircle:  { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
-  title:       { fontFamily: 'Fredoka_700Bold', fontSize: 22, textAlign: 'center' },
-  sub:         { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', marginTop: -4 },
-  priceRow:    { flexDirection: 'row', alignItems: 'center', gap: 6,
-                 borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10, alignSelf: 'stretch', justifyContent: 'center' },
-  price:       { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
-  balance:     { fontFamily: 'Fredoka_400Regular', fontSize: 13 },
-  btnConfirm:  { borderRadius: 14, paddingVertical: 13, alignSelf: 'stretch', alignItems: 'center', marginTop: 4 },
-  btnConfirmText: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#FFF' },
-  btnCancel:   { paddingVertical: 6 },
-  btnCancelText:  { fontFamily: 'Fredoka_500Medium', fontSize: 14 },
-});
-
-// ─── Boost sub-section ───────────────────────────────────────────────────────
-
-function BoostSubSection({
-  label,
-  activePercent,
-  expiresAt,
-  packages,
-  gems,
-  now,
-  onBuy,
-  onNotEnough,
-}: {
-  label: string;
-  activePercent: number;
-  expiresAt: number;
-  packages: BoostPackage[];
-  gems: number;
-  now: number;
-  onBuy: (pkg: BoostPackage) => void;
-  onNotEnough: (need: number) => void;
-}) {
-  const isDark = useColorScheme() === 'dark';
-  const remaining = expiresAt > now ? (() => {
-    const ms = expiresAt - now;
-    const h = Math.floor(ms / 3_600_000);
-    const m = Math.floor((ms % 3_600_000) / 60_000);
-    return `${h}h ${m}m`;
-  })() : null;
-
-  const txt = isDark ? '#F0F0F0' : '#1A1A1A';
-  const sub = isDark ? '#9A9A9A' : '#666';
-  const cardBg = isDark ? '#2A2A2A' : '#F5F5F5';
-
-  return (
-    <View style={{ marginBottom: 16 }}>
-      <Text style={{ fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: txt, marginBottom: 4 }}>
-        {label}
-      </Text>
-      {remaining && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8,
-                       backgroundColor: 'rgba(245,166,35,0.12)', borderRadius: 10,
-                       paddingHorizontal: 10, paddingVertical: 5, alignSelf: 'flex-start' }}>
-          <Text style={{ fontSize: 14 }}>🟡</Text>
-          <Text style={{ fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#F5A623' }}>
-            +{activePercent}% active · {remaining} left
-          </Text>
-        </View>
-      )}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, flexDirection: 'row' }}>
-        {packages.map((pkg) => (
-          <Pressable
-            key={pkg.id}
-            onPress={() => gems >= pkg.gemCost ? onBuy(pkg) : onNotEnough(pkg.gemCost)}
-            style={{ backgroundColor: cardBg, borderRadius: 12, padding: 12, minWidth: 90, alignItems: 'center' }}
-          >
-            <Text style={{ fontFamily: 'Fredoka_600SemiBold', fontSize: 18, color: '#F5A623' }}>
-              +{pkg.percent}%
-            </Text>
-            <Text style={{ fontFamily: 'Fredoka_400Regular', fontSize: 12, color: sub, marginTop: 2 }}>
-              30 hrs
-            </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 4 }}>
-              <Image source={DIAMOND_ICON} style={{ width: 14, height: 14 }} contentFit="contain" />
-              <Text style={{ fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: txt }}>
-                {pkg.gemCost}
-              </Text>
-            </View>
-          </Pressable>
-        ))}
-      </ScrollView>
-    </View>
-  );
-}
-
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ShopScreen() {
@@ -520,8 +374,6 @@ export default function ShopScreen() {
   const gems         = useGameStore((s) => s.gems);
   const player       = useAuthStore((s) => s.player);
   const shopPurchase = useGameStore((s) => s.shopPurchase);
-  const buyBoost               = useGameStore((s) => s.buyBoost);
-  const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const coinBoostPercent   = useGameStore((s) => s.coinBoostPercent);
   const xpBoostPercent     = useGameStore((s) => s.xpBoostPercent);
   const coinBoostExpiresAt = useGameStore((s) => s.coinBoostExpiresAt);
@@ -543,7 +395,6 @@ export default function ShopScreen() {
   const fullWidth = screenWidth - 32;
 
   const [buyingId, setBuyingId] = useState<string | null>(null);
-  const [pendingBoost, setPendingBoost] = useState<BoostPackage | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -557,17 +408,6 @@ export default function ShopScreen() {
       shopPurchase(pack);
       setBuyingId(null);
     }, 3000);
-  };
-
-  const handleBuyBoost = (pkg: BoostPackage) => {
-    setPendingBoost(pkg);
-  };
-
-  const confirmBoost = () => {
-    if (pendingBoost) {
-      buyBoost(pendingBoost);
-      setPendingBoost(null);
-    }
   };
 
   return (
@@ -632,42 +472,8 @@ export default function ShopScreen() {
             ))}
           </View>
 
-          {/* Boosts — coin and XP boost packages */}
-          <SectionHeader title="Boosts" sectionKey="boosts" />
-          <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-            <BoostSubSection
-              label="💰 Coin Boost"
-              activePercent={coinBoostPercent}
-              expiresAt={coinBoostExpiresAt}
-              packages={BOOST_PACKAGES.filter((p) => p.boostType === 'coin')}
-              gems={gems}
-              now={now}
-              onBuy={handleBuyBoost}
-              onNotEnough={(need) => showInsufficientResources({ currency: 'gems', need, have: gems })}
-            />
-            <BoostSubSection
-              label="⭐ XP Boost"
-              activePercent={xpBoostPercent}
-              expiresAt={xpBoostExpiresAt}
-              packages={BOOST_PACKAGES.filter((p) => p.boostType === 'xp')}
-              gems={gems}
-              now={now}
-              onBuy={handleBuyBoost}
-              onNotEnough={(need) => showInsufficientResources({ currency: 'gems', need, have: gems })}
-            />
-          </View>
-
           <View style={{ height: 40 }} />
         </ScrollView>
-
-        {pendingBoost && (
-          <BoostConfirmModal
-            pkg={pendingBoost}
-            gems={gems}
-            onConfirm={confirmBoost}
-            onCancel={() => setPendingBoost(null)}
-          />
-        )}
       </AppBackground>
     </View>
   );
