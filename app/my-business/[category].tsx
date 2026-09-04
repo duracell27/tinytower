@@ -56,7 +56,6 @@ const TYPE_ICONS: Record<FloorType, ReturnType<typeof require>> = {
   red:    require('../../assets/img/flourTypes/electronics.png'),
 };
 
-const MILESTONES = [0, 10, 20, 30, 40] as const;
 
 export default function BusinessCategoryScreen() {
   const { t: tHotel } = useTranslation('hotel');
@@ -118,63 +117,69 @@ export default function BusinessCategoryScreen() {
         showsVerticalScrollIndicator={false}
       >
 
-        {/* ── Header ── */}
+        {/* ── Title above card ── */}
         <Text style={[styles.categoryName, { color }]}>
           {tHotel(`myBusiness.categories.${ft}`)}
         </Text>
 
-        {/* ── Icon left / stats right ── */}
-        <View style={styles.heroRow}>
-          <View style={[styles.iconRing, { backgroundColor: `${color}20`, borderColor: `${color}40` }]}>
-            <Image source={TYPE_ICONS[ft]} style={styles.icon} contentFit="contain" />
-          </View>
-          <View style={styles.heroStats}>
-            <Text style={[styles.bonusText, { color }]}>
-              {isMaxed ? tHotel('myBusiness.maxLevel') : tHotel('myBusiness.profitBonus', { percent: level * 5 })}
-            </Text>
-            <View style={[styles.builtChip, { backgroundColor: `${color}18` }]}>
-              <Image source={TYPE_ICONS[ft]} style={styles.builtIcon} contentFit="contain" />
-              <Text style={[styles.builtText, { color }]}>
-                {builtCount} {builtCount === 1 ? 'floor' : 'floors'} built
+        {/* ── Hero card ── */}
+        <View style={[styles.heroCard, { backgroundColor: theme.surface }]}>
+          <View style={styles.heroRow}>
+            <View style={[styles.iconRing, { backgroundColor: `${color}20`, borderColor: `${color}40` }]}>
+              <Image source={TYPE_ICONS[ft]} style={styles.icon} contentFit="fill" />
+            </View>
+            <View style={styles.heroStats}>
+              <Text style={[styles.bonusText, { color }]}>
+                {isMaxed ? tHotel('myBusiness.maxLevel') : tHotel('myBusiness.profitBonus', { percent: level * 5 })}
               </Text>
+              <View style={[styles.builtChip, { backgroundColor: `${color}18` }]}>
+                <Text style={[styles.builtText, { color }]}>
+                  {builtCount} {builtCount === 1 ? 'floor' : 'floors'} built
+                </Text>
+              </View>
             </View>
           </View>
         </View>
 
         {/* ── Progress with milestone markers ── */}
         <View style={[styles.progressCard, { backgroundColor: theme.surface }]}>
-          <View style={styles.progressTrackWrap}>
-            <View style={[styles.progressBg, { backgroundColor: `${color}22` }]}>
-              <View
-                style={[styles.progressFill, {
-                  width: `${(level / 40) * 100}%`,
-                  backgroundColor: color,
-                }]}
-              />
-              {[10, 20, 30].map((m) => (
+          {/* Track */}
+          <View style={[styles.progressBg, { backgroundColor: `${color}22` }]}>
+            {/* Fill */}
+            <View
+              style={[styles.progressFill, {
+                width: `${(level / 40) * 100}%`,
+                backgroundColor: color,
+              }]}
+            />
+            {/* Ticks: 1 per level boundary (1–39), major at 10/20/30 */}
+            {Array.from({ length: 39 }, (_, i) => i + 1).map((n) => {
+              const major = n === 10 || n === 20 || n === 30;
+              return (
                 <View
-                  key={m}
-                  style={[styles.milestoneTick, {
-                    left: `${(m / 40) * 100}%`,
+                  key={n}
+                  style={{
+                    position: 'absolute',
+                    top: major ? 0 : 3,
+                    bottom: major ? 0 : 3,
+                    left: `${(n / 40) * 100}%` as any,
+                    width: major ? 2 : 1,
                     backgroundColor: isDark ? theme.surface : '#fff',
-                  }]}
+                    opacity: major ? 0.65 : 0.3,
+                    transform: [{ translateX: major ? -1 : -0.5 }],
+                  }}
                 />
-              ))}
-            </View>
+              );
+            })}
           </View>
-          <View style={styles.milestoneRow}>
-            {MILESTONES.map((m) => (
-              <Text
-                key={m}
-                style={[
-                  styles.milestoneLabel,
-                  { color: m <= level ? color : theme.textMuted },
-                  m <= level && styles.milestoneLabelActive,
-                ]}
-              >
-                {m === 40 ? 'MAX' : m}
-              </Text>
-            ))}
+
+          {/* Labels — absolute under their respective ticks */}
+          <View style={styles.milestoneLabelsWrap}>
+            <Text style={[styles.milestoneLabel, { color: 0 <= level ? color : theme.textMuted }, 0 <= level && styles.milestoneLabelActive, { position: 'absolute', left: 0 }]}>0</Text>
+            <Text style={[styles.milestoneLabel, { color: 10 <= level ? color : theme.textMuted }, 10 <= level && styles.milestoneLabelActive, { position: 'absolute', left: '25%' as any, transform: [{ translateX: -7 }] }]}>10</Text>
+            <Text style={[styles.milestoneLabel, { color: 20 <= level ? color : theme.textMuted }, 20 <= level && styles.milestoneLabelActive, { position: 'absolute', left: '50%' as any, transform: [{ translateX: -7 }] }]}>20</Text>
+            <Text style={[styles.milestoneLabel, { color: 30 <= level ? color : theme.textMuted }, 30 <= level && styles.milestoneLabelActive, { position: 'absolute', left: '75%' as any, transform: [{ translateX: -7 }] }]}>30</Text>
+            <Text style={[styles.milestoneLabel, { color: 40 <= level ? color : theme.textMuted }, 40 <= level && styles.milestoneLabelActive, { position: 'absolute', right: 0 }]}>MAX</Text>
           </View>
         </View>
 
@@ -273,16 +278,21 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { paddingTop: 60, paddingBottom: 120 },
 
-  /* Header */
+  /* Hero card */
+  heroCard: {
+    marginHorizontal: 20, marginTop: 8, borderRadius: 20,
+    paddingHorizontal: 18, paddingVertical: 16,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3,
+  },
   categoryName: {
     fontFamily: 'Fredoka_700Bold', fontSize: 26,
-    marginHorizontal: 20, marginBottom: 10,
+    marginHorizontal: 20,
   },
 
   /* Hero row */
   heroRow: {
     flexDirection: 'row', alignItems: 'center',
-    marginHorizontal: 20, gap: 16, marginBottom: 4,
+    gap: 16,
   },
   iconRing: {
     width: 90, height: 90, borderRadius: 45,
@@ -290,7 +300,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
-  icon: { width: 58, height: 58 },
+  icon: { width: 60, height: 58 },
   heroStats: { flex: 1, gap: 8 },
   bonusText: { fontFamily: 'Fredoka_700Bold', fontSize: 24, lineHeight: 26 },
   builtChip: {
@@ -303,19 +313,13 @@ const styles = StyleSheet.create({
 
   /* Progress */
   progressCard: {
-    marginHorizontal: 20, marginTop: 18, borderRadius: 16,
-    paddingHorizontal: 18, paddingTop: 16, paddingBottom: 12, gap: 8,
+    marginHorizontal: 20, marginTop: 12, borderRadius: 16,
+    paddingHorizontal: 18, paddingTop: 14, paddingBottom: 14, gap: 0,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
   },
-  progressTrackWrap: {},
-  progressBg: { height: 12, borderRadius: 6, overflow: 'hidden', position: 'relative' },
-  progressFill: { height: '100%', borderRadius: 6 },
-  milestoneTick: {
-    position: 'absolute', top: 2, bottom: 2,
-    width: 2, borderRadius: 1,
-    transform: [{ translateX: -1 }],
-  },
-  milestoneRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  progressBg: { height: 12, borderRadius: 6, overflow: 'hidden' },
+  progressFill: { position: 'absolute', top: 0, bottom: 0, left: 0, borderRadius: 6 },
+  milestoneLabelsWrap: { position: 'relative', height: 18, marginTop: 5 },
   milestoneLabel: { fontFamily: 'Nunito_600SemiBold', fontSize: 11 },
   milestoneLabelActive: { fontFamily: 'Nunito_700Bold' },
 
