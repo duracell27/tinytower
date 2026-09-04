@@ -656,7 +656,7 @@ function handleBuy(
   slotIdx: number,
   production: GameState['floors'][0]['productions'][0],
   worker: Worker,
-  bonuses: { xpPerBuy?: number } = {},
+  bonuses: { xpPerBuy?: number; xpPercent?: number } = {},
 ): ProcessResult {
   if (production.stage !== 'IDLE') {
     return { success: false, state, error: 'Production not idle' };
@@ -695,7 +695,7 @@ function handleBuy(
 
   return {
     success: true,
-    xpGained: effectiveCost + (bonuses.xpPerBuy ?? 0),
+    xpGained: Math.floor(effectiveCost * (1 + (bonuses.xpPercent ?? 0) / 100)) + (bonuses.xpPerBuy ?? 0),
     state: {
       ...state,
       balance: state.balance - effectiveCost,
@@ -720,7 +720,7 @@ function handleList(
   floorIdx: number,
   slotIdx: number,
   production: GameState['floors'][0]['productions'][0],
-  bonuses: { deliverySpeedPercent?: number; xpPerSell?: number } = {},
+  bonuses: { deliverySpeedPercent?: number; xpPerSell?: number; xpPercent?: number } = {},
 ): ProcessResult {
   if (production.stage !== 'DELIVERING') {
     return { success: false, state, error: 'Production not delivering' };
@@ -741,7 +741,7 @@ function handleList(
 
   return {
     success: true,
-    xpGained: 10 + (bonuses.xpPerSell ?? 0),
+    xpGained: Math.floor(10 * (1 + (bonuses.xpPercent ?? 0) / 100)) + (bonuses.xpPerSell ?? 0),
     state: {
       ...state,
       floors: updateProduction(state.floors, floorIdx, slotIdx, {

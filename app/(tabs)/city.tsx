@@ -53,6 +53,8 @@ export default function CityScreen() {
           revenuePerMin={revenuePerMin}
           activeCoinBoost={activeCoinBoost}
           activeXpBoost={activeXpBoost}
+          coinBoostExpiresAt={coinBoostExpiresAt}
+          xpBoostExpiresAt={xpBoostExpiresAt}
         />
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} style={styles.scrollView}>
           {/* Hero */}

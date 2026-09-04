@@ -17,6 +17,16 @@ interface TopBarProps {
   revenuePerMin?: number;
   activeCoinBoost?: number;
   activeXpBoost?: number;
+  coinBoostExpiresAt?: number;
+  xpBoostExpiresAt?: number;
+}
+
+function boostTimeLabel(expiresAt: number | undefined): string {
+  if (!expiresAt) return '';
+  const msLeft = expiresAt - Date.now();
+  if (msLeft <= 0) return '';
+  const h = Math.floor(msLeft / (1000 * 60 * 60));
+  return h >= 1 ? ` ${h}h` : ' <1h';
 }
 
 function ProgressRing({ progress, size = 50 }: { progress: number; size?: number }) {
@@ -51,7 +61,7 @@ function ProgressRing({ progress, size = 50 }: { progress: number; size?: number
   );
 }
 
-export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, revenuePerMin, activeCoinBoost, activeXpBoost }: TopBarProps) {
+export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, revenuePerMin, activeCoinBoost, activeXpBoost, coinBoostExpiresAt, xpBoostExpiresAt }: TopBarProps) {
   const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
   const theme = useAppTheme();
 
@@ -81,15 +91,15 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
             {((activeCoinBoost ?? 0) > 0 || (activeXpBoost ?? 0) > 0) && (
               <View style={styles.boostRow}>
                 {(activeCoinBoost ?? 0) > 0 && (
-                  <View style={[styles.boostPill, { backgroundColor: theme.surfaceElevated }]}>
+                  <View style={[styles.boostPill, theme.isDark && { backgroundColor: 'rgba(212,134,10,0.55)' }]}>
                     <Image source={require('../../assets/img/MarketingIcon.png')} style={styles.boostIcon} contentFit="contain" />
-                    <Text style={styles.boostCoinText}>+{activeCoinBoost}%</Text>
+                    <Text style={[styles.boostCoinText, theme.isDark && { color: '#fff' }]}>+{activeCoinBoost}%{boostTimeLabel(coinBoostExpiresAt)}</Text>
                   </View>
                 )}
                 {(activeXpBoost ?? 0) > 0 && (
-                  <View style={[styles.boostPill, { backgroundColor: theme.surfaceElevated }]}>
+                  <View style={[styles.boostPill, theme.isDark && { backgroundColor: 'rgba(112,64,184,0.55)' }]}>
                     <Image source={require('../../assets/img/PRIcon.png')} style={styles.boostIcon} contentFit="contain" />
-                    <Text style={styles.boostXpText}>+{activeXpBoost}%</Text>
+                    <Text style={[styles.boostXpText, theme.isDark && { color: '#fff' }]}>+{activeXpBoost}%{boostTimeLabel(xpBoostExpiresAt)}</Text>
                   </View>
                 )}
               </View>
@@ -280,29 +290,33 @@ const styles = StyleSheet.create({
   boostPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
+    alignSelf: 'flex-start',
+    backgroundColor: '#fff',
     paddingVertical: 2,
-    paddingLeft: 4,
-    paddingRight: 6,
-    borderRadius: 9,
+    paddingLeft: 5,
+    paddingRight: 7,
+    borderRadius: 10,
     shadowColor: 'rgba(120,110,60,1)',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.10,
+    shadowOpacity: 0.12,
     shadowRadius: 2,
-    elevation: 1,
+    elevation: 2,
   },
+  boostPillCoin: {},
+  boostPillXp: {},
   boostIcon: {
     width: 13,
     height: 13,
   },
   boostCoinText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 11,
+    fontSize: 12,
     color: '#C28A22',
   },
   boostXpText: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 11,
+    fontSize: 12,
     color: '#7B4FBF',
   },
 });

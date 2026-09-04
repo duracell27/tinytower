@@ -583,6 +583,8 @@ export default function ShopScreen() {
           revenuePerMin={revenuePerMin}
           activeCoinBoost={now < coinBoostExpiresAt ? coinBoostPercent : 0}
           activeXpBoost={now < xpBoostExpiresAt ? xpBoostPercent : 0}
+          coinBoostExpiresAt={coinBoostExpiresAt}
+          xpBoostExpiresAt={xpBoostExpiresAt}
         />
 
         <ScrollView

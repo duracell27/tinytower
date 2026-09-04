@@ -1103,6 +1103,8 @@ export default function GameScreen() {
           revenuePerMin={revenuePerMin}
           activeCoinBoost={activeCoinBoost}
           activeXpBoost={activeXpBoost}
+          coinBoostExpiresAt={coinBoostExpiresAt}
+          xpBoostExpiresAt={xpBoostExpiresAt}
         />
 
         {!isOnboarding && !isTemporary && <QuickActionFAB
