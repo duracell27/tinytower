@@ -267,7 +267,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                 onPress={() => setTermsAccepted(!termsAccepted)}
                 style={styles.checkboxRow}
               >
-                <View style={[styles.checkbox, !termsAccepted && styles.checkboxUnchecked, !termsAccepted && isDark && { borderColor: '#3A4560' }]}>
+                <View style={[styles.checkbox, !termsAccepted && styles.checkboxUnchecked, !termsAccepted && isDark && { borderColor: '#3A4560', backgroundColor: '#252D42' }]}>
                   {termsAccepted && <View style={styles.checkmark} />}
                 </View>
                 <Text style={[styles.checkboxText, isDark && dk.checkText]}>
