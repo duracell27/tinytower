@@ -276,8 +276,18 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         {(isAuthenticated || hasLastAccount) && (
           <View style={styles.continueRow}>
             <Pressable
+              onPress={isAuthenticated ? () => useAuthStore.getState().logout() : clearLastPlayer}
+              style={({ pressed }) => [styles.trashButton, pressed && { opacity: 0.75 }]}
+            >
+              <Svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <Path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                <Path d="M10 11v6M14 11v6" />
+              </Svg>
+            </Pressable>
+
+            <Pressable
               onPress={handleMainAction}
-              style={({ pressed }) => [styles.continueButton, { flex: 1 }, pressed && { opacity: 0.88 }]}
+              style={({ pressed }) => [styles.continueButton, pressed && { opacity: 0.88 }]}
             >
               <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.continueGradient}>
                 <PlayerAvatar level={playerLevel} size={36} />
@@ -299,16 +309,6 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
                   </Svg>
                 )}
               </LinearGradient>
-            </Pressable>
-
-            <Pressable
-              onPress={isAuthenticated ? () => useAuthStore.getState().logout() : clearLastPlayer}
-              style={({ pressed }) => [styles.trashButton, pressed && { opacity: 0.75 }]}
-            >
-              <Svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <Path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
-                <Path d="M10 11v6M14 11v6" />
-              </Svg>
             </Pressable>
           </View>
         )}
@@ -523,14 +523,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 22,
     elevation: 8,
-    overflow: 'hidden',
   },
   continueGradient: {
     height: 66,
+    borderRadius: 20,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    overflow: 'hidden',
   },
   continueMeta: {
     flex: 1,
@@ -760,19 +761,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   continueRow: {
-    flexDirection: 'row',
-    gap: 10,
-    alignItems: 'stretch',
+    position: 'relative',
+    paddingTop: 18,
   },
   trashButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    position: 'absolute',
+    top: -22,
+    left: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.4)',
     backgroundColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'center',
+    zIndex: 1,
   },
 });
