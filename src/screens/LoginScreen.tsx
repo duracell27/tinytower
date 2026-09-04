@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface LoginScreenProps {
   onSuccess: () => void;
@@ -58,6 +59,25 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
   const isLogin = tab === 'login';
   const isLoading = useAuthStore((s) => s.isLoading);
+  const { isDark } = useAppTheme();
+
+  const dk = {
+    card:        { backgroundColor: '#1A2338' },
+    title:       { color: '#D8E4F0' },
+    subtitle:    { color: '#7A8EA8' },
+    tabBar:      { backgroundColor: '#252D42' },
+    tabActive:   { backgroundColor: '#2E3B58' },
+    tabText:     { color: '#5A6A80' },
+    tabTextActive:{ color: '#D8E4F0' },
+    label:       { color: '#7A8EA8' },
+    input:       { backgroundColor: '#252D42', borderColor: '#3A4560', color: '#D8E4F0' },
+    eyeBorder:   { borderColor: '#4A5A70' },
+    eyeDot:      { backgroundColor: '#4A5A70' },
+    forgotText:  { color: '#5BAA52' },
+    checkText:   { color: '#7A8EA8' },
+    google:      { backgroundColor: '#252D42', borderColor: '#3A4560' },
+    socialLabel: { color: '#D8E4F0' },
+  };
 
   const handleSubmit = async () => {
     setError('');
@@ -127,8 +147,8 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
       />
 
       {/* Back button */}
-      <Pressable onPress={onBack} style={styles.backButton}>
-        <Text style={styles.backArrow}>{'‹'}</Text>
+      <Pressable onPress={onBack} style={[styles.backButton, isDark && { backgroundColor: 'rgba(18,28,50,0.90)', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1 }]}>
+        <Text style={[styles.backArrow, isDark && { color: '#D8E4F0' }]}>{'‹'}</Text>
       </Pressable>
 
       {/* Centered card */}
@@ -142,32 +162,32 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.card}>
+          <View style={[styles.card, isDark && dk.card]}>
             {/* Title */}
-            <Text style={styles.cardTitle}>
+            <Text style={[styles.cardTitle, isDark && dk.title]}>
               {isLogin ? t('login.welcomeBack.title') : t('login.createAccount.title')}
             </Text>
-            <Text style={styles.cardSubtitle}>
+            <Text style={[styles.cardSubtitle, isDark && dk.subtitle]}>
               {isLogin
                 ? t('login.welcomeBack.subtitle')
                 : t('login.createAccount.subtitle')}
             </Text>
 
             {/* Tabs */}
-            <View style={styles.tabBar}>
+            <View style={[styles.tabBar, isDark && dk.tabBar]}>
               <Pressable
                 onPress={() => handleTabSwitch('login')}
-                style={[styles.tab, isLogin && styles.tabActive]}
+                style={[styles.tab, isLogin && styles.tabActive, isLogin && isDark && dk.tabActive]}
               >
-                <Text style={[styles.tabText, isLogin && styles.tabTextActive]}>
+                <Text style={[styles.tabText, isDark && dk.tabText, isLogin && styles.tabTextActive, isLogin && isDark && dk.tabTextActive]}>
                   {t('login.tabs.login')}
                 </Text>
               </Pressable>
               <Pressable
                 onPress={() => handleTabSwitch('register')}
-                style={[styles.tab, !isLogin && styles.tabActive]}
+                style={[styles.tab, !isLogin && styles.tabActive, !isLogin && isDark && dk.tabActive]}
               >
-                <Text style={[styles.tabText, !isLogin && styles.tabTextActive]}>
+                <Text style={[styles.tabText, isDark && dk.tabText, !isLogin && styles.tabTextActive, !isLogin && isDark && dk.tabTextActive]}>
                   {t('login.tabs.register')}
                 </Text>
               </Pressable>
@@ -183,11 +203,11 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
             {/* Player name (register only) */}
             {!isLogin && (
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>{t('login.labels.playerName')}</Text>
+                <Text style={[styles.label, isDark && dk.label]}>{t('login.labels.playerName')}</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, isDark && dk.input]}
                   placeholder={t('login.placeholders.playerName')}
-                  placeholderTextColor="#B7B3A2"
+                  placeholderTextColor={isDark ? '#4A5A70' : '#B7B3A2'}
                   value={playerName}
                   onChangeText={setPlayerName}
                   autoCapitalize="words"
@@ -198,11 +218,11 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
             {/* Email */}
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>{t('login.labels.email')}</Text>
+              <Text style={[styles.label, isDark && dk.label]}>{t('login.labels.email')}</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, isDark && dk.input]}
                 placeholder="you@example.com"
-                placeholderTextColor="#B7B3A2"
+                placeholderTextColor={isDark ? '#4A5A70' : '#B7B3A2'}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -213,12 +233,12 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
             {/* Password */}
             <View style={[styles.fieldGroup, { marginBottom: 10 }]}>
-              <Text style={styles.label}>{t('login.labels.password')}</Text>
+              <Text style={[styles.label, isDark && dk.label]}>{t('login.labels.password')}</Text>
               <View style={styles.passwordWrap}>
                 <TextInput
-                  style={[styles.input, { paddingRight: 48 }]}
+                  style={[styles.input, { paddingRight: 48 }, isDark && dk.input]}
                   placeholder={t('login.placeholders.password')}
-                  placeholderTextColor="#B7B3A2"
+                  placeholderTextColor={isDark ? '#4A5A70' : '#B7B3A2'}
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
@@ -228,8 +248,8 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeButton}
                 >
-                  <View style={[styles.eyeShape, showPassword && styles.eyeShapeActive]}>
-                    <View style={styles.eyeDot} />
+                  <View style={[styles.eyeShape, isDark && dk.eyeBorder, showPassword && styles.eyeShapeActive]}>
+                    <View style={[styles.eyeDot, isDark && dk.eyeDot]} />
                   </View>
                 </Pressable>
               </View>
@@ -239,7 +259,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
             {isLogin ? (
               <View style={styles.forgotWrap}>
                 <Pressable>
-                  <Text style={styles.forgotText}>{t('login.forgotPassword')}</Text>
+                  <Text style={[styles.forgotText, isDark && dk.forgotText]}>{t('login.forgotPassword')}</Text>
                 </Pressable>
               </View>
             ) : (
@@ -247,10 +267,10 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                 onPress={() => setTermsAccepted(!termsAccepted)}
                 style={styles.checkboxRow}
               >
-                <View style={[styles.checkbox, !termsAccepted && styles.checkboxUnchecked]}>
+                <View style={[styles.checkbox, !termsAccepted && styles.checkboxUnchecked, !termsAccepted && isDark && { borderColor: '#3A4560' }]}>
                   {termsAccepted && <View style={styles.checkmark} />}
                 </View>
-                <Text style={styles.checkboxText}>
+                <Text style={[styles.checkboxText, isDark && dk.checkText]}>
                   {t('login.terms.accept')}
                   <Text style={styles.checkboxLink}>{t('login.terms.termsOfUse')}</Text>
                   {t('login.terms.and')}
@@ -260,9 +280,9 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
             )}
 
             {/* Submit button */}
-            <Pressable onPress={handleSubmit} style={styles.submitButton} disabled={isLoading}>
+            <Pressable onPress={handleSubmit} style={[styles.submitButton, isDark && { borderColor: 'rgba(255,255,255,0.15)', shadowColor: 'rgba(20,60,20,1)' }]} disabled={isLoading}>
               <LinearGradient
-                colors={['#62C84F', '#3FA535']}
+                colors={isDark ? ['#2E7228', '#1E5018'] : ['#62C84F', '#3FA535']}
                 style={styles.submitGradient}
               >
                 {isLoading ? (
@@ -277,16 +297,16 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
             {/* Divider */}
             <View style={styles.dividerRow}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>{t('common:actions.or')}</Text>
-              <View style={styles.dividerLine} />
+              <View style={[styles.dividerLine, isDark && { backgroundColor: '#2E3B58' }]} />
+              <Text style={[styles.dividerText, isDark && { color: '#4A5A70' }]}>{t('common:actions.or')}</Text>
+              <View style={[styles.dividerLine, isDark && { backgroundColor: '#2E3B58' }]} />
             </View>
 
             {/* Social buttons */}
             <View style={styles.socialRow}>
-              <Pressable onPress={onGoogle} style={styles.googleButton}>
+              <Pressable onPress={onGoogle} style={[styles.googleButton, isDark && dk.google]}>
                 <GoogleIcon />
-                <Text style={styles.socialLabel}>Google</Text>
+                <Text style={[styles.socialLabel, isDark && dk.socialLabel]}>Google</Text>
               </Pressable>
               <Pressable onPress={onApple} style={styles.appleButton}>
                 <Text style={styles.appleIcon}>{''}</Text>

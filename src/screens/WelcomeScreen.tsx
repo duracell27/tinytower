@@ -17,6 +17,7 @@ import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
+import { useAppTheme } from '../hooks/useAppTheme';
 import { getUserIcon } from '../utils/userIcon';
 import { formatNum } from '../utils/format';
 import { fetchGlobalStats, type GlobalStats } from '../services/api';
@@ -69,6 +70,8 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       fetchGlobalStats().then(setGlobalStats).catch(() => {});
     }
   }, [isAuthenticated]);
+
+  const { isDark } = useAppTheme();
 
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [password, setPassword] = useState('');
@@ -154,39 +157,39 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
 
       {/* Speech bubble */}
       <View style={styles.bubbleWrapper}>
-        <View style={styles.bubble}>
+        <View style={[styles.bubble, isDark && { backgroundColor: 'rgba(20,30,52,0.93)' }]}>
           <View style={styles.bubbleContent}>
-            <Text style={styles.bubbleText}>{t('welcome.bubble')}</Text>
+            <Text style={[styles.bubbleText, isDark && { color: '#D8E4F0' }]}>{t('welcome.bubble')}</Text>
             <Image
               source={require('../../assets/img/coin.png')}
               style={{ width: 13, height: 13 }}
               contentFit="contain"
             />
           </View>
-          <View style={styles.bubbleTail} />
+          <View style={[styles.bubbleTail, isDark && { backgroundColor: 'rgba(20,30,52,0.93)' }]} />
         </View>
       </View>
 
       {/* Personal stat chips — only for authenticated player */}
       {showChips && (
         <View style={styles.chipsContainer}>
-          <View style={styles.chip}>
+          <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Image source={require('../../assets/img/coin.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
-            <Text style={styles.chipValue}>{formatNum(balance)}</Text>
+            <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{formatNum(balance)}</Text>
           </View>
-          <View style={styles.chip}>
+          <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Image source={require('../../assets/img/diamond.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
-            <Text style={styles.chipValue}>{gems}</Text>
+            <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{gems}</Text>
           </View>
-          <View style={styles.chip}>
+          <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <View style={styles.floorsIconWrap}>
               {(['#6FBF46', '#8FD86A', '#6FBF46'] as const).map((c, i) => (
                 <View key={i} style={[styles.floorBar, { backgroundColor: c }]} />
               ))}
             </View>
             <View>
-              <Text style={styles.chipValue}>{floorCount}</Text>
-              <Text style={styles.floorsLabel}>{t('welcome.chips.floorsLabel')}</Text>
+              <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{floorCount}</Text>
+              <Text style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</Text>
             </View>
           </View>
         </View>
@@ -195,29 +198,29 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       {/* Global stat chips — shown when not authenticated */}
       {!isAuthenticated && (
         <View style={styles.chipsContainer}>
-          <View style={styles.chip}>
+          <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Text style={styles.chipStatEmoji}>👥</Text>
             <View>
-              <Text style={styles.chipValue}>{globalStats ? formatNum(globalStats.players) : '—'}</Text>
-              <Text style={styles.floorsLabel}>{t('welcome.chips.playersLabel')}</Text>
+              <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.players) : '—'}</Text>
+              <Text style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.playersLabel')}</Text>
             </View>
           </View>
-          <View style={styles.chip}>
+          <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <View style={styles.floorsIconWrap}>
               {(['#6FBF46', '#8FD86A', '#6FBF46'] as const).map((c, i) => (
                 <View key={i} style={[styles.floorBar, { backgroundColor: c }]} />
               ))}
             </View>
             <View>
-              <Text style={styles.chipValue}>{globalStats ? formatNum(globalStats.floors) : '—'}</Text>
-              <Text style={styles.floorsLabel}>{t('welcome.chips.floorsLabel')}</Text>
+              <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.floors) : '—'}</Text>
+              <Text style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</Text>
             </View>
           </View>
-          <View style={styles.chip}>
+          <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Text style={styles.chipStatEmoji}>🏙️</Text>
             <View>
-              <Text style={styles.chipValue}>{globalStats ? formatNum(globalStats.cities) : '—'}</Text>
-              <Text style={styles.floorsLabel}>{t('welcome.chips.citiesLabel')}</Text>
+              <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.cities) : '—'}</Text>
+              <Text style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.citiesLabel')}</Text>
             </View>
           </View>
         </View>
@@ -235,15 +238,15 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <Pressable style={styles.promptBackdrop} onPress={() => setShowPasswordPrompt(false)} />
-          <View style={styles.promptCard}>
+          <View style={[styles.promptCard, isDark && { backgroundColor: '#1E2840' }]}>
             <PlayerAvatar level={playerLevel} size={52} />
-            <Text style={styles.promptTitle}>{lastPlayer?.playerName}</Text>
-            <Text style={styles.promptEmail}>{lastPlayer?.email}</Text>
+            <Text style={[styles.promptTitle, isDark && { color: '#D8E4F0' }]}>{lastPlayer?.playerName}</Text>
+            <Text style={[styles.promptEmail, isDark && { color: '#7A8EA8' }]}>{lastPlayer?.email}</Text>
 
             <TextInput
-              style={styles.promptInput}
+              style={[styles.promptInput, isDark && { backgroundColor: '#252D42', borderColor: '#3A4560', color: '#D8E4F0' }]}
               placeholder={t('welcome.passwordPrompt.placeholder')}
-              placeholderTextColor="#B7B3A2"
+              placeholderTextColor={isDark ? '#5A6A80' : '#B7B3A2'}
               secureTextEntry
               value={password}
               onChangeText={(t) => { setPassword(t); setError(''); }}
@@ -263,7 +266,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
             </Pressable>
 
             <Pressable onPress={() => setShowPasswordPrompt(false)} style={styles.promptCancel}>
-              <Text style={styles.promptCancelText}>{t('common:actions.cancel')}</Text>
+              <Text style={[styles.promptCancelText, isDark && { color: '#7A8EA8' }]}>{t('common:actions.cancel')}</Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -277,7 +280,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
           <View style={styles.continueRow}>
             <Pressable
               onPress={isAuthenticated ? () => useAuthStore.getState().logout() : clearLastPlayer}
-              style={({ pressed }) => [styles.trashButton, pressed && { opacity: 0.75 }]}
+              style={({ pressed }) => [styles.trashButton, isDark && { backgroundColor: 'rgba(18,28,50,0.80)', borderColor: 'rgba(255,255,255,0.18)' }, pressed && { opacity: 0.75 }]}
             >
               <Svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                 <Path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
@@ -287,9 +290,9 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
 
             <Pressable
               onPress={handleMainAction}
-              style={({ pressed }) => [styles.continueButton, pressed && { opacity: 0.88 }]}
+              style={({ pressed }) => [styles.continueButton, isDark && { borderColor: 'rgba(255,255,255,0.22)', shadowColor: 'rgba(20,60,20,1)' }, pressed && { opacity: 0.88 }]}
             >
-              <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.continueGradient}>
+              <LinearGradient colors={isDark ? ['#2E7228', '#1E5018'] : ['#62C84F', '#3FA535']} style={styles.continueGradient}>
                 <PlayerAvatar level={playerLevel} size={36} />
                 <View style={styles.continueMeta}>
                   <Text style={styles.continueName}>{activePlayerName}</Text>
@@ -319,7 +322,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
             onPress={handleMainAction}
             style={({ pressed }) => [styles.playButton, pressed && { opacity: 0.88 }]}
           >
-            <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.playButtonGradient}>
+            <LinearGradient colors={isDark ? ['#2E7228', '#1E5018'] : ['#62C84F', '#3FA535']} style={styles.playButtonGradient}>
               <View style={styles.playTriangle} />
               <Text style={styles.playButtonText}>{t('welcome.playButton')}</Text>
             </LinearGradient>
@@ -327,18 +330,18 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         )}
 
         <View style={styles.secondaryRow}>
-          <Pressable onPress={onLogin} style={styles.secondaryButton}>
-            <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="#2C4A2A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <Pressable onPress={onLogin} style={[styles.secondaryButton, isDark && { backgroundColor: 'rgba(18,28,50,0.90)', borderColor: 'rgba(255,255,255,0.22)' }]}>
+            <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke={isDark ? '#A0C0E0' : '#2C4A2A'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <Circle cx={12} cy={8} r={4} />
               <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </Svg>
-            <Text style={styles.secondaryLabel}>{t('common:actions.login')}</Text>
+            <Text style={[styles.secondaryLabel, isDark && { color: '#D8E4F0' }]}>{t('common:actions.login')}</Text>
           </Pressable>
-          <Pressable onPress={onRegister} style={styles.secondaryButton}>
-            <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="#2C4A2A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <Pressable onPress={onRegister} style={[styles.secondaryButton, isDark && { backgroundColor: 'rgba(18,28,50,0.90)', borderColor: 'rgba(255,255,255,0.22)' }]}>
+            <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke={isDark ? '#A0C0E0' : '#2C4A2A'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <Path d="M12 5v14M5 12h14" />
             </Svg>
-            <Text style={styles.secondaryLabel}>{t('common:actions.register')}</Text>
+            <Text style={[styles.secondaryLabel, isDark && { color: '#D8E4F0' }]}>{t('common:actions.register')}</Text>
           </Pressable>
         </View>
 
