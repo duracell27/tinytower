@@ -25,10 +25,16 @@ export default function CityScreen() {
   const floors = useGameStore((s) => s.floors);
   const workers = useGameStore((s) => s.workers);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
-  const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
-  const businessUpgrades = useGameStore((s) => s.businessUpgrades);
-  const floorStars       = useGameStore((s) => s.floorStars);
+  const coinBonusPercent   = useGameStore((s) => s.coinBonusPercent);
+  const businessUpgrades   = useGameStore((s) => s.businessUpgrades);
+  const floorStars         = useGameStore((s) => s.floorStars);
+  const coinBoostPercent   = useGameStore((s) => s.coinBoostPercent);
+  const xpBoostPercent     = useGameStore((s) => s.xpBoostPercent);
+  const coinBoostExpiresAt = useGameStore((s) => s.coinBoostExpiresAt);
+  const xpBoostExpiresAt   = useGameStore((s) => s.xpBoostExpiresAt);
   const now = useGameClock(60_000);
+  const activeCoinBoost = now < coinBoostExpiresAt ? coinBoostPercent : 0;
+  const activeXpBoost   = now < xpBoostExpiresAt   ? xpBoostPercent   : 0;
   const revenuePerMin = React.useMemo(
     () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars),
     [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars],
@@ -45,6 +51,8 @@ export default function CityScreen() {
           coins={formatNum(balance)}
           gems={formatNum(gems)}
           revenuePerMin={revenuePerMin}
+          activeCoinBoost={activeCoinBoost}
+          activeXpBoost={activeXpBoost}
         />
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} style={styles.scrollView}>
           {/* Hero */}

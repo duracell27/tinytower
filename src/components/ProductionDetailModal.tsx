@@ -60,8 +60,11 @@ export default function ProductionDetailModal() {
   const floorStars = useGameStore((s) => s.floorStars);
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const vehicles = useGameStore((s) => s.vehicles);
-  const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
+  const coinBonusPercent   = useGameStore((s) => s.coinBonusPercent);
+  const coinBoostPercent   = useGameStore((s) => s.coinBoostPercent);
+  const coinBoostExpiresAt = useGameStore((s) => s.coinBoostExpiresAt);
   const balance = useGameStore((s) => s.balance);
+  const activeCoinBoost = Date.now() < coinBoostExpiresAt ? coinBoostPercent : 0;
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
 
   // Animation hooks — must come before early returns
@@ -150,7 +153,7 @@ export default function ProductionDetailModal() {
         typeConfig.batchValue *
           (1 + vb.baseCoinBoostPercent / 100) *
           starValueMult *
-          (1 + (coinBonusPercent + specialistBonusPercent + categoryBonus) / 100) *
+          (1 + (coinBonusPercent + activeCoinBoost + specialistBonusPercent + categoryBonus) / 100) *
           multiplier,
       )
     : 0;
@@ -326,6 +329,14 @@ export default function ProductionDetailModal() {
                 isDark={isDark}
                 label={t('productionDetail.revenue.global')}
                 value={<Text style={[styles.rowValue, { color: theme.text }]}>+{coinBonusPercent}%</Text>}
+              />
+            )}
+
+            {activeCoinBoost > 0 && (
+              <BreakdownRow
+                isDark={isDark}
+                label="💰 Marketing boost"
+                value={<Text style={[styles.rowValue, { color: '#F5A623' }]}>+{activeCoinBoost}%</Text>}
               />
             )}
 

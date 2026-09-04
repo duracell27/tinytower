@@ -369,12 +369,15 @@ export default function ProductionCard({
   const multiplier = worker && floorType
     ? getRevenueMultiplier(worker, floorType, production.typeId)
     : 1;
-  const coinBonusPercent = useGameStore(s => s.coinBonusPercent);
+  const coinBonusPercent   = useGameStore(s => s.coinBonusPercent);
+  const coinBoostPercent   = useGameStore(s => s.coinBoostPercent);
+  const coinBoostExpiresAt = useGameStore(s => s.coinBoostExpiresAt);
   const businessUpgrades = useGameStore(s => s.businessUpgrades);
   const specialistBonusPercent = Math.round((specialistBonus ?? 0) * 100);
   const categoryBonus = floorType ? (businessUpgrades?.[floorType as keyof typeof businessUpgrades] ?? 0) * 5 : 0;
+  const activeCoinBoost = Date.now() < coinBoostExpiresAt ? coinBoostPercent : 0;
   const effectiveRevenue = typeConfig
-    ? Math.floor(typeConfig.batchValue * (1 + vb.baseCoinBoostPercent / 100) * starMult.value * (1 + (coinBonusPercent + specialistBonusPercent + categoryBonus) / 100) * multiplier)
+    ? Math.floor(typeConfig.batchValue * (1 + vb.baseCoinBoostPercent / 100) * starMult.value * (1 + (coinBonusPercent + activeCoinBoost + specialistBonusPercent + categoryBonus) / 100) * multiplier)
     : 0;
   const hasMultiplier = multiplier > 1;
 

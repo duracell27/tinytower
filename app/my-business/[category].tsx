@@ -71,7 +71,6 @@ export default function BusinessCategoryScreen() {
   const upgradeBusinessCategory  = useGameStore((s) => s.upgradeBusinessCategory);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const showTokenInsufficient     = useGameStore((s) => s.showTokenInsufficient);
-
   const theme = useAppTheme();
   const { isDark } = theme;
   const btnGradColors = isDark ? TYPE_DARK_GRADIENTS[ft] : TYPE_HERO_GRADIENTS[ft];
@@ -310,7 +309,6 @@ const styles = StyleSheet.create({
   },
   builtIcon: { width: 14, height: 14 },
   builtText: { fontFamily: 'Nunito_700Bold', fontSize: 12 },
-
   /* Progress */
   progressCard: {
     marginHorizontal: 20, marginTop: 12, borderRadius: 16,

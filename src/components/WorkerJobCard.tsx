@@ -19,6 +19,7 @@ import { getWorkerMood } from '../../shared/engine/workerUtils';
 import type { Worker, Floor } from '../../shared/types';
 import WorkerAvatar from './WorkerAvatar';
 import { GemIcon } from './CurrencyIcons';
+import { FLOOR_TYPE_SCHEMES } from './FloorCard';
 
 interface WorkerJobCardProps {
   worker: Worker;
@@ -105,13 +106,19 @@ export default function WorkerJobCard({
   const theme = useAppTheme();
   const { isDark } = theme;
 
-  const ft = gameConfig.floorTypes[worker.floorType];
-  const accent = ft?.accent ?? '#888';
-  const floorAccent = gameConfig.floorTypes[floorType]?.accent ?? '#888';
+  const workerScheme = FLOOR_TYPE_SCHEMES[worker.floorType];
+  const accent = isDark
+    ? (workerScheme?.dark.nameColor ?? '#888')
+    : (workerScheme?.nameColor ?? '#888');
+  const floorScheme = FLOOR_TYPE_SCHEMES[floorType];
+  const floorAccent = isDark
+    ? (floorScheme?.dark.nameColor ?? '#888')
+    : (floorScheme?.nameColor ?? '#888');
   let dreamAccent = accent;
-  for (const floorTypeEntry of Object.values(gameConfig.floorTypes)) {
+  for (const [ftKey, floorTypeEntry] of Object.entries(gameConfig.floorTypes)) {
     if (floorTypeEntry.businesses.some((b) => b.dreamJobs.includes(worker.dreamJob))) {
-      dreamAccent = floorTypeEntry.accent ?? accent;
+      const dScheme = FLOOR_TYPE_SCHEMES[ftKey];
+      dreamAccent = isDark ? (dScheme?.dark.nameColor ?? accent) : (dScheme?.nameColor ?? accent);
       break;
     }
   }

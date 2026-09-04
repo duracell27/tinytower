@@ -599,9 +599,9 @@ export default function GameScreen() {
   const bottomFloorInfo = React.useMemo(
     () =>
       bottomFloor !== null && quickActionMode !== null
-        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers, coinBonusPercent, openedFloorTypes ?? {}, businessUpgrades ?? {}, floorStars ?? {}, vehicleSpeedBonuses)
+        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers, coinBonusPercent + activeCoinBoost, openedFloorTypes ?? {}, businessUpgrades ?? {}, floorStars ?? {}, vehicleSpeedBonuses)
         : null,
-    [bottomFloor, quickActionMode, now, workers, coinBonusPercent, openedFloorTypes, businessUpgrades, floorStars, vehicleSpeedBonuses],
+    [bottomFloor, quickActionMode, now, workers, coinBonusPercent, activeCoinBoost, openedFloorTypes, businessUpgrades, floorStars, vehicleSpeedBonuses],
   );
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
