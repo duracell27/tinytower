@@ -20,6 +20,7 @@ import { WAREHOUSE_UPGRADE_COSTS } from '../../shared/config/warehouseUpgradeCon
 import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import type { Vehicles } from '../../shared/types';
 import { useOnboardingStore } from './onboardingStore';
+import type { BoostPackage } from '../../shared/config/boostConfig';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -260,6 +261,7 @@ interface GameActions {
   setTaskReward: (payload: PendingTaskReward) => void;
   clearTaskReward: () => void;
   shopPurchase: (pack: import('../data/shopPacks').ShopPack) => void;
+  buyBoost: (pkg: BoostPackage) => void;
   clearPurchaseSuccess: () => void;
   setPendingDeliverAll: (summary: DeliverAllSummary) => void;
   clearPendingDeliverAll: () => void;
@@ -485,6 +487,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
+  },
+  buyBoost: (pkg) => {
+    executeCommand(get, set, {
+      id: uuid(),
+      type: 'buy_boost',
+      boostType: pkg.boostType,
+      percent: pkg.percent,
+      durationMs: pkg.durationMs,
+      gemCost: pkg.gemCost,
+      timestamp: clock.now(),
+    });
   },
   upgradeBusinessCategory: (floorType) => {
     executeCommand(get, set, {
