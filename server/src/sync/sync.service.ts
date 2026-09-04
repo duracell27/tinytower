@@ -118,8 +118,8 @@ export class SyncService {
         result = processCommand(
           gameState, command, gameConfig, command.timestamp, player.playerLevel,
           {
-            coinPercent: gameState.coinBonusPercent,
-            xpPercent: gameState.xpBonusPercent,
+            coinPercent: gameState.coinBonusPercent + (serverNow < gameState.coinBoostExpiresAt ? (gameState.coinBoostPercent ?? 0) : 0),
+            xpPercent:   gameState.xpBonusPercent   + (serverNow < gameState.xpBoostExpiresAt   ? (gameState.xpBoostPercent   ?? 0) : 0),
             ...computeVehicleBonuses(gameState.vehicles),
           },
         );
@@ -181,7 +181,7 @@ export class SyncService {
       gameConfig,
       serverNow,
       gameState.businessUpgrades,
-      gameState.coinBonusPercent,
+      gameState.coinBonusPercent + (serverNow < gameState.coinBoostExpiresAt ? (gameState.coinBoostPercent ?? 0) : 0),
       gameState.floorStars,
     );
     const currentOpenedFloors = gameConfig.floors.length + Object.keys(gameState.openedFloorTypes ?? {}).length;
@@ -329,6 +329,10 @@ export class SyncService {
             vehicleArmoredTruck:  gameState.vehicles.armored_truck,
             vehicleDeliveryTruck: gameState.vehicles.delivery_truck,
             vehicleBus:           gameState.vehicles.bus,
+            coinBoostPercent:   gameState.coinBoostPercent   ?? 0,
+            xpBoostPercent:     gameState.xpBoostPercent     ?? 0,
+            coinBoostExpiresAt: BigInt(gameState.coinBoostExpiresAt ?? 0),
+            xpBoostExpiresAt:   BigInt(gameState.xpBoostExpiresAt   ?? 0),
             dailyTasksProgress:     gameState.dailyTasks.progress,
             dailyTasksClaimed:      gameState.dailyTasks.claimed,
             dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
@@ -373,6 +377,10 @@ export class SyncService {
             vehicleArmoredTruck:  gameState.vehicles.armored_truck,
             vehicleDeliveryTruck: gameState.vehicles.delivery_truck,
             vehicleBus:           gameState.vehicles.bus,
+            coinBoostPercent:   gameState.coinBoostPercent   ?? 0,
+            xpBoostPercent:     gameState.xpBoostPercent     ?? 0,
+            coinBoostExpiresAt: BigInt(gameState.coinBoostExpiresAt ?? 0),
+            xpBoostExpiresAt:   BigInt(gameState.xpBoostExpiresAt   ?? 0),
             dailyTasksProgress:     gameState.dailyTasks.progress,
             dailyTasksClaimed:      gameState.dailyTasks.claimed,
             dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
@@ -679,6 +687,10 @@ export class SyncService {
       },
       coinBonusPercent: s?.coinBonusPercent ?? 0,
       xpBonusPercent:   s?.xpBonusPercent   ?? 0,
+      coinBoostPercent:   s?.coinBoostPercent   ?? 0,
+      xpBoostPercent:     s?.xpBoostPercent     ?? 0,
+      coinBoostExpiresAt: Number(s?.coinBoostExpiresAt ?? 0),
+      xpBoostExpiresAt:   Number(s?.xpBoostExpiresAt   ?? 0),
       dailyFillLobbyUses: s?.dailyFillLobbyUses ?? 0,
       tokens: {
         green:  s?.tokenGreen  ?? 0,
