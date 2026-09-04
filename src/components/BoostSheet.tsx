@@ -96,16 +96,25 @@ export default function BoostSheet({ visible, onClose }: Props) {
   const scrimOpacity = useSharedValue(0);
   const startY       = useSharedValue(0);
 
-  const gems               = useGameStore((s) => s.gems);
-  const buyBoost           = useGameStore((s) => s.buyBoost);
+  const gems                      = useGameStore((s) => s.gems);
+  const buyBoost                  = useGameStore((s) => s.buyBoost);
+  const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const coinBoostPercent   = useGameStore((s) => s.coinBoostPercent);
   const xpBoostPercent     = useGameStore((s) => s.xpBoostPercent);
   const coinBoostExpiresAt = useGameStore((s) => s.coinBoostExpiresAt);
   const xpBoostExpiresAt   = useGameStore((s) => s.xpBoostExpiresAt);
 
-  const [pendingBoost, setPendingBoost]   = useState<BoostPackage | null>(null);
-  const [notEnoughGems, setNotEnoughGems] = useState<number | null>(null);
+  const [pendingBoost, setPendingBoost] = useState<BoostPackage | null>(null);
   const now = Date.now();
+
+  const handleNotEnough = (need: number) => {
+    // Close sheet first, then show GlobalOverlay popup after Modal is gone
+    close(() => {
+      setMounted(false);
+      onClose();
+      setTimeout(() => showInsufficientResources({ currency: 'gems', need, have: gems }), 450);
+    });
+  };
 
   const open = () => {
     setMounted(true);
@@ -183,15 +192,6 @@ export default function BoostSheet({ visible, onClose }: Props) {
               </View>
             </View>
 
-            {/* Not enough gems — fixed below header */}
-            {notEnoughGems !== null && (
-              <View style={[styles.notEnoughBanner, { backgroundColor: theme.surfaceDanger }]}>
-                <Text style={styles.notEnoughText}>
-                  💎 Not enough gems — need {notEnoughGems}, you have {gems}
-                </Text>
-              </View>
-            )}
-
             {/* Scrollable content */}
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
               <SectionRow label="💰 Coin Boost" percent={coinBoostPercent} expiresAt={coinBoostExpiresAt} now={now} isCoin />
@@ -199,8 +199,8 @@ export default function BoostSheet({ visible, onClose }: Props) {
                 {coinPackages.map((pkg) => (
                   <BoostCard
                     key={pkg.id} pkg={pkg} gems={gems} now={now}
-                    onBuy={() => { setNotEnoughGems(null); setPendingBoost(pkg); }}
-                    onNotEnough={() => setNotEnoughGems(pkg.gemCost)}
+                    onBuy={() => setPendingBoost(pkg)}
+                    onNotEnough={() => handleNotEnough(pkg.gemCost)}
                   />
                 ))}
               </View>
@@ -210,8 +210,8 @@ export default function BoostSheet({ visible, onClose }: Props) {
                 {xpPackages.map((pkg) => (
                   <BoostCard
                     key={pkg.id} pkg={pkg} gems={gems} now={now}
-                    onBuy={() => { setNotEnoughGems(null); setPendingBoost(pkg); }}
-                    onNotEnough={() => setNotEnoughGems(pkg.gemCost)}
+                    onBuy={() => setPendingBoost(pkg)}
+                    onNotEnough={() => handleNotEnough(pkg.gemCost)}
                   />
                 ))}
               </View>
@@ -287,11 +287,6 @@ const styles = StyleSheet.create({
   headerTitle:     { fontFamily: 'Fredoka_700Bold', fontSize: 20, flex: 1 },
   headerGemsRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   headerGemsText:  { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
-  notEnoughBanner: {
-    marginHorizontal: 16, marginBottom: 8,
-    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
-  },
-  notEnoughText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#C0392B', textAlign: 'center' },
   scrollContent:   { paddingHorizontal: 16, paddingBottom: 48, gap: 10 },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center',
