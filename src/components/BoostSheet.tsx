@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, Modal, Pressable, StyleSheet, Dimensions,
+  View, Text, Modal, Pressable, StyleSheet, Dimensions, ScrollView,
 } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
@@ -18,7 +18,7 @@ const TIMING = { duration: 360, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const CLOSE_THRESHOLD = 80;
 const CLOSE_VELOCITY  = 500;
 
-const DIAMOND = require('../../assets/img/diamond.png');
+const DIAMOND        = require('../../assets/img/diamond.png');
 const MARKETING_ICON = require('../../assets/img/MarketingIcon.png');
 const PR_ICON        = require('../../assets/img/PRIcon.png');
 
@@ -38,24 +38,21 @@ function boostTimeLabel(expiresAt: number, now: number): string | null {
   return `${h}h ${m}m left`;
 }
 
-function BoostCard({
-  pkg, gems, now, onBuy, onNotEnough,
-}: {
+function BoostCard({ pkg, gems, now, onBuy, onNotEnough }: {
   pkg: BoostPackage;
   gems: number;
   now: number;
   onBuy: () => void;
   onNotEnough: () => void;
 }) {
-  const theme = useAppTheme();
-  const isCoin   = pkg.boostType === 'coin';
-  const accent   = isCoin ? '#F5A623' : '#7B4FBF';
-  const accentBg = isCoin ? 'rgba(245,166,35,0.10)' : 'rgba(123,79,191,0.10)';
-  const canAfford = gems >= pkg.gemCost;
+  const theme   = useAppTheme();
+  const isCoin  = pkg.boostType === 'coin';
+  const accent  = isCoin ? '#F5A623' : (theme.isDark ? '#C08AF0' : '#7B4FBF');
+  const accentBg = isCoin ? 'rgba(245,166,35,0.12)' : (theme.isDark ? 'rgba(192,138,240,0.12)' : 'rgba(123,79,191,0.12)');
 
   return (
     <Pressable
-      onPress={canAfford ? onBuy : onNotEnough}
+      onPress={gems >= pkg.gemCost ? onBuy : onNotEnough}
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: theme.surface, width: CARD_W },
@@ -67,27 +64,33 @@ function BoostCard({
       </View>
       <Text style={[styles.cardPercent, { color: accent }]}>+{pkg.percent}%</Text>
       <Text style={[styles.cardDuration, { color: theme.textMuted }]}>30 hrs</Text>
-      <View style={[styles.cardPrice, { backgroundColor: canAfford ? accentBg : 'rgba(180,0,0,0.08)' }]}>
+      <View style={[styles.cardPrice, { backgroundColor: accentBg }]}>
         <Image source={DIAMOND} style={styles.diamond} contentFit="contain" />
-        <Text style={[styles.cardPriceText, { color: canAfford ? theme.text : '#B00000' }]}>{pkg.gemCost}</Text>
+        <Text style={[styles.cardPriceText, { color: theme.text }]}>{pkg.gemCost}</Text>
       </View>
     </Pressable>
   );
 }
 
-function ActiveBadge({ percent, expiresAt, now, isCoin }: {
-  percent: number; expiresAt: number; now: number; isCoin: boolean;
+function SectionRow({ label, percent, expiresAt, now, isCoin }: {
+  label: string; percent: number; expiresAt: number; now: number; isCoin: boolean;
 }) {
+  const theme    = useAppTheme();
   const timeLeft = boostTimeLabel(expiresAt, now);
-  if (!timeLeft) return null;
-  const accent = isCoin ? '#F5A623' : '#7B4FBF';
-  const bg     = isCoin ? 'rgba(245,166,35,0.12)' : 'rgba(123,79,191,0.12)';
+  const accent   = isCoin ? '#F5A623' : (theme.isDark ? '#C08AF0' : '#7B4FBF');
+  const bg       = isCoin ? 'rgba(245,166,35,0.12)' : (theme.isDark ? 'rgba(192,138,240,0.12)' : 'rgba(123,79,191,0.12)');
+
   return (
-    <View style={[styles.activeBadge, { backgroundColor: bg }]}>
-      <Image source={isCoin ? MARKETING_ICON : PR_ICON} style={styles.activeBadgeIcon} contentFit="contain" />
-      <Text style={[styles.activeBadgeText, { color: accent }]}>
-        +{percent}% active · {timeLeft}
-      </Text>
+    <View style={styles.sectionRow}>
+      <Text style={[styles.sectionLabel, { color: theme.text }]}>{label}</Text>
+      {timeLeft && (
+        <View style={[styles.activeBadge, { backgroundColor: bg }]}>
+          <Image source={isCoin ? MARKETING_ICON : PR_ICON} style={styles.activeBadgeIcon} contentFit="contain" />
+          <Text style={[styles.activeBadgeText, { color: accent }]}>
+            +{percent}% · {timeLeft}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -95,12 +98,12 @@ function ActiveBadge({ percent, expiresAt, now, isCoin }: {
 export default function BoostSheet({ visible, onClose }: Props) {
   const theme = useAppTheme();
   const [mounted, setMounted] = useState(false);
-  const translateY    = useSharedValue(SCREEN_HEIGHT);
-  const scrimOpacity  = useSharedValue(0);
-  const startY        = useSharedValue(0);
+  const translateY   = useSharedValue(SCREEN_HEIGHT);
+  const scrimOpacity = useSharedValue(0);
+  const startY       = useSharedValue(0);
 
-  const gems               = useGameStore((s) => s.gems);
-  const buyBoost           = useGameStore((s) => s.buyBoost);
+  const gems                   = useGameStore((s) => s.gems);
+  const buyBoost               = useGameStore((s) => s.buyBoost);
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const coinBoostPercent   = useGameStore((s) => s.coinBoostPercent);
   const xpBoostPercent     = useGameStore((s) => s.xpBoostPercent);
@@ -143,8 +146,8 @@ export default function BoostSheet({ visible, onClose }: Props) {
       }
     });
 
-  const sheetStyle  = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
-  const scrimStyle  = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
+  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
+  const scrimStyle = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
 
   const confirmBoost = () => {
     if (pendingBoost) { buyBoost(pendingBoost); setPendingBoost(null); }
@@ -163,58 +166,66 @@ export default function BoostSheet({ visible, onClose }: Props) {
             <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
           </Animated.View>
 
-          <GestureDetector gesture={pan}>
-            <Animated.View style={[styles.sheet, { backgroundColor: theme.surfaceCard }, sheetStyle]}>
-              {/* Handle */}
-              <View style={styles.handleRow}>
+          <Animated.View style={[styles.sheet, { backgroundColor: theme.surfaceCard }, sheetStyle]}>
+            {/* Handle — swipe to close */}
+            <GestureDetector gesture={pan}>
+              <View style={styles.handleArea}>
                 <View style={[styles.handle, { backgroundColor: theme.surfaceSub }]} />
               </View>
+            </GestureDetector>
 
-              {/* Header */}
-              <View style={styles.header}>
-                <Image source={MARKETING_ICON} style={styles.headerIcon} contentFit="contain" />
-                <View>
-                  <Text style={[styles.headerTitle, { color: theme.text }]}>Boosts</Text>
-                  <View style={styles.headerGems}>
-                    <GemIcon size={14} />
-                    <Text style={[styles.headerGemsText, { color: theme.textMuted }]}>{gems} gems</Text>
-                  </View>
-                </View>
+            {/* Header */}
+            <View style={styles.header}>
+              <Image source={MARKETING_ICON} style={styles.headerIcon} contentFit="contain" />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.headerTitle, { color: theme.text }]}>Boosts</Text>
               </View>
+              <View style={styles.headerGems}>
+                <GemIcon size={14} />
+                <Text style={[styles.headerGemsText, { color: theme.textMuted }]}>{gems} gems</Text>
+              </View>
+            </View>
 
-              {/* Coin boosts */}
-              <Text style={[styles.sectionLabel, { color: theme.text }]}>💰 Coin Boost</Text>
-              <ActiveBadge percent={coinBoostPercent} expiresAt={coinBoostExpiresAt} now={now} isCoin />
+            {/* Scrollable content */}
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+            >
+              <SectionRow
+                label="💰 Coin Boost"
+                percent={coinBoostPercent}
+                expiresAt={coinBoostExpiresAt}
+                now={now}
+                isCoin
+              />
               <View style={styles.grid}>
                 {coinPackages.map((pkg) => (
                   <BoostCard
-                    key={pkg.id}
-                    pkg={pkg}
-                    gems={gems}
-                    now={now}
+                    key={pkg.id} pkg={pkg} gems={gems} now={now}
                     onBuy={() => setPendingBoost(pkg)}
                     onNotEnough={() => showInsufficientResources({ currency: 'gems', need: pkg.gemCost, have: gems })}
                   />
                 ))}
               </View>
 
-              {/* XP boosts */}
-              <Text style={[styles.sectionLabel, { color: theme.text, marginTop: 16 }]}>⭐ XP Boost</Text>
-              <ActiveBadge percent={xpBoostPercent} expiresAt={xpBoostExpiresAt} now={now} isCoin={false} />
+              <SectionRow
+                label="⭐ XP Boost"
+                percent={xpBoostPercent}
+                expiresAt={xpBoostExpiresAt}
+                now={now}
+                isCoin={false}
+              />
               <View style={styles.grid}>
                 {xpPackages.map((pkg) => (
                   <BoostCard
-                    key={pkg.id}
-                    pkg={pkg}
-                    gems={gems}
-                    now={now}
+                    key={pkg.id} pkg={pkg} gems={gems} now={now}
                     onBuy={() => setPendingBoost(pkg)}
                     onNotEnough={() => showInsufficientResources({ currency: 'gems', need: pkg.gemCost, have: gems })}
                   />
                 ))}
               </View>
-            </Animated.View>
-          </GestureDetector>
+            </ScrollView>
+          </Animated.View>
 
           {/* Confirm modal */}
           {pendingBoost && (
@@ -222,7 +233,8 @@ export default function BoostSheet({ visible, onClose }: Props) {
               <Pressable style={StyleSheet.absoluteFill} onPress={() => setPendingBoost(null)} />
               <View style={[styles.confirmCard, { backgroundColor: theme.surface }]}>
                 <View style={[styles.confirmIconCircle, {
-                  backgroundColor: pendingBoost.boostType === 'coin' ? 'rgba(245,166,35,0.15)' : 'rgba(123,79,191,0.15)',
+                  backgroundColor: pendingBoost.boostType === 'coin'
+                    ? 'rgba(245,166,35,0.15)' : 'rgba(123,79,191,0.15)',
                 }]}>
                   <Image
                     source={pendingBoost.boostType === 'coin' ? MARKETING_ICON : PR_ICON}
@@ -263,41 +275,46 @@ const styles = StyleSheet.create({
   scrim: { backgroundColor: 'rgba(0,0,0,0.45)' },
   sheet: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    bottom: 0, left: 0, right: 0,
+    maxHeight: SCREEN_HEIGHT * 0.88,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    paddingHorizontal: 16,
-    paddingBottom: 48,
   },
-  handleRow:  { alignItems: 'center', paddingTop: 10, paddingBottom: 6 },
+  handleArea: { alignItems: 'center', paddingTop: 10, paddingBottom: 8 },
   handle:     { width: 40, height: 4, borderRadius: 2 },
-  header:     { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
-  headerIcon: { width: 40, height: 40 },
-  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
-  headerGems:  { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
-  headerGemsText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
-  sectionLabel: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, marginBottom: 6 },
-  activeBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
-    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5, marginBottom: 8,
+  header: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingBottom: 10,
   },
-  activeBadgeIcon: { width: 16, height: 16 },
-  activeBadgeText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP },
+  headerIcon:      { width: 36, height: 36 },
+  headerTitle:     { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
+  headerGems:      { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  headerGemsText:  { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
+  scrollContent:   { paddingHorizontal: 16, paddingBottom: 48, gap: 10 },
+  sectionRow: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between', marginTop: 8,
+  },
+  sectionLabel:    { fontFamily: 'Fredoka_600SemiBold', fontSize: 16 },
+  activeBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4,
+  },
+  activeBadgeIcon: { width: 14, height: 14 },
+  activeBadgeText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 12 },
+  grid:            { flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP },
   card: {
     borderRadius: 16, padding: 14, alignItems: 'center', gap: 6,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
   },
-  cardIconBg:   { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  cardIcon:     { width: 32, height: 32 },
-  cardPercent:  { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
-  cardDuration: { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
-  cardPrice:    { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
-  diamond:      { width: 14, height: 14 },
-  cardPriceText: { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
+  cardIconBg:    { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
+  cardIcon:      { width: 32, height: 32 },
+  cardPercent:   { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
+  cardDuration:  { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
+  cardPrice:     { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  diamond:       { width: 14, height: 14 },
+  cardPriceText: { fontFamily: 'Fredoka_700Bold', fontSize: 17 },
   confirmScrim: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center',
