@@ -108,11 +108,10 @@ export default function BoostSheet({ visible, onClose }: Props) {
   const now = Date.now();
 
   const handleNotEnough = (need: number) => {
-    // Close sheet first, then show GlobalOverlay popup after Modal is gone
     close(() => {
       setMounted(false);
       onClose();
-      setTimeout(() => showInsufficientResources({ currency: 'gems', need, have: gems }), 450);
+      showInsufficientResources({ currency: 'gems', need, have: gems });
     });
   };
 
