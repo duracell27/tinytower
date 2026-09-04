@@ -199,8 +199,7 @@ export function processCommand(
       };
     }
     case 'buy_boost':
-      // TODO: Engine logic for buy_boost will be implemented in Task 2
-      return { success: true, state };
+      return handleBuyBoost(state, command, now);
     default:
       const exhaustive: never = command;
       return { success: false, state, error: `Unknown command type: ${(exhaustive as any).type}` };
@@ -1113,6 +1112,38 @@ function handleClaimTutorialFinal(state: GameState): ProcessResult {
       balance: state.balance + FINAL_REWARD.coins,
       gems: state.gems + FINAL_REWARD.gems,
       tutorialTasks: { ...state.tutorialTasks, claimedFinal: true },
+    },
+  };
+}
+
+function handleBuyBoost(
+  state: GameState,
+  command: Extract<Command, { type: 'buy_boost' }>,
+  now: number,
+): ProcessResult {
+  if (state.gems < command.gemCost) {
+    return { success: false, state, error: 'Insufficient gems' };
+  }
+
+  let { coinBoostPercent, xpBoostPercent, coinBoostExpiresAt, xpBoostExpiresAt } = state;
+
+  if (command.boostType === 'coin') {
+    coinBoostPercent   = Math.min(300, coinBoostPercent + command.percent);
+    coinBoostExpiresAt = Math.max(now, coinBoostExpiresAt) + command.durationMs;
+  } else {
+    xpBoostPercent   = Math.min(300, xpBoostPercent + command.percent);
+    xpBoostExpiresAt = Math.max(now, xpBoostExpiresAt) + command.durationMs;
+  }
+
+  return {
+    success: true,
+    state: {
+      ...state,
+      gems: state.gems - command.gemCost,
+      coinBoostPercent,
+      xpBoostPercent,
+      coinBoostExpiresAt,
+      xpBoostExpiresAt,
     },
   };
 }
