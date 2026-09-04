@@ -6,7 +6,6 @@ import { Image } from 'expo-image';
 import Animated, {
   useAnimatedStyle, useSharedValue, withTiming, Easing, runOnJS,
 } from 'react-native-reanimated';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useGameStore } from '../stores/gameStore';
 import { BOOST_PACKAGES, BoostPackage } from '../../shared/config/boostConfig';
@@ -15,8 +14,6 @@ import { GemIcon } from './CurrencyIcons';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH  = Dimensions.get('window').width;
 const TIMING = { duration: 360, easing: Easing.bezier(0.4, 0, 0.2, 1) };
-const CLOSE_THRESHOLD = 80;
-const CLOSE_VELOCITY  = 500;
 
 const DIAMOND        = require('../../assets/img/diamond.png');
 const MARKETING_ICON = require('../../assets/img/MarketingIcon.png');
@@ -45,9 +42,9 @@ function BoostCard({ pkg, gems, now, onBuy, onNotEnough }: {
   onBuy: () => void;
   onNotEnough: () => void;
 }) {
-  const theme   = useAppTheme();
-  const isCoin  = pkg.boostType === 'coin';
-  const accent  = isCoin ? '#F5A623' : (theme.isDark ? '#C08AF0' : '#7B4FBF');
+  const theme  = useAppTheme();
+  const isCoin = pkg.boostType === 'coin';
+  const accent   = isCoin ? '#F5A623' : (theme.isDark ? '#C08AF0' : '#7B4FBF');
   const accentBg = isCoin ? 'rgba(245,166,35,0.12)' : (theme.isDark ? 'rgba(192,138,240,0.12)' : 'rgba(123,79,191,0.12)');
 
   return (
@@ -86,9 +83,7 @@ function SectionRow({ label, percent, expiresAt, now, isCoin }: {
       {timeLeft && (
         <View style={[styles.activeBadge, { backgroundColor: bg }]}>
           <Image source={isCoin ? MARKETING_ICON : PR_ICON} style={styles.activeBadgeIcon} contentFit="contain" />
-          <Text style={[styles.activeBadgeText, { color: accent }]}>
-            +{percent}% · {timeLeft}
-          </Text>
+          <Text style={[styles.activeBadgeText, { color: accent }]}>+{percent}% · {timeLeft}</Text>
         </View>
       )}
     </View>
@@ -100,17 +95,16 @@ export default function BoostSheet({ visible, onClose }: Props) {
   const [mounted, setMounted] = useState(false);
   const translateY   = useSharedValue(SCREEN_HEIGHT);
   const scrimOpacity = useSharedValue(0);
-  const startY       = useSharedValue(0);
 
-  const gems                   = useGameStore((s) => s.gems);
-  const buyBoost               = useGameStore((s) => s.buyBoost);
-  const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
+  const gems               = useGameStore((s) => s.gems);
+  const buyBoost           = useGameStore((s) => s.buyBoost);
   const coinBoostPercent   = useGameStore((s) => s.coinBoostPercent);
   const xpBoostPercent     = useGameStore((s) => s.xpBoostPercent);
   const coinBoostExpiresAt = useGameStore((s) => s.coinBoostExpiresAt);
   const xpBoostExpiresAt   = useGameStore((s) => s.xpBoostExpiresAt);
 
-  const [pendingBoost, setPendingBoost] = useState<BoostPackage | null>(null);
+  const [pendingBoost, setPendingBoost]   = useState<BoostPackage | null>(null);
+  const [notEnoughGems, setNotEnoughGems] = useState<number | null>(null);
   const now = Date.now();
 
   const open = () => {
@@ -135,17 +129,6 @@ export default function BoostSheet({ visible, onClose }: Props) {
     else if (mounted) close(() => setMounted(false));
   }, [visible]);
 
-  const pan = Gesture.Pan()
-    .onStart(() => { startY.value = translateY.value; })
-    .onUpdate((e) => { translateY.value = Math.max(0, startY.value + e.translationY); })
-    .onEnd((e) => {
-      if (translateY.value > CLOSE_THRESHOLD || e.velocityY > CLOSE_VELOCITY) {
-        runOnJS(handleClose)();
-      } else {
-        translateY.value = withTiming(0, TIMING);
-      }
-    });
-
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
   const scrimStyle = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
 
@@ -160,112 +143,100 @@ export default function BoostSheet({ visible, onClose }: Props) {
 
   return (
     <Modal transparent visible={mounted} onRequestClose={handleClose} statusBarTranslucent>
-      {visible && (
-        <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-          <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]} pointerEvents="box-none">
-            <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
-          </Animated.View>
+      {/* Scrim */}
+      <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]} pointerEvents="box-none">
+        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+      </Animated.View>
 
-          <Animated.View style={[styles.sheet, { backgroundColor: theme.surfaceCard }, sheetStyle]}>
-            {/* Handle — swipe to close */}
-            <GestureDetector gesture={pan}>
-              <View style={styles.handleArea}>
-                <View style={[styles.handle, { backgroundColor: theme.surfaceSub }]} />
-              </View>
-            </GestureDetector>
+      {/* Sheet */}
+      <Animated.View style={[styles.sheet, { backgroundColor: theme.surfaceCard }, sheetStyle]}>
+        {/* Handle */}
+        <View style={styles.handleArea}>
+          <View style={[styles.handle, { backgroundColor: theme.surfaceSub }]} />
+        </View>
 
-            {/* Header */}
-            <View style={styles.header}>
-              <Image source={MARKETING_ICON} style={styles.headerIcon} contentFit="contain" />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.headerTitle, { color: theme.text }]}>Boosts</Text>
-              </View>
-              <View style={styles.headerGems}>
-                <GemIcon size={14} />
-                <Text style={[styles.headerGemsText, { color: theme.textMuted }]}>{gems} gems</Text>
-              </View>
-            </View>
+        {/* Header */}
+        <View style={styles.header}>
+          <Image source={MARKETING_ICON} style={styles.headerIcon} contentFit="contain" />
+          <Text style={[styles.headerTitle, { color: theme.text }]}>Boosts</Text>
+          <View style={styles.headerGemsRight}>
+            <GemIcon size={14} />
+            <Text style={[styles.headerGemsText, { color: theme.textMuted }]}>{gems} gems</Text>
+          </View>
+        </View>
 
-            {/* Scrollable content */}
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-            >
-              <SectionRow
-                label="💰 Coin Boost"
-                percent={coinBoostPercent}
-                expiresAt={coinBoostExpiresAt}
-                now={now}
-                isCoin
+        {/* Scrollable content */}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          <SectionRow label="💰 Coin Boost" percent={coinBoostPercent} expiresAt={coinBoostExpiresAt} now={now} isCoin />
+          <View style={styles.grid}>
+            {coinPackages.map((pkg) => (
+              <BoostCard
+                key={pkg.id} pkg={pkg} gems={gems} now={now}
+                onBuy={() => { setNotEnoughGems(null); setPendingBoost(pkg); }}
+                onNotEnough={() => setNotEnoughGems(pkg.gemCost)}
               />
-              <View style={styles.grid}>
-                {coinPackages.map((pkg) => (
-                  <BoostCard
-                    key={pkg.id} pkg={pkg} gems={gems} now={now}
-                    onBuy={() => setPendingBoost(pkg)}
-                    onNotEnough={() => showInsufficientResources({ currency: 'gems', need: pkg.gemCost, have: gems })}
-                  />
-                ))}
-              </View>
+            ))}
+          </View>
 
-              <SectionRow
-                label="⭐ XP Boost"
-                percent={xpBoostPercent}
-                expiresAt={xpBoostExpiresAt}
-                now={now}
-                isCoin={false}
+          <SectionRow label="⭐ XP Boost" percent={xpBoostPercent} expiresAt={xpBoostExpiresAt} now={now} isCoin={false} />
+          <View style={styles.grid}>
+            {xpPackages.map((pkg) => (
+              <BoostCard
+                key={pkg.id} pkg={pkg} gems={gems} now={now}
+                onBuy={() => { setNotEnoughGems(null); setPendingBoost(pkg); }}
+                onNotEnough={() => setNotEnoughGems(pkg.gemCost)}
               />
-              <View style={styles.grid}>
-                {xpPackages.map((pkg) => (
-                  <BoostCard
-                    key={pkg.id} pkg={pkg} gems={gems} now={now}
-                    onBuy={() => setPendingBoost(pkg)}
-                    onNotEnough={() => showInsufficientResources({ currency: 'gems', need: pkg.gemCost, have: gems })}
-                  />
-                ))}
-              </View>
-            </ScrollView>
-          </Animated.View>
+            ))}
+          </View>
 
-          {/* Confirm modal */}
-          {pendingBoost && (
-            <View style={styles.confirmScrim}>
-              <Pressable style={StyleSheet.absoluteFill} onPress={() => setPendingBoost(null)} />
-              <View style={[styles.confirmCard, { backgroundColor: theme.surface }]}>
-                <View style={[styles.confirmIconCircle, {
-                  backgroundColor: pendingBoost.boostType === 'coin'
-                    ? 'rgba(245,166,35,0.15)' : 'rgba(123,79,191,0.15)',
-                }]}>
-                  <Image
-                    source={pendingBoost.boostType === 'coin' ? MARKETING_ICON : PR_ICON}
-                    style={styles.confirmIcon}
-                    contentFit="contain"
-                  />
-                </View>
-                <Text style={[styles.confirmTitle, { color: theme.text }]}>
-                  {pendingBoost.boostType === 'coin' ? 'Coin Boost' : 'XP Boost'} +{pendingBoost.percent}%
-                </Text>
-                <Text style={[styles.confirmSub, { color: theme.textMuted }]}>30 hours · active immediately</Text>
-                <View style={[styles.confirmPriceRow, { backgroundColor: theme.surfaceElevated }]}>
-                  <Image source={DIAMOND} style={{ width: 20, height: 20 }} contentFit="contain" />
-                  <Text style={[styles.confirmPrice, { color: theme.text }]}>{pendingBoost.gemCost}</Text>
-                  <Text style={[styles.confirmBalance, { color: theme.textMuted }]}>· you have {gems}</Text>
-                </View>
-                <Pressable
-                  style={[styles.confirmBtn, {
-                    backgroundColor: pendingBoost.boostType === 'coin' ? '#F5A623' : '#7B4FBF',
-                  }]}
-                  onPress={confirmBoost}
-                >
-                  <Text style={styles.confirmBtnText}>Activate Boost</Text>
-                </Pressable>
-                <Pressable style={styles.cancelBtn} onPress={() => setPendingBoost(null)}>
-                  <Text style={[styles.cancelBtnText, { color: theme.textMuted }]}>Cancel</Text>
-                </Pressable>
-              </View>
+          {/* Insufficient gems banner */}
+          {notEnoughGems !== null && (
+            <View style={[styles.notEnoughBanner, { backgroundColor: theme.surfaceDanger }]}>
+              <Text style={styles.notEnoughText}>
+                💎 Not enough gems · need {notEnoughGems}, have {gems}
+              </Text>
             </View>
           )}
-        </GestureHandlerRootView>
+        </ScrollView>
+      </Animated.View>
+
+      {/* Confirm modal */}
+      {pendingBoost && (
+        <View style={styles.confirmScrim}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setPendingBoost(null)} />
+          <View style={[styles.confirmCard, { backgroundColor: theme.surface }]}>
+            <View style={[styles.confirmIconCircle, {
+              backgroundColor: pendingBoost.boostType === 'coin'
+                ? 'rgba(245,166,35,0.15)' : 'rgba(123,79,191,0.15)',
+            }]}>
+              <Image
+                source={pendingBoost.boostType === 'coin' ? MARKETING_ICON : PR_ICON}
+                style={styles.confirmIcon}
+                contentFit="contain"
+              />
+            </View>
+            <Text style={[styles.confirmTitle, { color: theme.text }]}>
+              {pendingBoost.boostType === 'coin' ? 'Coin Boost' : 'XP Boost'} +{pendingBoost.percent}%
+            </Text>
+            <Text style={[styles.confirmSub, { color: theme.textMuted }]}>30 hours · active immediately</Text>
+            <View style={[styles.confirmPriceRow, { backgroundColor: theme.surfaceElevated }]}>
+              <Image source={DIAMOND} style={{ width: 20, height: 20 }} contentFit="contain" />
+              <Text style={[styles.confirmPrice, { color: theme.text }]}>{pendingBoost.gemCost}</Text>
+              <Text style={[styles.confirmBalance, { color: theme.textMuted }]}>· you have {gems}</Text>
+            </View>
+            <Pressable
+              style={[styles.confirmBtn, {
+                backgroundColor: pendingBoost.boostType === 'coin' ? '#F5A623' : '#7B4FBF',
+              }]}
+              onPress={confirmBoost}
+            >
+              <Text style={styles.confirmBtnText}>Activate Boost</Text>
+            </Pressable>
+            <Pressable style={styles.cancelBtn} onPress={() => setPendingBoost(null)}>
+              <Text style={[styles.cancelBtnText, { color: theme.textMuted }]}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
       )}
     </Modal>
   );
@@ -283,12 +254,12 @@ const styles = StyleSheet.create({
   handleArea: { alignItems: 'center', paddingTop: 10, paddingBottom: 8 },
   handle:     { width: 40, height: 4, borderRadius: 2 },
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 16, paddingBottom: 10,
   },
   headerIcon:      { width: 36, height: 36 },
-  headerTitle:     { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
-  headerGems:      { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  headerTitle:     { fontFamily: 'Fredoka_700Bold', fontSize: 20, flex: 1 },
+  headerGemsRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   headerGemsText:  { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
   scrollContent:   { paddingHorizontal: 16, paddingBottom: 48, gap: 10 },
   sectionRow: {
@@ -315,6 +286,10 @@ const styles = StyleSheet.create({
   cardPrice:     { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   diamond:       { width: 14, height: 14 },
   cardPriceText: { fontFamily: 'Fredoka_700Bold', fontSize: 17 },
+  notEnoughBanner: {
+    borderRadius: 12, padding: 12, alignItems: 'center', marginTop: 4,
+  },
+  notEnoughText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#C0392B' },
   confirmScrim: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center',
