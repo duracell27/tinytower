@@ -328,7 +328,11 @@ function executeCommand(
   const vehicleBonuses = computeVehicleBonuses(store.vehicles);
   const result = processCommand(
     gameState, command, gameConfig, command.timestamp, store.playerLevel,
-    { coinPercent: store.coinBonusPercent, xpPercent: store.xpBonusPercent, ...vehicleBonuses },
+    {
+      coinPercent: store.coinBonusPercent + (command.timestamp < store.coinBoostExpiresAt ? (store.coinBoostPercent ?? 0) : 0),
+      xpPercent:   store.xpBonusPercent   + (command.timestamp < store.xpBoostExpiresAt   ? (store.xpBoostPercent   ?? 0) : 0),
+      ...vehicleBonuses,
+    },
   );
   if (!result.success) {
     if (result.error === 'WAREHOUSE_FULL') {
@@ -1287,6 +1291,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     achievementQueue: state.achievementQueue ?? [],
     coinBonusPercent: state.coinBonusPercent ?? 0,
     xpBonusPercent: state.xpBonusPercent ?? 0,
+    coinBoostPercent:   state.coinBoostPercent   ?? 0,
+    xpBoostPercent:     state.xpBoostPercent     ?? 0,
+    coinBoostExpiresAt: state.coinBoostExpiresAt ?? 0,
+    xpBoostExpiresAt:   state.xpBoostExpiresAt   ?? 0,
     categoryProgress: state.categoryProgress ?? {},
     tokens: state.tokens ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
     businessUpgrades: state.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
