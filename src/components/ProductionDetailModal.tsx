@@ -24,6 +24,9 @@ import {
 import WorkerAvatar from './WorkerAvatar';
 import { CoinIcon } from './CurrencyIcons';
 import { PRODUCT_IMAGES } from '../utils/productImages';
+const MARKETING_ICON    = require('../../assets/img/MarketingIcon.png');
+const WORKER_ICON       = require('../../assets/img/worker.png');
+const SPECIALIST_ICON   = require('../../assets/img/specialistWorker.png');
 import { FLOOR_TYPE_SCHEMES } from './FloorCard';
 import { shadeColor } from '../utils/color';
 import { formatNum } from '../utils/format';
@@ -290,7 +293,12 @@ export default function ProductionDetailModal() {
 
             <BreakdownRow
               isDark={isDark}
-              label={t('productionDetail.revenue.base')}
+              label={
+                <View style={styles.rowLabelWithIcon}>
+                  {productImage && <Image source={productImage} style={styles.rowLabelIcon} contentFit="contain" />}
+                  <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.base')}</Text>
+                </View>
+              }
               value={<><Text style={[styles.rowValue, { color: theme.text }]}>{formatNum(baseRevenue)}</Text><CoinIcon size={13} /></>}
             />
 
@@ -304,14 +312,24 @@ export default function ProductionDetailModal() {
 
             <BreakdownRow
               isDark={isDark}
-              label={t('productionDetail.revenue.worker')}
+              label={
+                <View style={styles.rowLabelWithIcon}>
+                  <Image source={WORKER_ICON} style={styles.rowLabelIcon} contentFit="contain" />
+                  <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.worker')}</Text>
+                </View>
+              }
               value={<Text style={[styles.rowValue, { color: moodColor }]}>{multiplierText}</Text>}
             />
 
             {specialistBonusPercent > 0 && (
               <BreakdownRow
                 isDark={isDark}
-                label={t('productionDetail.revenue.specialist')}
+                label={
+                  <View style={styles.rowLabelWithIcon}>
+                    <Image source={SPECIALIST_ICON} style={styles.rowLabelIcon} contentFit="contain" />
+                    <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.specialist')}</Text>
+                  </View>
+                }
                 value={<Text style={[styles.rowValue, { color: theme.text }]}>+{specialistBonusPercent}%</Text>}
               />
             )}
@@ -335,7 +353,12 @@ export default function ProductionDetailModal() {
             {activeCoinBoost > 0 && (
               <BreakdownRow
                 isDark={isDark}
-                label="💰 Marketing boost"
+                label={
+                  <View style={styles.rowLabelWithIcon}>
+                    <Image source={MARKETING_ICON} style={styles.rowLabelIcon} contentFit="contain" />
+                    <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>Marketing boost</Text>
+                  </View>
+                }
                 value={<Text style={[styles.rowValue, { color: '#F5A623' }]}>+{activeCoinBoost}%</Text>}
               />
             )}
@@ -433,10 +456,12 @@ export default function ProductionDetailModal() {
   );
 }
 
-function BreakdownRow({ label, value, isDark }: { label: string; value: React.ReactNode; isDark?: boolean }) {
+function BreakdownRow({ label, value, isDark }: { label: React.ReactNode; value: React.ReactNode; isDark?: boolean }) {
   return (
     <View style={styles.breakdownRow}>
-      <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{label}</Text>
+      {typeof label === 'string'
+        ? <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{label}</Text>
+        : label}
       <View style={styles.rowValueWrap}>{value}</View>
     </View>
   );
@@ -600,6 +625,8 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     color: '#6A7284',
   },
+  rowLabelWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  rowLabelIcon:     { width: 16, height: 16 },
   rowValue: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 13.5,

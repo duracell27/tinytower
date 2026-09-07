@@ -45,15 +45,17 @@ function BoostCard({ pkg, gems, now, onBuy, onNotEnough }: {
 }) {
   const theme  = useAppTheme();
   const isCoin = pkg.boostType === 'coin';
-  const accent   = isCoin ? '#F5A623' : (theme.isDark ? '#C08AF0' : '#7B4FBF');
-  const accentBg = isCoin ? 'rgba(245,166,35,0.12)' : (theme.isDark ? 'rgba(192,138,240,0.12)' : 'rgba(123,79,191,0.12)');
+  const accent    = isCoin ? '#F5A623' : (theme.isDark ? '#C08AF0' : '#7B4FBF');
+  const accentBg  = isCoin ? 'rgba(245,166,35,0.35)' : (theme.isDark ? 'rgba(192,138,240,0.35)' : 'rgba(123,79,191,0.35)');
+  const cardBg      = isCoin ? 'rgba(245,166,35,0.22)' : (theme.isDark ? 'rgba(192,138,240,0.22)' : 'rgba(123,79,191,0.22)');
+  const cardBorder  = isCoin ? 'rgba(245,166,35,0.55)' : (theme.isDark ? 'rgba(192,138,240,0.55)' : 'rgba(123,79,191,0.55)');
 
   return (
     <Pressable
       onPress={gems >= pkg.gemCost ? onBuy : onNotEnough}
       style={({ pressed }) => [
         styles.card,
-        { backgroundColor: theme.surface, width: CARD_W },
+        { backgroundColor: cardBg, width: CARD_W, borderColor: cardBorder },
         pressed && { opacity: 0.75 },
       ]}
     >
@@ -62,13 +64,18 @@ function BoostCard({ pkg, gems, now, onBuy, onNotEnough }: {
           <Image source={isCoin ? MARKETING_ICON : PR_ICON} style={styles.cardIcon} contentFit="contain" />
         </View>
         <View style={styles.cardInfo}>
-          <Text style={[styles.cardPercent, { color: accent }]}>+{pkg.percent}%</Text>
-          <Text style={[styles.cardDuration, { color: theme.textMuted }]}>30 hrs</Text>
+          <Text style={[styles.cardPercent, { color: theme.text }]}>+{pkg.percent}%</Text>
+          <Text style={[styles.cardDuration, { color: accent }]}>for 30 hrs</Text>
         </View>
       </View>
-      <View style={[styles.cardPrice, { backgroundColor: accentBg }]}>
-        <Image source={DIAMOND} style={styles.diamond} contentFit="contain" />
-        <Text style={[styles.cardPriceText, { color: theme.text }]}>{pkg.gemCost}</Text>
+      <View style={styles.cardBottom}>
+        <View style={[styles.cardPrice, { backgroundColor: accent }]}>
+          <Image source={DIAMOND} style={styles.diamond} contentFit="contain" />
+          <Text style={[styles.cardPriceText, { color: '#FFF' }]}>{pkg.gemCost}</Text>
+        </View>
+        <View style={[styles.cardBuyBtn, { backgroundColor: accent }]}>
+          <Text style={styles.cardBuyBtnText}>Buy</Text>
+        </View>
       </View>
     </Pressable>
   );
@@ -196,15 +203,15 @@ export default function BoostSheet({ visible, onClose }: Props) {
                 <Image source={MARKETING_ICON} style={styles.headerIcon} contentFit="contain" />
                 <Text style={[styles.headerTitle, { color: theme.text }]}>Boosts</Text>
               </View>
-              <View style={styles.headerCenter}>
+              <View style={styles.headerRight}>
                 <GemIcon size={14} />
-                <Text style={[styles.headerGemsText, { color: theme.textMuted }]}>{gems} gems</Text>
+                <Text style={[styles.headerGemsText, { color: theme.text }]}>{gems} gems</Text>
+                <Pressable onPress={handleClose} hitSlop={8}>
+                  <View style={[styles.headerCloseBtnInner, { backgroundColor: theme.surfaceSub }]}>
+                    <Text style={[styles.headerCloseBtnText, { color: theme.textMuted }]}>✕</Text>
+                  </View>
+                </Pressable>
               </View>
-              <Pressable style={styles.headerCloseBtn} onPress={handleClose} hitSlop={8}>
-                <View style={[styles.headerCloseBtnInner, { backgroundColor: theme.surfaceSub }]}>
-                  <Text style={[styles.headerCloseBtnText, { color: theme.textMuted }]}>✕</Text>
-                </View>
-              </Pressable>
             </View>
 
             {/* Scrollable content */}
@@ -251,10 +258,12 @@ export default function BoostSheet({ visible, onClose }: Props) {
                   {pendingBoost.boostType === 'coin' ? 'Coin Boost' : 'XP Boost'} +{pendingBoost.percent}%
                 </Text>
                 <Text style={[styles.confirmSub, { color: theme.textMuted }]}>30 hours · active immediately</Text>
+                <Text style={[styles.confirmStackNote, { color: theme.textMuted }]}>
+                  Boosts stack — buying again adds 30 hrs on top
+                </Text>
                 <View style={[styles.confirmPriceRow, { backgroundColor: theme.surfaceElevated }]}>
                   <Image source={DIAMOND} style={{ width: 20, height: 20 }} contentFit="contain" />
                   <Text style={[styles.confirmPrice, { color: theme.text }]}>{pendingBoost.gemCost}</Text>
-                  <Text style={[styles.confirmBalance, { color: theme.textMuted }]}>· you have {gems}</Text>
                 </View>
                 <Pressable
                   style={[styles.confirmBtn, {
@@ -301,9 +310,8 @@ const styles = StyleSheet.create({
   headerLeft:         { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerIcon:         { width: 36, height: 36 },
   headerTitle:        { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
-  headerCenter:       { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  headerRight:        { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerGemsText:     { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
-  headerCloseBtn:     { flex: 1, alignItems: 'flex-end' },
   headerCloseBtnInner: {
     width: 32, height: 32, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
@@ -326,6 +334,7 @@ const styles = StyleSheet.create({
   grid:            { flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP },
   card: {
     borderRadius: 16, padding: 12, alignItems: 'stretch', gap: 8,
+    borderWidth: 1,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
   },
@@ -334,10 +343,13 @@ const styles = StyleSheet.create({
   cardIcon:      { width: 28, height: 28 },
   cardInfo:      { flex: 1 },
   cardPercent:   { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
-  cardDuration:  { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
-  cardPrice:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  cardDuration:  { fontFamily: 'Fredoka_700Bold', fontSize: 12 },
+  cardBottom:    { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  cardPrice:     { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
   diamond:       { width: 14, height: 14 },
-  cardPriceText: { fontFamily: 'Fredoka_700Bold', fontSize: 16 },
+  cardPriceText: { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
+  cardBuyBtn:    { flex: 1, borderRadius: 8, paddingVertical: 5, alignItems: 'center', justifyContent: 'center' },
+  cardBuyBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 14, color: '#FFF' },
   confirmScrim: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center',
@@ -348,10 +360,10 @@ const styles = StyleSheet.create({
   confirmIcon:       { width: 44, height: 44 },
   confirmTitle:      { fontFamily: 'Fredoka_700Bold', fontSize: 22, textAlign: 'center' },
   confirmSub:        { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', marginTop: -4 },
+  confirmStackNote:  { fontFamily: 'Fredoka_400Regular', fontSize: 12, textAlign: 'center', opacity: 0.7 },
   confirmPriceRow:   { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 12,
                        paddingHorizontal: 16, paddingVertical: 10, alignSelf: 'stretch', justifyContent: 'center' },
   confirmPrice:      { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
-  confirmBalance:    { fontFamily: 'Fredoka_400Regular', fontSize: 13 },
   confirmBtn:        { borderRadius: 14, paddingVertical: 13, alignSelf: 'stretch', alignItems: 'center', marginTop: 4 },
   confirmBtnText:    { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#FFF' },
   cancelBtn:         { paddingVertical: 6 },
