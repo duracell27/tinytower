@@ -21,6 +21,8 @@ const CLOSE_VELOCITY  = 500;
 const DIAMOND        = require('../../assets/img/diamond.png');
 const MARKETING_ICON = require('../../assets/img/MarketingIcon.png');
 const PR_ICON        = require('../../assets/img/PRIcon.png');
+const COIN_ICON      = require('../../assets/img/coin.png');
+const XP_ICON        = require('../../assets/img/xpIcon.png');
 
 const CARD_GAP = 10;
 const CARD_W   = (SCREEN_WIDTH - 32 - CARD_GAP) / 2;
@@ -55,11 +57,15 @@ function BoostCard({ pkg, gems, now, onBuy, onNotEnough }: {
         pressed && { opacity: 0.75 },
       ]}
     >
-      <View style={[styles.cardIconBg, { backgroundColor: accentBg }]}>
-        <Image source={isCoin ? MARKETING_ICON : PR_ICON} style={styles.cardIcon} contentFit="contain" />
+      <View style={styles.cardTopRow}>
+        <View style={[styles.cardIconBg, { backgroundColor: accentBg }]}>
+          <Image source={isCoin ? MARKETING_ICON : PR_ICON} style={styles.cardIcon} contentFit="contain" />
+        </View>
+        <View style={styles.cardInfo}>
+          <Text style={[styles.cardPercent, { color: accent }]}>+{pkg.percent}%</Text>
+          <Text style={[styles.cardDuration, { color: theme.textMuted }]}>30 hrs</Text>
+        </View>
       </View>
-      <Text style={[styles.cardPercent, { color: accent }]}>+{pkg.percent}%</Text>
-      <Text style={[styles.cardDuration, { color: theme.textMuted }]}>30 hrs</Text>
       <View style={[styles.cardPrice, { backgroundColor: accentBg }]}>
         <Image source={DIAMOND} style={styles.diamond} contentFit="contain" />
         <Text style={[styles.cardPriceText, { color: theme.text }]}>{pkg.gemCost}</Text>
@@ -78,7 +84,10 @@ function SectionRow({ label, percent, expiresAt, now, isCoin }: {
 
   return (
     <View style={styles.sectionRow}>
-      <Text style={[styles.sectionLabel, { color: theme.text }]}>{label}</Text>
+      <View style={styles.sectionLabelRow}>
+        <Image source={isCoin ? COIN_ICON : XP_ICON} style={styles.sectionLabelIcon} contentFit="contain" />
+        <Text style={[styles.sectionLabel, { color: theme.text }]}>{label}</Text>
+      </View>
       {timeLeft && (
         <View style={[styles.activeBadge, { backgroundColor: bg }]}>
           <Image source={isCoin ? MARKETING_ICON : PR_ICON} style={styles.activeBadgeIcon} contentFit="contain" />
@@ -183,17 +192,24 @@ export default function BoostSheet({ visible, onClose }: Props) {
 
             {/* Header */}
             <View style={styles.header}>
-              <Image source={MARKETING_ICON} style={styles.headerIcon} contentFit="contain" />
-              <Text style={[styles.headerTitle, { color: theme.text }]}>Boosts</Text>
-              <View style={styles.headerGemsRight}>
+              <View style={styles.headerLeft}>
+                <Image source={MARKETING_ICON} style={styles.headerIcon} contentFit="contain" />
+                <Text style={[styles.headerTitle, { color: theme.text }]}>Boosts</Text>
+              </View>
+              <View style={styles.headerCenter}>
                 <GemIcon size={14} />
                 <Text style={[styles.headerGemsText, { color: theme.textMuted }]}>{gems} gems</Text>
               </View>
+              <Pressable style={styles.headerCloseBtn} onPress={handleClose} hitSlop={8}>
+                <View style={[styles.headerCloseBtnInner, { backgroundColor: theme.surfaceSub }]}>
+                  <Text style={[styles.headerCloseBtnText, { color: theme.textMuted }]}>✕</Text>
+                </View>
+              </Pressable>
             </View>
 
             {/* Scrollable content */}
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-              <SectionRow label="💰 Coin Boost" percent={coinBoostPercent} expiresAt={coinBoostExpiresAt} now={now} isCoin />
+              <SectionRow label="Coin Boost" percent={coinBoostPercent} expiresAt={coinBoostExpiresAt} now={now} isCoin />
               <View style={styles.grid}>
                 {coinPackages.map((pkg) => (
                   <BoostCard
@@ -204,7 +220,7 @@ export default function BoostSheet({ visible, onClose }: Props) {
                 ))}
               </View>
 
-              <SectionRow label="⭐ XP Boost" percent={xpBoostPercent} expiresAt={xpBoostExpiresAt} now={now} isCoin={false} />
+              <SectionRow label="XP Boost" percent={xpBoostPercent} expiresAt={xpBoostExpiresAt} now={now} isCoin={false} />
               <View style={styles.grid}>
                 {xpPackages.map((pkg) => (
                   <BoostCard
@@ -279,18 +295,27 @@ const styles = StyleSheet.create({
   handleArea: { alignItems: 'center', paddingTop: 10, paddingBottom: 8 },
   handle:     { width: 40, height: 4, borderRadius: 2 },
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
+    flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingBottom: 10,
   },
-  headerIcon:      { width: 36, height: 36 },
-  headerTitle:     { fontFamily: 'Fredoka_700Bold', fontSize: 20, flex: 1 },
-  headerGemsRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  headerGemsText:  { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
+  headerLeft:         { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerIcon:         { width: 36, height: 36 },
+  headerTitle:        { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
+  headerCenter:       { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  headerGemsText:     { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
+  headerCloseBtn:     { flex: 1, alignItems: 'flex-end' },
+  headerCloseBtnInner: {
+    width: 32, height: 32, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  headerCloseBtnText: { fontFamily: 'Fredoka_500Medium', fontSize: 16, lineHeight: 18 },
   scrollContent:   { paddingHorizontal: 16, paddingBottom: 48, gap: 10 },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center',
     justifyContent: 'space-between', marginTop: 8,
   },
+  sectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  sectionLabelIcon: { width: 20, height: 20 },
   sectionLabel:    { fontFamily: 'Fredoka_600SemiBold', fontSize: 16 },
   activeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
@@ -300,17 +325,19 @@ const styles = StyleSheet.create({
   activeBadgeText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 12 },
   grid:            { flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP },
   card: {
-    borderRadius: 16, padding: 14, alignItems: 'center', gap: 6,
+    borderRadius: 16, padding: 12, alignItems: 'stretch', gap: 8,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
   },
-  cardIconBg:    { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  cardIcon:      { width: 32, height: 32 },
-  cardPercent:   { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
+  cardTopRow:    { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  cardIconBg:    { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  cardIcon:      { width: 28, height: 28 },
+  cardInfo:      { flex: 1 },
+  cardPercent:   { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
   cardDuration:  { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
-  cardPrice:     { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  cardPrice:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   diamond:       { width: 14, height: 14 },
-  cardPriceText: { fontFamily: 'Fredoka_700Bold', fontSize: 17 },
+  cardPriceText: { fontFamily: 'Fredoka_700Bold', fontSize: 16 },
   confirmScrim: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center',
