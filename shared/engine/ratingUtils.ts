@@ -11,6 +11,7 @@ export function calcRevenuePerMin(
   businessUpgrades?: Record<string, number>,
   coinBonusPercent?: number,
   floorStars?: Record<string, number>,
+  activeCoinBoost?: number,
 ): number {
   let total = 0;
   for (const floor of floors) {
@@ -18,7 +19,7 @@ export function calcRevenuePerMin(
     const floorType = floorConfig?.floorType ?? openedFloorTypes[String(floor.id)] ?? null;
     const specialistBonusPercent = Math.round(getFloorSpecialistBonus(workers, floor.id) * 100);
     const categoryBonus = floorType ? (businessUpgrades?.[floorType] ?? 0) * 5 : 0;
-    const coinMultiplier = 1 + ((coinBonusPercent ?? 0) + specialistBonusPercent + categoryBonus) / 100;
+    const coinMultiplier = 1 + ((coinBonusPercent ?? 0) + (activeCoinBoost ?? 0) + specialistBonusPercent + categoryBonus) / 100;
     const stars = floorStars?.[String(floor.id)] ?? 0;
     const starMult = FLOOR_STAR_MULTIPLIERS[stars] ?? FLOOR_STAR_MULTIPLIERS[0];
 

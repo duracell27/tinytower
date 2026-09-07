@@ -386,9 +386,10 @@ export default function ShopScreen() {
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const floorStars       = useGameStore((s) => s.floorStars);
   const now = useGameClock(60_000);
+  const activeCoinBoost = now < coinBoostExpiresAt ? coinBoostPercent : 0;
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars),
-    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, activeCoinBoost),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, activeCoinBoost],
   );
 
   const cardWidth = Math.floor((screenWidth - 32 - 12) / 2);
