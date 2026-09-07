@@ -172,8 +172,8 @@ export default function GameScreen() {
   const activeXpBoost   = now < xpBoostExpiresAt   ? xpBoostPercent   : 0;
 
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, revenueNow, businessUpgrades, coinBonusPercent, floorStars, activeCoinBoost),
-    [floors, workers, openedFloorTypes, revenueNow, businessUpgrades, coinBonusPercent, floorStars, activeCoinBoost],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, revenueNow, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt),
+    [floors, workers, openedFloorTypes, revenueNow, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt],
   );
 
   const hasBetterWorker = React.useMemo(

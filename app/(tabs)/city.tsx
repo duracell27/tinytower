@@ -36,8 +36,8 @@ export default function CityScreen() {
   const activeCoinBoost = now < coinBoostExpiresAt ? coinBoostPercent : 0;
   const activeXpBoost   = now < xpBoostExpiresAt   ? xpBoostPercent   : 0;
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, activeCoinBoost),
-    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, activeCoinBoost],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt],
   );
 
   return (
