@@ -95,8 +95,8 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       await quickLogin(password);
       setShowPasswordPrompt(false);
       onPlay();
-    } catch {
-      setError(t('welcome.errors.wrongPassword'));
+    } catch (e) {
+      setError(e instanceof TypeError ? t('welcome.errors.noInternet') : t('welcome.errors.wrongPassword'));
     }
   };
 

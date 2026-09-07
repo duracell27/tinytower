@@ -167,7 +167,8 @@ export function setupUserPersistence(userId: string): void {
     useGameStore.getState().hydrate(savedState);
   } else {
     useGameStore.getState().reset();
-    useGameStore.setState({ isHydrated: true });
+    // No local state — keep isHydrated:false so the UI shows skeletons
+    // until the first sync provides the real server state.
   }
 
   storeUnsubscribe = useGameStore.subscribe((state) => {

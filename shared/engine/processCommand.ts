@@ -488,15 +488,21 @@ function handleFireWorker(
       if (duration - (now - production.stageStartedAt) > 0) {
         return { success: false, state, error: 'Cannot fire during active production' };
       }
-      // Selling is done but uncollected — reset slot so hire mode is shown correctly
-      if (production.stage === 'SELLING') {
-        floors = updateProduction(state.floors, floorIdx, slotIdx, {
-          ...production,
-          stage: 'IDLE',
-          stageStartedAt: 0,
-        });
-      }
+      // Delivery/selling done — reset slot so quick actions don't show stale state
+      floors = updateProduction(state.floors, floorIdx, slotIdx, {
+        ...production,
+        stage: 'IDLE',
+        stageStartedAt: 0,
+      });
     }
+  }
+
+  if (production && production.stage === 'READY_TO_LIST') {
+    floors = updateProduction(floors, floorIdx, slotIdx, {
+      ...production,
+      stage: 'IDLE',
+      stageStartedAt: 0,
+    });
   }
 
   return {
@@ -940,7 +946,10 @@ function handleFireAndEvictWorker(
   const floorIdx = state.floors.findIndex((f) => f.id === worker.assignedFloorId);
   if (floorIdx === -1) return { success: false, state, error: 'Floor not found' };
 
-  const production = state.floors[floorIdx].productions[worker.assignedSlotIdx!];
+  const slotIdx = worker.assignedSlotIdx!;
+  const production = state.floors[floorIdx].productions[slotIdx];
+  let floors = state.floors;
+
   if (production && (production.stage === 'DELIVERING' || production.stage === 'SELLING')) {
     const typeConfig = production.typeId ? config.productionTypes[production.typeId] : null;
     if (typeConfig) {
@@ -952,13 +961,27 @@ function handleFireAndEvictWorker(
       if (duration - (now - production.stageStartedAt) > 0) {
         return { success: false, state, error: 'Cannot fire during active production' };
       }
+      floors = updateProduction(state.floors, floorIdx, slotIdx, {
+        ...production,
+        stage: 'IDLE',
+        stageStartedAt: 0,
+      });
     }
+  }
+
+  if (production && production.stage === 'READY_TO_LIST') {
+    floors = updateProduction(floors, floorIdx, slotIdx, {
+      ...production,
+      stage: 'IDLE',
+      stageStartedAt: 0,
+    });
   }
 
   return {
     success: true,
     state: {
       ...state,
+      floors,
       workers: state.workers.filter((w) => w.id !== command.workerId),
     },
   };
