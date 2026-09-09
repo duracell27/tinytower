@@ -1,20 +1,20 @@
 {
   "expo": {
-    "name": "Tiny Tower",
+    "name": "Vibe Tower",
     "slug": "tinytower",
     "scheme": "tinytower",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/img/logoBlack.png",
+    "icon": "./assets/img/LogoBlack (1).png",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.duracell27.tinytower-init",
       "buildNumber": "1",
       "icon": {
-        "light": "./assets/img/logoWhite.png",
-        "dark": "./assets/img/logoBlack.png",
-        "tinted": "./assets/img/logoBlack.png"
+        "light": "./assets/img/LogoWhite (1).png",
+        "dark": "./assets/img/LogoBlack (1).png",
+        "tinted": "./assets/img/LogoBlack (1).png"
       },
       "infoPlist": {
         "NSAppTransportSecurity": {
@@ -25,7 +25,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/img/logoBlack.png"
+        "foregroundImage": "./assets/img/LogoBlack (1).png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.duracell27.tinytowerinit"
