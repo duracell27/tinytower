@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { InfoSection } from '../components/InfoSection';
 import { Image } from 'expo-image';
 import AppBackground from '../components/AppBackground';
+import { useTranslation } from 'react-i18next';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { createMMKV } from 'react-native-mmkv';
@@ -38,6 +39,7 @@ function MilestoneRow({
   reachable: boolean;
   currentLevel?: number;
 }) {
+  const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   const rewardIcon =
     rewardType === 'coins'
@@ -57,24 +59,25 @@ function MilestoneRow({
         <View style={styles.milestoneValueRow}>
           <Text style={styles.milestoneEarned}>{rewardLabel} </Text>
           <Image source={rewardIcon} style={styles.diamondIcon} contentFit="contain" />
-          <Text style={styles.milestoneEarned}> Claimed</Text>
+          <Text style={styles.milestoneEarned}> {t('referrals.claimed')}</Text>
         </View>
       ) : reachable ? (
         <View style={styles.milestoneValueRow}>
           <Text style={styles.milestonePending}>{rewardLabel} </Text>
           <Image source={rewardIcon} style={styles.diamondIcon} contentFit="contain" />
-          <Text style={styles.milestonePending}> Pending</Text>
+          <Text style={styles.milestonePending}> {t('referrals.pending')}</Text>
         </View>
       ) : currentLevel !== undefined ? (
         <Text style={styles.milestonePending}>lv {currentLevel}</Text>
       ) : (
-        <Text style={styles.milestonePending}>Not reached</Text>
+        <Text style={styles.milestonePending}>{t('referrals.notReached')}</Text>
       )}
     </View>
   );
 }
 
 function ReferralCard({ entry }: { entry: ReferralEntry }) {
+  const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   return (
     <View style={[styles.referralCard, isDark && { backgroundColor: '#252D42' }]}>
@@ -83,14 +86,14 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
         <Text style={[styles.referralName, isDark && { color: '#DDE8D8' }]}>{entry.referredName}</Text>
       </View>
       <MilestoneRow
-        label="Registration"
+        label={t('referrals.milestoneRegistration')}
         rewardAmount={10000}
         rewardType="coins"
         claimed={!!entry.milestones.registered.claimedAt}
         reachable={!entry.milestones.registered.claimedAt}
       />
       <MilestoneRow
-        label="Level 10"
+        label={t('referrals.milestone10')}
         rewardAmount={20}
         rewardType="gems"
         claimed={!!entry.milestones.level10.claimedAt}
@@ -98,7 +101,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
         currentLevel={entry.milestones.level10.reachedAt ? undefined : entry.referredLevel}
       />
       <MilestoneRow
-        label="Level 30"
+        label={t('referrals.milestone30')}
         rewardAmount={50}
         rewardType="gems"
         claimed={!!entry.milestones.level30.claimedAt}
@@ -108,7 +111,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
       {entry.gemBonusEarned > 0 && (
         <View style={styles.milestoneRow}>
           <Image source={ICON_GEM_BONUS} style={styles.milestoneIcon} contentFit="contain" />
-          <Text style={styles.milestoneLabel}>Purchase bonus</Text>
+          <Text style={styles.milestoneLabel}>{t('referrals.purchaseBonus')}</Text>
           <View style={{ flex: 1 }} />
           <Text style={styles.milestoneEarned}>+{entry.gemBonusEarned} 💎</Text>
         </View>
@@ -118,6 +121,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
 }
 
 export default function ReferralScreen() {
+  const { t } = useTranslation('tabs');
   const { code, referrals, isLoading, hasUsedCode, referrerName, isApplying, fetchReferral, applyReferralCode } = useReferralStore();
   const isDark = useColorScheme() === 'dark';
   const recordInviteSent = useGameStore((s) => s.recordInviteSent);
@@ -160,7 +164,7 @@ export default function ReferralScreen() {
   const handleShare = () => {
     if (!shareLink) return;
     Share.share({
-      message: `Play TinyTower with me! My referral code: ${code}\n${shareLink}`,
+      message: t('referrals.shareMessage', { code, link: shareLink }),
     }).then((result) => {
       if (result.action === Share.sharedAction && currentTask?.progressSource === 'inviteSent') {
         recordInviteSent();
@@ -173,7 +177,7 @@ export default function ReferralScreen() {
     try {
       await applyReferralCode(inputCode);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Invalid or already used code';
+      const msg = e instanceof Error ? e.message : t('referrals.applyError');
       setApplyError(msg);
     }
   };
@@ -188,7 +192,7 @@ export default function ReferralScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <View style={styles.headingRow}>
-            <Text style={[styles.heading, isDark && { color: '#DDE8D8' }]}>Referrals</Text>
+            <Text style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('referrals.title')}</Text>
             <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
               <Image
                 source={require('../../assets/img/InformationIcon.png')}
@@ -204,7 +208,7 @@ export default function ReferralScreen() {
                 onPress={handleToggle}
                 style={styles.applyHeader}
               >
-                <Text style={[styles.applyLabel, isDark && { color: '#8A9A80' }]}>Have a referral code?</Text>
+                <Text style={[styles.applyLabel, isDark && { color: '#8A9A80' }]}>{t('referrals.applyLabel')}</Text>
                 <Animated.View style={chevronStyle}>
                   <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
                     <Path
@@ -242,7 +246,7 @@ export default function ReferralScreen() {
                       {isApplying ? (
                         <ActivityIndicator size="small" color="#fff" />
                       ) : (
-                        <Text style={styles.applyBtnText}>Apply</Text>
+                        <Text style={styles.applyBtnText}>{t('referrals.apply')}</Text>
                       )}
                     </Pressable>
                   </View>
@@ -254,7 +258,7 @@ export default function ReferralScreen() {
 
           {hasUsedCode && referrerName && (
             <View style={[styles.referredByCard, isDark && { backgroundColor: '#252D42' }]}>
-              <Text style={styles.referredByLabel}>Invited by</Text>
+              <Text style={styles.referredByLabel}>{t('referrals.invitedBy')}</Text>
               <View style={styles.referredByRow}>
                 <Image
                   source={require('../../assets/img/profile/ReferralProfileIcon.png')}
@@ -267,25 +271,25 @@ export default function ReferralScreen() {
           )}
 
           <View style={[styles.codeCard, isDark && { backgroundColor: '#252D42' }]}>
-            <Text style={[styles.codeLabel, isDark && { color: '#8A9A80' }]}>Your code</Text>
+            <Text style={[styles.codeLabel, isDark && { color: '#8A9A80' }]}>{t('referrals.yourCode')}</Text>
             <View style={styles.codeRow}>
               <Text style={[styles.codeText, isDark && { color: '#DDE8D8' }]}>{code ?? '------'}</Text>
               <Pressable onPress={handleCopy} style={({ pressed }) => [styles.copyBtn, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }, pressed && { opacity: 0.7 }]}>
-                <Text style={styles.copyBtnText}>{copied ? 'Copied!' : 'Copy'}</Text>
+                <Text style={styles.copyBtnText}>{copied ? t('referrals.copied') : t('referrals.copy')}</Text>
               </Pressable>
             </View>
             <Pressable onPress={handleShare} style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.85 }]}>
-              <Text style={styles.shareBtnText}>Share link</Text>
+              <Text style={styles.shareBtnText}>{t('referrals.share')}</Text>
             </Pressable>
           </View>
 
           {referrals.length === 0 ? (
             <View style={[styles.emptyCard, isDark && { backgroundColor: '#252D42' }]}>
-              <Text style={styles.emptyText}>No invited players yet.{'\n'}Share your link!</Text>
+              <Text style={styles.emptyText}>{t('referrals.empty')}</Text>
             </View>
           ) : (
             <>
-              <Text style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>Invited players</Text>
+              <Text style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{t('referrals.invitedPlayers')}</Text>
               {referrals.map((entry) => (
                 <ReferralCard key={entry.id} entry={entry} />
               ))}
@@ -306,7 +310,7 @@ export default function ReferralScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, isDark && { backgroundColor: '#2A2F38' }]}>
             <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>Referrals</Text>
+              <Text style={styles.infoCardTitle}>{t('referrals.title')}</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
                 <Text style={styles.infoCardClose}>✕</Text>
               </Pressable>
@@ -314,26 +318,26 @@ export default function ReferralScreen() {
             <View style={styles.infoCardBody}>
               <InfoSection
                 icon={require('../../assets/img/profile/ReferralProfileIcon.png')}
-                title="Your Referral Code"
-                text="Share your unique code or link with friends. They enter it when registering to link you as their referrer."
+                title={t('referrals.info.codeTitle')}
+                text={t('referrals.info.codeText')}
                 accentColor="rgba(201,99,126,0.3)"
               />
               <InfoSection
                 icon={require('../../assets/img/OkIcon.png')}
-                title="Milestone Rewards"
-                text="Earn coins when your friend registers, and gems when they reach level 10 or level 30."
+                title={t('referrals.info.milestoneTitle')}
+                text={t('referrals.info.milestoneText')}
                 accentColor="rgba(201,99,126,0.3)"
               />
               <InfoSection
                 icon={require('../../assets/img/diamond+percent.png')}
-                title="Purchase Bonus"
-                text="You receive a gem bonus whenever a player you referred makes an in-game purchase."
+                title={t('referrals.info.purchaseTitle')}
+                text={t('referrals.info.purchaseText')}
                 accentColor="rgba(201,99,126,0.3)"
               />
               <InfoSection
                 icon={require('../../assets/img/sandClock.png')}
-                title="Have a Referral Code?"
-                text="If someone shared a code with you, tap the section below to enter it — both players receive a bonus."
+                title={t('referrals.info.haveCodeTitle')}
+                text={t('referrals.info.haveCodeText')}
                 accentColor="rgba(201,99,126,0.3)"
                 isLast
               />

@@ -4,6 +4,7 @@ import AppBackground from '../src/components/AppBackground';
 import { useAppTheme } from '../src/hooks/useAppTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { InfoSection } from '../src/components/InfoSection';
 import { useGameStore } from '../src/stores/gameStore';
 import {
@@ -20,12 +21,6 @@ const CATEGORY_IMAGES: Record<string, ReturnType<typeof require>> = {
   elevator: require('../assets/img/achivment/achivLiftCategory.png'),
 };
 
-const CATEGORY_DESCRIPTIONS: Record<string, string> = {
-  buy:      'Buy goods for your floors to restock production',
-  list:     'Put delivered goods on shelves to start selling',
-  collect:  'Collect earned coins from completed sales',
-  elevator: 'Transport visitors between floors in the elevator',
-};
 
 const DIAMOND_ICON = require('../assets/img/diamond.png');
 
@@ -75,6 +70,7 @@ function ProgressBar({ value, max }: { value: number; max: number }) {
 }
 
 export default function AchievementsScreen() {
+  const { t } = useTranslation('hotel');
   const categoryProgress = useGameStore(s => s.categoryProgress);
   const theme = useAppTheme();
   const { isDark } = theme;
@@ -88,7 +84,7 @@ export default function AchievementsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headingRow}>
-          <Text style={[styles.heading, { color: theme.text }]}>Achievements</Text>
+          <Text style={[styles.heading, { color: theme.text }]}>{t('achievement.screenTitle')}</Text>
           <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -117,12 +113,12 @@ export default function AchievementsScreen() {
                 <View style={styles.cardTopText}>
                   <Text style={[styles.categoryTitle, { color: theme.text }]}>{category.title}</Text>
                   <Text style={[styles.categoryDesc, { color: theme.textMuted }]}>
-                    {CATEGORY_DESCRIPTIONS[category.key]}
+                    {t(`achievement.categoryDesc.${category.key}` as any)}
                   </Text>
                   <Text style={[styles.levelLabel, { color: theme.textMuted }]}>
                     {currentLevel === 0
-                      ? 'No rank earned'
-                      : `Rank ${currentLevel} · ${currentLevelConfig?.title ?? ''}`}
+                      ? t('achievement.noRank')
+                      : t('achievement.rankLabel', { level: currentLevel, title: currentLevelConfig?.title ?? '' })}
                   </Text>
                 </View>
                 <Image source={TIER_IMAGES[currentLevel]} style={styles.tierIcon} />
@@ -132,13 +128,13 @@ export default function AchievementsScreen() {
 
               {isMaxed ? (
                 <View style={styles.maxedRow}>
-                  <Text style={styles.maxedText}>Max level reached 🏆</Text>
+                  <Text style={styles.maxedText}>{t('achievement.maxLevel')}</Text>
                 </View>
               ) : nextLevelConfig ? (
                 <View style={styles.progressSection}>
                   <View style={styles.nextRankRow}>
                     <View style={styles.inlineRow}>
-                      <Text style={styles.sectionLabel}>Next rank: </Text>
+                      <Text style={styles.sectionLabel}>{t('achievement.nextRank')} </Text>
                       <Text style={[styles.nextTitleBold, { color: theme.text }]}>{nextLevelConfig.title}</Text>
                       <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
                     </View>
@@ -148,19 +144,19 @@ export default function AchievementsScreen() {
                   </View>
                   <ProgressBar value={relativeProgress} max={relativeMax} />
                   <View style={styles.inlineRow}>
-                    <Text style={styles.sectionLabel}>Reward: </Text>
+                    <Text style={styles.sectionLabel}>{t('achievement.rewardLabel')} </Text>
                     <View style={[styles.rewardChip, { backgroundColor: theme.surfaceElevated }]}>
                       <Image source={DIAMOND_ICON} style={styles.diamondIcon} />
                       <Text style={[styles.rewardChipText, { color: theme.text }]}>{nextGems}</Text>
                     </View>
                     {nextIncomeBonus > 0 && (
                       <View style={[styles.rewardChipBonus, { backgroundColor: isDark ? 'rgba(160,107,0,0.2)' : '#FFF4E0' }]}>
-                        <Text style={styles.rewardChipBonusText}>+{nextIncomeBonus}% coins</Text>
+                        <Text style={styles.rewardChipBonusText}>{t('achievement.coinsBonus', { percent: nextIncomeBonus })}</Text>
                       </View>
                     )}
                     {nextXpBonus > 0 && (
                       <View style={[styles.rewardChipBonus, { backgroundColor: isDark ? 'rgba(160,107,0,0.2)' : '#FFF4E0' }]}>
-                        <Text style={styles.rewardChipBonusText}>+{nextXpBonus}% XP</Text>
+                        <Text style={styles.rewardChipBonusText}>{t('achievement.xpBonus', { percent: nextXpBonus })}</Text>
                       </View>
                     )}
                   </View>
@@ -183,7 +179,7 @@ export default function AchievementsScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, { backgroundColor: isDark ? '#2A2F38' : '#fff' }]}>
             <LinearGradient colors={['#5B8CD6', '#3A6BB5']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>Achievements</Text>
+              <Text style={styles.infoCardTitle}>{t('achievement.screenTitle')}</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
                 <Text style={styles.infoCardClose}>✕</Text>
               </Pressable>
@@ -191,20 +187,20 @@ export default function AchievementsScreen() {
             <View style={styles.infoCardBody}>
               <InfoSection
                 icon={require('../assets/img/achivment/1TierAchive.png')}
-                title="Achievement Ranks"
-                text="Each category has 7 ranks to unlock by reaching in-game milestones — buying goods, lifting visitors, collecting revenue, and more."
+                title={t('achievement.info.ranksTitle')}
+                text={t('achievement.info.ranksText')}
                 accentColor="rgba(90,140,214,0.25)"
               />
               <InfoSection
                 icon={require('../assets/img/diamond.png')}
-                title="Gem Rewards"
-                text="Completing each rank earns gems. Higher ranks give more gems per completion."
+                title={t('achievement.info.gemsTitle')}
+                text={t('achievement.info.gemsText')}
                 accentColor="rgba(90,140,214,0.25)"
               />
               <InfoSection
                 icon={require('../assets/img/greenArrowUp.png')}
-                title="Income & XP Bonuses"
-                text="Some ranks also grant a permanent income or XP bonus that applies to all future earnings."
+                title={t('achievement.info.bonusTitle')}
+                text={t('achievement.info.bonusText')}
                 accentColor="rgba(90,140,214,0.25)"
                 isLast
               />

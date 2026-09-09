@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { formatNum } from '../utils/format';
@@ -37,6 +38,7 @@ const COIN_ICON    = require('../../assets/img/coin.png');
 const DIAMOND_ICON = require('../../assets/img/diamond.png');
 
 export default function TaskRewardModal() {
+  const { t } = useTranslation('common');
   const theme = useAppTheme();
   const { isDark } = theme;
   const styles = getStyles(theme);
@@ -69,7 +71,7 @@ export default function TaskRewardModal() {
               <Text style={[styles.star, styles.starSm]}>★</Text>
             </View>
 
-            <Text style={styles.title}>Task Complete!</Text>
+            <Text style={styles.title}>{t('taskReward.title')}</Text>
             <Text style={styles.subtitle} numberOfLines={1}>{reward.taskTitle}</Text>
 
             <View style={styles.chipsWrap}>
@@ -102,7 +104,7 @@ export default function TaskRewardModal() {
               style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
             >
               <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.btnGradient}>
-                <Text style={styles.btnText}>Awesome!</Text>
+                <Text style={styles.btnText}>{t('taskReward.dismiss')}</Text>
               </LinearGradient>
               <View style={styles.btnShadow} />
             </Pressable>

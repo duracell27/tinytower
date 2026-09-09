@@ -442,33 +442,33 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                   <View style={styles.infoCardBody}>
                     <InfoSection
                       icon={require('../../assets/img/hotel.png')}
-                      title="The Hotel"
-                      text="The hotel is where your workers live when they're not assigned to a floor. They wait here until you send them to work."
+                      title={t('hotelPanel.info.hotelTitle')}
+                      text={t('hotelPanel.info.hotelText')}
                     />
                     <InfoSection
                       icon={require('../../assets/img/menu/myWorkers.png')}
-                      title="Seats & Free"
-                      text="Seats — total number of rooms available. Free — how many rooms are vacant. When the hotel is full, no new workers will appear."
+                      title={t('hotelPanel.info.seatsTitle')}
+                      text={t('hotelPanel.info.seatsText')}
                     />
                     <InfoSection
                       icon={require('../../assets/img/specialistWorker.png')}
-                      title="Worker Level"
-                      text="Level (1–9) determines how fast a worker produces goods on a floor. Higher level means faster production."
+                      title={t('hotelPanel.info.levelTitle')}
+                      text={t('hotelPanel.info.levelText')}
                     />
                     <InfoSection
                       icon={require('../../assets/img/happySmile.png')}
-                      title="Dream Job"
-                      text="Every worker has an ideal job. Assigning them to a floor with that production type gives a speed bonus."
+                      title={t('hotelPanel.info.dreamTitle')}
+                      text={t('hotelPanel.info.dreamText')}
                     />
                     <InfoSection
                       icon={require('../../assets/img/greenArrowUp.png')}
-                      title="Green Arrow"
-                      text="This worker is a better candidate for their floor than whoever is currently assigned there — either by type match or higher level."
+                      title={t('hotelPanel.info.arrowTitle')}
+                      text={t('hotelPanel.info.arrowText')}
                     />
                     <InfoSection
                       icon={require('../../assets/img/quicActions/findWorker.png')}
-                      title="Find Job / Evict"
-                      text="Find Job opens the floor picker to assign this worker. Evict permanently removes them from the hotel."
+                      title={t('hotelPanel.info.actionsTitle')}
+                      text={t('hotelPanel.info.actionsText')}
                     />
                   </View>
                 </ScrollView>

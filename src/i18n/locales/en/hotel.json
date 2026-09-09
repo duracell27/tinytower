@@ -79,6 +79,20 @@
       "cancel": "Cancel",
       "confirm": "Evict"
     },
+    "info": {
+      "hotelTitle": "The Hotel",
+      "hotelText": "The hotel is where your workers live when they're not assigned to a floor. They wait here until you send them to work.",
+      "seatsTitle": "Seats & Free",
+      "seatsText": "Seats — total number of rooms available. Free — how many rooms are vacant. When the hotel is full, no new workers will appear.",
+      "levelTitle": "Worker Level",
+      "levelText": "Level (1–9) determines how fast a worker produces goods on a floor. Higher level means faster production.",
+      "dreamTitle": "Dream Job",
+      "dreamText": "Every worker has an ideal job. Assigning them to a floor with that production type gives a speed bonus.",
+      "arrowTitle": "Green Arrow",
+      "arrowText": "This worker is a better candidate for their floor than whoever is currently assigned there — either by type match or higher level.",
+      "actionsTitle": "Find Job / Evict",
+      "actionsText": "Find Job opens the floor picker to assign this worker. Evict permanently removes them from the hotel."
+    },
     "emptySlot": {
       "title": "Vacant",
       "subtitle": "Empty room"
@@ -114,7 +128,29 @@
     "tier": "Tier {{tier}}",
     "buyer": { "title": "Shopaholic" },
     "lister": { "title": "Merchant" },
-    "seller": { "title": "Sales Star" }
+    "seller": { "title": "Sales Star" },
+    "screenTitle": "Achievements",
+    "noRank": "No rank earned",
+    "rankLabel": "Rank {{level}} · {{title}}",
+    "maxLevel": "Max level reached 🏆",
+    "nextRank": "Next rank:",
+    "rewardLabel": "Reward:",
+    "coinsBonus": "+{{percent}}% coins",
+    "xpBonus": "+{{percent}}% XP",
+    "categoryDesc": {
+      "buy":      "Buy goods for your floors to restock production",
+      "list":     "Put delivered goods on shelves to start selling",
+      "collect":  "Collect earned coins from completed sales",
+      "elevator": "Transport visitors between floors in the elevator"
+    },
+    "info": {
+      "ranksTitle": "Achievement Ranks",
+      "ranksText":  "Each category has 7 ranks to unlock by reaching in-game milestones — buying goods, lifting visitors, collecting revenue, and more.",
+      "gemsTitle":  "Gem Rewards",
+      "gemsText":   "Completing each rank earns gems. Higher ranks give more gems per completion.",
+      "bonusTitle": "Income & XP Bonuses",
+      "bonusText":  "Some ranks also grant a permanent income or XP bonus that applies to all future earnings."
+    }
   },
   "dailyLoginReward": {
     "title": "Daily Reward",
@@ -154,7 +190,17 @@
     "collect": "Collect",
     "progress": "{{current}} of {{total}}",
     "tokens": "Tokens",
-    "completedToday": "{{done}} / 7 tasks completed today"
+    "completedToday": "{{done}} / 7 tasks completed today",
+    "info": {
+      "challengesTitle": "Daily Challenges",
+      "challengesText": "Complete 11 tasks each day: buy, list, and collect goods, lift visitors and VIPs, add residents, spend gems, purchase diamonds, and more.",
+      "rewardsTitle": "Rewards",
+      "rewardsText": "Each completed task gives coins and building materials (bricks, glass, nails, screws).",
+      "tokensTitle": "Tokens",
+      "tokensText": "Tasks also reward colored tokens used to upgrade your business categories in My Business.",
+      "bonusTitle": "×2 Bonus Day",
+      "bonusText": "Complete 7 tasks to unlock double rewards for the following day. Resets at midnight."
+    }
   },
   "workersPanel": {
     "title": "My Workers",
@@ -200,6 +246,12 @@
       "specialist": "Specialist",
       "category": "Category upgrade",
       "global": "Global bonus",
+      "marketingBoost": "Marketing boost",
+      "vehicleBonuses": "Vehicle bonuses",
+      "forklift": "Forklift",
+      "deliveryTruck": "Delivery truck",
+      "armoredTruck": "Armored truck",
+      "armoredTruckXp": "Armored truck XP",
       "total": "Total",
       "perMin": "/min"
     },
@@ -249,6 +301,72 @@
     "cancel": "Cancel",
     "have": "Have",
     "need": "Need",
-    "missing": "Missing"
+    "missing": "Missing",
+    "info": {
+      "categoriesTitle": "Business Categories",
+      "categoriesText": "Each floor type (green, blue, yellow, purple, red) is a category. Upgrade them to boost earnings on all floors of that type.",
+      "tokensTitle": "Tokens",
+      "tokensText": "Spend colored tokens to upgrade a category. Each token color matches a specific floor type. Tokens are earned from daily tasks.",
+      "bonusTitle": "+5% Per Level",
+      "bonusText": "Each upgrade adds +5% to coins earned when collecting goods from that floor type.",
+      "maxTitle": "Maximum Level",
+      "maxText": "Each category can be upgraded up to level 40, for a maximum bonus of +200%."
+    }
+  },
+  "buyFloorConfirm": {
+    "subtitle": "This will start construction",
+    "cost": "Cost",
+    "build": "Build!",
+    "cancel": "Cancel"
+  },
+  "underConstruction": {
+    "openBusiness": "Open business",
+    "chooseBusiness": "Choose business",
+    "gatherMaterials": "Gather all required materials to open the business",
+    "materialsHint": "Take people in the elevator to get materials, or buy them in the shop",
+    "elevator": "Elevator"
+  },
+  "tutorialSheet": {
+    "newcomersPath": "NEWCOMER'S PATH",
+    "allDoneTitle": "All tasks done!",
+    "allDoneDesc": "You've mastered the basics of TinyTower.",
+    "finalRewardLabel": "Final reward",
+    "claimFinalReward": "Claim Final Reward",
+    "allCompleteTitle": "All complete!",
+    "rewardLabel": "Reward",
+    "claimReward": "Claim Reward"
+  },
+  "tutorialTaskItems": {
+    "hire_workers":         { "title": "Staff Up",          "description": "Hire 3 workers. Any worker beats an empty slot — you can swap them anytime." },
+    "lift_visitors":        { "title": "Elevator Operator", "description": "Lift 30 visitors in the elevator" },
+    "collect_revenue":      { "title": "Collect Revenue",   "description": "Collect revenue from your floors 10 times" },
+    "build_floor":          { "title": "Going Higher",      "description": "Build a new floor — reach floor 5" },
+    "complete_daily_tasks": { "title": "Daily Grind",       "description": "Complete 3 daily tasks" },
+    "upgrade_elevator":     { "title": "Speed Boost",       "description": "Upgrade the elevator" },
+    "upgrade_lobby":        { "title": "Grand Lobby",       "description": "Upgrade the lobby" },
+    "upgrade_floor":        { "title": "Level Up",          "description": "Upgrade one of your floors to level 2" },
+    "invite_friend":        { "title": "Bring a Friend",    "description": "Send a friend request to any player. Find them in the leaderboard, chat, forum, or visit their profile." },
+    "upgrade_business":     { "title": "Business Pro",      "description": "Upgrade one business category. You can do it in your profile." }
+  },
+  "onboarding": {
+    "collect_slot_1":       "Collect revenue from your business",
+    "collect_slot_2":       "Collect revenue from one more floor",
+    "buy_goods_1":          "Restock goods so production keeps running",
+    "buy_goods_2":          "Restock another production",
+    "open_elevator_1":      "Open the elevator — visitors are waiting",
+    "deliver_visitor":      "Open the elevator and take the guest to their floor",
+    "assign_worker":        "Tap a worker slot — assign your first employee to a floor!",
+    "buy_floor":            "Buy a new floor to expand your tower!",
+    "choose_floor_type":    "All types earn equally. Green floors need frequent attention, red ones less often",
+    "speed_up_construction":"Speed up construction so you don't have to wait",
+    "expand_floor_card":    "Expand the floor card to see which materials are needed",
+    "open_business":        "You have the resources! Tap to open the business",
+    "final_message":        "Welcome!\nThe tower is yours! 🎉",
+    "final_message_dismiss":"Let's go!",
+    "final_message_bullet_1":"Build new floors and collect revenue",
+    "final_message_bullet_2":"Hire and upgrade workers",
+    "final_message_bullet_3":"Take guests by elevator — earn tips",
+    "final_message_bullet_4":"Climb to the top of the leaderboard",
+    "nextTasksHint":        "Complete newcomer tasks and level up your character"
   }
 }

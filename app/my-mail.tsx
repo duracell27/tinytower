@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import AppBackground from '../src/components/AppBackground';
 import { useAppTheme } from '../src/hooks/useAppTheme';
+import { useTranslation } from 'react-i18next';
 import { InfoSection } from '../src/components/InfoSection';
 import { useMailStore } from '../src/stores/mailStore';
 import { getUserIcon } from '../src/utils/userIcon';
@@ -35,6 +36,7 @@ function MailRow({
   onMarkRead: () => void;
   theme: ReturnType<typeof useAppTheme>;
 }) {
+  const { t } = useTranslation('tabs');
   const [expanded, setExpanded] = useState(false);
 
   const handlePress = () => {
@@ -114,7 +116,7 @@ function MailRow({
                 hitSlop={6}
               >
                 <Image source={DELETE_ICON} style={styles.deleteIcon} contentFit="contain" />
-                <Text style={styles.deleteBtnText}>Delete</Text>
+                <Text style={styles.deleteBtnText}>{t('mail.delete')}</Text>
               </Pressable>
             </View>
           </View>
@@ -166,6 +168,7 @@ function SentRow({ mail, theme }: { mail: SentMailMessage; theme: ReturnType<typ
 }
 
 export default function MyMailScreen() {
+  const { t } = useTranslation('tabs');
   const theme = useAppTheme();
   const mails = useMailStore((s) => s.mails);
   const sentMails = useMailStore((s) => s.sentMails);
@@ -200,7 +203,7 @@ export default function MyMailScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <Text style={[styles.screenTitle, { color: theme.text }]}>My Mail</Text>
+            <Text style={[styles.screenTitle, { color: theme.text }]}>{t('mail.title')}</Text>
             <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
               <Image source={INFO_ICON} style={styles.infoIcon} contentFit="contain" />
             </Pressable>
@@ -212,19 +215,19 @@ export default function MyMailScreen() {
               style={[styles.tab, tab === 'all' && styles.tabActive]}
               onPress={() => setTab('all')}
             >
-              <Text style={[styles.tabText, tab === 'all' && styles.tabTextActive]}>All</Text>
+              <Text style={[styles.tabText, tab === 'all' && styles.tabTextActive]}>{t('mail.tabAll')}</Text>
             </Pressable>
             <Pressable
               style={[styles.tab, tab === 'inbox' && styles.tabActive]}
               onPress={() => setTab('inbox')}
             >
-              <Text style={[styles.tabText, tab === 'inbox' && styles.tabTextActive]}>Inbox</Text>
+              <Text style={[styles.tabText, tab === 'inbox' && styles.tabTextActive]}>{t('mail.tabInbox')}</Text>
             </Pressable>
             <Pressable
               style={[styles.tab, tab === 'sent' && styles.tabActive]}
               onPress={() => setTab('sent')}
             >
-              <Text style={[styles.tabText, tab === 'sent' && styles.tabTextActive]}>Sent</Text>
+              <Text style={[styles.tabText, tab === 'sent' && styles.tabTextActive]}>{t('mail.tabSent')}</Text>
             </Pressable>
           </View>
 
@@ -240,9 +243,9 @@ export default function MyMailScreen() {
               if (combined.length === 0) return (
                 <View style={styles.emptyWrap}>
                   <Text style={styles.emptyEmoji}>📭</Text>
-                  <Text style={[styles.emptyTitle, { color: theme.text }]}>No messages yet</Text>
+                  <Text style={[styles.emptyTitle, { color: theme.text }]}>{t('mail.emptyTitle')}</Text>
                   <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
-                    When someone sends you a message it'll show up here
+                    {t('mail.emptySubtitle')}
                   </Text>
                 </View>
               );
@@ -263,9 +266,9 @@ export default function MyMailScreen() {
               mails.length === 0 ? (
                 <View style={styles.emptyWrap}>
                   <Text style={styles.emptyEmoji}>📭</Text>
-                  <Text style={[styles.emptyTitle, { color: theme.text }]}>No messages yet</Text>
+                  <Text style={[styles.emptyTitle, { color: theme.text }]}>{t('mail.emptyTitle')}</Text>
                   <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
-                    When someone sends you a message it'll show up here
+                    {t('mail.emptySubtitle')}
                   </Text>
                 </View>
               ) : (
@@ -283,9 +286,9 @@ export default function MyMailScreen() {
               sentMails.length === 0 ? (
                 <View style={styles.emptyWrap}>
                   <Text style={styles.emptyEmoji}>📤</Text>
-                  <Text style={[styles.emptyTitle, { color: theme.text }]}>No sent messages</Text>
+                  <Text style={[styles.emptyTitle, { color: theme.text }]}>{t('mail.emptySentTitle')}</Text>
                   <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
-                    Messages you send to other players will appear here
+                    {t('mail.emptySentSubtitle')}
                   </Text>
                 </View>
               ) : (
@@ -303,7 +306,7 @@ export default function MyMailScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, { backgroundColor: theme.surface }]}>
             <LinearGradient colors={['#3FA535', '#2C7A25']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>My Mail</Text>
+              <Text style={styles.infoCardTitle}>{t('mail.title')}</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
                 <Text style={styles.infoCardClose}>✕</Text>
               </Pressable>
@@ -311,26 +314,26 @@ export default function MyMailScreen() {
             <View style={styles.infoCardBody}>
               <InfoSection
                 icon={require('../assets/img/mail.png')}
-                title="Inbox"
-                text="Receive messages from any player in the game. Messages are sorted from newest to oldest."
+                title={t('mail.info.inboxTitle')}
+                text={t('mail.info.inboxText')}
                 accentColor="rgba(63,165,53,0.2)"
               />
               <InfoSection
                 icon={require('../assets/img/userIcons/user1-29.png')}
-                title="Read & Unread"
-                text="Unread messages are highlighted in green. Tap a message to open and read it — it will be marked as read automatically."
+                title={t('mail.info.unreadTitle')}
+                text={t('mail.info.unreadText')}
                 accentColor="rgba(63,165,53,0.2)"
               />
               <InfoSection
                 icon={require('../assets/img/CancellIcon.png')}
-                title="Delete"
-                text="You can delete any message after reading it. Deletion is permanent."
+                title={t('mail.info.deleteTitle')}
+                text={t('mail.info.deleteText')}
                 accentColor="rgba(63,165,53,0.2)"
               />
               <InfoSection
                 icon={require('../assets/img/coin.png')}
-                title="Sending Cost"
-                text="Sending a message to another player costs 100 coins. Find any player's profile to send them a message."
+                title={t('mail.info.costTitle')}
+                text={t('mail.info.costText')}
                 accentColor="rgba(63,165,53,0.2)"
                 isLast
               />

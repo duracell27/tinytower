@@ -16,6 +16,13 @@ import hotel from './locales/en/hotel.json';
 import lobby from './locales/en/lobby.json';
 import gameContent from './locales/en/gameContent.json';
 
+import ukCommon from './locales/uk/common.json';
+import ukAuth from './locales/uk/auth.json';
+import ukTabs from './locales/uk/tabs.json';
+import ukHotel from './locales/uk/hotel.json';
+import ukLobby from './locales/uk/lobby.json';
+import ukGameContent from './locales/uk/gameContent.json';
+
 const LANGUAGE_STORAGE_KEY = 'appLanguage';
 
 let languageStorage: ReturnType<typeof createMMKV> | null = null;
@@ -42,6 +49,7 @@ i18next.use(initReactI18next).init({
   defaultNS: 'common',
   resources: {
     en: { common, auth, tabs, hotel, lobby, gameContent },
+    uk: { common: ukCommon, auth: ukAuth, tabs: ukTabs, hotel: ukHotel, lobby: ukLobby, gameContent: ukGameContent },
   },
   interpolation: { escapeValue: false },
 });

@@ -1,4 +1,127 @@
 {
+  "boost": {
+    "title": "Boosts",
+    "gemsUnit": "gems",
+    "coinBoostLabel": "Coin Boost",
+    "xpBoostLabel": "XP Boost",
+    "forDuration": "for {{hours}} hrs",
+    "buy": "Buy",
+    "activeDuration": "{{hours}} hours · active immediately",
+    "stackNote": "Boosts stack — buying again adds {{hours}} hrs on top",
+    "activate": "Activate Boost",
+    "cancel": "Cancel"
+  },
+  "friends": {
+    "title": "My Friends",
+    "subtitle": "Friends list and incoming requests",
+    "level": "Lv {{level}}",
+    "remove": "Remove",
+    "accept": "Accept",
+    "reject": "Reject",
+    "cancel": "Cancel",
+    "tabFriends": "Friends",
+    "tabRequests": "Requests",
+    "tabSent": "Sent",
+    "emptyFriends": "No friends yet",
+    "emptyRequests": "No pending requests",
+    "emptySent": "No sent requests",
+    "info": {
+      "listTitle": "Friends List",
+      "listText": "View all your in-game friends. Tap a friend to visit their profile and see their tower stats.",
+      "requestsTitle": "Friend Requests",
+      "requestsText": "Accept or reject incoming friend requests. The badge on the tab shows how many requests are waiting.",
+      "removeTitle": "Remove Friends",
+      "removeText": "You can remove a friend at any time from the friends list.",
+      "addTitle": "Add Friends",
+      "addText": "To send a friend request, visit any player's profile and tap 'Add Friend'."
+    }
+  },
+  "mail": {
+    "title": "My Mail",
+    "tabAll": "All",
+    "tabInbox": "Inbox",
+    "tabSent": "Sent",
+    "delete": "Delete",
+    "emptyTitle": "No messages yet",
+    "emptySubtitle": "When someone sends you a message it'll show up here",
+    "emptySentTitle": "No sent messages",
+    "emptySentSubtitle": "Messages you send to other players will appear here",
+    "info": {
+      "inboxTitle": "Inbox",
+      "inboxText": "Receive messages from any player in the game. Messages are sorted from newest to oldest.",
+      "unreadTitle": "Read & Unread",
+      "unreadText": "Unread messages are highlighted in green. Tap a message to open and read it — it will be marked as read automatically.",
+      "deleteTitle": "Delete",
+      "deleteText": "You can delete any message after reading it. Deletion is permanent.",
+      "costTitle": "Sending Cost",
+      "costText": "Sending a message to another player costs 100 coins. Find any player's profile to send them a message."
+    }
+  },
+  "autopark": {
+    "title": "Autopark",
+    "vehiclesOwned": "Vehicles owned",
+    "tagline": "Machines allow you to earn more and develop faster",
+    "ownedCount": "{{count}} / 10 owned",
+    "about": "About",
+    "purchased": "Purchased!",
+    "maxedOut": "Maxed out",
+    "buyFor": "Buy for",
+    "info": {
+      "whatTitle": "What is the Autopark?",
+      "whatText": "The autopark is a fleet of vehicles that passively boost your hotel's performance. Each vehicle type provides a unique bonus — buy up to 10 of each.",
+      "truckTitle": "Armored Truck — Profit",
+      "truckText": "Each armored truck increases base production profit by +5% and base XP by +10%. These bonuses apply before all other multipliers.",
+      "speedTitle": "Forklift & Delivery Truck — Speed",
+      "speedText": "Forklifts reduce sell time by 1% each. Delivery trucks reduce delivery time by 1% each. Both also give +5,000 XP per action.",
+      "lobbyTitle": "Taxi & Bus — Lobby",
+      "lobbyText": "Taxis add +1 free gem exchange per day and +1,000 XP per visitor. Buses add +5 visitor slots and +5% tip income each."
+    }
+  },
+  "referrals": {
+    "title": "Referrals",
+    "applyLabel": "Have a referral code?",
+    "apply": "Apply",
+    "applyError": "Invalid or already used code",
+    "invitedBy": "Invited by",
+    "yourCode": "Your code",
+    "copied": "Copied!",
+    "copy": "Copy",
+    "share": "Share link",
+    "shareMessage": "Play TinyTower with me! My referral code: {{code}}\n{{link}}",
+    "empty": "No invited players yet.\nShare your link!",
+    "invitedPlayers": "Invited players",
+    "claimed": "Claimed",
+    "pending": "Pending",
+    "notReached": "Not reached",
+    "purchaseBonus": "Purchase bonus",
+    "milestoneRegistration": "Registration",
+    "milestone10": "Level 10",
+    "milestone30": "Level 30",
+    "info": {
+      "codeTitle": "Your Referral Code",
+      "codeText": "Share your unique code or link with friends. They enter it when registering to link you as their referrer.",
+      "milestoneTitle": "Milestone Rewards",
+      "milestoneText": "Earn coins when your friend registers, and gems when they reach level 10 or level 30.",
+      "purchaseTitle": "Purchase Bonus",
+      "purchaseText": "You receive a gem bonus whenever a player you referred makes an in-game purchase.",
+      "haveCodeTitle": "Have a Referral Code?",
+      "haveCodeText": "If someone shared a code with you, tap the section below to enter it — both players receive a bonus."
+    }
+  },
+  "referralModal": {
+    "rewardTitle": "Referral Reward!",
+    "bonusTitle": "Referral Bonus!",
+    "welcomeTitle": "Welcome Bonus!",
+    "joinedViaLink": "joined via your link",
+    "reachedLevel10": "reached level 10",
+    "reachedLevel30": "reached level 30",
+    "madeAPurchase": "{{name}} made a purchase",
+    "madeAPurchasePlural": "{{name}} and {{count}} more players made purchases",
+    "usedReferralCode": "You used a referral code",
+    "claimCoins": "Claim {{coins}}",
+    "claimGems": "Claim {{gems}} 💎",
+    "awesome": "Awesome!"
+  },
   "labels": {
     "tower": "Tower",
     "city": "City",
@@ -69,17 +192,43 @@
       "popular": "Popular"
     },
     "purchasing": "Processing...",
-    "each5": "5 pcs"
+    "each5": "5 pcs",
+    "basePrice": "Base price",
+    "packs": {
+      "diamonds_1": { "name": "Handful" },
+      "diamonds_2": { "name": "Pouch" },
+      "diamonds_3": { "name": "Box" },
+      "diamonds_4": { "name": "Chest" },
+      "diamonds_5": { "name": "Vault" },
+      "diamonds_6": { "name": "Treasure" },
+      "bundle_1":   { "name": "Starter Pack",    "description": "Perfect for new players — gems, tools & tokens to get you started" },
+      "bundle_2":   { "name": "Resource Bundle", "description": "Stock up on everything you need to keep building fast" },
+      "bundle_3":   { "name": "Growth Bundle",   "description": "Supercharge your tower with premium resources and extra gems" },
+      "bundle_4":   { "name": "VIP Bundle",      "description": "The ultimate value pack — massive gems, full tool & token supply" },
+      "builder_1":  { "name": "Mini Kit",        "description": "A small starter kit with gems and all 6 materials to kick things off" },
+      "builder_2":  { "name": "Starter Builder", "description": "Enough supplies to push through the next few floors without stopping" },
+      "builder_3":  { "name": "Pro Builder",     "description": "A serious supply drop — gems and materials to keep your tower rising fast" },
+      "builder_4":  { "name": "Master Builder",  "description": "Maximum value — massive gem and material haul for elite builders" },
+      "mat_briks":  { "name": "Bricks",          "description": "Solid red bricks for walls and foundations" },
+      "mat_glass":  { "name": "Glass",           "description": "Crystal-clear glass panels for windows and facades" },
+      "mat_nails":  { "name": "Nails",           "description": "Heavy-duty nails to keep every joint tight" },
+      "mat_screw":  { "name": "Screws",          "description": "Precision screws for secure fixtures and fittings" },
+      "mat_wood":   { "name": "Wood",            "description": "Premium timber planks for floors and frames" },
+      "mat_cement": { "name": "Cement",          "description": "Fast-setting cement mix for slabs and structure" }
+    }
   },
   "profile": {
     "title": "Profile",
     "guestFallbackName": "Player",
+    "guestAccount": "Guest account",
     "achievements": "Achievements ({{count}})",
     "stats": {
       "level": "Level",
       "xp": "XP",
       "happy": "Happy",
-      "specialists": "Specialists"
+      "specialists": "Specialists",
+      "currentPerMin": "Current / min",
+      "bestPerMin": "Best / min"
     },
     "menuInfo": {
       "achievements": {
@@ -97,6 +246,21 @@
       "dailyTasks": {
         "title": "Daily Tasks",
         "description": "Complete 9 daily challenges — buy, list, collect goods, lift visitors, and more — to earn coins, building materials, and tokens. Resets every day at midnight."
+      },
+      "mail": {
+        "title": "My Mail",
+        "description": "Messages from other players"
+      },
+      "friends": {
+        "title": "My Friends",
+        "description": "Manage your friend list"
+      },
+      "autopark": {
+        "subtitle": "{{count}} of 50 vehicles owned",
+        "empty": "Manage your vehicles"
+      },
+      "settings": {
+        "description": "App preferences"
       }
     },
     "sync": {
@@ -118,6 +282,7 @@
       "bannerSub": "Create an account to keep your tower across devices.",
       "title": "Create Account",
       "subtitle": "Your progress will be saved to your account.",
+      "unlockFeatures": "Save your account to unlock all game features",
       "labelName": "Player Name",
       "labelEmail": "Email",
       "labelPassword": "Password",
@@ -130,7 +295,10 @@
       "title": "Settings",
       "liftSection": "Lift",
       "simplifiedRewards": "Simplified reward display",
-      "simplifiedRewardsDesc": "Shows items received in the elevator below the transport button, instead of separate popups"
+      "simplifiedRewardsDesc": "Shows items received in the elevator below the transport button, instead of separate popups",
+      "languageSection": "Language",
+      "languageEn": "🇺🇸 English",
+      "languageUk": "🇺🇦 Ukrainian"
     }
   },
   "menu": {
@@ -177,6 +345,12 @@
     "guestBanner": "Log in to participate in the forum",
     "commentPlaceholder": "Write a comment...",
     "submit": "Submit",
+    "commentCount_one": "{{count}} comment",
+    "commentCount_other": "{{count}} comments",
+    "pinPost": "📌 Pin",
+    "unpinPost": "📌 Unpin",
+    "openPost": "🔓 Open",
+    "closePost": "🔒 Close",
     "categories": {
       "NEWS": "News",
       "HELP": "Game Help",
@@ -244,5 +418,44 @@
     "upgradeConfirmTitle": "Upgrade Warehouse?",
     "upgradeConfirmOk": "Upgrade",
     "upgradeConfirmCancel": "Cancel"
+  },
+  "userProfile": {
+    "sectionProfile": "Profile",
+    "sectionBusiness": "Business",
+    "sectionRevenue": "Revenue",
+    "sectionStatus": "Status",
+    "level": "Level",
+    "floors": "Floors",
+    "happy": "Happy",
+    "specialists": "Specialists",
+    "sendMessage": "Send Message",
+    "addFriend": "Add Friend",
+    "requestSent": "Request Sent",
+    "cancelRequest": "Cancel",
+    "accept": "Accept",
+    "reject": "Reject",
+    "removeFriend": "Remove from Friends",
+    "achievements": "Achievements ({{count}})",
+    "locked": "Locked",
+    "levelFallback": "Level {{level}}",
+    "coinBonus": "Coin bonus",
+    "xpBonus": "XP bonus",
+    "currentPerMin": "Current / min",
+    "bestPerMin": "Best / min",
+    "daysInGame": "Days in game",
+    "online": "Online",
+    "lastSeenMins": "Last seen {{mins}}m ago",
+    "lastSeenHours": "Last seen {{hrs}}h ago",
+    "lastSeenDays": "Last seen {{days}}d ago",
+    "messageCost": "Cost: 100",
+    "sent": "Sent!",
+    "subject": "Subject",
+    "subjectPlaceholder": "Subject (max 100 chars)",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Your message (max 1000 chars)",
+    "cancel": "Cancel",
+    "send": "Send",
+    "fillSubjectMessage": "Please fill in subject and message",
+    "failedToSend": "Failed to send"
   }
 }

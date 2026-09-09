@@ -151,26 +151,26 @@ const color         = TYPE_COLORS[ft];
             <View style={styles.infoCardBody}>
               <InfoSection
                 icon={require('../assets/img/profile/myBusiness.png')}
-                title="Business Categories"
-                text="Each floor type (green, blue, yellow, purple, red) is a category. Upgrade them to boost earnings on all floors of that type."
+                title={tHotel('myBusiness.info.categoriesTitle')}
+                text={tHotel('myBusiness.info.categoriesText')}
                 accentColor="rgba(63,165,53,0.25)"
               />
               <InfoSection
                 icon={require('../assets/img/tokens/tokenGreen.png')}
-                title="Tokens"
-                text="Spend coloured tokens to upgrade a category. Each token colour matches a specific floor type. Tokens are earned from daily tasks."
+                title={tHotel('myBusiness.info.tokensTitle')}
+                text={tHotel('myBusiness.info.tokensText')}
                 accentColor="rgba(63,165,53,0.25)"
               />
               <InfoSection
                 icon={require('../assets/img/diamond+percent.png')}
-                title="+5% Per Level"
-                text="Each upgrade adds +5% to coins earned when collecting goods from that floor type."
+                title={tHotel('myBusiness.info.bonusTitle')}
+                text={tHotel('myBusiness.info.bonusText')}
                 accentColor="rgba(63,165,53,0.25)"
               />
               <InfoSection
                 icon={require('../assets/img/achivment/7TierAchive.png')}
-                title="Maximum Level"
-                text="Each category can be upgraded up to level 40, for a maximum bonus of +200%."
+                title={tHotel('myBusiness.info.maxTitle')}
+                text={tHotel('myBusiness.info.maxText')}
                 accentColor="rgba(63,165,53,0.25)"
                 isLast
               />

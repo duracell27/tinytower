@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import AppBackground from '../src/components/AppBackground';
 import { useAppTheme } from '../src/hooks/useAppTheme';
+import { useTranslation } from 'react-i18next';
 import { InfoSection } from '../src/components/InfoSection';
 import { useFriendStore } from '../src/stores/friendStore';
 import { getUserIcon } from '../src/utils/userIcon';
@@ -34,6 +35,7 @@ function FriendRow({ entry, onRemove, theme }: {
   onRemove: () => void;
   theme: ReturnType<typeof useAppTheme>;
 }) {
+  const { t } = useTranslation('tabs');
   return (
     <Pressable
       style={({ pressed }) => [fStyles.row, { borderBottomColor: theme.divider }, pressed && { opacity: 0.75 }]}
@@ -44,7 +46,7 @@ function FriendRow({ entry, onRemove, theme }: {
         <Text style={[fStyles.name, { color: theme.text }]}>{entry.playerName}</Text>
         <View style={fStyles.subRow}>
           <OnlineDot lastSeenAt={entry.lastSeenAt} />
-          <Text style={[fStyles.level, { color: theme.textMuted }]}>Lv {entry.playerLevel}</Text>
+          <Text style={[fStyles.level, { color: theme.textMuted }]}>{t('friends.level', { level: entry.playerLevel })}</Text>
         </View>
       </View>
       <Pressable
@@ -53,7 +55,7 @@ function FriendRow({ entry, onRemove, theme }: {
         hitSlop={8}
       >
         <Image source={CANCEL_ICON} style={fStyles.removeIcon} contentFit="contain" />
-        <Text style={fStyles.removeBtnText}>Remove</Text>
+        <Text style={fStyles.removeBtnText}>{t('friends.remove')}</Text>
       </Pressable>
     </Pressable>
   );
@@ -82,6 +84,7 @@ function RequestRow({ entry, onAccept, onReject, theme }: {
   onReject: () => void;
   theme: ReturnType<typeof useAppTheme>;
 }) {
+  const { t } = useTranslation('tabs');
   return (
     <View style={[rStyles.row, { borderBottomColor: theme.divider }]}>
       <Pressable
@@ -91,7 +94,7 @@ function RequestRow({ entry, onAccept, onReject, theme }: {
         <Image source={getUserIcon(entry.playerLevel)} style={rStyles.avatar} contentFit="cover" />
         <View style={rStyles.info}>
           <Text style={[rStyles.name, { color: theme.text }]}>{entry.playerName}</Text>
-          <Text style={[rStyles.level, { color: theme.textMuted }]}>Lv {entry.playerLevel}</Text>
+          <Text style={[rStyles.level, { color: theme.textMuted }]}>{t('friends.level', { level: entry.playerLevel })}</Text>
         </View>
       </Pressable>
       <View style={rStyles.actions}>
@@ -99,13 +102,13 @@ function RequestRow({ entry, onAccept, onReject, theme }: {
           style={({ pressed }) => [rStyles.acceptBtn, pressed && { opacity: 0.8 }]}
           onPress={onAccept}
         >
-          <Text style={rStyles.acceptText}>Accept</Text>
+          <Text style={rStyles.acceptText}>{t('friends.accept')}</Text>
         </Pressable>
         <Pressable
           style={({ pressed }) => [rStyles.rejectBtn, pressed && { opacity: 0.8 }]}
           onPress={onReject}
         >
-          <Text style={rStyles.rejectText}>Reject</Text>
+          <Text style={rStyles.rejectText}>{t('friends.reject')}</Text>
         </Pressable>
       </View>
     </View>
@@ -138,6 +141,7 @@ function OutgoingRow({ entry, onCancel, theme }: {
   onCancel: () => void;
   theme: ReturnType<typeof useAppTheme>;
 }) {
+  const { t } = useTranslation('tabs');
   return (
     <Pressable
       style={({ pressed }) => [fStyles.row, { borderBottomColor: theme.divider }, pressed && { opacity: 0.75 }]}
@@ -146,7 +150,7 @@ function OutgoingRow({ entry, onCancel, theme }: {
       <Image source={getUserIcon(entry.playerLevel)} style={fStyles.avatar} contentFit="cover" />
       <View style={fStyles.info}>
         <Text style={[fStyles.name, { color: theme.text }]}>{entry.playerName}</Text>
-        <Text style={[fStyles.level, { color: theme.textMuted }]}>Lv {entry.playerLevel}</Text>
+        <Text style={[fStyles.level, { color: theme.textMuted }]}>{t('friends.level', { level: entry.playerLevel })}</Text>
       </View>
       <Pressable
         style={({ pressed }) => [fStyles.removeBtn, pressed && { opacity: 0.7 }]}
@@ -154,13 +158,14 @@ function OutgoingRow({ entry, onCancel, theme }: {
         hitSlop={8}
       >
         <Image source={CANCEL_ICON} style={fStyles.removeIcon} contentFit="contain" />
-        <Text style={fStyles.removeBtnText}>Cancel</Text>
+        <Text style={fStyles.removeBtnText}>{t('friends.cancel')}</Text>
       </Pressable>
     </Pressable>
   );
 }
 
 export default function MyFriendsScreen() {
+  const { t } = useTranslation('tabs');
   const theme = useAppTheme();
   const friends = useFriendStore(s => s.friends);
   const incomingRequests = useFriendStore(s => s.incomingRequests);
@@ -196,12 +201,12 @@ export default function MyFriendsScreen() {
     <AppBackground style={{ flex: 1 }}>
 
       <View style={headerStyles.header}>
-        <Text style={[headerStyles.title, { color: theme.text }]}>My Friends</Text>
+        <Text style={[headerStyles.title, { color: theme.text }]}>{t('friends.title')}</Text>
         <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
           <Image source={INFO_ICON} style={headerStyles.infoIcon} contentFit="contain" />
         </Pressable>
       </View>
-      <Text style={[headerStyles.subtitle, { color: theme.textMuted }]}>Friends list and incoming requests</Text>
+      <Text style={[headerStyles.subtitle, { color: theme.textMuted }]}>{t('friends.subtitle')}</Text>
 
       {/* Tab bar */}
       <View style={[tabStyles.bar, { borderBottomColor: theme.divider }]}>
@@ -210,7 +215,7 @@ export default function MyFriendsScreen() {
           onPress={() => setActiveTab('friends')}
         >
           <Text style={[tabStyles.tabText, { color: activeTab === 'friends' ? '#3FA535' : theme.textMuted }]}>
-            Friends {friends.length > 0 ? `(${friends.length})` : ''}
+            {t('friends.tabFriends')}{friends.length > 0 ? ` (${friends.length})` : ''}
           </Text>
           {activeTab === 'friends' && <View style={tabStyles.indicator} />}
         </Pressable>
@@ -222,7 +227,7 @@ export default function MyFriendsScreen() {
           >
             <View style={tabStyles.tabWithBadge}>
               <Text style={[tabStyles.tabText, { color: activeTab === 'requests' ? '#3FA535' : theme.textMuted }]}>
-                Requests
+                {t('friends.tabRequests')}
               </Text>
               <View style={tabStyles.badge}>
                 <Text style={tabStyles.badgeText}>{pendingCount}</Text>
@@ -238,7 +243,7 @@ export default function MyFriendsScreen() {
             onPress={() => setActiveTab('sent')}
           >
             <Text style={[tabStyles.tabText, { color: activeTab === 'sent' ? '#3FA535' : theme.textMuted }]}>
-              Sent ({outgoingRequests.length})
+              {t('friends.tabSent')} ({outgoingRequests.length})
             </Text>
             {activeTab === 'sent' && <View style={tabStyles.indicator} />}
           </Pressable>
@@ -255,7 +260,7 @@ export default function MyFriendsScreen() {
           {activeTab === 'friends' && (
             <View style={[listStyles.card, { backgroundColor: theme.surface }]}>
               {friends.length === 0 ? (
-                <Text style={[listStyles.emptyText, { color: theme.textMuted }]}>No friends yet</Text>
+                <Text style={[listStyles.emptyText, { color: theme.textMuted }]}>{t('friends.emptyFriends')}</Text>
               ) : (
                 friends.map((entry, idx) => (
                   <FriendRow
@@ -275,7 +280,7 @@ export default function MyFriendsScreen() {
           {activeTab === 'requests' && (
             <View style={[listStyles.card, { backgroundColor: theme.surface }]}>
               {incomingRequests.length === 0 ? (
-                <Text style={[listStyles.emptyText, { color: theme.textMuted }]}>No pending requests</Text>
+                <Text style={[listStyles.emptyText, { color: theme.textMuted }]}>{t('friends.emptyRequests')}</Text>
               ) : (
                 incomingRequests.map((entry) => (
                   <RequestRow
@@ -299,7 +304,7 @@ export default function MyFriendsScreen() {
           {activeTab === 'sent' && (
             <View style={[listStyles.card, { backgroundColor: theme.surface }]}>
               {outgoingRequests.length === 0 ? (
-                <Text style={[listStyles.emptyText, { color: theme.textMuted }]}>No sent requests</Text>
+                <Text style={[listStyles.emptyText, { color: theme.textMuted }]}>{t('friends.emptySent')}</Text>
               ) : (
                 outgoingRequests.map((entry) => (
                   <OutgoingRow
@@ -324,7 +329,7 @@ export default function MyFriendsScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[headerStyles.infoCard, { backgroundColor: theme.surface }]}>
             <LinearGradient colors={['#3FA535', '#2C7A25']} style={headerStyles.infoCardHeader}>
-              <Text style={headerStyles.infoCardTitle}>My Friends</Text>
+              <Text style={headerStyles.infoCardTitle}>{t('friends.title')}</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
                 <Text style={headerStyles.infoCardClose}>✕</Text>
               </Pressable>
@@ -332,26 +337,26 @@ export default function MyFriendsScreen() {
             <View style={headerStyles.infoCardBody}>
               <InfoSection
                 icon={require('../assets/img/users.png')}
-                title="Friends List"
-                text="View all your in-game friends. Tap a friend to visit their profile and see their tower stats."
+                title={t('friends.info.listTitle')}
+                text={t('friends.info.listText')}
                 accentColor="rgba(63,165,53,0.2)"
               />
               <InfoSection
                 icon={require('../assets/img/addfriend.png')}
-                title="Friend Requests"
-                text="Accept or reject incoming friend requests. The badge on the tab shows how many requests are waiting."
+                title={t('friends.info.requestsTitle')}
+                text={t('friends.info.requestsText')}
                 accentColor="rgba(63,165,53,0.2)"
               />
               <InfoSection
                 icon={require('../assets/img/removefriend.png')}
-                title="Remove Friends"
-                text="You can remove a friend at any time from the friends list."
+                title={t('friends.info.removeTitle')}
+                text={t('friends.info.removeText')}
                 accentColor="rgba(63,165,53,0.2)"
               />
               <InfoSection
                 icon={require('../assets/img/userIcons/user1-29.png')}
-                title="Add Friends"
-                text="To send a friend request, visit any player's profile and tap 'Add Friend'."
+                title={t('friends.info.addTitle')}
+                text={t('friends.info.addText')}
                 accentColor="rgba(63,165,53,0.2)"
                 isLast
               />

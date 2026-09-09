@@ -110,14 +110,14 @@ function InfoRow({ icons, label, value, noBorder }: { icons?: any[]; label: stri
   );
 }
 
-function formatLastSeen(lastSeenAt: string): string {
+function formatLastSeen(lastSeenAt: string, t: (key: string, opts?: any) => string): string {
   const diff = Date.now() - new Date(lastSeenAt).getTime();
-  if (diff < 5 * 60 * 1000) return 'Online';
+  if (diff < 5 * 60 * 1000) return t('userProfile.online');
   const mins = Math.floor(diff / 60_000);
-  if (mins < 60) return `Last seen ${mins}m ago`;
+  if (mins < 60) return t('userProfile.lastSeenMins', { mins });
   const hrs = Math.floor(diff / 3_600_000);
-  if (hrs < 24) return `Last seen ${hrs}h ago`;
-  return `Last seen ${Math.floor(diff / 86_400_000)}d ago`;
+  if (hrs < 24) return t('userProfile.lastSeenHours', { hrs });
+  return t('userProfile.lastSeenDays', { days: Math.floor(diff / 86_400_000) });
 }
 
 export default function UserProfileScreen() {
@@ -168,7 +168,7 @@ export default function UserProfileScreen() {
 
   const handleSend = async () => {
     if (!composeSubject.trim() || !composeBody.trim()) {
-      setSendError('Please fill in subject and message');
+      setSendError(t('userProfile.fillSubjectMessage'));
       return;
     }
     setSendLoading(true);
@@ -183,7 +183,7 @@ export default function UserProfileScreen() {
         setComposeBody('');
       }, 1200);
     } catch (e) {
-      setSendError(e instanceof Error ? e.message : 'Failed to send');
+      setSendError(e instanceof Error ? e.message : t('userProfile.failedToSend'));
     } finally {
       setSendLoading(false);
     }
@@ -233,7 +233,7 @@ export default function UserProfileScreen() {
       {!loading && !error && profile && (
         <ScrollView contentContainerStyle={pStyles.scroll} showsVerticalScrollIndicator={false}>
 
-          <SectionHeader label="Profile" />
+          <SectionHeader label={t('userProfile.sectionProfile')} />
 
           {/* Block 1: Header card */}
           <View style={[pStyles.card, { backgroundColor: theme.surface }]}>
@@ -260,7 +260,7 @@ export default function UserProfileScreen() {
                   <Image source={LVL_ICON} style={pStyles.statIcon} contentFit="contain" />
                   <Text style={[pStyles.statValue, { color: theme.text }]}>{profile.playerLevel}</Text>
                 </View>
-                <Text style={[pStyles.statLabel, { color: theme.textMuted }]}>Level</Text>
+                <Text style={[pStyles.statLabel, { color: theme.textMuted }]}>{t('userProfile.level')}</Text>
               </View>
               <View style={[pStyles.statDivider, { backgroundColor: theme.divider }]} />
               <View style={pStyles.statCol}>
@@ -268,7 +268,7 @@ export default function UserProfileScreen() {
                   <Image source={FLOOR_ICON} style={pStyles.statIcon} contentFit="contain" />
                   <Text style={[pStyles.statValue, { color: theme.text }]}>{profile.openedFloorsCount}</Text>
                 </View>
-                <Text style={[pStyles.statLabel, { color: theme.textMuted }]}>Floors</Text>
+                <Text style={[pStyles.statLabel, { color: theme.textMuted }]}>{t('userProfile.floors')}</Text>
               </View>
             </View>
 
@@ -277,14 +277,14 @@ export default function UserProfileScreen() {
               <View style={pStyles.workerItem}>
                 <Image source={HAPPY_ICON} style={pStyles.workerIcon} contentFit="contain" />
                 <View>
-                  <Text style={[pStyles.workerLabel, { color: theme.textMuted }]}>Happy</Text>
+                  <Text style={[pStyles.workerLabel, { color: theme.textMuted }]}>{t('userProfile.happy')}</Text>
                   <Text style={[pStyles.workerValue, { color: theme.text }]}>{profile.happyWorkers}/{profile.totalWorkers}</Text>
                 </View>
               </View>
               <View style={pStyles.workerItem}>
                 <Image source={SPEC_ICON} style={pStyles.workerIcon} contentFit="contain" />
                 <View>
-                  <Text style={[pStyles.workerLabel, { color: theme.textMuted }]}>Specialists</Text>
+                  <Text style={[pStyles.workerLabel, { color: theme.textMuted }]}>{t('userProfile.specialists')}</Text>
                   <Text style={[pStyles.workerValue, { color: theme.text }]}>{profile.specialistWorkers}/{profile.totalWorkers}</Text>
                 </View>
               </View>
@@ -298,7 +298,7 @@ export default function UserProfileScreen() {
               onPress={() => setComposeOpen(true)}
             >
               <Image source={MAIL_ICON} style={pStyles.actionIcon} contentFit="contain" />
-              <Text style={[pStyles.actionBtnText, { color: theme.text }]}>Send Message</Text>
+              <Text style={[pStyles.actionBtnText, { color: theme.text }]}>{t('userProfile.sendMessage')}</Text>
             </Pressable>
           )}
           {/* Friend action — only shown if viewing someone else's profile */}
@@ -315,14 +315,14 @@ export default function UserProfileScreen() {
                   disabled={friendActionLoading}
                 >
                   <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
-                  <Text style={[pStyles.actionBtnText, { color: theme.text }]}>Add Friend</Text>
+                  <Text style={[pStyles.actionBtnText, { color: theme.text }]}>{t('userProfile.addFriend')}</Text>
                 </Pressable>
               )}
 
               {friendStatus?.status === 'pending_sent' && (
                 <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
                   <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
-                  <Text style={[pStyles.actionBtnText, { flex: 1, color: theme.textMuted }]}>Request Sent</Text>
+                  <Text style={[pStyles.actionBtnText, { flex: 1, color: theme.textMuted }]}>{t('userProfile.requestSent')}</Text>
                   <Pressable
                     style={[pStyles.cancelBtn, { backgroundColor: isDark ? '#2A3040' : '#F0EDE5' }]}
                     onPress={async () => {
@@ -333,7 +333,7 @@ export default function UserProfileScreen() {
                     }}
                     disabled={friendActionLoading}
                   >
-                    <Text style={[pStyles.cancelBtnText, { color: theme.textMuted }]}>Cancel</Text>
+                    <Text style={[pStyles.cancelBtnText, { color: theme.textMuted }]}>{t('userProfile.cancelRequest')}</Text>
                   </Pressable>
                 </View>
               )}
@@ -351,7 +351,7 @@ export default function UserProfileScreen() {
                     }}
                     disabled={friendActionLoading}
                   >
-                    <Text style={pStyles.acceptBtnText}>Accept</Text>
+                    <Text style={pStyles.acceptBtnText}>{t('userProfile.accept')}</Text>
                   </Pressable>
                   <Pressable
                     style={pStyles.rejectBtn}
@@ -363,7 +363,7 @@ export default function UserProfileScreen() {
                     }}
                     disabled={friendActionLoading}
                   >
-                    <Text style={pStyles.rejectBtnText}>Reject</Text>
+                    <Text style={pStyles.rejectBtnText}>{t('userProfile.reject')}</Text>
                   </Pressable>
                 </View>
               )}
@@ -380,7 +380,7 @@ export default function UserProfileScreen() {
                   disabled={friendActionLoading}
                 >
                   <Image source={REMOVE_FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
-                  <Text style={[pStyles.actionBtnText, { flex: 1, color: theme.text }]}>Remove from Friends</Text>
+                  <Text style={[pStyles.actionBtnText, { flex: 1, color: theme.text }]}>{t('userProfile.removeFriend')}</Text>
                 </Pressable>
               )}
             </>
@@ -393,7 +393,7 @@ export default function UserProfileScreen() {
           >
             <Image source={ACHIV_ICON} style={pStyles.actionIcon} contentFit="contain" />
             <Text style={[pStyles.actionBtnText, { flex: 1, color: theme.text }]}>
-              Achievements ({totalAchievementLevels})
+              {t('userProfile.achievements', { count: totalAchievementLevels })}
             </Text>
             <Svg width={20} height={20} viewBox="0 0 24 24">
               <Polyline
@@ -412,8 +412,8 @@ export default function UserProfileScreen() {
               {ACHIEVEMENT_CATEGORIES.map((cat, idx) => {
                 const level = profile.categoryProgress[cat.key] ?? 0;
                 const rankTitle = level > 0
-                  ? (cat.levels.find((l) => l.level === level)?.title ?? `Level ${level}`)
-                  : 'Locked';
+                  ? (cat.levels.find((l) => l.level === level)?.title ?? t('userProfile.levelFallback', { level }))
+                  : t('userProfile.locked');
                 const isLast = idx === ACHIEVEMENT_CATEGORIES.length - 1;
                 return (
                   <View key={cat.key} style={[pStyles.achieveRow, { borderBottomColor: theme.divider }, isLast && { borderBottomWidth: 0 }]}>
@@ -432,7 +432,7 @@ export default function UserProfileScreen() {
           )}
 
           {/* Block 4: Business */}
-          <SectionHeader label="Business" />
+          <SectionHeader label={t('userProfile.sectionBusiness')} />
           <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
             {FLOOR_TYPES.map((ft, idx) => {
               const level = profile.businessUpgrades[ft] ?? 0;
@@ -449,14 +449,14 @@ export default function UserProfileScreen() {
           </View>
 
           {/* Block 5: Revenue */}
-          <SectionHeader label="Revenue" />
+          <SectionHeader label={t('userProfile.sectionRevenue')} />
           <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
             {/* Coin bonus + XP bonus on one row */}
             <View style={[pStyles.bonusRow, { borderBottomColor: theme.divider }]}>
               <View style={pStyles.bonusHalf}>
                 <Image source={MARKETING_ICON} style={pStyles.infoIcon} contentFit="contain" />
                 <View>
-                  <Text style={[pStyles.infoLabel, { color: theme.textMuted }]}>Coin bonus</Text>
+                  <Text style={[pStyles.infoLabel, { color: theme.textMuted }]}>{t('userProfile.coinBonus')}</Text>
                   <Text style={[pStyles.infoValue, { color: theme.text }]}>+{profile.coinBonusPercent}%</Text>
                 </View>
               </View>
@@ -464,24 +464,24 @@ export default function UserProfileScreen() {
               <View style={pStyles.bonusHalf}>
                 <Image source={PR_ICON} style={pStyles.infoIcon} contentFit="contain" />
                 <View>
-                  <Text style={[pStyles.infoLabel, { color: theme.textMuted }]}>XP bonus</Text>
+                  <Text style={[pStyles.infoLabel, { color: theme.textMuted }]}>{t('userProfile.xpBonus')}</Text>
                   <Text style={[pStyles.infoValue, { color: theme.text }]}>+{profile.xpBonusPercent}%</Text>
                 </View>
               </View>
             </View>
 
-            <InfoRow icons={[COIN_ICON]} label="Current / min" value={formatNum(profile.revenuePerMin)} />
-            <InfoRow icons={[BEST_RPM_ICON]} label="Best / min" value={formatNum(profile.maxRevenuePerMin)} noBorder />
+            <InfoRow icons={[COIN_ICON]} label={t('userProfile.currentPerMin')} value={formatNum(profile.revenuePerMin)} />
+            <InfoRow icons={[BEST_RPM_ICON]} label={t('userProfile.bestPerMin')} value={formatNum(profile.maxRevenuePerMin)} noBorder />
           </View>
 
           {/* Block 6: Status */}
-          <SectionHeader label="Status" />
+          <SectionHeader label={t('userProfile.sectionStatus')} />
           <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
             <View style={[pStyles.statusRow, { borderBottomColor: theme.divider }]}>
               <View style={[pStyles.statusDot, { backgroundColor: isOnline ? '#52B847' : '#A6ACB8' }]} />
-              <Text style={[pStyles.statusText, { color: theme.text }]}>{formatLastSeen(profile.lastSeenAt)}</Text>
+              <Text style={[pStyles.statusText, { color: theme.text }]}>{formatLastSeen(profile.lastSeenAt, t)}</Text>
             </View>
-            <InfoRow icons={[SAND_CLOCK]} label="Days in game" value={String(daysInGame)} noBorder />
+            <InfoRow icons={[SAND_CLOCK]} label={t('userProfile.daysInGame')} value={String(daysInGame)} noBorder />
           </View>
 
           {currentPlayerId && id !== currentPlayerId && (
@@ -523,35 +523,35 @@ export default function UserProfileScreen() {
         >
           <Pressable style={cStyles.backdrop} onPress={closeCompose} />
           <View style={[cStyles.card, { backgroundColor: theme.surface }]}>
-            <Text style={[cStyles.title, { color: theme.text }]}>Send Message</Text>
+            <Text style={[cStyles.title, { color: theme.text }]}>{t('userProfile.sendMessage')}</Text>
             <View style={cStyles.costRow}>
-              <Text style={[cStyles.costLabel, { color: theme.textMuted }]}>Cost: 100</Text>
+              <Text style={[cStyles.costLabel, { color: theme.textMuted }]}>{t('userProfile.messageCost')}</Text>
               <Image source={COIN_ICON} style={cStyles.costIcon} contentFit="contain" />
             </View>
 
             {sendSuccess ? (
-              <Text style={cStyles.successText}>Sent!</Text>
+              <Text style={cStyles.successText}>{t('userProfile.sent')}</Text>
             ) : (
               <>
                 {sendError ? <Text style={cStyles.errorText}>{sendError}</Text> : null}
 
-                <Text style={[cStyles.fieldLabel, { color: theme.textMuted }]}>Subject</Text>
+                <Text style={[cStyles.fieldLabel, { color: theme.textMuted }]}>{t('userProfile.subject')}</Text>
                 <TextInput
                   style={[cStyles.input, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
                   value={composeSubject}
                   onChangeText={setComposeSubject}
-                  placeholder="Subject (max 100 chars)"
+                  placeholder={t('userProfile.subjectPlaceholder')}
                   placeholderTextColor={theme.textMuted as string}
                   maxLength={100}
                   editable={!sendLoading}
                 />
 
-                <Text style={[cStyles.fieldLabel, { color: theme.textMuted }]}>Message</Text>
+                <Text style={[cStyles.fieldLabel, { color: theme.textMuted }]}>{t('userProfile.messageLabel')}</Text>
                 <TextInput
                   style={[cStyles.textArea, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
                   value={composeBody}
                   onChangeText={setComposeBody}
-                  placeholder="Your message (max 1000 chars)"
+                  placeholder={t('userProfile.messagePlaceholder')}
                   placeholderTextColor={theme.textMuted as string}
                   multiline
                   maxLength={1000}
@@ -564,7 +564,7 @@ export default function UserProfileScreen() {
                     onPress={closeCompose}
                     disabled={sendLoading}
                   >
-                    <Text style={[cStyles.cancelBtnText, { color: theme.textMuted }]}>Cancel</Text>
+                    <Text style={[cStyles.cancelBtnText, { color: theme.textMuted }]}>{t('userProfile.cancel')}</Text>
                   </Pressable>
                   <Pressable
                     style={({ pressed }) => [cStyles.sendBtn, pressed && { opacity: 0.85 }]}
@@ -573,7 +573,7 @@ export default function UserProfileScreen() {
                   >
                     {sendLoading
                       ? <ActivityIndicator color="#fff" size="small" />
-                      : <Text style={cStyles.sendBtnText}>Send</Text>
+                      : <Text style={cStyles.sendBtnText}>{t('userProfile.send')}</Text>
                     }
                   </Pressable>
                 </View>

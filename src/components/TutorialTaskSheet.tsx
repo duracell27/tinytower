@@ -13,6 +13,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useTranslation } from 'react-i18next';
 import { useTutorialTaskStore, useGameStore } from '../stores/gameStore';
 import { TUTORIAL_TASKS, FINAL_REWARD } from '../../shared/config/tutorialTasksConfig';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
@@ -42,6 +43,7 @@ const TASK_ICONS: Record<string, ReturnType<typeof require>> = {
 };
 
 export default function TutorialTaskSheet({ visible, onClose }: Props) {
+  const { t } = useTranslation('hotel');
   const theme = useAppTheme();
   const { isDark } = theme;
   const textPrimary = theme.text;
@@ -118,7 +120,7 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                 </View>
                 {/* NEWCOMER'S PATH label + counter + close */}
                 <View style={styles.sectionRow}>
-                  <Text style={styles.sectionLabel}>NEWCOMER'S PATH</Text>
+                  <Text style={styles.sectionLabel}>{t('tutorialSheet.newcomersPath')}</Text>
                   <Text style={[styles.counterText, { color: textSecondary }]}>{displayIndex}/{totalTasks}</Text>
                   <Pressable onPress={handleAnimatedClose} style={styles.closeBtn} hitSlop={14}>
                     <Text style={[styles.closeBtnText, { color: textSecondary }]}>✕</Text>
@@ -136,9 +138,9 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                       <Text style={{ fontSize: 28 }}>🎉</Text>
                     </View>
                     <View style={styles.taskHeaderText}>
-                      <Text style={[styles.taskTitle, { color: textPrimary }]}>All tasks done!</Text>
+                      <Text style={[styles.taskTitle, { color: textPrimary }]}>{t('tutorialSheet.allDoneTitle')}</Text>
                       <Text style={[styles.taskDesc, { color: textSecondary }]}>
-                        You've mastered the basics of TinyTower.
+                        {t('tutorialSheet.allDoneDesc')}
                       </Text>
                     </View>
                   </View>
@@ -146,7 +148,7 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                   <View style={[styles.divider, { backgroundColor: divider }]} />
 
                   <View style={styles.rewardRow}>
-                    <Text style={[styles.rewardLabel, { color: textSecondary }]}>Final reward</Text>
+                    <Text style={[styles.rewardLabel, { color: textSecondary }]}>{t('tutorialSheet.finalRewardLabel')}</Text>
                     <View style={styles.rewardIcons}>
                       <CoinIcon size={18} />
                       <Text style={[styles.rewardValue, { color: textPrimary }]}>{FINAL_REWARD.coins.toLocaleString()}</Text>
@@ -157,13 +159,13 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
 
                   <View style={styles.claimSpacer} />
                   <Pressable onPress={handleClaim} style={[styles.claimBtn, styles.claimBtnActive]}>
-                    <Text style={styles.claimBtnText}>Claim Final Reward</Text>
+                    <Text style={styles.claimBtnText}>{t('tutorialSheet.claimFinalReward')}</Text>
                   </Pressable>
                 </>
               ) : claimedFinal ? (
                 <View style={styles.taskHeader}>
                   <Text style={{ fontSize: 28, marginRight: 10 }}>✅</Text>
-                  <Text style={[styles.taskTitle, { color: textPrimary }]}>All complete!</Text>
+                  <Text style={[styles.taskTitle, { color: textPrimary }]}>{t('tutorialSheet.allCompleteTitle')}</Text>
                 </View>
               ) : currentTask ? (
                 <>
@@ -173,10 +175,10 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                     </View>
                     <View style={styles.taskHeaderText}>
                       <Text style={[styles.taskTitle, { color: textPrimary }]} numberOfLines={1}>
-                        {currentTask.title}
+                        {t(currentTask.title)}
                       </Text>
                       <Text style={[styles.taskDesc, { color: textSecondary }]} numberOfLines={2}>
-                        {currentTask.description}
+                        {t(currentTask.description)}
                       </Text>
                     </View>
                   </View>
@@ -191,7 +193,7 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                   <View style={[styles.divider, { backgroundColor: divider }]} />
 
                   <View style={styles.rewardRow}>
-                    <Text style={[styles.rewardLabel, { color: textSecondary }]}>Reward</Text>
+                    <Text style={[styles.rewardLabel, { color: textSecondary }]}>{t('tutorialSheet.rewardLabel')}</Text>
                     <View style={styles.rewardIcons}>
                       {currentTask.reward.coins > 0 && (
                         <>
@@ -212,7 +214,7 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                     <>
                       <View style={styles.claimSpacer} />
                       <Pressable onPress={handleClaim} style={[styles.claimBtn, styles.claimBtnActive]}>
-                        <Text style={styles.claimBtnText}>Claim Reward</Text>
+                        <Text style={styles.claimBtnText}>{t('tutorialSheet.claimReward')}</Text>
                       </Pressable>
                     </>
                   ) : (

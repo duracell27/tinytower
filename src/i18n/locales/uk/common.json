@@ -1,0 +1,37 @@
+{
+  "actions": {
+    "login": "Увійти",
+    "register": "Зареєструватись",
+    "cancel": "Скасувати",
+    "or": "або",
+    "awesome": "Чудово!",
+    "signUpFree": "Зареєструватись — це безкоштовно"
+  },
+  "purchaseSuccess": {
+    "title": "Покупку здійснено!",
+    "dismiss": "Чудово!"
+  },
+  "taskReward": {
+    "title": "Завдання виконано!",
+    "dismiss": "Чудово!"
+  },
+  "relativeTime": {
+    "never": "ніколи",
+    "justNow": "щойно",
+    "minutesAgo": "{{count}}хв тому",
+    "hoursAgo": "{{count}}год тому",
+    "daysAgo": "{{count}}дн тому"
+  },
+  "insufficientResources": {
+    "notEnoughCoins": "Недостатньо монет",
+    "notEnoughGems": "Недостатньо кристалів",
+    "missingMaterials": "Не вистачає матеріалів",
+    "have": "Є",
+    "need": "Потрібно",
+    "missing": "Бракує",
+    "goToShop": "До магазину",
+    "exchangeGems_pre": "Обміняти {{gems}}",
+    "exchangeGems_post": "→ {{coins}} монет",
+    "close": "Закрити"
+  }
+}

@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -29,6 +30,7 @@ const TOOL_ICONS: Record<string, ReturnType<typeof require>> = {
 };
 
 export default function PurchaseSuccessModal() {
+  const { t } = useTranslation('common');
   const theme  = useAppTheme();
   const payload = useGameStore((s) => s.pendingPurchaseSuccess);
   const clear   = useGameStore((s) => s.clearPurchaseSuccess);
@@ -76,7 +78,7 @@ export default function PurchaseSuccessModal() {
           <LinearGradient colors={gradientColors} style={s.cardInner}>
 
             <Image source={DIAMOND_ICON} style={s.bigIcon} contentFit="contain" />
-            <Text style={s.title}>Purchase Complete!</Text>
+            <Text style={s.title}>{t('purchaseSuccess.title')}</Text>
             <Text style={s.packName}>{packName}</Text>
 
             <View style={s.chips}>
@@ -89,7 +91,7 @@ export default function PurchaseSuccessModal() {
             </View>
 
             <Pressable style={s.btn} onPress={clear}>
-              <Text style={s.btnText}>Awesome!</Text>
+              <Text style={s.btnText}>{t('purchaseSuccess.dismiss')}</Text>
             </Pressable>
           </LinearGradient>
         </Animated.View>

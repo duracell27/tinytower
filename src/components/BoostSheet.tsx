@@ -7,6 +7,7 @@ import Animated, {
   useAnimatedStyle, useSharedValue, withTiming, Easing, runOnJS,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useGameStore } from '../stores/gameStore';
 import { BOOST_PACKAGES, BoostPackage } from '../../shared/config/boostConfig';
@@ -43,6 +44,7 @@ function boostTimeLabel(expiresAt: number, now: number): string | null {
 function BoostCard({ pkg, gems, now, onBuy, onNotEnough }: {
   pkg: BoostPackage; gems: number; now: number; onBuy: () => void; onNotEnough: () => void;
 }) {
+  const { t } = useTranslation('tabs');
   const theme  = useAppTheme();
   const isCoin = pkg.boostType === 'coin';
   const accent    = isCoin ? '#F5A623' : (theme.isDark ? '#C08AF0' : '#7B4FBF');
@@ -65,7 +67,7 @@ function BoostCard({ pkg, gems, now, onBuy, onNotEnough }: {
         </View>
         <View style={styles.cardInfo}>
           <Text style={[styles.cardPercent, { color: theme.text }]}>+{pkg.percent}%</Text>
-          <Text style={[styles.cardDuration, { color: accent }]}>for 30 hrs</Text>
+          <Text style={[styles.cardDuration, { color: accent }]}>{t('boost.forDuration', { hours: pkg.durationMs / 3_600_000 })}</Text>
         </View>
       </View>
       <View style={styles.cardBottom}>
@@ -74,7 +76,7 @@ function BoostCard({ pkg, gems, now, onBuy, onNotEnough }: {
           <Text style={[styles.cardPriceText, { color: '#FFF' }]}>{pkg.gemCost}</Text>
         </View>
         <View style={[styles.cardBuyBtn, { backgroundColor: accent }]}>
-          <Text style={styles.cardBuyBtnText}>Buy</Text>
+          <Text style={styles.cardBuyBtnText}>{t('boost.buy')}</Text>
         </View>
       </View>
     </Pressable>
@@ -106,6 +108,7 @@ function SectionRow({ label, percent, expiresAt, now, isCoin }: {
 }
 
 export default function BoostSheet({ visible, onClose }: Props) {
+  const { t } = useTranslation('tabs');
   const theme = useAppTheme();
   const [mounted, setMounted] = useState(false);
   const translateY   = useSharedValue(SCREEN_HEIGHT);
@@ -201,11 +204,11 @@ export default function BoostSheet({ visible, onClose }: Props) {
             <View style={styles.header}>
               <View style={styles.headerLeft}>
                 <Image source={MARKETING_ICON} style={styles.headerIcon} contentFit="contain" />
-                <Text style={[styles.headerTitle, { color: theme.text }]}>Boosts</Text>
+                <Text style={[styles.headerTitle, { color: theme.text }]}>{t('boost.title')}</Text>
               </View>
               <View style={styles.headerRight}>
                 <GemIcon size={14} />
-                <Text style={[styles.headerGemsText, { color: theme.text }]}>{gems} gems</Text>
+                <Text style={[styles.headerGemsText, { color: theme.text }]}>{gems} {t('boost.gemsUnit')}</Text>
                 <Pressable onPress={handleClose} hitSlop={8}>
                   <View style={[styles.headerCloseBtnInner, { backgroundColor: theme.surfaceSub }]}>
                     <Text style={[styles.headerCloseBtnText, { color: theme.textMuted }]}>✕</Text>
@@ -216,7 +219,7 @@ export default function BoostSheet({ visible, onClose }: Props) {
 
             {/* Scrollable content */}
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-              <SectionRow label="Coin Boost" percent={coinBoostPercent} expiresAt={coinBoostExpiresAt} now={now} isCoin />
+              <SectionRow label={t('boost.coinBoostLabel')} percent={coinBoostPercent} expiresAt={coinBoostExpiresAt} now={now} isCoin />
               <View style={styles.grid}>
                 {coinPackages.map((pkg) => (
                   <BoostCard
@@ -227,7 +230,7 @@ export default function BoostSheet({ visible, onClose }: Props) {
                 ))}
               </View>
 
-              <SectionRow label="XP Boost" percent={xpBoostPercent} expiresAt={xpBoostExpiresAt} now={now} isCoin={false} />
+              <SectionRow label={t('boost.xpBoostLabel')} percent={xpBoostPercent} expiresAt={xpBoostExpiresAt} now={now} isCoin={false} />
               <View style={styles.grid}>
                 {xpPackages.map((pkg) => (
                   <BoostCard
@@ -255,11 +258,11 @@ export default function BoostSheet({ visible, onClose }: Props) {
                   />
                 </View>
                 <Text style={[styles.confirmTitle, { color: theme.text }]}>
-                  {pendingBoost.boostType === 'coin' ? 'Coin Boost' : 'XP Boost'} +{pendingBoost.percent}%
+                  {pendingBoost.boostType === 'coin' ? t('boost.coinBoostLabel') : t('boost.xpBoostLabel')} +{pendingBoost.percent}%
                 </Text>
-                <Text style={[styles.confirmSub, { color: theme.textMuted }]}>30 hours · active immediately</Text>
+                <Text style={[styles.confirmSub, { color: theme.textMuted }]}>{t('boost.activeDuration', { hours: pendingBoost.durationMs / 3_600_000 })}</Text>
                 <Text style={[styles.confirmStackNote, { color: theme.textMuted }]}>
-                  Boosts stack — buying again adds 30 hrs on top
+                  {t('boost.stackNote', { hours: pendingBoost.durationMs / 3_600_000 })}
                 </Text>
                 <View style={[styles.confirmPriceRow, { backgroundColor: theme.surfaceElevated }]}>
                   <Image source={DIAMOND} style={{ width: 20, height: 20 }} contentFit="contain" />
@@ -271,10 +274,10 @@ export default function BoostSheet({ visible, onClose }: Props) {
                   }]}
                   onPress={confirmBoost}
                 >
-                  <Text style={styles.confirmBtnText}>Activate Boost</Text>
+                  <Text style={styles.confirmBtnText}>{t('boost.activate')}</Text>
                 </Pressable>
                 <Pressable style={styles.cancelBtn} onPress={() => setPendingBoost(null)}>
-                  <Text style={[styles.cancelBtnText, { color: theme.textMuted }]}>Cancel</Text>
+                  <Text style={[styles.cancelBtnText, { color: theme.textMuted }]}>{t('boost.cancel')}</Text>
                 </Pressable>
               </View>
             </View>

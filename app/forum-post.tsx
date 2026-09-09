@@ -186,7 +186,7 @@ export default function ForumPostScreen() {
         )}
       </View>
       <Text style={[styles.postTitle, isDark && { color: theme.text }]}>
-        {isPostBlocked ? <Text style={styles.blockedText}>From blocked user</Text> : activePost.title}
+        {isPostBlocked ? <Text style={styles.blockedText}>{t('block.blockedContent')}</Text> : activePost.title}
       </Text>
       <Text style={[styles.postBody, isDark && { color: '#C8D8C0' }]}>
         {isPostBlocked ? '' : activePost.body}
@@ -197,20 +197,20 @@ export default function ForumPostScreen() {
             style={[styles.adminBtn, activePost.isPinned && styles.adminBtnActive, isDark && { backgroundColor: theme.surface, borderColor: theme.divider }]}
             onPress={() => void pinPost(postId, !activePost.isPinned)}
           >
-            <Text style={[styles.adminBtnText, isDark && { color: theme.text }]}>{activePost.isPinned ? '📌 Unpin' : '📌 Pin'}</Text>
+            <Text style={[styles.adminBtnText, isDark && { color: theme.text }]}>{activePost.isPinned ? t('forum.unpinPost') : t('forum.pinPost')}</Text>
           </Pressable>
           <Pressable
             style={[styles.adminBtn, activePost.isClosed && styles.adminBtnActive, isDark && { backgroundColor: theme.surface, borderColor: theme.divider }]}
             onPress={() => void closePost(postId, !activePost.isClosed)}
           >
-            <Text style={[styles.adminBtnText, isDark && { color: theme.text }]}>{activePost.isClosed ? '🔓 Open' : '🔒 Close'}</Text>
+            <Text style={[styles.adminBtnText, isDark && { color: theme.text }]}>{activePost.isClosed ? t('forum.openPost') : t('forum.closePost')}</Text>
           </Pressable>
         </View>
       )}
       <View style={[styles.divider, isDark && { backgroundColor: theme.divider }]} />
       <View style={styles.commentsLabel}>
         <Image source={CHAT_ICON} style={styles.commentsLabelIcon} contentFit="contain" />
-        <Text style={styles.commentsLabelText}>{activePost.commentCount} comments</Text>
+        <Text style={styles.commentsLabelText}>{t('forum.commentCount', { count: activePost.commentCount })}</Text>
       </View>
     </View>
   ) : null;

@@ -92,6 +92,7 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
   cardWidth: number;
   btnColor: string;
 }) {
+  const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   const baseGems = pack.rewards.gems != null
     ? pack.rewards.gems - (pack.bonusGems ?? 0)
@@ -118,11 +119,11 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
             <Text style={[dc.bonusText, isDark && { color: '#5ABF50' }]}>+{pack.bonusGems.toLocaleString()} bonus</Text>
           </View>
         : <View style={[dc.baseChip, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-            <Text style={[dc.baseText, isDark && { color: '#8A9A80' }]}>Base price</Text>
+            <Text style={[dc.baseText, isDark && { color: '#8A9A80' }]}>{t('shop.basePrice')}</Text>
           </View>
       }
 
-      <Text style={[dc.name, isDark && { color: '#DDE8D8' }]}>{pack.name}</Text>
+      <Text style={[dc.name, isDark && { color: '#DDE8D8' }]}>{t(pack.name as any)}</Text>
 
       <Pressable
         style={[dc.btn, { backgroundColor: activeBtnColor }, disabled && dc.btnDisabled]}
@@ -178,6 +179,7 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
   fullWidth: number;
   btnColor: string;
 }) {
+  const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   const bg = (isDark ? (pack.imageBgDark ?? pack.imageBg) : pack.imageBg) ?? ['#EEE8FF', '#D8CCFF'] as [string, string];
 
@@ -208,10 +210,10 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
         </View>
         <View style={fw.headerText}>
           <View style={fw.titleRow}>
-            <Text style={[fw.name, { color: txt }]}>{pack.name}</Text>
+            <Text style={[fw.name, { color: txt }]}>{t(pack.name as any)}</Text>
             {pack.badge && <Badge kind={pack.badge} />}
           </View>
-          {pack.description && <Text style={[fw.desc, { color: txtSub }]}>{pack.description}</Text>}
+          {pack.description && <Text style={[fw.desc, { color: txtSub }]}>{t(pack.description as any)}</Text>}
         </View>
       </View>
 
@@ -327,8 +329,8 @@ function MaterialCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
       style={[mc.card, { width: cardWidth }, buying && mc.buying]}
     >
       <Image source={pack.image} style={mc.icon} contentFit="contain" />
-      <Text style={[mc.name, { color: txt }]}>{pack.name}</Text>
-      {pack.description && <Text style={[mc.desc, { color: txtSub }]}>{pack.description}</Text>}
+      <Text style={[mc.name, { color: txt }]}>{t(pack.name as any)}</Text>
+      {pack.description && <Text style={[mc.desc, { color: txtSub }]}>{t(pack.description as any)}</Text>}
       <View style={[mc.qtyChip, { backgroundColor: onDark ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.42)' }]}>
         <Text style={[mc.qty, { color: txt }]}>{t('shop.each5')}</Text>
       </View>

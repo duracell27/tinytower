@@ -41,31 +41,31 @@ export interface StepConfig {
 // Tune these values after visual testing.
 export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfig> = {
   collect_slot_1: {
-    text: 'Collect revenue from your business',
+    text: 'onboarding.collect_slot_1',
     iconSource: require('../../assets/img/coin.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   collect_slot_2: {
-    text: 'Collect revenue from one more floor',
+    text: 'onboarding.collect_slot_2',
     iconSource: require('../../assets/img/coin.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   buy_goods_1: {
-    text: 'Restock goods so production keeps running',
+    text: 'onboarding.buy_goods_1',
     iconSource: require('../../assets/img/ForkliftIcon.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   buy_goods_2: {
-    text: 'Restock another production',
+    text: 'onboarding.buy_goods_2',
     iconSource: require('../../assets/img/ForkliftIcon.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   open_elevator_1: {
-    text: 'Open the elevator — visitors are waiting',
+    text: 'onboarding.open_elevator_1',
     iconSource: require('../../assets/img/lift/visitor.png'),
     pointer: { x: 0.5, y: 0.78 },
     arrowDir: 'down',
@@ -74,7 +74,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowAboveSpotlight: true,
   },
   deliver_visitor: {
-    text: 'Open the elevator and take the guest to their floor',
+    text: 'onboarding.deliver_visitor',
     iconSource: require('../../assets/img/lift/visitor.png'),
     pointer: { x: 0.5, y: 0.78 },
     arrowDir: 'down',
@@ -83,13 +83,13 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowAboveSpotlight: true,
   },
   assign_worker: {
-    text: 'Tap a worker slot — assign your first employee to a floor!',
+    text: 'onboarding.assign_worker',
     iconSource: require('../../assets/img/workers/man-green.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   buy_floor: {
-    text: 'Buy a new floor to expand your tower!',
+    text: 'onboarding.buy_floor',
     iconSource: require('../../assets/img/workers/builder.png'),
     arrowDir: 'up',
     dismissable: false,
@@ -98,13 +98,13 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     spotlightPressEnabled: true,
   },
   choose_floor_type: {
-    text: 'All types earn equally. Green floors need frequent attention, red ones less often',
+    text: 'onboarding.choose_floor_type',
     iconSource: require('../../assets/img/menu/myBusiness.png'),
     arrowDir: 'down',
     dismissable: false,
   },
   speed_up_construction: {
-    text: 'Speed up construction so you don\'t have to wait',
+    text: 'onboarding.speed_up_construction',
     iconSource: require('../../assets/img/diamond.png'),
     arrowDir: 'down',
     dismissable: false,
@@ -113,7 +113,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     hintBelowSpotlight: true,
   },
   expand_floor_card: {
-    text: 'Expand the floor card to see which materials are needed',
+    text: 'onboarding.expand_floor_card',
     iconSource: require('../../assets/img/sandClock.png'),
     arrowDir: 'up',
     dismissable: false,
@@ -124,7 +124,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowOffsetX: 162,
   },
   open_business: {
-    text: 'You have the resources! Tap to open the business',
+    text: 'onboarding.open_business',
     iconSource: require('../../assets/img/tools/briks.png'),
     arrowDir: 'down',
     dismissable: false,
@@ -133,17 +133,17 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowOffsetX: 70,
   },
   final_message: {
-    text: 'Welcome!\nThe tower is yours! 🎉',
+    text: 'onboarding.final_message',
     iconSource: require('../../assets/img/managerIcon.png'),
     arrowDir: 'up',
     dismissable: true,
-    dismissLabel: 'Let\'s go!',
+    dismissLabel: 'onboarding.final_message_dismiss',
     centered: true,
     bullets: [
-      { icon: require('../../assets/img/coin.png'),      text: 'Build new floors and collect revenue' },
-      { icon: require('../../assets/img/worker.png'),    text: 'Hire and upgrade workers' },
-      { icon: require('../../assets/img/hotel.png'),     text: 'Take guests by elevator — earn tips' },
-      { icon: require('../../assets/img/starFull.png'),  text: 'Climb to the top of the leaderboard' },
+      { icon: require('../../assets/img/coin.png'),      text: 'onboarding.final_message_bullet_1' },
+      { icon: require('../../assets/img/worker.png'),    text: 'onboarding.final_message_bullet_2' },
+      { icon: require('../../assets/img/hotel.png'),     text: 'onboarding.final_message_bullet_3' },
+      { icon: require('../../assets/img/starFull.png'),  text: 'onboarding.final_message_bullet_4' },
     ],
   },
 };

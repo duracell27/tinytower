@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import AppBackground from '../src/components/AppBackground';
 import { useAppTheme } from '../src/hooks/useAppTheme';
+import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../src/stores/gameStore';
 import { InfoSection } from '../src/components/InfoSection';
 import { VEHICLE_CONFIG, VEHICLE_TYPES } from '../shared/config/vehicleConfig';
@@ -19,6 +20,7 @@ const VEHICLE_ICONS: Record<VehicleType, ReturnType<typeof require>> = {
 };
 
 export default function AutoparkScreen() {
+  const { t } = useTranslation('tabs');
   const theme = useAppTheme();
   const vehicles = useGameStore((s) => s.vehicles);
   const totalOwned = VEHICLE_TYPES.reduce((sum, k) => sum + (vehicles[k] ?? 0), 0);
@@ -28,7 +30,7 @@ export default function AutoparkScreen() {
     <AppBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text }]}>Autopark</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{t('autopark.title')}</Text>
           <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -40,14 +42,14 @@ export default function AutoparkScreen() {
 
         <View style={[styles.summaryCard, { backgroundColor: theme.surface }]}>
           <View style={styles.summaryTop}>
-            <Text style={[styles.summaryLabel, { color: theme.text }]}>Vehicles owned</Text>
+            <Text style={[styles.summaryLabel, { color: theme.text }]}>{t('autopark.vehiclesOwned')}</Text>
             <View style={styles.summaryCountRow}>
               <Text style={[styles.summaryCount, { color: theme.text }]}>{totalOwned}</Text>
               <Text style={[styles.summaryOf, { color: theme.textMuted }]}> / 50</Text>
             </View>
           </View>
           <Text style={[styles.tagline, { color: theme.textMuted }]}>
-            Machines allow you to earn more and develop faster
+            {t('autopark.tagline')}
           </Text>
         </View>
 
@@ -113,7 +115,7 @@ export default function AutoparkScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, { backgroundColor: theme.surface }]}>
             <LinearGradient colors={['#2563EB', '#1D4ED8']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>Autopark</Text>
+              <Text style={styles.infoCardTitle}>{t('autopark.title')}</Text>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
                 <Text style={styles.infoCardClose}>✕</Text>
               </Pressable>
@@ -121,26 +123,26 @@ export default function AutoparkScreen() {
             <View style={styles.infoCardBody}>
               <InfoSection
                 icon={require('../assets/img/TrucksProfileIcon.png')}
-                title="What is the Autopark?"
-                text="The autopark is a fleet of vehicles that passively boost your hotel's performance. Each vehicle type provides a unique bonus — buy up to 10 of each."
+                title={t('autopark.info.whatTitle')}
+                text={t('autopark.info.whatText')}
                 accentColor="rgba(37,99,235,0.18)"
               />
               <InfoSection
                 icon={require('../assets/img/coin.png')}
-                title="Armored Truck — Profit"
-                text="Each armored truck increases base production profit by +5% and base XP by +10%. These bonuses apply before all other multipliers."
+                title={t('autopark.info.truckTitle')}
+                text={t('autopark.info.truckText')}
                 accentColor="rgba(37,99,235,0.18)"
               />
               <InfoSection
                 icon={require('../assets/img/speedUp.png')}
-                title="Forklift & Delivery Truck — Speed"
-                text="Forklifts reduce sell time by 1% each. Delivery trucks reduce delivery time by 1% each. Both also give +5,000 XP per action."
+                title={t('autopark.info.speedTitle')}
+                text={t('autopark.info.speedText')}
                 accentColor="rgba(37,99,235,0.18)"
               />
               <InfoSection
                 icon={require('../assets/img/xpIcon.png')}
-                title="Taxi & Bus — Lobby"
-                text="Taxis add +1 free gem exchange per day and +1,000 XP per visitor. Buses add +5 visitor slots and +5% tip income each."
+                title={t('autopark.info.lobbyTitle')}
+                text={t('autopark.info.lobbyText')}
                 accentColor="rgba(37,99,235,0.18)"
                 isLast
               />

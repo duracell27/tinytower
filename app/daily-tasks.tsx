@@ -277,26 +277,26 @@ export default function DailyTasksScreen() {
             <View style={styles.infoCardBody}>
               <InfoSection
                 icon={require('../assets/img/daily/dailytransporter.png')}
-                title="Daily Challenges"
-                text="Complete 11 tasks each day: buy, list, and collect goods, lift visitors and VIPs, add residents, spend gems, purchase diamonds, and more."
+                title={t('dailyTasks.info.challengesTitle')}
+                text={t('dailyTasks.info.challengesText')}
                 accentColor="rgba(229,167,46,0.3)"
               />
               <InfoSection
                 icon={require('../assets/img/coin.png')}
-                title="Rewards"
-                text="Each completed task gives coins and building materials (bricks, glass, nails, screws)."
+                title={t('dailyTasks.info.rewardsTitle')}
+                text={t('dailyTasks.info.rewardsText')}
                 accentColor="rgba(229,167,46,0.3)"
               />
               <InfoSection
                 icon={require('../assets/img/tokens/tokenGreen.png')}
-                title="Tokens"
-                text="Tasks also reward coloured tokens used to upgrade your business categories in My Business."
+                title={t('dailyTasks.info.tokensTitle')}
+                text={t('dailyTasks.info.tokensText')}
                 accentColor="rgba(229,167,46,0.3)"
               />
               <InfoSection
                 icon={require('../assets/img/diamond.png')}
-                title="×2 Bonus Day"
-                text="Complete 7 tasks to unlock double rewards for the following day. Resets at midnight."
+                title={t('dailyTasks.info.bonusTitle')}
+                text={t('dailyTasks.info.bonusText')}
                 accentColor="rgba(229,167,46,0.3)"
                 isLast
               />

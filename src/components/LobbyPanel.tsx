@@ -1523,33 +1523,33 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <View style={infoStyles.cardBody}>
                   <InfoSection
                     icon={require('../../assets/img/reception.png')}
-                    title="Lobby"
-                    text="The lobby is your tower's entrance. Visitors arrive here and you use the elevator to guide them to their destinations."
+                    title={t('lobbyPanel.info.lobbyTitle')}
+                    text={t('lobbyPanel.info.lobbyText')}
                   />
                   <InfoSection
                     icon={require('../../assets/img/lift/visitor.png')}
-                    title="Guests"
-                    text="Guests head to floor 1 (Hotel) and check in as new workers. Guide them up to grow your team."
+                    title={t('lobbyPanel.info.guestsTitle')}
+                    text={t('lobbyPanel.info.guestsText')}
                   />
                   <InfoSection
                     icon={require('../../assets/img/lift/businessman.png')}
-                    title="Businessmen"
-                    text="Businessmen pay in gems — one gem per visit, up to your daily limit. Lift them to any floor to collect."
+                    title={t('lobbyPanel.info.businessmenTitle')}
+                    text={t('lobbyPanel.info.businessmenText')}
                   />
                   <InfoSection
                     icon={require('../../assets/img/lift/delivery.png')}
-                    title="Deliverers & Sellers"
-                    text="Deliverers and sellers visit production floors to bring supplies or buyers. Lift them to earn coin tips."
+                    title={t('lobbyPanel.info.deliverersTitle')}
+                    text={t('lobbyPanel.info.deliverersText')}
                   />
                   <InfoSection
                     icon={require('../../assets/img/coin.png')}
-                    title="Daily Tips"
-                    text="Every coin tip you collect counts toward your daily tip goal. Reach the two milestones to earn gem rewards."
+                    title={t('lobbyPanel.info.tipsTitle')}
+                    text={t('lobbyPanel.info.tipsText')}
                   />
                   <InfoSection
                     icon={require('../../assets/img/quicActions/deliver.png')}
-                    title="Deliver All"
-                    text="Spend 1 gem to instantly deliver all waiting visitors at once — great when the lobby is packed."
+                    title={t('lobbyPanel.info.deliverAllTitle')}
+                    text={t('lobbyPanel.info.deliverAllText')}
                   />
                 </View>
               </ScrollView>

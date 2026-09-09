@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { createMMKV } from 'react-native-mmkv';
 import { shadeColor } from '../utils/color';
+import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useGameClock } from '../hooks/useGameClock';
@@ -15,9 +16,6 @@ const uiStorage = createMMKV({ id: 'ui-prefs' });
 const BANNER_COLOR = '#E67E22';
 const BANNER_BG = shadeColor(BANNER_COLOR, 45);
 
-const TOOL_NAMES: Record<string, string> = {
-  briks: 'Bricks', glass: 'Glass', nails: 'Nails', screw: 'Screws', wood: 'Wood', cement: 'Cement',
-};
 const TOOL_IMAGES: Record<string, ReturnType<typeof require>> = {
   briks:  require('../../assets/img/tools/briks.png'),
   glass:  require('../../assets/img/tools/glass.png'),
@@ -25,9 +23,6 @@ const TOOL_IMAGES: Record<string, ReturnType<typeof require>> = {
   screw:  require('../../assets/img/tools/screw.png'),
   wood:   require('../../assets/img/tools/wood.png'),
   cement: require('../../assets/img/tools/cement.png'),
-};
-const FLOOR_TYPE_NAMES: Record<string, string> = {
-  green: 'Products', blue: 'Service', yellow: 'Rest', purple: 'Fashion', red: 'Electronics',
 };
 const FLOOR_TYPE_COLORS: Record<string, string> = {
   green: '#5E8F42', blue: '#2E6EC9', yellow: '#C78800', purple: '#9A6FD0', red: '#E05050',
@@ -140,6 +135,9 @@ export default function UnderConstructionBanner({
   const speedUpCost = Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));
   const canStart = requiredTools.every(({ tool, count }) => (tools?.[tool as keyof typeof tools] ?? 0) >= count);
 
+  const { t } = useTranslation('hotel');
+  const { t: tLobby } = useTranslation('lobby');
+  const { t: tContent } = useTranslation('gameContent');
   const theme = useAppTheme();
   const { isDark } = theme;
   const toggleCollapse = () => {
@@ -157,7 +155,7 @@ export default function UnderConstructionBanner({
   // State: type selected — full card layout
   if (isReady && selectedFloorType) {
     const typeColor = FLOOR_TYPE_COLORS[selectedFloorType] ?? '#888';
-    const typeName = FLOOR_TYPE_NAMES[selectedFloorType] ?? selectedFloorType;
+    const typeName = tContent(`floorTypes.${selectedFloorType}.category`, { defaultValue: selectedFloorType });
 
     const num = parseInt(typeColor.replace('#', ''), 16);
     const mix = 0.22;
@@ -206,7 +204,7 @@ export default function UnderConstructionBanner({
           </Pressable>
         </View>
         <Text style={[styles.cardHint, { color: theme.textMuted }]}>
-          Gather all required materials to open the business
+          {t('underConstruction.gatherMaterials')}
         </Text>
 
         {/* Tools row — centred */}
@@ -226,7 +224,7 @@ export default function UnderConstructionBanner({
                 <Text style={[styles.toolCount, { color: met ? '#49AA38' : '#E05050' }]}>
                   {`${have}/${count}`}
                 </Text>
-                <Text style={[styles.toolLabel, { color: theme.textMuted }]}>{TOOL_NAMES[tool] ?? tool}</Text>
+                <Text style={[styles.toolLabel, { color: theme.textMuted }]}>{tLobby(`tools.${tool}`, { defaultValue: tool })}</Text>
               </View>
             );
           })}
@@ -241,7 +239,7 @@ export default function UnderConstructionBanner({
             style={({ pressed }) => [styles.startBtn, pressed && { opacity: 0.85 }]}
           >
             <LinearGradient colors={['#72C24F', '#5BA63C']} style={styles.startBtnGradient}>
-              <Text style={styles.startBtnText}>Open business</Text>
+              <Text style={styles.startBtnText}>{t('underConstruction.openBusiness')}</Text>
             </LinearGradient>
             <View style={styles.startBtnShadow} />
           </Pressable>
@@ -249,7 +247,7 @@ export default function UnderConstructionBanner({
           /* Two action buttons when materials are missing */
           <>
             <Text style={[styles.materialsHint, { color: theme.textMuted }]}>
-              Take people in the elevator to get materials, or buy them in the shop
+              {t('underConstruction.materialsHint')}
             </Text>
             <View style={styles.twoButtonsRow}>
               <Pressable
@@ -258,7 +256,7 @@ export default function UnderConstructionBanner({
               >
                 <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.actionBtnGradient}>
                   <Image source={require('../../assets/img/achivment/achivLiftCategory.png')} style={styles.actionBtnIcon} contentFit="contain" />
-                  <Text style={styles.actionBtnText}>Elevator</Text>
+                  <Text style={styles.actionBtnText}>{t('underConstruction.elevator')}</Text>
                 </LinearGradient>
                 <View style={[styles.actionBtnShadow, { backgroundColor: '#7A3A50' }]} />
               </Pressable>
@@ -268,7 +266,7 @@ export default function UnderConstructionBanner({
               >
                 <LinearGradient colors={['#52A6E2', '#3B8BCB']} style={styles.actionBtnGradient}>
                   <Image source={require('../../assets/img/diamondPig.png')} style={styles.actionBtnIcon} contentFit="contain" />
-                  <Text style={styles.actionBtnText}>Shop</Text>
+                  <Text style={styles.actionBtnText}>{t('tabs:shop.title')}</Text>
                 </LinearGradient>
                 <View style={[styles.actionBtnShadow, { backgroundColor: '#2A6A9A' }]} />
               </Pressable>
@@ -347,7 +345,7 @@ export default function UnderConstructionBanner({
               style={({ pressed }) => [styles.openBtn, pressed && { opacity: 0.85 }]}
             >
               <LinearGradient colors={['#E67E22', '#C96A14']} style={styles.openBtnGradient}>
-                <Text style={styles.openBtnText}>Choose business</Text>
+                <Text style={styles.openBtnText}>{t('underConstruction.chooseBusiness')}</Text>
               </LinearGradient>
               <View style={styles.openBtnShadow} />
             </Pressable>

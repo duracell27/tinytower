@@ -104,6 +104,22 @@
     "subtitle": "{{count}} new workers moved into the hotel",
     "dismiss": "Awesome!"
   },
+  "lobbyPanel": {
+    "info": {
+      "lobbyTitle": "Lobby",
+      "lobbyText": "The lobby is your tower's entrance. Visitors arrive here and you use the elevator to guide them to their destinations.",
+      "guestsTitle": "Guests",
+      "guestsText": "Guests head to floor 1 (Hotel) and check in as new workers. Guide them up to grow your team.",
+      "businessmenTitle": "Businessmen",
+      "businessmenText": "Businessmen pay in gems — one gem per visit, up to your daily limit. Lift them to any floor to collect.",
+      "deliverersTitle": "Deliverers & Sellers",
+      "deliverersText": "Deliverers and sellers visit production floors to bring supplies or buyers. Lift them to earn coin tips.",
+      "tipsTitle": "Daily Tips",
+      "tipsText": "Every coin tip you collect counts toward your daily tip goal. Reach the two milestones to earn gem rewards.",
+      "deliverAllTitle": "Deliver All",
+      "deliverAllText": "Spend 1 gem to instantly deliver all waiting visitors at once — great when the lobby is packed."
+    }
+  },
   "inlineReward": {
     "checkedIn": "checked in",
     "noRoom": "no room in hotel",

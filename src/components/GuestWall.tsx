@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { useAppTheme } from '../hooks/useAppTheme';
 
@@ -11,6 +12,7 @@ interface GuestWallProps {
 }
 
 export default function GuestWall({ message = 'Create a free account to join the community' }: GuestWallProps) {
+  const { t } = useTranslation('common');
   const router = useRouter();
   const theme = useAppTheme();
   const { isDark } = theme;
@@ -43,7 +45,7 @@ export default function GuestWall({ message = 'Create a free account to join the
           style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
         >
           <LinearGradient colors={['#72C24F', '#5BA63C']} style={styles.btnGradient}>
-            <Text style={styles.btnText}>Sign Up — it's free</Text>
+            <Text style={styles.btnText}>{t('actions.signUpFree')}</Text>
           </LinearGradient>
         </Pressable>
       </View>

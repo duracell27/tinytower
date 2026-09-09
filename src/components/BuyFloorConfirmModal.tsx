@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { formatNum } from '../utils/format';
 import { useAppTheme } from '../hooks/useAppTheme';
 
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function BuyFloorConfirmModal({ visible, floorId, price, currency, onConfirm, onCancel }: Props) {
+  const { t } = useTranslation('hotel');
   const theme = useAppTheme();
   const { isDark } = theme;
   const s = getStyles(theme);
@@ -66,11 +68,11 @@ export default function BuyFloorConfirmModal({ visible, floorId, price, currency
             </View>
 
             <Text style={s.title}>Build Floor {floorId}?</Text>
-            <Text style={s.subtitle}>This will start construction</Text>
+            <Text style={s.subtitle}>{t('buyFloorConfirm.subtitle')}</Text>
 
             {/* Price chip */}
             <View style={s.priceCard}>
-              <Text style={s.priceLabel}>Cost</Text>
+              <Text style={s.priceLabel}>{t('buyFloorConfirm.cost')}</Text>
               <View style={s.priceRow}>
                 <Image
                   source={isGems ? DIAMOND_ICON : COIN_ICON}
@@ -89,14 +91,14 @@ export default function BuyFloorConfirmModal({ visible, floorId, price, currency
               onPress={onConfirm}
             >
               <LinearGradient colors={['#74D44F', '#5BA63C']} style={s.btnGradient}>
-                <Text style={s.btnText}>Build!</Text>
+                <Text style={s.btnText}>{t('buyFloorConfirm.build')}</Text>
               </LinearGradient>
               <View style={s.btnShadow} />
             </Pressable>
 
             {/* Cancel */}
             <Pressable onPress={onCancel} style={s.cancelBtn} hitSlop={8}>
-              <Text style={s.cancelText}>Cancel</Text>
+              <Text style={s.cancelText}>{t('buyFloorConfirm.cancel')}</Text>
             </Pressable>
           </LinearGradient>
         </Animated.View>

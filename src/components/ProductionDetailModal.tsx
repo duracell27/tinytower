@@ -356,7 +356,7 @@ export default function ProductionDetailModal() {
                 label={
                   <View style={styles.rowLabelWithIcon}>
                     <Image source={MARKETING_ICON} style={styles.rowLabelIcon} contentFit="contain" />
-                    <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>Marketing boost</Text>
+                    <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.marketingBoost')}</Text>
                   </View>
                 }
                 value={<Text style={[styles.rowValue, { color: '#F5A623' }]}>+{activeCoinBoost}%</Text>}
@@ -365,32 +365,32 @@ export default function ProductionDetailModal() {
 
             {hasVehicleBonus && (
               <View style={[styles.bonusSection, { borderTopColor: theme.divider }]}>
-                <Text style={[styles.bonusSectionTitle, { color: theme.textMuted }]}>Vehicle bonuses</Text>
+                <Text style={[styles.bonusSectionTitle, { color: theme.textMuted }]}>{t('productionDetail.revenue.vehicleBonuses')}</Text>
                 {forkliftSalesSpeed > 0 && (
                   <BreakdownRow
                     isDark={isDark}
-                    label="Forklift"
+                    label={t('productionDetail.revenue.forklift')}
                     value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.forklift.accentColor }]}>−{forkliftSalesSpeed}% sell time</Text>}
                   />
                 )}
                 {deliveryTruckSpeed > 0 && (
                   <BreakdownRow
                     isDark={isDark}
-                    label="Delivery truck"
+                    label={t('productionDetail.revenue.deliveryTruck')}
                     value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.delivery_truck.accentColor }]}>−{deliveryTruckSpeed}% delivery time</Text>}
                   />
                 )}
                 {armoredBaseCoin > 0 && (
                   <BreakdownRow
                     isDark={isDark}
-                    label="Armored truck"
+                    label={t('productionDetail.revenue.armoredTruck')}
                     value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.armored_truck.accentColor }]}>+{armoredBaseCoin}% base revenue</Text>}
                   />
                 )}
                 {armoredBaseXp > 0 && (
                   <BreakdownRow
                     isDark={isDark}
-                    label="Armored truck XP"
+                    label={t('productionDetail.revenue.armoredTruckXp')}
                     value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.armored_truck.accentColor }]}>+{armoredBaseXp}% base XP</Text>}
                   />
                 )}

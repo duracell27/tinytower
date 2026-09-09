@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import {
   View, Text, StyleSheet, Pressable, Dimensions, Image, TouchableWithoutFeedback,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks/useAppTheme';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
@@ -44,6 +45,7 @@ function Arrow({ dir }: { dir: 'up' | 'down' | 'left' | 'right' }) {
 }
 
 export default function OnboardingOverlay() {
+  const { t } = useTranslation('hotel');
   const theme = useAppTheme();
   const { isDark } = theme;
   const cardBg      = theme.surface;
@@ -280,14 +282,14 @@ export default function OnboardingOverlay() {
             {config.iconSource && (
               <Image source={config.iconSource} style={styles.centeredIcon} resizeMode="contain" />
             )}
-            <Text style={[styles.centeredTitle, { color: textMain }]}>{config.text}</Text>
+            <Text style={[styles.centeredTitle, { color: textMain }]}>{t(config.text)}</Text>
           </View>
         ) : (
           <View style={styles.cardRow}>
             {config.iconSource && (
               <Image source={config.iconSource} style={styles.icon} resizeMode="contain" />
             )}
-            <Text style={[styles.cardText, { color: textMain }]}>{config.text}</Text>
+            <Text style={[styles.cardText, { color: textMain }]}>{t(config.text)}</Text>
           </View>
         )}
         {config.bullets && config.bullets.map((b: BulletItem, i: number) => (
@@ -295,7 +297,7 @@ export default function OnboardingOverlay() {
             {i > 0 && <View style={[styles.bulletDivider, { backgroundColor: dividerCol }]} />}
             <View style={styles.bulletRow}>
               <Image source={b.icon} style={styles.bulletIcon} resizeMode="contain" />
-              <Text style={[styles.bulletText, { color: textSub }]}>{b.text}</Text>
+              <Text style={[styles.bulletText, { color: textSub }]}>{t(b.text)}</Text>
             </View>
           </React.Fragment>
         ))}
@@ -310,7 +312,7 @@ export default function OnboardingOverlay() {
               if (action) { action(); } else { advance(); }
             }}
           >
-            <Text style={styles.dismissLabel}>{config.dismissLabel ?? 'OK'}</Text>
+            <Text style={styles.dismissLabel}>{config.dismissLabel ? t(config.dismissLabel) : 'OK'}</Text>
           </Pressable>
         )}
 
@@ -318,7 +320,7 @@ export default function OnboardingOverlay() {
           <View style={[styles.nextTasksBlock, { backgroundColor: isDark ? 'rgba(242,172,64,0.09)' : 'rgba(242,172,64,0.10)', borderColor: isDark ? 'rgba(242,172,64,0.22)' : 'rgba(242,172,64,0.35)' }]}>
             <Image source={CHECKLIST_ICON} style={styles.nextTasksIcon} resizeMode="contain" />
             <Text style={[styles.nextTasksText, { color: textMain }]}>
-              Complete newcomer tasks and level up your character
+              {t('onboarding.nextTasksHint')}
             </Text>
           </View>
         )}

@@ -1,6 +1,6 @@
-export type SupportedLanguage = 'en';
+export type SupportedLanguage = 'en' | 'uk';
 
-export const SUPPORTED_LANGUAGES: readonly SupportedLanguage[] = ['en'];
+export const SUPPORTED_LANGUAGES: readonly SupportedLanguage[] = ['en', 'uk'];
 export const DEFAULT_LANGUAGE: SupportedLanguage = 'en';
 
 export function pickLanguage(

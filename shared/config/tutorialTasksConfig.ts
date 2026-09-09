@@ -22,16 +22,16 @@ export type TutorialTaskConfig = {
 export const FINAL_REWARD = { coins: 5000, gems: 20 };
 
 export const TUTORIAL_TASKS: TutorialTaskConfig[] = [
-  { key: 'hire_workers',          title: 'Staff Up',           description: 'Hire 3 workers. Any worker beats an empty slot — you can swap them anytime.',                progressSource: 'workersHired',       threshold: 3,   reward: { coins: 500, gems: 0 } },
-  { key: 'lift_visitors',         title: 'Elevator Operator',  description: 'Lift 30 visitors in the elevator',             progressSource: 'visitorsLifted',     threshold: 30,  reward: { coins: 0,   gems: 1 } },
-  { key: 'collect_revenue',       title: 'Collect Revenue',    description: 'Collect revenue from your floors 10 times',   progressSource: 'coinsCollected',     threshold: 10,  reward: { coins: 500, gems: 0 } },
-  { key: 'build_floor',           title: 'Going Higher',       description: 'Build a new floor — reach floor 5',           progressSource: 'floorsBuilt',        threshold: 1,   reward: { coins: 0,   gems: 2 } },
-  { key: 'complete_daily_tasks',  title: 'Daily Grind',        description: 'Complete 3 daily tasks',                       progressSource: 'dailyTasksClaimed',  threshold: 3,   reward: { coins: 800, gems: 0 } },
-  { key: 'upgrade_elevator',      title: 'Speed Boost',        description: 'Upgrade the elevator',                         progressSource: 'elevatorUpgraded',   threshold: 1,   reward: { coins: 0,   gems: 2 } },
-  { key: 'upgrade_lobby',         title: 'Grand Lobby',        description: 'Upgrade the lobby',                            progressSource: 'lobbyUpgraded',      threshold: 1,   reward: { coins: 0,   gems: 1 } },
-  { key: 'upgrade_floor',         title: 'Level Up',           description: 'Upgrade one of your floors to level 2',        progressSource: 'floorUpgraded',      threshold: 1,   reward: { coins: 0,   gems: 1 } },
-  { key: 'invite_friend',         title: 'Bring a Friend',     description: 'Send a friend request to any player. Find them in the leaderboard, chat, forum, or visit their profile.',              progressSource: 'inviteSent',         threshold: 1,   reward: { coins: 0,   gems: 3 } },
-  { key: 'upgrade_business',      title: 'Business Pro',       description: 'Upgrade one business category. You can do it in your profile.',                progressSource: 'businessUpgraded',   threshold: 1,   reward: { coins: 0,   gems: 5 } },
+  { key: 'hire_workers',          title: 'tutorialTaskItems.hire_workers.title',         description: 'tutorialTaskItems.hire_workers.description',         progressSource: 'workersHired',       threshold: 3,   reward: { coins: 500, gems: 0 } },
+  { key: 'lift_visitors',         title: 'tutorialTaskItems.lift_visitors.title',        description: 'tutorialTaskItems.lift_visitors.description',        progressSource: 'visitorsLifted',     threshold: 30,  reward: { coins: 0,   gems: 1 } },
+  { key: 'collect_revenue',       title: 'tutorialTaskItems.collect_revenue.title',      description: 'tutorialTaskItems.collect_revenue.description',      progressSource: 'coinsCollected',     threshold: 10,  reward: { coins: 500, gems: 0 } },
+  { key: 'build_floor',           title: 'tutorialTaskItems.build_floor.title',          description: 'tutorialTaskItems.build_floor.description',          progressSource: 'floorsBuilt',        threshold: 1,   reward: { coins: 0,   gems: 2 } },
+  { key: 'complete_daily_tasks',  title: 'tutorialTaskItems.complete_daily_tasks.title', description: 'tutorialTaskItems.complete_daily_tasks.description', progressSource: 'dailyTasksClaimed',  threshold: 3,   reward: { coins: 800, gems: 0 } },
+  { key: 'upgrade_elevator',      title: 'tutorialTaskItems.upgrade_elevator.title',     description: 'tutorialTaskItems.upgrade_elevator.description',     progressSource: 'elevatorUpgraded',   threshold: 1,   reward: { coins: 0,   gems: 2 } },
+  { key: 'upgrade_lobby',         title: 'tutorialTaskItems.upgrade_lobby.title',        description: 'tutorialTaskItems.upgrade_lobby.description',        progressSource: 'lobbyUpgraded',      threshold: 1,   reward: { coins: 0,   gems: 1 } },
+  { key: 'upgrade_floor',         title: 'tutorialTaskItems.upgrade_floor.title',        description: 'tutorialTaskItems.upgrade_floor.description',        progressSource: 'floorUpgraded',      threshold: 1,   reward: { coins: 0,   gems: 1 } },
+  { key: 'invite_friend',         title: 'tutorialTaskItems.invite_friend.title',        description: 'tutorialTaskItems.invite_friend.description',        progressSource: 'inviteSent',         threshold: 1,   reward: { coins: 0,   gems: 3 } },
+  { key: 'upgrade_business',      title: 'tutorialTaskItems.upgrade_business.title',     description: 'tutorialTaskItems.upgrade_business.description',     progressSource: 'businessUpgraded',   threshold: 1,   reward: { coins: 0,   gems: 5 } },
 ];
 
 export type TutorialProgressState = Record<TutorialProgressSource, number>;

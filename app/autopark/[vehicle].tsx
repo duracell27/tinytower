@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
 import AppBackground from '../../src/components/AppBackground';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
+import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../../src/stores/gameStore';
 import { GemIcon } from '../../src/components/CurrencyIcons';
 import { formatNum } from '../../src/utils/format';
@@ -119,6 +120,7 @@ function renderDesc(text: string): React.ReactNode {
 }
 
 export default function VehicleDetailScreen() {
+  const { t } = useTranslation('tabs');
   const { vehicle } = useLocalSearchParams<{ vehicle: string }>();
   const theme = useAppTheme();
   const vehicles = useGameStore((s) => s.vehicles);
@@ -180,7 +182,7 @@ export default function VehicleDetailScreen() {
               />
             ))}
           </View>
-          <Text style={[styles.dotCount, { color: theme.textMuted }]}>{count} / 10 owned</Text>
+          <Text style={[styles.dotCount, { color: theme.textMuted }]}>{t('autopark.ownedCount', { count })}</Text>
         </View>
 
         {/* Bonus cards */}
@@ -197,7 +199,7 @@ export default function VehicleDetailScreen() {
 
         {/* Description */}
         <View style={[styles.descCard, { backgroundColor: theme.surface, borderLeftColor: def.accentColor }]}>
-          <Text style={[styles.descLabel, { color: def.accentColor }]}>About</Text>
+          <Text style={[styles.descLabel, { color: def.accentColor }]}>{t('autopark.about')}</Text>
           <Text style={[styles.descText, { color: theme.text }]}>
             {renderDesc(def.description)}
           </Text>
@@ -206,11 +208,11 @@ export default function VehicleDetailScreen() {
         {/* Buy button */}
         <View style={styles.buyWrap}>
           {feedback === 'success' && (
-            <Text style={[styles.feedbackText, { color: def.accentColor }]}>Purchased!</Text>
+            <Text style={[styles.feedbackText, { color: def.accentColor }]}>{t('autopark.purchased')}</Text>
           )}
           {isMaxed ? (
             <View style={[styles.buyBtn, { backgroundColor: theme.surfaceSub }]}>
-              <Text style={[styles.buyBtnText, { color: theme.textMuted }]}>Maxed out</Text>
+              <Text style={[styles.buyBtnText, { color: theme.textMuted }]}>{t('autopark.maxedOut')}</Text>
             </View>
           ) : (
             <View>
@@ -225,7 +227,7 @@ export default function VehicleDetailScreen() {
                 style={({ pressed }) => [styles.buyBtn, { backgroundColor: def.accentColor, opacity: pressed ? 0.82 : 1 }]}
               >
                 <View style={styles.buyBtnRow}>
-                  <Text style={styles.buyBtnText}>Buy for </Text>
+                  <Text style={styles.buyBtnText}>{t('autopark.buyFor')} </Text>
                   <GemIcon size={18} />
                   <Text style={styles.buyBtnText}> {formatNum(def.gemCost)}</Text>
                 </View>

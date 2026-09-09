@@ -3,7 +3,17 @@
     "login": "Log In",
     "register": "Register",
     "cancel": "Cancel",
-    "or": "or"
+    "or": "or",
+    "awesome": "Awesome!",
+    "signUpFree": "Sign Up — it's free"
+  },
+  "purchaseSuccess": {
+    "title": "Purchase Complete!",
+    "dismiss": "Awesome!"
+  },
+  "taskReward": {
+    "title": "Task Complete!",
+    "dismiss": "Awesome!"
   },
   "relativeTime": {
     "never": "never",

@@ -8,7 +8,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-g
 import Svg, { Path, Polyline } from 'react-native-svg';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../src/i18n';
+import i18n, { setAppLanguage } from '../../src/i18n';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useGameStore } from '../../src/stores/gameStore';
 import type { FailedCommandEntry } from '../../src/stores/gameStore';
@@ -525,7 +525,7 @@ const player = useAuthStore((s) => s.player);
             />
             <View style={styles.profileInfo}>
               <Text style={[styles.name, { color: theme.text }]}>{player?.playerName ?? t('profile.guestFallbackName')}</Text>
-              <Text style={[styles.email, { color: theme.textMuted }]}>{isTemporary ? 'Guest account' : (player?.email ?? '')}</Text>
+              <Text style={[styles.email, { color: theme.textMuted }]}>{isTemporary ? t('profile.guestAccount') : (player?.email ?? '')}</Text>
             </View>
           </View>
 
@@ -599,7 +599,7 @@ const player = useAuthStore((s) => s.player);
                     <View style={styles.revenueItem}>
                       <Image source={COIN_ICON} style={styles.revenueIcon} contentFit="contain" />
                       <View style={styles.workerStatTextCol}>
-                        <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>Current / min</Text>
+                        <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.currentPerMin')}</Text>
                         <Text style={[styles.workerStatValue, { color: theme.text }]}>{formatNumFull(revenuePerMin)}</Text>
                       </View>
                     </View>
@@ -607,7 +607,7 @@ const player = useAuthStore((s) => s.player);
                     <View style={styles.revenueItem}>
                       <Image source={BEST_RPM_ICON} style={styles.revenueIcon} contentFit="contain" />
                       <View style={styles.workerStatTextCol}>
-                        <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>Best / min</Text>
+                        <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.bestPerMin')}</Text>
                         <Text style={[styles.workerStatValue, { color: '#3FA535' }]}>{myProfile ? formatNumFull(Math.max(myProfile.maxRevenuePerMin, revenuePerMin)) : '—'}</Text>
                       </View>
                     </View>
@@ -630,7 +630,7 @@ const player = useAuthStore((s) => s.player);
                 ({dailyTasks.claimed.filter(k => DAILY_TASKS.find(t => t.key === k && !t.hidden)).length}/{DAILY_TASKS.filter(t => !t.hidden).length})
               </Text>
             </Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Complete missions for rewards</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.dailyTasks.description')}</Text>
           </View>
         </Pressable>
 
@@ -640,8 +640,8 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/mail.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>My Mail</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Messages from other players</Text>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>{t('profile.menuInfo.mail.title')}</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.mail.description')}</Text>
           </View>
           {unreadMailCount > 0 && (
             <View style={styles.friendsBadge}>
@@ -656,8 +656,8 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/users.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>My Friends</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Manage your friend list</Text>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>{t('profile.menuInfo.friends.title')}</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.friends.description')}</Text>
           </View>
           {pendingCount > 0 && (
             <View style={styles.friendsBadge}>
@@ -673,7 +673,7 @@ const player = useAuthStore((s) => s.player);
           <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
             <Text style={[styles.menuTitle, { color: theme.text }]}>{tHotel('myBusiness.title')}</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Upgrade your businesses</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.myBusiness.description')}</Text>
           </View>
           {isHydrated && upgradeReadyTypes.length > 0 && (
             <View style={styles.businessDotsRow}>
@@ -690,9 +690,9 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/TrucksProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>Autopark</Text>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>{t('autopark.title')}</Text>
             <Text style={[styles.menuSub, { color: theme.textMuted }]}>
-              {totalVehicles > 0 ? `${totalVehicles} of 50 vehicles owned` : 'Manage your vehicles'}
+              {totalVehicles > 0 ? t('profile.menuInfo.autopark.subtitle', { count: totalVehicles }) : t('profile.menuInfo.autopark.empty')}
             </Text>
           </View>
         </Pressable>
@@ -706,7 +706,7 @@ const player = useAuthStore((s) => s.player);
             <Text style={[styles.menuTitle, { color: theme.text }]}>
               {t('profile.achievements', { count: totalEarnedLevels })}
             </Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Track your progress</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.achievements.description')}</Text>
           </View>
         </Pressable>
 
@@ -716,8 +716,8 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/profile/ReferralProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>Referrals</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>Invite friends for bonuses</Text>
+            <Text style={[styles.menuTitle, { color: theme.text }]}>{t('profile.menuInfo.referrals.title')}</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.referrals.description')}</Text>
           </View>
         </Pressable>
 
@@ -728,7 +728,7 @@ const player = useAuthStore((s) => s.player);
           <Image source={require('../../assets/img/settingsIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
             <Text style={[styles.menuTitle, { color: theme.text }]}>{t('profile.settings.title')}</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>App preferences</Text>
+            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.settings.description')}</Text>
           </View>
         </Pressable>
 
@@ -759,7 +759,7 @@ const player = useAuthStore((s) => s.player);
                 <Image source={require('../../assets/img/managerIcon.png')} style={styles.convertManagerIcon} contentFit="contain" />
                 <View style={styles.convertHeaderText}>
                   <Text style={[styles.convertTitle, { color: theme.text }]}>{t('profile.convert.title')}</Text>
-                  <Text style={[styles.convertSub, { color: theme.textMuted }]}>Save your account to unlock all game features</Text>
+                  <Text style={[styles.convertSub, { color: theme.textMuted }]}>{t('profile.convert.unlockFeatures')}</Text>
                 </View>
               </View>
 
@@ -841,6 +841,29 @@ const player = useAuthStore((s) => s.player);
                     thumbColor="#fff"
                   />
                 </View>
+
+                <Text style={[settingsStyles.sectionHeader, { color: theme.textMuted, marginTop: 20 }]}>
+                  {t('profile.settings.languageSection')}
+                </Text>
+                <View style={settingsStyles.langRow}>
+                  {(['en', 'uk'] as const).map((lang) => {
+                    const active = i18n.language === lang;
+                    return (
+                      <Pressable
+                        key={lang}
+                        onPress={() => setAppLanguage(lang)}
+                        style={[
+                          settingsStyles.langBtn,
+                          { borderColor: active ? '#72C24F' : theme.divider, backgroundColor: active ? 'rgba(114,194,79,0.12)' : theme.surfaceCard },
+                        ]}
+                      >
+                        <Text style={[settingsStyles.langBtnText, { color: active ? '#72C24F' : theme.text }]}>
+                          {t(`profile.settings.language${lang.charAt(0).toUpperCase() + lang.slice(1)}`)}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
               </Animated.View>
             </GestureDetector>
           </GestureHandlerRootView>
@@ -884,7 +907,7 @@ const player = useAuthStore((s) => s.player);
               <View style={[styles.syncDivider, { backgroundColor: theme.divider }]} />
               <ProfileInfoRow
                 icons={[SAND_CLOCK]}
-                label="Days in game"
+                label={t('userProfile.daysInGame')}
                 value={daysInGame === 0 ? '<1' : String(daysInGame)}
                 theme={theme}
                 noBorder
@@ -1524,5 +1547,20 @@ const settingsStyles = StyleSheet.create({
     fontFamily: 'Fredoka_400Regular',
     fontSize: 12.5,
     lineHeight: 17,
+  },
+  langRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  langBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+  },
+  langBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
   },
 });
