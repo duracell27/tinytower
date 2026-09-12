@@ -1526,7 +1526,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const TOOLS: ToolKey[] = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'];
     const unlock = gameConfig.floorUnlocks.find((f) => f.floorId === floorId);
     const slots = unlock?.requiredToolSlots ?? 1;
-    const shuffled = [...TOOLS].sort(() => Math.random() - 0.5);
+    const shuffled = [...TOOLS];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
     const requiredTools = shuffled.slice(0, slots).map((tool) => ({ tool }));
     const isOnboarding = useOnboardingStore.getState().step === 'buy_floor';
     executeCommand(get, set, {

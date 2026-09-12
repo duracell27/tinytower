@@ -2,6 +2,7 @@ import type { GameState, GameConfig, Visitor, VisitorRole } from '../types';
 import { HAIR_COLORS } from '../config/workerNames';
 import { DAILY_TASKS, getTaskProgress } from '../config/dailyTasksConfig';
 import { FLOOR_STAR_MULTIPLIERS } from '../config/floorUpgradeConfig';
+import { warehouseCapacity } from '../config/warehouseUpgradeConfig';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -112,17 +113,27 @@ export function generateRandomVisitorRole(
   const hasDelivering = state.floors.some((f) => f.productions.some(isActiveDelivering));
   const hasSelling = state.floors.some((f) => f.productions.some((p) => isActiveSelling(f.id, p)));
 
-  // higher builder chance when a floor is actively under construction
-  const builderChance = state.underConstruction.length > 0 ? 0.10 : 0.02;
-  if (Math.random() < builderChance) {
-    const targetFloor = 1 + Math.floor(Math.random() * totalFloors);
-    return { role: 'builder', targetFloor, isVip };
+  const hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
+  const hotelFull = hotelOccupied >= state.hotelCapacity;
+  const randomFloor = () =>
+    hotelFull && totalFloors > 1
+      ? 2 + Math.floor(Math.random() * (totalFloors - 1))
+      : 1 + Math.floor(Math.random() * totalFloors);
+
+  const toolsTotal = (t: GameState['tools']) =>
+    (t.briks ?? 0) + (t.glass ?? 0) + (t.nails ?? 0) + (t.screw ?? 0) + (t.wood ?? 0) + (t.cement ?? 0);
+  const warehouseFull = toolsTotal(state.tools) >= warehouseCapacity(state.warehouseLevel ?? 0);
+
+  // higher builder chance when a floor is actively under construction; skip if warehouse is full
+  const builderChance = warehouseFull ? 0 : state.underConstruction.length > 0 ? 0.10 : 0.02;
+  if (builderChance > 0 && Math.random() < builderChance) {
+    return { role: 'builder', targetFloor: randomFloor(), isVip };
   }
 
   const gemLimit = config.lobbyConfig.dailyGemLimitBase + playerLevel + extraGemExchangeLimit;
   const hasGemsLeft = state.dailyGemsCollected < gemLimit;
   // businessman appears more often while daily gems are still available
-  const businessmanChance = hasGemsLeft ? 0.10 : 0.01;
+  const businessmanChance = hasGemsLeft ? 0.15 : 0.01;
 
   let role: VisitorRole;
   const businessmanRoll = Math.random();
@@ -150,19 +161,19 @@ export function generateRandomVisitorRole(
   } else if (role === 'deliverer') {
     const deliveringFloors = state.floors.filter((f) => f.productions.some(isActiveDelivering));
     if (deliveringFloors.length === 0) {
-      targetFloor = 1 + Math.floor(Math.random() * totalFloors);
+      targetFloor = randomFloor();
     } else {
       targetFloor = deliveringFloors[Math.floor(Math.random() * deliveringFloors.length)].id;
     }
   } else if (role === 'seller') {
     const sellingFloors = state.floors.filter((f) => f.productions.some((p) => isActiveSelling(f.id, p)));
     if (sellingFloors.length === 0) {
-      targetFloor = 1 + Math.floor(Math.random() * totalFloors);
+      targetFloor = randomFloor();
     } else {
       targetFloor = sellingFloors[Math.floor(Math.random() * sellingFloors.length)].id;
     }
   } else {
-    targetFloor = 1 + Math.floor(Math.random() * totalFloors);
+    targetFloor = randomFloor();
   }
 
   return { role, targetFloor, isVip };

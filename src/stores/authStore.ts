@@ -163,7 +163,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       const player = data.player;
       getStorage().set('player', JSON.stringify(player));
       saveLastPlayer(player);
-      set({ player, lastPlayer: player, isLoading: false });
+      set({ player, lastPlayer: player, isAuthenticated: true, isLoading: false });
+      setupUserPersistence(player.id);
       return data.registrationGems ?? 5;
     } catch (e) {
       set({ isLoading: false });
