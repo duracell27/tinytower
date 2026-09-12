@@ -179,6 +179,7 @@ interface UIState {
   pendingDeliverAll: DeliverAllSummary | null;
   hotelFullNotice: boolean;
   warehouseFullNotice: boolean;
+  warehouseFullDailyTask: { taskKey: string; taskTitle: string } | null;
   pendingOpenHotel: boolean;
   pendingOpenWarehouse: boolean;
   pendingPurchaseSuccess: PurchaseSuccessPayload | null;
@@ -215,6 +216,7 @@ interface GameActions {
   evictLowLevelWorkers: () => void;
   claimDailyReward: (stage: 1 | 2) => void;
   claimDailyTask: (taskKey: string, taskTitle: string) => void;
+  claimDailyTaskWithoutMaterials: () => void;
   claimTutorialTask: (taskIndex: number) => void;
   claimTutorialFinal: () => void;
   recordInviteSent: () => void;
@@ -269,6 +271,7 @@ interface GameActions {
   dismissHotelFullNotice: () => void;
   upgradeWarehouse: () => void;
   dismissWarehouseFullNotice: () => void;
+  dismissWarehouseFullDailyTask: () => void;
   clearPendingOpenHotel: () => void;
   clearPendingOpenWarehouse: () => void;
   openSheet: () => void;
@@ -481,6 +484,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   pendingDeliverAll: null,
   hotelFullNotice: false,
   warehouseFullNotice: false,
+  warehouseFullDailyTask: null,
   pendingOpenHotel: false,
   pendingOpenWarehouse: false,
   pendingPurchaseSuccess: null,
@@ -694,6 +698,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     pendingDailyLoginReward: null,
     hotelFullNotice: false,
     warehouseFullNotice: false,
+    warehouseFullDailyTask: null,
     pendingOpenHotel: false,
     pendingOpenWarehouse: false,
     dailyTasks: { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
@@ -1194,7 +1199,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
-  dismissWarehouseFullNotice: () => set({ warehouseFullNotice: false }),
+  dismissWarehouseFullNotice: () => set({ warehouseFullNotice: false, warehouseFullDailyTask: null }),
+  dismissWarehouseFullDailyTask: () => set({ warehouseFullDailyTask: null }),
 
   expandHotel: () => {
     executeCommand(get, set, {
@@ -1241,6 +1247,36 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
     if (ok) {
       set({ pendingTaskReward: { taskTitle, coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount, materialType } });
+    } else if (taskConfig.rewards.hasMaterials && get().warehouseFullNotice) {
+      set({ warehouseFullDailyTask: { taskKey, taskTitle } });
+    }
+  },
+
+  claimDailyTaskWithoutMaterials: () => {
+    const pending = get().warehouseFullDailyTask;
+    if (!pending) return;
+    const { taskKey, taskTitle } = pending;
+    set({ warehouseFullNotice: false, warehouseFullDailyTask: null });
+    const COLORS = ['green', 'blue', 'yellow', 'purple', 'red'] as const;
+    const taskConfig = DAILY_TASKS.find((t) => t.key === taskKey);
+    if (!taskConfig) return;
+    const state = get();
+    const tokenColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const multiplier = getCoinMultiplier(state.playerLevel);
+    const doubleMultiplier = state.dailyTasks.doubleRewardActive ? 2 : 1;
+    const tokenCount = (Math.floor(Math.random() * 5) + 1) * doubleMultiplier;
+    const coins = taskConfig.rewards.baseCoins * multiplier * doubleMultiplier;
+    const ok = executeCommand(get, set, {
+      id: uuid(),
+      type: 'claim_daily_task',
+      taskKey,
+      tokenCount,
+      tokenColor,
+      materialType: undefined,
+      timestamp: clock.now(),
+    });
+    if (ok) {
+      set({ pendingTaskReward: { taskTitle, coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount: undefined, materialType: undefined } });
     }
   },
 

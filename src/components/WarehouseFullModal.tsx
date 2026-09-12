@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 
@@ -15,10 +16,13 @@ export default function WarehouseFullModal() {
   const theme = useAppTheme();
   const visible = useGameStore((s) => s.warehouseFullNotice);
   const dismiss = useGameStore((s) => s.dismissWarehouseFullNotice);
+  const pendingDailyTask = useGameStore((s) => s.warehouseFullDailyTask);
+  const claimWithoutMaterials = useGameStore((s) => s.claimDailyTaskWithoutMaterials);
   const isOnboarding = useOnboardingStore((s) => s.isActive);
   const openWarehouse = () => {
     dismiss();
     useGameStore.setState({ pendingOpenWarehouse: true });
+    router.navigate('/(tabs)/menu');
   };
 
   const showModal = visible && !isOnboarding;
@@ -48,6 +52,16 @@ export default function WarehouseFullModal() {
                 <Text style={styles.btnText}>{t('warehouse.fullPopup.open')}</Text>
               </LinearGradient>
             </Pressable>
+            {pendingDailyTask && (
+              <Pressable
+                onPress={claimWithoutMaterials}
+                style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
+              >
+                <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.btnGradient}>
+                  <Text style={styles.btnText}>{t('warehouse.fullPopup.claimWithoutMaterials')}</Text>
+                </LinearGradient>
+              </Pressable>
+            )}
             <Pressable onPress={dismiss} style={styles.dismissBtn}>
               <Text style={[styles.dismissText, { color: theme.isDark ? '#8A9A80' : '#9BA3B0' }]}>{t('warehouse.fullPopup.dismiss')}</Text>
             </Pressable>

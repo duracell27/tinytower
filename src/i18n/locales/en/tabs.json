@@ -410,6 +410,7 @@
       "title": "Warehouse Full",
       "subtitle": "Upgrade your warehouse to receive more materials",
       "open": "Open Warehouse",
+      "claimWithoutMaterials": "Complete without materials",
       "dismiss": "Dismiss"
     },
     "capacity": "{{current}} / {{max}}",
