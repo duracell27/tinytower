@@ -38,15 +38,17 @@ const SYNC_CHUNK_SIZE = 200;
 
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 let isSyncing = false;
+let pendingSync = false;
 
 async function doSync(): Promise<void> {
-  if (isSyncing) return;
+  if (isSyncing) { pendingSync = true; return; }
   if (!useAuthStore.getState().isAuthenticated) return;
 
   const { commandQueue, lastAckCursor } = useGameStore.getState();
   const sentIds = new Set(commandQueue.map((c) => c.id));
 
   isSyncing = true;
+  pendingSync = false;
   try {
     let currentLastAckCursor = lastAckCursor;
 
@@ -130,6 +132,7 @@ async function doSync(): Promise<void> {
     // Network error — retry next cycle
   } finally {
     isSyncing = false;
+    if (pendingSync) doSync();
   }
 }
 

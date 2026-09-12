@@ -43,7 +43,8 @@ export default function ReferralNotificationModal() {
         milestone: notification.milestone,
       });
       dismiss();
-      syncService.triggerSync();
+      // Delay so the server has time to commit the claim before we sync state
+      setTimeout(() => syncService.triggerSync(), 800);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
     } finally {
@@ -69,13 +70,17 @@ export default function ReferralNotificationModal() {
         {notification && (
           <Animated.View style={[styles.card, cardStyle]}>
             <LinearGradient
-              colors={isReferredBonusModal ? ['#E8FFF0', '#D0F5DC'] : ['#E8F4FF', '#D0E8FF']}
+              colors={
+                theme.isDark
+                  ? (isReferredBonusModal ? ['#1A3326', '#0F2219'] : ['#162340', '#0E1829'])
+                  : (isReferredBonusModal ? ['#E8FFF0', '#D0F5DC'] : ['#E8F4FF', '#D0E8FF'])
+              }
               style={styles.cardGradient}
             >
 
               {isClaimModal && (
                 <>
-                  <Text style={styles.emoji}>🎉</Text>
+                  <Image source={require('../../assets/img/confetti.png')} style={styles.headerIcon} resizeMode="contain" />
                   <Text style={styles.title}>{t('referralModal.rewardTitle')}</Text>
                   <Text style={styles.body}>
                     {notification.referredName}{' '}
@@ -158,8 +163,8 @@ export default function ReferralNotificationModal() {
                     style={styles.confettiIcon}
                     resizeMode="contain"
                   />
-                  <Text style={styles.title}>{t('referralModal.welcomeTitle')}</Text>
-                  <Text style={styles.body}>{t('referralModal.usedReferralCode')}</Text>
+                  <Text style={[styles.title, styles.titleGreen]}>{t('referralModal.welcomeTitle')}</Text>
+                  <Text style={[styles.body, styles.bodyGreen]}>{t('referralModal.usedReferralCode')}</Text>
                   <View style={styles.referredRewardRow}>
                     <View style={styles.rewardRow}>
                       <Image
@@ -219,8 +224,9 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       paddingHorizontal: 24,
       gap: 12,
     },
-    emoji: {
-      fontSize: 40,
+    headerIcon: {
+      width: 72,
+      height: 72,
     },
     purchaseIllustration: {
       width: 72,
@@ -229,7 +235,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
     confettiIcon: {
       width: 72,
       height: 72,
-    },
+    }, // kept for referredBonusModal which uses its own image
     referredRewardRow: {
       flexDirection: 'row',
       gap: 10,
@@ -237,8 +243,11 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
     title: {
       fontFamily: 'Fredoka_700Bold',
       fontSize: 22,
-      color: isDark ? '#A8C8F8' : '#1A3D6B',
+      color: isDark ? '#C8E8FF' : '#1A3D6B',
       textAlign: 'center',
+    },
+    titleGreen: {
+      color: isDark ? '#A8E8C0' : '#1A4D2E',
     },
     body: {
       fontFamily: 'Nunito_600SemiBold',
@@ -246,25 +255,30 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       color: isDark ? '#8AAFD4' : '#3E5A80',
       textAlign: 'center',
     },
+    bodyGreen: {
+      color: isDark ? '#6ABDA0' : '#2A5A40',
+    },
     rewardRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-      backgroundColor: theme.surface,
+      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : theme.surface,
+      borderWidth: isDark ? 1 : 0,
+      borderColor: 'rgba(255,255,255,0.12)',
       paddingVertical: 8,
       paddingHorizontal: 18,
       borderRadius: 14,
       shadowColor: 'rgba(30,60,120,1)',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.12,
+      shadowOpacity: isDark ? 0 : 0.12,
       shadowRadius: 4,
-      elevation: 2,
+      elevation: isDark ? 0 : 2,
       marginVertical: 4,
     },
     rewardText: {
       fontFamily: 'Fredoka_700Bold',
       fontSize: 20,
-      color: isDark ? '#5BB8CD' : '#2592AB',
+      color: isDark ? '#7DD4E8' : '#2592AB',
     },
     errorText: {
       fontFamily: 'Nunito_400Regular',
