@@ -31,6 +31,7 @@ const TOOL_ICONS: Record<string, ReturnType<typeof require>> = {
 
 export default function PurchaseSuccessModal() {
   const { t } = useTranslation('common');
+  const { t: tTabs } = useTranslation('tabs');
   const theme  = useAppTheme();
   const payload = useGameStore((s) => s.pendingPurchaseSuccess);
   const clear   = useGameStore((s) => s.clearPurchaseSuccess);
@@ -79,7 +80,7 @@ export default function PurchaseSuccessModal() {
 
             <Image source={DIAMOND_ICON} style={s.bigIcon} contentFit="contain" />
             <Text style={s.title}>{t('purchaseSuccess.title')}</Text>
-            <Text style={s.packName}>{packName}</Text>
+            <Text style={s.packName}>{tTabs(packName as any)}</Text>
 
             <View style={s.chips}>
               {chips.map((c, i) => (

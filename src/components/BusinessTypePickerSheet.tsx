@@ -5,6 +5,7 @@ import {
 import { Image } from 'expo-image';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useTranslation } from 'react-i18next';
 
 const ICON_FLOOR  = require('../../assets/img/floor.png');
 
@@ -36,13 +37,6 @@ const SHEET_TIMING = { duration: 320, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const SWIPE_CLOSE_THRESHOLD = 80;
 const VELOCITY_CLOSE_THRESHOLD = 500;
 
-const FLOOR_TYPE_NAMES: Record<string, string> = {
-  green:  'Products',
-  blue:   'Service',
-  yellow: 'Rest',
-  purple: 'Fashion',
-  red:    'Electronics',
-};
 
 const FLOOR_TYPE_ICONS: Record<string, ReturnType<typeof require>> = {
   green:  require('../../assets/img/flourTypes/products.png'),
@@ -73,6 +67,8 @@ export default function BusinessTypePickerSheet({
 }: BusinessTypePickerSheetProps) {
   const theme = useAppTheme();
   const { isDark } = theme;
+  const { t } = useTranslation('hotel');
+  const { t: tContent } = useTranslation('gameContent');
   const translateY = useSharedValue(SHEET_HEIGHT);
 
   useEffect(() => {
@@ -132,7 +128,7 @@ export default function BusinessTypePickerSheet({
           <View style={[pickerHint.card, { backgroundColor: theme.surface }, isDark && { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }]}>
             <Image source={require('../../assets/img/happySmile.png')} style={pickerHint.icon} contentFit="contain" />
             <Text style={[pickerHint.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
-              {'All types earn equally. Green floors need frequent attention, red ones less often'}
+              {t('onboarding.choose_floor_type')}
             </Text>
           </View>
         )}
@@ -144,14 +140,14 @@ export default function BusinessTypePickerSheet({
         </GestureDetector>
 
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: theme.text }]}>Choose business type</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{t('floorTypePicker.title')}</Text>
           {!isLocked && (
             <Pressable onPress={onClose} style={[styles.closeBtn, isDark && { backgroundColor: theme.divider }]} hitSlop={8}>
               <Text style={[styles.closeBtnText, isDark && { color: '#A0AABC' }]}>✕</Text>
             </Pressable>
           )}
         </View>
-        <Text style={styles.subtitle}>Floor {underConstruction.floorId}</Text>
+        <Text style={styles.subtitle}>{t('floorTypePicker.subtitle', { floorId: underConstruction.floorId })}</Text>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
           {floorTypes.map((ft) => {
@@ -176,19 +172,19 @@ export default function BusinessTypePickerSheet({
                   contentFit="contain"
                 />
                 <View style={styles.typeTextCol}>
-                  <Text style={[styles.typeName, { color: TYPE_COLORS[ft] }]}>{FLOOR_TYPE_NAMES[ft] ?? ft}</Text>
+                  <Text style={[styles.typeName, { color: TYPE_COLORS[ft] }]}>{tContent(`floorTypes.${ft}.category`, { defaultValue: ft })}</Text>
                   {isExhausted ? (
                     <Text style={styles.typeExhaustedHint}>
-                      All floors of this category already built
+                      {t('floorTypePicker.exhausted')}
                     </Text>
                   ) : (
                     <View style={styles.typeStatsRow}>
                       <Image source={ICON_FLOOR} style={styles.typeStatIcon} contentFit="contain" />
-                      <Text style={[styles.typeStatBuilt, { color: isDark ? theme.textMuted : '#2A3344' }]}>Built </Text>
+                      <Text style={[styles.typeStatBuilt, { color: isDark ? theme.textMuted : '#2A3344' }]}>{t('floorTypePicker.built')} </Text>
                       <Text style={[styles.typeStatBuilt, { color: TYPE_COLORS[ft] }]}>{builtFloorCounts[ft] ?? 0}</Text>
                       <Text style={[styles.typeStatSep, isDark && { color: 'rgba(255,255,255,0.2)' }]}>·</Text>
                       <Image source={WORKER_ICONS[ft]} style={styles.typeStatIcon} contentFit="contain" />
-                      <Text style={[styles.typeStat, { color: isDark ? theme.textMuted : '#7A8899' }]}>{hotelWorkerCounts[ft] ?? 0} waiting in the hotel</Text>
+                      <Text style={[styles.typeStat, { color: isDark ? theme.textMuted : '#7A8899' }]}>{t('floorTypePicker.waiting', { count: hotelWorkerCounts[ft] ?? 0 })}</Text>
                     </View>
                   )}
                 </View>

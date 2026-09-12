@@ -379,6 +379,13 @@
     "invite_friend":        { "title": "Bring a Friend",    "description": "Send a friend request to any player. Find them in the leaderboard, chat, forum, or visit their profile." },
     "upgrade_business":     { "title": "Business Pro",      "description": "Upgrade one business category. You can do it in your profile." }
   },
+  "floorTypePicker": {
+    "title":     "Choose business type",
+    "subtitle":  "Floor {{floorId}}",
+    "exhausted": "All floors of this category already built",
+    "built":     "Built",
+    "waiting":   "{{count}} waiting in the hotel"
+  },
   "onboarding": {
     "collect_slot_1":       "Collect revenue from your business",
     "collect_slot_2":       "Collect revenue from one more floor",
