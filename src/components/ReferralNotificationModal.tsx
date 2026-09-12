@@ -42,8 +42,14 @@ export default function ReferralNotificationModal() {
         referralId: notification.referralId,
         milestone: notification.milestone,
       });
+      // Optimistic credit — visible immediately even if sync is delayed or offline
+      if (notification.milestone === 'registered') {
+        useGameStore.setState((s) => ({ balance: s.balance + (notification.coins ?? 0) }));
+      } else {
+        useGameStore.setState((s) => ({ gems: s.gems + (notification.gems ?? 0) }));
+      }
       dismiss();
-      // Delay so the server has time to commit the claim before we sync state
+      // Delay so the server finishes committing the claim before we read state back
       setTimeout(() => syncService.triggerSync(), 800);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
