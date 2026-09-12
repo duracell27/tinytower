@@ -111,14 +111,19 @@ export default function AchievementsScreen() {
               <View style={styles.cardTop}>
                 <Image source={CATEGORY_IMAGES[category.key]} style={styles.categoryIcon} />
                 <View style={styles.cardTopText}>
-                  <Text style={[styles.categoryTitle, { color: theme.text }]}>{category.title}</Text>
+                  <Text style={[styles.categoryTitle, { color: theme.text }]}>
+                    {t(`achievement.categories.${category.key}.title` as any, { defaultValue: category.title })}
+                  </Text>
                   <Text style={[styles.categoryDesc, { color: theme.textMuted }]}>
                     {t(`achievement.categoryDesc.${category.key}` as any)}
                   </Text>
                   <Text style={[styles.levelLabel, { color: theme.textMuted }]}>
                     {currentLevel === 0
                       ? t('achievement.noRank')
-                      : t('achievement.rankLabel', { level: currentLevel, title: currentLevelConfig?.title ?? '' })}
+                      : t('achievement.rankLabel', {
+                          level: currentLevel,
+                          title: t(`achievement.categories.${category.key}.levels.${currentLevel}` as any, { defaultValue: currentLevelConfig?.title ?? '' }),
+                        })}
                   </Text>
                 </View>
                 <Image source={TIER_IMAGES[currentLevel]} style={styles.tierIcon} />
@@ -135,7 +140,9 @@ export default function AchievementsScreen() {
                   <View style={styles.nextRankRow}>
                     <View style={styles.inlineRow}>
                       <Text style={styles.sectionLabel}>{t('achievement.nextRank')} </Text>
-                      <Text style={[styles.nextTitleBold, { color: theme.text }]}>{nextLevelConfig.title}</Text>
+                      <Text style={[styles.nextTitleBold, { color: theme.text }]}>
+                      {t(`achievement.categories.${category.key}.levels.${nextLevelConfig.level}` as any, { defaultValue: nextLevelConfig.title })}
+                    </Text>
                       <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
                     </View>
                     <Text style={[styles.progressCount, { color: theme.textMuted }]}>

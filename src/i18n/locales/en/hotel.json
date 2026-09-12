@@ -129,6 +129,24 @@
     "buyer": { "title": "Shopaholic" },
     "lister": { "title": "Merchant" },
     "seller": { "title": "Sales Star" },
+    "categories": {
+      "buy": {
+        "title": "Purchasing",
+        "levels": { "1": "Beginner", "2": "Buyer", "3": "Supplier", "4": "Wholesaler", "5": "Importer", "6": "Tycoon", "7": "Purchase King" }
+      },
+      "list": {
+        "title": "Stocking Shelves",
+        "levels": { "1": "Intern", "2": "Salesperson", "3": "Consultant", "4": "Manager", "5": "Director", "6": "Top Manager", "7": "Shelf Legend" }
+      },
+      "collect": {
+        "title": "Collecting Coins",
+        "levels": { "1": "Collector", "2": "Cashier", "3": "Accountant", "4": "Financier", "5": "Banker", "6": "Investor", "7": "Billionaire" }
+      },
+      "elevator": {
+        "title": "Elevator Service",
+        "levels": { "1": "Newcomer", "2": "Elevator Boy", "3": "Doorman", "4": "Dispatcher", "5": "Engineer", "6": "Lift Master", "7": "Elevator King" }
+      }
+    },
     "screenTitle": "Achievements",
     "noRank": "No rank earned",
     "rankLabel": "Rank {{level}} · {{title}}",
@@ -178,6 +196,19 @@
       "vip_builder": "⭐ VIP Builders: {{count}}"
     },
     "done": "Done"
+  },
+  "dailyTaskItems": {
+    "transporter":     { "title": "Transporter",          "description": "Lift 100 visitors in the elevator" },
+    "vip_transporter": { "title": "VIP Transporter",      "description": "Lift 10 VIP guests in the elevator" },
+    "wholesale":       { "title": "Wholesale Purchase",   "description": "Buy 50 products in the market" },
+    "new_residents":   { "title": "New Residents",        "description": "Welcome 25 new residents to your hotel" },
+    "easy_money":      { "title": "Easy Money",           "description": "Collect 10 gems from elevator visitors" },
+    "investor":        { "title": "Investor",             "description": "Purchase 200 gems in the store" },
+    "money_collector": { "title": "Money Collector",      "description": "Collect 150 products from your businesses" },
+    "build_floor":     { "title": "Higher and Higher!",   "description": "Build 1 new floor in your tower" },
+    "major_investor":  { "title": "Major Investor",       "description": "Purchase 1,000 gems in the store" },
+    "hasta_la_vista":  { "title": "Hasta la vista, Baby!","description": "Evict 15 residents from your hotel" },
+    "goods_to_sell":   { "title": "Goods to Sell",        "description": "List 100 products for sale" }
   },
   "dailyTasks": {
     "title": "Daily Tasks",

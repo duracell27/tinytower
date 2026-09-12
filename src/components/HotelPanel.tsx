@@ -278,7 +278,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
       if (workerDreamJob) {
         for (const ft of Object.values(gameConfig.floorTypes)) {
           const biz = ft.businesses.find((b) => b.dreamJobs.includes(workerDreamJob));
-          if (biz) { dreamFloorName = biz.name; break; }
+          if (biz) { dreamFloorName = tContent(`businessNames.${biz.dreamJobs[0]}`, { defaultValue: biz.name }); break; }
         }
       }
       const card = item.kind === 'worker' ? (

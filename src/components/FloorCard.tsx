@@ -196,9 +196,11 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
   // other floors of the same type get opened later.
   const dynamicFloorName = (() => {
     if (!dynamicFloorType || !availableTypes[0]) return null;
+    const firstTypeId = availableTypes[0];
     const business = gameConfig.floorTypes[dynamicFloorType]?.businesses
-      .find((b) => b.dreamJobs.includes(availableTypes[0]));
-    return business?.name ?? null;
+      .find((b) => b.dreamJobs.includes(firstTypeId));
+    if (!business) return null;
+    return tContent(`businessNames.${firstTypeId}`, { defaultValue: business.name });
   })();
   const floorName = dynamicFloorName ?? tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
   const theme = useAppTheme();

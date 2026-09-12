@@ -193,10 +193,10 @@ export default function DailyTasksScreen() {
                 )}
                 <View style={styles.cardTitleBlock}>
                   <Text style={[styles.cardTitle, { color: theme.text }, claimed && styles.cardTitleClaimed]}>
-                    {task.title}
+                    {t(`dailyTaskItems.${task.key}.title` as any, { defaultValue: task.title })}
                   </Text>
                   <Text style={[styles.cardDesc, { color: theme.textMuted }, claimed && styles.cardDescClaimed]}>
-                    {task.description}
+                    {t(`dailyTaskItems.${task.key}.description` as any, { defaultValue: task.description })}
                   </Text>
                 </View>
                 {claimed && <Text style={styles.claimedCheck}>✓</Text>}
@@ -240,7 +240,7 @@ export default function DailyTasksScreen() {
 
               {completed && !claimed && (
                 <Pressable
-                  onPress={() => handleClaim(task.key, task.title)}
+                  onPress={() => handleClaim(task.key, t(`dailyTaskItems.${task.key}.title` as any, { defaultValue: task.title }))}
                   style={({ pressed }) => [styles.collectBtn, pressed && { opacity: 0.8 }]}
                 >
                   <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.collectGradient}>

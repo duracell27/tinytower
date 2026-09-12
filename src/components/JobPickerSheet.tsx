@@ -100,6 +100,8 @@ export default function JobPickerSheet({
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
   const floorStars = useGameStore((s) => s.floorStars ?? {});
 
+  const { t: tContentMemo } = useTranslation('gameContent');
+
   useEffect(() => {
     if (visible) {
       scrimOpacity.value = withTiming(1, SCRIM_TIMING);
@@ -128,9 +130,9 @@ export default function JobPickerSheet({
       const ftBusinesses = gameConfig.floorTypes[floorType as keyof typeof gameConfig.floorTypes]?.businesses ?? [];
       if (firstTypeId) {
         const biz = ftBusinesses.find((b) => b.dreamJobs.includes(firstTypeId));
-        if (biz) return biz.name;
+        if (biz) return tContentMemo(`businessNames.${firstTypeId}`, { defaultValue: biz.name });
       }
-      return `Floor ${floorId}`;
+      return tContentMemo(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
     };
 
     // Process static floors
@@ -211,7 +213,7 @@ export default function JobPickerSheet({
     }
 
     return result;
-  }, [workers, worker, storeFloors, openedFloorTypes]);
+  }, [workers, worker, storeFloors, openedFloorTypes, tContentMemo]);
 
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
@@ -487,10 +489,9 @@ function resolveSectionName(
   const ftBusinesses =
     gameConfig.floorTypes[section.floorType as keyof typeof gameConfig.floorTypes]?.businesses ?? [];
   const firstTypeId = section.data[0]?.typeId;
-  return (
-    ftBusinesses.find((b) => b.dreamJobs.includes(firstTypeId))?.name ??
-    `Floor ${section.floorId}`
-  );
+  const biz = ftBusinesses.find((b) => b.dreamJobs.includes(firstTypeId));
+  if (biz) return tContent(`businessNames.${firstTypeId}`, { defaultValue: biz.name });
+  return tContent(`floors.${section.floorId}.name`, { defaultValue: `Floor ${section.floorId}` });
 }
 
 function SectionHeader({ section, headerRef }: { section: FloorSection; headerRef?: React.RefObject<View> }) {

@@ -70,7 +70,8 @@ function resolveFloorName(
   const floor = floors.find((f) => f.id === floorId);
   const availableTypes = floor?.productions.map((p) => p.typeId).filter((id): id is string => id !== null) ?? [];
   const business = gameConfig.floorTypes[floorType]?.businesses.find((b) => b.dreamJobs.includes(availableTypes[0]));
-  return business?.name ?? tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
+  if (business) return tContent(`businessNames.${availableTypes[0]}`, { defaultValue: business.name });
+  return tContent(`floors.${floorId}.name`, { defaultValue: `Floor ${floorId}` });
 }
 
 function resolveWorkerTab(mood: string, workerLevel: number): Tab {
@@ -358,7 +359,7 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
             dreamFloorName={(() => {
               for (const ft of Object.values(gameConfig.floorTypes)) {
                 const biz = ft.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
-                if (biz) return biz.name;
+                if (biz) return tContent(`businessNames.${biz.dreamJobs[0]}`, { defaultValue: biz.name });
               }
               return undefined;
             })()}
@@ -387,7 +388,7 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
       let dreamFloorName = tContent(`floorTypes.${worker.floorType}.category`, { defaultValue: worker.floorType });
       for (const ft of Object.values(gameConfig.floorTypes)) {
         const biz = ft.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
-        if (biz) { dreamFloorName = biz.name; break; }
+        if (biz) { dreamFloorName = tContent(`businessNames.${biz.dreamJobs[0]}`, { defaultValue: biz.name }); break; }
       }
       const now = clock.now();
 

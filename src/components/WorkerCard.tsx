@@ -58,7 +58,7 @@ export default function WorkerCard({
   for (const [ftKey, ftEntry] of Object.entries(gameConfig.floorTypes)) {
     const biz = ftEntry.businesses.find((b) => b.dreamJobs.includes(worker.dreamJob));
     if (biz) {
-      dreamBusinessName = biz.name;
+      dreamBusinessName = tContent(`businessNames.${biz.dreamJobs[0]}`, { defaultValue: biz.name });
       const dScheme = FLOOR_TYPE_SCHEMES[ftKey];
       dreamAccent = isDark ? (dScheme?.dark.nameColor ?? accent) : (dScheme?.nameColor ?? accent);
       break;
