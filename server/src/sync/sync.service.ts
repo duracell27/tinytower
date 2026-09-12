@@ -25,6 +25,7 @@ export interface SyncResult {
   xpBonusPercent: number;
   categoryProgress: Record<string, CategoryProgressState>;
   dailyLoginReward: { coins: number; gems: number } | null;
+  acceptedCommandIds: string[];
   pendingReferralClaims: Array<{
     id: string;
     referredName: string;
@@ -613,6 +614,7 @@ export class SyncService {
       dailyLoginReward,
       pendingReferralClaims,
       referralPurchaseBonuses,
+      acceptedCommandIds: acceptedCommands.map((c) => c.id),
     };
   }
 

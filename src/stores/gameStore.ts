@@ -236,8 +236,8 @@ interface GameActions {
     categoryProgress?: Record<string, CategoryProgressState>;
     dailyTipsRewardClaimed?: boolean;
   }) => void;
-  reconcile: (state: GameState, stateVersion: number, ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
-  clearAckedCommands: (ackCursor: number, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
+  reconcile: (state: GameState, stateVersion: number, ackCursor: number, acceptedIds: Set<string>, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
+  clearAckedCommands: (ackCursor: number, acceptedIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
   exchangeGemsForCoins: (gems: number) => void;
   speedUpConstruction: (floorId: number) => void;
   speedUpDelivery: (floorId: number, slotIdx: number) => void;
@@ -1358,20 +1358,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
     tutorialTasks: state.tutorialTasks ?? { currentIndex: 0, snapshot: {}, claimedFinal: false },
   }),
 
-  reconcile: (serverState, newVersion, ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
-    balance: serverState.balance,
-    gems: serverState.gems,
-    workers: (() => {
+  reconcile: (serverState, newVersion, ackCursor, acceptedIds, sentIds, playerLevel, playerXp) => set((cur) => {
+    // Commands that remain pending after this reconcile: already-queued commands minus
+    // those the server confirmed as accepted.  Rejected offline commands stay in the queue
+    // so they are automatically retried on the next sync cycle.
+    const pendingQueue = cur.commandQueue.filter((cmd) => !acceptedIds.has(cmd.id));
+
+    const workers = (() => {
       // Re-apply pending worker commands over server state to preserve optimistic effects.
       // Without this, a stale sync response (stateVersion bumped by lobby visitors while
       // a hire was in-flight) triggers a reconcile that rolls back the optimistic hire,
       // causing the "better candidate" badge to flicker incorrectly.
-      const pendingWorkerCmds = cur.commandQueue.filter(
-        (cmd) => !sentIds.has(cmd.id) &&
-          (cmd.type === 'assign_worker' || cmd.type === 'fire_worker' ||
-           cmd.type === 'evict_worker' || cmd.type === 'fire_and_evict_worker' ||
-           cmd.type === 'evict_low_level_workers' || cmd.type === 'upgrade_to_specialist' ||
-           cmd.type === 'deliver_all'),
+      const pendingWorkerCmds = pendingQueue.filter(
+        (cmd) => cmd.type === 'assign_worker' || cmd.type === 'fire_worker' ||
+          cmd.type === 'evict_worker' || cmd.type === 'fire_and_evict_worker' ||
+          cmd.type === 'evict_low_level_workers' || cmd.type === 'upgrade_to_specialist' ||
+          cmd.type === 'deliver_all',
       );
       if (pendingWorkerCmds.length === 0) return serverState.workers;
       let workers = serverState.workers;
@@ -1402,11 +1404,41 @@ export const useGameStore = create<GameStore>((set, get) => ({
         workers = [...localUnemployed, ...serverNew.slice(0, keepCount), ...assigned];
       }
       return workers;
-    })(),
-    hotelCapacity: serverState.hotelCapacity + cur.commandQueue.filter(
-      (cmd) => !sentIds.has(cmd.id) && cmd.type === 'expand_hotel',
-    ).length,
-    lobbyVisitors: (() => {
+    })();
+
+    // Floors with a pending open_floor in the queue (not yet confirmed by server).
+    // This covers both truly-unsent commands AND sent-but-rejected commands that we
+    // kept in the queue for retry — the user already sees the floor as open locally,
+    // so we preserve that state until the server confirms or definitively rejects it.
+    const pendingOpenFloorIds = new Set<number>(
+      pendingQueue
+        .filter((cmd) => cmd.type === 'open_floor')
+        .map((cmd) => (cmd as Extract<Command, { type: 'open_floor' }>).floorId),
+    );
+
+    const tools = (() => {
+      // Start from server-confirmed tools, then re-apply any pending shop_purchase
+      // effects that the server hasn't confirmed yet (e.g. a purchase that was
+      // rejected alongside a failed open_floor — the purchase stays in the retry
+      // queue and its optimistic tool bonus must remain visible to the player).
+      let t = serverState.tools ?? cur.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 };
+      for (const cmd of pendingQueue) {
+        if (cmd.type === 'shop_purchase') {
+          const sp = cmd as Extract<Command, { type: 'shop_purchase' }>;
+          t = {
+            briks:  (t.briks  ?? 0) + (sp.tools.briks  ?? 0),
+            glass:  (t.glass  ?? 0) + (sp.tools.glass  ?? 0),
+            nails:  (t.nails  ?? 0) + (sp.tools.nails  ?? 0),
+            screw:  (t.screw  ?? 0) + (sp.tools.screw  ?? 0),
+            wood:   (t.wood   ?? 0) + (sp.tools.wood   ?? 0),
+            cement: (t.cement ?? 0) + (sp.tools.cement ?? 0),
+          };
+        }
+      }
+      return t;
+    })();
+
+    const lobbyVisitors = (() => {
       // Map all server visitors; supply defaults for legacy visitors that lack role/targetFloor
       // (created by createInitialState before eager generation was added).
       const floorTypeKeys = Object.keys(gameConfig.floorTypes);
@@ -1440,119 +1472,122 @@ export const useGameStore = create<GameStore>((set, get) => ({
         .filter((lv) => pendingSpawnIds.has(lv.id) && !serverIds.has(lv.id))
         .slice(0, freeSlots);
       return [...serverMapped, ...pendingLocal];
-    })(),
-    lobbyCapacity: serverState.lobbyCapacity,
-    elevatorLevel: serverState.elevatorLevel,
-    warehouseLevel: serverState.warehouseLevel ?? 0,
-    elevatorFloor: serverState.elevatorFloor,
-    dailyTips: serverState.dailyTips,
-    dailyGemsCollected: serverState.dailyGemsCollected,
-    dailyTipsStage1Claimed: serverState.dailyTipsStage1Claimed ?? (serverState as any).dailyTipsRewardClaimed ?? false,
-    dailyTipsStage2Claimed: serverState.dailyTipsStage2Claimed ?? false,
-    lastDailyReset: serverState.lastDailyReset,
-    nextVisitorAt: serverState.nextVisitorAt,
-    dailyFillLobbyUses: serverState.dailyFillLobbyUses ?? 0,
-    stateVersion: newVersion,
-    lastAckCursor: ackCursor,
-    commandQueue: cur.commandQueue.filter((cmd) => !sentIds.has(cmd.id)),
-    playerLevel: playerLevel != null ? Math.max(playerLevel, cur.playerLevel) : cur.playerLevel,
-    playerXp: (() => {
-      if (playerLevel == null) return cur.playerXp;
-      if (playerLevel > cur.playerLevel) return playerXp ?? 0;
-      if (playerLevel < cur.playerLevel) return cur.playerXp;
-      return Math.max(playerXp ?? 0, cur.playerXp);
-    })(),
-    tools: serverState.tools ?? cur.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
-    underConstruction: (() => {
-      const pendingOpenFloorIds = new Set<number>();
-      for (const cmd of cur.commandQueue) {
-        if (!sentIds.has(cmd.id) && cmd.type === 'open_floor') {
-          pendingOpenFloorIds.add(cmd.floorId);
-        }
-      }
-      return (serverState.underConstruction ?? [])
+    })();
+
+    return {
+      balance: serverState.balance,
+      gems: serverState.gems,
+      workers,
+      hotelCapacity: serverState.hotelCapacity + pendingQueue.filter(
+        (cmd) => cmd.type === 'expand_hotel',
+      ).length,
+      lobbyVisitors,
+      lobbyCapacity: serverState.lobbyCapacity,
+      elevatorLevel: serverState.elevatorLevel,
+      warehouseLevel: serverState.warehouseLevel ?? 0,
+      elevatorFloor: serverState.elevatorFloor,
+      dailyTips: serverState.dailyTips,
+      dailyGemsCollected: serverState.dailyGemsCollected,
+      dailyTipsStage1Claimed: serverState.dailyTipsStage1Claimed ?? (serverState as any).dailyTipsRewardClaimed ?? false,
+      dailyTipsStage2Claimed: serverState.dailyTipsStage2Claimed ?? false,
+      lastDailyReset: serverState.lastDailyReset,
+      nextVisitorAt: serverState.nextVisitorAt,
+      dailyFillLobbyUses: serverState.dailyFillLobbyUses ?? 0,
+      stateVersion: newVersion,
+      lastAckCursor: ackCursor,
+      commandQueue: pendingQueue,
+      playerLevel: playerLevel != null ? Math.max(playerLevel, cur.playerLevel) : cur.playerLevel,
+      playerXp: (() => {
+        if (playerLevel == null) return cur.playerXp;
+        if (playerLevel > cur.playerLevel) return playerXp ?? 0;
+        if (playerLevel < cur.playerLevel) return cur.playerXp;
+        return Math.max(playerXp ?? 0, cur.playerXp);
+      })(),
+      tools,
+      underConstruction: (serverState.underConstruction ?? [])
         .filter((uc) => !pendingOpenFloorIds.has(uc.floorId))
         .map((uc) => {
           const local = cur.underConstruction.find((u) => u.floorId === uc.floorId);
           return local?.selectedFloorType ? { ...uc, selectedFloorType: local.selectedFloorType } : uc;
-        });
-    })(),
-    openedFloorTypes: (() => {
-      const base = serverState.openedFloorTypes ?? {};
-      // Pending open_floor commands (not in this sync batch) must survive reconcile so
-      // subsequent open_floor commands for other floors compute the correct tier.
-      const extra: Record<string, string> = {};
-      for (const cmd of cur.commandQueue) {
-        if (!sentIds.has(cmd.id) && cmd.type === 'open_floor') {
-          extra[String(cmd.floorId)] = cmd.floorType;
+        }),
+      openedFloorTypes: (() => {
+        const base = serverState.openedFloorTypes ?? {};
+        // Pending open_floor commands must survive reconcile so subsequent open_floor
+        // commands for other floors compute the correct tier.
+        const extra: Record<string, string> = {};
+        for (const cmd of pendingQueue) {
+          if (cmd.type === 'open_floor') {
+            extra[String((cmd as Extract<Command, { type: 'open_floor' }>).floorId)] =
+              (cmd as Extract<Command, { type: 'open_floor' }>).floorType;
+          }
         }
-      }
-      return { ...base, ...extra };
-    })(),
-    floors: (() => {
-      const base = serverState.floors;
-      const extra: typeof base = [];
-      for (const cmd of cur.commandQueue) {
-        if (!sentIds.has(cmd.id) && cmd.type === 'open_floor') {
-          const f = cur.floors.find((fl) => fl.id === cmd.floorId);
-          if (f && !base.some((b) => b.id === cmd.floorId)) extra.push(f);
+        return { ...base, ...extra };
+      })(),
+      floors: (() => {
+        const base = serverState.floors;
+        const extra: typeof base = [];
+        for (const cmd of pendingQueue) {
+          if (cmd.type === 'open_floor') {
+            const f = cur.floors.find((fl) => fl.id === (cmd as Extract<Command, { type: 'open_floor' }>).floorId);
+            if (f && !base.some((b) => b.id === (cmd as Extract<Command, { type: 'open_floor' }>).floorId)) extra.push(f);
+          }
         }
-      }
-      const merged = extra.length > 0 ? [...base, ...extra] : base;
-      // During the collect onboarding steps, preserve READY_TO_COLLECT on the
-      // initial tutorial slots so the server's IDLE doesn't wipe our forced state.
-      const onboardingStep = useOnboardingStore.getState().step;
-      if (onboardingStep === 'collect_slot_1' || onboardingStep === 'collect_slot_2') {
-        return merged.map((floor) => {
-          if (floor.id !== 2 && floor.id !== 3) return floor;
-          const local = cur.floors.find((f) => f.id === floor.id);
-          if (!local) return floor;
-          return {
-            ...floor,
-            productions: floor.productions.map((prod, i) => {
-              if (i !== 0) return prod;
-              const localProd = local.productions[0];
-              if ((localProd?.stage === 'SELLING' || localProd?.stage === 'READY_TO_COLLECT') && prod.stage === 'IDLE') return localProd;
-              return prod;
-            }),
-          };
-        });
-      }
-      return merged;
-    })(),
-    stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
-    tokens:     serverState.tokens     ?? cur.tokens,
-    businessUpgrades: serverState.businessUpgrades ?? cur.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
-    vehicles: serverState.vehicles ?? cur.vehicles ?? { taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 },
-    floorStars: (() => {
-      const base = serverState.floorStars ?? cur.floorStars ?? {};
-      const pending: Record<string, number> = {};
-      for (const cmd of cur.commandQueue) {
-        if (!sentIds.has(cmd.id) && cmd.type === 'upgrade_floor') {
-          const key = String((cmd as Extract<typeof cmd, { type: 'upgrade_floor' }>).floorId);
-          pending[key] = Math.min(5, (pending[key] ?? base[key] ?? 0) + 1);
+        const merged = extra.length > 0 ? [...base, ...extra] : base;
+        // During the collect onboarding steps, preserve READY_TO_COLLECT on the
+        // initial tutorial slots so the server's IDLE doesn't wipe our forced state.
+        const onboardingStep = useOnboardingStore.getState().step;
+        if (onboardingStep === 'collect_slot_1' || onboardingStep === 'collect_slot_2') {
+          return merged.map((floor) => {
+            if (floor.id !== 2 && floor.id !== 3) return floor;
+            const local = cur.floors.find((f) => f.id === floor.id);
+            if (!local) return floor;
+            return {
+              ...floor,
+              productions: floor.productions.map((prod, i) => {
+                if (i !== 0) return prod;
+                const localProd = local.productions[0];
+                if ((localProd?.stage === 'SELLING' || localProd?.stage === 'READY_TO_COLLECT') && prod.stage === 'IDLE') return localProd;
+                return prod;
+              }),
+            };
+          });
         }
-      }
-      return Object.keys(pending).length > 0 ? { ...base, ...pending } : base;
-    })(),
-    dailyTasks: (() => {
-      const base = serverState.dailyTasks ?? cur.dailyTasks;
-      const pendingClaims = cur.commandQueue
-        .filter((cmd) => !sentIds.has(cmd.id) && cmd.type === 'claim_daily_task')
-        .map((cmd) => (cmd as Extract<typeof cmd, { type: 'claim_daily_task' }>).taskKey);
-      if (pendingClaims.length === 0) return base;
-      return { ...base, claimed: [...new Set([...base.claimed, ...pendingClaims])] };
-    })(),
-    tutorialProgress: serverState.tutorialProgress ?? cur.tutorialProgress,
-    tutorialTasks: serverState.tutorialTasks ?? cur.tutorialTasks,
-    locallyGrantedAchievements: new Set<string>(),
-  })),
+        return merged;
+      })(),
+      stats: serverState.stats ?? { totalBought: 0, totalListed: 0, totalCollected: 0, totalPassengersLifted: 0 },
+      tokens:     serverState.tokens     ?? cur.tokens,
+      businessUpgrades: serverState.businessUpgrades ?? cur.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
+      vehicles: serverState.vehicles ?? cur.vehicles ?? { taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 },
+      floorStars: (() => {
+        const base = serverState.floorStars ?? cur.floorStars ?? {};
+        const pending: Record<string, number> = {};
+        for (const cmd of pendingQueue) {
+          if (cmd.type === 'upgrade_floor') {
+            const key = String((cmd as Extract<typeof cmd, { type: 'upgrade_floor' }>).floorId);
+            pending[key] = Math.min(5, (pending[key] ?? base[key] ?? 0) + 1);
+          }
+        }
+        return Object.keys(pending).length > 0 ? { ...base, ...pending } : base;
+      })(),
+      dailyTasks: (() => {
+        const base = serverState.dailyTasks ?? cur.dailyTasks;
+        const pendingClaims = pendingQueue
+          .filter((cmd) => cmd.type === 'claim_daily_task')
+          .map((cmd) => (cmd as Extract<typeof cmd, { type: 'claim_daily_task' }>).taskKey);
+        if (pendingClaims.length === 0) return base;
+        return { ...base, claimed: [...new Set([...base.claimed, ...pendingClaims])] };
+      })(),
+      tutorialProgress: serverState.tutorialProgress ?? cur.tutorialProgress,
+      tutorialTasks: serverState.tutorialTasks ?? cur.tutorialTasks,
+      locallyGrantedAchievements: new Set<string>(),
+    };
+  }),
 
-  clearAckedCommands: (ackCursor, sentIds, playerLevel, playerXp) => set((cur) => ({
+  clearAckedCommands: (ackCursor, acceptedIds, playerLevel, playerXp) => set((cur) => ({
     lastAckCursor: ackCursor,
     playerLevel: playerLevel ?? cur.playerLevel,
     playerXp: playerXp ?? cur.playerXp,
-    commandQueue: cur.commandQueue.filter((cmd) => !sentIds.has(cmd.id)),
+    commandQueue: cur.commandQueue.filter((cmd) => !acceptedIds.has(cmd.id)),
   })),
 
   buyVehicle: (vehicleType) => {

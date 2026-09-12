@@ -19,6 +19,7 @@ interface SyncResponse {
   xpBonusPercent: number;
   categoryProgress: Record<string, CategoryProgressState>;
   dailyLoginReward?: { coins: number; gems: number } | null;
+  acceptedCommandIds?: string[];
   pendingReferralClaims?: Array<{
     id: string;
     referredName: string;
@@ -80,12 +81,21 @@ async function doSync(): Promise<void> {
       (response.stateVersion !== store.stateVersion && response.stateVersion > 0) ||
       (store.workers.length === 0 && response.state.workers.length > 0);
 
+    // Only remove commands the server confirmed as accepted; rejected commands stay in
+    // the queue so they are retried on the next sync (e.g. open_floor after shop_purchase
+    // adds the required tools that the server processed in the same batch but in a
+    // conflicting order).  Fall back to the old sentIds behaviour when the server is older
+    // and doesn't return acceptedCommandIds.
+    const acceptedIds = response.acceptedCommandIds
+      ? new Set(response.acceptedCommandIds)
+      : sentIds;
+
     const onboarding = useOnboardingStore.getState();
     const duringOnboarding = onboarding.isActive && onboarding.step !== 'done';
     if (needsReconcile && !duringOnboarding) {
-      store.reconcile(response.state, response.stateVersion, response.ackCursor, sentIds, response.playerLevel, response.playerXp);
+      store.reconcile(response.state, response.stateVersion, response.ackCursor, acceptedIds, sentIds, response.playerLevel, response.playerXp);
     } else {
-      store.clearAckedCommands(response.ackCursor, sentIds, response.playerLevel, response.playerXp);
+      store.clearAckedCommands(response.ackCursor, acceptedIds, response.playerLevel, response.playerXp);
     }
     if (response.newAchievements && response.newAchievements.length > 0) {
       const unshown = response.newAchievements.filter(
