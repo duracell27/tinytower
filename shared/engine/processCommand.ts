@@ -407,10 +407,8 @@ function handleOpenFloor(
   };
 
   const updatedTools = { ...currentTools };
-  if (!command.freeOpen) {
-    for (const { tool, count } of uc.requiredTools) {
-      updatedTools[tool] = updatedTools[tool] - count;
-    }
+  for (const { tool, count } of uc.requiredTools) {
+    updatedTools[tool] = updatedTools[tool] - count;
   }
 
   return {
