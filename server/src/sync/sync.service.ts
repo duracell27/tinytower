@@ -84,9 +84,9 @@ export class SyncService {
           )
         : new Set<string>();
 
-    const newCommands = commands.filter(
-      (c) => !existingIds.has(c.id) && c.timestamp > lastAckCursor,
-    );
+    const newCommands = commands
+      .filter((c) => !existingIds.has(c.id) && c.timestamp > lastAckCursor)
+      .sort((a, b) => a.timestamp - b.timestamp);
 
     if (newCommands.length > 0) {
       this.logger.log(`Processing ${newCommands.length} new commands: ${newCommands.map((c) => c.type).join(', ')}`);
@@ -614,7 +614,10 @@ export class SyncService {
       dailyLoginReward,
       pendingReferralClaims,
       referralPurchaseBonuses,
-      acceptedCommandIds: acceptedCommands.map((c) => c.id),
+      // Include previously-logged (already-accepted) command IDs so the client can
+      // prune "ghost" commands that were accepted in an earlier intermediate batch but
+      // never removed from the queue due to the interim-batch acceptedCommandIds bug.
+      acceptedCommandIds: [...acceptedCommands.map((c) => c.id), ...existingIds],
     };
   }
 

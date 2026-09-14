@@ -313,8 +313,11 @@ function handleBuyFloor(
     return { success: true, state: { ...state, underConstruction: [...state.underConstruction, newUc] } };
   }
 
-  if (state.underConstruction.some((uc) => uc.floorId === command.floorId)) return { success: false, state, error: 'Floor already under construction' };
-  if (state.floors.some((f) => f.id === command.floorId)) return { success: false, state, error: 'Floor already exists' };
+  // Idempotent: if the floor was already started (e.g. accepted in a previous sync but the
+  // client retried due to the intermediate-batch acceptedCommandIds bug), accept silently so
+  // the command is acked and pruned from the queue without double-charging the player.
+  if (state.underConstruction.some((uc) => uc.floorId === command.floorId)) return { success: true, state };
+  if (state.floors.some((f) => f.id === command.floorId)) return { success: true, state };
   if (unlockConfig.currency === 'gems') {
     if (state.gems < unlockConfig.price) return { success: false, state, error: 'Insufficient gems' };
     return {

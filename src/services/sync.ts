@@ -52,6 +52,11 @@ async function doSync(): Promise<void> {
   pendingSync = false;
   try {
     let currentLastAckCursor = lastAckCursor;
+    // Collect accepted IDs from every interim batch so those commands are properly
+    // removed from the queue during reconcile.  Previously only the final batch's
+    // acceptedCommandIds were used, leaving interim-accepted commands as permanent
+    // "ghosts" that bloated the queue and caused state-divergence bugs.
+    const interimAcceptedIds: string[] = [];
 
     // When the queue is large, drain it in chunks so each request stays under the server body limit.
     // The server deduplicates by commandLog, so re-sending is safe on retry.
@@ -62,6 +67,9 @@ async function doSync(): Promise<void> {
           lastAckCursor: currentLastAckCursor,
         });
         currentLastAckCursor = interim.ackCursor;
+        if (interim.acceptedCommandIds) {
+          interimAcceptedIds.push(...interim.acceptedCommandIds);
+        }
       }
     }
 
@@ -81,13 +89,11 @@ async function doSync(): Promise<void> {
       (response.stateVersion !== store.stateVersion && response.stateVersion > 0) ||
       (store.workers.length === 0 && response.state.workers.length > 0);
 
-    // Only remove commands the server confirmed as accepted; rejected commands stay in
-    // the queue so they are retried on the next sync (e.g. open_floor after shop_purchase
-    // adds the required tools that the server processed in the same batch but in a
-    // conflicting order).  Fall back to the old sentIds behaviour when the server is older
-    // and doesn't return acceptedCommandIds.
+    // Build the full set of accepted IDs: final batch + all interim batches.
+    // Fall back to sentIds (accept everything) for older server versions that don't
+    // return acceptedCommandIds — that matches the previous behaviour.
     const acceptedIds = response.acceptedCommandIds
-      ? new Set(response.acceptedCommandIds)
+      ? new Set([...response.acceptedCommandIds, ...interimAcceptedIds])
       : sentIds;
 
     const onboarding = useOnboardingStore.getState();
