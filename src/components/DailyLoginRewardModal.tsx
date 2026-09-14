@@ -47,24 +47,24 @@ export default function DailyLoginRewardModal() {
 
         {reward && (
           <Animated.View style={[styles.card, cardStyle]}>
-            <LinearGradient colors={['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
+            <LinearGradient colors={isDark ? ['#1E2A3A', '#141E2E'] : ['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
               <View style={styles.starsRow}>
                 <Text style={[styles.starText, styles.starSmall]}>★</Text>
                 <Text style={[styles.starText, styles.starLarge]}>★</Text>
                 <Text style={[styles.starText, styles.starSmall]}>★</Text>
               </View>
 
-              <Text style={styles.title}>{t('dailyLoginReward.title')}</Text>
-              <Text style={styles.subtitle}>{t('dailyLoginReward.subtitle')}</Text>
+              <Text style={[styles.title, isDark && { color: theme.text }]}>{t('dailyLoginReward.title')}</Text>
+              <Text style={[styles.subtitle, isDark && { color: theme.textMuted }]}>{t('dailyLoginReward.subtitle')}</Text>
 
               <View style={styles.rewardsContainer}>
-                <View style={[styles.rewardRow, { backgroundColor: theme.surface }]}>
+                <View style={[styles.rewardRow, { backgroundColor: isDark ? theme.surfaceCard : '#fff' }]}>
                   <CoinIcon size={20} />
-                  <Text style={styles.rewardText}>+{formatNum(reward.coins)}</Text>
+                  <Text style={[styles.rewardText, isDark && { color: '#F5C842' }]}>+{formatNum(reward.coins)}</Text>
                 </View>
-                <View style={[styles.rewardRow, { backgroundColor: theme.surface }]}>
+                <View style={[styles.rewardRow, { backgroundColor: isDark ? theme.surfaceCard : '#fff' }]}>
                   <GemIcon size={16} />
-                  <Text style={styles.rewardTextGem}>+{reward.gems}</Text>
+                  <Text style={[styles.rewardTextGem, isDark && { color: '#4DC8E0' }]}>+{reward.gems}</Text>
                 </View>
               </View>
 

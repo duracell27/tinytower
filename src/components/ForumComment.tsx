@@ -79,7 +79,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
     },
     bubble: {
       flexShrink: 1,
-      backgroundColor: theme.surface,
+      backgroundColor: isDark ? theme.surfaceCard : theme.surface,
       borderRadius: 16,
       borderBottomLeftRadius: 4,
       paddingHorizontal: 12,
