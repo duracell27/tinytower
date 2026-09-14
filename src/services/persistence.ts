@@ -53,7 +53,14 @@ export function loadGameState(): PersistedGameState | null {
       lastDailyReset: parsed.lastDailyReset ?? 0,
       nextVisitorAt: parsed.nextVisitorAt ?? 0,
       gems: parsed.gems ?? 20,
-      tools: parsed.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 },
+      tools: parsed.tools ? {
+        briks:  Math.max(0, parsed.tools.briks  ?? 1),
+        glass:  Math.max(0, parsed.tools.glass  ?? 1),
+        nails:  Math.max(0, parsed.tools.nails  ?? 1),
+        screw:  Math.max(0, parsed.tools.screw  ?? 1),
+        wood:   Math.max(0, parsed.tools.wood   ?? 1),
+        cement: Math.max(0, parsed.tools.cement ?? 1),
+      } : { briks: 1, glass: 1, nails: 1, screw: 1, wood: 1, cement: 1 },
       underConstruction: Array.isArray(parsed.underConstruction)
         ? parsed.underConstruction
         : parsed.underConstruction != null
