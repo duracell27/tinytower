@@ -1475,6 +1475,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     })();
 
     return {
+      isHydrated: true,
       balance: serverState.balance,
       gems: serverState.gems,
       workers,
