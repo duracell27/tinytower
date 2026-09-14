@@ -380,7 +380,7 @@ const rawConfig = {
     dailyTipsStage2Reward: 3,
     dailyGemLimitBase: 10,
     guestTipBase: 3,
-    businessmanFallbackBase: 100,
+    businessmanFallbackBase: 10,
     deliverySpeedBonus: 0.05,
     sellSpeedBonus: 0.05,
     elevatorUpgradeBaseCost: 3,
