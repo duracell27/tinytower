@@ -50,6 +50,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
   const gems = useGameStore((s) => s.gems);
   const floorCount = useGameStore((s) => s.floors.length + 1); // +1 for hotel floor
   const playerLevel = useGameStore((s) => s.playerLevel);
+  const isHydrated = useGameStore((s) => s.isHydrated);
   const player = useAuthStore((s) => s.player);
 
   // Case 1: active session
@@ -175,11 +176,11 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         <View style={styles.chipsContainer}>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Image source={require('../../assets/img/coin.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
-            <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{formatNum(balance)}</Text>
+            <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{isHydrated ? formatNum(balance) : '—'}</Text>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Image source={require('../../assets/img/diamond.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
-            <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{gems}</Text>
+            <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{isHydrated ? gems : '—'}</Text>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <View style={styles.floorsIconWrap}>
@@ -188,7 +189,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
               ))}
             </View>
             <View>
-              <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{floorCount}</Text>
+              <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{isHydrated ? floorCount : '—'}</Text>
               <Text style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</Text>
             </View>
           </View>
