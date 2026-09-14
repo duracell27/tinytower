@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet, Animated } from 'react-native';
+import LocaleText from '../../src/components/LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -30,6 +31,15 @@ const BONUS_ICONS: Record<VehicleType, [ReturnType<typeof require>, ReturnType<t
 };
 
 const VALID_VEHICLE_KEYS: VehicleType[] = ['taxi', 'forklift', 'armored_truck', 'delivery_truck', 'bus'];
+
+function getBonusParams(key: VehicleType, idx: 0 | 1, count: number): Record<string, string | number> {
+  if (key === 'taxi') return idx === 0 ? { n: count } : { xp: (count * 1_000).toLocaleString() };
+  if (key === 'forklift') return idx === 0 ? { n: count } : { xp: (count * 5_000).toLocaleString() };
+  if (key === 'armored_truck') return idx === 0 ? { n: count * 5 } : { n: count * 10 };
+  if (key === 'delivery_truck') return idx === 0 ? { n: count } : { xp: (count * 5_000).toLocaleString() };
+  if (key === 'bus') return { n: count * 5 };
+  return {};
+}
 
 const PARTICLE_COUNT = 6;
 const OFFSETS = [-100, -60, -20, 20, 60, 100];
@@ -115,7 +125,7 @@ function renderDesc(text: string): React.ReactNode {
         />
       );
     }
-    return <Text key={i}>{part}</Text>;
+    return <LocaleText key={i}>{part}</LocaleText>;
   });
 }
 
@@ -168,7 +178,7 @@ export default function VehicleDetailScreen() {
           <View style={[styles.iconCircle, { backgroundColor: `${def.accentColor}20` }]}>
             <Image source={VEHICLE_ICONS[key]} style={styles.heroIcon} contentFit="contain" />
           </View>
-          <Text style={[styles.heroName, { color: theme.text }]}>{def.name}</Text>
+          <LocaleText style={[styles.heroName, { color: theme.text }]}>{t(`autopark.vehicles.${key}.name`)}</LocaleText>
 
           {/* Dot progress */}
           <View style={styles.dotRow}>
@@ -182,7 +192,7 @@ export default function VehicleDetailScreen() {
               />
             ))}
           </View>
-          <Text style={[styles.dotCount, { color: theme.textMuted }]}>{t('autopark.ownedCount', { count })}</Text>
+          <LocaleText style={[styles.dotCount, { color: theme.textMuted }]}>{t('autopark.ownedCount', { count })}</LocaleText>
         </View>
 
         {/* Bonus cards */}
@@ -190,29 +200,29 @@ export default function VehicleDetailScreen() {
           {([0, 1] as const).map((idx) => (
             <View key={idx} style={[styles.bonusCard, { backgroundColor: theme.surface }]}>
               <Image source={idx === 0 ? icon1 : icon2} style={styles.bonusIcon} contentFit="contain" />
-              <Text style={[styles.bonusValue, { color: def.accentColor }]}>
-                {idx === 0 ? def.bonus1Label(count) : def.bonus2Label(count)}
-              </Text>
+              <LocaleText style={[styles.bonusValue, { color: def.accentColor }]}>
+                {t(`autopark.vehicles.${key}.${idx === 0 ? 'b1' : 'b2'}`, getBonusParams(key, idx, count))}
+              </LocaleText>
             </View>
           ))}
         </View>
 
         {/* Description */}
         <View style={[styles.descCard, { backgroundColor: theme.surface, borderLeftColor: def.accentColor }]}>
-          <Text style={[styles.descLabel, { color: def.accentColor }]}>{t('autopark.about')}</Text>
-          <Text style={[styles.descText, { color: theme.text }]}>
-            {renderDesc(def.description)}
-          </Text>
+          <LocaleText style={[styles.descLabel, { color: def.accentColor }]}>{t('autopark.about')}</LocaleText>
+          <LocaleText style={[styles.descText, { color: theme.text }]}>
+            {renderDesc(t(`autopark.vehicles.${key}.desc`))}
+          </LocaleText>
         </View>
 
         {/* Buy button */}
         <View style={styles.buyWrap}>
           {feedback === 'success' && (
-            <Text style={[styles.feedbackText, { color: def.accentColor }]}>{t('autopark.purchased')}</Text>
+            <LocaleText style={[styles.feedbackText, { color: def.accentColor }]}>{t('autopark.purchased')}</LocaleText>
           )}
           {isMaxed ? (
             <View style={[styles.buyBtn, { backgroundColor: theme.surfaceSub }]}>
-              <Text style={[styles.buyBtnText, { color: theme.textMuted }]}>{t('autopark.maxedOut')}</Text>
+              <LocaleText style={[styles.buyBtnText, { color: theme.textMuted }]}>{t('autopark.maxedOut')}</LocaleText>
             </View>
           ) : (
             <View>
@@ -227,9 +237,9 @@ export default function VehicleDetailScreen() {
                 style={({ pressed }) => [styles.buyBtn, { backgroundColor: def.accentColor, opacity: pressed ? 0.82 : 1 }]}
               >
                 <View style={styles.buyBtnRow}>
-                  <Text style={styles.buyBtnText}>{t('autopark.buyFor')} </Text>
+                  <LocaleText style={styles.buyBtnText}>{t('autopark.buyFor')} </LocaleText>
                   <GemIcon size={18} />
-                  <Text style={styles.buyBtnText}> {formatNum(def.gemCost)}</Text>
+                  <LocaleText style={styles.buyBtnText}> {formatNum(def.gemCost)}</LocaleText>
                 </View>
               </Pressable>
             </View>
@@ -242,7 +252,7 @@ export default function VehicleDetailScreen() {
         onPress={() => router.back()}
         style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
       >
-        <Text style={styles.closeBtnText}>✕</Text>
+        <LocaleText style={styles.closeBtnText}>✕</LocaleText>
       </Pressable>
     </AppBackground>
   );

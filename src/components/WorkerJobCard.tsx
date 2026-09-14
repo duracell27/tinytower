@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -184,7 +185,7 @@ export default function WorkerJobCard({
 
         <View style={styles.infoColumn}>
           <View style={styles.nameRow}>
-            <Text style={[styles.nameText, isDark && { color: theme.text }]} numberOfLines={1}>{worker.name}</Text>
+            <LocaleText style={[styles.nameText, isDark && { color: theme.text }]} numberOfLines={1}>{worker.name}</LocaleText>
             {isBetterCandidate && (
               <Animated.View style={arrowStyle}>
                 <Image
@@ -200,7 +201,7 @@ export default function WorkerJobCard({
               <Svg width={13} height={13} viewBox="0 0 24 24" fill="none">
                 <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke={dreamAccent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
               </Svg>
-              <Text style={[styles.floorText, { color: dreamAccent }]} numberOfLines={1}>{`${dreamFloorName} · ${dreamJobName}`}</Text>
+              <LocaleText style={[styles.floorText, { color: dreamAccent }]} numberOfLines={1}>{`${dreamFloorName} · ${dreamJobName}`}</LocaleText>
             </View>
           )}
           <View style={styles.iconRow}>
@@ -208,21 +209,21 @@ export default function WorkerJobCard({
               <Path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke={floorAccent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
               <Path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke={floorAccent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
             </Svg>
-            <Text style={[styles.floorText, { color: floorAccent }]} numberOfLines={1}>{`${floorName} · ${productionName}`}</Text>
+            <LocaleText style={[styles.floorText, { color: floorAccent }]} numberOfLines={1}>{`${floorName} · ${productionName}`}</LocaleText>
           </View>
           {activeProduction && (
-            <Text style={[styles.statusText, isDark && { color: '#5A6470' }]} numberOfLines={1}>{statusLabel}</Text>
+            <LocaleText style={[styles.statusText, isDark && { color: '#5A6470' }]} numberOfLines={1}>{statusLabel}</LocaleText>
           )}
         </View>
 
         <View style={styles.levelBlock}>
           <View style={styles.levelInner}>
-            <Text style={styles.levelLabel}>
+            <LocaleText style={styles.levelLabel}>
               {t('workerCard.level')}
-            </Text>
-            <Text style={[styles.levelNumber, { color: accent }]}>
+            </LocaleText>
+            <LocaleText style={[styles.levelNumber, { color: accent }]}>
               {worker.level}
-            </Text>
+            </LocaleText>
           </View>
           <Animated.View style={chevronStyle}>
             <Svg width={9} height={14} viewBox="0 0 9 14" fill="none">
@@ -246,7 +247,7 @@ export default function WorkerJobCard({
               style={({ pressed }) => [styles.actionButton, pressed && styles.actionButtonPressed]}
             >
               <LinearGradient colors={['#F5C842', '#D4A500']} style={styles.actionButtonGradient}>
-                <Text style={styles.actionButtonText}>{t('workersPanel.trainButton')}</Text>
+                <LocaleText style={styles.actionButtonText}>{t('workersPanel.trainButton')}</LocaleText>
                 <GemIcon size={16} />
               </LinearGradient>
               <View style={[styles.actionButtonShadow, { backgroundColor: '#A07800' }]} />
@@ -264,7 +265,7 @@ export default function WorkerJobCard({
                   style={{ width: 16, height: 16 }}
                   contentFit="contain"
                 />
-                <Text style={styles.actionButtonText}>{t('workerCard.actions.findJob')}</Text>
+                <LocaleText style={styles.actionButtonText}>{t('workerCard.actions.findJob')}</LocaleText>
               </LinearGradient>
               <View style={[styles.actionButtonShadow, { backgroundColor: '#1E6B3A' }]} />
             </Pressable>
@@ -275,7 +276,7 @@ export default function WorkerJobCard({
             style={({ pressed }) => [styles.actionButton, pressed && styles.actionButtonPressed]}
           >
             <LinearGradient colors={['#E2685A', '#CC4A3C']} style={styles.actionButtonGradient}>
-              <Text style={styles.actionButtonText}>{t('workersPanel.fireButton')}</Text>
+              <LocaleText style={styles.actionButtonText}>{t('workersPanel.fireButton')}</LocaleText>
             </LinearGradient>
             <View style={[styles.actionButtonShadow, { backgroundColor: '#A8392C' }]} />
           </Pressable>
@@ -290,8 +291,8 @@ function InfoRow({ label, value, valueColor }: { label: string; value: string; v
   const { isDark } = theme;
   return (
     <View style={styles.infoRow}>
-      <Text style={[styles.infoRowLabel, isDark && { color: theme.textMuted }]}>{label}</Text>
-      <Text style={[styles.infoRowValue, isDark && { color: theme.text }, valueColor ? { color: valueColor } : undefined]}>{value}</Text>
+      <LocaleText style={[styles.infoRowLabel, isDark && { color: theme.textMuted }]}>{label}</LocaleText>
+      <LocaleText style={[styles.infoRowValue, isDark && { color: theme.text }, valueColor ? { color: valueColor } : undefined]}>{value}</LocaleText>
     </View>
   );
 }

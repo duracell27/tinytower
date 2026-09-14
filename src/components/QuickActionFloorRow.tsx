@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { formatNum } from '../utils/format';
 import type { QuickActionMode, FloorActionInfo } from '../utils/quickAction';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -37,12 +38,12 @@ export default function QuickActionFloorRow({ floorId, floorName, mode, info }: 
   return (
     <View style={styles.row}>
       <View style={[styles.badge, { borderColor: chipColor }]}>
-        <Text style={[styles.badgeText, { color: chipColor }]}>{floorId}</Text>
+        <LocaleText style={[styles.badgeText, { color: chipColor }]}>{floorId}</LocaleText>
       </View>
-      <Text style={styles.name} numberOfLines={1}>{floorName}</Text>
+      <LocaleText style={styles.name} numberOfLines={1}>{floorName}</LocaleText>
       {summary !== '' && (
         <View style={[styles.chip, { backgroundColor: chipColor }]}>
-          <Text style={styles.chipText}>{summary}</Text>
+          <LocaleText style={styles.chipText}>{summary}</LocaleText>
         </View>
       )}
     </View>

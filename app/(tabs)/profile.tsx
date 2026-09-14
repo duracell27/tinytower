@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch, Dimensions } from 'react-native';
+import LocaleText from '../../src/components/LocaleText';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
@@ -245,9 +246,9 @@ function ProfileInfoRow({
         {icons.map((src, i) => (
           <Image key={i} source={src} style={profileInfoRowStyles.icon} contentFit="contain" />
         ))}
-        <Text style={[profileInfoRowStyles.label, { color: theme.textMuted }]}>{label}</Text>
+        <LocaleText style={[profileInfoRowStyles.label, { color: theme.textMuted }]}>{label}</LocaleText>
       </View>
-      <Text style={[profileInfoRowStyles.value, { color: theme.text }]}>{value}</Text>
+      <LocaleText style={[profileInfoRowStyles.value, { color: theme.text }]}>{value}</LocaleText>
     </View>
   );
 }
@@ -524,8 +525,8 @@ const player = useAuthStore((s) => s.player);
               contentFit="cover"
             />
             <View style={styles.profileInfo}>
-              <Text style={[styles.name, { color: theme.text }]}>{player?.playerName ?? t('profile.guestFallbackName')}</Text>
-              <Text style={[styles.email, { color: theme.textMuted }]}>{isTemporary ? t('profile.guestAccount') : (player?.email ?? '')}</Text>
+              <LocaleText style={[styles.name, { color: theme.text }]}>{player?.playerName ?? t('profile.guestFallbackName')}</LocaleText>
+              <LocaleText style={[styles.email, { color: theme.textMuted }]}>{isTemporary ? t('profile.guestAccount') : (player?.email ?? '')}</LocaleText>
             </View>
           </View>
 
@@ -533,7 +534,7 @@ const player = useAuthStore((s) => s.player);
             <View style={styles.statItem}>
               <View style={styles.statValueRow}>
                 {isHydrated
-                  ? <Text style={[styles.levelValue, { color: theme.text }]}>{playerLevel}</Text>
+                  ? <LocaleText style={[styles.levelValue, { color: theme.text }]}>{playerLevel}</LocaleText>
                   : <SkeletonBox width={40} height={36} />}
                 <Image source={require('../../assets/img/lvlIcon.png')} style={styles.statIcon} contentFit="contain" />
               </View>
@@ -542,7 +543,7 @@ const player = useAuthStore((s) => s.player);
             <View style={styles.statItemXp}>
               <View style={styles.statValueRow}>
                 {isHydrated
-                  ? <Text style={[styles.statValue, { color: theme.text }]}>{formatCompact(playerXp)} / {formatCompact(xpNeeded)}</Text>
+                  ? <LocaleText style={[styles.statValue, { color: theme.text }]}>{formatCompact(playerXp)} / {formatCompact(xpNeeded)}</LocaleText>
                   : <SkeletonBox width={90} />}
                 <Image source={require('../../assets/img/xpIcon.png')} style={styles.statIcon} contentFit="contain" />
               </View>
@@ -559,13 +560,13 @@ const player = useAuthStore((s) => s.player);
                 <View style={styles.currencyItem}>
                   <CoinIcon size={18} />
                   {isHydrated
-                    ? <Text style={styles.currencyValue}>{formatNum(balance)}</Text>
+                    ? <LocaleText style={styles.currencyValue}>{formatNum(balance)}</LocaleText>
                     : <SkeletonBox width={60} />}
                 </View>
                 <View style={styles.currencyItem}>
                   <GemIcon size={16} />
                   {isHydrated
-                    ? <Text style={styles.currencyValueGem}>{formatNum(gems)}</Text>
+                    ? <LocaleText style={styles.currencyValueGem}>{formatNum(gems)}</LocaleText>
                     : <SkeletonBox width={40} />}
                 </View>
               </View>
@@ -575,18 +576,18 @@ const player = useAuthStore((s) => s.player);
                 <View style={styles.workerStatItem}>
                   <Image source={require('../../assets/img/happySmile.png')} style={styles.workerStatIcon} contentFit="contain" />
                   <View style={styles.workerStatTextCol}>
-                    <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.happy')}</Text>
+                    <LocaleText style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.happy')}</LocaleText>
                     {isHydrated
-                      ? <Text style={[styles.workerStatValue, { color: theme.text }]}>{happyCount}/{totalWorkers}</Text>
+                      ? <LocaleText style={[styles.workerStatValue, { color: theme.text }]}>{happyCount}/{totalWorkers}</LocaleText>
                       : <SkeletonBox width={36} />}
                   </View>
                 </View>
                 <View style={styles.workerStatItem}>
                   <Image source={require('../../assets/img/specialistWorker.png')} style={styles.workerStatIcon} contentFit="contain" />
                   <View style={styles.workerStatTextCol}>
-                    <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.specialists')}</Text>
+                    <LocaleText style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.specialists')}</LocaleText>
                     {isHydrated
-                      ? <Text style={[styles.workerStatValue, { color: theme.text }]}>{specialistCount}/{totalWorkers}</Text>
+                      ? <LocaleText style={[styles.workerStatValue, { color: theme.text }]}>{specialistCount}/{totalWorkers}</LocaleText>
                       : <SkeletonBox width={36} />}
                   </View>
                 </View>
@@ -599,16 +600,16 @@ const player = useAuthStore((s) => s.player);
                     <View style={styles.revenueItem}>
                       <Image source={COIN_ICON} style={styles.revenueIcon} contentFit="contain" />
                       <View style={styles.workerStatTextCol}>
-                        <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.currentPerMin')}</Text>
-                        <Text style={[styles.workerStatValue, { color: theme.text }]}>{formatNumFull(revenuePerMin)}</Text>
+                        <LocaleText style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.currentPerMin')}</LocaleText>
+                        <LocaleText style={[styles.workerStatValue, { color: theme.text }]}>{formatNumFull(revenuePerMin)}</LocaleText>
                       </View>
                     </View>
                     <View style={[styles.workerStatsDivider, { backgroundColor: theme.divider, width: 1, height: 32, marginTop: 0 }]} />
                     <View style={styles.revenueItem}>
                       <Image source={BEST_RPM_ICON} style={styles.revenueIcon} contentFit="contain" />
                       <View style={styles.workerStatTextCol}>
-                        <Text style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.bestPerMin')}</Text>
-                        <Text style={[styles.workerStatValue, { color: '#3FA535' }]}>{myProfile ? formatNumFull(Math.max(myProfile.maxRevenuePerMin, revenuePerMin)) : '—'}</Text>
+                        <LocaleText style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.bestPerMin')}</LocaleText>
+                        <LocaleText style={[styles.workerStatValue, { color: '#3FA535' }]}>{myProfile ? formatNumFull(Math.max(myProfile.maxRevenuePerMin, revenuePerMin)) : '—'}</LocaleText>
                       </View>
                     </View>
                   </View>
@@ -624,13 +625,13 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/profile/dayliQuests.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>
+            <LocaleText style={[styles.menuTitle, { color: theme.text }]}>
               {tHotel('dailyTasks.title')}{' '}
-              <Text style={[styles.achievementsButtonSubText, { color: theme.text }]}>
+              <LocaleText style={[styles.achievementsButtonSubText, { color: theme.text }]}>
                 ({dailyTasks.claimed.filter(k => DAILY_TASKS.find(t => t.key === k && !t.hidden)).length}/{DAILY_TASKS.filter(t => !t.hidden).length})
-              </Text>
-            </Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.dailyTasks.description')}</Text>
+              </LocaleText>
+            </LocaleText>
+            <LocaleText style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.dailyTasks.description')}</LocaleText>
           </View>
         </Pressable>
 
@@ -640,12 +641,12 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/mail.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>{t('profile.menuInfo.mail.title')}</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.mail.description')}</Text>
+            <LocaleText style={[styles.menuTitle, { color: theme.text }]}>{t('profile.menuInfo.mail.title')}</LocaleText>
+            <LocaleText style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.mail.description')}</LocaleText>
           </View>
           {unreadMailCount > 0 && (
             <View style={styles.friendsBadge}>
-              <Text style={styles.friendsBadgeText}>{unreadMailCount}</Text>
+              <LocaleText style={styles.friendsBadgeText}>{unreadMailCount}</LocaleText>
             </View>
           )}
         </Pressable>
@@ -656,12 +657,12 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/users.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>{t('profile.menuInfo.friends.title')}</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.friends.description')}</Text>
+            <LocaleText style={[styles.menuTitle, { color: theme.text }]}>{t('profile.menuInfo.friends.title')}</LocaleText>
+            <LocaleText style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.friends.description')}</LocaleText>
           </View>
           {pendingCount > 0 && (
             <View style={styles.friendsBadge}>
-              <Text style={styles.friendsBadgeText}>{pendingCount}</Text>
+              <LocaleText style={styles.friendsBadgeText}>{pendingCount}</LocaleText>
             </View>
           )}
         </Pressable>
@@ -672,8 +673,8 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>{tHotel('myBusiness.title')}</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.myBusiness.description')}</Text>
+            <LocaleText style={[styles.menuTitle, { color: theme.text }]}>{tHotel('myBusiness.title')}</LocaleText>
+            <LocaleText style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.myBusiness.description')}</LocaleText>
           </View>
           {isHydrated && upgradeReadyTypes.length > 0 && (
             <View style={styles.businessDotsRow}>
@@ -690,10 +691,10 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/TrucksProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>{t('autopark.title')}</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>
+            <LocaleText style={[styles.menuTitle, { color: theme.text }]}>{t('autopark.title')}</LocaleText>
+            <LocaleText style={[styles.menuSub, { color: theme.textMuted }]}>
               {totalVehicles > 0 ? t('profile.menuInfo.autopark.subtitle', { count: totalVehicles }) : t('profile.menuInfo.autopark.empty')}
-            </Text>
+            </LocaleText>
           </View>
         </Pressable>
 
@@ -703,10 +704,10 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/profile/achivProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>
+            <LocaleText style={[styles.menuTitle, { color: theme.text }]}>
               {t('profile.achievements', { count: totalEarnedLevels })}
-            </Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.achievements.description')}</Text>
+            </LocaleText>
+            <LocaleText style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.achievements.description')}</LocaleText>
           </View>
         </Pressable>
 
@@ -716,8 +717,8 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/profile/ReferralProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>{t('profile.menuInfo.referrals.title')}</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.referrals.description')}</Text>
+            <LocaleText style={[styles.menuTitle, { color: theme.text }]}>{t('profile.menuInfo.referrals.title')}</LocaleText>
+            <LocaleText style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.referrals.description')}</LocaleText>
           </View>
         </Pressable>
 
@@ -727,8 +728,8 @@ const player = useAuthStore((s) => s.player);
         >
           <Image source={require('../../assets/img/settingsIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
-            <Text style={[styles.menuTitle, { color: theme.text }]}>{t('profile.settings.title')}</Text>
-            <Text style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.settings.description')}</Text>
+            <LocaleText style={[styles.menuTitle, { color: theme.text }]}>{t('profile.settings.title')}</LocaleText>
+            <LocaleText style={[styles.menuSub, { color: theme.textMuted }]}>{t('profile.menuInfo.settings.description')}</LocaleText>
           </View>
         </Pressable>
 
@@ -737,8 +738,8 @@ const player = useAuthStore((s) => s.player);
             onPress={() => setConvertOpen(true)}
             style={({ pressed }) => [styles.convertBanner, pressed && { opacity: 0.88 }]}
           >
-            <Text style={styles.convertBannerTitle}>{t('profile.convert.bannerTitle')}</Text>
-            <Text style={styles.convertBannerSub}>{t('profile.convert.bannerSub')}</Text>
+            <LocaleText style={styles.convertBannerTitle}>{t('profile.convert.bannerTitle')}</LocaleText>
+            <LocaleText style={styles.convertBannerSub}>{t('profile.convert.bannerSub')}</LocaleText>
           </Pressable>
         )}
 
@@ -747,7 +748,7 @@ const player = useAuthStore((s) => s.player);
           { backgroundColor: theme.surface },
           pressed && styles.logoutPressed,
         ]}>
-          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
+          <LocaleText style={styles.logoutText}>{t('profile.logout')}</LocaleText>
         </Pressable>
 
         <Modal visible={convertOpen} transparent animationType="fade" onRequestClose={() => setConvertOpen(false)}>
@@ -758,13 +759,13 @@ const player = useAuthStore((s) => s.player);
               <View style={styles.convertHeader}>
                 <Image source={require('../../assets/img/managerIcon.png')} style={styles.convertManagerIcon} contentFit="contain" />
                 <View style={styles.convertHeaderText}>
-                  <Text style={[styles.convertTitle, { color: theme.text }]}>{t('profile.convert.title')}</Text>
-                  <Text style={[styles.convertSub, { color: theme.textMuted }]}>{t('profile.convert.unlockFeatures')}</Text>
+                  <LocaleText style={[styles.convertTitle, { color: theme.text }]}>{t('profile.convert.title')}</LocaleText>
+                  <LocaleText style={[styles.convertSub, { color: theme.textMuted }]}>{t('profile.convert.unlockFeatures')}</LocaleText>
                 </View>
               </View>
 
-              {convertError ? <Text style={styles.convertErrorText}>{convertError}</Text> : null}
-              <Text style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelName')}</Text>
+              {convertError ? <LocaleText style={styles.convertErrorText}>{convertError}</LocaleText> : null}
+              <LocaleText style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelName')}</LocaleText>
               <TextInput
                 style={[styles.convertInput, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
                 value={convertName}
@@ -773,7 +774,7 @@ const player = useAuthStore((s) => s.player);
                 editable={!convertLoading}
               />
 
-              <Text style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelEmail')}</Text>
+              <LocaleText style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelEmail')}</LocaleText>
               <TextInput
                 style={[styles.convertInput, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
                 value={convertEmail}
@@ -783,7 +784,7 @@ const player = useAuthStore((s) => s.player);
                 editable={!convertLoading}
               />
 
-              <Text style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelPassword')}</Text>
+              <LocaleText style={[styles.convertLabel, { color: theme.textMuted }]}>{t('profile.convert.labelPassword')}</LocaleText>
               <TextInput
                 style={[styles.convertInput, { borderColor: theme.divider, color: theme.text, backgroundColor: theme.surfaceSub }]}
                 value={convertPassword}
@@ -795,7 +796,7 @@ const player = useAuthStore((s) => s.player);
               <Pressable onPress={handleConvert} disabled={convertLoading} style={styles.convertSubmit}>
                 {convertLoading
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.convertSubmitText}>{t('profile.convert.submit')}</Text>
+                  : <LocaleText style={styles.convertSubmitText}>{t('profile.convert.submit')}</LocaleText>
                 }
               </Pressable>
             </ScrollView>
@@ -819,20 +820,20 @@ const player = useAuthStore((s) => s.player);
                 style={[settingsStyles.sheet, { backgroundColor: theme.surface }, settingsSheetStyle]}
               >
                 <View style={settingsStyles.handle} />
-                <Text style={[settingsStyles.title, { color: theme.text }]}>{t('profile.settings.title')}</Text>
+                <LocaleText style={[settingsStyles.title, { color: theme.text }]}>{t('profile.settings.title')}</LocaleText>
 
-                <Text style={[settingsStyles.sectionHeader, { color: theme.textMuted }]}>
+                <LocaleText style={[settingsStyles.sectionHeader, { color: theme.textMuted }]}>
                   {t('profile.settings.liftSection')}
-                </Text>
+                </LocaleText>
 
                 <View style={[settingsStyles.row, { borderBottomColor: theme.divider }]}>
                   <View style={settingsStyles.rowLeft}>
-                    <Text style={[settingsStyles.rowTitle, { color: theme.text }]}>
+                    <LocaleText style={[settingsStyles.rowTitle, { color: theme.text }]}>
                       {t('profile.settings.simplifiedRewards')}
-                    </Text>
-                    <Text style={[settingsStyles.rowDesc, { color: theme.textMuted }]}>
+                    </LocaleText>
+                    <LocaleText style={[settingsStyles.rowDesc, { color: theme.textMuted }]}>
                       {t('profile.settings.simplifiedRewardsDesc')}
-                    </Text>
+                    </LocaleText>
                   </View>
                   <Switch
                     value={liftSimplifiedRewards}
@@ -842,9 +843,9 @@ const player = useAuthStore((s) => s.player);
                   />
                 </View>
 
-                <Text style={[settingsStyles.sectionHeader, { color: theme.textMuted, marginTop: 20 }]}>
+                <LocaleText style={[settingsStyles.sectionHeader, { color: theme.textMuted, marginTop: 20 }]}>
                   {t('profile.settings.languageSection')}
-                </Text>
+                </LocaleText>
                 <View style={settingsStyles.langRow}>
                   {(['en', 'uk'] as const).map((lang) => {
                     const active = i18n.language === lang;
@@ -857,9 +858,9 @@ const player = useAuthStore((s) => s.player);
                           { borderColor: active ? '#72C24F' : theme.divider, backgroundColor: active ? 'rgba(114,194,79,0.12)' : theme.surfaceCard },
                         ]}
                       >
-                        <Text style={[settingsStyles.langBtnText, { color: active ? '#72C24F' : theme.text }]}>
+                        <LocaleText style={[settingsStyles.langBtnText, { color: active ? '#72C24F' : theme.text }]}>
                           {t(`profile.settings.language${lang.charAt(0).toUpperCase() + lang.slice(1)}`)}
-                        </Text>
+                        </LocaleText>
                       </Pressable>
                     );
                   })}
@@ -881,7 +882,7 @@ const player = useAuthStore((s) => s.player);
               syncStatus === 'pending' && styles.syncDotYellow,
               syncStatus === 'critical' && styles.syncDotRed,
             ]} />
-            <Text style={[
+            <LocaleText style={[
               styles.syncStatus,
               syncStatus === 'online' && styles.syncStatusGreen,
               syncStatus === 'pending' && styles.syncStatusYellow,
@@ -890,10 +891,10 @@ const player = useAuthStore((s) => s.player);
               {syncStatus === 'online' && t('profile.sync.online')}
               {syncStatus === 'pending' && t('profile.sync.pending', { count: commandQueueLength })}
               {syncStatus === 'critical' && t('profile.sync.critical', { count: commandQueueLength })}
-            </Text>
+            </LocaleText>
             <View style={styles.syncTimeRow}>
               <SyncIcon color={theme.textMuted} />
-              <Text style={[styles.syncTime, { color: theme.textMuted }]}>{formatSyncTime(lastSyncAt, now)}</Text>
+              <LocaleText style={[styles.syncTime, { color: theme.textMuted }]}>{formatSyncTime(lastSyncAt, now)}</LocaleText>
             </View>
             {hasExpandContent && (
               <View style={styles.chevron}>
@@ -922,15 +923,15 @@ const player = useAuthStore((s) => s.player);
               {/* Pending commands */}
               {commandQueueLength > 0 && (
                 <View style={styles.dropSection}>
-                  <Text style={[styles.dropSectionTitle, { color: theme.textMuted }]}>
+                  <LocaleText style={[styles.dropSectionTitle, { color: theme.textMuted }]}>
                     {t('profile.sync.pendingDetail', { count: commandQueueLength })}
-                  </Text>
+                  </LocaleText>
                   {pendingGroups.map(({ type, count }) => (
                     <View key={type} style={styles.dropRow}>
-                      <Text style={[styles.dropRowBullet, { color: theme.textMuted }]}>•</Text>
-                      <Text style={[styles.dropRowText, { color: theme.text }]}>
+                      <LocaleText style={[styles.dropRowBullet, { color: theme.textMuted }]}>•</LocaleText>
+                      <LocaleText style={[styles.dropRowText, { color: theme.text }]}>
                         {commandLabel(type)}{count > 1 ? ` ×${count}` : ''}
-                      </Text>
+                      </LocaleText>
                     </View>
                   ))}
                 </View>
@@ -940,33 +941,33 @@ const player = useAuthStore((s) => s.player);
               {failedCommandLog.length > 0 && (
                 <View style={styles.dropSection}>
                   <View style={styles.dropSectionHeader}>
-                    <Text style={[styles.dropSectionTitle, { color: theme.textMuted }]}>
+                    <LocaleText style={[styles.dropSectionTitle, { color: theme.textMuted }]}>
                       {t('profile.sync.failedCount', { count: failedCommandLog.length })}
-                    </Text>
+                    </LocaleText>
                     <View style={styles.dropActions}>
                       <Pressable
                         onPress={handleCopy}
                         style={({ pressed }) => [styles.dropActionBtn, { backgroundColor: theme.surfaceSub }, pressed && styles.dropActionBtnPressed]}
                       >
-                        <Text style={[styles.dropActionText, { color: theme.textMuted }]}>{copied ? t('profile.sync.copied') : t('profile.sync.copy')}</Text>
+                        <LocaleText style={[styles.dropActionText, { color: theme.textMuted }]}>{copied ? t('profile.sync.copied') : t('profile.sync.copy')}</LocaleText>
                       </Pressable>
                       <Pressable
                         onPress={clearFailedCommandLog}
                         style={({ pressed }) => [styles.dropActionBtn, styles.dropActionBtnDanger, { backgroundColor: theme.surfaceDanger }, pressed && styles.dropActionBtnPressed]}
                       >
-                        <Text style={[styles.dropActionText, styles.dropActionTextDanger]}>{t('profile.sync.clear')}</Text>
+                        <LocaleText style={[styles.dropActionText, styles.dropActionTextDanger]}>{t('profile.sync.clear')}</LocaleText>
                       </Pressable>
                     </View>
                   </View>
                   {reversedFailLog.map((entry) => (
                     <View key={entry.id} style={styles.dropRow}>
-                      <Text style={[styles.dropRowBullet, { color: theme.textMuted }]}>•</Text>
+                      <LocaleText style={[styles.dropRowBullet, { color: theme.textMuted }]}>•</LocaleText>
                       <View style={styles.dropRowContent}>
-                        <Text style={[styles.dropRowText, { color: theme.text }]} numberOfLines={1}>
+                        <LocaleText style={[styles.dropRowText, { color: theme.text }]} numberOfLines={1}>
                           {commandLabel(entry.type)}
-                          <Text style={styles.dropRowError}> — {friendlyError(entry.error)}</Text>
-                        </Text>
-                        <Text style={[styles.dropRowTime, { color: theme.textMuted }]}>{formatSyncTime(entry.timestamp, now)}</Text>
+                          <LocaleText style={styles.dropRowError}> — {friendlyError(entry.error)}</LocaleText>
+                        </LocaleText>
+                        <LocaleText style={[styles.dropRowTime, { color: theme.textMuted }]}>{formatSyncTime(entry.timestamp, now)}</LocaleText>
                       </View>
                     </View>
                   ))}
@@ -1069,7 +1070,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 36,
     color: '#27331F',
-    lineHeight: 36,
     marginTop: 6,
   },
   statLabel: {

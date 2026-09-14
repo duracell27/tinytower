@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import LocaleText from '../src/components/LocaleText';
 import { useAppTheme } from '../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import AppBackground from '../src/components/AppBackground';
@@ -59,7 +60,7 @@ export default function MyBusinessScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text }]}>{tHotel('myBusiness.title')}</Text>
+          <LocaleText style={[styles.title, { color: theme.text }]}>{tHotel('myBusiness.title')}</LocaleText>
           <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -69,25 +70,25 @@ export default function MyBusinessScreen() {
           </Pressable>
         </View>
 
-        <Text style={[styles.subtitle, { color: theme.textMuted }]}>{tHotel('myBusiness.subtitle')}</Text>
+        <LocaleText style={[styles.subtitle, { color: theme.textMuted }]}>{tHotel('myBusiness.subtitle')}</LocaleText>
 
         {/* Currency + token balances */}
         <View style={[styles.balanceCard, { backgroundColor: theme.surface }]}>
           <View style={styles.currencyRow}>
             <View style={styles.currencyChip}>
               <CoinIcon size={16} />
-              <Text style={styles.currencyCoins}>{formatNum(balance)}</Text>
+              <LocaleText style={styles.currencyCoins}>{formatNum(balance)}</LocaleText>
             </View>
             <View style={styles.currencyChip}>
               <GemIcon size={14} />
-              <Text style={styles.currencyGems}>{formatNum(gems)}</Text>
+              <LocaleText style={styles.currencyGems}>{formatNum(gems)}</LocaleText>
             </View>
           </View>
           <View style={styles.tokenRow}>
             {FLOOR_TYPES.map((ft) => (
               <View key={ft} style={styles.tokenChip}>
                 <Image source={TOKEN_ICONS[ft]} style={styles.tokenIcon} contentFit="contain" />
-                <Text style={[styles.tokenCount, { color: TYPE_COLORS[ft] }]}>{tokens?.[ft] ?? 0}</Text>
+                <LocaleText style={[styles.tokenCount, { color: TYPE_COLORS[ft] }]}>{tokens?.[ft] ?? 0}</LocaleText>
               </View>
             ))}
           </View>
@@ -108,10 +109,10 @@ const color         = TYPE_COLORS[ft];
               <Image source={TYPE_ICONS[ft]} style={styles.categoryIcon} contentFit="contain" />
               <View style={styles.cardContent}>
                 <View style={styles.cardRow}>
-                  <Text style={[styles.categoryName, { color: theme.text }]}>{tHotel(`myBusiness.categories.${ft}`)}</Text>
-                  <Text style={[styles.bonus, { color }]}>
+                  <LocaleText style={[styles.categoryName, { color: theme.text }]}>{tHotel(`myBusiness.categories.${ft}`)}</LocaleText>
+                  <LocaleText style={[styles.bonus, { color }]}>
                     {level >= 40 ? tHotel('myBusiness.maxLevel') : tHotel('myBusiness.profitBonus', { percent: level * 5 })}
-                  </Text>
+                  </LocaleText>
                 </View>
 
                 <View style={[styles.progressBarBg, { backgroundColor: barBgColor }]}>
@@ -121,7 +122,7 @@ const color         = TYPE_COLORS[ft];
                 <View style={styles.statsRow}>
                   <View style={styles.statChip}>
                     <Image source={TYPE_ICONS[ft]} style={styles.statIcon} contentFit="contain" />
-                    <Text style={[styles.statBuilt, { color }]}>Built {count}</Text>
+                    <LocaleText style={[styles.statBuilt, { color }]}>Built {count}</LocaleText>
                   </View>
                 </View>
               </View>
@@ -135,7 +136,7 @@ const color         = TYPE_COLORS[ft];
         onPress={() => router.back()}
         style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
       >
-        <Text style={styles.closeBtnText}>✕</Text>
+        <LocaleText style={styles.closeBtnText}>✕</LocaleText>
       </Pressable>
 
       {infoVisible && (
@@ -143,9 +144,9 @@ const color         = TYPE_COLORS[ft];
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, { backgroundColor: theme.surface }]}>
             <LinearGradient colors={['#3FA535', '#2C7A25']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>{tHotel('myBusiness.title')}</Text>
+              <LocaleText style={styles.infoCardTitle}>{tHotel('myBusiness.title')}</LocaleText>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
-                <Text style={styles.infoCardClose}>✕</Text>
+                <LocaleText style={styles.infoCardClose}>✕</LocaleText>
               </Pressable>
             </LinearGradient>
             <View style={styles.infoCardBody}>

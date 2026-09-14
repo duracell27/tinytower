@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
@@ -266,9 +267,9 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
               style={styles.elevatorHintIcon}
               contentFit="contain"
             />
-            <Text style={[styles.elevatorHintText, isDark && { color: '#C9899E' }]}>
+            <LocaleText style={[styles.elevatorHintText, isDark && { color: '#C9899E' }]}>
               {t('hotelPanel.elevatorHint')}
-            </Text>
+            </LocaleText>
           </View>
         );
       }
@@ -304,7 +305,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           collapsable={false}
         >
           <View style={styles.roomBadge}>
-            <Text style={styles.roomNumber}>{roomNumber}</Text>
+            <LocaleText style={styles.roomNumber}>{roomNumber}</LocaleText>
           </View>
           <View style={styles.roomCard}>{card}</View>
         </View>
@@ -358,14 +359,14 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                     </Svg>
                     <View>
                       <Pressable onPress={() => setInfoVisible(true)} style={styles.titleNameRow}>
-                        <Text style={styles.titleText}>{t('hotelPanel.title')}</Text>
+                        <LocaleText style={styles.titleText}>{t('hotelPanel.title')}</LocaleText>
                         <Image
                           source={require('../../assets/img/InformationIcon.png')}
                           style={styles.infoIcon}
                           contentFit="contain"
                         />
                       </Pressable>
-                      <Text style={styles.subtitleText}>{t('hotelPanel.subtitle')}</Text>
+                      <LocaleText style={styles.subtitleText}>{t('hotelPanel.subtitle')}</LocaleText>
                     </View>
                   </View>
 
@@ -387,19 +388,19 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                 <View style={styles.statsRow}>
                   <View style={styles.statPills}>
                     <View style={styles.statPill}>
-                      <Text style={styles.statLabel}>{t('hotelPanel.seats')}</Text>
-                      <Text style={styles.statValue}>{hotelCapacity}</Text>
+                      <LocaleText style={styles.statLabel}>{t('hotelPanel.seats')}</LocaleText>
+                      <LocaleText style={styles.statValue}>{hotelCapacity}</LocaleText>
                     </View>
                     <View style={styles.statPill}>
-                      <Text style={styles.statLabel}>{t('hotelPanel.free')}</Text>
-                      <Text style={styles.statValue}>
+                      <LocaleText style={styles.statLabel}>{t('hotelPanel.free')}</LocaleText>
+                      <LocaleText style={styles.statValue}>
                         {freeSeats > 0 ? freeSeats : 0}
-                      </Text>
+                      </LocaleText>
                     </View>
                     {betterCandidateCount > 0 && (
                       <View style={styles.statPill}>
-                        <Text style={styles.statLabel}>{t('hotelPanel.best')}</Text>
-                        <Text style={styles.statValue}>{betterCandidateCount}</Text>
+                        <LocaleText style={styles.statLabel}>{t('hotelPanel.best')}</LocaleText>
+                        <LocaleText style={styles.statValue}>{betterCandidateCount}</LocaleText>
                       </View>
                     )}
                   </View>
@@ -431,7 +432,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
               <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
               <View style={[styles.infoCard, { backgroundColor: theme.surfaceCard}]}>
                 <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.infoCardHeader}>
-                  <Text style={styles.infoCardTitle}>About the Hotel</Text>
+                  <LocaleText style={styles.infoCardTitle}>About the Hotel</LocaleText>
                   <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
                     <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                       <Path d="M18 6L6 18M6 6l12 12" stroke="rgba(255,255,255,0.85)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
@@ -517,9 +518,9 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
               </Animated.View>
               <View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop, backgroundColor: theme.surfaceCard}]}>
                 <Image source={require('../../assets/img/happySmile.png')} style={hotelHintStyles.icon} />
-                <Text style={[hotelHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
+                <LocaleText style={[hotelHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
                   {'Tap «Find Job» to assign a worker to a floor'}
-                </Text>
+                </LocaleText>
               </View>
             </View>
           );
@@ -537,8 +538,8 @@ function InfoSection({ icon, title, text }: { icon: number; title: string; text:
     <View style={infoStyles.section}>
       <Image source={icon} style={infoStyles.sectionIcon} contentFit="contain" />
       <View style={infoStyles.sectionBody}>
-        <Text style={[infoStyles.sectionTitle, { color: theme.text }]}>{title}</Text>
-        <Text style={[infoStyles.sectionText, { color: theme.textMuted }]}>{text}</Text>
+        <LocaleText style={[infoStyles.sectionTitle, { color: theme.text }]}>{title}</LocaleText>
+        <LocaleText style={[infoStyles.sectionText, { color: theme.textMuted }]}>{text}</LocaleText>
       </View>
     </View>
   );
@@ -591,8 +592,8 @@ function EmptySlotCard({ t }: { t: (key: string) => string }) {
         </Svg>
       </View>
       <View style={slotStyles.info}>
-        <Text style={slotStyles.title}>{t('hotelPanel.emptySlot.title')}</Text>
-        <Text style={slotStyles.subtitle}>{t('hotelPanel.emptySlot.subtitle')}</Text>
+        <LocaleText style={slotStyles.title}>{t('hotelPanel.emptySlot.title')}</LocaleText>
+        <LocaleText style={slotStyles.subtitle}>{t('hotelPanel.emptySlot.subtitle')}</LocaleText>
       </View>
     </View>
   );
@@ -611,7 +612,7 @@ function BuySlotCard({
   if (cost === null) {
     return (
       <View style={[buyStyles.card, { backgroundColor: theme.surfaceCard}]}>
-        <Text style={buyStyles.maxedText}>{t('hotelPanel.expandCard.maxed')}</Text>
+        <LocaleText style={buyStyles.maxedText}>{t('hotelPanel.expandCard.maxed')}</LocaleText>
       </View>
     );
   }
@@ -631,7 +632,7 @@ function BuySlotCard({
           <Rect x={7} y={15} width={4} height={4} rx={0.5} stroke="#C9637E" strokeWidth={1.5} />
           <Rect x={13} y={15} width={4} height={4} rx={0.5} stroke="#C9637E" strokeWidth={1.5} />
         </Svg>
-        <Text style={[buyStyles.title, { color: theme.text }]}>{t('hotelPanel.expandCard.title')}</Text>
+        <LocaleText style={[buyStyles.title, { color: theme.text }]}>{t('hotelPanel.expandCard.title')}</LocaleText>
       </View>
       <Pressable
         onPress={onPress}
@@ -639,7 +640,7 @@ function BuySlotCard({
       >
         <LinearGradient colors={['#D96E8A', '#B84E6A']} style={buyStyles.btnGradient}>
           <GemIcon size={16} />
-          <Text style={buyStyles.btnCost}>{cost}</Text>
+          <LocaleText style={buyStyles.btnCost}>{cost}</LocaleText>
         </LinearGradient>
         <View style={buyStyles.btnShadow} />
       </Pressable>
@@ -675,7 +676,7 @@ function EvictLowLevelCard({
           />
           <Circle cx={12} cy={5} r={3} stroke="#C9637E" strokeWidth={2} />
         </Svg>
-        <Text style={[buyStyles.title, { fontSize: 13 }, { color: theme.text }]}>{t('hotelPanel.evictLowLevelCard.title')}</Text>
+        <LocaleText style={[buyStyles.title, { fontSize: 13 }, { color: theme.text }]}>{t('hotelPanel.evictLowLevelCard.title')}</LocaleText>
       </View>
       <Pressable
         onPress={onPress}
@@ -683,7 +684,7 @@ function EvictLowLevelCard({
       >
         <LinearGradient colors={['#D96E8A', '#B84E6A']} style={[buyStyles.btnGradient, { paddingVertical: 4, paddingHorizontal: 10 }]}>
           <GemIcon size={13} />
-          <Text style={[buyStyles.btnCost, { fontSize: 13 }]}>1</Text>
+          <LocaleText style={[buyStyles.btnCost, { fontSize: 13 }]}>1</LocaleText>
         </LinearGradient>
         <View style={buyStyles.btnShadow} />
       </Pressable>

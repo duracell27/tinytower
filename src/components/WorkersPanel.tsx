@@ -3,6 +3,7 @@ import {
   View, Text, Pressable, FlatList, Alert, Modal,
   StyleSheet, Dimensions, TextInput,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import Svg, { Path, Polygon } from 'react-native-svg';
@@ -441,8 +442,8 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
                       <Path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                     </Svg>
                     <View>
-                      <Text style={styles.titleText}>{t('workersPanel.title')}</Text>
-                      <Text style={styles.subtitleText}>{t('workersPanel.subtitle')}</Text>
+                      <LocaleText style={styles.titleText}>{t('workersPanel.title')}</LocaleText>
+                      <LocaleText style={styles.subtitleText}>{t('workersPanel.subtitle')}</LocaleText>
                     </View>
                   </View>
                   <Pressable onPress={onClose} style={styles.closeButton}>
@@ -468,9 +469,9 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
                         onPress={() => { setActiveTab(tab); setExpandedWorkerId(null); }}
                         style={[styles.tabButton, isActive && styles.tabButtonActive, isActive && isDark && { backgroundColor: theme.surfaceCard }]}
                       >
-                        <Text style={[styles.tabLabel, { color: isActive ? color : 'rgba(255,255,255,0.75)' }]}>
+                        <LocaleText style={[styles.tabLabel, { color: isActive ? color : 'rgba(255,255,255,0.75)' }]}>
                           {t(`workersPanel.tabs.${tab}`)}
-                        </Text>
+                        </LocaleText>
                         {tab === 'specialists' ? (
                           <View style={[styles.tabStarWrap, isActive && { borderColor: '#F5C842' }]}>
                             <Svg width={14} height={14} viewBox="0 0 24 24">
@@ -483,14 +484,14 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
                                 strokeLinejoin="round"
                               />
                             </Svg>
-                            <Text style={[styles.tabCountText, { color: isActive ? '#7A5A00' : 'rgba(255,255,255,0.9)' }]}>
+                            <LocaleText style={[styles.tabCountText, { color: isActive ? '#7A5A00' : 'rgba(255,255,255,0.9)' }]}>
                               {count}
-                            </Text>
+                            </LocaleText>
                           </View>
                         ) : (
                           <View style={styles.tabCountRow}>
                             <View style={[styles.tabCount, { backgroundColor: isActive ? color : 'rgba(255,255,255,0.2)' }]}>
-                              <Text style={styles.tabCountText}>{count}</Text>
+                              <LocaleText style={styles.tabCountText}>{count}</LocaleText>
                             </View>
                             {showArrow && (
                               <Image
@@ -571,9 +572,9 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
             }
             ListEmptyComponent={
               <View style={styles.emptyWrap}>
-                <Text style={styles.emptyText}>
+                <LocaleText style={styles.emptyText}>
                   {searchQuery.trim() ? t('workersPanel.searchEmpty') : '—'}
-                </Text>
+                </LocaleText>
               </View>
             }
           />

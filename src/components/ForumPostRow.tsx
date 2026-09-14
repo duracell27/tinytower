@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import type { ForumPost } from '../stores/forumStore';
 import { getUserIcon } from '../utils/userIcon';
@@ -26,10 +27,10 @@ function getPostIcon(post: ForumPost) {
 
 function formatAge(iso: string): string {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return `${diff}s`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  return `${Math.floor(diff / 86400)}d`;
+  if (diff < 60) return `${diff}с`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}хв`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}год`;
+  return `${Math.floor(diff / 86400)}дн`;
 }
 
 export default function ForumPostRow({ post, onPress, onReport }: Props) {
@@ -44,28 +45,28 @@ export default function ForumPostRow({ post, onPress, onReport }: Props) {
     <Pressable style={styles.row} onPress={onPress}>
       <Image source={getPostIcon(post)} style={styles.statusIcon} contentFit="contain" />
       <View style={styles.content}>
-        <Text
+        <LocaleText
           style={[styles.title, post.isPinned && styles.titlePinned]}
           numberOfLines={2}
         >
-          {blocked ? <Text style={styles.blockedText}>From blocked user</Text> : post.title}
-        </Text>
+          {blocked ? <LocaleText style={styles.blockedText}>From blocked user</LocaleText> : post.title}
+        </LocaleText>
         <View style={styles.meta}>
           <Image
             source={getUserIcon(displayLevel)}
             style={[styles.avatar, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]}
             contentFit="cover"
           />
-          <Text style={styles.metaText} numberOfLines={1}>{post.playerName}</Text>
-          <Text style={styles.metaSep}>·</Text>
+          <LocaleText style={styles.metaText} numberOfLines={1}>{post.playerName}</LocaleText>
+          <LocaleText style={styles.metaSep}>·</LocaleText>
           <Image source={LVL_ICON} style={styles.metaIcon} contentFit="contain" />
-          <Text style={styles.metaText}>{displayLevel}</Text>
-          <Text style={styles.metaSep}>·</Text>
+          <LocaleText style={styles.metaText}>{displayLevel}</LocaleText>
+          <LocaleText style={styles.metaSep}>·</LocaleText>
           <Image source={CHAT_ICON} style={styles.metaIcon} contentFit="contain" />
-          <Text style={styles.metaText}>{post.commentCount}</Text>
+          <LocaleText style={styles.metaText}>{post.commentCount}</LocaleText>
         </View>
       </View>
-      <Text style={styles.dateText}>{formatAge(post.updatedAt)}</Text>
+      <LocaleText style={styles.dateText}>{formatAge(post.updatedAt)}</LocaleText>
     </Pressable>
   );
 }

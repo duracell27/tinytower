@@ -3,6 +3,7 @@ import {
   View, Text, FlatList, TextInput, Pressable, Modal, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, Alert, Keyboard,
 } from 'react-native';
+import LocaleText from '../src/components/LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -29,10 +30,10 @@ function InfoSection({ emoji, title, text }: { emoji: string; title: string; tex
   const { isDark } = theme;
   return (
     <View style={[infoStyles.section, isDark && { borderBottomColor: theme.divider }]}>
-      <Text style={infoStyles.sectionEmoji}>{emoji}</Text>
+      <LocaleText style={infoStyles.sectionEmoji}>{emoji}</LocaleText>
       <View style={infoStyles.sectionBody}>
-        <Text style={[infoStyles.sectionTitle, isDark && { color: theme.text }]}>{title}</Text>
-        <Text style={[infoStyles.sectionText, isDark && { color: theme.textMuted }]}>{text}</Text>
+        <LocaleText style={[infoStyles.sectionTitle, isDark && { color: theme.text }]}>{title}</LocaleText>
+        <LocaleText style={[infoStyles.sectionText, isDark && { color: theme.textMuted }]}>{text}</LocaleText>
       </View>
     </View>
   );
@@ -157,9 +158,9 @@ export default function ChatScreen() {
         <View style={[styles.topBar, { paddingTop: insets.top }, isDark && { backgroundColor: theme.surface }]}>
           <View style={styles.header}>
             <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
-              <Text style={styles.backIcon}>‹</Text>
+              <LocaleText style={styles.backIcon}>‹</LocaleText>
             </Pressable>
-            <Text style={[styles.headerTitle, isDark && { color: theme.text }]}>{t('chat.title')}</Text>
+            <LocaleText style={[styles.headerTitle, isDark && { color: theme.text }]}>{t('chat.title')}</LocaleText>
             <View style={styles.headerBtn} />
           </View>
         </View>
@@ -174,9 +175,9 @@ export default function ChatScreen() {
       <View style={[styles.topBar, { paddingTop: insets.top }, isDark && { backgroundColor: theme.surface }]}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
-            <Text style={styles.backIcon}>‹</Text>
+            <LocaleText style={styles.backIcon}>‹</LocaleText>
           </Pressable>
-          <Text style={[styles.headerTitle, isDark && { color: theme.text }]}>{t('chat.title')}</Text>
+          <LocaleText style={[styles.headerTitle, isDark && { color: theme.text }]}>{t('chat.title')}</LocaleText>
           <Pressable onPress={() => setInfoVisible(true)} style={styles.headerBtn} hitSlop={8}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -192,18 +193,18 @@ export default function ChatScreen() {
             style={[styles.pill, channel === 'global' && styles.pillActive, isDark && channel !== 'global' && { backgroundColor: '#2E3B58' }]}
             onPress={() => setChannel('global')}
           >
-            <Text style={[styles.pillText, channel === 'global' && styles.pillTextActive]}>
+            <LocaleText style={[styles.pillText, channel === 'global' && styles.pillTextActive]}>
               {t('chat.global')}
-            </Text>
+            </LocaleText>
           </Pressable>
           {countryCode && (
             <Pressable
               style={[styles.pill, channel === 'country' && styles.pillActive, isDark && channel !== 'country' && { backgroundColor: '#2E3B58' }]}
               onPress={() => setChannel('country')}
             >
-              <Text style={[styles.pillText, channel === 'country' && styles.pillTextActive]}>
+              <LocaleText style={[styles.pillText, channel === 'country' && styles.pillTextActive]}>
                 {regionToFlag(countryCode)} {countryCode}
-              </Text>
+              </LocaleText>
             </Pressable>
           )}
         </View>
@@ -233,7 +234,7 @@ export default function ChatScreen() {
           ListEmptyComponent={
             isLoading ? null : (
               <View style={styles.empty}>
-                <Text style={styles.emptyText}>{t('chat.empty')}</Text>
+                <LocaleText style={styles.emptyText}>{t('chat.empty')}</LocaleText>
               </View>
             )
           }
@@ -243,9 +244,9 @@ export default function ChatScreen() {
           <View>
             {editingId && (
               <View style={[styles.editBanner, isDark && { backgroundColor: 'rgba(30,64,24,0.5)', borderTopColor: '#3C9A34' }]}>
-                <Text style={styles.editBannerText}>{t('chat.editing')}</Text>
+                <LocaleText style={styles.editBannerText}>{t('chat.editing')}</LocaleText>
                 <Pressable onPress={handleCancelEdit} hitSlop={8}>
-                  <Text style={styles.editBannerCancel}>✕</Text>
+                  <LocaleText style={styles.editBannerCancel}>✕</LocaleText>
                 </Pressable>
               </View>
             )}
@@ -261,7 +262,7 @@ export default function ChatScreen() {
               />
               {keyboardVisible && !inputText.trim() ? (
                 <Pressable style={styles.sendBtn} onPress={() => Keyboard.dismiss()}>
-                  <Text style={styles.sendIcon}>↓</Text>
+                  <LocaleText style={styles.sendIcon}>↓</LocaleText>
                 </Pressable>
               ) : (
                 <Pressable
@@ -273,14 +274,14 @@ export default function ChatScreen() {
                   onPress={handleSend}
                   disabled={!inputText.trim() || isSending}
                 >
-                  <Text style={styles.sendIcon}>{editingId ? '✓' : '➤'}</Text>
+                  <LocaleText style={styles.sendIcon}>{editingId ? '✓' : '➤'}</LocaleText>
                 </Pressable>
               )}
             </View>
           </View>
         ) : (
           <View style={[styles.guestBanner, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: theme.surface, borderTopColor: theme.divider }]}>
-            <Text style={styles.guestText}>{t('chat.guestBanner')}</Text>
+            <LocaleText style={styles.guestText}>{t('chat.guestBanner')}</LocaleText>
           </View>
         )}
       </KeyboardAvoidingView>
@@ -291,9 +292,9 @@ export default function ChatScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, isDark && { backgroundColor: theme.surfaceCard }]}>
             <LinearGradient colors={isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>{t('chat.infoTitle')}</Text>
+              <LocaleText style={styles.infoCardTitle}>{t('chat.infoTitle')}</LocaleText>
               <Pressable onPress={() => setInfoVisible(false)} style={styles.infoCardClose} hitSlop={10}>
-                <Text style={styles.infoCardCloseText}>✕</Text>
+                <LocaleText style={styles.infoCardCloseText}>✕</LocaleText>
               </Pressable>
             </LinearGradient>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -321,24 +322,24 @@ export default function ChatScreen() {
             {selectedMessage?.isOwn && (
               <Pressable style={styles.sheetItem} onPress={handleActionEdit}>
                 <Image source={require('../assets/img/edit.png')} style={styles.sheetItemIcon} contentFit="contain" />
-                <Text style={[styles.sheetItemText, isDark && { color: theme.text }]}>{t('chat.actionEdit')}</Text>
+                <LocaleText style={[styles.sheetItemText, isDark && { color: theme.text }]}>{t('chat.actionEdit')}</LocaleText>
               </Pressable>
             )}
             {!selectedMessage?.isOwn && isAuthenticated && (
               <Pressable style={styles.sheetItem} onPress={handleActionReport}>
                 <Image source={require('../assets/img/warningIcon.png')} style={styles.sheetItemIcon} contentFit="contain" />
-                <Text style={[styles.sheetItemText, isDark && { color: theme.text }]}>{t('chat.actionReport')}</Text>
+                <LocaleText style={[styles.sheetItemText, isDark && { color: theme.text }]}>{t('chat.actionReport')}</LocaleText>
               </Pressable>
             )}
             {(selectedMessage?.isOwn || isAdmin) && (
               <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
                 <Image source={require('../assets/img/delete.png')} style={styles.sheetItemIcon} contentFit="contain" />
-                <Text style={[styles.sheetItemText, styles.sheetItemDanger]}>{t('chat.actionDelete')}</Text>
+                <LocaleText style={[styles.sheetItemText, styles.sheetItemDanger]}>{t('chat.actionDelete')}</LocaleText>
               </Pressable>
             )}
             <View style={[styles.sheetDivider, isDark && { backgroundColor: theme.divider }]} />
             <Pressable style={styles.sheetItem} onPress={() => setSelectedMessage(null)}>
-              <Text style={[styles.sheetItemText, styles.sheetItemCancel]}>{t('chat.cancel')}</Text>
+              <LocaleText style={[styles.sheetItemText, styles.sheetItemCancel]}>{t('chat.cancel')}</LocaleText>
             </Pressable>
           </View>
         </Pressable>

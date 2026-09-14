@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import type { ForumCategory } from '../stores/forumStore';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -32,16 +33,16 @@ export default function ForumCategoryCard({ category, label, description, unread
       />
       <View style={styles.info}>
         <View style={styles.titleRow}>
-          <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
+          <LocaleText style={[styles.label, { color: theme.text }]}>{label}</LocaleText>
         </View>
-        <Text style={[styles.description, { color: theme.textMuted }]} numberOfLines={1}>{description}</Text>
+        <LocaleText style={[styles.description, { color: theme.textMuted }]} numberOfLines={1}>{description}</LocaleText>
       </View>
       {unreadCount > 0 && (
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+          <LocaleText style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</LocaleText>
         </View>
       )}
-      <Text style={[styles.arrow, { color: isDark ? '#5A6470' : '#ccc' }]}>›</Text>
+      <LocaleText style={[styles.arrow, { color: isDark ? '#5A6470' : '#ccc' }]}>›</LocaleText>
     </Pressable>
   );
 }

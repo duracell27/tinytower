@@ -4,6 +4,7 @@ import {
   Modal, TextInput, KeyboardAvoidingView, Platform,
   Alert, StyleSheet,
 } from 'react-native';
+import LocaleText from '../src/components/LocaleText';
 import { useAppTheme } from '../src/hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
@@ -73,12 +74,12 @@ export default function ForumCategoryScreen() {
     <View style={[styles.container, { paddingTop: insets.top }, isDark && { backgroundColor: '#1A1E24' }]}>
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.divider }]}>
         <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
-          <Text style={styles.backIcon}>‹</Text>
+          <LocaleText style={styles.backIcon}>‹</LocaleText>
         </Pressable>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>{t(`forum.categories.${cat}`)}</Text>
+        <LocaleText style={[styles.headerTitle, { color: theme.text }]}>{t(`forum.categories.${cat}`)}</LocaleText>
         {canPost ? (
           <Pressable onPress={() => setModalVisible(true)} style={styles.headerBtn} hitSlop={8}>
-            <Text style={styles.addBtn}>+</Text>
+            <LocaleText style={styles.addBtn}>+</LocaleText>
           </Pressable>
         ) : (
           <View style={styles.headerBtn} />
@@ -109,14 +110,14 @@ export default function ForumCategoryScreen() {
         ListEmptyComponent={
           !postsLoading ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyText}>{t('forum.noPostsYet')}</Text>
+              <LocaleText style={styles.emptyText}>{t('forum.noPostsYet')}</LocaleText>
             </View>
           ) : null
         }
         ListFooterComponent={
           postsHasMore ? (
             <Pressable style={[styles.loadMore, { backgroundColor: theme.surface, borderColor: theme.divider }]} onPress={() => void fetchPosts(cat)}>
-              <Text style={styles.loadMoreText}>{t('forum.loadMore')}</Text>
+              <LocaleText style={styles.loadMoreText}>{t('forum.loadMore')}</LocaleText>
             </Pressable>
           ) : null
         }
@@ -143,17 +144,17 @@ export default function ForumCategoryScreen() {
           <View style={[styles.modalInner, { paddingTop: insets.top }]}>
             <LinearGradient colors={theme.isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.modalHeader}>
               <Pressable onPress={handleCloseModal} style={styles.modalClose} hitSlop={10}>
-                <Text style={styles.modalCloseText}>✕</Text>
+                <LocaleText style={styles.modalCloseText}>✕</LocaleText>
               </Pressable>
-              <Text style={styles.modalTitle}>{t('forum.newPost')}</Text>
+              <LocaleText style={styles.modalTitle}>{t('forum.newPost')}</LocaleText>
               <Pressable
                 onPress={handleSubmit}
                 disabled={!newTitle.trim() || !newBody.trim() || isSending}
                 hitSlop={8}
               >
-                <Text style={[styles.modalSubmit, (!newTitle.trim() || !newBody.trim() || isSending) && styles.modalSubmitDisabled]}>
+                <LocaleText style={[styles.modalSubmit, (!newTitle.trim() || !newBody.trim() || isSending) && styles.modalSubmitDisabled]}>
                   {t('forum.submit')}
-                </Text>
+                </LocaleText>
               </Pressable>
             </LinearGradient>
 

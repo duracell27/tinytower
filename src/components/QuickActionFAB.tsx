@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import type { QuickActionMode } from '../utils/quickAction';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -46,7 +47,7 @@ export default function QuickActionFAB({ availableMode, activeMode, count, onPre
       <Image source={meta.icon} style={styles.icon} contentFit="contain" />
       {count > 0 && (
         <View style={[styles.badge, { backgroundColor: meta.glow }]}>
-          <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
+          <LocaleText style={styles.badgeText}>{count > 99 ? '99+' : count}</LocaleText>
         </View>
       )}
     </Pressable>

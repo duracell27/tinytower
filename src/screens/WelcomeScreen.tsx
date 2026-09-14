@@ -11,6 +11,7 @@ import {
   Modal,
   Linking,
 } from 'react-native';
+import LocaleText from '../components/LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
@@ -160,7 +161,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       <View style={styles.bubbleWrapper}>
         <View style={[styles.bubble, isDark && { backgroundColor: 'rgba(20,30,52,0.93)' }]}>
           <View style={styles.bubbleContent}>
-            <Text style={[styles.bubbleText, isDark && { color: '#D8E4F0' }]}>{t('welcome.bubble')}</Text>
+            <LocaleText style={[styles.bubbleText, isDark && { color: '#D8E4F0' }]}>{t('welcome.bubble')}</LocaleText>
             <Image
               source={require('../../assets/img/coin.png')}
               style={{ width: 13, height: 13 }}
@@ -176,11 +177,11 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         <View style={styles.chipsContainer}>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Image source={require('../../assets/img/coin.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
-            <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{formatNum(balance)}</Text>
+            <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{formatNum(balance)}</LocaleText>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Image source={require('../../assets/img/diamond.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
-            <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{gems}</Text>
+            <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{gems}</LocaleText>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <View style={styles.floorsIconWrap}>
@@ -189,8 +190,8 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
               ))}
             </View>
             <View>
-              <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{floorCount}</Text>
-              <Text style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</Text>
+              <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{floorCount}</LocaleText>
+              <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</LocaleText>
             </View>
           </View>
         </View>
@@ -200,10 +201,10 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       {!isAuthenticated && (
         <View style={styles.chipsContainer}>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
-            <Text style={styles.chipStatEmoji}>👥</Text>
+            <LocaleText style={styles.chipStatEmoji}>👥</LocaleText>
             <View>
-              <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.players) : '—'}</Text>
-              <Text style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.playersLabel')}</Text>
+              <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.players) : '—'}</LocaleText>
+              <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.playersLabel')}</LocaleText>
             </View>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
@@ -213,15 +214,15 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
               ))}
             </View>
             <View>
-              <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.floors) : '—'}</Text>
-              <Text style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</Text>
+              <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.floors) : '—'}</LocaleText>
+              <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</LocaleText>
             </View>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
-            <Text style={styles.chipStatEmoji}>🏙️</Text>
+            <LocaleText style={styles.chipStatEmoji}>🏙️</LocaleText>
             <View>
-              <Text style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.cities) : '—'}</Text>
-              <Text style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.citiesLabel')}</Text>
+              <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.cities) : '—'}</LocaleText>
+              <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.citiesLabel')}</LocaleText>
             </View>
           </View>
         </View>
@@ -241,8 +242,8 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
           <Pressable style={styles.promptBackdrop} onPress={() => setShowPasswordPrompt(false)} />
           <View style={[styles.promptCard, isDark && { backgroundColor: '#1E2840' }]}>
             <PlayerAvatar level={playerLevel} size={52} />
-            <Text style={[styles.promptTitle, isDark && { color: '#D8E4F0' }]}>{lastPlayer?.playerName}</Text>
-            <Text style={[styles.promptEmail, isDark && { color: '#7A8EA8' }]}>{lastPlayer?.email}</Text>
+            <LocaleText style={[styles.promptTitle, isDark && { color: '#D8E4F0' }]}>{lastPlayer?.playerName}</LocaleText>
+            <LocaleText style={[styles.promptEmail, isDark && { color: '#7A8EA8' }]}>{lastPlayer?.email}</LocaleText>
 
             <TextInput
               style={[styles.promptInput, isDark && { backgroundColor: '#252D42', borderColor: '#3A4560', color: '#D8E4F0' }]}
@@ -255,19 +256,19 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
               editable={!isLoading}
             />
 
-            {error ? <Text style={styles.promptError}>{error}</Text> : null}
+            {error ? <LocaleText style={styles.promptError}>{error}</LocaleText> : null}
 
             <Pressable onPress={handlePasswordSubmit} disabled={isLoading} style={styles.promptSubmitWrap}>
               <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.promptSubmit}>
                 {isLoading
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.promptSubmitText}>{t('common:actions.login')}</Text>
+                  : <LocaleText style={styles.promptSubmitText}>{t('common:actions.login')}</LocaleText>
                 }
               </LinearGradient>
             </Pressable>
 
             <Pressable onPress={() => setShowPasswordPrompt(false)} style={styles.promptCancel}>
-              <Text style={[styles.promptCancelText, isDark && { color: '#7A8EA8' }]}>{t('common:actions.cancel')}</Text>
+              <LocaleText style={[styles.promptCancelText, isDark && { color: '#7A8EA8' }]}>{t('common:actions.cancel')}</LocaleText>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -296,10 +297,10 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
               <LinearGradient colors={isDark ? ['#2E7228', '#1E5018'] : ['#62C84F', '#3FA535']} style={styles.continueGradient}>
                 <PlayerAvatar level={playerLevel} size={36} />
                 <View style={styles.continueMeta}>
-                  <Text style={styles.continueName}>{activePlayerName}</Text>
-                  <Text style={styles.continueLabel}>
+                  <LocaleText style={styles.continueName}>{activePlayerName}</LocaleText>
+                  <LocaleText style={styles.continueLabel}>
                     {isAuthenticated ? t('welcome.continueLabel.authenticated') : t('welcome.continueLabel.hasAccount')}
-                  </Text>
+                  </LocaleText>
                 </View>
                 {hasLastAccount && (
                   <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
@@ -325,7 +326,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
           >
             <LinearGradient colors={isDark ? ['#2E7228', '#1E5018'] : ['#62C84F', '#3FA535']} style={styles.playButtonGradient}>
               <View style={styles.playTriangle} />
-              <Text style={styles.playButtonText}>{t('welcome.playButton')}</Text>
+              <LocaleText style={styles.playButtonText}>{t('welcome.playButton')}</LocaleText>
             </LinearGradient>
           </Pressable>
         )}
@@ -336,38 +337,38 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
               <Circle cx={12} cy={8} r={4} />
               <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </Svg>
-            <Text style={[styles.secondaryLabel, isDark && { color: '#D8E4F0' }]}>{t('common:actions.login')}</Text>
+            <LocaleText style={[styles.secondaryLabel, isDark && { color: '#D8E4F0' }]}>{t('common:actions.login')}</LocaleText>
           </Pressable>
           <Pressable onPress={onRegister} style={[styles.secondaryButton, isDark && { backgroundColor: 'rgba(18,28,50,0.90)', borderColor: 'rgba(255,255,255,0.22)' }]}>
             <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke={isDark ? '#A0C0E0' : '#2C4A2A'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <Path d="M12 5v14M5 12h14" />
             </Svg>
-            <Text style={[styles.secondaryLabel, isDark && { color: '#D8E4F0' }]}>{t('common:actions.register')}</Text>
+            <LocaleText style={[styles.secondaryLabel, isDark && { color: '#D8E4F0' }]}>{t('common:actions.register')}</LocaleText>
           </Pressable>
         </View>
 
         {isFirstTime && (
-          <Text style={styles.guestNote}>
+          <LocaleText style={styles.guestNote}>
             {t('welcome.guestNote')}
-          </Text>
+          </LocaleText>
         )}
 
-        <Text style={styles.termsText}>
+        <LocaleText style={styles.termsText}>
           {t('welcome.terms.continuingText')}
-          <Text
+          <LocaleText
             style={styles.termsUnderline}
             onPress={() => Linking.openURL('https://TODO/terms')}
           >
             {t('welcome.terms.terms')}
-          </Text>
+          </LocaleText>
           {t('welcome.terms.and')}
-          <Text
+          <LocaleText
             style={styles.termsUnderline}
             onPress={() => Linking.openURL('https://TODO/privacy')}
           >
             {t('welcome.terms.policy')}
-          </Text>
-        </Text>
+          </LocaleText>
+        </LocaleText>
       </View>
     </View>
   );

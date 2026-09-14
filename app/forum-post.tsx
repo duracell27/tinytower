@@ -3,6 +3,7 @@ import {
   View, Text, FlatList, Pressable, TextInput, Modal,
   KeyboardAvoidingView, Platform, Alert, StyleSheet, Keyboard,
 } from 'react-native';
+import LocaleText from '../src/components/LocaleText';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -159,12 +160,12 @@ export default function ForumPostScreen() {
         </Pressable>
         <View>
           <View style={styles.postAuthorRow}>
-            <Text style={[styles.postAuthor, isDark && { color: theme.text }]}>{activePost.playerName}</Text>
-            <Text style={[styles.postAuthorSep, isDark && { color: '#5A6470' }]}>·</Text>
+            <LocaleText style={[styles.postAuthor, isDark && { color: theme.text }]}>{activePost.playerName}</LocaleText>
+            <LocaleText style={[styles.postAuthorSep, isDark && { color: '#5A6470' }]}>·</LocaleText>
             <Image source={LVL_ICON} style={styles.postMetaIcon} contentFit="contain" />
-            <Text style={[styles.postAuthor, isDark && { color: theme.text }]}>{activePost.playerId === player?.id ? currentPlayerLevel : activePost.playerLevel}</Text>
+            <LocaleText style={[styles.postAuthor, isDark && { color: theme.text }]}>{activePost.playerId === player?.id ? currentPlayerLevel : activePost.playerLevel}</LocaleText>
           </View>
-          <Text style={styles.postDate}>{formatDate(activePost.createdAt)}</Text>
+          <LocaleText style={styles.postDate}>{formatDate(activePost.createdAt)}</LocaleText>
         </View>
         {canModifyPost && (
           <Pressable
@@ -172,7 +173,7 @@ export default function ForumPostScreen() {
             style={styles.postMenuBtn}
             hitSlop={8}
           >
-            <Text style={styles.postMenuIcon}>•••</Text>
+            <LocaleText style={styles.postMenuIcon}>•••</LocaleText>
           </Pressable>
         )}
         {!isPostOwn && !isAdmin && isAuthenticated && (
@@ -185,32 +186,32 @@ export default function ForumPostScreen() {
           </Pressable>
         )}
       </View>
-      <Text style={[styles.postTitle, isDark && { color: theme.text }]}>
-        {isPostBlocked ? <Text style={styles.blockedText}>{t('block.blockedContent')}</Text> : activePost.title}
-      </Text>
-      <Text style={[styles.postBody, isDark && { color: '#C8D8C0' }]}>
+      <LocaleText style={[styles.postTitle, isDark && { color: theme.text }]}>
+        {isPostBlocked ? <LocaleText style={styles.blockedText}>{t('block.blockedContent')}</LocaleText> : activePost.title}
+      </LocaleText>
+      <LocaleText style={[styles.postBody, isDark && { color: '#C8D8C0' }]}>
         {isPostBlocked ? '' : activePost.body}
-      </Text>
+      </LocaleText>
       {isAdmin && (
         <View style={styles.adminActions}>
           <Pressable
             style={[styles.adminBtn, activePost.isPinned && styles.adminBtnActive, isDark && { backgroundColor: theme.surface, borderColor: theme.divider }]}
             onPress={() => void pinPost(postId, !activePost.isPinned)}
           >
-            <Text style={[styles.adminBtnText, isDark && { color: theme.text }]}>{activePost.isPinned ? t('forum.unpinPost') : t('forum.pinPost')}</Text>
+            <LocaleText style={[styles.adminBtnText, isDark && { color: theme.text }]}>{activePost.isPinned ? t('forum.unpinPost') : t('forum.pinPost')}</LocaleText>
           </Pressable>
           <Pressable
             style={[styles.adminBtn, activePost.isClosed && styles.adminBtnActive, isDark && { backgroundColor: theme.surface, borderColor: theme.divider }]}
             onPress={() => void closePost(postId, !activePost.isClosed)}
           >
-            <Text style={[styles.adminBtnText, isDark && { color: theme.text }]}>{activePost.isClosed ? t('forum.openPost') : t('forum.closePost')}</Text>
+            <LocaleText style={[styles.adminBtnText, isDark && { color: theme.text }]}>{activePost.isClosed ? t('forum.openPost') : t('forum.closePost')}</LocaleText>
           </Pressable>
         </View>
       )}
       <View style={[styles.divider, isDark && { backgroundColor: theme.divider }]} />
       <View style={styles.commentsLabel}>
         <Image source={CHAT_ICON} style={styles.commentsLabelIcon} contentFit="contain" />
-        <Text style={styles.commentsLabelText}>{t('forum.commentCount', { count: activePost.commentCount })}</Text>
+        <LocaleText style={styles.commentsLabelText}>{t('forum.commentCount', { count: activePost.commentCount })}</LocaleText>
       </View>
     </View>
   ) : null;
@@ -222,11 +223,11 @@ export default function ForumPostScreen() {
     <View style={[styles.container, { paddingTop: insets.top }, isDark && { backgroundColor: theme.surface }]}>
       <View style={[styles.header, isDark && { backgroundColor: theme.surface, borderBottomColor: theme.divider }]}>
         <Pressable onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
-          <Text style={styles.backIcon}>‹</Text>
+          <LocaleText style={styles.backIcon}>‹</LocaleText>
         </Pressable>
-        <Text style={[styles.headerTitle, isDark && { color: theme.text }]} numberOfLines={1}>
+        <LocaleText style={[styles.headerTitle, isDark && { color: theme.text }]} numberOfLines={1}>
           {activePost?.title ?? ''}
-        </Text>
+        </LocaleText>
         <View style={styles.headerBtn} />
       </View>
 
@@ -252,14 +253,14 @@ export default function ForumPostScreen() {
           ListEmptyComponent={
             commentsLoading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyText}>{t('forum.loading')}</Text>
+                <LocaleText style={styles.emptyText}>{t('forum.loading')}</LocaleText>
               </View>
             ) : null
           }
           ListFooterComponent={
             commentsHasMore ? (
               <Pressable style={[styles.loadMore, isDark && { backgroundColor: theme.surface, borderColor: theme.divider }]} onPress={() => void fetchComments(postId)}>
-                <Text style={styles.loadMoreText}>{t('forum.loadMore')}</Text>
+                <LocaleText style={styles.loadMoreText}>{t('forum.loadMore')}</LocaleText>
               </Pressable>
             ) : null
           }
@@ -271,9 +272,9 @@ export default function ForumPostScreen() {
           <View>
             {editingCommentId && (
               <View style={[styles.editBanner, isDark && { backgroundColor: 'rgba(30,64,24,0.5)', borderTopColor: '#3C9A34' }]}>
-                <Text style={styles.editBannerText}>{t('forum.editing')}</Text>
+                <LocaleText style={styles.editBannerText}>{t('forum.editing')}</LocaleText>
                 <Pressable onPress={() => { setEditingCommentId(null); setCommentText(''); }} hitSlop={8}>
-                  <Text style={styles.editBannerCancel}>✕</Text>
+                  <LocaleText style={styles.editBannerCancel}>✕</LocaleText>
                 </Pressable>
               </View>
             )}
@@ -292,19 +293,19 @@ export default function ForumPostScreen() {
                 onPress={!commentText.trim() && keyboardVisible ? () => Keyboard.dismiss() : handleSendComment}
                 disabled={!commentText.trim() && !keyboardVisible || isSending}
               >
-                <Text style={styles.sendIcon}>
+                <LocaleText style={styles.sendIcon}>
                   {!commentText.trim() && keyboardVisible ? '▼' : editingCommentId ? '✓' : '➤'}
-                </Text>
+                </LocaleText>
               </Pressable>
             </View>
           </View>
         ) : activePost?.isClosed ? (
           <View style={[styles.closedBanner, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: theme.surface, borderTopColor: theme.divider }]}>
-            <Text style={styles.closedText}>🔒 {t('forum.closedBanner')}</Text>
+            <LocaleText style={styles.closedText}>🔒 {t('forum.closedBanner')}</LocaleText>
           </View>
         ) : !isAuthenticated ? (
           <View style={[styles.closedBanner, { paddingBottom: Math.max(insets.bottom, 16) }, isDark && { backgroundColor: theme.surface, borderTopColor: theme.divider }]}>
-            <Text style={styles.closedText}>{t('forum.guestBanner')}</Text>
+            <LocaleText style={styles.closedText}>{t('forum.guestBanner')}</LocaleText>
           </View>
         ) : null}
       </KeyboardAvoidingView>
@@ -316,7 +317,7 @@ export default function ForumPostScreen() {
             {selectedItem?.isOwn && (
               <Pressable style={styles.sheetItem} onPress={handleActionEdit}>
                 <Image source={require('../assets/img/edit.png')} style={styles.sheetIcon} contentFit="contain" />
-                <Text style={[styles.sheetText, isDark && { color: theme.text }]}>{t('forum.actionEdit')}</Text>
+                <LocaleText style={[styles.sheetText, isDark && { color: theme.text }]}>{t('forum.actionEdit')}</LocaleText>
               </Pressable>
             )}
             {!selectedItem?.isOwn && isAuthenticated && (
@@ -330,18 +331,18 @@ export default function ForumPostScreen() {
                 }}
               >
                 <Image source={require('../assets/img/warningIcon.png')} style={styles.sheetIcon} contentFit="contain" />
-                <Text style={[styles.sheetText, isDark && { color: theme.text }]}>{t('forum.actionReport')}</Text>
+                <LocaleText style={[styles.sheetText, isDark && { color: theme.text }]}>{t('forum.actionReport')}</LocaleText>
               </Pressable>
             )}
             {(selectedItem?.isOwn || isAdmin) && (
               <Pressable style={styles.sheetItem} onPress={handleActionDelete}>
                 <Image source={require('../assets/img/delete.png')} style={styles.sheetIcon} contentFit="contain" />
-                <Text style={[styles.sheetText, styles.sheetDanger]}>{t('forum.actionDelete')}</Text>
+                <LocaleText style={[styles.sheetText, styles.sheetDanger]}>{t('forum.actionDelete')}</LocaleText>
               </Pressable>
             )}
             <View style={[styles.sheetDivider, isDark && { backgroundColor: theme.divider }]} />
             <Pressable style={styles.sheetItem} onPress={() => setSelectedItem(null)}>
-              <Text style={[styles.sheetText, styles.sheetCancel]}>{t('forum.cancel')}</Text>
+              <LocaleText style={[styles.sheetText, styles.sheetCancel]}>{t('forum.cancel')}</LocaleText>
             </Pressable>
           </View>
         </Pressable>
@@ -364,11 +365,11 @@ export default function ForumPostScreen() {
           <View style={{ flex: 1, paddingTop: insets.top }}>
             <LinearGradient colors={isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.modalHeader}>
               <Pressable onPress={() => setEditPostVisible(false)} style={styles.modalClose} hitSlop={10}>
-                <Text style={styles.modalCloseText}>✕</Text>
+                <LocaleText style={styles.modalCloseText}>✕</LocaleText>
               </Pressable>
-              <Text style={styles.modalTitle}>{t('forum.editPost')}</Text>
+              <LocaleText style={styles.modalTitle}>{t('forum.editPost')}</LocaleText>
               <Pressable onPress={handleSubmitEditPost} disabled={isSending} hitSlop={8}>
-                <Text style={[styles.modalSubmit, isSending && styles.modalSubmitDisabled]}>{t('forum.submit')}</Text>
+                <LocaleText style={[styles.modalSubmit, isSending && styles.modalSubmitDisabled]}>{t('forum.submit')}</LocaleText>
               </Pressable>
             </LinearGradient>
             <TextInput

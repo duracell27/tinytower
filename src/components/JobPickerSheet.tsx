@@ -9,6 +9,7 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import Svg, { Path } from 'react-native-svg';
@@ -346,18 +347,18 @@ export default function JobPickerSheet({
             <View style={styles.titleLeft}>
               {worker && <WorkerAvatar worker={worker} size={36} />}
               <View style={styles.titleInfo}>
-                <Text style={styles.nameText} numberOfLines={1}>
+                <LocaleText style={styles.nameText} numberOfLines={1}>
                   {worker?.name ?? ''}
-                </Text>
+                </LocaleText>
                 <View style={styles.pillRow}>
                   <View style={[styles.typePill, { backgroundColor: accent }]}>
-                    <Text style={styles.typePillText}>{category}</Text>
+                    <LocaleText style={styles.typePillText}>{category}</LocaleText>
                   </View>
                   {!!dreamJobBusinessName && (
                     <View style={[styles.dreamPill, { borderColor: accent }]}>
-                      <Text style={[styles.dreamPillText, { color: accent }]} numberOfLines={1}>
+                      <LocaleText style={[styles.dreamPillText, { color: accent }]} numberOfLines={1}>
                         {dreamJobBusinessName} · {dreamJobProductName}
-                      </Text>
+                      </LocaleText>
                     </View>
                   )}
                 </View>
@@ -382,7 +383,7 @@ export default function JobPickerSheet({
         {/* Body */}
         {isEmpty ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{t('jobPicker.empty')}</Text>
+            <LocaleText style={styles.emptyText}>{t('jobPicker.empty')}</LocaleText>
           </View>
         ) : (
           <SectionList
@@ -468,9 +469,9 @@ export default function JobPickerSheet({
             </Animated.View>
             <View style={[pickerHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop }]}>
               <Image source={require('../../assets/img/happySmile.png')} style={pickerHintStyles.icon} />
-              <Text style={pickerHintStyles.text}>
+              <LocaleText style={pickerHintStyles.text}>
                 {'Tap «Assign» to place a worker on a floor'}
-              </Text>
+              </LocaleText>
             </View>
           </View>
         );
@@ -502,7 +503,7 @@ function SectionHeader({ section, headerRef }: { section: FloorSection; headerRe
     return (
       <View style={sectionStyles.container}>
         <View style={[sectionStyles.header, { backgroundColor: '#7A8596' }]}>
-          <Text style={sectionStyles.floorName}>{t('jobPicker.occupiedSection')}</Text>
+          <LocaleText style={sectionStyles.floorName}>{t('jobPicker.occupiedSection')}</LocaleText>
         </View>
       </View>
     );
@@ -516,9 +517,9 @@ function SectionHeader({ section, headerRef }: { section: FloorSection; headerRe
     <View ref={headerRef} style={sectionStyles.container} collapsable={false}>
       <View style={[sectionStyles.header, { backgroundColor: headerColor }]}>
         <View style={sectionStyles.numberBadge}>
-          <Text style={sectionStyles.numberText}>{section.floorId}</Text>
+          <LocaleText style={sectionStyles.numberText}>{section.floorId}</LocaleText>
         </View>
-        <Text style={sectionStyles.floorName}>{floorName}</Text>
+        <LocaleText style={sectionStyles.floorName}>{floorName}</LocaleText>
       </View>
     </View>
   );
@@ -553,18 +554,18 @@ function SlotRow({
     return (
       <View style={slotStyles.row}>
         <View style={slotStyles.occupiedInfo}>
-          <Text style={slotStyles.productName} numberOfLines={1}>
+          <LocaleText style={slotStyles.productName} numberOfLines={1}>
             {productName}
-          </Text>
-          <Text style={slotStyles.occupantText} numberOfLines={1}>
+          </LocaleText>
+          <LocaleText style={slotStyles.occupantText} numberOfLines={1}>
             {item.floorName ? `${item.floorName} · ` : ''}{item.occupant.name}
-          </Text>
+          </LocaleText>
         </View>
 
         <View style={[slotStyles.badge, { backgroundColor: badgeStyle.bg }]}>
-          <Text style={[slotStyles.badgeText, { color: badgeStyle.text }]}>
+          <LocaleText style={[slotStyles.badgeText, { color: badgeStyle.text }]}>
             {badgeLabel}
-          </Text>
+          </LocaleText>
         </View>
 
         <Pressable
@@ -578,7 +579,7 @@ function SlotRow({
             colors={['#E0813C', '#C4621C']}
             style={slotStyles.assignButtonGradient}
           >
-            <Text style={slotStyles.assignButtonText}>{t('jobPicker.replace')}</Text>
+            <LocaleText style={slotStyles.assignButtonText}>{t('jobPicker.replace')}</LocaleText>
           </LinearGradient>
         </Pressable>
       </View>
@@ -587,14 +588,14 @@ function SlotRow({
 
   return (
     <View ref={rowRef} style={slotStyles.row} collapsable={false}>
-      <Text style={slotStyles.productName} numberOfLines={1}>
+      <LocaleText style={slotStyles.productName} numberOfLines={1}>
         {productName}
-      </Text>
+      </LocaleText>
 
       <View style={[slotStyles.badge, { backgroundColor: badgeStyle.bg }]}>
-        <Text style={[slotStyles.badgeText, { color: badgeStyle.text }]}>
+        <LocaleText style={[slotStyles.badgeText, { color: badgeStyle.text }]}>
           {badgeLabel}
-        </Text>
+        </LocaleText>
       </View>
 
       <Pressable
@@ -609,7 +610,7 @@ function SlotRow({
           colors={['#72C24F', '#5BA63C']}
           style={slotStyles.assignButtonGradient}
         >
-          <Text style={slotStyles.assignButtonText}>{t('jobPicker.assign')}</Text>
+          <LocaleText style={slotStyles.assignButtonText}>{t('jobPicker.assign')}</LocaleText>
         </LinearGradient>
       </Pressable>
     </View>

@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { GlassView } from 'expo-glass-effect';
 import Svg, { Circle } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { getUserIcon } from '../utils/userIcon';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -64,6 +66,7 @@ function ProgressRing({ progress, size = 50 }: { progress: number; size?: number
 export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, revenuePerMin, activeCoinBoost, activeXpBoost, coinBoostExpiresAt, xpBoostExpiresAt }: TopBarProps) {
   const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
   const theme = useAppTheme();
+  const { t } = useTranslation('tabs');
 
   const panelContent = (
     <>
@@ -77,15 +80,15 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
               contentFit="cover"
             />
             <View style={styles.levelBadge}>
-              <Text style={styles.levelText}>{level}</Text>
+              <LocaleText style={styles.levelText}>{level}</LocaleText>
             </View>
           </View>
           <View style={styles.nameColumn}>
-            <Text style={[styles.nameText, { color: theme.text }]}>{name}</Text>
+            <LocaleText style={[styles.nameText, { color: theme.text }]}>{name}</LocaleText>
             {revenuePerMin !== undefined && (
               <View style={[styles.revenuePill, { backgroundColor: theme.surfaceElevated }]}>
                 <CoinIcon size={12} />
-                <Text style={styles.revenuePillText}>{revenuePerMin} /min</Text>
+                <LocaleText style={styles.revenuePillText}>{revenuePerMin} {t('topBar.perMin')}</LocaleText>
               </View>
             )}
             {((activeCoinBoost ?? 0) > 0 || (activeXpBoost ?? 0) > 0) && (
@@ -93,13 +96,13 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
                 {(activeCoinBoost ?? 0) > 0 && (
                   <View style={[styles.boostPill, theme.isDark && { backgroundColor: 'rgba(212,134,10,0.55)' }]}>
                     <Image source={require('../../assets/img/MarketingIcon.png')} style={styles.boostIcon} contentFit="contain" />
-                    <Text style={[styles.boostCoinText, theme.isDark && { color: '#fff' }]}>+{activeCoinBoost}%{boostTimeLabel(coinBoostExpiresAt)}</Text>
+                    <LocaleText style={[styles.boostCoinText, theme.isDark && { color: '#fff' }]}>+{activeCoinBoost}%{boostTimeLabel(coinBoostExpiresAt)}</LocaleText>
                   </View>
                 )}
                 {(activeXpBoost ?? 0) > 0 && (
                   <View style={[styles.boostPill, theme.isDark && { backgroundColor: 'rgba(112,64,184,0.55)' }]}>
                     <Image source={require('../../assets/img/PRIcon.png')} style={styles.boostIcon} contentFit="contain" />
-                    <Text style={[styles.boostXpText, theme.isDark && { color: '#fff' }]}>+{activeXpBoost}%{boostTimeLabel(xpBoostExpiresAt)}</Text>
+                    <LocaleText style={[styles.boostXpText, theme.isDark && { color: '#fff' }]}>+{activeXpBoost}%{boostTimeLabel(xpBoostExpiresAt)}</LocaleText>
                   </View>
                 )}
               </View>
@@ -110,11 +113,11 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
         <View style={styles.currencySection}>
           <View style={[styles.coinBadge, { backgroundColor: theme.surfaceElevated }]}>
             <CoinIcon size={18} />
-            <Text style={styles.coinText}>{coins}</Text>
+            <LocaleText style={styles.coinText}>{coins}</LocaleText>
           </View>
           <Pressable style={[styles.gemBadge, { backgroundColor: theme.surfaceElevated }]}>
             <GemIcon size={14} />
-            <Text style={styles.gemText}>{gems}</Text>
+            <LocaleText style={styles.gemText}>{gems}</LocaleText>
           </Pressable>
         </View>
       </View>

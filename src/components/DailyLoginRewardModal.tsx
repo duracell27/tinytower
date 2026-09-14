@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
+import LocaleText from './LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -49,22 +50,22 @@ export default function DailyLoginRewardModal() {
           <Animated.View style={[styles.card, cardStyle]}>
             <LinearGradient colors={isDark ? ['#1E2A3A', '#141E2E'] : ['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
               <View style={styles.starsRow}>
-                <Text style={[styles.starText, styles.starSmall]}>★</Text>
-                <Text style={[styles.starText, styles.starLarge]}>★</Text>
-                <Text style={[styles.starText, styles.starSmall]}>★</Text>
+                <LocaleText style={[styles.starText, styles.starSmall]}>★</LocaleText>
+                <LocaleText style={[styles.starText, styles.starLarge]}>★</LocaleText>
+                <LocaleText style={[styles.starText, styles.starSmall]}>★</LocaleText>
               </View>
 
-              <Text style={[styles.title, isDark && { color: theme.text }]}>{t('dailyLoginReward.title')}</Text>
-              <Text style={[styles.subtitle, isDark && { color: theme.textMuted }]}>{t('dailyLoginReward.subtitle')}</Text>
+              <LocaleText style={[styles.title, isDark && { color: theme.text }]}>{t('dailyLoginReward.title')}</LocaleText>
+              <LocaleText style={[styles.subtitle, isDark && { color: theme.textMuted }]}>{t('dailyLoginReward.subtitle')}</LocaleText>
 
               <View style={styles.rewardsContainer}>
                 <View style={[styles.rewardRow, { backgroundColor: isDark ? theme.surfaceCard : '#fff' }]}>
                   <CoinIcon size={20} />
-                  <Text style={[styles.rewardText, isDark && { color: '#F5C842' }]}>+{formatNum(reward.coins)}</Text>
+                  <LocaleText style={[styles.rewardText, isDark && { color: '#F5C842' }]}>+{formatNum(reward.coins)}</LocaleText>
                 </View>
                 <View style={[styles.rewardRow, { backgroundColor: isDark ? theme.surfaceCard : '#fff' }]}>
                   <GemIcon size={16} />
-                  <Text style={[styles.rewardTextGem, isDark && { color: '#4DC8E0' }]}>+{reward.gems}</Text>
+                  <LocaleText style={[styles.rewardTextGem, isDark && { color: '#4DC8E0' }]}>+{reward.gems}</LocaleText>
                 </View>
               </View>
 
@@ -73,7 +74,7 @@ export default function DailyLoginRewardModal() {
                 style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
               >
                 <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.buttonGradient}>
-                  <Text style={styles.buttonText}>{t('dailyLoginReward.claim')}</Text>
+                  <LocaleText style={styles.buttonText}>{t('dailyLoginReward.claim')}</LocaleText>
                 </LinearGradient>
                 <View style={styles.buttonShadow} />
               </Pressable>

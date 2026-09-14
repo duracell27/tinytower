@@ -1,5 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import Animated, { useSharedValue, useAnimatedProps, useAnimatedStyle, withTiming, withRepeat, withSequence, cancelAnimation, Easing } from 'react-native-reanimated';
 import { useClockNow } from '../context/ClockContext';
 import { Image } from 'expo-image';
@@ -166,7 +167,7 @@ const iconStyles = StyleSheet.create({
 // The parent ProductionCard stays frozen until a real stage transition occurs.
 function TimerText({ stageEndsAt, style }: { stageEndsAt: number; style: object }) {
   const now = useClockNow();
-  return <Text style={style}>{formatTime(Math.max(0, stageEndsAt - now))}</Text>;
+  return <LocaleText style={style}>{formatTime(Math.max(0, stageEndsAt - now))}</LocaleText>;
 }
 
 // Static layout-only styles shared with DeliveryLockPill (no color dependencies).
@@ -193,7 +194,7 @@ function DeliveryLockPill({ deliveryLockUntil, accentColor }: { deliveryLockUnti
   if (remaining <= 0) return null;
   return (
     <View style={[pillStyles.pill, { backgroundColor: accentColor + '20' }]}>
-      <Text style={[pillStyles.pillText, { color: accentColor }]}>{formatTime(remaining)}</Text>
+      <LocaleText style={[pillStyles.pillText, { color: accentColor }]}>{formatTime(remaining)}</LocaleText>
     </View>
   );
 }
@@ -509,9 +510,9 @@ export default function ProductionCard({
   if (isLocked) {
     return (
       <View style={[styles.card, { backgroundColor: cardBg }]}>
-        <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
+        <LocaleText style={[styles.title, { color: nameColor }]} numberOfLines={1}>
           {productTitle}
-        </Text>
+        </LocaleText>
 
         <View style={styles.imageContainer}>
           <View style={[styles.hireSlot, { borderColor: accentColor + '66' }]}>
@@ -536,11 +537,11 @@ export default function ProductionCard({
           ]}
         >
           <StageIcon stage={'EMPTY'} />
-          <Text style={styles.actionLabel}>{t('productionCard.actions.hire')}</Text>
+          <LocaleText style={styles.actionLabel}>{t('productionCard.actions.hire')}</LocaleText>
         </Pressable>
 
         <View style={styles.subContainer}>
-          <Text style={[styles.pillText, { color: accentColor }]}>{t('productionCard.actions.workerWanted')}</Text>
+          <LocaleText style={[styles.pillText, { color: accentColor }]}>{t('productionCard.actions.workerWanted')}</LocaleText>
         </View>
       </View>
     );
@@ -552,9 +553,9 @@ export default function ProductionCard({
       onLongPress={onLongPress}
       delayLongPress={800}
     >
-      <Text style={[styles.title, { color: nameColor }]} numberOfLines={1}>
+      <LocaleText style={[styles.title, { color: nameColor }]} numberOfLines={1}>
         {productTitle}
-      </Text>
+      </LocaleText>
 
       <View style={styles.imageContainer}>
         {isHire ? (
@@ -591,11 +592,11 @@ export default function ProductionCard({
               <WorkerAvatar worker={worker} size={24} />
             </View>
             <View style={[styles.workerLevelBadge, { backgroundColor: levelBadgeBg }]}>
-              <Text style={[styles.workerLevelText, { color: levelBadgeTextColor }]}>{worker.level}</Text>
+              <LocaleText style={[styles.workerLevelText, { color: levelBadgeTextColor }]}>{worker.level}</LocaleText>
             </View>
             {hasMultiplier && (
               <View style={[styles.bonusBubble, { backgroundColor: accentColor }]}>
-                <Text style={styles.bonusBubbleText}>×{multiplier}</Text>
+                <LocaleText style={styles.bonusBubbleText}>×{multiplier}</LocaleText>
               </View>
             )}
           </Pressable>
@@ -617,7 +618,7 @@ export default function ProductionCard({
           {isDeliveryLocked ? <LockIcon /> : <StageIcon stage={effectiveStage} />}
           {isProgressTimer && stageEndsAt > 0
             ? <TimerText stageEndsAt={stageEndsAt} style={styles.actionLabel} />
-            : <Text style={styles.actionLabel}>{labelText}</Text>
+            : <LocaleText style={styles.actionLabel}>{labelText}</LocaleText>
           }
         </Pressable>
         {isProgressTimer && btnSize.width > 0 && (
@@ -652,7 +653,7 @@ export default function ProductionCard({
             onPress={handleSpeedUp}
             style={({ pressed }) => [styles.pill, { backgroundColor: accentColor + '20', borderColor: accentColor, borderWidth: 1 }, pressed && { opacity: 0.7 }]}
           >
-            <Text style={[styles.pillText, { color: accentColor }]}>speed up {speedUpCost}</Text>
+            <LocaleText style={[styles.pillText, { color: accentColor }]}>speed up {speedUpCost}</LocaleText>
             <GemIcon size={12} />
           </Pressable>
         ) : effectiveStage === 'READY_TO_LIST' && subText ? (
@@ -662,16 +663,16 @@ export default function ProductionCard({
               <Circle cx={9} cy={19} r={1.2} fill={accentColor} stroke="none" />
               <Circle cx={17} cy={19} r={1.2} fill={accentColor} stroke="none" />
             </Svg>
-            <Text style={[styles.pillText, { color: accentColor }]}>{subText}</Text>
+            <LocaleText style={[styles.pillText, { color: accentColor }]}>{subText}</LocaleText>
           </View>
         ) : isTimer ? (
           <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
-            <Text style={[styles.pillText, { color: accentColor }]}>{subText}</Text>
+            <LocaleText style={[styles.pillText, { color: accentColor }]}>{subText}</LocaleText>
           </View>
         ) : subText ? (
           <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
             <CoinIcon size={13} />
-            <Text style={[styles.pillText, { color: accentColor }]}>{subText}</Text>
+            <LocaleText style={[styles.pillText, { color: accentColor }]}>{subText}</LocaleText>
           </View>
         ) : null}
       </View>

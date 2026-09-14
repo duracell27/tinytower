@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
+import LocaleText from './LocaleText';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { Image } from 'expo-image';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -41,15 +42,15 @@ export default function WarehouseFullModal() {
               />
             </View>
             <View style={styles.info}>
-              <Text style={[styles.title, { color: theme.isDark ? '#DDE8D8' : '#2A3344' }]}>{t('warehouse.fullPopup.title')}</Text>
-              <Text style={[styles.subtitle, { color: theme.isDark ? '#8A9A80' : '#9BA3B0' }]}>{t('warehouse.fullPopup.subtitle')}</Text>
+              <LocaleText style={[styles.title, { color: theme.isDark ? '#DDE8D8' : '#2A3344' }]}>{t('warehouse.fullPopup.title')}</LocaleText>
+              <LocaleText style={[styles.subtitle, { color: theme.isDark ? '#8A9A80' : '#9BA3B0' }]}>{t('warehouse.fullPopup.subtitle')}</LocaleText>
             </View>
             <Pressable
               onPress={openWarehouse}
               style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
             >
               <LinearGradient colors={['#6B7A8D', '#4A5568']} style={styles.btnGradient}>
-                <Text style={styles.btnText}>{t('warehouse.fullPopup.open')}</Text>
+                <LocaleText style={styles.btnText}>{t('warehouse.fullPopup.open')}</LocaleText>
               </LinearGradient>
             </Pressable>
             {pendingDailyTask && (
@@ -58,12 +59,12 @@ export default function WarehouseFullModal() {
                 style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
               >
                 <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.btnGradient}>
-                  <Text style={styles.btnText}>{t('warehouse.fullPopup.claimWithoutMaterials')}</Text>
+                  <LocaleText style={styles.btnText}>{t('warehouse.fullPopup.claimWithoutMaterials')}</LocaleText>
                 </LinearGradient>
               </Pressable>
             )}
             <Pressable onPress={dismiss} style={styles.dismissBtn}>
-              <Text style={[styles.dismissText, { color: theme.isDark ? '#8A9A80' : '#9BA3B0' }]}>{t('warehouse.fullPopup.dismiss')}</Text>
+              <LocaleText style={[styles.dismissText, { color: theme.isDark ? '#8A9A80' : '#9BA3B0' }]}>{t('warehouse.fullPopup.dismiss')}</LocaleText>
             </Pressable>
           </Pressable>
         </Pressable>

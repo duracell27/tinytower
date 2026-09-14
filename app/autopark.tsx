@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import LocaleText from '../src/components/LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -30,7 +31,7 @@ export default function AutoparkScreen() {
     <AppBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text }]}>{t('autopark.title')}</Text>
+          <LocaleText style={[styles.title, { color: theme.text }]}>{t('autopark.title')}</LocaleText>
           <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -42,15 +43,15 @@ export default function AutoparkScreen() {
 
         <View style={[styles.summaryCard, { backgroundColor: theme.surface }]}>
           <View style={styles.summaryTop}>
-            <Text style={[styles.summaryLabel, { color: theme.text }]}>{t('autopark.vehiclesOwned')}</Text>
+            <LocaleText style={[styles.summaryLabel, { color: theme.text }]}>{t('autopark.vehiclesOwned')}</LocaleText>
             <View style={styles.summaryCountRow}>
-              <Text style={[styles.summaryCount, { color: theme.text }]}>{totalOwned}</Text>
-              <Text style={[styles.summaryOf, { color: theme.textMuted }]}> / 50</Text>
+              <LocaleText style={[styles.summaryCount, { color: theme.text }]}>{totalOwned}</LocaleText>
+              <LocaleText style={[styles.summaryOf, { color: theme.textMuted }]}> / 50</LocaleText>
             </View>
           </View>
-          <Text style={[styles.tagline, { color: theme.textMuted }]}>
+          <LocaleText style={[styles.tagline, { color: theme.textMuted }]}>
             {t('autopark.tagline')}
-          </Text>
+          </LocaleText>
         </View>
 
         {VEHICLE_TYPES.map((key: VehicleType) => {
@@ -75,16 +76,16 @@ export default function AutoparkScreen() {
               {/* Info */}
               <View style={styles.info}>
                 <View style={styles.nameRow}>
-                  <Text style={[styles.vehicleName, { color: theme.text }]}>{def.name}</Text>
+                  <LocaleText style={[styles.vehicleName, { color: theme.text }]}>{t(`autopark.vehicles.${key}.name`)}</LocaleText>
                   <View style={[styles.countBadge, { backgroundColor: `${def.accentColor}22` }]}>
-                    <Text style={[styles.countBadgeText, { color: def.accentColor }]}>
+                    <LocaleText style={[styles.countBadgeText, { color: def.accentColor }]}>
                       {count} / 10
-                    </Text>
+                    </LocaleText>
                   </View>
                 </View>
-                <Text style={[styles.descText, { color: theme.textMuted }]} numberOfLines={1}>
-                  {def.shortDescription}
-                </Text>
+                <LocaleText style={[styles.descText, { color: theme.textMuted }]} numberOfLines={1}>
+                  {t(`autopark.vehicles.${key}.short`)}
+                </LocaleText>
               </View>
 
               {/* Segmented progress bar */}
@@ -107,7 +108,7 @@ export default function AutoparkScreen() {
         onPress={() => router.back()}
         style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
       >
-        <Text style={styles.closeBtnText}>✕</Text>
+        <LocaleText style={styles.closeBtnText}>✕</LocaleText>
       </Pressable>
 
       {infoVisible && (
@@ -115,9 +116,9 @@ export default function AutoparkScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, { backgroundColor: theme.surface }]}>
             <LinearGradient colors={['#2563EB', '#1D4ED8']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>{t('autopark.title')}</Text>
+              <LocaleText style={styles.infoCardTitle}>{t('autopark.title')}</LocaleText>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
-                <Text style={styles.infoCardClose}>✕</Text>
+                <LocaleText style={styles.infoCardClose}>✕</LocaleText>
               </Pressable>
             </LinearGradient>
             <View style={styles.infoCardBody}>

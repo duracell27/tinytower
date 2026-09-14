@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path } from 'react-native-svg';
@@ -50,12 +51,12 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
       <View style={[styles.header, { backgroundColor: HEADER_COLORS[0] }]}>
         <View style={styles.headerEdge} />
         <View style={styles.numberBadge}>
-          <Text style={styles.numberText}>1</Text>
+          <LocaleText style={styles.numberText}>1</LocaleText>
         </View>
-        <Text style={styles.floorName} numberOfLines={1}>{t('technicalFloor.hotel.name')}</Text>
+        <LocaleText style={styles.floorName} numberOfLines={1}>{t('technicalFloor.hotel.name')}</LocaleText>
         <View style={styles.techTag}>
           <StarIcon />
-          <Text style={styles.techTagText}>{t('technicalFloor.hotel.tag')}</Text>
+          <LocaleText style={styles.techTagText}>{t('technicalFloor.hotel.tag')}</LocaleText>
         </View>
       </View>
 
@@ -78,17 +79,17 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
                 !hasVacancy && isDark && styles.statusRedDark,
               ]}>
                 <View style={[styles.statusDot, { backgroundColor: hasVacancy ? '#5BA63C' : (isDark ? '#FF6B6B' : '#D14343') }]} />
-                <Text style={[styles.statusText, { color: hasVacancy ? '#3C7A2A' : (isDark ? '#FF8A8A' : '#A13030') }]}>
+                <LocaleText style={[styles.statusText, { color: hasVacancy ? '#3C7A2A' : (isDark ? '#FF8A8A' : '#A13030') }]}>
                   {hasVacancy ? t('technicalFloor.hotel.hasVacancy') : t('technicalFloor.hotel.full')}
-                </Text>
+                </LocaleText>
               </View>
               {/* Right: occupancy count */}
               <View style={styles.occupancyRight}>
-                <Text style={[styles.occupancyLabel, isDark && { color: '#D494A8' }]}>{t('technicalFloor.hotel.occupied')}</Text>
-                <Text style={styles.occupancyCount}>
-                  <Text style={[styles.occupancyNum, isDark && { color: '#D46E85' }]}>{hotelOccupied}</Text>
-                  <Text style={[styles.occupancyTotal, isDark && { color: '#A87080' }]}>/{hotelTotal}</Text>
-                </Text>
+                <LocaleText style={[styles.occupancyLabel, isDark && { color: '#D494A8' }]}>{t('technicalFloor.hotel.occupied')}</LocaleText>
+                <LocaleText style={styles.occupancyCount}>
+                  <LocaleText style={[styles.occupancyNum, isDark && { color: '#D46E85' }]}>{hotelOccupied}</LocaleText>
+                  <LocaleText style={[styles.occupancyTotal, isDark && { color: '#A87080' }]}>/{hotelTotal}</LocaleText>
+                </LocaleText>
               </View>
             </View>
             {hasBetterWorker && (
@@ -98,7 +99,7 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
                   style={styles.betterWorkerIcon}
                   contentFit="contain"
                 />
-                <Text style={styles.betterWorkerText}>Better worker available</Text>
+                <LocaleText style={styles.betterWorkerText}>{t('technicalFloor.hotel.betterWorker')}</LocaleText>
               </View>
             )}
           </View>
@@ -131,12 +132,12 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
       <View style={[styles.header, { backgroundColor: HEADER_COLORS[0] }]}>
         <View style={styles.headerEdge} />
         <View style={styles.numberBadge}>
-          <Text style={styles.numberText}>0</Text>
+          <LocaleText style={styles.numberText}>0</LocaleText>
         </View>
-        <Text style={styles.floorName} numberOfLines={1}>{t('technicalFloor.lobby.name')}</Text>
+        <LocaleText style={styles.floorName} numberOfLines={1}>{t('technicalFloor.lobby.name')}</LocaleText>
         <View style={styles.techTag}>
           <StarIcon />
-          <Text style={styles.techTagText}>{t('technicalFloor.lobby.tag')}</Text>
+          <LocaleText style={styles.techTagText}>{t('technicalFloor.lobby.tag')}</LocaleText>
         </View>
       </View>
 
@@ -152,20 +153,20 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
           />
           <View style={styles.techInfo}>
             <View style={styles.infoRow}>
-              <Text style={[styles.visitorLabel, isDark && { color: '#C4849A' }]}>{t('technicalFloor.lobby.waiting')}</Text>
+              <LocaleText style={[styles.visitorLabel, isDark && { color: '#C4849A' }]}>{t('technicalFloor.lobby.waiting')}</LocaleText>
               {/* Visitor count pill */}
               <View style={[styles.visitorPill, { backgroundColor: theme.surface }, isDark && { backgroundColor: theme.divider, borderColor: 'rgba(168,71,95,0.3)' }]}>
                 <View style={styles.visitorAvatarCircle}>
                   <PersonMiniIcon />
                 </View>
-                <Text style={[styles.visitorPillText, isDark && { color: '#D06880' }]}>{visitorCount} / {lobbyCapacity}</Text>
+                <LocaleText style={[styles.visitorPillText, isDark && { color: '#D06880' }]}>{visitorCount} / {lobbyCapacity}</LocaleText>
               </View>
             </View>
             <View style={styles.infoRow}>
-              <Text style={[styles.visitorLabel, isDark && { color: '#C4849A' }]}>
+              <LocaleText style={[styles.visitorLabel, isDark && { color: '#C4849A' }]}>
                 {t('technicalFloor.lobby.newGuest')}{' '}
-                <Text style={[styles.timerText, isDark && { color: '#C4849A' }]}>{timerText}</Text>
-              </Text>
+                <LocaleText style={[styles.timerText, isDark && { color: '#C4849A' }]}>{timerText}</LocaleText>
+              </LocaleText>
             </View>
           </View>
         </View>

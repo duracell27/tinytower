@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, Modal, View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useReportStore, type ReportTargetType, type ReportCategory } from '../stores/reportStore';
@@ -49,13 +50,13 @@ export default function ReportSheet({ visible, targetType, targetId, onClose, on
           style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}
           onStartShouldSetResponder={() => true}
         >
-          <Text style={styles.title}>{t('report.title')}</Text>
+          <LocaleText style={styles.title}>{t('report.title')}</LocaleText>
           {CATEGORIES.map(cat => (
             <Pressable key={cat} style={styles.option} onPress={() => setSelected(cat)}>
               <View style={[styles.radio, selected === cat && styles.radioSelected]} />
-              <Text style={styles.optionText}>
+              <LocaleText style={styles.optionText}>
                 {t(`report.category.${cat.toLowerCase()}`)}
-              </Text>
+              </LocaleText>
             </Pressable>
           ))}
           <Pressable
@@ -63,10 +64,10 @@ export default function ReportSheet({ visible, targetType, targetId, onClose, on
             onPress={handleSubmit}
             disabled={!selected || isSubmitting}
           >
-            <Text style={styles.submitBtnText}>{t('report.submit')}</Text>
+            <LocaleText style={styles.submitBtnText}>{t('report.submit')}</LocaleText>
           </Pressable>
           <Pressable style={styles.cancelBtn} onPress={onClose}>
-            <Text style={styles.cancelBtnText}>{t('report.cancel')}</Text>
+            <LocaleText style={styles.cancelBtnText}>{t('report.cancel')}</LocaleText>
           </Pressable>
         </View>
       </Pressable>

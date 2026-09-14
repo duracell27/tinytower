@@ -18,6 +18,19 @@ import {
   Nunito_700Bold,
   Nunito_800ExtraBold,
 } from '@expo-google-fonts/nunito';
+import {
+  Geologica_400Regular,
+  Geologica_500Medium,
+  Geologica_600SemiBold,
+  Geologica_700Bold,
+  Geologica_800ExtraBold,
+} from '@expo-google-fonts/geologica';
+import {
+  Comfortaa_400Regular,
+  Comfortaa_500Medium,
+  Comfortaa_600SemiBold,
+  Comfortaa_700Bold,
+} from '@expo-google-fonts/comfortaa';
 import { useAuthStore } from '../src/stores/authStore';
 import { setAuthFailureCallback } from '../src/services/api';
 import * as Linking from 'expo-linking';
@@ -57,6 +70,15 @@ export default function RootLayout() {
     Nunito_600SemiBold,
     Nunito_700Bold,
     Nunito_800ExtraBold,
+    Geologica_400Regular,
+    Geologica_500Medium,
+    Geologica_600SemiBold,
+    Geologica_700Bold,
+    Geologica_800ExtraBold,
+    Comfortaa_400Regular,
+    Comfortaa_500Medium,
+    Comfortaa_600SemiBold,
+    Comfortaa_700Bold,
   });
 
   useEffect(() => {

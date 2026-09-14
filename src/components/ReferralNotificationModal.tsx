@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions, ActivityIndicator, Image } from 'react-native';
+import LocaleText from './LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -87,15 +88,15 @@ export default function ReferralNotificationModal() {
               {isClaimModal && (
                 <>
                   <Image source={require('../../assets/img/confetti.png')} style={styles.headerIcon} resizeMode="contain" />
-                  <Text style={styles.title}>{t('referralModal.rewardTitle')}</Text>
-                  <Text style={styles.body}>
+                  <LocaleText style={styles.title}>{t('referralModal.rewardTitle')}</LocaleText>
+                  <LocaleText style={styles.body}>
                     {notification.referredName}{' '}
                     {notification.milestone === 'registered'
                       ? t('referralModal.joinedViaLink')
                       : notification.milestone === 'level10'
                       ? t('referralModal.reachedLevel10')
                       : t('referralModal.reachedLevel30')}
-                  </Text>
+                  </LocaleText>
                   <View style={styles.rewardRow}>
                     {notification.milestone === 'registered' ? (
                       <>
@@ -103,16 +104,16 @@ export default function ReferralNotificationModal() {
                           source={require('../../assets/img/coin.png')}
                           style={{ width: 18, height: 18 }}
                         />
-                        <Text style={styles.rewardText}>+{notification.coins.toLocaleString()}</Text>
+                        <LocaleText style={styles.rewardText}>+{notification.coins.toLocaleString()}</LocaleText>
                       </>
                     ) : (
                       <>
                         <GemIcon size={18} />
-                        <Text style={styles.rewardText}>+{notification.gems}</Text>
+                        <LocaleText style={styles.rewardText}>+{notification.gems}</LocaleText>
                       </>
                     )}
                   </View>
-                  {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                  {error ? <LocaleText style={styles.errorText}>{error}</LocaleText> : null}
                   <Pressable
                     onPress={handleClaim}
                     disabled={loading}
@@ -123,13 +124,13 @@ export default function ReferralNotificationModal() {
                         <ActivityIndicator color="#fff" />
                       ) : notification.milestone === 'registered' ? (
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          <Text style={styles.buttonText}>{t('referralModal.claimCoins', { coins: notification.coins.toLocaleString() })}</Text>
+                          <LocaleText style={styles.buttonText}>{t('referralModal.claimCoins', { coins: notification.coins.toLocaleString() })}</LocaleText>
                           <CoinIcon size={18} />
                         </View>
                       ) : notification.milestone === 'level10' ? (
-                        <Text style={styles.buttonText}>{t('referralModal.claimGems', { gems: notification.gems })}</Text>
+                        <LocaleText style={styles.buttonText}>{t('referralModal.claimGems', { gems: notification.gems })}</LocaleText>
                       ) : (
-                        <Text style={styles.buttonText}>{t('referralModal.claimGems', { gems: notification.gems })}</Text>
+                        <LocaleText style={styles.buttonText}>{t('referralModal.claimGems', { gems: notification.gems })}</LocaleText>
                       )}
                     </LinearGradient>
                     <View style={styles.buttonShadow} />
@@ -140,22 +141,22 @@ export default function ReferralNotificationModal() {
               {isPurchaseModal && (
                 <>
                   <Image source={require('../../assets/img/diamond+percent.png')} style={styles.purchaseIllustration} resizeMode="contain" />
-                  <Text style={styles.title}>{t('referralModal.bonusTitle')}</Text>
-                  <Text style={styles.body}>
+                  <LocaleText style={styles.title}>{t('referralModal.bonusTitle')}</LocaleText>
+                  <LocaleText style={styles.body}>
                     {notification.names.length === 1
                       ? t('referralModal.madeAPurchase', { name: notification.names[0] })
                       : t('referralModal.madeAPurchasePlural', { name: notification.names[0], count: notification.names.length - 1 })}
-                  </Text>
+                  </LocaleText>
                   <View style={styles.rewardRow}>
                     <GemIcon size={18} />
-                    <Text style={styles.rewardText}>+{notification.totalBonus}</Text>
+                    <LocaleText style={styles.rewardText}>+{notification.totalBonus}</LocaleText>
                   </View>
                   <Pressable
                     onPress={dismiss}
                     style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
                   >
                     <LinearGradient colors={['#4A9FE0', '#2F7BC0']} style={styles.buttonGradient}>
-                      <Text style={styles.buttonText}>{t('referralModal.awesome')}</Text>
+                      <LocaleText style={styles.buttonText}>{t('referralModal.awesome')}</LocaleText>
                     </LinearGradient>
                     <View style={styles.buttonShadow} />
                   </Pressable>
@@ -169,19 +170,19 @@ export default function ReferralNotificationModal() {
                     style={styles.confettiIcon}
                     resizeMode="contain"
                   />
-                  <Text style={[styles.title, styles.titleGreen]}>{t('referralModal.welcomeTitle')}</Text>
-                  <Text style={[styles.body, styles.bodyGreen]}>{t('referralModal.usedReferralCode')}</Text>
+                  <LocaleText style={[styles.title, styles.titleGreen]}>{t('referralModal.welcomeTitle')}</LocaleText>
+                  <LocaleText style={[styles.body, styles.bodyGreen]}>{t('referralModal.usedReferralCode')}</LocaleText>
                   <View style={styles.referredRewardRow}>
                     <View style={styles.rewardRow}>
                       <Image
                         source={require('../../assets/img/coin.png')}
                         style={{ width: 18, height: 18 }}
                       />
-                      <Text style={styles.rewardText}>+{notification.coins.toLocaleString()}</Text>
+                      <LocaleText style={styles.rewardText}>+{notification.coins.toLocaleString()}</LocaleText>
                     </View>
                     <View style={styles.rewardRow}>
                       <GemIcon size={18} />
-                      <Text style={styles.rewardText}>+{notification.gems}</Text>
+                      <LocaleText style={styles.rewardText}>+{notification.gems}</LocaleText>
                     </View>
                   </View>
                   <Pressable
@@ -189,7 +190,7 @@ export default function ReferralNotificationModal() {
                     style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
                   >
                     <LinearGradient colors={['#3FA535', '#2D7A25']} style={styles.buttonGradient}>
-                      <Text style={styles.buttonText}>{t('referralModal.awesome')}</Text>
+                      <LocaleText style={styles.buttonText}>{t('referralModal.awesome')}</LocaleText>
                     </LinearGradient>
                     <View style={styles.buttonShadow} />
                   </Pressable>

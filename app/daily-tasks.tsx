@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, Pressable,
 } from 'react-native';
+import LocaleText from '../src/components/LocaleText';
 import AppBackground from '../src/components/AppBackground';
 import { useAppTheme } from '../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
@@ -103,7 +104,7 @@ export default function DailyTasksScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.headingRow}>
-          <Text style={[styles.heading, { color: theme.text }]}>{t('dailyTasks.title')}</Text>
+          <LocaleText style={[styles.heading, { color: theme.text }]}>{t('dailyTasks.title')}</LocaleText>
           <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -116,9 +117,9 @@ export default function DailyTasksScreen() {
           {(['green', 'blue', 'yellow', 'purple', 'red'] as const).map((color) => (
             <View key={color} style={[styles.tokenChip, { backgroundColor: theme.surface }]}>
               <Image source={TOKEN_ICONS[color]} style={styles.tokenIcon} contentFit="contain" />
-              <Text style={[styles.tokenCount, { color: TOKEN_COLORS[color] }]}>
+              <LocaleText style={[styles.tokenCount, { color: TOKEN_COLORS[color] }]}>
                 {tokens[color]}
-              </Text>
+              </LocaleText>
             </View>
           ))}
         </View>
@@ -131,19 +132,19 @@ export default function DailyTasksScreen() {
           if (dailyTasks.doubleRewardActive) {
             return (
               <View style={[styles.doubleBanner, styles.doubleBannerActive, { backgroundColor: isDark ? 'rgba(80,60,0,0.45)' : '#FFF4D6' }]}>
-                <Text style={[styles.doubleBannerText, styles.doubleBannerTextActive]}>
+                <LocaleText style={[styles.doubleBannerText, styles.doubleBannerTextActive]}>
                   {t('dailyTasks.doubleReward')}
-                </Text>
+                </LocaleText>
                 <View style={styles.completionBarBg}>
                   <View style={[styles.completionBarFill, { width: `${Math.min(claimedCount / 7, 1) * 100}%` }]} />
                 </View>
-                <Text style={styles.completionText}>
+                <LocaleText style={styles.completionText}>
                   {t('dailyTasks.completedToday', { done: claimedCount })}
-                </Text>
+                </LocaleText>
                 {claimedCount >= 7 && (
-                  <Text style={styles.doubleBannerTomorrow}>
+                  <LocaleText style={styles.doubleBannerTomorrow}>
                     {t('dailyTasks.doubleRewardTomorrow')}
-                  </Text>
+                  </LocaleText>
                 )}
               </View>
             );
@@ -152,22 +153,22 @@ export default function DailyTasksScreen() {
           if (goalReached) {
             return (
               <View style={[styles.doubleBanner, styles.doubleBannerGoal, { backgroundColor: isDark ? 'rgba(20,60,15,0.45)' : '#E8F7E4' }]}>
-                <Text style={styles.doubleBannerGoalEmoji}>🎉</Text>
-                <Text style={styles.doubleBannerGoalTitle}>{t('dailyTasks.goalReachedTitle')}</Text>
-                <Text style={styles.doubleBannerGoalSub}>{t('dailyTasks.goalReachedSub')}</Text>
+                <LocaleText style={styles.doubleBannerGoalEmoji}>🎉</LocaleText>
+                <LocaleText style={styles.doubleBannerGoalTitle}>{t('dailyTasks.goalReachedTitle')}</LocaleText>
+                <LocaleText style={styles.doubleBannerGoalSub}>{t('dailyTasks.goalReachedSub')}</LocaleText>
               </View>
             );
           }
 
           return (
             <View style={[styles.doubleBanner, { backgroundColor: isDark ? '#252D42' : 'rgba(255,255,255,0.92)' }]}>
-              <Text style={styles.doubleBannerText}>{t('dailyTasks.doubleRewardHint')}</Text>
+              <LocaleText style={styles.doubleBannerText}>{t('dailyTasks.doubleRewardHint')}</LocaleText>
               <View style={styles.completionBarBg}>
                 <View style={[styles.completionBarFill, { width: `${(claimedCount / 7) * 100}%` }]} />
               </View>
-              <Text style={styles.completionText}>
+              <LocaleText style={styles.completionText}>
                 {t('dailyTasks.completedToday', { done: claimedCount })}
-              </Text>
+              </LocaleText>
             </View>
           );
         })()}
@@ -192,36 +193,36 @@ export default function DailyTasksScreen() {
                   <Image source={TASK_ICONS[task.key]!} style={styles.taskIcon} contentFit="contain" />
                 )}
                 <View style={styles.cardTitleBlock}>
-                  <Text style={[styles.cardTitle, { color: theme.text }, claimed && styles.cardTitleClaimed]}>
+                  <LocaleText style={[styles.cardTitle, { color: theme.text }, claimed && styles.cardTitleClaimed]}>
                     {t(`dailyTaskItems.${task.key}.title` as any, { defaultValue: task.title })}
-                  </Text>
-                  <Text style={[styles.cardDesc, { color: theme.textMuted }, claimed && styles.cardDescClaimed]}>
+                  </LocaleText>
+                  <LocaleText style={[styles.cardDesc, { color: theme.textMuted }, claimed && styles.cardDescClaimed]}>
                     {t(`dailyTaskItems.${task.key}.description` as any, { defaultValue: task.description })}
-                  </Text>
+                  </LocaleText>
                 </View>
-                {claimed && <Text style={styles.claimedCheck}>✓</Text>}
+                {claimed && <LocaleText style={styles.claimedCheck}>✓</LocaleText>}
               </View>
 
               <ProgressBar value={progress} max={task.threshold} />
 
               <View style={styles.progressRow}>
-                <Text style={styles.progressText}>
+                <LocaleText style={styles.progressText}>
                   {t('dailyTasks.progress', {
                     current: Math.min(progress, task.threshold),
                     total: task.threshold,
                   })}
-                </Text>
+                </LocaleText>
               </View>
 
               {!claimed && (
                 <View style={styles.rewardRow}>
                   <View style={[styles.rewardChip, { backgroundColor: theme.surfaceElevated }]}>
                     <Image source={COIN_ICON} style={styles.rewardIcon} contentFit="contain" />
-                    <Text style={styles.rewardCoins}>+{formatNum(coins)}</Text>
+                    <LocaleText style={styles.rewardCoins}>+{formatNum(coins)}</LocaleText>
                   </View>
                   <View style={[styles.rewardChip, { backgroundColor: theme.surfaceElevated }]}>
                     <Image source={DIAMOND_ICON} style={styles.rewardIcon} contentFit="contain" />
-                    <Text style={styles.rewardGems}>+{task.rewards.gems}</Text>
+                    <LocaleText style={styles.rewardGems}>+{task.rewards.gems}</LocaleText>
                   </View>
                   {task.rewards.hasMaterials && dailyTasks.dailyMaterialType && (
                     <View style={[styles.rewardChip, { backgroundColor: theme.surfaceElevated }]}>
@@ -230,9 +231,9 @@ export default function DailyTasksScreen() {
                         style={styles.rewardIcon}
                         contentFit="contain"
                       />
-                      <Text style={styles.rewardMat}>
+                      <LocaleText style={styles.rewardMat}>
                         +{matCount * (dailyTasks.doubleRewardActive ? 2 : 1)}
-                      </Text>
+                      </LocaleText>
                     </View>
                   )}
                 </View>
@@ -244,7 +245,7 @@ export default function DailyTasksScreen() {
                   style={({ pressed }) => [styles.collectBtn, pressed && { opacity: 0.8 }]}
                 >
                   <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.collectGradient}>
-                    <Text style={styles.collectText}>{t('dailyTasks.collect')}</Text>
+                    <LocaleText style={styles.collectText}>{t('dailyTasks.collect')}</LocaleText>
                   </LinearGradient>
                 </Pressable>
               )}
@@ -252,16 +253,16 @@ export default function DailyTasksScreen() {
           );
         })}
 
-        <Text style={styles.timer}>
+        <LocaleText style={styles.timer}>
           {t('dailyTasks.resetsIn', { time: formatCountdown(msUntilReset) })}
-        </Text>
+        </LocaleText>
       </ScrollView>
 
       <Pressable
         onPress={() => router.back()}
         style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
       >
-        <Text style={styles.closeBtnText}>✕</Text>
+        <LocaleText style={styles.closeBtnText}>✕</LocaleText>
       </Pressable>
 
       {infoVisible && (
@@ -269,9 +270,9 @@ export default function DailyTasksScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, { backgroundColor: isDark ? '#2A2F38' : '#fff' }]}>
             <LinearGradient colors={['#E5A72E', '#C48A18']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>{t('dailyTasks.title')}</Text>
+              <LocaleText style={styles.infoCardTitle}>{t('dailyTasks.title')}</LocaleText>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
-                <Text style={styles.infoCardClose}>✕</Text>
+                <LocaleText style={styles.infoCardClose}>✕</LocaleText>
               </Pressable>
             </LinearGradient>
             <View style={styles.infoCardBody}>

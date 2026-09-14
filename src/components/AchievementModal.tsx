@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions, Image } from 'react-native';
+import LocaleText from './LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -86,34 +87,34 @@ export default function AchievementModal() {
                 {tierImg && <Image source={tierImg} style={styles.tierImage} resizeMode="contain" />}
                 <View style={styles.categoryRow}>
                   {categoryImg && <Image source={categoryImg} style={styles.categoryIcon} resizeMode="contain" />}
-                  <Text style={styles.tierBadge}>{grant.categoryTitle}</Text>
+                  <LocaleText style={styles.tierBadge}>{grant.categoryTitle}</LocaleText>
                 </View>
                 {threshold != null && (
-                  <Text style={styles.thresholdText}>
+                  <LocaleText style={styles.thresholdText}>
                     {threshold >= 1_000_000
                       ? `${(threshold / 1_000_000).toFixed(threshold % 1_000_000 === 0 ? 0 : 1)}M`
                       : threshold >= 1_000
                       ? `${(threshold / 1_000).toFixed(threshold % 1_000 === 0 ? 0 : 1)}K`
                       : threshold} {CATEGORY_ACTION_LABEL[grant.categoryKey] ?? 'actions'}
-                  </Text>
+                  </LocaleText>
                 )}
-                <Text style={styles.title}>{grant.title}</Text>
+                <LocaleText style={styles.title}>{grant.title}</LocaleText>
 
                 <View style={styles.rewardsContainer}>
                   {grant.gems > 0 && (
                     <View style={styles.rewardRow}>
                       <GemIcon size={16} />
-                      <Text style={styles.rewardTextGem}>+{grant.gems}</Text>
+                      <LocaleText style={styles.rewardTextGem}>+{grant.gems}</LocaleText>
                     </View>
                   )}
                   {grant.incomeBonus > 0 && (
                     <View style={styles.rewardRow}>
-                      <Text style={styles.rewardText}>+{grant.incomeBonus}% до монет</Text>
+                      <LocaleText style={styles.rewardText}>+{grant.incomeBonus}% до монет</LocaleText>
                     </View>
                   )}
                   {grant.xpBonus > 0 && (
                     <View style={styles.rewardRow}>
-                      <Text style={styles.rewardText}>+{grant.xpBonus}% до досвіду</Text>
+                      <LocaleText style={styles.rewardText}>+{grant.xpBonus}% до досвіду</LocaleText>
                     </View>
                   )}
                 </View>
@@ -123,7 +124,7 @@ export default function AchievementModal() {
                   style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
                 >
                   <LinearGradient colors={['#4A9FE0', '#2F7BC0']} style={styles.buttonGradient}>
-                    <Text style={styles.buttonText}>{t('achievement.claim')}</Text>
+                    <LocaleText style={styles.buttonText}>{t('achievement.claim')}</LocaleText>
                   </LinearGradient>
                   <View style={styles.buttonShadow} />
                 </Pressable>

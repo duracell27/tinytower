@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import Animated, {
@@ -248,7 +249,7 @@ function ElevatorShaft({
 
   return (
     <View style={shaftStyles.container}>
-      <Text style={[shaftStyles.targetLabel, isDark && { color: '#8AACCC' }]}>{targetFloor ?? '?'}</Text>
+      <LocaleText style={[shaftStyles.targetLabel, isDark && { color: '#8AACCC' }]}>{targetFloor ?? '?'}</LocaleText>
       <LinearGradient colors={['#3C4658', '#2C3445']} style={shaftStyles.shaft}>
         {/* Rails */}
         <View style={shaftStyles.railLeft} />
@@ -261,12 +262,12 @@ function ElevatorShaft({
           </LinearGradient>
           <View style={shaftStyles.cabinBadgeWrapper}>
             <View style={shaftStyles.cabinBadge}>
-              <Text style={shaftStyles.cabinBadgeText}>{currentFloor}</Text>
+              <LocaleText style={shaftStyles.cabinBadgeText}>{currentFloor}</LocaleText>
             </View>
           </View>
         </Animated.View>
       </LinearGradient>
-      <Text style={shaftStyles.zeroLabel}>0</Text>
+      <LocaleText style={shaftStyles.zeroLabel}>0</LocaleText>
     </View>
   );
 }
@@ -377,8 +378,8 @@ function InfoSection({ icon, title, text }: { icon: ReturnType<typeof require>; 
     <View style={infoStyles.section}>
       <Image source={icon} style={infoStyles.icon} contentFit="contain" />
       <View style={infoStyles.textCol}>
-        <Text style={[infoStyles.sectionTitle, { color: theme.text }]}>{title}</Text>
-        <Text style={[infoStyles.sectionText, { color: theme.textMuted }]}>{text}</Text>
+        <LocaleText style={[infoStyles.sectionTitle, { color: theme.text }]}>{title}</LocaleText>
+        <LocaleText style={[infoStyles.sectionText, { color: theme.textMuted }]}>{text}</LocaleText>
       </View>
     </View>
   );
@@ -800,14 +801,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     </View>
                     <View>
                       <Pressable onPress={() => setInfoVisible(true)} style={styles.titleNameRow}>
-                        <Text style={styles.titleText}>{t('header.title')}</Text>
+                        <LocaleText style={styles.titleText}>{t('header.title')}</LocaleText>
                         <Image
                           source={require('../../assets/img/InformationIcon.png')}
                           style={styles.infoIcon}
                           contentFit="contain"
                         />
                       </Pressable>
-                      <Text style={styles.subtitleText}>{t('header.subtitle')}</Text>
+                      <LocaleText style={styles.subtitleText}>{t('header.subtitle')}</LocaleText>
                     </View>
                   </View>
 
@@ -833,26 +834,26 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   <View style={styles.statCol}>
                     <View style={styles.statPill}>
                       <CoinIcon size={13} />
-                      <Text style={styles.statLabel}>{t('stats.coins')}</Text>
-                      <Text style={styles.statValue}>{formatNum(balance)}</Text>
+                      <LocaleText style={styles.statLabel}>{t('stats.coins')}</LocaleText>
+                      <LocaleText style={styles.statValue}>{formatNum(balance)}</LocaleText>
                     </View>
                     <View style={styles.statPill}>
                       <GemIcon size={13} />
-                      <Text style={styles.statLabel}>{t('stats.gems')}</Text>
-                      <Text style={styles.statValue}>{gems}</Text>
+                      <LocaleText style={styles.statLabel}>{t('stats.gems')}</LocaleText>
+                      <LocaleText style={styles.statValue}>{gems}</LocaleText>
                     </View>
                   </View>
                   {/* Right: next guest + waiting */}
                   <View style={styles.statCol}>
                     <View style={styles.statPill}>
                       <ClockIcon size={13} />
-                      <Text style={styles.statLabel}>{t('stats.newGuest')}</Text>
-                      <Text style={[styles.statValue, { fontVariant: ['tabular-nums'] as any }]}>{timerText}</Text>
+                      <LocaleText style={styles.statLabel}>{t('stats.newGuest')}</LocaleText>
+                      <LocaleText style={[styles.statValue, { fontVariant: ['tabular-nums'] as any }]}>{timerText}</LocaleText>
                     </View>
                     <View style={styles.statPill}>
                       <PersonIcon size={13} />
-                      <Text style={styles.statLabel}>{t('stats.waiting')}</Text>
-                      <Text style={styles.statValue}>{lobbyVisitors.length}/{effectiveLobbyCapacity}</Text>
+                      <LocaleText style={styles.statLabel}>{t('stats.waiting')}</LocaleText>
+                      <LocaleText style={styles.statValue}>{lobbyVisitors.length}/{effectiveLobbyCapacity}</LocaleText>
                     </View>
                   </View>
                 </View>
@@ -889,12 +890,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                             <View style={[styles.speechBubble, isDark && { backgroundColor: theme.divider }]}>
                               {arrived ? (
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                  <Text style={[styles.speechArrivedText, { color: theme.text }]}>{t('visitor.thankYou')}</Text>
+                                  <LocaleText style={[styles.speechArrivedText, { color: theme.text }]}>{t('visitor.thankYou')}</LocaleText>
                                   <CoinIcon size={14} />
                                 </View>
                               ) : (
-                                <Text style={[styles.speechText, { color: theme.text }]}>
-                                  <Text style={[styles.speechRoleLabel, { color: (() => {
+                                <LocaleText style={[styles.speechText, { color: theme.text }]}>
+                                  <LocaleText style={[styles.speechRoleLabel, { color: (() => {
                                     const role = activeVisitor.role ?? 'guest';
                                     if (role === 'guest') {
                                       if (activeVisitor.targetFloor === 1) {
@@ -906,9 +907,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                     return ROLE_COLORS[role] ?? theme.textMuted;
                                   })() }]}>
                                     {t(`roles.${activeVisitor.isVip ? `vip_${activeVisitor.role ?? 'guest'}` : (activeVisitor.role ?? 'guest')}`)}
-                                  </Text>
+                                  </LocaleText>
                                   {activeVisitor.targetFloor != null ? t('visitor.floorSuffix', { floor: activeVisitor.targetFloor }) : ''}
-                                </Text>
+                                </LocaleText>
                               )}
                             </View>
                             <View style={[styles.statusChip, isDark && { backgroundColor: theme.divider }]}>
@@ -916,11 +917,11 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                 styles.statusDot,
                                 { backgroundColor: arrived ? '#52B847' : '#F0B92A' },
                               ]} />
-                              <Text style={[styles.statusChipText, { color: theme.textMuted }]}>
+                              <LocaleText style={[styles.statusChipText, { color: theme.textMuted }]}>
                                 {arrived
                                   ? t('visitor.arrivedStatus', { floor: activeVisitor.targetFloor })
                                   : t('visitor.elevatorStatus', { floor: elevatorFloor })}
-                              </Text>
+                              </LocaleText>
                             </View>
                           </View>
                         </View>
@@ -949,15 +950,15 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                             >
                               {actionButton.icon === 'up-arrow' && <UpArrowIcon />}
                               {actionButton.icon === 'hotel' && <HotelIcon size={18} color={actionButton.textColor} />}
-                              <Text style={[styles.actionButtonText, { color: actionButton.textColor }]}>
+                              <LocaleText style={[styles.actionButtonText, { color: actionButton.textColor }]}>
                                 {actionButton.label}
-                              </Text>
+                              </LocaleText>
                               {actionButton.icon === 'coin' && <CoinIcon size={14} />}
                               {actionButton.icon === 'gem' && <GemIcon size={14} />}
                               {actionButton.amount != null && (
-                                <Text style={[styles.actionButtonText, { color: actionButton.textColor }]}>
+                                <LocaleText style={[styles.actionButtonText, { color: actionButton.textColor }]}>
                                   {actionButton.amount}
-                                </Text>
+                                </LocaleText>
                               )}
                             </LinearGradient>
                             {!isDark && <View style={[styles.actionButtonShadow, { backgroundColor: actionButton.shadowColor }]} />}
@@ -974,12 +975,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                   return (
                                     <>
                                       <WorkerAvatar worker={inlineReward.worker} size={22} />
-                                      <Text numberOfLines={1} style={{ flex: 1 }}>
-                                        <Text style={[styles.inlineRewardText, { color: workerColor }]}>
+                                      <LocaleText numberOfLines={1} style={{ flex: 1 }}>
+                                        <LocaleText style={[styles.inlineRewardText, { color: workerColor }]}>
                                           {inlineReward.worker.name} Lv.{inlineReward.worker.level}
-                                        </Text>
-                                        <Text style={[styles.inlineRewardText, { color: theme.text }]}> · {t('inlineReward.checkedIn')}</Text>
-                                      </Text>
+                                        </LocaleText>
+                                        <LocaleText style={[styles.inlineRewardText, { color: theme.text }]}> · {t('inlineReward.checkedIn')}</LocaleText>
+                                      </LocaleText>
                                     </>
                                   );
                                 })()}
@@ -992,21 +993,21 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                     <>
                                       <Image source={require('../../assets/img/warningIcon.png')} style={{ width: 18, height: 18 }} contentFit="contain" />
                                       <Image source={avatarSrc} style={{ width: 22, height: 22 }} contentFit="contain" />
-                                      <Text style={[styles.inlineRewardText, { color: workerColor, flex: 1 }]} numberOfLines={1}>
+                                      <LocaleText style={[styles.inlineRewardText, { color: workerColor, flex: 1 }]} numberOfLines={1}>
                                         {inlineReward.name}
-                                        <Text style={[styles.inlineRewardText, { color: '#C9637E' }]}>
+                                        <LocaleText style={[styles.inlineRewardText, { color: '#C9637E' }]}>
                                           {' · '}{t('inlineReward.noRoom')}
-                                        </Text>
-                                      </Text>
+                                        </LocaleText>
+                                      </LocaleText>
                                     </>
                                   );
                                 })()}
                                 {inlineReward.kind === 'vip_fill' && (
                                   <>
-                                    <Text style={styles.inlineRewardEmoji}>🏨</Text>
-                                    <Text style={[styles.inlineRewardText, { color: theme.text }]}>
+                                    <LocaleText style={styles.inlineRewardEmoji}>🏨</LocaleText>
+                                    <LocaleText style={[styles.inlineRewardText, { color: theme.text }]}>
                                       {t('inlineReward.vipFill', { count: inlineReward.count })}
-                                    </Text>
+                                    </LocaleText>
                                   </>
                                 )}
                                 {inlineReward.kind === 'tool' && (
@@ -1016,17 +1017,17 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                       style={{ width: 20, height: 20 }}
                                       contentFit="contain"
                                     />
-                                    <Text style={[styles.inlineRewardText, { color: theme.text }]}>
+                                    <LocaleText style={[styles.inlineRewardText, { color: theme.text }]}>
                                       {t('inlineReward.builderDelivered', { tool: t(`tools.${inlineReward.tool}`) })}
-                                    </Text>
+                                    </LocaleText>
                                   </>
                                 )}
                                 {inlineReward.kind === 'warehouse_full' && (
                                   <>
                                     <Image source={require('../../assets/img/warningIcon.png')} style={{ width: 18, height: 18 }} contentFit="contain" />
-                                    <Text style={[styles.inlineRewardText, { color: '#E53E3E', flex: 1 }]} numberOfLines={1}>
+                                    <LocaleText style={[styles.inlineRewardText, { color: '#E53E3E', flex: 1 }]} numberOfLines={1}>
                                       {t('inlineReward.warehouseFull')}
-                                    </Text>
+                                    </LocaleText>
                                   </>
                                 )}
                               </View>
@@ -1045,8 +1046,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     /* Empty state */
                     <View style={styles.emptyState}>
                       <EmptyElevatorIcon />
-                      <Text style={styles.emptyTitle}>{t('empty.title')}</Text>
-                      <Text style={styles.emptySubtitle}>{t('empty.subtitle')}</Text>
+                      <LocaleText style={styles.emptyTitle}>{t('empty.title')}</LocaleText>
+                      <LocaleText style={styles.emptySubtitle}>{t('empty.subtitle')}</LocaleText>
                       <Pressable
                         onPress={fillLobby}
                         style={({ pressed }) => [
@@ -1058,9 +1059,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                           colors={['#52A6E2', '#3B8BCB']}
                           style={styles.fillLobbyGradient}
                         >
-                          <Text style={styles.fillLobbyText}>{t('actions.fillLobby')}</Text>
+                          <LocaleText style={styles.fillLobbyText}>{t('actions.fillLobby')}</LocaleText>
                           <GemIcon size={14} />
-                          <Text style={styles.fillLobbyGemCount}>{getFillLobbyCost(dailyFillLobbyUses)}</Text>
+                          <LocaleText style={styles.fillLobbyGemCount}>{getFillLobbyCost(dailyFillLobbyUses)}</LocaleText>
                         </LinearGradient>
                         <View style={styles.fillLobbyButtonShadow} />
                       </Pressable>
@@ -1083,15 +1084,15 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     style={({ pressed }) => [styles.deliverAllCard, { backgroundColor: theme.surfaceCard}, pressed && { opacity: 0.8 }]}
                   >
                     <PeopleGroupIcon size={20} color={isDark ? theme.textMuted : '#5A6478'} />
-                    <Text style={[styles.deliverAllText, { color: theme.text }]}>{t('actions.deliverAll')}</Text>
+                    <LocaleText style={[styles.deliverAllText, { color: theme.text }]}>{t('actions.deliverAll')}</LocaleText>
                     <GemIcon size={14} />
-                    <Text style={styles.deliverAllGemText}>1</Text>
+                    <LocaleText style={styles.deliverAllGemText}>1</LocaleText>
                   </Pressable>
                 )}
 
                 {/* Daily tips card */}
                 <View style={[styles.dailyTipsCard, { backgroundColor: theme.surfaceCard}]}>
-                  <Text style={[styles.dailyTipsLabel, { color: theme.textMuted }]}>{t('dailyTips.label')}</Text>
+                  <LocaleText style={[styles.dailyTipsLabel, { color: theme.textMuted }]}>{t('dailyTips.label')}</LocaleText>
 
                   {/* Labels above bar */}
                   <View style={styles.milestoneAboveRow}>
@@ -1099,25 +1100,25 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={styles.milestone0}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                         <CoinIcon size={11} />
-                        <Text style={[styles.milestoneAmount, { color: theme.textMuted }]}>{formatNum(effectiveDailyTips)}</Text>
+                        <LocaleText style={[styles.milestoneAmount, { color: theme.textMuted }]}>{formatNum(effectiveDailyTips)}</LocaleText>
                       </View>
                     </View>
                     {/* Stage 1: centered at stage1/stage2 position */}
                     <View style={[styles.milestone50, { left: stage1Pct as any }]}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                         <CoinIcon size={11} />
-                        <Text style={[styles.milestoneAmount, { color: theme.textMuted }]}>
+                        <LocaleText style={[styles.milestoneAmount, { color: theme.textMuted }]}>
                           {dailyTipsStage1Claimed ? t('dailyTips.received') : formatShortCoins(stage1Target)}
-                        </Text>
+                        </LocaleText>
                       </View>
                     </View>
                     {/* Stage 2: at right edge */}
                     <View style={styles.milestone100}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                         <CoinIcon size={11} />
-                        <Text style={[styles.milestoneAmount, { color: theme.textMuted }]}>
+                        <LocaleText style={[styles.milestoneAmount, { color: theme.textMuted }]}>
                           {dailyTipsStage2Claimed ? t('dailyTips.received') : formatShortCoins(stage2Target)}
-                        </Text>
+                        </LocaleText>
                       </View>
                     </View>
                   </View>
@@ -1137,13 +1138,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   <View style={styles.milestoneBelowRow}>
                     <View style={[styles.milestone50, { left: stage1Pct as any }]}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                        <Text style={styles.milestoneReward}>+{stage1Reward}</Text>
+                        <LocaleText style={styles.milestoneReward}>+{stage1Reward}</LocaleText>
                         <GemIcon size={10} />
                       </View>
                     </View>
                     <View style={styles.milestone100}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                        <Text style={styles.milestoneReward}>+{stage2Reward}</Text>
+                        <LocaleText style={styles.milestoneReward}>+{stage2Reward}</LocaleText>
                         <GemIcon size={10} />
                       </View>
                     </View>
@@ -1163,9 +1164,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         style={styles.rewardButtonGradient}
                       >
                         <GiftIcon size={16} color="#fff" />
-                        <Text style={styles.rewardButtonText}>{t('dailyTips.claimReward')}</Text>
+                        <LocaleText style={styles.rewardButtonText}>{t('dailyTips.claimReward')}</LocaleText>
                         <GemIcon size={14} />
-                        <Text style={styles.rewardGemCount}>+{stage1Reward}</Text>
+                        <LocaleText style={styles.rewardGemCount}>+{stage1Reward}</LocaleText>
                       </LinearGradient>
                       <View style={styles.rewardButtonShadow} />
                     </Pressable>
@@ -1183,9 +1184,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         style={styles.rewardButtonGradient}
                       >
                         <GiftIcon size={16} color="#fff" />
-                        <Text style={styles.rewardButtonText}>{t('dailyTips.claimReward')}</Text>
+                        <LocaleText style={styles.rewardButtonText}>{t('dailyTips.claimReward')}</LocaleText>
                         <GemIcon size={14} />
-                        <Text style={styles.rewardGemCount}>+{stage2Reward}</Text>
+                        <LocaleText style={styles.rewardGemCount}>+{stage2Reward}</LocaleText>
                       </LinearGradient>
                       <View style={styles.rewardButtonShadow} />
                     </Pressable>
@@ -1195,10 +1196,10 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 {/* Daily gems card */}
                 <View style={[styles.dailyGemsCard, { backgroundColor: theme.surfaceCard}]}>
                   <GemIcon size={14} />
-                  <Text style={[styles.dailyGemsLabel, { color: theme.textMuted }]}>{t('dailyGems.label')}</Text>
-                  <Text style={styles.dailyGemsValue}>
+                  <LocaleText style={[styles.dailyGemsLabel, { color: theme.textMuted }]}>{t('dailyGems.label')}</LocaleText>
+                  <LocaleText style={styles.dailyGemsValue}>
                     {effectiveDailyGemsCollected} / {dailyGemLimit}
-                  </Text>
+                  </LocaleText>
                   {gemsRemaining > 0 && onboardingStep !== 'deliver_visitor' && (
                     <Pressable
                       onPress={() => {
@@ -1207,9 +1208,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       }}
                       style={({ pressed }) => [styles.buyGemsChip, isDark && { backgroundColor: 'rgba(82,166,226,0.18)' }, pressed && { opacity: 0.7 }]}
                     >
-                      <Text style={styles.buyGemsChipText}>{t('dailyGems.buyAll')}</Text>
+                      <LocaleText style={styles.buyGemsChipText}>{t('dailyGems.buyAll')}</LocaleText>
                       <GemIcon size={11} />
-                      <Text style={styles.buyGemsChipText}>+{gemsRemaining}</Text>
+                      <LocaleText style={styles.buyGemsChipText}>+{gemsRemaining}</LocaleText>
                     </Pressable>
                   )}
                 </View>
@@ -1227,13 +1228,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     style={styles.upgradeEntryGradient}
                   >
                     <UploadIcon />
-                    <Text style={styles.upgradeEntryText}>{t('elevator.upgradeEntry')}</Text>
+                    <LocaleText style={styles.upgradeEntryText}>{t('elevator.upgradeEntry')}</LocaleText>
                   </LinearGradient>
                   {!isDark && <View style={styles.upgradeEntryShadow} />}
                 </Pressable>}
-                {onboardingStep !== 'deliver_visitor' && <Text style={[styles.upgradeCaption, { color: theme.textMuted }]}>
+                {onboardingStep !== 'deliver_visitor' && <LocaleText style={[styles.upgradeCaption, { color: theme.textMuted }]}>
                   {t('elevator.upgradeCaption')}
-                </Text>}
+                </LocaleText>}
               </>
             ) : (
               /* UPGRADE VIEW */
@@ -1241,17 +1242,17 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 {/* Back button */}
                 <Pressable onPress={() => setView('operate')} style={[styles.backButton, { backgroundColor: theme.surfaceCard}]}>
                   <ChevronLeftIcon />
-                  <Text style={[styles.backButtonText, { color: theme.textMuted }]}>{t('elevator.backToElevator')}</Text>
+                  <LocaleText style={[styles.backButtonText, { color: theme.textMuted }]}>{t('elevator.backToElevator')}</LocaleText>
                 </Pressable>
 
                 {/* Elevator upgrade card */}
                 <View style={[styles.card, { backgroundColor: theme.surfaceCard}]}>
                   <View style={styles.upgradeCardHeader}>
                     <View style={styles.upgradeCardTitleRow}>
-                      <Text style={[styles.upgradeCardTitle, { color: theme.text }]}>{t('elevator.cardTitle')}</Text>
-                      <Text style={styles.upgradeCardLevel}>L-{elevatorLevel}</Text>
+                      <LocaleText style={[styles.upgradeCardTitle, { color: theme.text }]}>{t('elevator.cardTitle')}</LocaleText>
+                      <LocaleText style={styles.upgradeCardLevel}>L-{elevatorLevel}</LocaleText>
                     </View>
-                    <Text style={[styles.upgradeCardCapacity, { color: theme.textMuted }]}>{t('elevator.capacityPerTrip', { level: elevatorLevel })}</Text>
+                    <LocaleText style={[styles.upgradeCardCapacity, { color: theme.textMuted }]}>{t('elevator.capacityPerTrip', { level: elevatorLevel })}</LocaleText>
                   </View>
 
                   {/* Progress */}
@@ -1271,9 +1272,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={[styles.upgradeIconTile, { backgroundColor: 'rgba(91,166,60,0.15)' }]}>
                       <ElevatorIcon size={22} color="#5BA63C" />
                     </View>
-                    <Text style={[styles.upgradeDesc, { color: theme.textMuted }]}>
+                    <LocaleText style={[styles.upgradeDesc, { color: theme.textMuted }]}>
                       {t('elevator.description')}
-                    </Text>
+                    </LocaleText>
                   </View>
 
                   {!elevatorMaxed ? (
@@ -1294,16 +1295,16 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         colors={['#72C24F', '#5BA63C']}
                         style={styles.upgradeButtonGradient}
                       >
-                        <Text style={styles.upgradeButtonText}>{t('elevator.upgradeFor')}</Text>
+                        <LocaleText style={styles.upgradeButtonText}>{t('elevator.upgradeFor')}</LocaleText>
                         <GemIcon size={14} />
-                        <Text style={styles.upgradeGemCount}>{elevatorUpgradeCost}</Text>
+                        <LocaleText style={styles.upgradeGemCount}>{elevatorUpgradeCost}</LocaleText>
                       </LinearGradient>
                       {!isDark && <View style={[styles.upgradeButtonShadow, { backgroundColor: '#4A8A2E' }]} />}
                     </Pressable>
                   ) : (
                     <View style={[styles.maxLevelStrip, isDark && { backgroundColor: theme.surfaceSub }]}>
                       <CheckIcon size={14} color="#5BA63C" />
-                      <Text style={[styles.claimedText, { color: '#5BA63C' }]}>{t('elevator.maxLevel')}</Text>
+                      <LocaleText style={[styles.claimedText, { color: '#5BA63C' }]}>{t('elevator.maxLevel')}</LocaleText>
                     </View>
                   )}
                 </View>
@@ -1311,8 +1312,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 {/* Lobby upgrade card */}
                 <View style={[styles.card, { backgroundColor: theme.surfaceCard}]}>
                   <View style={styles.upgradeCardHeader}>
-                    <Text style={[styles.upgradeCardTitle, { color: theme.text }]}>{t('lobbyUpgrade.cardTitle')}</Text>
-                    <Text style={[styles.upgradeCardCapacity, { color: '#2592AB' }]}>{t('lobbyUpgrade.seats', { count: effectiveLobbyCapacity })}</Text>
+                    <LocaleText style={[styles.upgradeCardTitle, { color: theme.text }]}>{t('lobbyUpgrade.cardTitle')}</LocaleText>
+                    <LocaleText style={[styles.upgradeCardCapacity, { color: '#2592AB' }]}>{t('lobbyUpgrade.seats', { count: effectiveLobbyCapacity })}</LocaleText>
                   </View>
 
                   {/* Progress */}
@@ -1332,9 +1333,9 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                     <View style={[styles.upgradeIconTile, { backgroundColor: 'rgba(59,139,203,0.15)' }]}>
                       <PersonIcon size={22} color="#3B8BCB" />
                     </View>
-                    <Text style={[styles.upgradeDesc, { color: theme.textMuted }]}>
+                    <LocaleText style={[styles.upgradeDesc, { color: theme.textMuted }]}>
                       {t('lobbyUpgrade.description')}
-                    </Text>
+                    </LocaleText>
                   </View>
 
                   {!lobbyMaxed ? (
@@ -1355,16 +1356,16 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                         colors={['#52A6E2', '#3B8BCB']}
                         style={styles.upgradeButtonGradient}
                       >
-                        <Text style={styles.upgradeButtonText}>{t('lobbyUpgrade.upgradeForSeats')}</Text>
+                        <LocaleText style={styles.upgradeButtonText}>{t('lobbyUpgrade.upgradeForSeats')}</LocaleText>
                         <GemIcon size={14} />
-                        <Text style={styles.upgradeGemCount}>{lobbyUpgradeCost}</Text>
+                        <LocaleText style={styles.upgradeGemCount}>{lobbyUpgradeCost}</LocaleText>
                       </LinearGradient>
                       {!isDark && <View style={[styles.upgradeButtonShadow, { backgroundColor: '#2E72A8' }]} />}
                     </Pressable>
                   ) : (
                     <View style={[styles.maxLevelStrip, isDark && { backgroundColor: theme.surfaceSub }]}>
                       <CheckIcon size={14} color="#2592AB" />
-                      <Text style={[styles.claimedText, { color: '#2592AB' }]}>{t('lobbyUpgrade.maxLevel')}</Text>
+                      <LocaleText style={[styles.claimedText, { color: '#2592AB' }]}>{t('lobbyUpgrade.maxLevel')}</LocaleText>
                     </View>
                   )}
                 </View>
@@ -1381,15 +1382,15 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <WorkerAvatar worker={newWorkerPopup} size={56} />
               </View>
               <View style={popupStyles.info}>
-                <Text style={[popupStyles.title, { color: theme.text }]}>{t('newWorkerPopup.title')}</Text>
-                <Text style={[popupStyles.name, { color: gameConfig.floorTypes[newWorkerPopup.floorType]?.shirtColor ?? '#3B8BCB' }]}>{newWorkerPopup.name}</Text>
-                <Text style={[popupStyles.meta, { color: theme.textMuted }]}>
+                <LocaleText style={[popupStyles.title, { color: theme.text }]}>{t('newWorkerPopup.title')}</LocaleText>
+                <LocaleText style={[popupStyles.name, { color: gameConfig.floorTypes[newWorkerPopup.floorType]?.shirtColor ?? '#3B8BCB' }]}>{newWorkerPopup.name}</LocaleText>
+                <LocaleText style={[popupStyles.meta, { color: theme.textMuted }]}>
                   {t('newWorkerPopup.meta', {
                     level: newWorkerPopup.level,
                     job: tContent(`productionTypes.${newWorkerPopup.dreamJob}.displayName`, { defaultValue: newWorkerPopup.dreamJob }),
                   })}
-                </Text>
-                <Text style={popupStyles.subtitle}>{t('newWorkerPopup.waitingInHotel')}</Text>
+                </LocaleText>
+                <LocaleText style={popupStyles.subtitle}>{t('newWorkerPopup.waitingInHotel')}</LocaleText>
               </View>
               <Pressable
                 onPress={() => {
@@ -1400,11 +1401,11 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
               >
                 <LinearGradient colors={['#72C24F', '#5BA63C']} style={popupStyles.findJobGradient}>
-                  <Text style={popupStyles.findJobText}>{t('newWorkerPopup.findJobNow')}</Text>
+                  <LocaleText style={popupStyles.findJobText}>{t('newWorkerPopup.findJobNow')}</LocaleText>
                 </LinearGradient>
               </Pressable>
               <Pressable onPress={() => setNewWorkerPopup(null)} style={popupStyles.dismissBtn}>
-                <Text style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('newWorkerPopup.later')}</Text>
+                <LocaleText style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('newWorkerPopup.later')}</LocaleText>
               </Pressable>
             </Pressable>
           </Pressable>
@@ -1415,14 +1416,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
           <Pressable style={[StyleSheet.absoluteFill, popupStyles.scrim]} onPress={() => setVipHotelFillCount(null)}>
             <Pressable style={[popupStyles.card, { backgroundColor: theme.surfaceCard}]} onPress={() => {}}>
               <View style={[popupStyles.avatarWrap, { backgroundColor: '#FFF9E6' }]}>
-                <Text style={{ fontSize: 32 }}>🏨</Text>
+                <LocaleText style={{ fontSize: 32 }}>🏨</LocaleText>
               </View>
               <View style={popupStyles.info}>
-                <Text style={[popupStyles.title, { color: theme.text }]}>{t('vipHotelFillPopup.title')}</Text>
-                <Text style={popupStyles.subtitle}>{t('vipHotelFillPopup.subtitle', { count: vipHotelFillCount })}</Text>
+                <LocaleText style={[popupStyles.title, { color: theme.text }]}>{t('vipHotelFillPopup.title')}</LocaleText>
+                <LocaleText style={popupStyles.subtitle}>{t('vipHotelFillPopup.subtitle', { count: vipHotelFillCount })}</LocaleText>
               </View>
               <Pressable onPress={() => setVipHotelFillCount(null)} style={popupStyles.dismissBtn}>
-                <Text style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('vipHotelFillPopup.dismiss')}</Text>
+                <LocaleText style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('vipHotelFillPopup.dismiss')}</LocaleText>
               </Pressable>
             </Pressable>
           </Pressable>
@@ -1439,19 +1440,19 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 </Svg>
               </View>
               <View style={popupStyles.info}>
-                <Text style={[popupStyles.title, { color: theme.text }]}>{t('hotelFullPopup.title')}</Text>
-                <Text style={popupStyles.subtitle}>{t('hotelFullPopup.subtitle')}</Text>
+                <LocaleText style={[popupStyles.title, { color: theme.text }]}>{t('hotelFullPopup.title')}</LocaleText>
+                <LocaleText style={popupStyles.subtitle}>{t('hotelFullPopup.subtitle')}</LocaleText>
               </View>
               <Pressable
                 onPress={() => { setHotelFullPopup(false); handleAnimatedClose(); onOpenHotel?.(); }}
                 style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
               >
                 <LinearGradient colors={['#C9637E', '#A8475F']} style={popupStyles.findJobGradient}>
-                  <Text style={popupStyles.findJobText}>{t('hotelFullPopup.goToHotel')}</Text>
+                  <LocaleText style={popupStyles.findJobText}>{t('hotelFullPopup.goToHotel')}</LocaleText>
                 </LinearGradient>
               </Pressable>
               <Pressable onPress={() => setHotelFullPopup(false)} style={popupStyles.dismissBtn}>
-                <Text style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('hotelFullPopup.dismiss')}</Text>
+                <LocaleText style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('hotelFullPopup.dismiss')}</LocaleText>
               </Pressable>
             </Pressable>
           </Pressable>
@@ -1469,12 +1470,12 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 />
               </View>
               <View style={popupStyles.info}>
-                <Text style={[popupStyles.title, { color: theme.text }]}>{t('builderPopup.title')}</Text>
-                <Text style={[popupStyles.name, { color: '#E67E22' }]}>{t(`tools.${builderToolDrop}`)}</Text>
-                <Text style={popupStyles.subtitle}>{t('builderPopup.subtitle')}</Text>
+                <LocaleText style={[popupStyles.title, { color: theme.text }]}>{t('builderPopup.title')}</LocaleText>
+                <LocaleText style={[popupStyles.name, { color: '#E67E22' }]}>{t(`tools.${builderToolDrop}`)}</LocaleText>
+                <LocaleText style={popupStyles.subtitle}>{t('builderPopup.subtitle')}</LocaleText>
               </View>
               <Pressable onPress={clearBuilderToolDrop} style={popupStyles.dismissBtn}>
-                <Text style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('builderPopup.dismiss')}</Text>
+                <LocaleText style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('builderPopup.dismiss')}</LocaleText>
               </Pressable>
             </Pressable>
           </Pressable>
@@ -1488,11 +1489,11 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <Image source={require('../../assets/img/warningIcon.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
               </View>
               <View style={popupStyles.info}>
-                <Text style={[popupStyles.title, { color: theme.text }]}>{t('builderPopup.warehouseFullTitle')}</Text>
-                <Text style={popupStyles.subtitle}>{t('builderPopup.warehouseFullSubtitle')}</Text>
+                <LocaleText style={[popupStyles.title, { color: theme.text }]}>{t('builderPopup.warehouseFullTitle')}</LocaleText>
+                <LocaleText style={popupStyles.subtitle}>{t('builderPopup.warehouseFullSubtitle')}</LocaleText>
               </View>
               <Pressable onPress={clearBuilderWarehouseFull} style={popupStyles.dismissBtn}>
-                <Text style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('builderPopup.dismiss')}</Text>
+                <LocaleText style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('builderPopup.dismiss')}</LocaleText>
               </Pressable>
             </Pressable>
           </Pressable>
@@ -1512,7 +1513,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
             <View style={[infoStyles.card, { backgroundColor: theme.surfaceCard}]}>
               <LinearGradient colors={['#C9637E', '#A8475F']} style={infoStyles.cardHeader}>
-                <Text style={infoStyles.cardTitle}>About the Lobby</Text>
+                <LocaleText style={infoStyles.cardTitle}>About the Lobby</LocaleText>
                 <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
                   <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                     <Path d="M18 6L6 18M6 6l12 12" stroke="rgba(255,255,255,0.85)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
@@ -1564,13 +1565,13 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 <GemIcon size={36} />
               </View>
               <View style={popupStyles.info}>
-                <Text style={[popupStyles.title, { color: theme.text }]}>{t('dailyGems.confirmTitle')}</Text>
+                <LocaleText style={[popupStyles.title, { color: theme.text }]}>{t('dailyGems.confirmTitle')}</LocaleText>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
-                  <Text style={[popupStyles.confirmAmount, { color: '#2592AB' }]}>+{gemsRemaining}</Text>
+                  <LocaleText style={[popupStyles.confirmAmount, { color: '#2592AB' }]}>+{gemsRemaining}</LocaleText>
                   <GemIcon size={20} />
-                  <Text style={[popupStyles.confirmFor, { color: theme.textMuted }]}>{t('dailyGems.confirmFor')}</Text>
+                  <LocaleText style={[popupStyles.confirmFor, { color: theme.textMuted }]}>{t('dailyGems.confirmFor')}</LocaleText>
                   <CoinIcon size={20} />
-                  <Text style={[popupStyles.confirmAmount, { color: '#E5A41C' }]}>{formatNum(buyAllGemsCost)}</Text>
+                  <LocaleText style={[popupStyles.confirmAmount, { color: '#E5A41C' }]}>{formatNum(buyAllGemsCost)}</LocaleText>
                 </View>
               </View>
               <Pressable
@@ -1582,11 +1583,11 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 style={({ pressed }) => [popupStyles.findJobBtn, pressed && { opacity: 0.85 }]}
               >
                 <LinearGradient colors={['#52A6E2', '#3B8BCB']} style={popupStyles.findJobGradient}>
-                  <Text style={popupStyles.findJobText}>{t('dailyGems.confirmBuy')}</Text>
+                  <LocaleText style={popupStyles.findJobText}>{t('dailyGems.confirmBuy')}</LocaleText>
                 </LinearGradient>
               </Pressable>
               <Pressable onPress={() => setShowBuyGemsConfirm(false)} style={popupStyles.dismissBtn}>
-                <Text style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('dailyGems.confirmCancel')}</Text>
+                <LocaleText style={[popupStyles.dismissText, { color: theme.textMuted }]}>{t('dailyGems.confirmCancel')}</LocaleText>
               </Pressable>
             </Pressable>
           </Pressable>
@@ -1657,7 +1658,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   style={onboardingHintStyles.icon}
                   contentFit="contain"
                 />
-                <Text style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>{onboardingHint}</Text>
+                <LocaleText style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>{onboardingHint}</LocaleText>
               </View>
             </View>
           );

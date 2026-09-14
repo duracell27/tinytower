@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { shadeColor } from '../utils/color';
@@ -33,11 +34,11 @@ export default function BuyFloorBanner({ nextFloorNumber, price, currency, onPre
           style={{ width: 28, height: 28 }}
           contentFit="contain"
         />
-        <Text style={[styles.ribbonTitle, { color: theme.isDark ? '#9BA4B0' : BANNER_COLOR }]} numberOfLines={1}>{t('game.buyFloor', { number: nextFloorNumber })}</Text>
+        <LocaleText style={[styles.ribbonTitle, { color: theme.isDark ? '#9BA4B0' : BANNER_COLOR }]} numberOfLines={1}>{t('game.buyFloor', { number: nextFloorNumber })}</LocaleText>
       </View>
       <View style={[styles.ribbonPricePill, { backgroundColor: theme.isDark ? theme.divider : 'rgba(255,255,255,0.85)' }]}>
         <CurrencyIcon currency={currency} size={13} />
-        <Text style={[styles.ribbonPriceText, { color: currency === 'gems' ? '#2592AB' : '#C28A22' }]}>{formatNum(price)}</Text>
+        <LocaleText style={[styles.ribbonPriceText, { color: currency === 'gems' ? '#2592AB' : '#C28A22' }]}>{formatNum(price)}</LocaleText>
       </View>
     </Pressable>
   );

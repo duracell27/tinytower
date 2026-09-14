@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import {
   View, Text, Pressable, Modal, ScrollView, StyleSheet, Dimensions,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -127,9 +128,9 @@ export default function BusinessTypePickerSheet({
         {onboardingStep === 'choose_floor_type' && (
           <View style={[pickerHint.card, { backgroundColor: theme.surface }, isDark && { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }]}>
             <Image source={require('../../assets/img/happySmile.png')} style={pickerHint.icon} contentFit="contain" />
-            <Text style={[pickerHint.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
+            <LocaleText style={[pickerHint.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
               {t('onboarding.choose_floor_type')}
-            </Text>
+            </LocaleText>
           </View>
         )}
 
@@ -140,14 +141,14 @@ export default function BusinessTypePickerSheet({
         </GestureDetector>
 
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: theme.text }]}>{t('floorTypePicker.title')}</Text>
+          <LocaleText style={[styles.title, { color: theme.text }]}>{t('floorTypePicker.title')}</LocaleText>
           {!isLocked && (
             <Pressable onPress={onClose} style={[styles.closeBtn, isDark && { backgroundColor: theme.divider }]} hitSlop={8}>
-              <Text style={[styles.closeBtnText, isDark && { color: '#A0AABC' }]}>✕</Text>
+              <LocaleText style={[styles.closeBtnText, isDark && { color: '#A0AABC' }]}>✕</LocaleText>
             </Pressable>
           )}
         </View>
-        <Text style={styles.subtitle}>{t('floorTypePicker.subtitle', { floorId: underConstruction.floorId })}</Text>
+        <LocaleText style={styles.subtitle}>{t('floorTypePicker.subtitle', { floorId: underConstruction.floorId })}</LocaleText>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
           {floorTypes.map((ft) => {
@@ -172,19 +173,19 @@ export default function BusinessTypePickerSheet({
                   contentFit="contain"
                 />
                 <View style={styles.typeTextCol}>
-                  <Text style={[styles.typeName, { color: TYPE_COLORS[ft] }]}>{tContent(`floorTypes.${ft}.category`, { defaultValue: ft })}</Text>
+                  <LocaleText style={[styles.typeName, { color: TYPE_COLORS[ft] }]}>{tContent(`floorTypes.${ft}.category`, { defaultValue: ft })}</LocaleText>
                   {isExhausted ? (
-                    <Text style={styles.typeExhaustedHint}>
+                    <LocaleText style={styles.typeExhaustedHint}>
                       {t('floorTypePicker.exhausted')}
-                    </Text>
+                    </LocaleText>
                   ) : (
                     <View style={styles.typeStatsRow}>
                       <Image source={ICON_FLOOR} style={styles.typeStatIcon} contentFit="contain" />
-                      <Text style={[styles.typeStatBuilt, { color: isDark ? theme.textMuted : '#2A3344' }]}>{t('floorTypePicker.built')} </Text>
-                      <Text style={[styles.typeStatBuilt, { color: TYPE_COLORS[ft] }]}>{builtFloorCounts[ft] ?? 0}</Text>
-                      <Text style={[styles.typeStatSep, isDark && { color: 'rgba(255,255,255,0.2)' }]}>·</Text>
+                      <LocaleText style={[styles.typeStatBuilt, { color: isDark ? theme.textMuted : '#2A3344' }]}>{t('floorTypePicker.built')} </LocaleText>
+                      <LocaleText style={[styles.typeStatBuilt, { color: TYPE_COLORS[ft] }]}>{builtFloorCounts[ft] ?? 0}</LocaleText>
+                      <LocaleText style={[styles.typeStatSep, isDark && { color: 'rgba(255,255,255,0.2)' }]}>·</LocaleText>
                       <Image source={WORKER_ICONS[ft]} style={styles.typeStatIcon} contentFit="contain" />
-                      <Text style={[styles.typeStat, { color: isDark ? theme.textMuted : '#7A8899' }]}>{t('floorTypePicker.waiting', { count: hotelWorkerCounts[ft] ?? 0 })}</Text>
+                      <LocaleText style={[styles.typeStat, { color: isDark ? theme.textMuted : '#7A8899' }]}>{t('floorTypePicker.waiting', { count: hotelWorkerCounts[ft] ?? 0 })}</LocaleText>
                     </View>
                   )}
                 </View>

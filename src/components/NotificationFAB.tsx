@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { useAppTheme } from '../hooks/useAppTheme';
 
@@ -31,7 +32,7 @@ export default function NotificationFAB({ icon, count, slot, badgeColor = '#3FA5
     >
       <Image source={icon} style={styles.icon} contentFit="contain" />
       <View style={[styles.badge, { backgroundColor: badgeColor, borderColor: theme.surface }]}>
-        <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
+        <LocaleText style={styles.badgeText}>{count > 99 ? '99+' : count}</LocaleText>
       </View>
     </Pressable>
   );

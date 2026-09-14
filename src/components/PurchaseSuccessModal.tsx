@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal, Dimensions } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -79,20 +80,20 @@ export default function PurchaseSuccessModal() {
           <LinearGradient colors={gradientColors} style={s.cardInner}>
 
             <Image source={DIAMOND_ICON} style={s.bigIcon} contentFit="contain" />
-            <Text style={s.title}>{t('purchaseSuccess.title')}</Text>
-            <Text style={s.packName}>{tTabs(packName as any)}</Text>
+            <LocaleText style={s.title}>{t('purchaseSuccess.title')}</LocaleText>
+            <LocaleText style={s.packName}>{tTabs(packName as any)}</LocaleText>
 
             <View style={s.chips}>
               {chips.map((c, i) => (
                 <View key={i} style={s.chip}>
                   <Image source={c.icon} style={s.chipIcon} contentFit="contain" />
-                  <Text style={s.chipLabel}>{c.label}</Text>
+                  <LocaleText style={s.chipLabel}>{c.label}</LocaleText>
                 </View>
               ))}
             </View>
 
             <Pressable style={s.btn} onPress={clear}>
-              <Text style={s.btnText}>{t('purchaseSuccess.dismiss')}</Text>
+              <LocaleText style={s.btnText}>{t('purchaseSuccess.dismiss')}</LocaleText>
             </Pressable>
           </LinearGradient>
         </Animated.View>

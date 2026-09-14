@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import {
   View, Text, Modal, Pressable, StyleSheet, ScrollView, Dimensions,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS,
 } from 'react-native-reanimated';
@@ -237,19 +238,19 @@ export default function ProductionDetailModal() {
             <Image source={productImage} style={styles.productImage} contentFit="contain" />
           )}
           <View style={styles.headerText}>
-            <Text style={styles.productName} numberOfLines={1}>
+            <LocaleText style={styles.productName} numberOfLines={1}>
               {productTitle}
-            </Text>
-            <Text style={styles.statusLabel}>
+            </LocaleText>
+            <LocaleText style={styles.statusLabel}>
               {statusLabels[effectiveStage] ?? effectiveStage}
-            </Text>
+            </LocaleText>
           </View>
           <Pressable
             onPress={close}
             style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.6 }]}
             hitSlop={8}
           >
-            <Text style={styles.closeBtnText}>✕</Text>
+            <LocaleText style={styles.closeBtnText}>✕</LocaleText>
           </Pressable>
         </View>
         </View>{/* /topSection */}
@@ -266,20 +267,20 @@ export default function ProductionDetailModal() {
                 <WorkerAvatar worker={worker} size={40} />
               </View>
               <View style={styles.workerInfo}>
-                <Text style={[styles.workerName, { color: theme.text }]} numberOfLines={1}>
+                <LocaleText style={[styles.workerName, { color: theme.text }]} numberOfLines={1}>
                   {worker.name}
-                </Text>
-                <Text style={[styles.workerLevel, isDark && { color: '#6A7284' }]}>Lv{worker.level}</Text>
+                </LocaleText>
+                <LocaleText style={[styles.workerLevel, isDark && { color: '#6A7284' }]}>Lv{worker.level}</LocaleText>
                 {worker.isSpecialist && (
                   <View style={styles.specialistBadge}>
-                    <Text style={styles.specialistBadgeText}>★</Text>
+                    <LocaleText style={styles.specialistBadgeText}>★</LocaleText>
                   </View>
                 )}
               </View>
               <View style={[styles.moodChip, { backgroundColor: moodColor }]}>
-                <Text style={styles.moodChipText}>
+                <LocaleText style={styles.moodChipText}>
                   {moodLabel} {multiplierText}
-                </Text>
+                </LocaleText>
               </View>
             </View>
           </View>
@@ -289,24 +290,24 @@ export default function ProductionDetailModal() {
 
           {/* Revenue breakdown */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, isDark && { color: '#6A7284' }]}>{t('productionDetail.revenue.section')}</Text>
+            <LocaleText style={[styles.sectionTitle, isDark && { color: '#6A7284' }]}>{t('productionDetail.revenue.section')}</LocaleText>
 
             <BreakdownRow
               isDark={isDark}
               label={
                 <View style={styles.rowLabelWithIcon}>
                   {productImage && <Image source={productImage} style={styles.rowLabelIcon} contentFit="contain" />}
-                  <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.base')}</Text>
+                  <LocaleText style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.base')}</LocaleText>
                 </View>
               }
-              value={<><Text style={[styles.rowValue, { color: theme.text }]}>{formatNum(baseRevenue)}</Text><CoinIcon size={13} /></>}
+              value={<><LocaleText style={[styles.rowValue, { color: theme.text }]}>{formatNum(baseRevenue)}</LocaleText><CoinIcon size={13} /></>}
             />
 
             {stars > 0 && (
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.revenue.stars')}
-                value={<Text style={[styles.rowValue, { color: theme.text }]}>×{starValueMult.toFixed(1)}</Text>}
+                value={<LocaleText style={[styles.rowValue, { color: theme.text }]}>×{starValueMult.toFixed(1)}</LocaleText>}
               />
             )}
 
@@ -315,10 +316,10 @@ export default function ProductionDetailModal() {
               label={
                 <View style={styles.rowLabelWithIcon}>
                   <Image source={WORKER_ICON} style={styles.rowLabelIcon} contentFit="contain" />
-                  <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.worker')}</Text>
+                  <LocaleText style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.worker')}</LocaleText>
                 </View>
               }
-              value={<Text style={[styles.rowValue, { color: moodColor }]}>{multiplierText}</Text>}
+              value={<LocaleText style={[styles.rowValue, { color: moodColor }]}>{multiplierText}</LocaleText>}
             />
 
             {specialistBonusPercent > 0 && (
@@ -327,10 +328,10 @@ export default function ProductionDetailModal() {
                 label={
                   <View style={styles.rowLabelWithIcon}>
                     <Image source={SPECIALIST_ICON} style={styles.rowLabelIcon} contentFit="contain" />
-                    <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.specialist')}</Text>
+                    <LocaleText style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.specialist')}</LocaleText>
                   </View>
                 }
-                value={<Text style={[styles.rowValue, { color: theme.text }]}>+{specialistBonusPercent}%</Text>}
+                value={<LocaleText style={[styles.rowValue, { color: theme.text }]}>+{specialistBonusPercent}%</LocaleText>}
               />
             )}
 
@@ -338,7 +339,7 @@ export default function ProductionDetailModal() {
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.revenue.category')}
-                value={<Text style={[styles.rowValue, { color: theme.text }]}>+{categoryBonus}%</Text>}
+                value={<LocaleText style={[styles.rowValue, { color: theme.text }]}>+{categoryBonus}%</LocaleText>}
               />
             )}
 
@@ -346,7 +347,7 @@ export default function ProductionDetailModal() {
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.revenue.global')}
-                value={<Text style={[styles.rowValue, { color: theme.text }]}>+{coinBonusPercent}%</Text>}
+                value={<LocaleText style={[styles.rowValue, { color: theme.text }]}>+{coinBonusPercent}%</LocaleText>}
               />
             )}
 
@@ -356,42 +357,42 @@ export default function ProductionDetailModal() {
                 label={
                   <View style={styles.rowLabelWithIcon}>
                     <Image source={MARKETING_ICON} style={styles.rowLabelIcon} contentFit="contain" />
-                    <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.marketingBoost')}</Text>
+                    <LocaleText style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{t('productionDetail.revenue.marketingBoost')}</LocaleText>
                   </View>
                 }
-                value={<Text style={[styles.rowValue, { color: '#F5A623' }]}>+{activeCoinBoost}%</Text>}
+                value={<LocaleText style={[styles.rowValue, { color: '#F5A623' }]}>+{activeCoinBoost}%</LocaleText>}
               />
             )}
 
             {hasVehicleBonus && (
               <View style={[styles.bonusSection, { borderTopColor: theme.divider }]}>
-                <Text style={[styles.bonusSectionTitle, { color: theme.textMuted }]}>{t('productionDetail.revenue.vehicleBonuses')}</Text>
+                <LocaleText style={[styles.bonusSectionTitle, { color: theme.textMuted }]}>{t('productionDetail.revenue.vehicleBonuses')}</LocaleText>
                 {forkliftSalesSpeed > 0 && (
                   <BreakdownRow
                     isDark={isDark}
                     label={t('productionDetail.revenue.forklift')}
-                    value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.forklift.accentColor }]}>−{forkliftSalesSpeed}% sell time</Text>}
+                    value={<LocaleText style={[styles.rowValue, { color: VEHICLE_CONFIG.forklift.accentColor }]}>−{forkliftSalesSpeed}% sell time</LocaleText>}
                   />
                 )}
                 {deliveryTruckSpeed > 0 && (
                   <BreakdownRow
                     isDark={isDark}
                     label={t('productionDetail.revenue.deliveryTruck')}
-                    value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.delivery_truck.accentColor }]}>−{deliveryTruckSpeed}% delivery time</Text>}
+                    value={<LocaleText style={[styles.rowValue, { color: VEHICLE_CONFIG.delivery_truck.accentColor }]}>−{deliveryTruckSpeed}% delivery time</LocaleText>}
                   />
                 )}
                 {armoredBaseCoin > 0 && (
                   <BreakdownRow
                     isDark={isDark}
                     label={t('productionDetail.revenue.armoredTruck')}
-                    value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.armored_truck.accentColor }]}>+{armoredBaseCoin}% base revenue</Text>}
+                    value={<LocaleText style={[styles.rowValue, { color: VEHICLE_CONFIG.armored_truck.accentColor }]}>+{armoredBaseCoin}% base revenue</LocaleText>}
                   />
                 )}
                 {armoredBaseXp > 0 && (
                   <BreakdownRow
                     isDark={isDark}
                     label={t('productionDetail.revenue.armoredTruckXp')}
-                    value={<Text style={[styles.rowValue, { color: VEHICLE_CONFIG.armored_truck.accentColor }]}>+{armoredBaseXp}% base XP</Text>}
+                    value={<LocaleText style={[styles.rowValue, { color: VEHICLE_CONFIG.armored_truck.accentColor }]}>+{armoredBaseXp}% base XP</LocaleText>}
                   />
                 )}
               </View>
@@ -400,14 +401,14 @@ export default function ProductionDetailModal() {
             <View style={[styles.rowDivider, { backgroundColor: theme.divider }]} />
 
             <View style={styles.totalRow}>
-              <Text style={[styles.totalLabel, { color: theme.text }]}>{t('productionDetail.revenue.total')}</Text>
+              <LocaleText style={[styles.totalLabel, { color: theme.text }]}>{t('productionDetail.revenue.total')}</LocaleText>
               <View style={styles.totalValueRow}>
-                <Text style={[styles.totalValue, { color: theme.text }]}>{formatNum(effectiveRevenue)}</Text>
+                <LocaleText style={[styles.totalValue, { color: theme.text }]}>{formatNum(effectiveRevenue)}</LocaleText>
                 <CoinIcon size={14} />
                 {revenuePerMin > 0 && (
-                  <Text style={styles.perMin}>
+                  <LocaleText style={styles.perMin}>
                     {' '}({formatNum(revenuePerMin)}{t('productionDetail.revenue.perMin')})
-                  </Text>
+                  </LocaleText>
                 )}
               </View>
             </View>
@@ -422,14 +423,14 @@ export default function ProductionDetailModal() {
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.timing.delivery')}
-                value={<Text style={[styles.rowValue, { color: theme.text }]}>{formatDuration(deliveryDuration)}</Text>}
+                value={<LocaleText style={[styles.rowValue, { color: theme.text }]}>{formatDuration(deliveryDuration)}</LocaleText>}
               />
             )}
             {effectiveSellDuration > 0 && (
               <BreakdownRow
                 isDark={isDark}
                 label={t('productionDetail.timing.sell')}
-                value={<Text style={[styles.rowValue, { color: theme.text }]}>{formatDuration(effectiveSellDuration)}</Text>}
+                value={<LocaleText style={[styles.rowValue, { color: theme.text }]}>{formatDuration(effectiveSellDuration)}</LocaleText>}
               />
             )}
             {effectiveCost > 0 && (
@@ -438,12 +439,12 @@ export default function ProductionDetailModal() {
                 label={t('productionDetail.cost.buy')}
                 value={
                   <View style={styles.costValueRow}>
-                    <Text style={[styles.rowValue, { color: theme.text }]}>{formatNum(effectiveCost)}</Text>
+                    <LocaleText style={[styles.rowValue, { color: theme.text }]}>{formatNum(effectiveCost)}</LocaleText>
                     <CoinIcon size={13} />
                     {discountPercent > 0 && (
-                      <Text style={styles.discountLabel}>
+                      <LocaleText style={styles.discountLabel}>
                         {t('productionDetail.cost.discount', { percent: discountPercent })}
-                      </Text>
+                      </LocaleText>
                     )}
                   </View>
                 }
@@ -460,7 +461,7 @@ function BreakdownRow({ label, value, isDark }: { label: React.ReactNode; value:
   return (
     <View style={styles.breakdownRow}>
       {typeof label === 'string'
-        ? <Text style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{label}</Text>
+        ? <LocaleText style={[styles.rowLabel, isDark && { color: '#8E95A3' }]}>{label}</LocaleText>
         : label}
       <View style={styles.rowValueWrap}>{value}</View>
     </View>

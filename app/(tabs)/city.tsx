@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, useColorScheme } from 'react-native';
+import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
 import { useTranslation } from 'react-i18next';
 import TopBar from '../../src/components/TopBar';
@@ -60,59 +61,59 @@ export default function CityScreen() {
           {/* Hero */}
           <View style={styles.hero}>
             <Image source={require('../../assets/img/forum/forumCatCities.png')} style={styles.heroImage} />
-            <Text style={[styles.heroTagline, isDark && { color: '#DDE8D8' }]}>{t('city.tagline')}</Text>
-            <Text style={[styles.heroDescription, isDark && { color: '#8A9A80' }]}>{t('city.description')}</Text>
+            <LocaleText style={[styles.heroTagline, isDark && { color: '#DDE8D8' }]}>{t('city.tagline')}</LocaleText>
+            <LocaleText style={[styles.heroDescription, isDark && { color: '#8A9A80' }]}>{t('city.description')}</LocaleText>
           </View>
 
           {/* Bonus card */}
           <View style={[styles.card, isDark ? { backgroundColor: 'rgba(40,90,55,0.35)' } : styles.cardBonus]}>
-            <Text style={styles.cardIcon}>🎁</Text>
+            <LocaleText style={styles.cardIcon}>🎁</LocaleText>
             <View style={styles.cardBody}>
-              <Text style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.bonusTitle')}</Text>
-              <Text style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.bonusDescription')}</Text>
+              <LocaleText style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.bonusTitle')}</LocaleText>
+              <LocaleText style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.bonusDescription')}</LocaleText>
             </View>
           </View>
 
           {/* Requirement card */}
           <View style={[styles.card, isDark ? { backgroundColor: 'rgba(100,75,15,0.35)' } : styles.cardRequirement]}>
-            <Text style={styles.cardIcon}>🏗️</Text>
+            <LocaleText style={styles.cardIcon}>🏗️</LocaleText>
             <View style={styles.cardBody}>
-              <Text style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.requirementTitle')}</Text>
-              <Text style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.requirementDescription')}</Text>
+              <LocaleText style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.requirementTitle')}</LocaleText>
+              <LocaleText style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.requirementDescription')}</LocaleText>
             </View>
           </View>
 
           {/* Join section */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{t('city.joinTitle')}</Text>
-            <Text style={[styles.sectionText, isDark && { color: '#8A9A80' }]}>{t('city.joinDescription')}</Text>
+            <LocaleText style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{t('city.joinTitle')}</LocaleText>
+            <LocaleText style={[styles.sectionText, isDark && { color: '#8A9A80' }]}>{t('city.joinDescription')}</LocaleText>
             <TouchableOpacity style={styles.btnPrimary} disabled>
-              <Text style={styles.btnPrimaryText}>{t('city.joinButton')}</Text>
+              <LocaleText style={styles.btnPrimaryText}>{t('city.joinButton')}</LocaleText>
             </TouchableOpacity>
           </View>
 
           {/* Rankings action card */}
           <TouchableOpacity style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(30,70,110,0.35)' } : styles.actionCardBlue]} disabled activeOpacity={0.7}>
             <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-              <Text style={styles.actionCardEmoji}>🏆</Text>
+              <LocaleText style={styles.actionCardEmoji}>🏆</LocaleText>
             </View>
             <View style={styles.actionCardBody}>
-              <Text style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.rankingsTitle')}</Text>
-              <Text style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.rankingsSubtitle')}</Text>
+              <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.rankingsTitle')}</LocaleText>
+              <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.rankingsSubtitle')}</LocaleText>
             </View>
-            <Text style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</Text>
+            <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
           </TouchableOpacity>
 
           {/* Create action card */}
           <TouchableOpacity style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(30,90,55,0.35)' } : styles.actionCardGreen]} disabled activeOpacity={0.7}>
             <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-              <Text style={styles.actionCardEmoji}>🏛️</Text>
+              <LocaleText style={styles.actionCardEmoji}>🏛️</LocaleText>
             </View>
             <View style={styles.actionCardBody}>
-              <Text style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.createButton')}</Text>
-              <Text style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.createDescription')}</Text>
+              <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.createButton')}</LocaleText>
+              <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.createDescription')}</LocaleText>
             </View>
-            <Text style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</Text>
+            <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
           </TouchableOpacity>
         </ScrollView>
       </AppBackground>

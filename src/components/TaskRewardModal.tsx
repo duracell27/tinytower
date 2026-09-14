@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal, Dimensions } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -66,35 +67,35 @@ export default function TaskRewardModal() {
         <Animated.View style={[styles.card, cardStyle]}>
           <LinearGradient colors={isDark ? ['#1C2B18', '#142010'] : ['#F0FBE8', '#E2F5D0']} style={styles.cardInner}>
             <View style={styles.starsRow}>
-              <Text style={[styles.star, styles.starSm]}>★</Text>
-              <Text style={[styles.star, styles.starLg]}>★</Text>
-              <Text style={[styles.star, styles.starSm]}>★</Text>
+              <LocaleText style={[styles.star, styles.starSm]}>★</LocaleText>
+              <LocaleText style={[styles.star, styles.starLg]}>★</LocaleText>
+              <LocaleText style={[styles.star, styles.starSm]}>★</LocaleText>
             </View>
 
-            <Text style={styles.title}>{t('taskReward.title')}</Text>
-            <Text style={styles.subtitle} numberOfLines={1}>{reward.taskTitle}</Text>
+            <LocaleText style={styles.title}>{t('taskReward.title')}</LocaleText>
+            <LocaleText style={styles.subtitle} numberOfLines={1}>{reward.taskTitle}</LocaleText>
 
             <View style={styles.chipsWrap}>
               <View style={styles.chip}>
                 <Image source={COIN_ICON} style={styles.chipIcon} contentFit="contain" />
-                <Text style={styles.chipCoins}>+{formatNum(reward.coins)}</Text>
+                <LocaleText style={styles.chipCoins}>+{formatNum(reward.coins)}</LocaleText>
               </View>
               <View style={styles.chip}>
                 <Image source={DIAMOND_ICON} style={styles.chipIcon} contentFit="contain" />
-                <Text style={styles.chipGems}>+{reward.gems}</Text>
+                <LocaleText style={styles.chipGems}>+{reward.gems}</LocaleText>
               </View>
               {reward.tokenCount > 0 && (
                 <View style={styles.chip}>
                   <Image source={TOKEN_ICONS[reward.tokenColor]} style={styles.chipIcon} contentFit="contain" />
-                  <Text style={[styles.chipToken, { color: TOKEN_COLORS[reward.tokenColor] }]}>
+                  <LocaleText style={[styles.chipToken, { color: TOKEN_COLORS[reward.tokenColor] }]}>
                     +{reward.tokenCount}
-                  </Text>
+                  </LocaleText>
                 </View>
               )}
               {reward.matCount != null && reward.materialType && (
                 <View style={styles.chip}>
                   <Image source={MATERIAL_ICONS[reward.materialType]} style={styles.chipIcon} contentFit="contain" />
-                  <Text style={styles.chipMat}>+{reward.matCount}</Text>
+                  <LocaleText style={styles.chipMat}>+{reward.matCount}</LocaleText>
                 </View>
               )}
             </View>
@@ -104,7 +105,7 @@ export default function TaskRewardModal() {
               style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
             >
               <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.btnGradient}>
-                <Text style={styles.btnText}>{t('taskReward.dismiss')}</Text>
+                <LocaleText style={styles.btnText}>{t('taskReward.dismiss')}</LocaleText>
               </LinearGradient>
               <View style={styles.btnShadow} />
             </Pressable>

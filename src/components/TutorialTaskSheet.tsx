@@ -3,6 +3,7 @@ import {
   Modal, View, Text, Pressable, StyleSheet,
   Dimensions, Image,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   useAnimatedStyle,
@@ -120,10 +121,10 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                 </View>
                 {/* NEWCOMER'S PATH label + counter + close */}
                 <View style={styles.sectionRow}>
-                  <Text style={styles.sectionLabel}>{t('tutorialSheet.newcomersPath')}</Text>
-                  <Text style={[styles.counterText, { color: textSecondary }]}>{displayIndex}/{totalTasks}</Text>
+                  <LocaleText style={styles.sectionLabel}>{t('tutorialSheet.newcomersPath')}</LocaleText>
+                  <LocaleText style={[styles.counterText, { color: textSecondary }]}>{displayIndex}/{totalTasks}</LocaleText>
                   <Pressable onPress={handleAnimatedClose} style={styles.closeBtn} hitSlop={14}>
-                    <Text style={[styles.closeBtnText, { color: textSecondary }]}>✕</Text>
+                    <LocaleText style={[styles.closeBtnText, { color: textSecondary }]}>✕</LocaleText>
                   </Pressable>
                 </View>
               </View>
@@ -135,37 +136,37 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                 <>
                   <View style={styles.taskHeader}>
                     <View style={styles.iconWrap}>
-                      <Text style={{ fontSize: 28 }}>🎉</Text>
+                      <LocaleText style={{ fontSize: 28 }}>🎉</LocaleText>
                     </View>
                     <View style={styles.taskHeaderText}>
-                      <Text style={[styles.taskTitle, { color: textPrimary }]}>{t('tutorialSheet.allDoneTitle')}</Text>
-                      <Text style={[styles.taskDesc, { color: textSecondary }]}>
+                      <LocaleText style={[styles.taskTitle, { color: textPrimary }]}>{t('tutorialSheet.allDoneTitle')}</LocaleText>
+                      <LocaleText style={[styles.taskDesc, { color: textSecondary }]}>
                         {t('tutorialSheet.allDoneDesc')}
-                      </Text>
+                      </LocaleText>
                     </View>
                   </View>
 
                   <View style={[styles.divider, { backgroundColor: divider }]} />
 
                   <View style={styles.rewardRow}>
-                    <Text style={[styles.rewardLabel, { color: textSecondary }]}>{t('tutorialSheet.finalRewardLabel')}</Text>
+                    <LocaleText style={[styles.rewardLabel, { color: textSecondary }]}>{t('tutorialSheet.finalRewardLabel')}</LocaleText>
                     <View style={styles.rewardIcons}>
                       <CoinIcon size={18} />
-                      <Text style={[styles.rewardValue, { color: textPrimary }]}>{FINAL_REWARD.coins.toLocaleString()}</Text>
+                      <LocaleText style={[styles.rewardValue, { color: textPrimary }]}>{FINAL_REWARD.coins.toLocaleString()}</LocaleText>
                       <GemIcon size={18} />
-                      <Text style={[styles.rewardValue, { color: textPrimary }]}>{FINAL_REWARD.gems}</Text>
+                      <LocaleText style={[styles.rewardValue, { color: textPrimary }]}>{FINAL_REWARD.gems}</LocaleText>
                     </View>
                   </View>
 
                   <View style={styles.claimSpacer} />
                   <Pressable onPress={handleClaim} style={[styles.claimBtn, styles.claimBtnActive]}>
-                    <Text style={styles.claimBtnText}>{t('tutorialSheet.claimFinalReward')}</Text>
+                    <LocaleText style={styles.claimBtnText}>{t('tutorialSheet.claimFinalReward')}</LocaleText>
                   </Pressable>
                 </>
               ) : claimedFinal ? (
                 <View style={styles.taskHeader}>
-                  <Text style={{ fontSize: 28, marginRight: 10 }}>✅</Text>
-                  <Text style={[styles.taskTitle, { color: textPrimary }]}>{t('tutorialSheet.allCompleteTitle')}</Text>
+                  <LocaleText style={{ fontSize: 28, marginRight: 10 }}>✅</LocaleText>
+                  <LocaleText style={[styles.taskTitle, { color: textPrimary }]}>{t('tutorialSheet.allCompleteTitle')}</LocaleText>
                 </View>
               ) : currentTask ? (
                 <>
@@ -174,12 +175,12 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                       <Image source={TASK_ICONS[currentTask.key]} style={styles.taskIcon} resizeMode="contain" />
                     </View>
                     <View style={styles.taskHeaderText}>
-                      <Text style={[styles.taskTitle, { color: textPrimary }]} numberOfLines={1}>
+                      <LocaleText style={[styles.taskTitle, { color: textPrimary }]} numberOfLines={1}>
                         {t(currentTask.title)}
-                      </Text>
-                      <Text style={[styles.taskDesc, { color: textSecondary }]} numberOfLines={2}>
+                      </LocaleText>
+                      <LocaleText style={[styles.taskDesc, { color: textSecondary }]} numberOfLines={2}>
                         {t(currentTask.description)}
-                      </Text>
+                      </LocaleText>
                     </View>
                   </View>
 
@@ -187,24 +188,24 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                     <View style={[styles.progressTrack, { backgroundColor: trackBg }]}>
                       <View style={[styles.progressFill, { width: `${progressRatio * 100}%` }]} />
                     </View>
-                    <Text style={[styles.progressLabel, { color: textSecondary }]}>{Math.min(delta, currentTask.threshold)}/{currentTask.threshold}</Text>
+                    <LocaleText style={[styles.progressLabel, { color: textSecondary }]}>{Math.min(delta, currentTask.threshold)}/{currentTask.threshold}</LocaleText>
                   </View>
 
                   <View style={[styles.divider, { backgroundColor: divider }]} />
 
                   <View style={styles.rewardRow}>
-                    <Text style={[styles.rewardLabel, { color: textSecondary }]}>{t('tutorialSheet.rewardLabel')}</Text>
+                    <LocaleText style={[styles.rewardLabel, { color: textSecondary }]}>{t('tutorialSheet.rewardLabel')}</LocaleText>
                     <View style={styles.rewardIcons}>
                       {currentTask.reward.coins > 0 && (
                         <>
                           <CoinIcon size={18} />
-                          <Text style={[styles.rewardValue, { color: textPrimary }]}>{currentTask.reward.coins}</Text>
+                          <LocaleText style={[styles.rewardValue, { color: textPrimary }]}>{currentTask.reward.coins}</LocaleText>
                         </>
                       )}
                       {currentTask.reward.gems > 0 && (
                         <>
                           <GemIcon size={18} />
-                          <Text style={[styles.rewardValue, { color: textPrimary }]}>{currentTask.reward.gems}</Text>
+                          <LocaleText style={[styles.rewardValue, { color: textPrimary }]}>{currentTask.reward.gems}</LocaleText>
                         </>
                       )}
                     </View>
@@ -214,7 +215,7 @@ export default function TutorialTaskSheet({ visible, onClose }: Props) {
                     <>
                       <View style={styles.claimSpacer} />
                       <Pressable onPress={handleClaim} style={[styles.claimBtn, styles.claimBtnActive]}>
-                        <Text style={styles.claimBtnText}>{t('tutorialSheet.claimReward')}</Text>
+                        <LocaleText style={styles.claimBtnText}>{t('tutorialSheet.claimReward')}</LocaleText>
                       </Pressable>
                     </>
                   ) : (

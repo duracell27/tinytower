@@ -4,6 +4,7 @@ import {
   View, Text, Pressable, FlatList, StyleSheet, Dimensions,
   ActivityIndicator, Modal, TextInput,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing,
@@ -53,13 +54,13 @@ function PlayerCard({ item, onPress }: { item: UserEntry; onPress: () => void })
       <View style={styles.nameBlock}>
         <View style={styles.nameRow}>
           {online && <View style={styles.onlineDot} />}
-          <Text style={[styles.name, isDark && { color: theme.text }]} numberOfLines={1}>{item.playerName}</Text>
+          <LocaleText style={[styles.name, isDark && { color: theme.text }]} numberOfLines={1}>{item.playerName}</LocaleText>
         </View>
-        <Text style={styles.cityText} numberOfLines={1}>{item.city ?? t('users.noCity')}</Text>
+        <LocaleText style={styles.cityText} numberOfLines={1}>{item.city ?? t('users.noCity')}</LocaleText>
       </View>
       <View style={styles.levelBadge}>
         <Image source={LVL_ICON} style={styles.lvlIcon} contentFit="contain" />
-        <Text style={[styles.levelText, isDark && { color: theme.textMuted }]}>{item.playerLevel}</Text>
+        <LocaleText style={[styles.levelText, isDark && { color: theme.textMuted }]}>{item.playerLevel}</LocaleText>
       </View>
     </Pressable>
   );
@@ -171,9 +172,9 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
       <Animated.View style={[styles.sheet, sheetStyle, isDark && { backgroundColor: theme.surface }]}>
         <LinearGradient colors={isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.gradientHeader}>
           <View style={styles.header}>
-            <Text style={styles.title}>{t('users.title')}</Text>
+            <LocaleText style={styles.title}>{t('users.title')}</LocaleText>
             <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
-              <Text style={styles.closeIcon}>✕</Text>
+              <LocaleText style={styles.closeIcon}>✕</LocaleText>
             </Pressable>
           </View>
           <View style={styles.tabs}>
@@ -185,9 +186,9 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
                   style={[styles.tab, isActive && styles.tabActive, isActive && isDark && { backgroundColor: theme.surfaceCard }]}
                   onPress={() => setTab(t.key)}
                 >
-                  <Text style={[styles.tabText, isActive ? styles.tabTextActive : styles.tabTextInactive]}>
+                  <LocaleText style={[styles.tabText, isActive ? styles.tabTextActive : styles.tabTextInactive]}>
                     {t.label}
-                  </Text>
+                  </LocaleText>
                 </Pressable>
               );
             })}
@@ -212,19 +213,19 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
 
         {error && !loading && (
           <View style={styles.errorWrap}>
-            <Text style={styles.errorText}>{error}</Text>
+            <LocaleText style={styles.errorText}>{error}</LocaleText>
           </View>
         )}
 
         {!loading && !error && tab === 'search' && query.length < 2 && (
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyText}>{t('users.minChars')}</Text>
+            <LocaleText style={styles.emptyText}>{t('users.minChars')}</LocaleText>
           </View>
         )}
 
         {!loading && !error && entries.length === 0 && (tab !== 'search' || query.length >= 2) && (
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyText}>{t('users.empty')}</Text>
+            <LocaleText style={styles.emptyText}>{t('users.empty')}</LocaleText>
           </View>
         )}
 
@@ -245,15 +246,15 @@ export default function UsersSheet({ visible, onClose, onCountReady }: Props) {
               onPress={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
             >
-              <Text style={styles.pageBtnText}>◀</Text>
+              <LocaleText style={styles.pageBtnText}>◀</LocaleText>
             </Pressable>
-            <Text style={[styles.pageLabel, isDark && { color: theme.text }]}>{page} / {totalPages}</Text>
+            <LocaleText style={[styles.pageLabel, isDark && { color: theme.text }]}>{page} / {totalPages}</LocaleText>
             <Pressable
               style={[styles.pageBtn, page >= totalPages && styles.pageBtnDisabled]}
               onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
             >
-              <Text style={styles.pageBtnText}>▶</Text>
+              <LocaleText style={styles.pageBtnText}>▶</LocaleText>
             </Pressable>
           </View>
         )}

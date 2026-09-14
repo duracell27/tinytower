@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
+import LocaleText from '../src/components/LocaleText';
 import { useAppTheme } from '../src/hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -32,9 +33,9 @@ export default function ForumScreen() {
       <View style={[styles.container, { paddingTop: insets.top }, isDark && { backgroundColor: '#1A1E24' }]}>
         <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.divider }]}>
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-            <Text style={styles.backIcon}>‹</Text>
+            <LocaleText style={styles.backIcon}>‹</LocaleText>
           </Pressable>
-          <Text style={[styles.headerTitle, { color: theme.text }]}>{t('menu.forum')}</Text>
+          <LocaleText style={[styles.headerTitle, { color: theme.text }]}>{t('menu.forum')}</LocaleText>
           <View style={styles.backBtn} />
         </View>
         <GuestWall message="Create a free account to read and post in the forum" />
@@ -46,9 +47,9 @@ export default function ForumScreen() {
     <View style={[styles.container, { paddingTop: insets.top }, isDark && { backgroundColor: '#1A1E24' }]}>
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.divider }]}>
         <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
-          <Text style={styles.backIcon}>‹</Text>
+          <LocaleText style={styles.backIcon}>‹</LocaleText>
         </Pressable>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>{t('menu.forum')}</Text>
+        <LocaleText style={[styles.headerTitle, { color: theme.text }]}>{t('menu.forum')}</LocaleText>
         <View style={styles.backBtn} />
       </View>
 

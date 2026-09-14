@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   View, Text, Modal, Pressable, StyleSheet, Dimensions, ScrollView,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import Animated, {
   useAnimatedStyle, useSharedValue, withTiming, Easing, runOnJS,
@@ -66,17 +67,17 @@ function BoostCard({ pkg, gems, now, onBuy, onNotEnough }: {
           <Image source={isCoin ? MARKETING_ICON : PR_ICON} style={styles.cardIcon} contentFit="contain" />
         </View>
         <View style={styles.cardInfo}>
-          <Text style={[styles.cardPercent, { color: theme.text }]}>+{pkg.percent}%</Text>
-          <Text style={[styles.cardDuration, { color: accent }]}>{t('boost.forDuration', { hours: pkg.durationMs / 3_600_000 })}</Text>
+          <LocaleText style={[styles.cardPercent, { color: theme.text }]}>+{pkg.percent}%</LocaleText>
+          <LocaleText style={[styles.cardDuration, { color: accent }]}>{t('boost.forDuration', { hours: pkg.durationMs / 3_600_000 })}</LocaleText>
         </View>
       </View>
       <View style={styles.cardBottom}>
         <View style={[styles.cardPrice, { backgroundColor: accent }]}>
           <Image source={DIAMOND} style={styles.diamond} contentFit="contain" />
-          <Text style={[styles.cardPriceText, { color: '#FFF' }]}>{pkg.gemCost}</Text>
+          <LocaleText style={[styles.cardPriceText, { color: '#FFF' }]}>{pkg.gemCost}</LocaleText>
         </View>
         <View style={[styles.cardBuyBtn, { backgroundColor: accent }]}>
-          <Text style={styles.cardBuyBtnText}>{t('boost.buy')}</Text>
+          <LocaleText style={styles.cardBuyBtnText}>{t('boost.buy')}</LocaleText>
         </View>
       </View>
     </Pressable>
@@ -95,12 +96,12 @@ function SectionRow({ label, percent, expiresAt, now, isCoin }: {
     <View style={styles.sectionRow}>
       <View style={styles.sectionLabelRow}>
         <Image source={isCoin ? COIN_ICON : XP_ICON} style={styles.sectionLabelIcon} contentFit="contain" />
-        <Text style={[styles.sectionLabel, { color: theme.text }]}>{label}</Text>
+        <LocaleText style={[styles.sectionLabel, { color: theme.text }]}>{label}</LocaleText>
       </View>
       {timeLeft && (
         <View style={[styles.activeBadge, { backgroundColor: bg }]}>
           <Image source={isCoin ? MARKETING_ICON : PR_ICON} style={styles.activeBadgeIcon} contentFit="contain" />
-          <Text style={[styles.activeBadgeText, { color: accent }]}>+{percent}% · {timeLeft}</Text>
+          <LocaleText style={[styles.activeBadgeText, { color: accent }]}>+{percent}% · {timeLeft}</LocaleText>
         </View>
       )}
     </View>
@@ -204,14 +205,14 @@ export default function BoostSheet({ visible, onClose }: Props) {
             <View style={styles.header}>
               <View style={styles.headerLeft}>
                 <Image source={MARKETING_ICON} style={styles.headerIcon} contentFit="contain" />
-                <Text style={[styles.headerTitle, { color: theme.text }]}>{t('boost.title')}</Text>
+                <LocaleText style={[styles.headerTitle, { color: theme.text }]}>{t('boost.title')}</LocaleText>
               </View>
               <View style={styles.headerRight}>
                 <GemIcon size={14} />
-                <Text style={[styles.headerGemsText, { color: theme.text }]}>{gems} {t('boost.gemsUnit')}</Text>
+                <LocaleText style={[styles.headerGemsText, { color: theme.text }]}>{gems} {t('boost.gemsUnit')}</LocaleText>
                 <Pressable onPress={handleClose} hitSlop={8}>
                   <View style={[styles.headerCloseBtnInner, { backgroundColor: theme.surfaceSub }]}>
-                    <Text style={[styles.headerCloseBtnText, { color: theme.textMuted }]}>✕</Text>
+                    <LocaleText style={[styles.headerCloseBtnText, { color: theme.textMuted }]}>✕</LocaleText>
                   </View>
                 </Pressable>
               </View>
@@ -257,16 +258,16 @@ export default function BoostSheet({ visible, onClose }: Props) {
                     style={styles.confirmIcon} contentFit="contain"
                   />
                 </View>
-                <Text style={[styles.confirmTitle, { color: theme.text }]}>
+                <LocaleText style={[styles.confirmTitle, { color: theme.text }]}>
                   {pendingBoost.boostType === 'coin' ? t('boost.coinBoostLabel') : t('boost.xpBoostLabel')} +{pendingBoost.percent}%
-                </Text>
-                <Text style={[styles.confirmSub, { color: theme.textMuted }]}>{t('boost.activeDuration', { hours: pendingBoost.durationMs / 3_600_000 })}</Text>
-                <Text style={[styles.confirmStackNote, { color: theme.textMuted }]}>
+                </LocaleText>
+                <LocaleText style={[styles.confirmSub, { color: theme.textMuted }]}>{t('boost.activeDuration', { hours: pendingBoost.durationMs / 3_600_000 })}</LocaleText>
+                <LocaleText style={[styles.confirmStackNote, { color: theme.textMuted }]}>
                   {t('boost.stackNote', { hours: pendingBoost.durationMs / 3_600_000 })}
-                </Text>
+                </LocaleText>
                 <View style={[styles.confirmPriceRow, { backgroundColor: theme.surfaceElevated }]}>
                   <Image source={DIAMOND} style={{ width: 20, height: 20 }} contentFit="contain" />
-                  <Text style={[styles.confirmPrice, { color: theme.text }]}>{pendingBoost.gemCost}</Text>
+                  <LocaleText style={[styles.confirmPrice, { color: theme.text }]}>{pendingBoost.gemCost}</LocaleText>
                 </View>
                 <Pressable
                   style={[styles.confirmBtn, {
@@ -274,10 +275,10 @@ export default function BoostSheet({ visible, onClose }: Props) {
                   }]}
                   onPress={confirmBoost}
                 >
-                  <Text style={styles.confirmBtnText}>{t('boost.activate')}</Text>
+                  <LocaleText style={styles.confirmBtnText}>{t('boost.activate')}</LocaleText>
                 </Pressable>
                 <Pressable style={styles.cancelBtn} onPress={() => setPendingBoost(null)}>
-                  <Text style={[styles.cancelBtnText, { color: theme.textMuted }]}>{t('boost.cancel')}</Text>
+                  <LocaleText style={[styles.cancelBtnText, { color: theme.textMuted }]}>{t('boost.cancel')}</LocaleText>
                 </Pressable>
               </View>
             </View>

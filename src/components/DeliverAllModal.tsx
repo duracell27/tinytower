@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, Dimensions, Modal } from 'react-native';
+import LocaleText from './LocaleText';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -55,31 +56,31 @@ export default function DeliverAllModal({ visible, summary, onDismiss, asOverlay
               colors={theme.isDark ? ['#1E2028', '#252930'] : ['#F0F4FA', '#E4EAF2']}
               style={styles.cardGradient}
             >
-              <Text style={[styles.title, { color: theme.isDark ? '#8ACE6A' : '#3D6B1E' }]}>{t('deliverAll.title')}</Text>
+              <LocaleText style={[styles.title, { color: theme.isDark ? '#8ACE6A' : '#3D6B1E' }]}>{t('deliverAll.title')}</LocaleText>
 
               {summary.guestCount > 0 && (
                 <View style={styles.row}>
-                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.guests', { count: summary.guestCount })}</Text>
+                  <LocaleText style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.guests', { count: summary.guestCount })}</LocaleText>
                 </View>
               )}
               {summary.businessmanCount > 0 && (
                 <View style={styles.row}>
-                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.businessmen', { count: summary.businessmanCount })}</Text>
+                  <LocaleText style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.businessmen', { count: summary.businessmanCount })}</LocaleText>
                 </View>
               )}
               {summary.delivererCount > 0 && (
                 <View style={styles.row}>
-                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.deliverers', { count: summary.delivererCount })}</Text>
+                  <LocaleText style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.deliverers', { count: summary.delivererCount })}</LocaleText>
                 </View>
               )}
               {summary.sellerCount > 0 && (
                 <View style={styles.row}>
-                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.sellers', { count: summary.sellerCount })}</Text>
+                  <LocaleText style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.sellers', { count: summary.sellerCount })}</LocaleText>
                 </View>
               )}
               {summary.builderCount > 0 && (
                 <View style={styles.row}>
-                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.builders', { count: summary.builderCount })}</Text>
+                  <LocaleText style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.builders', { count: summary.builderCount })}</LocaleText>
                 </View>
               )}
               {(['guest', 'businessman', 'deliverer', 'seller', 'builder'] as const).map((role) => {
@@ -87,13 +88,13 @@ export default function DeliverAllModal({ visible, summary, onDismiss, asOverlay
                 if (!count) return null;
                 return (
                   <View key={role} style={styles.row}>
-                    <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t(`deliverAll.rows.vip_${role}`, { count })}</Text>
+                    <LocaleText style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t(`deliverAll.rows.vip_${role}`, { count })}</LocaleText>
                   </View>
                 );
               })}
               {summary.newWorkers > 0 && (
                 <View style={styles.row}>
-                  <Text style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.newWorkers', { count: summary.newWorkers })}</Text>
+                  <LocaleText style={[styles.rowLabel, { color: theme.isDark ? '#B0BAC8' : '#5A6478' }]}>{t('deliverAll.rows.newWorkers', { count: summary.newWorkers })}</LocaleText>
                 </View>
               )}
 
@@ -103,20 +104,20 @@ export default function DeliverAllModal({ visible, summary, onDismiss, asOverlay
                 {summary.totalCoins > 0 && (
                   <View style={[styles.totalChip, { backgroundColor: theme.surface }]}>
                     <CoinIcon size={16} />
-                    <Text style={styles.totalCoinsText}>+{formatNum(summary.totalCoins)}</Text>
+                    <LocaleText style={styles.totalCoinsText}>+{formatNum(summary.totalCoins)}</LocaleText>
                   </View>
                 )}
                 {summary.totalGems > 0 && (
                   <View style={[styles.totalChip, { backgroundColor: theme.surface }]}>
                     <GemIcon size={14} />
-                    <Text style={styles.totalGemsText}>+{summary.totalGems}</Text>
+                    <LocaleText style={styles.totalGemsText}>+{summary.totalGems}</LocaleText>
                   </View>
                 )}
               </View>
 
               <Pressable onPress={onDismiss} style={({ pressed }) => [styles.button, pressed && { opacity: 0.85 }]}>
                 <LinearGradient colors={['#6C7C92', '#56657C']} style={styles.buttonGradient}>
-                  <Text style={styles.buttonText}>{t('deliverAll.done')}</Text>
+                  <LocaleText style={styles.buttonText}>{t('deliverAll.done')}</LocaleText>
                 </LinearGradient>
                 <View style={styles.buttonShadow} />
               </Pressable>

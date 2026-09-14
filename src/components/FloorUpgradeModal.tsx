@@ -2,6 +2,7 @@ import React from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity, Pressable,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
@@ -23,6 +24,7 @@ const TOKEN_ICONS: Record<string, ReturnType<typeof require>> = {
 
 export default function FloorUpgradeModal() {
   const { t } = useTranslation('hotel');
+  const { t: tContent } = useTranslation('gameContent');
   const theme = useAppTheme();
   const { isDark } = theme;
 
@@ -50,10 +52,12 @@ export default function FloorUpgradeModal() {
   const firstTypeId = floorConfig?.availableTypes[0]
     ?? storeFloor?.productions.map((p) => p.typeId).find((id) => id != null)
     ?? null;
-  const floorName = firstTypeId && floorType
-    ? (gameConfig.floorTypes[floorType as string]?.businesses
-        .find((b) => b.dreamJobs.includes(firstTypeId))?.name ?? `Floor ${floorId}`)
-    : `Floor ${floorId}`;
+  const bizName = firstTypeId && floorType
+    ? gameConfig.floorTypes[floorType as string]?.businesses.find((b) => b.dreamJobs.includes(firstTypeId))?.name
+    : null;
+  const floorName = bizName
+    ? tContent(`businessNames.${firstTypeId}`, { defaultValue: bizName })
+    : t('floorUpgrade.floorFallback', { floorId });
 
   const cost      = isMax ? null : FLOOR_UPGRADE_COSTS[stars];
   const haveTok   = tokens[floorType] ?? 0;
@@ -69,7 +73,7 @@ export default function FloorUpgradeModal() {
 
           {/* Colored top strip — floor number + floor name */}
           <View style={[styles.strip, { backgroundColor: scheme.color }]}>
-            <Text style={styles.stripTitle}>{floorId} {floorName}</Text>
+            <LocaleText style={styles.stripTitle}>{floorId} {floorName}</LocaleText>
           </View>
 
           {/* Body — bodyColor = background under cards on the floor */}
@@ -88,26 +92,26 @@ export default function FloorUpgradeModal() {
             </View>
 
             {/* Description */}
-            <Text style={styles.description}>
+            <LocaleText style={styles.description}>
               {t('floorUpgrade.description')}
-            </Text>
+            </LocaleText>
 
             {isMax ? (
-              <Text style={[styles.maxText, { color: scheme.color }]}>
+              <LocaleText style={[styles.maxText, { color: scheme.color }]}>
                 {t('floorUpgrade.maxLevel')}
-              </Text>
+              </LocaleText>
             ) : (
               <>
                 {/* Cost row */}
                 <View style={[styles.costRow, { backgroundColor: scheme.cardBg }]}>
                   <View style={styles.costItem}>
                     <Image source={DIAMOND} style={styles.costIcon} contentFit="contain" />
-                    <Text style={styles.costVal}>{cost!.gems}</Text>
+                    <LocaleText style={styles.costVal}>{cost!.gems}</LocaleText>
                   </View>
                   {tokenIcon && (
                     <View style={styles.costItem}>
                       <Image source={tokenIcon} style={styles.costIcon} contentFit="contain" />
-                      <Text style={styles.costVal}>{cost!.tokens}</Text>
+                      <LocaleText style={styles.costVal}>{cost!.tokens}</LocaleText>
                     </View>
                   )}
                 </View>
@@ -116,15 +120,15 @@ export default function FloorUpgradeModal() {
                   style={[styles.upgradeBtn, { backgroundColor: scheme.color }]}
                   onPress={() => { close(); upgradeFloor(floorId); }}
                 >
-                  <Text style={styles.upgradeBtnText}>{t('floorUpgrade.upgradeBtn')}</Text>
+                  <LocaleText style={styles.upgradeBtnText}>{t('floorUpgrade.upgradeBtn')}</LocaleText>
                 </TouchableOpacity>
               </>
             )}
 
             <TouchableOpacity onPress={close} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>
+              <LocaleText style={styles.closeBtnText}>
                 {t('floorUpgrade.close')}
-              </Text>
+              </LocaleText>
             </TouchableOpacity>
           </View>
 

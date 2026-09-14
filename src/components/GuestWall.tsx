@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -36,16 +37,16 @@ export default function GuestWall({ message = 'Create a free account to join the
           style={styles.icon}
           contentFit="contain"
         />
-        <Text style={[styles.title, { color: theme.text }]}>
+        <LocaleText style={[styles.title, { color: theme.text }]}>
           Registered players only
-        </Text>
-        <Text style={[styles.subtitle, { color: theme.textMuted }]}>{message}</Text>
+        </LocaleText>
+        <LocaleText style={[styles.subtitle, { color: theme.textMuted }]}>{message}</LocaleText>
         <Pressable
           onPress={handleAction}
           style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
         >
           <LinearGradient colors={['#72C24F', '#5BA63C']} style={styles.btnGradient}>
-            <Text style={styles.btnText}>{t('actions.signUpFree')}</Text>
+            <LocaleText style={styles.btnText}>{t('actions.signUpFree')}</LocaleText>
           </LinearGradient>
         </Pressable>
       </View>

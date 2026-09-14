@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import LocaleText from '../../src/components/LocaleText';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
@@ -59,6 +60,7 @@ const TYPE_ICONS: Record<FloorType, ReturnType<typeof require>> = {
 
 export default function BusinessCategoryScreen() {
   const { t: tHotel } = useTranslation('hotel');
+  const { t: tContent } = useTranslation('gameContent');
   const { category } = useLocalSearchParams<{ category: string }>();
   const ft = VALID_TYPES.has(category ?? '') ? (category as FloorType) : 'green';
 
@@ -117,9 +119,9 @@ export default function BusinessCategoryScreen() {
       >
 
         {/* ── Title above card ── */}
-        <Text style={[styles.categoryName, { color }]}>
+        <LocaleText style={[styles.categoryName, { color }]}>
           {tHotel(`myBusiness.categories.${ft}`)}
-        </Text>
+        </LocaleText>
 
         {/* ── Hero card ── */}
         <View style={[styles.heroCard, { backgroundColor: theme.surface }]}>
@@ -128,13 +130,13 @@ export default function BusinessCategoryScreen() {
               <Image source={TYPE_ICONS[ft]} style={styles.icon} contentFit="fill" />
             </View>
             <View style={styles.heroStats}>
-              <Text style={[styles.bonusText, { color }]}>
+              <LocaleText style={[styles.bonusText, { color }]}>
                 {isMaxed ? tHotel('myBusiness.maxLevel') : tHotel('myBusiness.profitBonus', { percent: level * 5 })}
-              </Text>
+              </LocaleText>
               <View style={[styles.builtChip, { backgroundColor: `${color}18` }]}>
-                <Text style={[styles.builtText, { color }]}>
-                  {builtCount} {builtCount === 1 ? 'floor' : 'floors'} built
-                </Text>
+                <LocaleText style={[styles.builtText, { color }]}>
+                  {tHotel('myBusiness.floorsBuilt', { count: builtCount })}
+                </LocaleText>
               </View>
             </View>
           </View>
@@ -174,11 +176,11 @@ export default function BusinessCategoryScreen() {
 
           {/* Labels — absolute under their respective ticks */}
           <View style={styles.milestoneLabelsWrap}>
-            <Text style={[styles.milestoneLabel, { color: 0 <= level ? color : theme.textMuted }, 0 <= level && styles.milestoneLabelActive, { position: 'absolute', left: 0 }]}>0</Text>
-            <Text style={[styles.milestoneLabel, { color: 10 <= level ? color : theme.textMuted }, 10 <= level && styles.milestoneLabelActive, { position: 'absolute', left: '25%' as any, transform: [{ translateX: -7 }] }]}>10</Text>
-            <Text style={[styles.milestoneLabel, { color: 20 <= level ? color : theme.textMuted }, 20 <= level && styles.milestoneLabelActive, { position: 'absolute', left: '50%' as any, transform: [{ translateX: -7 }] }]}>20</Text>
-            <Text style={[styles.milestoneLabel, { color: 30 <= level ? color : theme.textMuted }, 30 <= level && styles.milestoneLabelActive, { position: 'absolute', left: '75%' as any, transform: [{ translateX: -7 }] }]}>30</Text>
-            <Text style={[styles.milestoneLabel, { color: 40 <= level ? color : theme.textMuted }, 40 <= level && styles.milestoneLabelActive, { position: 'absolute', right: 0 }]}>MAX</Text>
+            <LocaleText style={[styles.milestoneLabel, { color: 0 <= level ? color : theme.textMuted }, 0 <= level && styles.milestoneLabelActive, { position: 'absolute', left: 0 }]}>0</LocaleText>
+            <LocaleText style={[styles.milestoneLabel, { color: 10 <= level ? color : theme.textMuted }, 10 <= level && styles.milestoneLabelActive, { position: 'absolute', left: '25%' as any, transform: [{ translateX: -7 }] }]}>10</LocaleText>
+            <LocaleText style={[styles.milestoneLabel, { color: 20 <= level ? color : theme.textMuted }, 20 <= level && styles.milestoneLabelActive, { position: 'absolute', left: '50%' as any, transform: [{ translateX: -7 }] }]}>20</LocaleText>
+            <LocaleText style={[styles.milestoneLabel, { color: 30 <= level ? color : theme.textMuted }, 30 <= level && styles.milestoneLabelActive, { position: 'absolute', left: '75%' as any, transform: [{ translateX: -7 }] }]}>30</LocaleText>
+            <LocaleText style={[styles.milestoneLabel, { color: 40 <= level ? color : theme.textMuted }, 40 <= level && styles.milestoneLabelActive, { position: 'absolute', right: 0 }]}>{tHotel('myBusiness.maxLevel')}</LocaleText>
           </View>
         </View>
 
@@ -186,25 +188,25 @@ export default function BusinessCategoryScreen() {
         <View style={[styles.balanceCard, { backgroundColor: theme.surface }]}>
           <View style={styles.balanceChip}>
             <CoinIcon size={16} />
-            <Text style={styles.balanceCoin}>{formatNum(balance)}</Text>
+            <LocaleText style={styles.balanceCoin}>{formatNum(balance)}</LocaleText>
           </View>
           <View style={[styles.balanceDivider, { backgroundColor: theme.divider }]} />
           <View style={styles.balanceChip}>
             <GemIcon size={14} />
-            <Text style={styles.balanceGem}>{formatNum(gems)}</Text>
+            <LocaleText style={styles.balanceGem}>{formatNum(gems)}</LocaleText>
           </View>
           <View style={[styles.balanceDivider, { backgroundColor: theme.divider }]} />
           <View style={styles.balanceChip}>
             <Image source={TOKEN_ICONS[ft]} style={styles.tokenIcon} contentFit="contain" />
-            <Text style={[styles.balanceToken, { color }]}>{formatNum(tokenBal)}</Text>
+            <LocaleText style={[styles.balanceToken, { color }]}>{formatNum(tokenBal)}</LocaleText>
           </View>
         </View>
 
         {/* ── Businesses list ── */}
         <View style={[styles.businessesCard, { backgroundColor: theme.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.textMuted }]}>
-            {tHotel('myBusiness.businesses', { defaultValue: 'Businesses' })}
-          </Text>
+          <LocaleText style={[styles.sectionTitle, { color: theme.textMuted }]}>
+            {tHotel('myBusiness.businesses')}
+          </LocaleText>
           <View style={styles.bizGrid}>
             {businesses.map((biz) => {
               const built = builtBusinessNames.has(biz.name);
@@ -218,9 +220,9 @@ export default function BusinessCategoryScreen() {
                       : { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' },
                   ]}
                 >
-                  <Text style={[styles.bizChipText, { color: built ? color : theme.textMuted }]}>
-                    {biz.name}
-                  </Text>
+                  <LocaleText style={[styles.bizChipText, { color: built ? color : theme.textMuted }]}>
+                    {tContent(`businessNames.${biz.dreamJobs[0]}`, { defaultValue: biz.name })}
+                  </LocaleText>
                 </View>
               );
             })}
@@ -237,23 +239,23 @@ export default function BusinessCategoryScreen() {
           ]}
         >
           <LinearGradient colors={btnGradColors} style={styles.upgradeBtnGradient}>
-            <Text style={styles.upgradeBtnText}>
+            <LocaleText style={styles.upgradeBtnText}>
               {isMaxed ? tHotel('myBusiness.maxLevel') : tHotel('myBusiness.upgrade')}
-            </Text>
+            </LocaleText>
             {!isMaxed && nextCost && (
               <View style={[styles.costPill, isDark && { backgroundColor: 'rgba(0,0,0,0.35)' }]}>
                 {nextCost.kind === 'gems' ? (
                   <>
                     <GemIcon size={14} />
-                    <Text style={styles.costGems}>{formatNum(nextCost.gems)}</Text>
+                    <LocaleText style={styles.costGems}>{formatNum(nextCost.gems)}</LocaleText>
                   </>
                 ) : (
                   <>
                     <CoinIcon size={14} />
-                    <Text style={styles.costCoins}>{formatNum(nextCost.coins)}</Text>
-                    <Text style={styles.costSep}>+</Text>
+                    <LocaleText style={styles.costCoins}>{formatNum(nextCost.coins)}</LocaleText>
+                    <LocaleText style={styles.costSep}>+</LocaleText>
                     <Image source={TOKEN_ICONS[ft]} style={styles.costTokenIcon} contentFit="contain" />
-                    <Text style={[styles.costTokens, { color }]}>{nextCost.tokens}</Text>
+                    <LocaleText style={[styles.costTokens, { color }]}>{nextCost.tokens}</LocaleText>
                   </>
                 )}
               </View>
@@ -267,7 +269,7 @@ export default function BusinessCategoryScreen() {
         onPress={() => router.back()}
         style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
       >
-        <Text style={styles.closeBtnText}>✕</Text>
+        <LocaleText style={styles.closeBtnText}>✕</LocaleText>
       </Pressable>
     </AppBackground>
   );

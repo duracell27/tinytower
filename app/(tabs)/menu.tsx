@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
@@ -50,7 +51,7 @@ export default function MenuScreen() {
   return (
     <AppBackground style={styles.container}>
       <View style={styles.content}>
-        <Text style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('menu.heading')}</Text>
+        <LocaleText style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('menu.heading')}</LocaleText>
 
         <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setBoostsOpen(true)}>
           <Image
@@ -58,7 +59,7 @@ export default function MenuScreen() {
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>Boosts</Text>
+          <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('boost.title')}</LocaleText>
         </Pressable>
 
         <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setInventoryOpen(true)}>
@@ -67,7 +68,7 @@ export default function MenuScreen() {
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.inventory')}</Text>
+          <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.inventory')}</LocaleText>
         </Pressable>
 
         <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setWorkersOpen(true)}>
@@ -76,7 +77,7 @@ export default function MenuScreen() {
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.workers')}</Text>
+          <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.workers')}</LocaleText>
         </Pressable>
 
         <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setLeaderboardOpen(true)}>
@@ -85,7 +86,7 @@ export default function MenuScreen() {
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.leaderboard')}</Text>
+          <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.leaderboard')}</LocaleText>
         </Pressable>
 
         <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => router.push('/chat-screen')}>
@@ -94,7 +95,7 @@ export default function MenuScreen() {
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.chat')}</Text>
+          <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.chat')}</LocaleText>
         </Pressable>
 
         <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => router.push('/forum-screen')}>
@@ -103,7 +104,7 @@ export default function MenuScreen() {
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.forum')}</Text>
+          <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.forum')}</LocaleText>
         </Pressable>
 
         <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setUsersOpen(true)}>
@@ -112,10 +113,10 @@ export default function MenuScreen() {
             style={{ width: 56, height: 56 }}
             contentFit="contain"
           />
-          <Text style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.users')}</Text>
+          <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.users')}</LocaleText>
           {onlineCount !== null && (
             <View style={[styles.onlineBadge, isDark && { backgroundColor: 'rgba(63,165,53,0.15)' }]}>
-              <Text style={styles.onlineBadgeText}>{t('users.onlineBadge', { count: onlineCount })}</Text>
+              <LocaleText style={styles.onlineBadgeText}>{t('users.onlineBadge', { count: onlineCount })}</LocaleText>
             </View>
           )}
         </Pressable>

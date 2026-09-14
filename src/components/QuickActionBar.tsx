@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   useSharedValue,
@@ -142,7 +143,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
         onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onExit(); }}
         style={({ pressed }) => [styles.exitBtn, pressed && { opacity: 0.7 }]}
       >
-        <Text style={styles.exitIcon}>✕</Text>
+        <LocaleText style={styles.exitIcon}>✕</LocaleText>
       </Pressable>
 
       {onBulkAll && bulkLabel && (
@@ -151,9 +152,9 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
           style={({ pressed }) => [styles.bulkBtn, pressed && { opacity: 0.7 }]}
         >
           <View style={styles.bulkContent}>
-            <Text style={styles.bulkLabelText}>{bulkLabel}</Text>
+            <LocaleText style={styles.bulkLabelText}>{bulkLabel}</LocaleText>
             <GemIcon size={12} />
-            <Text style={styles.bulkCostText}>1</Text>
+            <LocaleText style={styles.bulkCostText}>1</LocaleText>
           </View>
         </Pressable>
       )}
@@ -166,20 +167,20 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
           <View style={styles.btnContent}>
             {mode === 'collect' ? (
               <>
-                <Text style={styles.btnLabel}>{label}</Text>
+                <LocaleText style={styles.btnLabel}>{label}</LocaleText>
                 <CoinIcon size={18} />
-                <Text style={styles.btnLabel}>{collectAmount ?? '…'}</Text>
+                <LocaleText style={styles.btnLabel}>{collectAmount ?? '…'}</LocaleText>
               </>
             ) : mode === 'buy' && buyInfo ? (
               <>
-                <Text style={[styles.btnLabel, styles.btnLabelFlex]} numberOfLines={1}>{label}</Text>
+                <LocaleText style={[styles.btnLabel, styles.btnLabelFlex]} numberOfLines={1}>{label}</LocaleText>
                 <CoinIcon size={18} />
-                <Text style={styles.btnLabel}>{buyInfo.amount}</Text>
+                <LocaleText style={styles.btnLabel}>{buyInfo.amount}</LocaleText>
               </>
             ) : (
               <>
                 <ModeIcon mode={mode} />
-                <Text style={styles.btnLabel} numberOfLines={1}>{label}</Text>
+                <LocaleText style={styles.btnLabel} numberOfLines={1}>{label}</LocaleText>
               </>
             )}
           </View>

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal, Dimensions } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
@@ -71,31 +72,31 @@ export default function TokenInsufficientModal({ asOverlay = false }: { asOverla
             <Image source={TOKEN_ICONS[ft]} style={styles.tokenImg} contentFit="contain" />
           </View>
 
-          <Text style={styles.title}>{t('myBusiness.notEnoughTokens')}</Text>
+          <LocaleText style={styles.title}>{t('myBusiness.notEnoughTokens')}</LocaleText>
 
           <View style={styles.deficitCard}>
             <View style={styles.deficitRow}>
               <View style={styles.deficitCell}>
-                <Text style={styles.deficitLabel}>{t('myBusiness.have')}</Text>
+                <LocaleText style={styles.deficitLabel}>{t('myBusiness.have')}</LocaleText>
                 <View style={styles.deficitValueRow}>
                   <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
-                  <Text style={[styles.deficitValue, { color }]}>{formatNum(payload.have)}</Text>
+                  <LocaleText style={[styles.deficitValue, { color }]}>{formatNum(payload.have)}</LocaleText>
                 </View>
               </View>
-              <Text style={styles.arrow}>→</Text>
+              <LocaleText style={styles.arrow}>→</LocaleText>
               <View style={styles.deficitCell}>
-                <Text style={styles.deficitLabel}>{t('myBusiness.need')}</Text>
+                <LocaleText style={styles.deficitLabel}>{t('myBusiness.need')}</LocaleText>
                 <View style={styles.deficitValueRow}>
                   <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
-                  <Text style={[styles.deficitValue, { color }]}>{formatNum(payload.need)}</Text>
+                  <LocaleText style={[styles.deficitValue, { color }]}>{formatNum(payload.need)}</LocaleText>
                 </View>
               </View>
             </View>
             <View style={styles.missingRow}>
-              <Text style={styles.missingLabel}>{t('myBusiness.missing')}:</Text>
+              <LocaleText style={styles.missingLabel}>{t('myBusiness.missing')}:</LocaleText>
               <View style={styles.deficitValueRow}>
                 <Image source={TOKEN_ICONS[ft]} style={styles.deficitIcon} contentFit="contain" />
-                <Text style={styles.missingValue}>{formatNum(payload.need - payload.have)}</Text>
+                <LocaleText style={styles.missingValue}>{formatNum(payload.need - payload.have)}</LocaleText>
               </View>
             </View>
           </View>
@@ -105,13 +106,13 @@ export default function TokenInsufficientModal({ asOverlay = false }: { asOverla
             style={({ pressed }) => [styles.shopBtn, pressed && { opacity: 0.85 }]}
           >
             <LinearGradient colors={['#52A6E2', '#3B8BCB']} style={styles.shopBtnGradient}>
-              <Text style={styles.shopBtnText}>{t('myBusiness.goToShop')}</Text>
+              <LocaleText style={styles.shopBtnText}>{t('myBusiness.goToShop')}</LocaleText>
             </LinearGradient>
             <View style={styles.shopBtnShadow} />
           </Pressable>
 
           <Pressable onPress={clearTokenInsufficient} style={styles.closeBtn}>
-            <Text style={styles.closeBtnText}>{t('myBusiness.cancel')}</Text>
+            <LocaleText style={styles.closeBtnText}>{t('myBusiness.cancel')}</LocaleText>
           </Pressable>
 
         </LinearGradient>

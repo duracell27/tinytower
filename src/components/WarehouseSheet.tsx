@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   View, Text, Modal, Pressable, StyleSheet, Dimensions,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import Animated, {
   useAnimatedStyle, useSharedValue, withTiming, withSpring, Easing, runOnJS,
@@ -28,13 +29,13 @@ const TIMING = { duration: 380, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const CLOSE_THRESHOLD = 80;
 const CLOSE_VELOCITY = 500;
 
-const TOOLS: { key: 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement'; label: string; image: ReturnType<typeof require> }[] = [
-  { key: 'briks',  label: 'Bricks',  image: require('../../assets/img/tools/briks.png') },
-  { key: 'glass',  label: 'Glass',   image: require('../../assets/img/tools/glass.png') },
-  { key: 'nails',  label: 'Nails',   image: require('../../assets/img/tools/nails.png') },
-  { key: 'screw',  label: 'Screws',  image: require('../../assets/img/tools/screw.png') },
-  { key: 'wood',   label: 'Wood',    image: require('../../assets/img/tools/wood.png') },
-  { key: 'cement', label: 'Cement',  image: require('../../assets/img/tools/cement.png') },
+const TOOLS: { key: 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement'; image: ReturnType<typeof require> }[] = [
+  { key: 'briks',  image: require('../../assets/img/tools/briks.png') },
+  { key: 'glass',  image: require('../../assets/img/tools/glass.png') },
+  { key: 'nails',  image: require('../../assets/img/tools/nails.png') },
+  { key: 'screw',  image: require('../../assets/img/tools/screw.png') },
+  { key: 'wood',   image: require('../../assets/img/tools/wood.png') },
+  { key: 'cement', image: require('../../assets/img/tools/cement.png') },
 ];
 
 interface WarehouseSheetProps {
@@ -135,9 +136,9 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                   style={{ width: 24, height: 24 }}
                   contentFit="contain"
                 />
-                <Text style={styles.title}>{t('menu.warehouseTitle')}</Text>
+                <LocaleText style={styles.title}>{t('menu.warehouseTitle')}</LocaleText>
                 <View style={[styles.capacityPill, { backgroundColor: pillBg }]}>
-                  <Text style={styles.capacityPillText}>{total}/{capacity}</Text>
+                  <LocaleText style={styles.capacityPillText}>{total}/{capacity}</LocaleText>
                 </View>
                 <Pressable onPress={onClose} style={styles.closeBtn}>
                   <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
@@ -158,7 +159,7 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                   {nextCost.currency === 'coins'
                     ? <CoinIcon size={13} />
                     : <GemIcon size={13} />}
-                  <Text style={styles.upgradeChipText}>{formatNum(nextCost.amount)}</Text>
+                  <LocaleText style={styles.upgradeChipText}>{formatNum(nextCost.amount)}</LocaleText>
                 </Pressable>
               )}
             </View>
@@ -169,9 +170,9 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                 {TOOLS.map((tool) => (
                   <View key={tool.key} style={[styles.cell, { backgroundColor: isDark ? theme.surfaceCard : '#fff' }]}>
                     <Image source={tool.image} style={{ width: 40, height: 40 }} contentFit="contain" />
-                    <Text style={[styles.cellLabel, { color: theme.text }]}>{tool.label}</Text>
+                    <LocaleText style={[styles.cellLabel, { color: theme.text }]}>{t(`shop.packs.mat_${tool.key}.name`)}</LocaleText>
                     <View style={[styles.countBadge, { backgroundColor: isDark ? theme.divider : '#F0F2F5' }]}>
-                      <Text style={[styles.countText, { color: isDark ? '#A0AABC' : '#5B6472' }]}>{counts[tool.key]}</Text>
+                      <LocaleText style={[styles.countText, { color: isDark ? '#A0AABC' : '#5B6472' }]}>{counts[tool.key]}</LocaleText>
                     </View>
                   </View>
                 ))}
@@ -191,17 +192,17 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                   contentFit="contain"
                 />
               </View>
-              <Text style={[styles.confirmTitle, { color: theme.text }]}>
+              <LocaleText style={[styles.confirmTitle, { color: theme.text }]}>
                 {t('warehouse.upgradeConfirmTitle')}
-              </Text>
+              </LocaleText>
               <View style={styles.confirmCostRow}>
                 {nextCost.currency === 'coins' ? <CoinIcon size={22} /> : <GemIcon size={22} />}
-                <Text style={[
+                <LocaleText style={[
                   styles.confirmCostAmount,
                   { color: nextCost.currency === 'coins' ? '#E5A41C' : '#2592AB' },
                 ]}>
                   {formatNum(nextCost.amount)}
-                </Text>
+                </LocaleText>
               </View>
               <Pressable
                 onPress={() => {
@@ -210,12 +211,12 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
                 }}
                 style={({ pressed }) => [styles.confirmBtn, pressed && { opacity: 0.85 }]}
               >
-                <Text style={styles.confirmBtnText}>{t('warehouse.upgradeConfirmOk')}</Text>
+                <LocaleText style={styles.confirmBtnText}>{t('warehouse.upgradeConfirmOk')}</LocaleText>
               </Pressable>
               <Pressable onPress={() => setShowUpgradeConfirm(false)} style={styles.confirmCancelBtn}>
-                <Text style={[styles.confirmCancelText, { color: isDark ? theme.textMuted : '#5A6478' }]}>
+                <LocaleText style={[styles.confirmCancelText, { color: isDark ? theme.textMuted : '#5A6478' }]}>
                   {t('warehouse.upgradeConfirmCancel')}
-                </Text>
+                </LocaleText>
               </Pressable>
             </Pressable>
           </Pressable>

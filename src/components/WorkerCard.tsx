@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { FLOOR_TYPE_SCHEMES } from './FloorCard';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -119,9 +120,9 @@ export default function WorkerCard({
         <View style={styles.infoColumn}>
           {/* Name row */}
           <View style={styles.nameRow}>
-            <Text style={[styles.nameText, isDark && { color: theme.text }]} numberOfLines={1}>
+            <LocaleText style={[styles.nameText, isDark && { color: theme.text }]} numberOfLines={1}>
               {worker.name}
-            </Text>
+            </LocaleText>
 {isBetterCandidate && (
               <Animated.View style={arrowStyle}>
                 <Image
@@ -144,9 +145,9 @@ export default function WorkerCard({
                 strokeLinejoin="round"
               />
             </Svg>
-            <Text style={[styles.dreamJobText, { color: dreamAccent }]}>
+            <LocaleText style={[styles.dreamJobText, { color: dreamAccent }]}>
               {`${dreamFloorName ?? dreamBusinessName ?? category} · ${dreamJobName}`}
-            </Text>
+            </LocaleText>
           </View>
 
           {/* Status row */}
@@ -167,17 +168,17 @@ export default function WorkerCard({
                 strokeLinejoin="round"
               />
             </Svg>
-            <Text style={[styles.statusText, isDark && { color: '#5A6470' }]}>{statusText}</Text>
+            <LocaleText style={[styles.statusText, isDark && { color: '#5A6470' }]}>{statusText}</LocaleText>
           </View>
         </View>
 
         {/* Level + chevron */}
         <View style={styles.levelBlock}>
           <View style={styles.levelInner}>
-            <Text style={styles.levelLabel}>{t('workerCard.level')}</Text>
-            <Text style={[styles.levelNumber, { color: accent }]}>
+            <LocaleText style={styles.levelLabel}>{t('workerCard.level')}</LocaleText>
+            <LocaleText style={[styles.levelNumber, { color: accent }]}>
               {worker.level}
-            </Text>
+            </LocaleText>
           </View>
           <Animated.View style={chevronStyle}>
             <Svg width={9} height={14} viewBox="0 0 9 14" fill="none">
@@ -220,7 +221,7 @@ export default function WorkerCard({
               colors={['#72C24F', '#5BA63C']}
               style={styles.actionButtonGradient}
             >
-              <Text style={styles.actionButtonText}>{t('workerCard.actions.findJob')}</Text>
+              <LocaleText style={styles.actionButtonText}>{t('workerCard.actions.findJob')}</LocaleText>
             </LinearGradient>
             <View
               style={[
@@ -242,7 +243,7 @@ export default function WorkerCard({
               colors={['#E2685A', '#CC4A3C']}
               style={styles.actionButtonGradient}
             >
-              <Text style={styles.actionButtonText}>{t('workerCard.actions.evict')}</Text>
+              <LocaleText style={styles.actionButtonText}>{t('workerCard.actions.evict')}</LocaleText>
             </LinearGradient>
             <View
               style={[
@@ -253,9 +254,9 @@ export default function WorkerCard({
           </Pressable>
 
           {/* Hint */}
-          <Text style={[styles.hintText, isDark && { color: '#5A6470' }]}>
+          <LocaleText style={[styles.hintText, isDark && { color: '#5A6470' }]}>
             {t('workerCard.hint')}
-          </Text>
+          </LocaleText>
         </View>
       </Animated.View>
     </View>
@@ -267,8 +268,8 @@ function InfoRow({ label, value, valueColor }: { label: string; value: string; v
   const { isDark } = theme;
   return (
     <View style={styles.infoRow}>
-      <Text style={[styles.infoRowLabel, isDark && { color: theme.textMuted }]}>{label}</Text>
-      <Text style={[styles.infoRowValue, isDark && { color: theme.text }, valueColor ? { color: valueColor } : undefined]}>{value}</Text>
+      <LocaleText style={[styles.infoRowLabel, isDark && { color: theme.textMuted }]}>{label}</LocaleText>
+      <LocaleText style={[styles.infoRowValue, isDark && { color: theme.text }, valueColor ? { color: valueColor } : undefined]}>{value}</LocaleText>
     </View>
   );
 }

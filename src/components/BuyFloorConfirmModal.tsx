@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -67,21 +68,21 @@ export default function BuyFloorConfirmModal({ visible, floorId, price, currency
               <Image source={BUILDER_ICON} style={s.builderIcon} contentFit="contain" />
             </View>
 
-            <Text style={s.title}>Build Floor {floorId}?</Text>
-            <Text style={s.subtitle}>{t('buyFloorConfirm.subtitle')}</Text>
+            <LocaleText style={s.title}>{t('buyFloorConfirm.title', { floorId })}</LocaleText>
+            <LocaleText style={s.subtitle}>{t('buyFloorConfirm.subtitle')}</LocaleText>
 
             {/* Price chip */}
             <View style={s.priceCard}>
-              <Text style={s.priceLabel}>{t('buyFloorConfirm.cost')}</Text>
+              <LocaleText style={s.priceLabel}>{t('buyFloorConfirm.cost')}</LocaleText>
               <View style={s.priceRow}>
                 <Image
                   source={isGems ? DIAMOND_ICON : COIN_ICON}
                   style={s.priceIcon}
                   contentFit="contain"
                 />
-                <Text style={[s.priceValue, isGems ? s.gemText : s.coinText]}>
+                <LocaleText style={[s.priceValue, isGems ? s.gemText : s.coinText]}>
                   {formatNum(price)}
-                </Text>
+                </LocaleText>
               </View>
             </View>
 
@@ -91,14 +92,14 @@ export default function BuyFloorConfirmModal({ visible, floorId, price, currency
               onPress={onConfirm}
             >
               <LinearGradient colors={['#74D44F', '#5BA63C']} style={s.btnGradient}>
-                <Text style={s.btnText}>{t('buyFloorConfirm.build')}</Text>
+                <LocaleText style={s.btnText}>{t('buyFloorConfirm.build')}</LocaleText>
               </LinearGradient>
               <View style={s.btnShadow} />
             </Pressable>
 
             {/* Cancel */}
             <Pressable onPress={onCancel} style={s.cancelBtn} hitSlop={8}>
-              <Text style={s.cancelText}>{t('buyFloorConfirm.cancel')}</Text>
+              <LocaleText style={s.cancelText}>{t('buyFloorConfirm.cancel')}</LocaleText>
             </Pressable>
           </LinearGradient>
         </Animated.View>

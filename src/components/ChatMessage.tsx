@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import type { ChatMessage as ChatMessageType } from '../stores/chatStore';
 import { getUserIcon } from '../utils/userIcon';
@@ -43,12 +44,12 @@ export default function ChatMessage({ message, isOwn, isAdmin, canReport, onLong
         style={[styles.bubble, isOwn ? styles.bubbleOwn : [styles.bubbleOther, isDark && { backgroundColor: theme.surfaceCard }]]}
       >
         <View style={styles.header}>
-          <Text style={[styles.name, isOwn && styles.nameOwn]}>{message.playerName}</Text>
-          <Text style={[styles.time, isOwn ? styles.timeOwn : { color: isDark ? '#5A6470' : '#aaa' }]}>{formatTime(message.createdAt)}</Text>
+          <LocaleText style={[styles.name, isOwn && styles.nameOwn]}>{message.playerName}</LocaleText>
+          <LocaleText style={[styles.time, isOwn ? styles.timeOwn : { color: isDark ? '#5A6470' : '#aaa' }]}>{formatTime(message.createdAt)}</LocaleText>
         </View>
-        <Text style={[styles.body, isOwn ? styles.bodyOwn : { color: theme.text }]}>
-          {blocked ? <Text style={styles.blockedText}>From blocked user</Text> : message.body}
-        </Text>
+        <LocaleText style={[styles.body, isOwn ? styles.bodyOwn : { color: theme.text }]}>
+          {blocked ? <LocaleText style={styles.blockedText}>From blocked user</LocaleText> : message.body}
+        </LocaleText>
       </Pressable>
     </View>
   );

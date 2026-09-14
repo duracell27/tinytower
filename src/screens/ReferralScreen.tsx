@@ -3,6 +3,7 @@ import {
   View, Text, Pressable, StyleSheet, ScrollView,
   Share, ActivityIndicator, TextInput, useColorScheme,
 } from 'react-native';
+import LocaleText from '../components/LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { InfoSection } from '../components/InfoSection';
 import { Image } from 'expo-image';
@@ -53,24 +54,24 @@ function MilestoneRow({
   return (
     <View style={styles.milestoneRow}>
       <Image source={claimed ? ICON_OK : ICON_CLOCK} style={styles.milestoneIcon} contentFit="contain" />
-      <Text style={[styles.milestoneLabel, isDark && { color: '#8A9A80' }]}>{label}</Text>
+      <LocaleText style={[styles.milestoneLabel, isDark && { color: '#8A9A80' }]}>{label}</LocaleText>
       <View style={{ flex: 1 }} />
       {claimed ? (
         <View style={styles.milestoneValueRow}>
-          <Text style={styles.milestoneEarned}>{rewardLabel} </Text>
+          <LocaleText style={styles.milestoneEarned}>{rewardLabel} </LocaleText>
           <Image source={rewardIcon} style={styles.diamondIcon} contentFit="contain" />
-          <Text style={styles.milestoneEarned}> {t('referrals.claimed')}</Text>
+          <LocaleText style={styles.milestoneEarned}> {t('referrals.claimed')}</LocaleText>
         </View>
       ) : reachable ? (
         <View style={styles.milestoneValueRow}>
-          <Text style={styles.milestonePending}>{rewardLabel} </Text>
+          <LocaleText style={styles.milestonePending}>{rewardLabel} </LocaleText>
           <Image source={rewardIcon} style={styles.diamondIcon} contentFit="contain" />
-          <Text style={styles.milestonePending}> {t('referrals.pending')}</Text>
+          <LocaleText style={styles.milestonePending}> {t('referrals.pending')}</LocaleText>
         </View>
       ) : currentLevel !== undefined ? (
-        <Text style={styles.milestonePending}>lv {currentLevel}</Text>
+        <LocaleText style={styles.milestonePending}>lv {currentLevel}</LocaleText>
       ) : (
-        <Text style={styles.milestonePending}>{t('referrals.notReached')}</Text>
+        <LocaleText style={styles.milestonePending}>{t('referrals.notReached')}</LocaleText>
       )}
     </View>
   );
@@ -83,7 +84,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
     <View style={[styles.referralCard, isDark && { backgroundColor: '#252D42' }]}>
       <View style={styles.referralNameRow}>
         <Image source={getUserIcon(entry.referredLevel)} style={styles.referralAvatar} contentFit="cover" />
-        <Text style={[styles.referralName, isDark && { color: '#DDE8D8' }]}>{entry.referredName}</Text>
+        <LocaleText style={[styles.referralName, isDark && { color: '#DDE8D8' }]}>{entry.referredName}</LocaleText>
       </View>
       <MilestoneRow
         label={t('referrals.milestoneRegistration')}
@@ -111,9 +112,9 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
       {entry.gemBonusEarned > 0 && (
         <View style={styles.milestoneRow}>
           <Image source={ICON_GEM_BONUS} style={styles.milestoneIcon} contentFit="contain" />
-          <Text style={styles.milestoneLabel}>{t('referrals.purchaseBonus')}</Text>
+          <LocaleText style={styles.milestoneLabel}>{t('referrals.purchaseBonus')}</LocaleText>
           <View style={{ flex: 1 }} />
-          <Text style={styles.milestoneEarned}>+{entry.gemBonusEarned} 💎</Text>
+          <LocaleText style={styles.milestoneEarned}>+{entry.gemBonusEarned} 💎</LocaleText>
         </View>
       )}
     </View>
@@ -192,7 +193,7 @@ export default function ReferralScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <View style={styles.headingRow}>
-            <Text style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('referrals.title')}</Text>
+            <LocaleText style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('referrals.title')}</LocaleText>
             <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
               <Image
                 source={require('../../assets/img/InformationIcon.png')}
@@ -208,7 +209,7 @@ export default function ReferralScreen() {
                 onPress={handleToggle}
                 style={styles.applyHeader}
               >
-                <Text style={[styles.applyLabel, isDark && { color: '#8A9A80' }]}>{t('referrals.applyLabel')}</Text>
+                <LocaleText style={[styles.applyLabel, isDark && { color: '#8A9A80' }]}>{t('referrals.applyLabel')}</LocaleText>
                 <Animated.View style={chevronStyle}>
                   <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
                     <Path
@@ -246,11 +247,11 @@ export default function ReferralScreen() {
                       {isApplying ? (
                         <ActivityIndicator size="small" color="#fff" />
                       ) : (
-                        <Text style={styles.applyBtnText}>{t('referrals.apply')}</Text>
+                        <LocaleText style={styles.applyBtnText}>{t('referrals.apply')}</LocaleText>
                       )}
                     </Pressable>
                   </View>
-                  {applyError ? <Text style={styles.applyError}>{applyError}</Text> : null}
+                  {applyError ? <LocaleText style={styles.applyError}>{applyError}</LocaleText> : null}
                 </>
               )}
             </View>
@@ -258,38 +259,38 @@ export default function ReferralScreen() {
 
           {hasUsedCode && referrerName && (
             <View style={[styles.referredByCard, isDark && { backgroundColor: '#252D42' }]}>
-              <Text style={styles.referredByLabel}>{t('referrals.invitedBy')}</Text>
+              <LocaleText style={styles.referredByLabel}>{t('referrals.invitedBy')}</LocaleText>
               <View style={styles.referredByRow}>
                 <Image
                   source={require('../../assets/img/profile/ReferralProfileIcon.png')}
                   style={styles.referredByIcon}
                   contentFit="contain"
                 />
-                <Text style={[styles.referredByName, isDark && { color: '#DDE8D8' }]}>{referrerName}</Text>
+                <LocaleText style={[styles.referredByName, isDark && { color: '#DDE8D8' }]}>{referrerName}</LocaleText>
               </View>
             </View>
           )}
 
           <View style={[styles.codeCard, isDark && { backgroundColor: '#252D42' }]}>
-            <Text style={[styles.codeLabel, isDark && { color: '#8A9A80' }]}>{t('referrals.yourCode')}</Text>
+            <LocaleText style={[styles.codeLabel, isDark && { color: '#8A9A80' }]}>{t('referrals.yourCode')}</LocaleText>
             <View style={styles.codeRow}>
-              <Text style={[styles.codeText, isDark && { color: '#DDE8D8' }]}>{code ?? '------'}</Text>
+              <LocaleText style={[styles.codeText, isDark && { color: '#DDE8D8' }]}>{code ?? '------'}</LocaleText>
               <Pressable onPress={handleCopy} style={({ pressed }) => [styles.copyBtn, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }, pressed && { opacity: 0.7 }]}>
-                <Text style={styles.copyBtnText}>{copied ? t('referrals.copied') : t('referrals.copy')}</Text>
+                <LocaleText style={styles.copyBtnText}>{copied ? t('referrals.copied') : t('referrals.copy')}</LocaleText>
               </Pressable>
             </View>
             <Pressable onPress={handleShare} style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.85 }]}>
-              <Text style={styles.shareBtnText}>{t('referrals.share')}</Text>
+              <LocaleText style={styles.shareBtnText}>{t('referrals.share')}</LocaleText>
             </Pressable>
           </View>
 
           {referrals.length === 0 ? (
             <View style={[styles.emptyCard, isDark && { backgroundColor: '#252D42' }]}>
-              <Text style={styles.emptyText}>{t('referrals.empty')}</Text>
+              <LocaleText style={styles.emptyText}>{t('referrals.empty')}</LocaleText>
             </View>
           ) : (
             <>
-              <Text style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{t('referrals.invitedPlayers')}</Text>
+              <LocaleText style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{t('referrals.invitedPlayers')}</LocaleText>
               {referrals.map((entry) => (
                 <ReferralCard key={entry.id} entry={entry} />
               ))}
@@ -302,7 +303,7 @@ export default function ReferralScreen() {
         onPress={() => router.back()}
         style={({ pressed }) => [styles.closeBtn, pressed && styles.closeBtnPressed]}
       >
-        <Text style={styles.closeBtnText}>✕</Text>
+        <LocaleText style={styles.closeBtnText}>✕</LocaleText>
       </Pressable>
 
       {infoVisible && (
@@ -310,9 +311,9 @@ export default function ReferralScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, isDark && { backgroundColor: '#2A2F38' }]}>
             <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>{t('referrals.title')}</Text>
+              <LocaleText style={styles.infoCardTitle}>{t('referrals.title')}</LocaleText>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
-                <Text style={styles.infoCardClose}>✕</Text>
+                <LocaleText style={styles.infoCardClose}>✕</LocaleText>
               </Pressable>
             </LinearGradient>
             <View style={styles.infoCardBody}>

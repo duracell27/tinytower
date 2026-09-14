@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Image, ImageBackground, ScrollView, LayoutChangeEvent, useColorScheme, LayoutAnimation, Platform, UIManager, Modal } from 'react-native';
+import LocaleText from '../../src/components/LocaleText';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -946,13 +947,13 @@ export default function GameScreen() {
               onPress={() => { useAuthStore.getState().requestConvertModal(); router.navigate('/(tabs)/profile'); }}
               style={({ pressed }) => [styles.registerBanner, pressed && { opacity: 0.82 }]}
             >
-              <Text style={styles.registerBannerText}>Save Progress — get </Text>
+              <LocaleText style={styles.registerBannerText}>Save Progress — get </LocaleText>
               <Image
                 source={require('../../assets/img/diamond.png')}
                 style={styles.registerBannerGem}
                 resizeMode="contain"
               />
-              <Text style={styles.registerBannerText}> 5 free gems!</Text>
+              <LocaleText style={styles.registerBannerText}> 5 free gems!</LocaleText>
             </Pressable>
           )}
         </View>
@@ -1232,9 +1233,9 @@ function TowerCollapseDiv({
         hitSlop={10}
       >
         <Chevron collapsed={collapsed} />
-        <Text style={divStyles.label}>
+        <LocaleText style={divStyles.label}>
           {collapsed ? `show all ${hiddenCount}` : 'show less'}
-        </Text>
+        </LocaleText>
         <Chevron collapsed={collapsed} />
       </Pressable>
       <View style={divStyles.line} />

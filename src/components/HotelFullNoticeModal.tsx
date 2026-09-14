@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
+import LocaleText from './LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
@@ -37,8 +38,8 @@ export default function HotelFullNoticeModal() {
             <HotelIcon size={32} color="#A8475F" />
           </View>
           <View style={styles.info}>
-            <Text style={styles.title}>{t('hotelFullPopup.title')}</Text>
-            <Text style={styles.subtitle}>{t('hotelFullPopup.subtitle')}</Text>
+            <LocaleText style={styles.title}>{t('hotelFullPopup.title')}</LocaleText>
+            <LocaleText style={styles.subtitle}>{t('hotelFullPopup.subtitle')}</LocaleText>
           </View>
           <Pressable
             onPress={handleGoToHotel}
@@ -46,11 +47,11 @@ export default function HotelFullNoticeModal() {
           >
             <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.btnGradient}>
               <HotelIcon size={16} color="#fff" />
-              <Text style={styles.btnText}>{t('hotelFullPopup.goToHotel')}</Text>
+              <LocaleText style={styles.btnText}>{t('hotelFullPopup.goToHotel')}</LocaleText>
             </LinearGradient>
           </Pressable>
           <Pressable onPress={dismiss} style={styles.dismissBtn}>
-            <Text style={styles.dismissText}>{t('hotelFullPopup.dismiss')}</Text>
+            <LocaleText style={styles.dismissText}>{t('hotelFullPopup.dismiss')}</LocaleText>
           </Pressable>
         </Pressable>
       </Pressable>

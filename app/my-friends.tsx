@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator,
 } from 'react-native';
+import LocaleText from '../src/components/LocaleText';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -43,10 +44,10 @@ function FriendRow({ entry, onRemove, theme }: {
     >
       <Image source={getUserIcon(entry.playerLevel)} style={fStyles.avatar} contentFit="cover" />
       <View style={fStyles.info}>
-        <Text style={[fStyles.name, { color: theme.text }]}>{entry.playerName}</Text>
+        <LocaleText style={[fStyles.name, { color: theme.text }]}>{entry.playerName}</LocaleText>
         <View style={fStyles.subRow}>
           <OnlineDot lastSeenAt={entry.lastSeenAt} />
-          <Text style={[fStyles.level, { color: theme.textMuted }]}>{t('friends.level', { level: entry.playerLevel })}</Text>
+          <LocaleText style={[fStyles.level, { color: theme.textMuted }]}>{t('friends.level', { level: entry.playerLevel })}</LocaleText>
         </View>
       </View>
       <Pressable
@@ -55,7 +56,7 @@ function FriendRow({ entry, onRemove, theme }: {
         hitSlop={8}
       >
         <Image source={CANCEL_ICON} style={fStyles.removeIcon} contentFit="contain" />
-        <Text style={fStyles.removeBtnText}>{t('friends.remove')}</Text>
+        <LocaleText style={fStyles.removeBtnText}>{t('friends.remove')}</LocaleText>
       </Pressable>
     </Pressable>
   );
@@ -93,8 +94,8 @@ function RequestRow({ entry, onAccept, onReject, theme }: {
       >
         <Image source={getUserIcon(entry.playerLevel)} style={rStyles.avatar} contentFit="cover" />
         <View style={rStyles.info}>
-          <Text style={[rStyles.name, { color: theme.text }]}>{entry.playerName}</Text>
-          <Text style={[rStyles.level, { color: theme.textMuted }]}>{t('friends.level', { level: entry.playerLevel })}</Text>
+          <LocaleText style={[rStyles.name, { color: theme.text }]}>{entry.playerName}</LocaleText>
+          <LocaleText style={[rStyles.level, { color: theme.textMuted }]}>{t('friends.level', { level: entry.playerLevel })}</LocaleText>
         </View>
       </Pressable>
       <View style={rStyles.actions}>
@@ -102,13 +103,13 @@ function RequestRow({ entry, onAccept, onReject, theme }: {
           style={({ pressed }) => [rStyles.acceptBtn, pressed && { opacity: 0.8 }]}
           onPress={onAccept}
         >
-          <Text style={rStyles.acceptText}>{t('friends.accept')}</Text>
+          <LocaleText style={rStyles.acceptText}>{t('friends.accept')}</LocaleText>
         </Pressable>
         <Pressable
           style={({ pressed }) => [rStyles.rejectBtn, pressed && { opacity: 0.8 }]}
           onPress={onReject}
         >
-          <Text style={rStyles.rejectText}>{t('friends.reject')}</Text>
+          <LocaleText style={rStyles.rejectText}>{t('friends.reject')}</LocaleText>
         </Pressable>
       </View>
     </View>
@@ -149,8 +150,8 @@ function OutgoingRow({ entry, onCancel, theme }: {
     >
       <Image source={getUserIcon(entry.playerLevel)} style={fStyles.avatar} contentFit="cover" />
       <View style={fStyles.info}>
-        <Text style={[fStyles.name, { color: theme.text }]}>{entry.playerName}</Text>
-        <Text style={[fStyles.level, { color: theme.textMuted }]}>{t('friends.level', { level: entry.playerLevel })}</Text>
+        <LocaleText style={[fStyles.name, { color: theme.text }]}>{entry.playerName}</LocaleText>
+        <LocaleText style={[fStyles.level, { color: theme.textMuted }]}>{t('friends.level', { level: entry.playerLevel })}</LocaleText>
       </View>
       <Pressable
         style={({ pressed }) => [fStyles.removeBtn, pressed && { opacity: 0.7 }]}
@@ -158,7 +159,7 @@ function OutgoingRow({ entry, onCancel, theme }: {
         hitSlop={8}
       >
         <Image source={CANCEL_ICON} style={fStyles.removeIcon} contentFit="contain" />
-        <Text style={fStyles.removeBtnText}>{t('friends.cancel')}</Text>
+        <LocaleText style={fStyles.removeBtnText}>{t('friends.cancel')}</LocaleText>
       </Pressable>
     </Pressable>
   );
@@ -201,12 +202,12 @@ export default function MyFriendsScreen() {
     <AppBackground style={{ flex: 1 }}>
 
       <View style={headerStyles.header}>
-        <Text style={[headerStyles.title, { color: theme.text }]}>{t('friends.title')}</Text>
+        <LocaleText style={[headerStyles.title, { color: theme.text }]}>{t('friends.title')}</LocaleText>
         <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
           <Image source={INFO_ICON} style={headerStyles.infoIcon} contentFit="contain" />
         </Pressable>
       </View>
-      <Text style={[headerStyles.subtitle, { color: theme.textMuted }]}>{t('friends.subtitle')}</Text>
+      <LocaleText style={[headerStyles.subtitle, { color: theme.textMuted }]}>{t('friends.subtitle')}</LocaleText>
 
       {/* Tab bar */}
       <View style={[tabStyles.bar, { borderBottomColor: theme.divider }]}>
@@ -214,9 +215,9 @@ export default function MyFriendsScreen() {
           style={[tabStyles.tab, activeTab === 'friends' && tabStyles.tabActive]}
           onPress={() => setActiveTab('friends')}
         >
-          <Text style={[tabStyles.tabText, { color: activeTab === 'friends' ? '#3FA535' : theme.textMuted }]}>
+          <LocaleText style={[tabStyles.tabText, { color: activeTab === 'friends' ? '#3FA535' : theme.textMuted }]}>
             {t('friends.tabFriends')}{friends.length > 0 ? ` (${friends.length})` : ''}
-          </Text>
+          </LocaleText>
           {activeTab === 'friends' && <View style={tabStyles.indicator} />}
         </Pressable>
 
@@ -226,11 +227,11 @@ export default function MyFriendsScreen() {
             onPress={() => setActiveTab('requests')}
           >
             <View style={tabStyles.tabWithBadge}>
-              <Text style={[tabStyles.tabText, { color: activeTab === 'requests' ? '#3FA535' : theme.textMuted }]}>
+              <LocaleText style={[tabStyles.tabText, { color: activeTab === 'requests' ? '#3FA535' : theme.textMuted }]}>
                 {t('friends.tabRequests')}
-              </Text>
+              </LocaleText>
               <View style={tabStyles.badge}>
-                <Text style={tabStyles.badgeText}>{pendingCount}</Text>
+                <LocaleText style={tabStyles.badgeText}>{pendingCount}</LocaleText>
               </View>
             </View>
             {activeTab === 'requests' && <View style={tabStyles.indicator} />}
@@ -242,9 +243,9 @@ export default function MyFriendsScreen() {
             style={[tabStyles.tab, activeTab === 'sent' && tabStyles.tabActive]}
             onPress={() => setActiveTab('sent')}
           >
-            <Text style={[tabStyles.tabText, { color: activeTab === 'sent' ? '#3FA535' : theme.textMuted }]}>
+            <LocaleText style={[tabStyles.tabText, { color: activeTab === 'sent' ? '#3FA535' : theme.textMuted }]}>
               {t('friends.tabSent')} ({outgoingRequests.length})
-            </Text>
+            </LocaleText>
             {activeTab === 'sent' && <View style={tabStyles.indicator} />}
           </Pressable>
         )}
@@ -260,7 +261,7 @@ export default function MyFriendsScreen() {
           {activeTab === 'friends' && (
             <View style={[listStyles.card, { backgroundColor: theme.surface }]}>
               {friends.length === 0 ? (
-                <Text style={[listStyles.emptyText, { color: theme.textMuted }]}>{t('friends.emptyFriends')}</Text>
+                <LocaleText style={[listStyles.emptyText, { color: theme.textMuted }]}>{t('friends.emptyFriends')}</LocaleText>
               ) : (
                 friends.map((entry, idx) => (
                   <FriendRow
@@ -280,7 +281,7 @@ export default function MyFriendsScreen() {
           {activeTab === 'requests' && (
             <View style={[listStyles.card, { backgroundColor: theme.surface }]}>
               {incomingRequests.length === 0 ? (
-                <Text style={[listStyles.emptyText, { color: theme.textMuted }]}>{t('friends.emptyRequests')}</Text>
+                <LocaleText style={[listStyles.emptyText, { color: theme.textMuted }]}>{t('friends.emptyRequests')}</LocaleText>
               ) : (
                 incomingRequests.map((entry) => (
                   <RequestRow
@@ -304,7 +305,7 @@ export default function MyFriendsScreen() {
           {activeTab === 'sent' && (
             <View style={[listStyles.card, { backgroundColor: theme.surface }]}>
               {outgoingRequests.length === 0 ? (
-                <Text style={[listStyles.emptyText, { color: theme.textMuted }]}>{t('friends.emptySent')}</Text>
+                <LocaleText style={[listStyles.emptyText, { color: theme.textMuted }]}>{t('friends.emptySent')}</LocaleText>
               ) : (
                 outgoingRequests.map((entry) => (
                   <OutgoingRow
@@ -329,9 +330,9 @@ export default function MyFriendsScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[headerStyles.infoCard, { backgroundColor: theme.surface }]}>
             <LinearGradient colors={['#3FA535', '#2C7A25']} style={headerStyles.infoCardHeader}>
-              <Text style={headerStyles.infoCardTitle}>{t('friends.title')}</Text>
+              <LocaleText style={headerStyles.infoCardTitle}>{t('friends.title')}</LocaleText>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
-                <Text style={headerStyles.infoCardClose}>✕</Text>
+                <LocaleText style={headerStyles.infoCardClose}>✕</LocaleText>
               </Pressable>
             </LinearGradient>
             <View style={headerStyles.infoCardBody}>

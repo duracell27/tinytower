@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -33,7 +34,7 @@ export default function DailyTasksFAB({ unclaimedCount, slot }: Props) {
     >
       <Image source={DAILY_ICON} style={styles.icon} contentFit="contain" />
       <View style={[styles.fabBadge, { borderColor: theme.surface }]}>
-        <Text style={styles.badgeText}>{unclaimedCount}</Text>
+        <LocaleText style={styles.badgeText}>{unclaimedCount}</LocaleText>
       </View>
     </Pressable>
   );

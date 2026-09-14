@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -44,7 +45,7 @@ function formatCountdown(ms: number): string {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  if (hours > 0) return `${hours}h ${String(minutes).padStart(2, '0')}m`;
+  if (hours > 0) return `${hours}г ${String(minutes).padStart(2, '0')}хв`;
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
@@ -174,11 +175,11 @@ export default function UnderConstructionBanner({
     if (collapsed) {
       return (
         <View ref={collapsedRowRef} collapsable={false} style={[styles.collapsedRow, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
-          <Text style={[styles.collapsedTitle, { color: theme.text }]} numberOfLines={1}>
+          <LocaleText style={[styles.collapsedTitle, { color: theme.text }]} numberOfLines={1}>
             {'Floor '}
-            <Text style={{ color: typeColor }}>{typeName}</Text>
+            <LocaleText style={{ color: typeColor }}>{typeName}</LocaleText>
             {' awaits opening'}
-          </Text>
+          </LocaleText>
           <Pressable ref={chevronRef as React.RefObject<View>} collapsable={false} onPress={toggleCollapse} hitSlop={8}>
             <View style={[styles.chevronCircle, { backgroundColor: typeColor }]}>
               <View style={[styles.chevronShape, styles.chevronDown]} />
@@ -192,20 +193,20 @@ export default function UnderConstructionBanner({
       <View ref={expandedCardRef} collapsable={false} style={[styles.card, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
         {/* Header row with collapse button */}
         <View style={styles.cardHeader}>
-          <Text style={[styles.cardTitle, { flex: 1 }, { color: theme.text }]}>
+          <LocaleText style={[styles.cardTitle, { flex: 1 }, { color: theme.text }]}>
             {'Floor '}
-            <Text style={[styles.cardTitleType, { color: typeColor }]}>{typeName}</Text>
+            <LocaleText style={[styles.cardTitleType, { color: typeColor }]}>{typeName}</LocaleText>
             {' awaits opening.'}
-          </Text>
+          </LocaleText>
           <Pressable onPress={toggleCollapse} hitSlop={8}>
             <View style={[styles.chevronCircle, { backgroundColor: typeColor }]}>
               <View style={[styles.chevronShape, styles.chevronUp]} />
             </View>
           </Pressable>
         </View>
-        <Text style={[styles.cardHint, { color: theme.textMuted }]}>
+        <LocaleText style={[styles.cardHint, { color: theme.textMuted }]}>
           {t('underConstruction.gatherMaterials')}
-        </Text>
+        </LocaleText>
 
         {/* Tools row — centred */}
         <View style={styles.toolsRow}>
@@ -221,10 +222,10 @@ export default function UnderConstructionBanner({
                     contentFit="contain"
                   />
                 </View>
-                <Text style={[styles.toolCount, { color: met ? '#49AA38' : '#E05050' }]}>
+                <LocaleText style={[styles.toolCount, { color: met ? '#49AA38' : '#E05050' }]}>
                   {`${have}/${count}`}
-                </Text>
-                <Text style={[styles.toolLabel, { color: theme.textMuted }]}>{tLobby(`tools.${tool}`, { defaultValue: tool })}</Text>
+                </LocaleText>
+                <LocaleText style={[styles.toolLabel, { color: theme.textMuted }]}>{tLobby(`tools.${tool}`, { defaultValue: tool })}</LocaleText>
               </View>
             );
           })}
@@ -239,16 +240,16 @@ export default function UnderConstructionBanner({
             style={({ pressed }) => [styles.startBtn, pressed && { opacity: 0.85 }]}
           >
             <LinearGradient colors={['#72C24F', '#5BA63C']} style={styles.startBtnGradient}>
-              <Text style={styles.startBtnText}>{t('underConstruction.openBusiness')}</Text>
+              <LocaleText style={styles.startBtnText}>{t('underConstruction.openBusiness')}</LocaleText>
             </LinearGradient>
             <View style={styles.startBtnShadow} />
           </Pressable>
         ) : (
           /* Two action buttons when materials are missing */
           <>
-            <Text style={[styles.materialsHint, { color: theme.textMuted }]}>
+            <LocaleText style={[styles.materialsHint, { color: theme.textMuted }]}>
               {t('underConstruction.materialsHint')}
-            </Text>
+            </LocaleText>
             <View style={styles.twoButtonsRow}>
               <Pressable
                 onPress={onOpenLobby}
@@ -256,7 +257,7 @@ export default function UnderConstructionBanner({
               >
                 <LinearGradient colors={['#C9637E', '#A8475F']} style={styles.actionBtnGradient}>
                   <Image source={require('../../assets/img/achivment/achivLiftCategory.png')} style={styles.actionBtnIcon} contentFit="contain" />
-                  <Text style={styles.actionBtnText}>{t('underConstruction.elevator')}</Text>
+                  <LocaleText style={styles.actionBtnText}>{t('underConstruction.elevator')}</LocaleText>
                 </LinearGradient>
                 <View style={[styles.actionBtnShadow, { backgroundColor: '#7A3A50' }]} />
               </Pressable>
@@ -266,7 +267,7 @@ export default function UnderConstructionBanner({
               >
                 <LinearGradient colors={['#52A6E2', '#3B8BCB']} style={styles.actionBtnGradient}>
                   <Image source={require('../../assets/img/diamondPig.png')} style={styles.actionBtnIcon} contentFit="contain" />
-                  <Text style={styles.actionBtnText}>{t('tabs:shop.title')}</Text>
+                  <LocaleText style={styles.actionBtnText}>{t('tabs:shop.title')}</LocaleText>
                 </LinearGradient>
                 <View style={[styles.actionBtnShadow, { backgroundColor: '#2A6A9A' }]} />
               </Pressable>
@@ -286,9 +287,9 @@ export default function UnderConstructionBanner({
           style={{ width: 28, height: 28 }}
           contentFit="contain"
         />
-        <Text style={[styles.ribbonTitle, { color: BANNER_COLOR }]} numberOfLines={1}>
-          {`Building floor ${floorId}`}
-        </Text>
+        <LocaleText style={[styles.ribbonTitle, { color: BANNER_COLOR }]} numberOfLines={1}>
+          {t('underConstruction.buildingFloor', { floorId })}
+        </LocaleText>
       </View>
 
       <View style={styles.ribbonRight}>
@@ -297,9 +298,9 @@ export default function UnderConstructionBanner({
             <View style={styles.confirmRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <Image source={require('../../assets/img/speedUp.png')} style={{ width: 18, height: 18 }} contentFit="contain" />
-                <Text style={styles.confirmLabel}>{speedUpCost}</Text>
+                <LocaleText style={styles.confirmLabel}>{speedUpCost}</LocaleText>
                 <Image source={require('../../assets/img/diamond.png')} style={{ width: 18, height: 18 }} contentFit="contain" />
-                <Text style={styles.confirmLabel}>?</Text>
+                <LocaleText style={styles.confirmLabel}>?</LocaleText>
               </View>
               <Pressable
                 onPress={() => { speedUpConstruction(floorId); setConfirming(false); }}
@@ -315,9 +316,9 @@ export default function UnderConstructionBanner({
           ) : (
             <View style={styles.timerRow}>
               <View style={[styles.timerPill, isDark && { backgroundColor: theme.divider, borderColor: BANNER_COLOR }]}>
-                <Text style={[styles.timerText, { color: BANNER_COLOR }]}>
+                <LocaleText style={[styles.timerText, { color: BANNER_COLOR }]}>
                   {formatCountdown(timeLeft)}
-                </Text>
+                </LocaleText>
               </View>
               <Pressable
                 ref={speedUpBtnRef}
@@ -334,7 +335,7 @@ export default function UnderConstructionBanner({
               >
                 <Image source={require('../../assets/img/speedUp.png')} style={{ width: 13, height: 13 }} contentFit="contain" />
                 <Image source={require('../../assets/img/diamond.png')} style={{ width: 13, height: 13 }} contentFit="contain" />
-                <Text style={styles.speedUpCost}>{speedUpCost}</Text>
+                <LocaleText style={styles.speedUpCost}>{speedUpCost}</LocaleText>
               </Pressable>
             </View>
           )
@@ -345,7 +346,7 @@ export default function UnderConstructionBanner({
               style={({ pressed }) => [styles.openBtn, pressed && { opacity: 0.85 }]}
             >
               <LinearGradient colors={['#E67E22', '#C96A14']} style={styles.openBtnGradient}>
-                <Text style={styles.openBtnText}>{t('underConstruction.chooseBusiness')}</Text>
+                <LocaleText style={styles.openBtnText}>{t('underConstruction.chooseBusiness')}</LocaleText>
               </LinearGradient>
               <View style={styles.openBtnShadow} />
             </Pressable>

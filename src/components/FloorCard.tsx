@@ -1,5 +1,6 @@
 import React, { memo, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import LocaleText from './LocaleText';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
@@ -112,7 +113,7 @@ function Stars({ count, color = '#FFD23E' }: { count: number; color?: string }) 
   return (
     <View style={styles.starsContainer}>
       {[0, 1, 2, 3, 4].map((i) => (
-        <Text
+        <LocaleText
           key={i}
           style={[
             styles.star,
@@ -125,7 +126,7 @@ function Stars({ count, color = '#FFD23E' }: { count: number; color?: string }) 
           ]}
         >
           {'★'}
-        </Text>
+        </LocaleText>
       ))}
     </View>
   );
@@ -216,20 +217,20 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
       <View style={[styles.header, { backgroundColor: effectiveColor }]}>
         <View style={[styles.headerEdge, { backgroundColor: shadeColor(effectiveColor, -22) }]} />
         <View style={styles.floorNumberBadge}>
-          <Text style={styles.floorNumberText}>{floorId}</Text>
+          <LocaleText style={styles.floorNumberText}>{floorId}</LocaleText>
         </View>
-        <Text style={[styles.floorName, { textShadowColor: scheme.headerShadowColor }]}>
+        <LocaleText style={[styles.floorName, { textShadowColor: scheme.headerShadowColor }]}>
           {floorName}
-        </Text>
+        </LocaleText>
         <View style={styles.headerRight}>
           {discount > 0 && (
             <View style={styles.discountBadge}>
-              <Text style={styles.discountBadgeText}>−{Math.round(discount * 100)}%</Text>
+              <LocaleText style={styles.discountBadgeText}>−{Math.round(discount * 100)}%</LocaleText>
             </View>
           )}
           {specialistBonus > 0 && (
             <View style={styles.specialistBonusBadge}>
-              <Text style={styles.specialistBonusBadgeText}>+{Math.round(specialistBonus * 100)}%</Text>
+              <LocaleText style={styles.specialistBonusBadgeText}>+{Math.round(specialistBonus * 100)}%</LocaleText>
             </View>
           )}
           <TouchableOpacity

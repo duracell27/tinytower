@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import LocaleText from '../src/components/LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -79,7 +80,7 @@ function MailRow({
             hitSlop={6}
             style={styles.fromNameBtn}
           >
-            <Text
+            <LocaleText
               style={[
                 styles.fromName,
                 { color: theme.text },
@@ -88,14 +89,14 @@ function MailRow({
               numberOfLines={1}
             >
               {mail.fromName}
-            </Text>
+            </LocaleText>
           </Pressable>
-          <Text style={[styles.date, { color: theme.textMuted }]}>
+          <LocaleText style={[styles.date, { color: theme.textMuted }]}>
             {formatDate(mail.createdAt)}
-          </Text>
+          </LocaleText>
         </View>
 
-        <Text
+        <LocaleText
           style={[
             styles.subject,
             { color: mail.isRead ? (theme.textMuted as string) : (theme.text as string) },
@@ -104,11 +105,11 @@ function MailRow({
           numberOfLines={expanded ? undefined : 1}
         >
           {mail.subject}
-        </Text>
+        </LocaleText>
 
         {expanded && (
           <View style={[styles.bodyWrap, { borderTopColor: theme.divider }]}>
-            <Text style={[styles.body, { color: theme.text }]}>{mail.body}</Text>
+            <LocaleText style={[styles.body, { color: theme.text }]}>{mail.body}</LocaleText>
             <View style={styles.bodyActions}>
               <Pressable
                 onPress={onDelete}
@@ -116,7 +117,7 @@ function MailRow({
                 hitSlop={6}
               >
                 <Image source={DELETE_ICON} style={styles.deleteIcon} contentFit="contain" />
-                <Text style={styles.deleteBtnText}>{t('mail.delete')}</Text>
+                <LocaleText style={styles.deleteBtnText}>{t('mail.delete')}</LocaleText>
               </Pressable>
             </View>
           </View>
@@ -150,16 +151,16 @@ function SentRow({ mail, theme }: { mail: SentMailMessage; theme: ReturnType<typ
             hitSlop={6}
             style={styles.fromNameBtn}
           >
-            <Text style={[styles.fromName, { color: theme.text }]} numberOfLines={1}>{mail.toName}</Text>
+            <LocaleText style={[styles.fromName, { color: theme.text }]} numberOfLines={1}>{mail.toName}</LocaleText>
           </Pressable>
-          <Text style={[styles.date, { color: theme.textMuted }]}>{formatDate(mail.createdAt)}</Text>
+          <LocaleText style={[styles.date, { color: theme.textMuted }]}>{formatDate(mail.createdAt)}</LocaleText>
         </View>
-        <Text style={[styles.subject, { color: theme.textMuted as string }]} numberOfLines={expanded ? undefined : 1}>
+        <LocaleText style={[styles.subject, { color: theme.textMuted as string }]} numberOfLines={expanded ? undefined : 1}>
           {mail.subject}
-        </Text>
+        </LocaleText>
         {expanded && (
           <View style={[styles.bodyWrap, { borderTopColor: theme.divider }]}>
-            <Text style={[styles.body, { color: theme.text }]}>{mail.body}</Text>
+            <LocaleText style={[styles.body, { color: theme.text }]}>{mail.body}</LocaleText>
           </View>
         )}
       </View>
@@ -203,7 +204,7 @@ export default function MyMailScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <Text style={[styles.screenTitle, { color: theme.text }]}>{t('mail.title')}</Text>
+            <LocaleText style={[styles.screenTitle, { color: theme.text }]}>{t('mail.title')}</LocaleText>
             <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
               <Image source={INFO_ICON} style={styles.infoIcon} contentFit="contain" />
             </Pressable>
@@ -215,19 +216,19 @@ export default function MyMailScreen() {
               style={[styles.tab, tab === 'all' && styles.tabActive]}
               onPress={() => setTab('all')}
             >
-              <Text style={[styles.tabText, tab === 'all' && styles.tabTextActive]}>{t('mail.tabAll')}</Text>
+              <LocaleText style={[styles.tabText, tab === 'all' && styles.tabTextActive]}>{t('mail.tabAll')}</LocaleText>
             </Pressable>
             <Pressable
               style={[styles.tab, tab === 'inbox' && styles.tabActive]}
               onPress={() => setTab('inbox')}
             >
-              <Text style={[styles.tabText, tab === 'inbox' && styles.tabTextActive]}>{t('mail.tabInbox')}</Text>
+              <LocaleText style={[styles.tabText, tab === 'inbox' && styles.tabTextActive]}>{t('mail.tabInbox')}</LocaleText>
             </Pressable>
             <Pressable
               style={[styles.tab, tab === 'sent' && styles.tabActive]}
               onPress={() => setTab('sent')}
             >
-              <Text style={[styles.tabText, tab === 'sent' && styles.tabTextActive]}>{t('mail.tabSent')}</Text>
+              <LocaleText style={[styles.tabText, tab === 'sent' && styles.tabTextActive]}>{t('mail.tabSent')}</LocaleText>
             </Pressable>
           </View>
 
@@ -242,11 +243,11 @@ export default function MyMailScreen() {
               ].sort((a, b) => new Date(b.mail.createdAt).getTime() - new Date(a.mail.createdAt).getTime());
               if (combined.length === 0) return (
                 <View style={styles.emptyWrap}>
-                  <Text style={styles.emptyEmoji}>📭</Text>
-                  <Text style={[styles.emptyTitle, { color: theme.text }]}>{t('mail.emptyTitle')}</Text>
-                  <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
+                  <LocaleText style={styles.emptyEmoji}>📭</LocaleText>
+                  <LocaleText style={[styles.emptyTitle, { color: theme.text }]}>{t('mail.emptyTitle')}</LocaleText>
+                  <LocaleText style={[styles.emptySubtitle, { color: theme.textMuted }]}>
                     {t('mail.emptySubtitle')}
-                  </Text>
+                  </LocaleText>
                 </View>
               );
               return combined.map((item) =>
@@ -265,11 +266,11 @@ export default function MyMailScreen() {
             })() : tab === 'inbox' ? (
               mails.length === 0 ? (
                 <View style={styles.emptyWrap}>
-                  <Text style={styles.emptyEmoji}>📭</Text>
-                  <Text style={[styles.emptyTitle, { color: theme.text }]}>{t('mail.emptyTitle')}</Text>
-                  <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
+                  <LocaleText style={styles.emptyEmoji}>📭</LocaleText>
+                  <LocaleText style={[styles.emptyTitle, { color: theme.text }]}>{t('mail.emptyTitle')}</LocaleText>
+                  <LocaleText style={[styles.emptySubtitle, { color: theme.textMuted }]}>
                     {t('mail.emptySubtitle')}
-                  </Text>
+                  </LocaleText>
                 </View>
               ) : (
                 mails.map((mail) => (
@@ -285,11 +286,11 @@ export default function MyMailScreen() {
             ) : (
               sentMails.length === 0 ? (
                 <View style={styles.emptyWrap}>
-                  <Text style={styles.emptyEmoji}>📤</Text>
-                  <Text style={[styles.emptyTitle, { color: theme.text }]}>{t('mail.emptySentTitle')}</Text>
-                  <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
+                  <LocaleText style={styles.emptyEmoji}>📤</LocaleText>
+                  <LocaleText style={[styles.emptyTitle, { color: theme.text }]}>{t('mail.emptySentTitle')}</LocaleText>
+                  <LocaleText style={[styles.emptySubtitle, { color: theme.textMuted }]}>
                     {t('mail.emptySentSubtitle')}
-                  </Text>
+                  </LocaleText>
                 </View>
               ) : (
                 sentMails.map((mail) => (
@@ -306,9 +307,9 @@ export default function MyMailScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, { backgroundColor: theme.surface }]}>
             <LinearGradient colors={['#3FA535', '#2C7A25']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>{t('mail.title')}</Text>
+              <LocaleText style={styles.infoCardTitle}>{t('mail.title')}</LocaleText>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
-                <Text style={styles.infoCardClose}>✕</Text>
+                <LocaleText style={styles.infoCardClose}>✕</LocaleText>
               </Pressable>
             </LinearGradient>
             <View style={styles.infoCardBody}>

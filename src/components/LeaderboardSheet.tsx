@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, Pressable, FlatList, StyleSheet, Dimensions, ActivityIndicator, Modal,
 } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing,
@@ -29,11 +30,6 @@ const TAB_ACTIVE_COLORS: Record<Tab, string> = {
   revenue: '#E5A72E',
 };
 
-const VALUE_LABELS: Record<Tab, string> = {
-  level: 'LVL',
-  floors: 'FLOORS',
-  revenue: '/MIN',
-};
 
 function rankStyle(rank: number, surface: string, divider: string): { borderWidth: number; borderColor: string; backgroundColor: string } {
   if (rank === 1) return { borderWidth: 2, borderColor: '#E8B800', backgroundColor: surface };
@@ -119,6 +115,12 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
     { key: 'revenue', label: t('leaderboard.tabRevenue') },
   ];
 
+  const VALUE_LABELS: Record<Tab, string> = {
+    level:   t('leaderboard.valueLvl'),
+    floors:  t('leaderboard.valueFloors'),
+    revenue: t('leaderboard.valueRevenue'),
+  };
+
   const totalPages = data ? Math.ceil(data.total / 20) : 1;
   const isOnPage = data?.entries.some(e => e.playerId === myId) ?? false;
 
@@ -141,7 +143,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
       >
         {item.rank <= 3 ? (
           <View style={styles.trophyWrap}>
-            <Text style={styles.trophyRankNum}>#{item.rank}</Text>
+            <LocaleText style={styles.trophyRankNum}>#{item.rank}</LocaleText>
             <Image
               source={
                 item.rank === 1
@@ -154,7 +156,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
             />
           </View>
         ) : (
-          <Text style={styles.rankNum}>#{item.rank}</Text>
+          <LocaleText style={styles.rankNum}>#{item.rank}</LocaleText>
         )}
         <Image
           source={getUserIcon(tab === 'level' ? item.value : 1)}
@@ -162,12 +164,12 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
           contentFit="cover"
         />
         <View style={styles.nameBlock}>
-          <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>{item.playerName}</Text>
-          <Text style={styles.cityText} numberOfLines={1}>{item.city ?? 'no city'}</Text>
+          <LocaleText style={[styles.name, { color: theme.text }]} numberOfLines={1}>{item.playerName}</LocaleText>
+          <LocaleText style={styles.cityText} numberOfLines={1}>{item.city ?? t('leaderboard.noCity')}</LocaleText>
         </View>
         <View style={styles.valueBlock}>
-          <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
-          <Text style={[styles.valueBig, { color: accent }]}>{formatValue(item.value)}</Text>
+          <LocaleText style={styles.valueLabel}>{VALUE_LABELS[tab]}</LocaleText>
+          <LocaleText style={[styles.valueBig, { color: accent }]}>{formatValue(item.value)}</LocaleText>
         </View>
       </Pressable>
     );
@@ -185,11 +187,11 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
         <LinearGradient colors={isDark ? ['#6A4A10', '#4A3208'] : ['#E7A52B', '#C08A1E']} style={styles.gradientHeader}>
           <View style={styles.header}>
             <View>
-              <Text style={styles.title}>{t('leaderboard.title')}</Text>
-              <Text style={styles.cacheNotice}>{t('leaderboard.cacheNotice')}</Text>
+              <LocaleText style={styles.title}>{t('leaderboard.title')}</LocaleText>
+              <LocaleText style={styles.cacheNotice}>{t('leaderboard.cacheNotice')}</LocaleText>
             </View>
             <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
-              <Text style={styles.closeIcon}>✕</Text>
+              <LocaleText style={styles.closeIcon}>✕</LocaleText>
             </Pressable>
           </View>
 
@@ -206,14 +208,14 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
                   ]}
                   onPress={() => setTab(tabItem.key)}
                 >
-                  <Text style={[
+                  <LocaleText style={[
                     styles.tabText,
                     isActive
                       ? { color: TAB_ACTIVE_COLORS[tabItem.key] }
                       : styles.tabTextInactive,
                   ]}>
                     {tabItem.label}
-                  </Text>
+                  </LocaleText>
                 </Pressable>
               );
             })}
@@ -225,9 +227,9 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
 
         {error && !loading && (
           <View style={styles.errorWrap}>
-            <Text style={styles.errorText}>{error}</Text>
+            <LocaleText style={styles.errorText}>{error}</LocaleText>
             <Pressable onPress={() => setRetryKey(k => k + 1)} style={styles.retryBtn}>
-              <Text style={styles.retryText}>{t('leaderboard.retry')}</Text>
+              <LocaleText style={styles.retryText}>{t('leaderboard.retry')}</LocaleText>
             </Pressable>
           </View>
         )}
@@ -244,7 +246,7 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
 
         {!loading && !error && data && !isOnPage && (
           <View style={[styles.row, styles.rowMe, { backgroundColor: theme.surfaceCard }, styles.pinnedRow]}>
-            <Text style={styles.rankNum}>#{data.currentPlayer.rank}</Text>
+            <LocaleText style={styles.rankNum}>#{data.currentPlayer.rank}</LocaleText>
             <Pressable onPress={myId ? () => handleAvatarPress(myId) : undefined} hitSlop={6}>
               <Image
                 source={getUserIcon(myLevel)}
@@ -253,14 +255,14 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
               />
             </Pressable>
             <View style={styles.nameBlock}>
-              <Text style={[styles.name, { color: theme.text }]}>{t('leaderboard.you')}</Text>
-              <Text style={styles.cityText}>no city</Text>
+              <LocaleText style={[styles.name, { color: theme.text }]}>{t('leaderboard.you')}</LocaleText>
+              <LocaleText style={styles.cityText}>{t('leaderboard.noCity')}</LocaleText>
             </View>
             <View style={styles.valueBlock}>
-              <Text style={styles.valueLabel}>{VALUE_LABELS[tab]}</Text>
-              <Text style={[styles.valueBig, { color: TAB_ACTIVE_COLORS[tab] }]}>
+              <LocaleText style={styles.valueLabel}>{VALUE_LABELS[tab]}</LocaleText>
+              <LocaleText style={[styles.valueBig, { color: TAB_ACTIVE_COLORS[tab] }]}>
                 {formatValue(data.currentPlayer.value)}
-              </Text>
+              </LocaleText>
             </View>
           </View>
         )}
@@ -272,15 +274,15 @@ export default function LeaderboardSheet({ visible, onClose }: Props) {
               onPress={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
             >
-              <Text style={styles.pageBtnText}>◀</Text>
+              <LocaleText style={styles.pageBtnText}>◀</LocaleText>
             </Pressable>
-            <Text style={[styles.pageLabel, { color: theme.text }]}>{page} / {totalPages}</Text>
+            <LocaleText style={[styles.pageLabel, { color: theme.text }]}>{page} / {totalPages}</LocaleText>
             <Pressable
               style={[styles.pageBtn, page >= totalPages && styles.pageBtnDisabled]}
               onPress={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
             >
-              <Text style={styles.pageBtnText}>▶</Text>
+              <LocaleText style={styles.pageBtnText}>▶</LocaleText>
             </Pressable>
           </View>
         )}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import type { ForumComment as ForumCommentType } from '../stores/forumStore';
 import { getUserIcon } from '../utils/userIcon';
@@ -19,10 +20,10 @@ interface Props {
 
 function formatTime(iso: string): string {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return `${diff}s`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  return `${Math.floor(diff / 86400)}d`;
+  if (diff < 60) return `${diff}с`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}хв`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}год`;
+  return `${Math.floor(diff / 86400)}дн`;
 }
 
 export default function ForumComment({ comment, isOwn, isAdmin, canReport, onLongPress, onAvatarPress }: Props) {
@@ -48,13 +49,13 @@ export default function ForumComment({ comment, isOwn, isAdmin, canReport, onLon
         style={styles.bubble}
       >
         <View style={styles.header}>
-          <Text style={styles.name}>{comment.playerName}</Text>
-          <Text style={styles.level}>Lv.{displayLevel}</Text>
-          <Text style={styles.time}>{formatTime(comment.createdAt)}</Text>
+          <LocaleText style={styles.name}>{comment.playerName}</LocaleText>
+          <LocaleText style={styles.level}>Lv.{displayLevel}</LocaleText>
+          <LocaleText style={styles.time}>{formatTime(comment.createdAt)}</LocaleText>
         </View>
-        <Text style={styles.body}>
-          {blocked ? <Text style={styles.blockedText}>From blocked user</Text> : comment.body}
-        </Text>
+        <LocaleText style={styles.body}>
+          {blocked ? <LocaleText style={styles.blockedText}>From blocked user</LocaleText> : comment.body}
+        </LocaleText>
       </Pressable>
     </View>
   );

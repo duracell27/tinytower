@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, useWindowDimensions, useColorScheme,
 } from 'react-native';
+import LocaleText from '../../src/components/LocaleText';
 import { Image } from 'expo-image';
 import AppBackground from '../../src/components/AppBackground';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -55,7 +56,7 @@ function SectionHeader({ title, sectionKey }: { title: string; sectionKey: strin
       end={{ x: 1, y: 0 }}
       style={sh.wrap}
     >
-      <Text style={sh.text}>{title}</Text>
+      <LocaleText style={sh.text}>{title}</LocaleText>
     </LinearGradient>
   );
 }
@@ -71,7 +72,7 @@ function Badge({ kind }: { kind: 'best' | 'popular' }) {
   const { t } = useTranslation('tabs');
   return (
     <View style={[bdg.wrap, kind === 'best' ? bdg.best : bdg.pop]}>
-      <Text style={bdg.text}>{kind === 'best' ? t('shop.badges.best') : t('shop.badges.popular')}</Text>
+      <LocaleText style={bdg.text}>{kind === 'best' ? t('shop.badges.best') : t('shop.badges.popular')}</LocaleText>
     </View>
   );
 }
@@ -110,20 +111,20 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
       {baseGems != null && (
         <View style={dc.gemRow}>
           <Image source={DIAMOND_ICON} style={dc.gemIcon} contentFit="contain" />
-          <Text style={[dc.gemText, isDark && { color: '#DDE8D8' }]}>{baseGems.toLocaleString()}</Text>
+          <LocaleText style={[dc.gemText, isDark && { color: '#DDE8D8' }]}>{baseGems.toLocaleString()}</LocaleText>
         </View>
       )}
 
       {pack.bonusGems
         ? <View style={[dc.bonusChip, isDark && { backgroundColor: 'rgba(90,180,70,0.15)' }]}>
-            <Text style={[dc.bonusText, isDark && { color: '#5ABF50' }]}>+{pack.bonusGems.toLocaleString()} bonus</Text>
+            <LocaleText style={[dc.bonusText, isDark && { color: '#5ABF50' }]}>+{pack.bonusGems.toLocaleString()} {t('shop.bonus')}</LocaleText>
           </View>
         : <View style={[dc.baseChip, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-            <Text style={[dc.baseText, isDark && { color: '#8A9A80' }]}>{t('shop.basePrice')}</Text>
+            <LocaleText style={[dc.baseText, isDark && { color: '#8A9A80' }]}>{t('shop.basePrice')}</LocaleText>
           </View>
       }
 
-      <Text style={[dc.name, isDark && { color: '#DDE8D8' }]}>{t(pack.name as any)}</Text>
+      <LocaleText style={[dc.name, isDark && { color: '#DDE8D8' }]}>{t(pack.name as any)}</LocaleText>
 
       <Pressable
         style={[dc.btn, { backgroundColor: activeBtnColor }, disabled && dc.btnDisabled]}
@@ -132,7 +133,7 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
       >
         {buying
           ? <ActivityIndicator color={btnTxtColor} size="small" />
-          : <Text style={[dc.btnText, { color: btnTxtColor }]}>{pack.price}</Text>
+          : <LocaleText style={[dc.btnText, { color: btnTxtColor }]}>{pack.price}</LocaleText>
         }
       </Pressable>
     </View>
@@ -210,10 +211,10 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
         </View>
         <View style={fw.headerText}>
           <View style={fw.titleRow}>
-            <Text style={[fw.name, { color: txt }]}>{t(pack.name as any)}</Text>
+            <LocaleText style={[fw.name, { color: txt }]}>{t(pack.name as any)}</LocaleText>
             {pack.badge && <Badge kind={pack.badge} />}
           </View>
-          {pack.description && <Text style={[fw.desc, { color: txtSub }]}>{t(pack.description as any)}</Text>}
+          {pack.description && <LocaleText style={[fw.desc, { color: txtSub }]}>{t(pack.description as any)}</LocaleText>}
         </View>
       </View>
 
@@ -224,7 +225,7 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
         {!!pack.rewards.gems && (
           <View style={fw.leftSide}>
             <Image source={DIAMOND_ICON} style={fw.gemIcon} contentFit="contain" />
-            <Text style={[fw.gemCount, { color: txt }]}>{pack.rewards.gems.toLocaleString()}</Text>
+            <LocaleText style={[fw.gemCount, { color: txt }]}>{pack.rewards.gems.toLocaleString()}</LocaleText>
           </View>
         )}
         {!!pack.rewards.gems && hasRight && <View style={[fw.vDivider, { backgroundColor: divColor }]} />}
@@ -235,7 +236,7 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
                 {toolEntries.map(([k, v]) => (
                   <View key={k} style={fw.rewardItem}>
                     <Image source={TOOL_ICONS[k]} style={fw.rewardIcon} contentFit="contain" />
-                    <Text style={[fw.rewardCount, { color: txtReward }]}>×{v}</Text>
+                    <LocaleText style={[fw.rewardCount, { color: txtReward }]}>×{v}</LocaleText>
                   </View>
                 ))}
               </View>
@@ -245,7 +246,7 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
                 {tokenEntries.map(([k, v]) => (
                   <View key={k} style={fw.rewardItem}>
                     <Image source={TOKEN_ICONS[k]} style={fw.rewardIcon} contentFit="contain" />
-                    <Text style={[fw.rewardCount, { color: txtReward }]}>×{v}</Text>
+                    <LocaleText style={[fw.rewardCount, { color: txtReward }]}>×{v}</LocaleText>
                   </View>
                 ))}
               </View>
@@ -264,7 +265,7 @@ function FullWidthCard({ pack, onBuy, buying, disabled, fullWidth, btnColor }: {
       >
         {buying
           ? <ActivityIndicator color="#FFF" size="small" />
-          : <Text style={fw.btnText}>{pack.price}</Text>
+          : <LocaleText style={fw.btnText}>{pack.price}</LocaleText>
         }
       </Pressable>
     </LinearGradient>
@@ -329,10 +330,10 @@ function MaterialCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
       style={[mc.card, { width: cardWidth }, buying && mc.buying]}
     >
       <Image source={pack.image} style={mc.icon} contentFit="contain" />
-      <Text style={[mc.name, { color: txt }]}>{t(pack.name as any)}</Text>
-      {pack.description && <Text style={[mc.desc, { color: txtSub }]}>{t(pack.description as any)}</Text>}
+      <LocaleText style={[mc.name, { color: txt }]}>{t(pack.name as any)}</LocaleText>
+      {pack.description && <LocaleText style={[mc.desc, { color: txtSub }]}>{t(pack.description as any)}</LocaleText>}
       <View style={[mc.qtyChip, { backgroundColor: onDark ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.42)' }]}>
-        <Text style={[mc.qty, { color: txt }]}>{t('shop.each5')}</Text>
+        <LocaleText style={[mc.qty, { color: txt }]}>{t('shop.each5')}</LocaleText>
       </View>
       <Pressable
         style={[mc.btn, { backgroundColor: activeBtnColor }, disabled && mc.btnDisabled]}
@@ -341,7 +342,7 @@ function MaterialCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
       >
         {buying
           ? <ActivityIndicator color={btnTxtColor} size="small" />
-          : <Text style={[mc.btnText, { color: btnTxtColor }]}>{pack.price}</Text>
+          : <LocaleText style={[mc.btnText, { color: btnTxtColor }]}>{pack.price}</LocaleText>
         }
       </Pressable>
     </LinearGradient>

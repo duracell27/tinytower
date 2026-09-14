@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, Pressable } from 'react-native';
+import LocaleText from '../src/components/LocaleText';
 import AppBackground from '../src/components/AppBackground';
 import { useAppTheme } from '../src/hooks/useAppTheme';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -84,7 +85,7 @@ export default function AchievementsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headingRow}>
-          <Text style={[styles.heading, { color: theme.text }]}>{t('achievement.screenTitle')}</Text>
+          <LocaleText style={[styles.heading, { color: theme.text }]}>{t('achievement.screenTitle')}</LocaleText>
           <Pressable onPress={() => setInfoVisible(true)} hitSlop={10}>
             <Image
               source={require('../assets/img/InformationIcon.png')}
@@ -111,20 +112,20 @@ export default function AchievementsScreen() {
               <View style={styles.cardTop}>
                 <Image source={CATEGORY_IMAGES[category.key]} style={styles.categoryIcon} />
                 <View style={styles.cardTopText}>
-                  <Text style={[styles.categoryTitle, { color: theme.text }]}>
+                  <LocaleText style={[styles.categoryTitle, { color: theme.text }]}>
                     {t(`achievement.categories.${category.key}.title` as any, { defaultValue: category.title })}
-                  </Text>
-                  <Text style={[styles.categoryDesc, { color: theme.textMuted }]}>
+                  </LocaleText>
+                  <LocaleText style={[styles.categoryDesc, { color: theme.textMuted }]}>
                     {t(`achievement.categoryDesc.${category.key}` as any)}
-                  </Text>
-                  <Text style={[styles.levelLabel, { color: theme.textMuted }]}>
+                  </LocaleText>
+                  <LocaleText style={[styles.levelLabel, { color: theme.textMuted }]}>
                     {currentLevel === 0
                       ? t('achievement.noRank')
                       : t('achievement.rankLabel', {
                           level: currentLevel,
                           title: t(`achievement.categories.${category.key}.levels.${currentLevel}` as any, { defaultValue: currentLevelConfig?.title ?? '' }),
                         })}
-                  </Text>
+                  </LocaleText>
                 </View>
                 <Image source={TIER_IMAGES[currentLevel]} style={styles.tierIcon} />
               </View>
@@ -133,37 +134,37 @@ export default function AchievementsScreen() {
 
               {isMaxed ? (
                 <View style={styles.maxedRow}>
-                  <Text style={styles.maxedText}>{t('achievement.maxLevel')}</Text>
+                  <LocaleText style={styles.maxedText}>{t('achievement.maxLevel')}</LocaleText>
                 </View>
               ) : nextLevelConfig ? (
                 <View style={styles.progressSection}>
                   <View style={styles.nextRankRow}>
                     <View style={styles.inlineRow}>
-                      <Text style={styles.sectionLabel}>{t('achievement.nextRank')} </Text>
-                      <Text style={[styles.nextTitleBold, { color: theme.text }]}>
+                      <LocaleText style={styles.sectionLabel}>{t('achievement.nextRank')} </LocaleText>
+                      <LocaleText style={[styles.nextTitleBold, { color: theme.text }]}>
                       {t(`achievement.categories.${category.key}.levels.${nextLevelConfig.level}` as any, { defaultValue: nextLevelConfig.title })}
-                    </Text>
+                    </LocaleText>
                       <Image source={TIER_IMAGES[nextLevelConfig.level]} style={styles.nextTierIcon} />
                     </View>
-                    <Text style={[styles.progressCount, { color: theme.textMuted }]}>
+                    <LocaleText style={[styles.progressCount, { color: theme.textMuted }]}>
                       {formatCompactPrecise(progress)} / {formatCompact(nextLevelConfig.threshold)}
-                    </Text>
+                    </LocaleText>
                   </View>
                   <ProgressBar value={relativeProgress} max={relativeMax} />
                   <View style={styles.inlineRow}>
-                    <Text style={styles.sectionLabel}>{t('achievement.rewardLabel')} </Text>
+                    <LocaleText style={styles.sectionLabel}>{t('achievement.rewardLabel')} </LocaleText>
                     <View style={[styles.rewardChip, { backgroundColor: theme.surfaceElevated }]}>
                       <Image source={DIAMOND_ICON} style={styles.diamondIcon} />
-                      <Text style={[styles.rewardChipText, { color: theme.text }]}>{nextGems}</Text>
+                      <LocaleText style={[styles.rewardChipText, { color: theme.text }]}>{nextGems}</LocaleText>
                     </View>
                     {nextIncomeBonus > 0 && (
                       <View style={[styles.rewardChipBonus, { backgroundColor: isDark ? 'rgba(160,107,0,0.2)' : '#FFF4E0' }]}>
-                        <Text style={styles.rewardChipBonusText}>{t('achievement.coinsBonus', { percent: nextIncomeBonus })}</Text>
+                        <LocaleText style={styles.rewardChipBonusText}>{t('achievement.coinsBonus', { percent: nextIncomeBonus })}</LocaleText>
                       </View>
                     )}
                     {nextXpBonus > 0 && (
                       <View style={[styles.rewardChipBonus, { backgroundColor: isDark ? 'rgba(160,107,0,0.2)' : '#FFF4E0' }]}>
-                        <Text style={styles.rewardChipBonusText}>{t('achievement.xpBonus', { percent: nextXpBonus })}</Text>
+                        <LocaleText style={styles.rewardChipBonusText}>{t('achievement.xpBonus', { percent: nextXpBonus })}</LocaleText>
                       </View>
                     )}
                   </View>
@@ -178,7 +179,7 @@ export default function AchievementsScreen() {
         onPress={() => router.back()}
         style={({ pressed }) => [styles.closeBtn, pressed && styles.closeBtnPressed]}
       >
-        <Text style={styles.closeBtnText}>✕</Text>
+        <LocaleText style={styles.closeBtnText}>✕</LocaleText>
       </Pressable>
 
       {infoVisible && (
@@ -186,9 +187,9 @@ export default function AchievementsScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, { backgroundColor: isDark ? '#2A2F38' : '#fff' }]}>
             <LinearGradient colors={['#5B8CD6', '#3A6BB5']} style={styles.infoCardHeader}>
-              <Text style={styles.infoCardTitle}>{t('achievement.screenTitle')}</Text>
+              <LocaleText style={styles.infoCardTitle}>{t('achievement.screenTitle')}</LocaleText>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
-                <Text style={styles.infoCardClose}>✕</Text>
+                <LocaleText style={styles.infoCardClose}>✕</LocaleText>
               </Pressable>
             </LinearGradient>
             <View style={styles.infoCardBody}>

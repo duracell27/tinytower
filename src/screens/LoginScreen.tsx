@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import LocaleText from '../components/LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
@@ -148,7 +149,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
       {/* Back button */}
       <Pressable onPress={onBack} style={[styles.backButton, isDark && { backgroundColor: 'rgba(18,28,50,0.90)', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1 }]}>
-        <Text style={[styles.backArrow, isDark && { color: '#D8E4F0' }]}>{'‹'}</Text>
+        <LocaleText style={[styles.backArrow, isDark && { color: '#D8E4F0' }]}>{'‹'}</LocaleText>
       </Pressable>
 
       {/* Centered card */}
@@ -164,14 +165,14 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
         >
           <View style={[styles.card, isDark && dk.card]}>
             {/* Title */}
-            <Text style={[styles.cardTitle, isDark && dk.title]}>
+            <LocaleText style={[styles.cardTitle, isDark && dk.title]}>
               {isLogin ? t('login.welcomeBack.title') : t('login.createAccount.title')}
-            </Text>
-            <Text style={[styles.cardSubtitle, isDark && dk.subtitle]}>
+            </LocaleText>
+            <LocaleText style={[styles.cardSubtitle, isDark && dk.subtitle]}>
               {isLogin
                 ? t('login.welcomeBack.subtitle')
                 : t('login.createAccount.subtitle')}
-            </Text>
+            </LocaleText>
 
             {/* Tabs */}
             <View style={[styles.tabBar, isDark && dk.tabBar]}>
@@ -179,31 +180,31 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                 onPress={() => handleTabSwitch('login')}
                 style={[styles.tab, isLogin && styles.tabActive, isLogin && isDark && dk.tabActive]}
               >
-                <Text style={[styles.tabText, isDark && dk.tabText, isLogin && styles.tabTextActive, isLogin && isDark && dk.tabTextActive]}>
+                <LocaleText style={[styles.tabText, isDark && dk.tabText, isLogin && styles.tabTextActive, isLogin && isDark && dk.tabTextActive]}>
                   {t('login.tabs.login')}
-                </Text>
+                </LocaleText>
               </Pressable>
               <Pressable
                 onPress={() => handleTabSwitch('register')}
                 style={[styles.tab, !isLogin && styles.tabActive, !isLogin && isDark && dk.tabActive]}
               >
-                <Text style={[styles.tabText, isDark && dk.tabText, !isLogin && styles.tabTextActive, !isLogin && isDark && dk.tabTextActive]}>
+                <LocaleText style={[styles.tabText, isDark && dk.tabText, !isLogin && styles.tabTextActive, !isLogin && isDark && dk.tabTextActive]}>
                   {t('login.tabs.register')}
-                </Text>
+                </LocaleText>
               </Pressable>
             </View>
 
             {/* Error message */}
             {error ? (
               <View style={styles.errorBox}>
-                <Text style={styles.errorText}>{error}</Text>
+                <LocaleText style={styles.errorText}>{error}</LocaleText>
               </View>
             ) : null}
 
             {/* Player name (register only) */}
             {!isLogin && (
               <View style={styles.fieldGroup}>
-                <Text style={[styles.label, isDark && dk.label]}>{t('login.labels.playerName')}</Text>
+                <LocaleText style={[styles.label, isDark && dk.label]}>{t('login.labels.playerName')}</LocaleText>
                 <TextInput
                   style={[styles.input, isDark && dk.input]}
                   placeholder={t('login.placeholders.playerName')}
@@ -218,7 +219,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
             {/* Email */}
             <View style={styles.fieldGroup}>
-              <Text style={[styles.label, isDark && dk.label]}>{t('login.labels.email')}</Text>
+              <LocaleText style={[styles.label, isDark && dk.label]}>{t('login.labels.email')}</LocaleText>
               <TextInput
                 style={[styles.input, isDark && dk.input]}
                 placeholder="you@example.com"
@@ -233,7 +234,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
 
             {/* Password */}
             <View style={[styles.fieldGroup, { marginBottom: 10 }]}>
-              <Text style={[styles.label, isDark && dk.label]}>{t('login.labels.password')}</Text>
+              <LocaleText style={[styles.label, isDark && dk.label]}>{t('login.labels.password')}</LocaleText>
               <View style={styles.passwordWrap}>
                 <TextInput
                   style={[styles.input, { paddingRight: 48 }, isDark && dk.input]}
@@ -259,7 +260,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
             {isLogin ? (
               <View style={styles.forgotWrap}>
                 <Pressable>
-                  <Text style={[styles.forgotText, isDark && dk.forgotText]}>{t('login.forgotPassword')}</Text>
+                  <LocaleText style={[styles.forgotText, isDark && dk.forgotText]}>{t('login.forgotPassword')}</LocaleText>
                 </Pressable>
               </View>
             ) : (
@@ -270,12 +271,12 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                 <View style={[styles.checkbox, !termsAccepted && styles.checkboxUnchecked, !termsAccepted && isDark && { borderColor: '#3A4560', backgroundColor: '#252D42' }]}>
                   {termsAccepted && <View style={styles.checkmark} />}
                 </View>
-                <Text style={[styles.checkboxText, isDark && dk.checkText]}>
+                <LocaleText style={[styles.checkboxText, isDark && dk.checkText]}>
                   {t('login.terms.accept')}
-                  <Text style={styles.checkboxLink}>{t('login.terms.termsOfUse')}</Text>
+                  <LocaleText style={styles.checkboxLink}>{t('login.terms.termsOfUse')}</LocaleText>
                   {t('login.terms.and')}
-                  <Text style={styles.checkboxLink}>{t('login.terms.privacyPolicy')}</Text>
-                </Text>
+                  <LocaleText style={styles.checkboxLink}>{t('login.terms.privacyPolicy')}</LocaleText>
+                </LocaleText>
               </Pressable>
             )}
 
@@ -288,9 +289,9 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
                 {isLoading ? (
                   <ActivityIndicator color="#fff" size="small" />
                 ) : (
-                  <Text style={styles.submitText}>
+                  <LocaleText style={styles.submitText}>
                     {isLogin ? t('login.submit.login') : t('login.submit.createAccount')}
-                  </Text>
+                  </LocaleText>
                 )}
               </LinearGradient>
             </Pressable>
@@ -298,7 +299,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
             {/* Divider */}
             <View style={styles.dividerRow}>
               <View style={[styles.dividerLine, isDark && { backgroundColor: '#2E3B58' }]} />
-              <Text style={[styles.dividerText, isDark && { color: '#4A5A70' }]}>{t('common:actions.or')}</Text>
+              <LocaleText style={[styles.dividerText, isDark && { color: '#4A5A70' }]}>{t('common:actions.or')}</LocaleText>
               <View style={[styles.dividerLine, isDark && { backgroundColor: '#2E3B58' }]} />
             </View>
 
@@ -306,11 +307,11 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: Lo
             <View style={styles.socialRow}>
               <Pressable onPress={onGoogle} style={[styles.googleButton, isDark && dk.google]}>
                 <GoogleIcon />
-                <Text style={[styles.socialLabel, isDark && dk.socialLabel]}>Google</Text>
+                <LocaleText style={[styles.socialLabel, isDark && dk.socialLabel]}>Google</LocaleText>
               </Pressable>
               <Pressable onPress={onApple} style={styles.appleButton}>
-                <Text style={styles.appleIcon}>{''}</Text>
-                <Text style={styles.appleLabelText}>Apple</Text>
+                <LocaleText style={styles.appleIcon}>{''}</LocaleText>
+                <LocaleText style={styles.appleLabelText}>Apple</LocaleText>
               </Pressable>
             </View>
           </View>

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -20,14 +21,14 @@ const { width: SCREEN_W } = Dimensions.get('window');
 
 const TOOL_META: Record<
   'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement',
-  { label: string; image: ReturnType<typeof require> }
+  { image: ReturnType<typeof require> }
 > = {
-  briks:  { label: 'Bricks',  image: require('../../assets/img/tools/briks.png') },
-  glass:  { label: 'Glass',   image: require('../../assets/img/tools/glass.png') },
-  nails:  { label: 'Nails',   image: require('../../assets/img/tools/nails.png') },
-  screw:  { label: 'Screws',  image: require('../../assets/img/tools/screw.png') },
-  wood:   { label: 'Wood',    image: require('../../assets/img/tools/wood.png') },
-  cement: { label: 'Cement',  image: require('../../assets/img/tools/cement.png') },
+  briks:  { image: require('../../assets/img/tools/briks.png') },
+  glass:  { image: require('../../assets/img/tools/glass.png') },
+  nails:  { image: require('../../assets/img/tools/nails.png') },
+  screw:  { image: require('../../assets/img/tools/screw.png') },
+  wood:   { image: require('../../assets/img/tools/wood.png') },
+  cement: { image: require('../../assets/img/tools/cement.png') },
 };
 
 function CoinIcon() {
@@ -40,6 +41,7 @@ function GemIcon() {
 
 export default function InsufficientResourcesModal({ asOverlay = false }: { asOverlay?: boolean }) {
   const { t } = useTranslation('common');
+  const { t: tTabs } = useTranslation('tabs');
   const theme = useAppTheme();
   const { isDark } = theme;
   const payload = useGameStore((s) => s.insufficientResources);
@@ -122,37 +124,37 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
             </View>
 
             {/* Title */}
-            <Text style={styles.title}>{title}</Text>
+            <LocaleText style={styles.title}>{title}</LocaleText>
 
             {/* Currency deficit card */}
             {(isCoins || isGems) && (
               <View style={styles.deficitCard}>
                 <View style={styles.deficitRow}>
                   <View style={styles.deficitCell}>
-                    <Text style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('insufficientResources.have')}</Text>
+                    <LocaleText style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('insufficientResources.have')}</LocaleText>
                     <View style={styles.deficitValueRow}>
                       {isCoins ? <CoinIcon /> : <GemIcon />}
-                      <Text style={[styles.deficitValue, isCoins ? styles.coinText : styles.gemText]}>
+                      <LocaleText style={[styles.deficitValue, isCoins ? styles.coinText : styles.gemText]}>
                         {formatNum(payload.have)}
-                      </Text>
+                      </LocaleText>
                     </View>
                   </View>
-                  <Text style={[styles.arrow, isDark && { color: '#4A5060' }]}>→</Text>
+                  <LocaleText style={[styles.arrow, isDark && { color: '#4A5060' }]}>→</LocaleText>
                   <View style={styles.deficitCell}>
-                    <Text style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('insufficientResources.need')}</Text>
+                    <LocaleText style={[styles.deficitLabel, isDark && { color: '#6B7585' }]}>{t('insufficientResources.need')}</LocaleText>
                     <View style={styles.deficitValueRow}>
                       {isCoins ? <CoinIcon /> : <GemIcon />}
-                      <Text style={[styles.deficitValue, isCoins ? styles.coinText : styles.gemText]}>
+                      <LocaleText style={[styles.deficitValue, isCoins ? styles.coinText : styles.gemText]}>
                         {formatNum(payload.need)}
-                      </Text>
+                      </LocaleText>
                     </View>
                   </View>
                 </View>
                 <View style={styles.missingRow}>
-                  <Text style={styles.missingLabel}>{t('insufficientResources.missing')}:</Text>
+                  <LocaleText style={styles.missingLabel}>{t('insufficientResources.missing')}:</LocaleText>
                   <View style={styles.deficitValueRow}>
                     {isCoins ? <CoinIcon /> : <GemIcon />}
-                    <Text style={styles.missingValue}>{formatNum(deficit)}</Text>
+                    <LocaleText style={styles.missingValue}>{formatNum(deficit)}</LocaleText>
                   </View>
                 </View>
               </View>
@@ -168,13 +170,13 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
                       style={styles.toolItemIcon}
                       contentFit="contain"
                     />
-                    <Text style={styles.toolItemLabel}>{TOOL_META[tool.key].label}</Text>
+                    <LocaleText style={styles.toolItemLabel}>{tTabs(`shop.packs.mat_${tool.key}.name`)}</LocaleText>
                     <View style={styles.toolItemCounts}>
-                      <Text style={[styles.toolHave, isDark && { color: '#5A6472' }]}>{tool.have}</Text>
-                      <Text style={[styles.toolSlash, isDark && { color: '#3A4050' }]}>/</Text>
-                      <Text style={[styles.toolNeed, isDark && { color: '#9BAABB' }]}>{tool.need}</Text>
+                      <LocaleText style={[styles.toolHave, isDark && { color: '#5A6472' }]}>{tool.have}</LocaleText>
+                      <LocaleText style={[styles.toolSlash, isDark && { color: '#3A4050' }]}>/</LocaleText>
+                      <LocaleText style={[styles.toolNeed, isDark && { color: '#9BAABB' }]}>{tool.need}</LocaleText>
                     </View>
-                    <Text style={styles.toolMissing}>-{tool.need - tool.have}</Text>
+                    <LocaleText style={styles.toolMissing}>-{tool.need - tool.have}</LocaleText>
                   </View>
                 ))}
               </View>
@@ -198,13 +200,13 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
                   style={styles.shopBtnGradient}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Text style={styles.shopBtnText}>
+                    <LocaleText style={styles.shopBtnText}>
                       {t('insufficientResources.exchangeGems_pre', { gems: gemsNeeded })}
-                    </Text>
+                    </LocaleText>
                     <GemIcon />
-                    <Text style={styles.shopBtnText}>
+                    <LocaleText style={styles.shopBtnText}>
                       {t('insufficientResources.exchangeGems_post', { coins: formatNum(gemsNeeded * COINS_PER_GEM) })}
-                    </Text>
+                    </LocaleText>
                   </View>
                 </LinearGradient>
                 <View style={[styles.shopBtnShadow, { backgroundColor: '#A06A00' }]} />
@@ -221,7 +223,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
                   colors={['#52A6E2', '#3B8BCB']}
                   style={styles.shopBtnGradient}
                 >
-                  <Text style={styles.shopBtnText}>{t('insufficientResources.goToShop')}</Text>
+                  <LocaleText style={styles.shopBtnText}>{t('insufficientResources.goToShop')}</LocaleText>
                 </LinearGradient>
                 <View style={styles.shopBtnShadow} />
               </Pressable>
@@ -229,7 +231,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
 
             {/* Close */}
             <Pressable onPress={clearInsufficientResources} style={styles.closeBtn}>
-              <Text style={[styles.closeBtnText, isDark && { color: '#5A6472' }]}>{t('insufficientResources.close')}</Text>
+              <LocaleText style={[styles.closeBtnText, isDark && { color: '#5A6472' }]}>{t('insufficientResources.close')}</LocaleText>
             </Pressable>
 
           </LinearGradient>

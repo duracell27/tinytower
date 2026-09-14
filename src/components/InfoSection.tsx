@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { useAppTheme } from '../hooks/useAppTheme';
 
@@ -17,8 +18,8 @@ export function InfoSection({ icon, title, text, accentColor = 'rgba(100,110,130
     <View style={[styles.section, !isLast && { borderBottomWidth: 1, borderBottomColor: accentColor }]}>
       <Image source={icon} style={styles.icon} contentFit="contain" />
       <View style={styles.body}>
-        <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
-        <Text style={[styles.text, { color: theme.textMuted }]}>{text}</Text>
+        <LocaleText style={[styles.title, { color: theme.text }]}>{title}</LocaleText>
+        <LocaleText style={[styles.text, { color: theme.textMuted }]}>{text}</LocaleText>
       </View>
     </View>
   );
