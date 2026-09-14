@@ -439,7 +439,7 @@ describe('SyncService', () => {
 
       const result = await syncService.processSync('player-uuid', [], 0);
 
-      expect(result.state.tools).toEqual({ briks: 3, glass: 2, nails: 1, screw: 4 });
+      expect(result.state.tools).toEqual({ briks: 3, glass: 2, nails: 1, screw: 4, wood: 1, cement: 1 });
       expect(result.state.gems).toBe(50);
     });
 
@@ -483,7 +483,7 @@ describe('SyncService', () => {
 
       const result = await syncService.processSync('player-uuid', [], 0);
 
-      expect(result.state.tools).toEqual({ briks: 1, glass: 1, nails: 1, screw: 1 });
+      expect(result.state.tools).toEqual({ briks: 1, glass: 1, nails: 1, screw: 1, wood: 1, cement: 1 });
     });
 
     it('should read underConstruction from FloorConstruction rows', async () => {

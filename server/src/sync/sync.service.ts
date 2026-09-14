@@ -671,8 +671,8 @@ export class SyncService {
         glass: s?.glass ?? 1,
         nails: s?.nails ?? 1,
         screw: s?.screw ?? 1,
-        wood: s?.wood ?? 0,
-        cement: s?.cement ?? 0,
+        wood: s?.wood ?? 1,
+        cement: s?.cement ?? 1,
       },
       underConstruction: (player.floorConstructions ?? []).map((fc: any) => ({
         floorId: fc.floorId,
