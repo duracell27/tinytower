@@ -1107,7 +1107,13 @@ function handleClaimTutorialTask(
   const nextIndex = taskIndex + 1;
   const nextTask = TUTORIAL_TASKS[nextIndex];
   const nextSnapshot = nextTask
-    ? { ...state.tutorialTasks.snapshot, [nextTask.progressSource]: state.tutorialProgress[nextTask.progressSource] ?? 0 }
+    ? {
+        ...state.tutorialTasks.snapshot,
+        [nextTask.progressSource]: Math.max(
+          0,
+          (state.tutorialProgress[nextTask.progressSource] ?? 0) - nextTask.threshold,
+        ),
+      }
     : state.tutorialTasks.snapshot;
 
   return {

@@ -30,10 +30,10 @@ describe('claim_tutorial_task', () => {
   });
 
   it('succeeds, grants coins, advances index, sets snapshot', () => {
-    const task0 = TUTORIAL_TASKS[0]!; // collect_revenue, threshold 10, reward 500 coins
+    const task0 = TUTORIAL_TASKS[0]!; // hire_workers, threshold 3, reward 500 coins
     const state = makeState({
-      tutorialTasks: { currentIndex: 0, snapshot: { coinsCollected: 0 }, claimedFinal: false },
-      tutorialProgress: { coinsCollected: 10, visitorsLifted: 0, workersHired: 0, floorsBuilt: 0, dailyTasksClaimed: 0, elevatorUpgraded: 0, lobbyUpgraded: 0, floorUpgraded: 0, inviteSent: 0, businessUpgraded: 0 },
+      tutorialTasks: { currentIndex: 0, snapshot: {}, claimedFinal: false },
+      tutorialProgress: { coinsCollected: 0, visitorsLifted: 0, workersHired: 3, floorsBuilt: 0, dailyTasksClaimed: 0, elevatorUpgraded: 0, lobbyUpgraded: 0, floorUpgraded: 0, inviteSent: 0, businessUpgraded: 0 },
     });
     const result = processCommand(state, { ...baseCmd, type: 'claim_tutorial_task', taskIndex: 0 }, testConfig, Date.now());
     expect(result.success).toBe(true);
@@ -41,6 +41,26 @@ describe('claim_tutorial_task', () => {
     expect(result.state.gems).toBe(state.gems + task0.reward.gems);
     expect(result.state.tutorialTasks.currentIndex).toBe(1);
     expect(result.state.tutorialTasks.snapshot[TUTORIAL_TASKS[1]!.progressSource]).toBeDefined();
+  });
+
+  it('pre-existing progress counts toward next task after claim', () => {
+    // build_floor task (index 3) requires floorsBuilt delta >= 1.
+    // If the player already built a floor before collect_revenue (index 2) is claimed,
+    // the snapshot should be set such that the existing floor counts.
+    const task2 = TUTORIAL_TASKS[2]!; // collect_revenue, threshold 10
+    const task3 = TUTORIAL_TASKS[3]!; // build_floor, threshold 1
+    expect(task3.progressSource).toBe('floorsBuilt');
+    const state = makeState({
+      tutorialTasks: { currentIndex: 2, snapshot: { coinsCollected: 0, visitorsLifted: 0, workersHired: 0 }, claimedFinal: false },
+      tutorialProgress: { coinsCollected: 10, visitorsLifted: 0, workersHired: 0, floorsBuilt: 1, dailyTasksClaimed: 0, elevatorUpgraded: 0, lobbyUpgraded: 0, floorUpgraded: 0, inviteSent: 0, businessUpgraded: 0 },
+    });
+    const result = processCommand(state, { ...baseCmd, type: 'claim_tutorial_task', taskIndex: 2 }, testConfig, Date.now());
+    expect(result.success).toBe(true);
+    expect(result.state.tutorialTasks.currentIndex).toBe(3);
+    // snapshot.floorsBuilt should be max(0, 1 - 1) = 0, so delta = 1 - 0 = 1 >= threshold
+    const snap = result.state.tutorialTasks.snapshot;
+    const delta = (state.tutorialProgress.floorsBuilt ?? 0) - (snap[task3.progressSource] ?? 0);
+    expect(delta).toBeGreaterThanOrEqual(task3.threshold);
   });
 
   it('rejects already claimed (index already past)', () => {
