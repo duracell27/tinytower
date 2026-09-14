@@ -1,6 +1,7 @@
 {
   "floorUpgrade": {
     "title": "Upgrade Floor",
+    "floorFallback": "Floor {{floorId}}",
     "currentStars": "Current level",
     "nextUpgrade": "Next upgrade",
     "cost": "Cost",
@@ -113,7 +114,8 @@
       "tag": "SERVICE",
       "hasVacancy": "Rooms available",
       "full": "No vacancies",
-      "occupied": "OCCUPIED"
+      "occupied": "OCCUPIED",
+      "betterWorker": "Better worker available"
     },
     "lobby": {
       "name": "Lobby",
@@ -327,6 +329,9 @@
       "purple": "Fashion tokens",
       "red": "Tech tokens"
     },
+    "businesses": "Businesses",
+    "floorsBuilt_one": "{{count}} floor built",
+    "floorsBuilt_other": "{{count}} floors built",
     "notEnoughTokens": "Not enough tokens",
     "goToShop": "Go to Shop",
     "cancel": "Cancel",
@@ -345,12 +350,14 @@
     }
   },
   "buyFloorConfirm": {
+    "title": "Build Floor {{floorId}}?",
     "subtitle": "This will start construction",
     "cost": "Cost",
     "build": "Build!",
     "cancel": "Cancel"
   },
   "underConstruction": {
+    "buildingFloor": "Building floor {{floorId}}",
     "openBusiness": "Open business",
     "chooseBusiness": "Choose business",
     "gatherMaterials": "Gather all required materials to open the business",

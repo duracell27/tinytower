@@ -19,8 +19,11 @@ export function formatNumFull(n: number): string {
 }
 
 export function formatCompact(n: number): string {
-  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(n % 1_000_000_000 === 0 ? 0 : 1) + 'g';
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1) + 'm';
-  if (n >= 1_000) return (n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1) + 'k';
+  let i18n: { language?: string } | undefined;
+  try { i18n = require('../i18n').default; } catch {}
+  const uk = i18n?.language === 'uk';
+  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(n % 1_000_000_000 === 0 ? 0 : 1) + (uk ? 'г' : 'g');
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1) + (uk ? 'м' : 'm');
+  if (n >= 1_000) return (n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1) + (uk ? 'к' : 'k');
   return String(n);
 }

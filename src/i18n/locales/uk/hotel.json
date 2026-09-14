@@ -1,6 +1,7 @@
 {
   "floorUpgrade": {
     "title": "Покращення поверху",
+    "floorFallback": "Поверх {{floorId}}",
     "currentStars": "Поточний рівень",
     "nextUpgrade": "Наступне покращення",
     "cost": "Вартість",
@@ -99,7 +100,7 @@
     },
     "elevatorHint": "Везіть гостей у ліфті — іноді по дорозі з'являються нові працівники!",
     "expandCard": {
-      "title": "Розширити готель на 1 кімнату",
+      "title": "Розширити готель\nна 1 кімнату",
       "buy": "Розширити",
       "maxed": "Готель заповнений"
     },
@@ -113,7 +114,8 @@
       "tag": "СЕРВІС",
       "hasVacancy": "Є вільні місця",
       "full": "Немає місць",
-      "occupied": "ЗАЙНЯТО"
+      "occupied": "ЗАЙНЯТО",
+      "betterWorker": "Є кращий працівник"
     },
     "lobby": {
       "name": "Лобі",
@@ -327,6 +329,9 @@
       "purple": "Жетони моди",
       "red": "Жетони техніки"
     },
+    "businesses": "Бізнеси",
+    "floorsBuilt_one": "{{count}} поверх побудовано",
+    "floorsBuilt_other": "{{count}} поверхів побудовано",
     "notEnoughTokens": "Недостатньо жетонів",
     "goToShop": "До магазину",
     "cancel": "Скасувати",
@@ -345,12 +350,14 @@
     }
   },
   "buyFloorConfirm": {
+    "title": "Будувати поверх {{floorId}}?",
     "subtitle": "Розпочнеться будівництво",
     "cost": "Вартість",
     "build": "Будувати!",
     "cancel": "Скасувати"
   },
   "underConstruction": {
+    "buildingFloor": "Будуємо поверх {{floorId}}",
     "openBusiness": "Відкрити бізнес",
     "chooseBusiness": "Обрати бізнес",
     "gatherMaterials": "Зберіть усі потрібні матеріали, щоб відкрити бізнес",

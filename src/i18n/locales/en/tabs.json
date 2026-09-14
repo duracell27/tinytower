@@ -66,6 +66,43 @@
     "purchased": "Purchased!",
     "maxedOut": "Maxed out",
     "buyFor": "Buy for",
+    "vehicles": {
+      "taxi": {
+        "name": "Taxi",
+        "short": "More gem exchanges & XP per lobby visitor",
+        "desc": "Each taxi adds +1 free {gem} exchange per day and gives +1,000 {xp} for each elevator visitor.",
+        "b1": "+{{n}} gem exchange limit",
+        "b2": "+{{xp}} XP/visitor"
+      },
+      "forklift": {
+        "name": "Forklift",
+        "short": "Faster sales & bonus XP per listing",
+        "desc": "Each forklift {speed} speeds up sales by 1% and gives +5,000 {xp} per listed product.",
+        "b1": "-{{n}}% sell time",
+        "b2": "+{{xp}} XP/sell"
+      },
+      "armored_truck": {
+        "name": "Armored Truck",
+        "short": "Boosts base profit & XP before all multipliers",
+        "desc": "Each armored truck boosts base {coin} profit by 5% and base {xp} by 10%. These bonuses apply before all other multipliers.",
+        "b1": "+{{n}}% base profit",
+        "b2": "+{{n}}% base XP"
+      },
+      "delivery_truck": {
+        "name": "Delivery Truck",
+        "short": "Faster deliveries & bonus XP per purchase",
+        "desc": "Each truck {speed} speeds up delivery by 1% and gives +5,000 {xp} per purchased product.",
+        "b1": "-{{n}}% delivery time",
+        "b2": "+{{xp}} XP/buy"
+      },
+      "bus": {
+        "name": "Bus",
+        "short": "More elevator visitors & higher tips",
+        "desc": "Each bus adds 5 {visitor} slots to the elevator and boosts {coin} tips by 5%.",
+        "b1": "+{{n}} visitor slots",
+        "b2": "+{{n}}% tips"
+      }
+    },
     "info": {
       "whatTitle": "What is the Autopark?",
       "whatText": "The autopark is a fleet of vehicles that passively boost your hotel's performance. Each vehicle type provides a unique bonus — buy up to 10 of each.",
@@ -192,6 +229,7 @@
       "popular": "Popular"
     },
     "purchasing": "Processing...",
+    "bonus": "bonus",
     "each5": "5 pcs",
     "basePrice": "Base price",
     "packs": {
@@ -366,6 +404,9 @@
       "PURCHASES": "Help with in-game currency"
     }
   },
+  "topBar": {
+    "perMin": "/min"
+  },
   "game": {
     "buyFloor": "Buy floor {{number}}",
     "registerBanner": "Save your progress — create a free account"
@@ -379,7 +420,11 @@
     "errorLoad": "Failed to load",
     "retry": "Retry",
     "revenueSuffix": "/min",
-    "cacheNotice": "Updates every 5 min"
+    "cacheNotice": "Updates every 5 min",
+    "noCity": "no city",
+    "valueLvl": "LVL",
+    "valueFloors": "FLOORS",
+    "valueRevenue": "/MIN"
   },
   "block": {
     "blockUser": "Block user",
