@@ -74,7 +74,7 @@ function ErrorPopup({ message, onClose, isDark }: { message: string | null; onCl
             style={ep.gradient}
           >
             <View style={[ep.iconWrap, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(154,111,208,0.12)' }]}>
-              <LocaleText style={ep.iconText}>⚠</LocaleText>
+              <Image source={require('../../assets/img/warningIcon.png')} style={ep.iconImg} contentFit="contain" />
             </View>
             <LocaleText style={[ep.message, isDark && { color: '#DDE0FF' }]}>{message}</LocaleText>
             <TouchableOpacity onPress={onClose} style={ep.closeBtn} activeOpacity={0.7}>
@@ -103,7 +103,7 @@ const ep = StyleSheet.create({
   },
   gradient: { alignItems: 'center', paddingTop: 28, paddingBottom: 22, paddingHorizontal: 24, gap: 14 },
   iconWrap: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
-  iconText: { fontSize: 28 },
+  iconImg: { width: 38, height: 38 },
   message: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2A1A50', textAlign: 'center', lineHeight: 22 },
   closeBtn: { width: '100%', borderRadius: 14, overflow: 'hidden', marginTop: 2 },
   closeBtnGradient: { alignItems: 'center', paddingVertical: 13 },
