@@ -269,10 +269,19 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
 
         {/* Level + XP row */}
         <View style={styles.levelXpRow}>
-          <View style={styles.levelBadge}>
-            <LocaleText style={styles.levelText}>
-              {t('city.levelLabel', { level: city.level })}
-            </LocaleText>
+          <View style={styles.levelXpLeft}>
+            <View style={styles.levelBadge}>
+              <LocaleText style={styles.levelText}>
+                {t('city.levelLabel', { level: city.level })}
+              </LocaleText>
+            </View>
+            {city.xpForNextLevel != null && city.xpForNextLevel > 0 && (
+              <View style={styles.xpPercentBadge}>
+                <LocaleText style={styles.xpPercentText}>
+                  {(Math.min(city.xp / city.xpForNextLevel, 1) * 100).toFixed(1)}%
+                </LocaleText>
+              </View>
+            )}
           </View>
           <View style={styles.xpValueRow}>
             <LocaleText style={[styles.xpNum, { color: theme.textMuted }]}>
@@ -623,6 +632,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 8,
   },
+  levelXpLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   levelBadge: {
     borderRadius: 10,
     paddingHorizontal: 14,
@@ -630,6 +640,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(46,110,201,0.13)',
   },
   levelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#2E6EC9' },
+  xpPercentBadge: {
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: 'rgba(46,110,201,0.08)',
+  },
+  xpPercentText: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#2E6EC9' },
   xpValueRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   xpNum: { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
   xpIconImg: { width: 18, height: 18 },
