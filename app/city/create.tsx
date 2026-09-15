@@ -91,8 +91,10 @@ export default function CreateCityScreen() {
           <LocaleText style={styles.headerTitle}>{t('city.create.title')}</LocaleText>
         ),
         headerRight: () => (
-          <TouchableOpacity onPress={() => router.back()} hitSlop={10}>
-            <LocaleText style={styles.headerClose}>✕</LocaleText>
+          <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+            <View style={styles.headerCloseBtn}>
+              <LocaleText style={styles.headerClose}>✕</LocaleText>
+            </View>
           </TouchableOpacity>
         ),
         headerStyle: { backgroundColor: headerBg } as any,
@@ -115,10 +117,8 @@ export default function CreateCityScreen() {
 
           <View style={[styles.costCard, { backgroundColor: isDark ? '#F0B030' : '#E7A52B' }]}>
             <LocaleText style={styles.costText}>{t('city.create.costLabel')}</LocaleText>
-            <View style={styles.costAmountRow}>
-              <LocaleText style={styles.costAmount}>1 000</LocaleText>
-              <Image source={IMG.diamond} style={styles.gemIcon} contentFit="contain" />
-            </View>
+            <LocaleText style={styles.costAmount}>1 000</LocaleText>
+            <Image source={IMG.diamond} style={styles.gemIcon} contentFit="contain" />
           </View>
 
           <TextInput
@@ -169,15 +169,15 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 },
   iconRow: { alignItems: 'center', marginBottom: 12 },
   headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
-  headerClose: { fontFamily: 'Fredoka_700Bold', fontSize: 20, color: 'rgba(255,255,255,0.85)', lineHeight: 22 },
+  headerCloseBtn: { backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 7, width: 26, height: 26, alignItems: 'center', justifyContent: 'center' },
+  headerClose: { fontFamily: 'Fredoka_700Bold', fontSize: 13, color: 'rgba(255,255,255,0.9)', lineHeight: 15 },
   heroImg: { width: 110, height: 110 },
   buildingsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 8 },
   buildingWrap: { flex: 1, aspectRatio: 1, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.05)', alignItems: 'center', justifyContent: 'center', padding: 6 },
   buildingIcon: { width: '100%', height: '100%' },
-  costCard: { borderRadius: 14, paddingVertical: 12, paddingHorizontal: 16, marginBottom: 20, alignItems: 'center', gap: 4 },
-  costText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: 'rgba(255,255,255,0.8)' },
-  costAmountRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  costAmount: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#FFFFFF' },
+  costCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, paddingVertical: 10, paddingHorizontal: 16, marginBottom: 20 },
+  costText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: 'rgba(255,255,255,0.85)', flex: 1 },
+  costAmount: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#FFFFFF', marginRight: 5 },
   gemIcon: { width: 22, height: 22 },
   input: {
     backgroundColor: '#FFFFFF',
