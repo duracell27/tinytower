@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { getUserIcon } from '../utils/userIcon';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useCityStore } from '../stores/cityStore';
 
 interface TopBarProps {
   name: string;
@@ -67,6 +68,7 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
   const progress = xpForNextLevel > 0 ? xp / xpForNextLevel : 0;
   const theme = useAppTheme();
   const { t } = useTranslation('tabs');
+  const cityLevel = useCityStore((s) => s.city?.level ?? 0);
 
   const panelContent = (
     <>
@@ -91,7 +93,7 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
                 <LocaleText style={styles.revenuePillText}>{revenuePerMin} {t('topBar.perMin')}</LocaleText>
               </View>
             )}
-            {((activeCoinBoost ?? 0) > 0 || (activeXpBoost ?? 0) > 0) && (
+            {((activeCoinBoost ?? 0) > 0 || (activeXpBoost ?? 0) > 0 || cityLevel > 0) && (
               <View style={styles.boostRow}>
                 {(activeCoinBoost ?? 0) > 0 && (
                   <View style={[styles.boostPill, theme.isDark && { backgroundColor: 'rgba(212,134,10,0.55)' }]}>
@@ -103,6 +105,12 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
                   <View style={[styles.boostPill, theme.isDark && { backgroundColor: 'rgba(112,64,184,0.55)' }]}>
                     <Image source={require('../../assets/img/PRIcon.png')} style={styles.boostIcon} contentFit="contain" />
                     <LocaleText style={[styles.boostXpText, theme.isDark && { color: '#fff' }]}>+{activeXpBoost}%{boostTimeLabel(xpBoostExpiresAt)}</LocaleText>
+                  </View>
+                )}
+                {cityLevel > 0 && (
+                  <View style={[styles.boostPill, styles.cityBonusPill, theme.isDark && { backgroundColor: 'rgba(50,160,80,0.55)' }]}>
+                    <Image source={require('../../assets/img/city/cityBuildings.png')} style={styles.boostIcon} contentFit="contain" />
+                    <LocaleText style={[styles.cityBonusText, theme.isDark && { color: '#fff' }]}>+{cityLevel}%</LocaleText>
                   </View>
                 )}
               </View>
@@ -321,5 +329,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 12,
     color: '#7B4FBF',
+  },
+  cityBonusPill: {
+    backgroundColor: 'rgba(50,160,80,0.15)',
+  },
+  cityBonusText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 12,
+    color: '#2A7A3A',
   },
 });
