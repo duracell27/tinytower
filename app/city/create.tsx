@@ -41,6 +41,7 @@ export default function CreateCityScreen() {
   const [submitting, setSubmitting] = useState(false);
   const { createCity } = useCityStore();
   const gems = useGameStore((s) => s.gems);
+  const floorCount = useGameStore((s) => s.floors.length);
 
   const handleCreate = async () => {
     const trimmed = name.trim();
@@ -50,6 +51,10 @@ export default function CreateCityScreen() {
     }
     if (trimmed.length > 30) {
       Alert.alert('', t('city.create.errorNameTooLong'));
+      return;
+    }
+    if (floorCount + 1 < 10) {
+      Alert.alert('', t('city.create.errorNotEnoughFloors'));
       return;
     }
     if (gems < 1000) {
@@ -139,7 +144,7 @@ export default function CreateCityScreen() {
           <View style={styles.perksSection}>
             <LocaleText style={[styles.perksTitle, isDark && { color: '#B0C0B0' }]}>{t('city.create.perksTitle')}</LocaleText>
             {perks.map((p) => (
-              <View key={p.key} style={[styles.perkRow, isDark && { backgroundColor: 'rgba(255,255,255,0.12)' }]}>
+              <View key={p.key} style={[styles.perkRow, isDark && { backgroundColor: 'rgba(154,111,208,0.18)' }]}>
                 <Image source={p.img} style={styles.perkImg} contentFit="contain" />
                 <LocaleText style={[styles.perkText, isDark && { color: '#C0D0C0' }]}>{t(`city.create.${p.key}`)}</LocaleText>
               </View>
@@ -193,7 +198,7 @@ const styles = StyleSheet.create({
   btnText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
   perksSection: { marginTop: 28 },
   perksTitle: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#7A8A80', textAlign: 'center', marginBottom: 12, letterSpacing: 0.3 },
-  perkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(0,0,0,0.08)', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 8 },
+  perkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(154,111,208,0.10)', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 8 },
   perkImg: { width: 32, height: 32 },
   perkText: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#3A4A38', flex: 1 },
 });

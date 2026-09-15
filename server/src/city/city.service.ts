@@ -32,6 +32,7 @@ export interface MemberDto {
   playerName: string;
   playerLevel: number;
   role: CityRole;
+  cityXp: number;
   joinedAt: string;
   lastSeenAt: string;
 }
@@ -120,14 +121,17 @@ export class CityService {
       maxMembers,
       myRole: myMembership?.role ?? null,
       createdAt: city.createdAt.toISOString(),
-      members: city.members.map((m) => ({
-        playerId: m.playerId,
-        playerName: m.player.playerName,
-        playerLevel: m.player.playerLevel,
-        role: m.role,
-        joinedAt: m.joinedAt.toISOString(),
-        lastSeenAt: m.player.lastSeenAt.toISOString(),
-      })),
+      members: city.members
+        .sort((a, b) => b.cityXp - a.cityXp)
+        .map((m) => ({
+          playerId: m.playerId,
+          playerName: m.player.playerName,
+          playerLevel: m.player.playerLevel,
+          role: m.role,
+          cityXp: m.cityXp,
+          joinedAt: m.joinedAt.toISOString(),
+          lastSeenAt: m.player.lastSeenAt.toISOString(),
+        })),
     };
   }
 
@@ -147,7 +151,7 @@ export class CityService {
     });
     if (!player) throw new NotFoundException('Player not found');
     if (player.cityMembership) throw new ConflictException('Already in a city');
-    if (player.floors.length < MIN_FLOORS_TO_JOIN) {
+    if (player.floors.length + 1 < MIN_FLOORS_TO_JOIN) {
       throw new BadRequestException(`Need at least ${MIN_FLOORS_TO_JOIN} floors to found a city`);
     }
     if ((player.state?.gems ?? 0) < CITY_FOUND_COST_GEMS) {
@@ -235,7 +239,7 @@ export class CityService {
     ]);
     if (!target) throw new NotFoundException('Player not found');
     if (target.cityMembership) throw new ConflictException('Player is already in a city');
-    if (target.openedFloorsCount < MIN_FLOORS_TO_JOIN) {
+    if (target.openedFloorsCount + 1 < MIN_FLOORS_TO_JOIN) {
       throw new BadRequestException(`Player needs at least ${MIN_FLOORS_TO_JOIN} floors`);
     }
     if (!city) throw new NotFoundException('City not found');

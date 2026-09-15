@@ -125,6 +125,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const { createCity } = useCityStore();
   const gems = useGameStore((s) => s.gems);
+  const floorCount = useGameStore((s) => s.floors.length);
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -175,6 +176,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
     const trimmed = name.trim();
     if (!trimmed) { setErrorMsg(t('city.create.errorNoName')); return; }
     if (trimmed.length > 30) { setErrorMsg(t('city.create.errorNameTooLong')); return; }
+    if (floorCount + 1 < 10) { setErrorMsg(t('city.create.errorNotEnoughFloors')); return; }
     if (gems < 1000) { setErrorMsg(t('city.create.errorNotEnoughGems')); return; }
     setSubmitting(true);
     try {
@@ -267,7 +269,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
                     {t('city.create.perksTitle')}
                   </LocaleText>
                   {PERKS.map((p) => (
-                    <View key={p.key} style={[styles.perkRow, isDark && { backgroundColor: 'rgba(255,255,255,0.12)' }]}>
+                    <View key={p.key} style={[styles.perkRow, isDark && { backgroundColor: 'rgba(154,111,208,0.18)' }]}>
                       <Image source={p.img} style={styles.perkImg} contentFit="contain" />
                       <LocaleText style={[styles.perkText, isDark && { color: '#C0D0C0' }]}>
                         {t(`city.create.${p.key}`)}
@@ -328,7 +330,7 @@ const styles = StyleSheet.create({
   btnText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
   perksSection: { marginTop: 24 },
   perksTitle: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#7A8A80', textAlign: 'center', marginBottom: 12, letterSpacing: 0.3 },
-  perkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(0,0,0,0.08)', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 8 },
+  perkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(154,111,208,0.10)', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 8 },
   perkImg: { width: 32, height: 32 },
   perkText: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#3A4A38', flex: 1 },
 });

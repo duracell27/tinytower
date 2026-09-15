@@ -93,6 +93,12 @@ export class PlayerService {
         data: {
           playerId: player.id,
           lobbyVisitors: initial.lobbyVisitors,
+          briks:  initial.tools.briks,
+          glass:  initial.tools.glass,
+          nails:  initial.tools.nails,
+          screw:  initial.tools.screw,
+          wood:   initial.tools.wood,
+          cement: initial.tools.cement,
           tokenGreen:  initial.tokens.green,
           tokenBlue:   initial.tokens.blue,
           tokenYellow: initial.tokens.yellow,

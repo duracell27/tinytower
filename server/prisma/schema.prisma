@@ -78,8 +78,8 @@ model PlayerState {
   glass                  Int     @default(1)
   nails                  Int     @default(1)
   screw                  Int     @default(1)
-  wood                   Int     @default(0)
-  cement                 Int     @default(0)
+  wood                   Int     @default(1)
+  cement                 Int     @default(1)
   lobbyVisitors          Json    @default("[]")
   tokenGreen             Int     @default(0)
   tokenBlue              Int     @default(0)
@@ -410,6 +410,7 @@ model CityMembership {
   cityId   String
   playerId String   @id
   role     CityRole @default(NEWBIE)
+  cityXp   Int      @default(0)
   joinedAt DateTime @default(now())
   city     City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
   player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
