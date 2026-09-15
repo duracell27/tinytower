@@ -361,6 +361,8 @@
     "openBusiness": "Open business",
     "chooseBusiness": "Choose business",
     "gatherMaterials": "Gather all required materials to open the business",
+    "awaitsPrefix": "Floor ",
+    "awaitsSuffix": " awaits opening",
     "materialsHint": "Take people in the elevator to get materials, or buy them in the shop",
     "elevator": "Elevator"
   },

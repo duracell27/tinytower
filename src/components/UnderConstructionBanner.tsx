@@ -176,9 +176,9 @@ export default function UnderConstructionBanner({
       return (
         <View ref={collapsedRowRef} collapsable={false} style={[styles.collapsedRow, { borderColor: typeColor, backgroundColor: effectiveCardBg }]}>
           <LocaleText style={[styles.collapsedTitle, { color: theme.text }]} numberOfLines={1}>
-            {'Floor '}
+            {t('underConstruction.awaitsPrefix')}
             <LocaleText style={{ color: typeColor }}>{typeName}</LocaleText>
-            {' awaits opening'}
+            {t('underConstruction.awaitsSuffix')}
           </LocaleText>
           <Pressable ref={chevronRef as React.RefObject<View>} collapsable={false} onPress={toggleCollapse} hitSlop={8}>
             <View style={[styles.chevronCircle, { backgroundColor: typeColor }]}>
@@ -194,9 +194,10 @@ export default function UnderConstructionBanner({
         {/* Header row with collapse button */}
         <View style={styles.cardHeader}>
           <LocaleText style={[styles.cardTitle, { flex: 1 }, { color: theme.text }]}>
-            {'Floor '}
+            {t('underConstruction.awaitsPrefix')}
             <LocaleText style={[styles.cardTitleType, { color: typeColor }]}>{typeName}</LocaleText>
-            {' awaits opening.'}
+            {t('underConstruction.awaitsSuffix')}
+            {'.'}
           </LocaleText>
           <Pressable onPress={toggleCollapse} hitSlop={8}>
             <View style={[styles.chevronCircle, { backgroundColor: typeColor }]}>
