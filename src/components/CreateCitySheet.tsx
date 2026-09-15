@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import LocaleText from './LocaleText';
 import { useCityStore } from '../stores/cityStore';
 import { useGameStore } from '../stores/gameStore';
+import { syncService } from '../services/sync';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
@@ -178,6 +179,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
     setSubmitting(true);
     try {
       await createCity(trimmed);
+      syncService.triggerSync();
       handleAnimatedClose();
     } catch (e: any) {
       const msg = e?.message ?? '';
