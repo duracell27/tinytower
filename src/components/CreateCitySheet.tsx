@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, StyleSheet, TextInput, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, Alert, Modal, Dimensions, Pressable, useColorScheme,
+  KeyboardAvoidingView, Platform, Modal, Dimensions, Pressable, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, withSpring, runOnJS, Easing,
 } from 'react-native-reanimated';
@@ -43,6 +44,73 @@ const PERKS = [
   { img: IMG.chat,         key: 'perk4' },
 ];
 
+// ── Inline error popup ──────────────────────────────────────────────────────
+function ErrorPopup({ message, onClose, isDark }: { message: string | null; onClose: () => void; isDark: boolean }) {
+  const scale = useSharedValue(0.6);
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (message) {
+      opacity.value = withTiming(1, { duration: 180 });
+      scale.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
+    } else {
+      opacity.value = 0;
+      scale.value = 0.6;
+    }
+  }, [message]);
+
+  const scrimStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const cardStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }], opacity: opacity.value }));
+
+  if (!message) return null;
+
+  return (
+    <Modal transparent animationType="none" onRequestClose={onClose}>
+      <Animated.View style={[ep.scrim, scrimStyle]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <Animated.View style={[ep.card, cardStyle]}>
+          <LinearGradient
+            colors={isDark ? ['#2A2040', '#1C1535'] : ['#F4EEFF', '#EAE0FF']}
+            style={ep.gradient}
+          >
+            <View style={[ep.iconWrap, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(154,111,208,0.12)' }]}>
+              <LocaleText style={ep.iconText}>⚠</LocaleText>
+            </View>
+            <LocaleText style={[ep.message, isDark && { color: '#DDE0FF' }]}>{message}</LocaleText>
+            <TouchableOpacity onPress={onClose} style={ep.closeBtn} activeOpacity={0.7}>
+              <LinearGradient colors={['#A87EDE', '#9A6FD0']} style={ep.closeBtnGradient}>
+                <LocaleText style={ep.closeBtnText}>OK</LocaleText>
+              </LinearGradient>
+            </TouchableOpacity>
+          </LinearGradient>
+        </Animated.View>
+      </Animated.View>
+    </Modal>
+  );
+}
+
+const ep = StyleSheet.create({
+  scrim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center' },
+  card: {
+    width: Dimensions.get('window').width * 0.80,
+    borderRadius: 28,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.28,
+    shadowRadius: 30,
+    elevation: 12,
+  },
+  gradient: { alignItems: 'center', paddingTop: 28, paddingBottom: 22, paddingHorizontal: 24, gap: 14 },
+  iconWrap: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
+  iconText: { fontSize: 28 },
+  message: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2A1A50', textAlign: 'center', lineHeight: 22 },
+  closeBtn: { width: '100%', borderRadius: 14, overflow: 'hidden', marginTop: 2 },
+  closeBtnGradient: { alignItems: 'center', paddingVertical: 13 },
+  closeBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#FFFFFF' },
+});
+// ────────────────────────────────────────────────────────────────────────────
+
 interface Props {
   visible: boolean;
   onClose: () => void;
@@ -53,6 +121,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
   const isDark = useColorScheme() === 'dark';
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const { createCity } = useCityStore();
   const gems = useGameStore((s) => s.gems);
 
@@ -103,18 +172,18 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
 
   const handleCreate = async () => {
     const trimmed = name.trim();
-    if (!trimmed) { Alert.alert('', t('city.create.errorNoName')); return; }
-    if (trimmed.length > 30) { Alert.alert('', t('city.create.errorNameTooLong')); return; }
-    if (gems < 1000) { Alert.alert('', t('city.create.errorNotEnoughGems')); return; }
+    if (!trimmed) { setErrorMsg(t('city.create.errorNoName')); return; }
+    if (trimmed.length > 30) { setErrorMsg(t('city.create.errorNameTooLong')); return; }
+    if (gems < 1000) { setErrorMsg(t('city.create.errorNotEnoughGems')); return; }
     setSubmitting(true);
     try {
       await createCity(trimmed);
       handleAnimatedClose();
     } catch (e: any) {
       const msg = e?.message ?? '';
-      if (msg.includes('floors')) Alert.alert('', t('city.create.errorNotEnoughFloors'));
-      else if (msg.includes('name')) Alert.alert('', t('city.create.errorNameTaken'));
-      else Alert.alert('', t('city.errors.create'));
+      if (msg.includes('floors')) setErrorMsg(t('city.create.errorNotEnoughFloors'));
+      else if (msg.includes('name')) setErrorMsg(t('city.create.errorNameTaken'));
+      else setErrorMsg(t('city.errors.create'));
     } finally {
       setSubmitting(false);
     }
@@ -209,6 +278,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
           </Animated.View>
         </GestureHandlerRootView>
       )}
+      <ErrorPopup message={errorMsg} onClose={() => setErrorMsg(null)} isDark={isDark} />
     </Modal>
   );
 }
@@ -226,8 +296,8 @@ const styles = StyleSheet.create({
   sheetDark: { backgroundColor: '#1C1535' },
 
   // Header
-  header: { paddingBottom: 14 },
-  handleRow: { alignItems: 'center', paddingTop: 10, paddingBottom: 6 },
+  header: { paddingBottom: 18 },
+  handleRow: { alignItems: 'center', paddingTop: 12, paddingBottom: 8 },
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.5)' },
   titleRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
   titleText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF', flex: 1, textAlign: 'center' },
