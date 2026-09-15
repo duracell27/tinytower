@@ -4,7 +4,7 @@ import {
   KeyboardAvoidingView, Platform, Alert, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
@@ -16,7 +16,7 @@ const IMG = {
   diamond:       require('../../assets/img/diamond.png'),
   notice:        require('../../assets/img/city/cityNotice.png'),
   chat:          require('../../assets/img/city/cityChat.png'),
-  vipClub:       require('../../assets/img/city/cityBuildingVIPClub.png'),
+  advertising:   require('../../assets/img/city/cityBuildingAdvertisingagency.png'),
   marketing:     require('../../assets/img/MarketingIcon.png'),
 };
 
@@ -63,23 +63,29 @@ export default function CreateCityScreen() {
   };
 
   const perks = [
-    { img: IMG.notice,    key: 'perk1' },
-    { img: IMG.marketing, key: 'perk2' },
-    { img: IMG.vipClub,   key: 'perk3' },
-    { img: IMG.chat,      key: 'perk4' },
+    { img: IMG.notice,       key: 'perk1' },
+    { img: IMG.marketing,    key: 'perk2' },
+    { img: IMG.advertising,  key: 'perk3' },
+    { img: IMG.chat,         key: 'perk4' },
   ];
+
+  const headerBg = isDark ? '#A87EDE' : '#9A6FD0';
 
   return (
     <AppBackground style={[styles.background, isDark && styles.backgroundDark]}>
+      <Stack.Screen options={{
+        title: t('city.create.title'),
+        headerStyle: { backgroundColor: headerBg } as any,
+        headerTintColor: '#FFFFFF',
+        headerShadowVisible: false,
+      }} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.iconRow}>
             <Image source={IMG.cityBuildings} style={styles.heroImg} contentFit="contain" />
           </View>
 
-          <LocaleText style={[styles.title, isDark && { color: '#DDE8D8' }]}>{t('city.create.title')}</LocaleText>
-
-          <View style={[styles.costCard, { backgroundColor: isDark ? '#A87EDE' : '#9A6FD0' }]}>
+          <View style={[styles.costCard, { backgroundColor: isDark ? '#F0B030' : '#E7A52B' }]}>
             <LocaleText style={styles.costText}>{t('city.create.costLabel')}</LocaleText>
             <View style={styles.costAmountRow}>
               <LocaleText style={styles.costAmount}>1 000</LocaleText>
@@ -135,7 +141,6 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 },
   iconRow: { alignItems: 'center', marginBottom: 12 },
   heroImg: { width: 110, height: 110 },
-  title: { fontFamily: 'Fredoka_700Bold', fontSize: 24, color: '#0A1C30', textAlign: 'center', marginBottom: 14 },
   costCard: { borderRadius: 14, paddingVertical: 12, paddingHorizontal: 16, marginBottom: 20, alignItems: 'center', gap: 4 },
   costText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: 'rgba(255,255,255,0.8)' },
   costAmountRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
