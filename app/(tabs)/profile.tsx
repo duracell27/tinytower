@@ -1454,7 +1454,7 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     borderWidth: 2,
     paddingHorizontal: 14,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'Geologica_500Medium',
     fontSize: 15,
   },
   convertSubmit: {

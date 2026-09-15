@@ -709,6 +709,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
+    fontFamily: 'Geologica_500Medium',
     color: '#2A3344',
     paddingVertical: 0,
   },

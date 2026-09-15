@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'Geologica_500Medium',
     fontSize: 15,
     color: '#1a1a1a',
   },

@@ -35,11 +35,6 @@ const MODE_COLORS: Record<QuickActionMode, { colors: [string, string] }> = {
   hire:    { colors: ['#D96E8A', '#B84E6A'] },
 };
 
-const BULK_LABEL: Partial<Record<QuickActionMode, string>> = {
-  collect: 'All',
-  list: 'All',
-  buy: 'All',
-};
 
 function ModeIcon({ mode }: { mode: QuickActionMode }) {
   switch (mode) {
@@ -70,13 +65,16 @@ function ModeIcon({ mode }: { mode: QuickActionMode }) {
   }
 }
 
+const BULK_MODES: Set<QuickActionMode> = new Set(['collect', 'list', 'buy']);
+
 export default function QuickActionBar({ mode, info, visible, onHidden, onPress, onExit, onBulkAll }: Props) {
   const { t: tContent } = useTranslation('gameContent');
+  const { t } = useTranslation('common');
   const { colors } = MODE_COLORS[mode];
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
-  const bulkLabel = BULK_LABEL[mode];
+  const bulkLabel = BULK_MODES.has(mode) ? t('quickAction.all') : undefined;
 
   const slideY = useSharedValue(120);
   const firstRunRef = useRef(true);
@@ -114,7 +112,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   const collectAmount = info?.mode === 'collect' ? formatNum(info.totalCoins) : null;
 
   const buyInfo = info?.mode === 'buy' ? {
-    name: `Buy ${tContent(`productionTypes.${info.typeId}.displayName`, { defaultValue: info.typeId })}`,
+    name: t('quickAction.buy', { name: tContent(`productionTypes.${info.typeId}.displayName`, { defaultValue: info.typeId }) }),
     amount: formatNum(info.buyCost),
   } : null;
 
@@ -122,18 +120,18 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
     if (!info) return '…';
     switch (info.mode) {
       case 'collect':
-        return 'Collect';
+        return t('quickAction.collect');
       case 'list': {
         if (info.count === 1 && info.typeId) {
           const name = tContent(`productionTypes.${info.typeId}.displayName`, { defaultValue: info.typeId });
-          return `Sell ${name}`;
+          return t('quickAction.sell', { name });
         }
-        return info.count === 1 ? 'Sell Item' : `Sell Items (${info.count})`;
+        return info.count === 1 ? t('quickAction.sellItem') : t('quickAction.sellItems', { count: info.count });
       }
       case 'buy':
         return buyInfo!.name;
       case 'hire':
-        return 'Find Worker';
+        return t('quickAction.findWorker');
     }
   })();
 
@@ -173,14 +171,29 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
               </>
             ) : mode === 'buy' && buyInfo ? (
               <>
-                <LocaleText style={[styles.btnLabel, styles.btnLabelFlex]} numberOfLines={1}>{label}</LocaleText>
+                <LocaleText
+                  style={[styles.btnLabel, styles.btnLabelWrap]}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.82}
+                >{label}</LocaleText>
                 <CoinIcon size={18} />
-                <LocaleText style={styles.btnLabel}>{buyInfo.amount}</LocaleText>
+                <LocaleText
+                  style={styles.btnLabel}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.75}
+                >{buyInfo.amount}</LocaleText>
               </>
             ) : (
               <>
                 <ModeIcon mode={mode} />
-                <LocaleText style={styles.btnLabel} numberOfLines={1}>{label}</LocaleText>
+                <LocaleText
+                  style={[styles.btnLabel, styles.btnLabelWrap]}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.82}
+                >{label}</LocaleText>
               </>
             )}
           </View>
@@ -204,7 +217,7 @@ const staticStyles = StyleSheet.create({
 
 function getStyles(theme: ReturnType<typeof useAppTheme>) {
   const { isDark } = theme;
-  const pillBg = isDark ? theme.surfaceElevated : 'rgba(255,255,255,0.92)';
+  const pillBg = isDark ? 'rgba(46,59,88,0.92)' : 'rgba(255,255,255,0.92)';
   const pillTextColor = isDark ? theme.text : theme.textMuted;
   return StyleSheet.create({
     wrapper: {
@@ -239,6 +252,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
     },
     actionBtn: {
       flex: 1,
+      height: 50,
       borderRadius: 27,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
@@ -247,7 +261,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       elevation: 8,
     },
     btnGradient: {
-      paddingVertical: 16,
+      flex: 1,
       paddingHorizontal: 24,
       borderRadius: 27,
       borderWidth: 1.5,
@@ -269,6 +283,11 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
     btnLabelFlex: {
       flexShrink: 1,
       minWidth: 0,
+    },
+    btnLabelWrap: {
+      flexShrink: 1,
+      minWidth: 0,
+      includeFontPadding: false,
     },
     bulkBtn: {
       height: 50,

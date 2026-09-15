@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
     borderColor: '#E4E1D3',
     backgroundColor: '#fff',
     paddingHorizontal: 16,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'Geologica_500Medium',
     fontSize: 15,
     color: '#27331F',
   },

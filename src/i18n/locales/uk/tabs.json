@@ -302,6 +302,21 @@
       "loadMore": "Завантажити ще",
       "button": "Рейтинг міст"
     },
+    "founded": "Засновано {{date}}",
+    "allWorkers": "Робітники",
+    "happyWorkers": "Щасливі",
+    "membersPage": "{{from}} з {{total}}",
+    "statistics": "Статистика міста",
+    "citizenRankings": "Рейтинг містян",
+    "sections": {
+      "budget": "Бюджет",
+      "tasks": "Завдання міста",
+      "chat": "Чат міста",
+      "history": "Історія міста",
+      "buildings": "Будівлі міста",
+      "notifications": "Сповіщення міста",
+      "description": "Опис міста"
+    },
     "errors": {
       "load": "Не вдалося завантажити місто",
       "leave": "Не вдалося покинути місто",

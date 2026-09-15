@@ -302,6 +302,21 @@
       "loadMore": "Load More",
       "button": "City Rankings"
     },
+    "founded": "Founded {{date}}",
+    "allWorkers": "Workers",
+    "happyWorkers": "Happy",
+    "membersPage": "{{from}} of {{total}}",
+    "statistics": "City Statistics",
+    "citizenRankings": "Citizen Rankings",
+    "sections": {
+      "budget": "Budget",
+      "tasks": "City Tasks",
+      "chat": "City Chat",
+      "history": "History",
+      "buildings": "Buildings",
+      "notifications": "Notifications",
+      "description": "Description"
+    },
     "errors": {
       "load": "Failed to load city",
       "leave": "Failed to leave city",

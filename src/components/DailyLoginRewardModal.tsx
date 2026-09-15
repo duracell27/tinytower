@@ -47,7 +47,7 @@ export default function DailyLoginRewardModal() {
         <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
 
         {reward && (
-          <Animated.View style={[styles.card, cardStyle]}>
+          <Animated.View style={[styles.card, cardStyle, { backgroundColor: isDark ? '#1E2A3A' : '#FFF9E6' }]}>
             <LinearGradient colors={isDark ? ['#1E2A3A', '#141E2E'] : ['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
               <View style={styles.starsRow}>
                 <LocaleText style={[styles.starText, styles.starSmall]}>★</LocaleText>

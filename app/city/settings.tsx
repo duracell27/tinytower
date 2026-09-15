@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    fontFamily: 'Fredoka_500Medium',
+    fontFamily: 'Geologica_500Medium',
     color: '#0A1C30',
   },
   inputDark: { backgroundColor: '#1A2E3E', borderColor: '#2A4A60', color: '#DDE8D8' },

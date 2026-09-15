@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     flex: 1, minHeight: 40, maxHeight: 120,
     backgroundColor: '#F4F7F0', borderRadius: 20,
     paddingHorizontal: 14, paddingVertical: 8,
-    fontFamily: 'Nunito_400Regular', fontSize: 15, color: '#1a1a1a',
+    fontFamily: 'Geologica_500Medium', fontSize: 15, color: '#1a1a1a',
   },
   sendBtn: {
     width: 40, height: 40, borderRadius: 20,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
   editBodyInput: {
     flex: 1, marginHorizontal: 16, marginBottom: 16, padding: 14,
     backgroundColor: '#fff', borderRadius: 14,
-    fontFamily: 'Nunito_400Regular', fontSize: 15, color: '#1a1a1a',
+    fontFamily: 'Geologica_500Medium', fontSize: 15, color: '#1a1a1a',
     borderWidth: 1, borderColor: '#e8e8e8', minHeight: 200,
   },
   empty: { alignItems: 'center', paddingTop: 40 },

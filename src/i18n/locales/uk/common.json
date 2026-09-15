@@ -22,6 +22,15 @@
     "hoursAgo": "{{count}}год тому",
     "daysAgo": "{{count}}дн тому"
   },
+  "quickAction": {
+    "collect": "Зібрати",
+    "sell": "Продати {{name}}",
+    "sellItem": "Продати товар",
+    "sellItems": "Продати ({{count}} шт)",
+    "buy": "Купити {{name}}",
+    "findWorker": "Знайти робітника",
+    "all": "Всі"
+  },
   "insufficientResources": {
     "notEnoughCoins": "Недостатньо монет",
     "notEnoughGems": "Недостатньо кристалів",

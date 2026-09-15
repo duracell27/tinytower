@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
-    fontFamily: 'Nunito_400Regular', fontSize: 15, color: '#2A3344',
+    fontFamily: 'Geologica_400Regular', fontSize: 15, color: '#2A3344',
     borderWidth: 1, borderColor: '#E8EAF0',
   },
   loader: { flex: 1 },

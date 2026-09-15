@@ -22,6 +22,15 @@
     "hoursAgo": "{{count}}h ago",
     "daysAgo": "{{count}}d ago"
   },
+  "quickAction": {
+    "collect": "Collect",
+    "sell": "Sell {{name}}",
+    "sellItem": "Sell Item",
+    "sellItems": "Sell Items ({{count}})",
+    "buy": "Buy {{name}}",
+    "findWorker": "Find Worker",
+    "all": "All"
+  },
   "insufficientResources": {
     "notEnoughCoins": "Not enough coins",
     "notEnoughGems": "Not enough gems",
