@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, type CityDetail, type CitySummary, type CityRole } from '../services/api';
+import { api, type CityDetail, type CitySummary, type CityRole, type CityRankingsResponse } from '../services/api';
 
 interface CityState {
   city: CityDetail | null;
@@ -17,6 +17,7 @@ interface CityActions {
   updateCity: (cityId: string, updates: { name?: string; description?: string }) => Promise<void>;
   searchCities: (q: string) => Promise<CitySummary[]>;
   getCityById: (id: string) => Promise<CityDetail>;
+  getCityRankings: (page: number) => Promise<CityRankingsResponse>;
   clearCity: () => void;
 }
 
@@ -104,6 +105,10 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
 
   getCityById: async (id: string) => {
     return api.getCityById(id);
+  },
+
+  getCityRankings: async (page: number) => {
+    return api.getCityRankings(page);
   },
 
   clearCity: () => set({ city: null, error: null }),

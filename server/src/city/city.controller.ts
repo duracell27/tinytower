@@ -38,6 +38,13 @@ export class CityController {
     return this.cityService.searchCities(q ?? '');
   }
 
+  @Get('rankings')
+  @UseGuards(JwtAuthGuard)
+  getCityRankings(@Query('page') page: string) {
+    const p = Math.max(1, parseInt(page ?? '1', 10) || 1);
+    return this.cityService.getCityRankings(p);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   getCityById(@Req() req: AuthReq, @Param('id') id: string) {

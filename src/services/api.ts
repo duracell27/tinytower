@@ -82,6 +82,24 @@ export interface CitySummary {
   maxMembers: number;
 }
 
+export interface CityRankingEntry {
+  rank: number;
+  id: string;
+  name: string;
+  description: string | null;
+  level: number;
+  xp: number;
+  memberCount: number;
+  maxMembers: number;
+}
+
+export interface CityRankingsResponse {
+  entries: CityRankingEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface FriendEntry {
   requestId: string;
   playerId: string;
@@ -301,6 +319,8 @@ export const api = {
     request<CityDetail | null>('GET', '/city/my'),
   searchCities: (q: string) =>
     request<CitySummary[]>('GET', `/city/search?q=${encodeURIComponent(q)}`),
+  getCityRankings: (page: number) =>
+    request<CityRankingsResponse>('GET', `/city/rankings?page=${page}`),
   getCityById: (id: string) =>
     request<CityDetail>('GET', `/city/${id}`),
   inviteToCity: (cityId: string, playerId: string) =>

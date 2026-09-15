@@ -59,6 +59,24 @@ export interface CitySummaryDto {
   maxMembers: number;
 }
 
+export interface CityRankingEntry {
+  rank: number;
+  id: string;
+  name: string;
+  description: string | null;
+  level: number;
+  xp: number;
+  memberCount: number;
+  maxMembers: number;
+}
+
+export interface CityRankingsDto {
+  entries: CityRankingEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 @Injectable()
 export class CityService {
   constructor(private prisma: PrismaService) {}
@@ -377,6 +395,37 @@ export class CityService {
 
     await this.prisma.city.update({ where: { id: cityId }, data });
     return this.buildCityDetail(cityId, actorId);
+  }
+
+  async getCityRankings(page: number): Promise<CityRankingsDto> {
+    const PAGE_SIZE = 20;
+    const skip = (page - 1) * PAGE_SIZE;
+
+    const [cities, total] = await Promise.all([
+      this.prisma.city.findMany({
+        include: { members: { select: { playerId: true } } },
+        skip,
+        take: PAGE_SIZE,
+      }),
+      this.prisma.city.count(),
+    ]);
+
+    const entries = await Promise.all(
+      cities.map(async (city) => {
+        const xp = await this.computeCityXp(city.id);
+        const level = getCityLevel(xp);
+        return { id: city.id, name: city.name, description: city.description, level, xp, memberCount: city.members.length, maxMembers: getCityMaxMembers(level) };
+      }),
+    );
+
+    entries.sort((a, b) => b.xp - a.xp);
+
+    return {
+      entries: entries.map((e, i) => ({ rank: skip + i + 1, ...e })),
+      total,
+      page,
+      pageSize: PAGE_SIZE,
+    };
   }
 
   async getCityBonusForPlayer(playerId: string): Promise<{ level: number } | null> {

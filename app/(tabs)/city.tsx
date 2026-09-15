@@ -154,6 +154,22 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
         </View>
         <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
       </TouchableOpacity>
+
+      {/* Rankings */}
+      <TouchableOpacity
+        style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(80,55,10,0.35)' } : styles.actionCardGold]}
+        onPress={() => router.push('/city/rankings')}
+        activeOpacity={0.7}
+      >
+        <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+          <LocaleText style={styles.actionCardEmoji}>🏆</LocaleText>
+        </View>
+        <View style={styles.actionCardBody}>
+          <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.rankings.button')}</LocaleText>
+          <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.rankings.subtitle')}</LocaleText>
+        </View>
+        <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -235,6 +251,22 @@ function MyCityView({ city, isDark, t, router }: { city: any; isDark: boolean; t
           <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
         </TouchableOpacity>
       )}
+
+      {/* Rankings */}
+      <TouchableOpacity
+        style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(80,55,10,0.35)' } : styles.actionCardGold]}
+        onPress={() => router.push('/city/rankings')}
+        activeOpacity={0.7}
+      >
+        <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+          <LocaleText style={styles.actionCardEmoji}>🏆</LocaleText>
+        </View>
+        <View style={styles.actionCardBody}>
+          <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.rankings.button')}</LocaleText>
+          <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.rankings.subtitle')}</LocaleText>
+        </View>
+        <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -267,6 +299,7 @@ const styles = StyleSheet.create({
   actionCardBlue: { backgroundColor: '#C8E6F5' },
   actionCardGreen: { backgroundColor: '#C8EDD4' },
   actionCardAmber: { backgroundColor: '#FFF0C8' },
+  actionCardGold: { backgroundColor: '#FFF5D0' },
   actionCardLeft: { width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.6)', alignItems: 'center', justifyContent: 'center' },
   actionCardEmoji: { fontSize: 26 },
   actionCardBody: { flex: 1 },

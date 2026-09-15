@@ -287,6 +287,15 @@
       "success": "Role updated",
       "error": "Failed to change role"
     },
+    "rankings": {
+      "title": "City Rankings",
+      "subtitle": "Top cities by experience",
+      "rankLabel": "#{{rank}}",
+      "xpLabel": "{{xp}} XP",
+      "empty": "No cities yet",
+      "loadMore": "Load More",
+      "button": "City Rankings"
+    },
     "errors": {
       "load": "Failed to load city",
       "leave": "Failed to leave city",
