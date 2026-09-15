@@ -25,8 +25,8 @@ const IMG = {
 };
 
 const CITY_BUILDINGS = [
-  IMG.advertising,
   IMG.autopark,
+  IMG.advertising,
   IMG.bank,
   IMG.school,
   IMG.academy,
@@ -127,15 +127,10 @@ export default function CreateCityScreen() {
             placeholderTextColor={isDark ? '#667080' : '#A0AEB8'}
             value={name}
             onChangeText={setName}
-            maxLength={30}
             autoCapitalize="words"
             returnKeyType="done"
             onSubmitEditing={handleCreate}
           />
-
-          <LocaleText style={[styles.charCount, isDark && { color: '#667080' }]}>
-            {name.length} / 30
-          </LocaleText>
 
           <TouchableOpacity
             style={[styles.btn, submitting && styles.btnDisabled]}
@@ -169,7 +164,7 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 },
   iconRow: { alignItems: 'center', marginBottom: 12 },
   headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
-  headerCloseBtn: { backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 7, width: 26, height: 26, alignItems: 'center', justifyContent: 'center' },
+  headerCloseBtn: { backgroundColor: 'rgba(50,10,90,0.45)', borderRadius: 7, width: 26, height: 26, alignItems: 'center', justifyContent: 'center' },
   headerClose: { fontFamily: 'Fredoka_700Bold', fontSize: 13, color: 'rgba(255,255,255,0.9)', lineHeight: 15 },
   heroImg: { width: 110, height: 110 },
   buildingsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 8 },
@@ -192,7 +187,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   inputDark: { backgroundColor: '#1A2E3E', borderColor: '#2A4A60', color: '#DDE8D8' },
-  charCount: { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#8A9AA8', textAlign: 'right', marginBottom: 20 },
   btn: { backgroundColor: '#9A6FD0', borderRadius: 14, paddingVertical: 16, alignItems: 'center' },
   btnDisabled: { opacity: 0.5 },
   btnText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
