@@ -292,13 +292,6 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
           </View>
         </View>
 
-        {/* Bonus badge */}
-        <View style={styles.bonusBadge}>
-          <LocaleText style={styles.bonusBadgeText}>
-            {t('city.bonusLabel', { percent: city.level })}
-          </LocaleText>
-        </View>
-
         {/* XP bar */}
         <View style={[styles.xpBarBg, { backgroundColor: theme.divider }]}>
           <View style={[styles.xpBarFill, { width: `${Math.round(xpPercent * 100)}%` as any }]} />
