@@ -168,9 +168,9 @@ const styles = StyleSheet.create({
   buildingsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 8 },
   buildingWrap: { flex: 1, aspectRatio: 1, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.05)', alignItems: 'center', justifyContent: 'center', padding: 6 },
   buildingIcon: { width: '100%', height: '100%' },
-  costCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, paddingVertical: 10, paddingHorizontal: 16, marginBottom: 12 },
+  costCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16, marginBottom: 12, borderWidth: 1.5, borderColor: 'transparent' },
   costText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: 'rgba(255,255,255,0.85)', flex: 1 },
-  costAmount: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#FFFFFF', marginRight: 5 },
+  costAmount: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#FFFFFF', marginRight: 5 },
   gemIcon: { width: 22, height: 22 },
   input: {
     backgroundColor: '#FFFFFF',
