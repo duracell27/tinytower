@@ -1,6 +1,6 @@
 import '../src/i18n';
 import { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet, LogBox } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, LogBox, useColorScheme } from 'react-native';
 
 LogBox.ignoreLogs(['Sending `onAnimatedValueUpdate` with no listeners registered.']);
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -60,6 +60,14 @@ function handleReferralLink(url: string | null) {
 
 export default function RootLayout() {
   const router = useRouter();
+  const isDark = useColorScheme() === 'dark';
+  const cityHeaderOptions = {
+    headerShown: true,
+    title: '',
+    headerStyle: { backgroundColor: isDark ? '#0D1F2D' : '#FFFFFF' } as any,
+    headerTintColor: isDark ? '#DDE8D8' : '#000000',
+    headerShadowVisible: false,
+  };
 
   const [fontsLoaded] = useFonts({
     Fredoka_400Regular,
@@ -116,11 +124,11 @@ export default function RootLayout() {
         <Stack.Screen name="daily-tasks" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="my-business" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="my-business/[category]" options={{ headerShown: false }} />
-        <Stack.Screen name="city/create" options={{ animation: 'slide_from_bottom', presentation: 'modal', headerShown: true, title: '' }} />
-        <Stack.Screen name="city/search" options={{ animation: 'slide_from_right', headerShown: true, title: '' }} />
-        <Stack.Screen name="city/[id]" options={{ animation: 'slide_from_right', headerShown: true, title: '' }} />
-        <Stack.Screen name="city/settings" options={{ animation: 'slide_from_right', headerShown: true, title: '' }} />
-        <Stack.Screen name="city/rankings" options={{ animation: 'slide_from_right', headerShown: true, title: '' }} />
+        <Stack.Screen name="city/create" options={{ animation: 'slide_from_bottom', presentation: 'modal', ...cityHeaderOptions }} />
+        <Stack.Screen name="city/search" options={{ animation: 'slide_from_right', ...cityHeaderOptions }} />
+        <Stack.Screen name="city/[id]" options={{ animation: 'slide_from_right', ...cityHeaderOptions }} />
+        <Stack.Screen name="city/settings" options={{ animation: 'slide_from_right', ...cityHeaderOptions }} />
+        <Stack.Screen name="city/rankings" options={{ animation: 'slide_from_right', ...cityHeaderOptions }} />
       </Stack>
       <GlobalOverlay />
       <OnboardingOverlay />
