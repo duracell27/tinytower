@@ -128,7 +128,7 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
       </View>
 
       {/* Info cards */}
-      <View style={[styles.card, isDark ? { backgroundColor: 'rgba(40,90,55,0.35)' } : styles.cardBonus]}>
+      <View style={[styles.card, isDark ? { backgroundColor: 'rgba(30,150,80,0.42)' } : styles.cardBonus]}>
         <Image source={IMG.marketing} style={styles.cardImg} contentFit="contain" />
         <View style={styles.cardBody}>
           <LocaleText style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.bonusTitle')}</LocaleText>
@@ -136,7 +136,7 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
         </View>
       </View>
 
-      <View style={[styles.card, isDark ? { backgroundColor: 'rgba(100,75,15,0.35)' } : styles.cardRequirement]}>
+      <View style={[styles.card, isDark ? { backgroundColor: 'rgba(190,120,10,0.42)' } : styles.cardRequirement]}>
         <View style={styles.floorIconWrap}>
           <Image source={IMG.floorIcon} style={styles.cardImg} contentFit="contain" />
           <View style={styles.floorBadge}>
@@ -153,7 +153,7 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
 
       {/* Browse Cities */}
       <TouchableOpacity
-        style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(30,70,110,0.35)' } : styles.actionCardBlue]}
+        style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(20,95,210,0.45)' } : styles.actionCardBlue]}
         onPress={() => router.push('/city/search')}
         activeOpacity={0.7}
       >
@@ -169,7 +169,7 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
 
       {/* Create City */}
       <TouchableOpacity
-        style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(30,90,55,0.35)' } : styles.actionCardGreen]}
+        style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(80,55,200,0.42)' } : styles.actionCardGreen]}
         onPress={() => router.push('/city/create')}
         activeOpacity={0.7}
       >
@@ -185,7 +185,7 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
 
       {/* Rankings */}
       <TouchableOpacity
-        style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(80,55,10,0.35)' } : styles.actionCardGold]}
+        style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(175,135,0,0.45)' } : styles.actionCardGold]}
         onPress={() => router.push('/city/rankings')}
         activeOpacity={0.7}
       >
@@ -322,8 +322,8 @@ const styles = StyleSheet.create({
 
   // Info cards
   card: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, padding: 14, marginBottom: 10, gap: 12 },
-  cardBonus: { backgroundColor: '#D4EDDA' },
-  cardRequirement: { backgroundColor: '#FFF3CD' },
+  cardBonus: { backgroundColor: '#A8ECC8' },
+  cardRequirement: { backgroundColor: '#FFD078' },
   cardImg: { width: 44, height: 44 },
   floorIconWrap: { width: 44, height: 44, position: 'relative' },
   floorBadge: {
@@ -340,10 +340,10 @@ const styles = StyleSheet.create({
 
   // Action cards
   actionCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: 16, marginBottom: 10, gap: 14 },
-  actionCardBlue: { backgroundColor: '#C8E6F5' },
-  actionCardGreen: { backgroundColor: '#C8EDD4' },
-  actionCardAmber: { backgroundColor: '#FFF0C8' },
-  actionCardGold: { backgroundColor: '#FFF5D0' },
+  actionCardBlue: { backgroundColor: '#8ECEF8' },
+  actionCardGreen: { backgroundColor: '#C4B0F8' },
+  actionCardAmber: { backgroundColor: '#FFD078' },
+  actionCardGold: { backgroundColor: '#FFD84A' },
   actionCardLeft: { width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.6)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   actionImg: { width: 40, height: 40 },
   actionCardBody: { flex: 1 },
