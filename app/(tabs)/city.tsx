@@ -20,6 +20,7 @@ import { useGameClock } from '../../src/hooks/useGameClock';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
+import { useAppTheme } from '../../src/hooks/useAppTheme';
 import type { CityDetail, CityMember, CityRole } from '../../src/services/api';
 
 const IMG = {
@@ -34,6 +35,9 @@ const IMG = {
 };
 
 const STAR_EMPTY = require('../../assets/img/starEmpty.png');
+const XP_ICON    = require('../../assets/img/xpIcon.png');
+const WORKER_ICON = require('../../assets/img/worker.png');
+const HAPPY_ICON  = require('../../assets/img/happySmile.png');
 
 const SECTION_CARDS = [
   { key: 'budget',        img: require('../../assets/img/coin.png') },
@@ -150,6 +154,7 @@ export default function CityScreen() {
 
 function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boolean; t: any; router: any }) {
   const [memberPage, setMemberPage] = useState(0);
+  const theme = useAppTheme();
   const player = useAuthStore((s) => s.player);
   const { leaveCity, kickMember, changeMemberRole } = useCityStore();
 
@@ -242,7 +247,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
       style={styles.scrollView}
     >
       {/* ── HERO CARD ─────────────────────────────────── */}
-      <View style={[styles.heroCard, isDark && styles.heroCardDark]}>
+      <View style={[styles.heroCard, { backgroundColor: theme.surface }]}>
 
         {/* Stars */}
         <View style={styles.starsRow}>
@@ -254,45 +259,54 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
         {/* City name with icon on both sides */}
         <View style={styles.cityNameRow}>
           <Image source={IMG.cityBuildings} style={styles.cityNameIcon} contentFit="contain" />
-          <LocaleText style={[styles.cityHeroName, isDark && { color: '#DDE8D8' }]}>{city.name}</LocaleText>
+          <LocaleText style={[styles.cityHeroName, { color: theme.text }]}>{city.name}</LocaleText>
           <Image source={IMG.cityBuildings} style={styles.cityNameIcon} contentFit="contain" />
         </View>
 
-        <LocaleText style={[styles.foundedDate, isDark && { color: '#8A9A80' }]}>
+        <LocaleText style={[styles.foundedDate, { color: theme.textMuted }]}>
           {t('city.founded', { date: formatFoundedDate(city.createdAt) })}
         </LocaleText>
 
-        <View style={[styles.levelBadge, isDark && styles.levelBadgeDark]}>
-          <LocaleText style={[styles.levelText, isDark && { color: '#6BAED0' }]}>
-            {t('city.levelLabel', { level: city.level })}
-          </LocaleText>
-        </View>
-
-        {/* XP progress */}
-        <View style={styles.xpSection}>
-          <View style={styles.xpLabelRow}>
-            <LocaleText style={[styles.xpNum, isDark && { color: '#9AAAB8' }]}>{city.xp} XP</LocaleText>
-            {city.xpForNextLevel != null && (
-              <LocaleText style={[styles.xpNum, isDark && { color: '#9AAAB8' }]}>{city.xpForNextLevel} XP</LocaleText>
-            )}
+        {/* Level + XP row */}
+        <View style={styles.levelXpRow}>
+          <View style={[styles.levelBadge, { backgroundColor: theme.surfaceSub }]}>
+            <LocaleText style={[styles.levelText, { color: theme.text }]}>
+              {t('city.levelLabel', { level: city.level })}
+            </LocaleText>
           </View>
-          <View style={[styles.xpBarBg, isDark && styles.xpBarBgDark]}>
-            <View style={[styles.xpBarFill, { width: `${Math.round(xpPercent * 100)}%` as any }]} />
+          <View style={styles.xpValueRow}>
+            <LocaleText style={[styles.xpNum, { color: theme.textMuted }]}>
+              {city.xp}
+              {city.xpForNextLevel != null ? ` / ${city.xpForNextLevel}` : ''}
+            </LocaleText>
+            <Image source={XP_ICON} style={styles.xpIconImg} contentFit="contain" />
           </View>
         </View>
 
-        {/* Workers */}
-        <View style={[styles.workersRow, isDark && styles.workersRowDark]}>
-          <View style={styles.workerCell}>
-            <Image source={require('../../assets/img/worker.png')} style={styles.workerIcon} contentFit="contain" />
-            <LocaleText style={[styles.workerValue, isDark && { color: '#DDE8D8' }]}>{totalWorkers}</LocaleText>
-            <LocaleText style={[styles.workerLabel, isDark && { color: '#8A9A80' }]}>{t('city.allWorkers')}</LocaleText>
+        {/* XP bar */}
+        <View style={[styles.xpBarBg, { backgroundColor: theme.divider }]}>
+          <View style={[styles.xpBarFill, { width: `${Math.round(xpPercent * 100)}%` as any }]} />
+        </View>
+
+        {/* Workers / Happy divider */}
+        <View style={[styles.workersDividerLine, { backgroundColor: theme.divider }]} />
+
+        {/* Workers row — profile-style */}
+        <View style={styles.workerStatsRow}>
+          <View style={styles.workerStatItem}>
+            <Image source={WORKER_ICON} style={styles.workerStatIcon} contentFit="contain" />
+            <View style={styles.workerStatText}>
+              <LocaleText style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('city.allWorkers')}</LocaleText>
+              <LocaleText style={[styles.workerStatValue, { color: theme.text }]}>{totalWorkers}</LocaleText>
+            </View>
           </View>
-          <View style={[styles.workerDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.12)' }]} />
-          <View style={styles.workerCell}>
-            <Image source={require('../../assets/img/happySmile.png')} style={styles.workerIcon} contentFit="contain" />
-            <LocaleText style={[styles.workerValue, isDark && { color: '#DDE8D8' }]}>{happyCount}</LocaleText>
-            <LocaleText style={[styles.workerLabel, isDark && { color: '#8A9A80' }]}>{t('city.happyWorkers')}</LocaleText>
+          <View style={[styles.workerStatDivider, { backgroundColor: theme.divider }]} />
+          <View style={styles.workerStatItem}>
+            <Image source={HAPPY_ICON} style={styles.workerStatIcon} contentFit="contain" />
+            <View style={styles.workerStatText}>
+              <LocaleText style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('city.happyWorkers')}</LocaleText>
+              <LocaleText style={[styles.workerStatValue, { color: theme.text }]}>{happyCount} / {totalWorkers}</LocaleText>
+            </View>
           </View>
         </View>
       </View>
@@ -578,63 +592,58 @@ const styles = StyleSheet.create({
 
   // ── Hero card (my city) ────────────────────────────
   heroCard: {
-    backgroundColor: '#D0E8F8',
     marginHorizontal: 16,
     marginBottom: 16,
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
   },
-  heroCardDark: { backgroundColor: 'rgba(30,60,100,0.45)' },
 
   starsRow: { flexDirection: 'row', gap: 6, marginBottom: 12 },
   star: { width: 22, height: 22 },
 
   cityNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  cityNameIcon: { width: 22, height: 22, opacity: 0.7 },
+  cityNameIcon: { width: 22, height: 22, opacity: 0.6 },
   cityHeroName: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 24,
-    color: '#0A1C30',
     textAlign: 'center',
     flexShrink: 1,
   },
   foundedDate: {
     fontFamily: 'Fredoka_400Regular',
     fontSize: 13,
-    color: '#5A7090',
     marginBottom: 14,
+  },
+
+  levelXpRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 8,
   },
   levelBadge: {
-    backgroundColor: 'rgba(46,110,201,0.12)',
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: 10,
+    paddingHorizontal: 14,
     paddingVertical: 5,
-    marginBottom: 14,
   },
-  levelBadgeDark: { backgroundColor: 'rgba(107,174,208,0.18)' },
-  levelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2E6EC9' },
+  levelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+  xpValueRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  xpNum: { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
+  xpIconImg: { width: 18, height: 18 },
 
-  xpSection: { width: '100%', marginBottom: 14 },
-  xpLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
-  xpNum: { fontFamily: 'Fredoka_500Medium', fontSize: 12, color: '#5A7090' },
-  xpBarBg: { height: 8, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.1)', overflow: 'hidden' },
-  xpBarBgDark: { backgroundColor: 'rgba(255,255,255,0.1)' },
+  xpBarBg: { width: '100%', height: 7, borderRadius: 4, overflow: 'hidden', marginBottom: 14 },
   xpBarFill: { height: '100%', backgroundColor: '#2E6EC9', borderRadius: 4 },
 
-  workersRow: {
-    flexDirection: 'row',
-    width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.5)',
-    borderRadius: 14,
-    paddingVertical: 12,
-  },
-  workersRowDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
-  workerCell: { flex: 1, alignItems: 'center', gap: 2 },
-  workerIcon: { width: 28, height: 28, marginBottom: 2 },
-  workerValue: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#0A1C30' },
-  workerLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 11, color: '#5A7090' },
-  workerDivider: { width: 1, alignSelf: 'stretch', backgroundColor: 'rgba(0,0,0,0.1)' },
+  workersDividerLine: { width: '100%', height: 1, marginBottom: 12 },
+  workerStatsRow: { flexDirection: 'row', width: '100%', alignItems: 'center' },
+  workerStatItem: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 8 },
+  workerStatIcon: { width: 32, height: 32 },
+  workerStatText: { flex: 1 },
+  workerStatLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 11, marginBottom: 1 },
+  workerStatValue: { fontFamily: 'Fredoka_700Bold', fontSize: 16 },
+  workerStatDivider: { width: 1, height: 36, alignSelf: 'center' },
 
   // ── Section cards ──────────────────────────────────
   cardsGrid: {
