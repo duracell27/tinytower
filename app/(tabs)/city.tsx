@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
   star: { width: 22, height: 22 },
 
   cityNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  cityNameIcon: { width: 22, height: 22, opacity: 0.6 },
+  cityNameIcon: { width: 22, height: 22 },
   cityHeroName: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 24,
