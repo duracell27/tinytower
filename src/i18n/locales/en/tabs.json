@@ -367,6 +367,7 @@
     "newPost": "New Post",
     "editPost": "Edit Post",
     "noPostsYet": "No posts yet. Be the first!",
+    "levelPrefix": "Lv.",
     "loadMore": "Load more",
     "loading": "Loading...",
     "sendError": "Failed to send",
@@ -409,7 +410,9 @@
   },
   "game": {
     "buyFloor": "Buy floor {{number}}",
-    "registerBanner": "Save your progress — create a free account"
+    "registerBanner": "Save your progress — create a free account",
+    "showAll": "Show all {{count}}",
+    "showLess": "Show less"
   },
   "leaderboard": {
     "title": "Leaderboard",

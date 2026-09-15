@@ -74,6 +74,7 @@
     "seats": "Seats",
     "free": "Free",
     "best": "Best",
+    "aboutTitle": "About the Hotel",
     "evictConfirm": {
       "title": "Evict worker?",
       "message": "{{name}} will be evicted from the hotel",

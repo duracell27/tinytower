@@ -24,14 +24,14 @@ const LVL_ICON  = require('../assets/img/lvlIcon.png');
 
 type SelectedItem = { id: string; body: string; isOwn: boolean; type: 'post' | 'comment' };
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+function formatDate(iso: string, locale?: string): string {
+  return new Date(iso).toLocaleDateString(locale || undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 export default function ForumPostScreen() {
   const router = useRouter();
   const { postId, category } = useLocalSearchParams<{ postId: string; category: string }>();
-  const { t } = useTranslation('tabs');
+  const { t, i18n } = useTranslation('tabs');
   const insets = useSafeAreaInsets();
 
   const {
@@ -165,7 +165,7 @@ export default function ForumPostScreen() {
             <Image source={LVL_ICON} style={styles.postMetaIcon} contentFit="contain" />
             <LocaleText style={[styles.postAuthor, isDark && { color: theme.text }]}>{activePost.playerId === player?.id ? currentPlayerLevel : activePost.playerLevel}</LocaleText>
           </View>
-          <LocaleText style={styles.postDate}>{formatDate(activePost.createdAt)}</LocaleText>
+          <LocaleText style={styles.postDate}>{formatDate(activePost.createdAt, i18n.language)}</LocaleText>
         </View>
         {canModifyPost && (
           <Pressable

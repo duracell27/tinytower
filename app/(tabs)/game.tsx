@@ -1224,6 +1224,7 @@ function TowerCollapseDiv({
   collapsed: boolean;
   onToggle: () => void;
 }) {
+  const { t } = useTranslation('tabs');
   return (
     <View style={divStyles.container}>
       <View style={divStyles.line} />
@@ -1234,7 +1235,7 @@ function TowerCollapseDiv({
       >
         <Chevron collapsed={collapsed} />
         <LocaleText style={divStyles.label}>
-          {collapsed ? `show all ${hiddenCount}` : 'show less'}
+          {collapsed ? t('game.showAll', { count: hiddenCount }) : t('game.showLess')}
         </LocaleText>
         <Chevron collapsed={collapsed} />
       </Pressable>

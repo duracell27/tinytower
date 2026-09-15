@@ -55,11 +55,14 @@ const MATERIAL_ICONS: Record<string, ReturnType<typeof require>> = {
 };
 
 function formatCountdown(ms: number): string {
-  if (ms <= 0) return '0h 0m';
+  if (ms <= 0) return '0г 0хв';
   const totalMin = Math.floor(ms / 60_000);
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
-  return `${h}h ${m}m`;
+  let i18n: { language?: string } | undefined;
+  try { i18n = require('../src/i18n').default; } catch {}
+  const uk = i18n?.language !== 'en';
+  return uk ? `${h}г ${m}хв` : `${h}h ${m}m`;
 }
 
 function ProgressBar({ value, max }: { value: number; max: number }) {

@@ -1513,7 +1513,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
             <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
             <View style={[infoStyles.card, { backgroundColor: theme.surfaceCard}]}>
               <LinearGradient colors={['#C9637E', '#A8475F']} style={infoStyles.cardHeader}>
-                <LocaleText style={infoStyles.cardTitle}>About the Lobby</LocaleText>
+                <LocaleText style={infoStyles.cardTitle}>{t('lobbyPanel.aboutTitle')}</LocaleText>
                 <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
                   <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                     <Path d="M18 6L6 18M6 6l12 12" stroke="rgba(255,255,255,0.85)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />

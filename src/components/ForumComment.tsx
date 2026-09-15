@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import type { ForumComment as ForumCommentType } from '../stores/forumStore';
@@ -27,6 +28,7 @@ function formatTime(iso: string): string {
 }
 
 export default function ForumComment({ comment, isOwn, isAdmin, canReport, onLongPress, onAvatarPress }: Props) {
+  const { t } = useTranslation('tabs');
   const canInteract = isOwn || isAdmin || canReport;
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -50,7 +52,7 @@ export default function ForumComment({ comment, isOwn, isAdmin, canReport, onLon
       >
         <View style={styles.header}>
           <LocaleText style={styles.name}>{comment.playerName}</LocaleText>
-          <LocaleText style={styles.level}>Lv.{displayLevel}</LocaleText>
+          <LocaleText style={styles.level}>{t('forum.levelPrefix')}{displayLevel}</LocaleText>
           <LocaleText style={styles.time}>{formatTime(comment.createdAt)}</LocaleText>
         </View>
         <LocaleText style={styles.body}>

@@ -105,6 +105,7 @@
     "dismiss": "Awesome!"
   },
   "lobbyPanel": {
+    "aboutTitle": "About the Lobby",
     "info": {
       "lobbyTitle": "Lobby",
       "lobbyText": "The lobby is your tower's entrance. Visitors arrive here and you use the elevator to guide them to their destinations.",
