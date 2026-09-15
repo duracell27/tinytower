@@ -19,6 +19,7 @@ import { formatNum } from '../../src/utils/format';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
+import { getWorkerMood } from '../../shared/engine/workerUtils';
 import type { CityDetail, CityMember, CityRole } from '../../src/services/api';
 
 const IMG = {
@@ -31,6 +32,17 @@ const IMG = {
   marketing:     require('../../assets/img/MarketingIcon.png'),
   floorIcon:     require('../../assets/img/floor.png'),
 };
+
+const STAR_EMPTY = require('../../assets/img/starEmpty.png');
+
+const SECTION_CARDS = [
+  { key: 'budget',        img: require('../../assets/img/coin.png') },
+  { key: 'tasks',         img: require('../../assets/img/city/cityTasks.png') },
+  { key: 'chat',          img: require('../../assets/img/city/cityChat.png') },
+  { key: 'history',       img: require('../../assets/img/city/cityNotice.png') },
+  { key: 'buildings',     img: require('../../assets/img/city/cityBuildings.png') },
+  { key: 'notifications', img: require('../../assets/img/city/cityNotice.png') },
+] as const;
 
 const MEMBERS_PER_PAGE = 10;
 const ROLE_ORDER: CityRole[] = ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
@@ -52,15 +64,6 @@ function formatFoundedDate(dateStr: string): string {
   const d = new Date(dateStr);
   return d.toLocaleDateString(undefined, { day: '2-digit', month: 'long', year: 'numeric' });
 }
-
-const SECTION_CARDS = [
-  { key: 'budget',        icon: '💰' },
-  { key: 'tasks',         icon: '📋' },
-  { key: 'chat',          icon: '💬' },
-  { key: 'history',       icon: '📜' },
-  { key: 'buildings',     icon: '🏗️' },
-  { key: 'notifications', icon: '🔔' },
-] as const;
 
 export default function CityScreen() {
   const { t } = useTranslation('tabs');
@@ -150,6 +153,20 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
   const player = useAuthStore((s) => s.player);
   const { leaveCity, kickMember, changeMemberRole } = useCityStore();
 
+  // Current player's own worker stats (city-wide aggregate requires backend update)
+  const workers = useGameStore((s) => s.workers);
+  const floors = useGameStore((s) => s.floors);
+  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const totalWorkers = workers.length;
+  const happyCount = workers.filter((w) => {
+    if (w.assignedFloorId === null) return false;
+    const staticFloor = gameConfig.floors.find((f) => f.id === w.assignedFloorId);
+    const floorType = staticFloor ? staticFloor.floorType : (openedFloorTypes?.[String(w.assignedFloorId)] ?? '');
+    const floor = floors.find((f) => f.id === w.assignedFloorId);
+    const production = floor?.productions[w.assignedSlotIdx!];
+    return getWorkerMood(w, floorType, production?.typeId ?? null) === 'good';
+  }).length;
+
   const myRole = city.myRole;
   const isMyCity = !!myRole;
   const xpPercent = city.xpForNextLevel ? Math.min(city.xp / city.xpForNextLevel, 1) : 1;
@@ -226,13 +243,20 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
     >
       {/* ── HERO CARD ─────────────────────────────────── */}
       <View style={[styles.heroCard, isDark && styles.heroCardDark]}>
+
+        {/* Stars */}
         <View style={styles.starsRow}>
           {[0, 1, 2, 3, 4].map((i) => (
-            <LocaleText key={i} style={[styles.star, isDark && styles.starDark]}>★</LocaleText>
+            <Image key={i} source={STAR_EMPTY} style={styles.star} contentFit="contain" />
           ))}
         </View>
 
-        <LocaleText style={[styles.cityHeroName, isDark && { color: '#DDE8D8' }]}>{city.name}</LocaleText>
+        {/* City name with icon on both sides */}
+        <View style={styles.cityNameRow}>
+          <Image source={IMG.cityBuildings} style={styles.cityNameIcon} contentFit="contain" />
+          <LocaleText style={[styles.cityHeroName, isDark && { color: '#DDE8D8' }]}>{city.name}</LocaleText>
+          <Image source={IMG.cityBuildings} style={styles.cityNameIcon} contentFit="contain" />
+        </View>
 
         <LocaleText style={[styles.foundedDate, isDark && { color: '#8A9A80' }]}>
           {t('city.founded', { date: formatFoundedDate(city.createdAt) })}
@@ -244,6 +268,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
           </LocaleText>
         </View>
 
+        {/* XP progress */}
         <View style={styles.xpSection}>
           <View style={styles.xpLabelRow}>
             <LocaleText style={[styles.xpNum, isDark && { color: '#9AAAB8' }]}>{city.xp} XP</LocaleText>
@@ -256,16 +281,17 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
           </View>
         </View>
 
+        {/* Workers */}
         <View style={[styles.workersRow, isDark && styles.workersRowDark]}>
           <View style={styles.workerCell}>
-            <LocaleText style={styles.workerIcon}>👷</LocaleText>
-            <LocaleText style={[styles.workerValue, isDark && { color: '#DDE8D8' }]}>—</LocaleText>
+            <Image source={require('../../assets/img/worker.png')} style={styles.workerIcon} contentFit="contain" />
+            <LocaleText style={[styles.workerValue, isDark && { color: '#DDE8D8' }]}>{totalWorkers}</LocaleText>
             <LocaleText style={[styles.workerLabel, isDark && { color: '#8A9A80' }]}>{t('city.allWorkers')}</LocaleText>
           </View>
           <View style={[styles.workerDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.12)' }]} />
           <View style={styles.workerCell}>
-            <LocaleText style={styles.workerIcon}>😊</LocaleText>
-            <LocaleText style={[styles.workerValue, isDark && { color: '#DDE8D8' }]}>—</LocaleText>
+            <Image source={require('../../assets/img/happySmile.png')} style={styles.workerIcon} contentFit="contain" />
+            <LocaleText style={[styles.workerValue, isDark && { color: '#DDE8D8' }]}>{happyCount}</LocaleText>
             <LocaleText style={[styles.workerLabel, isDark && { color: '#8A9A80' }]}>{t('city.happyWorkers')}</LocaleText>
           </View>
         </View>
@@ -279,7 +305,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
             style={[styles.sectionCard, isDark && styles.sectionCardDark]}
             activeOpacity={0.7}
           >
-            <LocaleText style={styles.sectionCardIcon}>{card.icon}</LocaleText>
+            <Image source={card.img} style={styles.sectionCardImg} contentFit="contain" />
             <LocaleText style={[styles.sectionCardLabel, isDark && { color: '#DDE8D8' }]}>
               {t(`city.sections.${card.key}`)}
             </LocaleText>
@@ -377,19 +403,19 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
       {/* ── NAV ROWS ──────────────────────────────────── */}
       <View style={[styles.block, styles.navBlock, isDark && styles.navBlockDark]}>
         <TouchableOpacity style={styles.navRow} activeOpacity={0.7}>
-          <LocaleText style={styles.navIcon}>📊</LocaleText>
+          <Image source={require('../../assets/img/xpIcon.png')} style={styles.navImg} contentFit="contain" />
           <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>{t('city.statistics')}</LocaleText>
           <LocaleText style={[styles.navChevron, isDark && { color: '#5A7090' }]}>›</LocaleText>
         </TouchableOpacity>
         <View style={[styles.navDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.07)' }]} />
         <TouchableOpacity style={styles.navRow} activeOpacity={0.7}>
-          <LocaleText style={styles.navIcon}>🏅</LocaleText>
+          <Image source={require('../../assets/img/menu/rating.png')} style={styles.navImg} contentFit="contain" />
           <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>{t('city.citizenRankings')}</LocaleText>
           <LocaleText style={[styles.navChevron, isDark && { color: '#5A7090' }]}>›</LocaleText>
         </TouchableOpacity>
         <View style={[styles.navDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.07)' }]} />
         <TouchableOpacity style={styles.navRow} onPress={() => router.push('/city/rankings')} activeOpacity={0.7}>
-          <LocaleText style={styles.navIcon}>🏆</LocaleText>
+          <Image source={require('../../assets/img/rating/1PlaceCup.png')} style={styles.navImg} contentFit="contain" />
           <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>{t('city.rankings.button')}</LocaleText>
           <LocaleText style={[styles.navChevron, isDark && { color: '#5A7090' }]}>›</LocaleText>
         </TouchableOpacity>
@@ -516,7 +542,7 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingTop: 130, paddingBottom: 100 },
 
   // MyCityView scroll
-  cityScroll: { paddingTop: 130, paddingBottom: 8 },
+  cityScroll: { paddingTop: 155, paddingBottom: 8 },
 
   // ── Hero (no city) ─────────────────────────────────
   hero: { alignItems: 'center', paddingTop: 8, paddingBottom: 20 },
@@ -562,15 +588,16 @@ const styles = StyleSheet.create({
   heroCardDark: { backgroundColor: 'rgba(30,60,100,0.45)' },
 
   starsRow: { flexDirection: 'row', gap: 6, marginBottom: 12 },
-  star: { fontSize: 26, color: '#C8D8E8' },
-  starDark: { color: '#3A5070' },
+  star: { width: 22, height: 22 },
 
+  cityNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  cityNameIcon: { width: 22, height: 22, opacity: 0.7 },
   cityHeroName: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 24,
     color: '#0A1C30',
     textAlign: 'center',
-    marginBottom: 4,
+    flexShrink: 1,
   },
   foundedDate: {
     fontFamily: 'Fredoka_400Regular',
@@ -604,7 +631,7 @@ const styles = StyleSheet.create({
   },
   workersRowDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
   workerCell: { flex: 1, alignItems: 'center', gap: 2 },
-  workerIcon: { fontSize: 20, marginBottom: 2 },
+  workerIcon: { width: 28, height: 28, marginBottom: 2 },
   workerValue: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#0A1C30' },
   workerLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 11, color: '#5A7090' },
   workerDivider: { width: 1, alignSelf: 'stretch', backgroundColor: 'rgba(0,0,0,0.1)' },
@@ -627,7 +654,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   sectionCardDark: { backgroundColor: '#1A2E3E' },
-  sectionCardIcon: { fontSize: 24 },
+  sectionCardImg: { width: 32, height: 32 },
   sectionCardLabel: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 12,
@@ -705,7 +732,7 @@ const styles = StyleSheet.create({
   navBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', paddingVertical: 4 },
   navBlockDark: { backgroundColor: '#1A2E3E' },
   navRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
-  navIcon: { fontSize: 20, width: 28 },
+  navImg: { width: 26, height: 26 },
   navLabel: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#0A1C30' },
   navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: '#8A9A80', lineHeight: 24 },
   navDivider: { height: 1, marginLeft: 56, backgroundColor: 'rgba(0,0,0,0.06)' },
