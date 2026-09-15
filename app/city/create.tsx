@@ -85,20 +85,13 @@ export default function CreateCityScreen() {
 
   return (
     <AppBackground style={[styles.background, isDark && styles.backgroundDark]}>
-      <Stack.Screen options={{
-        title: '',
-        headerTitle: () => (
-          <LocaleText style={styles.headerTitle}>{t('city.create.title')}</LocaleText>
-        ),
-        headerRight: () => (
-          <TouchableOpacity onPress={() => router.back()} hitSlop={8} style={styles.headerCloseBtn}>
-            <LocaleText style={styles.headerClose}>✕</LocaleText>
-          </TouchableOpacity>
-        ),
-        headerStyle: { backgroundColor: headerBg } as any,
-        headerTintColor: '#FFFFFF',
-        headerShadowVisible: false,
-      }} />
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={[styles.customHeader, { backgroundColor: headerBg }]}>
+        <LocaleText style={styles.headerTitle}>{t('city.create.title')}</LocaleText>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={10} style={styles.headerCloseBtn}>
+          <LocaleText style={styles.headerClose}>✕</LocaleText>
+        </TouchableOpacity>
+      </View>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.iconRow}>
@@ -160,10 +153,18 @@ const styles = StyleSheet.create({
   background: { flex: 1, backgroundColor: '#F0F8FF' },
   backgroundDark: { backgroundColor: '#0D1F2D' },
   scroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 },
+  customHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    paddingTop: 16, paddingBottom: 14, paddingHorizontal: 16,
+  },
+  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF', flex: 1, textAlign: 'center' },
+  headerCloseBtn: {
+    position: 'absolute', right: 16,
+    backgroundColor: 'rgba(0,0,0,0.28)', borderRadius: 13,
+    width: 26, height: 26, alignItems: 'center', justifyContent: 'center',
+  },
+  headerClose: { fontFamily: 'Fredoka_700Bold', fontSize: 13, color: '#FFFFFF', lineHeight: 15 },
   iconRow: { alignItems: 'center', marginBottom: 12 },
-  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
-  headerCloseBtn: { backgroundColor: 'rgba(0,0,0,0.32)', borderRadius: 13, width: 26, height: 26, alignItems: 'center', justifyContent: 'center' },
-  headerClose: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: 'rgba(255,255,255,0.85)' },
   heroImg: { width: 110, height: 110 },
   buildingsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 8 },
   buildingWrap: { flex: 1, aspectRatio: 1, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.05)', alignItems: 'center', justifyContent: 'center', padding: 6 },
