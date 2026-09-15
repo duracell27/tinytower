@@ -19,12 +19,12 @@ import { gameConfig } from '../../shared/config/gameConfig';
 const IMG = {
   cityBuildings:   require('../../assets/img/city/cityBuildings.png'),
   advertising:     require('../../assets/img/city/cityBuildingAdvertisingagency.png'),
-  academy:         require('../../assets/img/city/cityBuildingStateAcademy.png'),
   bank:            require('../../assets/img/city/cityBuildingCityBank.png'),
   vipClub:         require('../../assets/img/city/cityBuildingVIPClub.png'),
   chat:            require('../../assets/img/city/cityChat.png'),
   notice:          require('../../assets/img/city/cityNotice.png'),
   marketing:       require('../../assets/img/MarketingIcon.png'),
+  floorIcon:       require('../../assets/img/floorIcon.png'),
 };
 
 export default function CityScreen() {
@@ -137,7 +137,12 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
       </View>
 
       <View style={[styles.card, isDark ? { backgroundColor: 'rgba(100,75,15,0.35)' } : styles.cardRequirement]}>
-        <Image source={IMG.academy} style={styles.cardImg} contentFit="contain" />
+        <View style={styles.floorIconWrap}>
+          <Image source={IMG.floorIcon} style={styles.cardImg} contentFit="contain" />
+          <View style={styles.floorBadge}>
+            <LocaleText style={styles.floorBadgeText}>10</LocaleText>
+          </View>
+        </View>
         <View style={styles.cardBody}>
           <LocaleText style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.requirementTitle')}</LocaleText>
           <LocaleText style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.requirementDescription')}</LocaleText>
@@ -173,6 +178,7 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
         </View>
         <View style={styles.actionCardBody}>
           <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.createButton')}</LocaleText>
+          <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.createSubtitle')}</LocaleText>
         </View>
         <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
       </TouchableOpacity>
@@ -319,6 +325,15 @@ const styles = StyleSheet.create({
   cardBonus: { backgroundColor: '#D4EDDA' },
   cardRequirement: { backgroundColor: '#FFF3CD' },
   cardImg: { width: 44, height: 44 },
+  floorIconWrap: { width: 44, height: 44, position: 'relative' },
+  floorBadge: {
+    position: 'absolute', top: -6, right: -6,
+    backgroundColor: '#E7A52B', borderRadius: 8,
+    minWidth: 18, height: 18,
+    alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  floorBadgeText: { fontFamily: 'Fredoka_700Bold', fontSize: 11, color: '#FFF', lineHeight: 13 },
   cardBody: { flex: 1 },
   cardTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#1C2C1A', marginBottom: 3 },
   cardText: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#4A5540', lineHeight: 18 },

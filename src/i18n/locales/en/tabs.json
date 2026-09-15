@@ -209,6 +209,7 @@
     "joinDescription": "Search for a city by name and ask the Mayor to invite you.",
     "joinButton": "Browse Cities",
     "createButton": "Create a City",
+    "createSubtitle": "You will become the Mayor",
     "createDescription": "Found your own city and become its Mayor! Costs 1000 💎",
     "browseCities": "Browse Cities",
     "createCity": "Create City",
