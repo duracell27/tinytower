@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, StyleSheet, TextInput, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, Modal, Dimensions, Pressable, useColorScheme,
+  KeyboardAvoidingView, Platform, Modal, Dimensions, Pressable, useColorScheme, Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -46,7 +46,7 @@ const PERKS = [
 ];
 
 // ── Inline error popup ──────────────────────────────────────────────────────
-function ErrorPopup({ message, onClose, isDark }: { message: string | null; onClose: () => void; isDark: boolean }) {
+function ErrorPopup({ message, onClose, isDark, icon }: { message: string | null; onClose: () => void; isDark: boolean; icon?: any }) {
   const scale = useSharedValue(0.6);
   const opacity = useSharedValue(0);
 
@@ -77,7 +77,14 @@ function ErrorPopup({ message, onClose, isDark }: { message: string | null; onCl
             <View style={[ep.iconWrap, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(154,111,208,0.12)' }]}>
               <Image source={require('../../assets/img/warningIcon.png')} style={ep.iconImg} contentFit="contain" />
             </View>
-            <LocaleText style={[ep.message, isDark && { color: '#DDE0FF' }]}>{message}</LocaleText>
+            {icon ? (
+              <View style={ep.messageRow}>
+                <LocaleText style={[ep.message, isDark && { color: '#DDE0FF' }]}>{message} </LocaleText>
+                <Image source={icon} style={ep.inlineIcon} contentFit="contain" />
+              </View>
+            ) : (
+              <LocaleText style={[ep.message, isDark && { color: '#DDE0FF' }]}>{message}</LocaleText>
+            )}
             <TouchableOpacity onPress={onClose} style={ep.closeBtn} activeOpacity={0.7}>
               <LinearGradient colors={['#A87EDE', '#9A6FD0']} style={ep.closeBtnGradient}>
                 <LocaleText style={ep.closeBtnText}>OK</LocaleText>
@@ -105,6 +112,8 @@ const ep = StyleSheet.create({
   gradient: { alignItems: 'center', paddingTop: 28, paddingBottom: 22, paddingHorizontal: 24, gap: 14 },
   iconWrap: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
   iconImg: { width: 38, height: 38 },
+  messageRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' },
+  inlineIcon: { width: 20, height: 20, marginLeft: 2 },
   message: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2A1A50', textAlign: 'center', lineHeight: 22 },
   closeBtn: { width: '100%', borderRadius: 14, overflow: 'hidden', marginTop: 2 },
   closeBtnGradient: { alignItems: 'center', paddingVertical: 13 },
@@ -123,6 +132,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorIcon, setErrorIcon] = useState<any>(null);
   const { createCity } = useCityStore();
   const gems = useGameStore((s) => s.gems);
   const floorCount = useGameStore((s) => s.floors.length);
@@ -176,8 +186,21 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
     const trimmed = name.trim();
     if (!trimmed) { setErrorMsg(t('city.create.errorNoName')); return; }
     if (trimmed.length > 30) { setErrorMsg(t('city.create.errorNameTooLong')); return; }
-    if (floorCount + 1 < 10) { setErrorMsg(t('city.create.errorNotEnoughFloors')); return; }
-    if (gems < 1000) { setErrorMsg(t('city.create.errorNotEnoughGems')); return; }
+    if (floorCount + 1 < 10) { setErrorMsg(t('city.create.errorNotEnoughFloors')); setErrorIcon(null); return; }
+    if (gems < 1000) { setErrorMsg(t('city.create.errorNotEnoughGems')); setErrorIcon(IMG.diamond); return; }
+
+    Alert.alert(
+      t('city.create.confirmTitle'),
+      t('city.create.confirmMessage', { name: trimmed }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('city.create.submit'), style: 'default', onPress: doCreate },
+      ],
+    );
+  };
+
+  const doCreate = async () => {
+    const trimmed = name.trim();
     setSubmitting(true);
     try {
       await createCity(trimmed);
@@ -185,9 +208,9 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
       handleAnimatedClose();
     } catch (e: any) {
       const msg = e?.message ?? '';
-      if (msg.includes('floors')) setErrorMsg(t('city.create.errorNotEnoughFloors'));
-      else if (msg.includes('name')) setErrorMsg(t('city.create.errorNameTaken'));
-      else setErrorMsg(t('city.errors.create'));
+      if (msg.includes('floors')) { setErrorMsg(t('city.create.errorNotEnoughFloors')); setErrorIcon(null); }
+      else if (msg.includes('name')) { setErrorMsg(t('city.create.errorNameTaken')); setErrorIcon(null); }
+      else { setErrorMsg(t('city.errors.create')); setErrorIcon(null); }
     } finally {
       setSubmitting(false);
     }
@@ -282,7 +305,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
           </Animated.View>
         </GestureHandlerRootView>
       )}
-      <ErrorPopup message={errorMsg} onClose={() => setErrorMsg(null)} isDark={isDark} />
+      <ErrorPopup message={errorMsg} onClose={() => { setErrorMsg(null); setErrorIcon(null); }} isDark={isDark} icon={errorIcon} />
     </Modal>
   );
 }

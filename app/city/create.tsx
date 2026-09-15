@@ -62,22 +62,35 @@ export default function CreateCityScreen() {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      await createCity(trimmed);
-      router.back();
-    } catch (e: any) {
-      const msg = e?.message ?? '';
-      if (msg.includes('floors')) {
-        Alert.alert('', t('city.create.errorNotEnoughFloors'));
-      } else if (msg.includes('name')) {
-        Alert.alert('', t('city.create.errorNameTaken'));
-      } else {
-        Alert.alert('', t('city.errors.create'));
-      }
-    } finally {
-      setSubmitting(false);
-    }
+    Alert.alert(
+      t('city.create.confirmTitle'),
+      t('city.create.confirmMessage', { name: trimmed }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('city.create.submit'),
+          style: 'default',
+          onPress: async () => {
+            setSubmitting(true);
+            try {
+              await createCity(trimmed);
+              router.back();
+            } catch (e: any) {
+              const msg = e?.message ?? '';
+              if (msg.includes('floors')) {
+                Alert.alert('', t('city.create.errorNotEnoughFloors'));
+              } else if (msg.includes('name')) {
+                Alert.alert('', t('city.create.errorNameTaken'));
+              } else {
+                Alert.alert('', t('city.errors.create'));
+              }
+            } finally {
+              setSubmitting(false);
+            }
+          },
+        },
+      ],
+    );
   };
 
   const perks = [

@@ -261,6 +261,8 @@
       "namePlaceholder": "City name (max 30 chars)",
       "costLabel": "Founding cost",
       "submit": "Create City",
+      "confirmTitle": "Create city?",
+      "confirmMessage": "Found the city «{{name}}» for 1000 gems?",
       "errorNoName": "Enter a city name",
       "errorNameTooLong": "Name must be 30 characters or less",
       "errorNotEnoughGems": "Not enough gems. You need 1000",

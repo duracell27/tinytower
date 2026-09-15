@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
-  Alert, useColorScheme,
+  Alert, useColorScheme, Dimensions,
 } from 'react-native';
+
+const CARD_WIDTH = (Dimensions.get('window').width - 32 - 16) / 3; // 2×margin + 2×gap
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
@@ -256,18 +258,25 @@ export default function CityDetailScreen() {
             <LocaleText style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>
               {t('city.members')}
             </LocaleText>
-            <LocaleText style={[styles.membersPageLabel, isDark && { color: '#8A9A80' }]}>
-              {t('city.membersPage', { from: memberPage + 1, total: totalPages })}
-            </LocaleText>
+            <View style={[styles.memberCountBadge, isDark && styles.memberCountBadgeDark]}>
+              <LocaleText style={styles.memberCountText}>
+                {city.memberCount} / {city.maxMembers}
+              </LocaleText>
+            </View>
           </View>
 
-          {pagedMembers.map((member) => {
+          {pagedMembers.map((member, idx) => {
+            const globalIdx = memberPage * MEMBERS_PER_PAGE + idx + 1;
             const isMe = member.playerId === player?.id;
             const showKick = isMyCity && !isMe && myRole && canKick(myRole, member.role);
             const showRole = isMyCity && !isMe && myRole && canPromote(myRole);
 
             return (
               <View key={member.playerId} style={[styles.memberRow, isDark && styles.memberRowDark]}>
+                <LocaleText style={[styles.memberRank, isDark && { color: '#5A7090' }]}>
+                  {globalIdx}
+                </LocaleText>
+
                 <TouchableOpacity
                   style={styles.memberInfo}
                   onPress={() => router.push(`/user-profile/${member.playerId}`)}
@@ -277,35 +286,40 @@ export default function CityDetailScreen() {
                     {member.playerName}{isMe ? ' ✦' : ''}
                   </LocaleText>
                   <LocaleText style={[styles.memberMeta, isDark && { color: '#8A9A80' }]}>
-                    {t('city.detail.level', { level: member.playerLevel })} · {t(`city.roles.${member.role}`)}
+                    {t(`city.roles.${member.role}`)} · {t('city.detail.level', { level: member.playerLevel })}
                   </LocaleText>
                 </TouchableOpacity>
 
-                <View style={styles.memberActions}>
-                  {showRole && (
-                    <TouchableOpacity
-                      style={[styles.actionBtn, isDark && styles.actionBtnDark]}
-                      onPress={() => handleChangeRole(member)}
-                      activeOpacity={0.7}
-                    >
-                      <LocaleText style={[styles.actionBtnText, isDark && { color: '#DDE8D8' }]}>⬆</LocaleText>
-                    </TouchableOpacity>
-                  )}
-                  {showKick && (
-                    <TouchableOpacity
-                      style={[styles.actionBtn, styles.kickBtn]}
-                      onPress={() => handleKick(member)}
-                      activeOpacity={0.7}
-                    >
-                      <LocaleText style={styles.kickBtnText}>✕</LocaleText>
-                    </TouchableOpacity>
-                  )}
-                </View>
+                <LocaleText style={[styles.memberXp, isDark && { color: '#6BAED0' }]}>
+                  {(member.cityXp ?? 0).toLocaleString()} XP
+                </LocaleText>
+
+                {(showRole || showKick) && (
+                  <View style={styles.memberActions}>
+                    {showRole && (
+                      <TouchableOpacity
+                        style={[styles.actionBtn, isDark && styles.actionBtnDark]}
+                        onPress={() => handleChangeRole(member)}
+                        activeOpacity={0.7}
+                      >
+                        <LocaleText style={[styles.actionBtnText, isDark && { color: '#DDE8D8' }]}>⬆</LocaleText>
+                      </TouchableOpacity>
+                    )}
+                    {showKick && (
+                      <TouchableOpacity
+                        style={[styles.actionBtn, styles.kickBtn]}
+                        onPress={() => handleKick(member)}
+                        activeOpacity={0.7}
+                      >
+                        <LocaleText style={styles.kickBtnText}>✕</LocaleText>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
               </View>
             );
           })}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <View style={styles.pagination}>
               <TouchableOpacity
@@ -402,7 +416,6 @@ const styles = StyleSheet.create({
   errorText: { fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#7A8A80' },
   scroll: { paddingTop: 12, paddingBottom: 8 },
 
-  // ── Hero ──────────────────────────────────────────
   heroCard: {
     backgroundColor: '#D0E8F8',
     marginHorizontal: 16,
@@ -462,28 +475,21 @@ const styles = StyleSheet.create({
   workersRowDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
   workerCell: { flex: 1, alignItems: 'center', gap: 2 },
   workerIcon: { fontSize: 20, marginBottom: 2 },
-  workerValue: {
-    fontFamily: 'Fredoka_700Bold',
-    fontSize: 18,
-    color: '#0A1C30',
-  },
-  workerLabel: {
-    fontFamily: 'Fredoka_400Regular',
-    fontSize: 11,
-    color: '#5A7090',
-  },
+  workerValue: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#0A1C30' },
+  workerLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 11, color: '#5A7090' },
   workerDivider: { width: 1, alignSelf: 'stretch', backgroundColor: 'rgba(0,0,0,0.1)' },
 
   // ── Section cards ─────────────────────────────────
   cardsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: 12,
+    justifyContent: 'center',
+    marginHorizontal: 16,
     marginBottom: 16,
     gap: 8,
   },
   sectionCard: {
-    width: '30.5%',
+    width: CARD_WIDTH,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     paddingVertical: 14,
@@ -491,6 +497,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
+  sectionCardSpacer: { width: '31.5%' },
   sectionCardDark: { backgroundColor: '#1A2E3E' },
   sectionCardIcon: { fontSize: 24 },
   sectionCardLabel: {
@@ -500,11 +507,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // ── Generic block ─────────────────────────────────
-  block: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
+  block: { marginHorizontal: 16, marginBottom: 16 },
   blockDark: {},
 
   // ── Members ───────────────────────────────────────
@@ -519,10 +522,17 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#0A1C30',
   },
-  membersPageLabel: {
-    fontFamily: 'Fredoka_500Medium',
+  memberCountBadge: {
+    backgroundColor: '#2E6EC9',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  memberCountBadgeDark: { backgroundColor: '#1A4A80' },
+  memberCountText: {
+    fontFamily: 'Fredoka_600SemiBold',
     fontSize: 13,
-    color: '#5A7090',
+    color: '#FFFFFF',
   },
 
   memberRow: {
@@ -530,11 +540,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
-    padding: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     marginBottom: 8,
     gap: 10,
   },
   memberRowDark: { backgroundColor: '#1A2E3E' },
+  memberRank: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 15,
+    color: '#8A9A80',
+    minWidth: 22,
+    textAlign: 'center',
+  },
   memberInfo: { flex: 1 },
   memberName: {
     fontFamily: 'Fredoka_600SemiBold',
@@ -546,6 +564,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_400Regular',
     fontSize: 12,
     color: '#5A7090',
+  },
+  memberXp: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
+    color: '#2E6EC9',
   },
   memberActions: { flexDirection: 'row', gap: 8 },
   actionBtn: {
@@ -572,11 +595,7 @@ const styles = StyleSheet.create({
   },
   pageBtnDark: { backgroundColor: '#1A2E3E' },
   pageBtnOff: { opacity: 0.35 },
-  pageBtnText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 16,
-    color: '#2E6EC9',
-  },
+  pageBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2E6EC9' },
   pageBtnTextOff: { color: '#8A9A80' },
   pageIndicator: {
     fontFamily: 'Fredoka_500Medium',
@@ -586,26 +605,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // ── Description ───────────────────────────────────
-  descBlock: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 16,
-  },
-  descText: {
-    fontFamily: 'Fredoka_400Regular',
-    fontSize: 14,
-    color: '#3A5060',
-    lineHeight: 20,
-  },
+  descBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 16 },
+  descText: { fontFamily: 'Fredoka_400Regular', fontSize: 14, color: '#3A5060', lineHeight: 20 },
 
-  // ── Nav block ─────────────────────────────────────
-  navBlock: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    overflow: 'hidden',
-    paddingVertical: 4,
-  },
+  navBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', paddingVertical: 4 },
   navRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -614,25 +617,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   navIcon: { fontSize: 20, width: 28 },
-  navLabel: {
-    flex: 1,
-    fontFamily: 'Fredoka_500Medium',
-    fontSize: 15,
-    color: '#0A1C30',
-  },
-  navChevron: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 22,
-    color: '#8A9A80',
-    lineHeight: 24,
-  },
-  navDivider: {
-    height: 1,
-    marginLeft: 56,
-    backgroundColor: 'rgba(0,0,0,0.06)',
-  },
+  navLabel: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#0A1C30' },
+  navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: '#8A9A80', lineHeight: 24 },
+  navDivider: { height: 1, marginLeft: 56, backgroundColor: 'rgba(0,0,0,0.06)' },
 
-  // ── Leave ─────────────────────────────────────────
   leaveBtn: {
     marginHorizontal: 16,
     marginBottom: 8,
@@ -642,9 +630,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   leaveBtnDark: { backgroundColor: 'rgba(200,50,50,0.15)' },
-  leaveBtnText: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 16,
-    color: '#C03030',
-  },
+  leaveBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#C03030' },
 });

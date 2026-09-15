@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, ScrollView, StyleSheet, TouchableOpacity,
-  ActivityIndicator, useColorScheme, Alert,
+  ActivityIndicator, useColorScheme, Alert, Dimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -337,56 +337,75 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
       </View>
 
       {/* ── MEMBERS ───────────────────────────────────── */}
-      <View style={styles.block}>
+      <View style={[styles.block, styles.membersBlock, isDark && styles.membersBlockDark]}>
+        {/* Header */}
         <View style={styles.membersHeader}>
-          <LocaleText style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>{t('city.members')}</LocaleText>
-          <LocaleText style={[styles.membersPageLabel, isDark && { color: '#8A9A80' }]}>
-            {t('city.membersPage', { from: memberPage + 1, total: totalPages })}
-          </LocaleText>
+          <LocaleText style={[styles.sectionTitle, { color: '#FFFFFF' }]}>{t('city.members')}</LocaleText>
+          <View style={[styles.memberCountBadge, isDark && styles.memberCountBadgeDark]}>
+            <LocaleText style={styles.memberCountText}>{city.memberCount} / {city.maxMembers}</LocaleText>
+          </View>
         </View>
 
-        {pagedMembers.map((member) => {
+        {/* List */}
+        <View style={[styles.membersListBg, isDark && styles.membersListBgDark]}>
+        {pagedMembers.map((member, idx) => {
+          const globalIdx = memberPage * MEMBERS_PER_PAGE + idx + 1;
           const isMe = member.playerId === player?.id;
           const showKick = isMyCity && !isMe && myRole && canKick(myRole, member.role);
           const showRole = isMyCity && !isMe && myRole && canPromote(myRole);
 
           return (
             <View key={member.playerId} style={[styles.memberRow, isDark && styles.memberRowDark]}>
+              <LocaleText style={[styles.memberRank, isDark && { color: '#5A7090' }]}>{globalIdx}</LocaleText>
+
+              <View style={[styles.memberRankDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
+
               <TouchableOpacity
                 style={styles.memberInfo}
                 onPress={() => router.push(`/user-profile/${member.playerId}`)}
                 activeOpacity={0.7}
               >
                 <LocaleText style={[styles.memberName, isDark && { color: '#DDE8D8' }]}>
-                  {member.playerName}{isMe ? ' ✦' : ''}
+                  {member.playerName}
                 </LocaleText>
                 <LocaleText style={[styles.memberMeta, isDark && { color: '#8A9A80' }]}>
-                  {t('city.detail.level', { level: member.playerLevel })} · {t(`city.roles.${member.role}`)}
+                  {t(`city.roles.${member.role}`)} · {t('city.detail.level', { level: member.playerLevel })}
                 </LocaleText>
               </TouchableOpacity>
-              <View style={styles.memberActions}>
-                {showRole && (
-                  <TouchableOpacity
-                    style={[styles.memberActionBtn, isDark && styles.memberActionBtnDark]}
-                    onPress={() => handleChangeRole(member)}
-                    activeOpacity={0.7}
-                  >
-                    <LocaleText style={[styles.memberActionText, isDark && { color: '#DDE8D8' }]}>⬆</LocaleText>
-                  </TouchableOpacity>
-                )}
-                {showKick && (
-                  <TouchableOpacity
-                    style={[styles.memberActionBtn, styles.kickBtn]}
-                    onPress={() => handleKick(member)}
-                    activeOpacity={0.7}
-                  >
-                    <LocaleText style={styles.kickBtnText}>✕</LocaleText>
-                  </TouchableOpacity>
-                )}
+
+              <View style={styles.memberXpRow}>
+                <LocaleText style={[styles.memberXp, isDark && { color: '#6BAED0' }]}>
+                  {(member.cityXp ?? 0).toLocaleString()}
+                </LocaleText>
+                <Image source={XP_ICON} style={styles.memberXpIcon} contentFit="contain" />
               </View>
+
+              {(showRole || showKick) && (
+                <View style={styles.memberActions}>
+                  {showRole && (
+                    <TouchableOpacity
+                      style={[styles.memberActionBtn, isDark && styles.memberActionBtnDark]}
+                      onPress={() => handleChangeRole(member)}
+                      activeOpacity={0.7}
+                    >
+                      <LocaleText style={[styles.memberActionText, isDark && { color: '#DDE8D8' }]}>⬆</LocaleText>
+                    </TouchableOpacity>
+                  )}
+                  {showKick && (
+                    <TouchableOpacity
+                      style={[styles.memberActionBtn, styles.kickBtn]}
+                      onPress={() => handleKick(member)}
+                      activeOpacity={0.7}
+                    >
+                      <LocaleText style={styles.kickBtnText}>✕</LocaleText>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
             </View>
           );
         })}
+        </View>
 
         {totalPages > 1 && (
           <View style={styles.pagination}>
@@ -443,6 +462,19 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
           <LocaleText style={[styles.navChevron, isDark && { color: '#5A7090' }]}>›</LocaleText>
         </TouchableOpacity>
       </View>
+
+      {/* ── SETTINGS (mayor only) ─────────────────────── */}
+      {(myRole === 'MAYOR' || myRole === 'ACTING_MAYOR') && (
+        <TouchableOpacity
+          style={[styles.block, styles.settingsBtn, isDark && styles.settingsBtnDark]}
+          onPress={() => router.push(`/city/settings?cityId=${city.id}`)}
+          activeOpacity={0.7}
+        >
+          <LocaleText style={[styles.settingsBtnText, isDark && { color: '#8BBFE0' }]}>
+            {t('city.settingsTitle')}
+          </LocaleText>
+        </TouchableOpacity>
+      )}
 
       {/* ── LEAVE CITY ────────────────────────────────── */}
       {isMyCity && (
@@ -677,12 +709,13 @@ const styles = StyleSheet.create({
   cardsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: 12,
+    justifyContent: 'center',
+    marginHorizontal: 16,
     marginBottom: 16,
     gap: 8,
   },
   sectionCard: {
-    width: '30.5%',
+    width: (Dimensions.get('window').width - 32 - 16) / 3,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     paddingVertical: 14,
@@ -707,24 +740,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    backgroundColor: '#2E6EC9',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
+  membersListBg: {
+    backgroundColor: '#E8F2FA',
+    padding: 10,
+    gap: 6,
+  },
+  membersListBgDark: { backgroundColor: 'rgba(30,60,100,0.35)' },
   sectionTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#0A1C30' },
-  membersPageLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#5A7090' },
+  membersBlock: { borderRadius: 16, overflow: 'hidden' },
+  membersBlockDark: {},
+  memberCountBadge: { backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
+  memberCountBadgeDark: { backgroundColor: 'rgba(255,255,255,0.15)' },
+  memberCountText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#FFFFFF' },
 
   memberRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 8,
-    gap: 10,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    gap: 0,
   },
   memberRowDark: { backgroundColor: '#1A2E3E' },
+  memberRankDivider: { width: 1, height: 32, backgroundColor: 'rgba(0,0,0,0.08)', marginHorizontal: 10 },
+  memberRank: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#8A9A80', minWidth: 22, textAlign: 'center' },
   memberInfo: { flex: 1 },
   memberName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#0A1C30', marginBottom: 2 },
   memberMeta: { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#5A7090' },
+  memberXpRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  memberXp: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#2E6EC9' },
+  memberXpIcon: { width: 16, height: 16 },
   memberActions: { flexDirection: 'row', gap: 8 },
   memberActionBtn: {
     width: 34, height: 34, borderRadius: 8,
@@ -773,6 +823,11 @@ const styles = StyleSheet.create({
   navLabel: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#0A1C30' },
   navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: '#8A9A80', lineHeight: 24 },
   navDivider: { height: 1, marginLeft: 56, backgroundColor: 'rgba(0,0,0,0.06)' },
+
+  // ── Settings ───────────────────────────────────────
+  settingsBtn: { backgroundColor: '#E8F2FA', borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
+  settingsBtnDark: { backgroundColor: 'rgba(46,110,201,0.15)' },
+  settingsBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2E6EC9' },
 
   // ── Leave ──────────────────────────────────────────
   leaveBtn: { backgroundColor: '#FCE8E8', borderRadius: 14, paddingVertical: 15, alignItems: 'center' },

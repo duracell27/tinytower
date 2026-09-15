@@ -85,7 +85,7 @@ export function processCommand(
     case 'evict_low_level_workers':
     case 'buy_daily_gems':
       return processLobbyCommand(state, command, config, playerLevel, {
-        tipPercent: bonuses.tipPercent,
+        tipPercent: (bonuses.tipPercent ?? 0) + (bonuses.coinPercent ?? 0),
         extraLobbyCapacity: bonuses.extraLobbyCapacity,
         extraGemExchangeLimit: bonuses.extraGemExchangeLimit,
         xpPerVisitor: bonuses.xpPerVisitor,

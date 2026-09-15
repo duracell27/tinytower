@@ -4,6 +4,7 @@ import { clock } from './clock';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
+import { useCityStore } from '../stores/cityStore';
 import { saveGameState } from './persistence';
 import type { GameState } from '../../shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
@@ -148,6 +149,9 @@ async function doSync(): Promise<void> {
     }
     useGameStore.getState().setLastSyncAt(Date.now());
     saveGameState(useGameStore.getState());
+    if ((response.cityMarketingBonus ?? 0) > 0) {
+      useCityStore.getState().fetchMyCityInfo().catch(() => {});
+    }
   } catch {
     // Network error — retry next cycle
   } finally {

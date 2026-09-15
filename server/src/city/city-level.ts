@@ -98,7 +98,7 @@ export function getCityLevel(xp: number): number {
 }
 
 export function getCityMaxMembers(level: number): number {
-  return 8 + level * 2;
+  return Math.min(level * 2, 90);
 }
 
 export function getCityXpForNextLevel(level: number): number | null {

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "CityMembership" ADD COLUMN "cityXp" INTEGER NOT NULL DEFAULT 0;

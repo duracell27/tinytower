@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api, type CityDetail, type CitySummary, type CityRole, type CityRankingsResponse } from '../services/api';
+import { useGameStore } from './gameStore';
 
 interface CityState {
   city: CityDetail | null;
@@ -11,6 +12,7 @@ interface CityActions {
   fetchMyCityInfo: () => Promise<void>;
   createCity: (name: string) => Promise<CityDetail>;
   leaveCity: () => Promise<void>;
+  deleteCity: (cityId: string) => Promise<void>;
   invitePlayer: (cityId: string, playerId: string) => Promise<void>;
   kickMember: (cityId: string, playerId: string) => Promise<void>;
   changeMemberRole: (cityId: string, playerId: string, role: CityRole) => Promise<void>;
@@ -41,6 +43,7 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
     try {
       const city = await api.createCity(name);
       set({ city, loading: false });
+      useGameStore.setState((s) => ({ gems: Math.max(0, s.gems - 1000) }));
       return city;
     } catch (e: any) {
       set({ loading: false, error: e?.message ?? 'Failed to create city' });
@@ -55,6 +58,17 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
       set({ city: null, loading: false });
     } catch (e: any) {
       set({ loading: false, error: e?.message ?? 'Failed to leave city' });
+      throw e;
+    }
+  },
+
+  deleteCity: async (cityId: string) => {
+    set({ loading: true, error: null });
+    try {
+      await api.deleteCity(cityId);
+      set({ city: null, loading: false });
+    } catch (e: any) {
+      set({ loading: false, error: e?.message ?? 'Failed to delete city' });
       throw e;
     }
   },

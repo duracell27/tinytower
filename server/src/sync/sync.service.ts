@@ -275,10 +275,16 @@ export class SyncService {
 
         // Contribute XP earned this sync to the city if the player is a member
         if (totalXpGained > 0 && player.cityMembership) {
-          await tx.city.update({
-            where: { id: player.cityMembership.cityId },
-            data: { cityXp: { increment: totalXpGained } },
-          });
+          await Promise.all([
+            tx.city.update({
+              where: { id: player.cityMembership.cityId },
+              data: { cityXp: { increment: totalXpGained } },
+            }),
+            tx.cityMembership.update({
+              where: { playerId },
+              data: { cityXp: { increment: totalXpGained } },
+            }),
+          ]);
         }
 
         // Single consolidated player update with all final values

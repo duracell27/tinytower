@@ -261,6 +261,8 @@
       "namePlaceholder": "Назва міста (макс. 30 символів)",
       "costLabel": "Вартість заснування",
       "submit": "Створити місто",
+      "confirmTitle": "Створити місто?",
+      "confirmMessage": "Заснувати місто «{{name}}» за 1000 алмазів?",
       "errorNoName": "Введіть назву міста",
       "errorNameTooLong": "Назва не більше 30 символів",
       "errorNotEnoughGems": "Недостатньо алмазів. Потрібно 1000",
