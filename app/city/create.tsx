@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Stack, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
@@ -81,12 +82,13 @@ export default function CreateCityScreen() {
     { img: IMG.chat,         key: 'perk4' },
   ];
 
+  const insets = useSafeAreaInsets();
   const headerBg = isDark ? '#A87EDE' : '#9A6FD0';
 
   return (
     <AppBackground style={[styles.background, isDark && styles.backgroundDark]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={[styles.customHeader, { backgroundColor: headerBg }]}>
+      <View style={[styles.customHeader, { backgroundColor: headerBg, paddingTop: insets.top + 10 }]}>
         <LocaleText style={styles.headerTitle}>{t('city.create.title')}</LocaleText>
         <TouchableOpacity onPress={() => router.back()} hitSlop={10} style={styles.headerCloseBtn}>
           <LocaleText style={styles.headerClose}>✕</LocaleText>
@@ -152,10 +154,10 @@ export default function CreateCityScreen() {
 const styles = StyleSheet.create({
   background: { flex: 1, backgroundColor: '#F0F8FF' },
   backgroundDark: { backgroundColor: '#0D1F2D' },
-  scroll: { paddingHorizontal: 24, paddingTop: 0, paddingBottom: 40 },
+  scroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 },
   customHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingTop: 16, paddingBottom: 14, paddingHorizontal: 16,
+    paddingBottom: 14, paddingHorizontal: 16,
   },
   headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF', flex: 1, textAlign: 'center' },
   headerCloseBtn: {
