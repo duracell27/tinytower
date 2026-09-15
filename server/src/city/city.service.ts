@@ -88,14 +88,6 @@ export class CityService {
     });
   }
 
-  private async computeCityXp(cityId: string): Promise<number> {
-    const memberships = await this.prisma.cityMembership.findMany({
-      where: { cityId },
-      select: { xpAtJoin: true, player: { select: { playerXp: true } } },
-    });
-    return memberships.reduce((sum, m) => sum + Math.max(0, m.player.playerXp - m.xpAtJoin), 0);
-  }
-
   private async buildCityDetail(cityId: string, myPlayerId: string | null): Promise<CityDetailDto> {
     const city = await this.prisma.city.findUnique({
       where: { id: cityId },
@@ -108,7 +100,7 @@ export class CityService {
     });
     if (!city) throw new NotFoundException('City not found');
 
-    const xp = await this.computeCityXp(cityId);
+    const xp = city.cityXp;
     const level = getCityLevel(xp);
     const maxMembers = getCityMaxMembers(level);
     const xpForNextLevel = getCityXpForNextLevel(level);
@@ -165,14 +157,12 @@ export class CityService {
     const existing = await this.prisma.city.findUnique({ where: { name: trimmed } });
     if (existing) throw new ConflictException('City name already taken');
 
-    const currentXp = player.playerXp ?? 0;
-
     const [city] = await this.prisma.$transaction([
       this.prisma.city.create({
         data: {
           name: trimmed,
           members: {
-            create: { playerId, role: CityRole.MAYOR, xpAtJoin: currentXp },
+            create: { playerId, role: CityRole.MAYOR },
           },
         },
       }),
@@ -207,20 +197,17 @@ export class CityService {
       orderBy: { name: 'asc' },
     });
 
-    return Promise.all(
-      cities.map(async (city) => {
-        const xp = await this.computeCityXp(city.id);
-        const level = getCityLevel(xp);
-        return {
-          id: city.id,
-          name: city.name,
-          description: city.description,
-          level,
-          memberCount: city.members.length,
-          maxMembers: getCityMaxMembers(level),
-        };
-      }),
-    );
+    return cities.map((city) => {
+      const level = getCityLevel(city.cityXp);
+      return {
+        id: city.id,
+        name: city.name,
+        description: city.description,
+        level,
+        memberCount: city.members.length,
+        maxMembers: getCityMaxMembers(level),
+      };
+    });
   }
 
   async invitePlayer(actorId: string, cityId: string, targetPlayerId: string): Promise<void> {
@@ -255,18 +242,16 @@ export class CityService {
     });
     if (!city) throw new NotFoundException('City not found');
 
-    const xp = await this.computeCityXp(cityId);
-    const level = getCityLevel(xp);
+    const cityXp = city.cityXp;
+    const level = getCityLevel(cityXp);
     const maxMembers = getCityMaxMembers(level);
     if (city.members.length >= maxMembers) {
       throw new BadRequestException('City is at maximum capacity');
     }
 
-    const targetXpAtJoin = target.playerXp ?? 0;
-
     await this.prisma.$transaction([
       this.prisma.cityMembership.create({
-        data: { cityId, playerId: targetPlayerId, role: CityRole.NEWBIE, xpAtJoin: targetXpAtJoin },
+        data: { cityId, playerId: targetPlayerId, role: CityRole.NEWBIE },
       }),
       this.prisma.player.update({
         where: { id: targetPlayerId },
@@ -414,13 +399,10 @@ export class CityService {
       this.prisma.city.count(),
     ]);
 
-    const entries = await Promise.all(
-      cities.map(async (city) => {
-        const xp = await this.computeCityXp(city.id);
-        const level = getCityLevel(xp);
-        return { id: city.id, name: city.name, description: city.description, level, xp, memberCount: city.members.length, maxMembers: getCityMaxMembers(level) };
-      }),
-    );
+    const entries = cities.map((city) => {
+      const level = getCityLevel(city.cityXp);
+      return { id: city.id, name: city.name, description: city.description, level, xp: city.cityXp, memberCount: city.members.length, maxMembers: getCityMaxMembers(level) };
+    });
 
     entries.sort((a, b) => b.xp - a.xp);
 
@@ -433,10 +415,12 @@ export class CityService {
   }
 
   async getCityBonusForPlayer(playerId: string): Promise<{ level: number } | null> {
-    const membership = await this.prisma.cityMembership.findUnique({ where: { playerId } });
+    const membership = await this.prisma.cityMembership.findUnique({
+      where: { playerId },
+      include: { city: { select: { cityXp: true } } },
+    });
     if (!membership) return null;
-    const xp = await this.computeCityXp(membership.cityId);
-    return { level: getCityLevel(xp) };
+    return { level: getCityLevel(membership.city.cityXp) };
   }
 
   private canActOnTarget(actorRole: CityRole, targetRole: CityRole, action: 'kick' | 'promote'): boolean {
