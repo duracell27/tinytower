@@ -292,6 +292,13 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
           </View>
         </View>
 
+        {/* Bonus badge */}
+        <View style={styles.bonusBadge}>
+          <LocaleText style={styles.bonusBadgeText}>
+            {t('city.bonusLabel', { percent: city.level })}
+          </LocaleText>
+        </View>
+
         {/* XP bar */}
         <View style={[styles.xpBarBg, { backgroundColor: theme.divider }]}>
           <View style={[styles.xpBarFill, { width: `${Math.round(xpPercent * 100)}%` as any }]} />
@@ -650,6 +657,16 @@ const styles = StyleSheet.create({
   xpValueRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   xpNum: { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
   xpIconImg: { width: 18, height: 18 },
+
+  bonusBadge: {
+    backgroundColor: 'rgba(50,160,80,0.13)',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    marginBottom: 14,
+    alignSelf: 'center',
+  },
+  bonusBadgeText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#2A7A3A' },
 
   xpBarBg: { width: '100%', height: 7, borderRadius: 4, overflow: 'hidden', marginBottom: 14 },
   xpBarFill: { height: '100%', backgroundColor: '#2E6EC9', borderRadius: 4 },
