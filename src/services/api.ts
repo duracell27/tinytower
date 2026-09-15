@@ -46,6 +46,7 @@ export interface PlayerProfile {
   totalWorkers: number;
   businessUpgrades: Record<string, number>;
   categoryProgress: Record<string, number>;
+  canBeInvited: boolean;
 }
 
 export type CityRole = 'MAYOR' | 'ACTING_MAYOR' | 'VICE_MAYOR' | 'ADVISOR' | 'BUSINESSMAN' | 'CITIZEN' | 'NEWBIE';
@@ -132,6 +133,15 @@ export interface FriendStatusResponse {
   requestId?: string;
 }
 
+export interface CityInviteInfo {
+  token: string;
+  cityId: string;
+  cityName: string;
+  cityLevel: number;
+  invitedByName: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED';
+}
+
 export interface MailMessage {
   id: string;
   fromId: string;
@@ -141,6 +151,7 @@ export interface MailMessage {
   body: string;
   isRead: boolean;
   createdAt: string;
+  cityInvite?: CityInviteInfo | null;
 }
 
 export interface SentMailMessage {
@@ -325,6 +336,10 @@ export const api = {
     request<CityDetail>('GET', `/city/${id}`),
   inviteToCity: (cityId: string, playerId: string) =>
     request<void>('POST', `/city/${cityId}/invite/${playerId}`),
+  acceptCityInvite: (token: string) =>
+    request<void>('POST', `/city/invite/${token}/accept`),
+  declineCityInvite: (token: string) =>
+    request<void>('POST', `/city/invite/${token}/decline`),
   leaveCity: () =>
     request<void>('DELETE', '/city/leave'),
   kickFromCity: (cityId: string, playerId: string) =>
@@ -333,6 +348,8 @@ export const api = {
     request<void>('PATCH', `/city/${cityId}/member/${playerId}/role`, { role }),
   updateCity: (cityId: string, updates: { name?: string; description?: string }) =>
     request<CityDetail>('PATCH', `/city/${cityId}`, updates),
+  deleteCity: (cityId: string) =>
+    request<void>('DELETE', `/city/${cityId}`),
   setTokens,
   clearTokens,
   getAccessToken,

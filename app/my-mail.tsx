@@ -10,8 +10,14 @@ import { useAppTheme } from '../src/hooks/useAppTheme';
 import { useTranslation } from 'react-i18next';
 import { InfoSection } from '../src/components/InfoSection';
 import { useMailStore } from '../src/stores/mailStore';
+import { useCityStore } from '../src/stores/cityStore';
 import { getUserIcon } from '../src/utils/userIcon';
+import { api } from '../src/services/api';
 import type { MailMessage, SentMailMessage } from '../src/services/api';
+
+const CITY_ICON = require('../assets/img/city/cityBuildings.png');
+const OK_ICON   = require('../assets/img/OkIcon.png');
+const NO_ICON   = require('../assets/img/CancellIcon.png');
 
 const DELETE_ICON   = require('../assets/img/CancellIcon.png');
 const INFO_ICON     = require('../assets/img/InformationIcon.png');
@@ -39,10 +45,33 @@ function MailRow({
 }) {
   const { t } = useTranslation('tabs');
   const [expanded, setExpanded] = useState(false);
+  const [inviteStatus, setInviteStatus] = useState<'pending' | 'accepted' | 'declined' | 'loading'>(
+    mail.cityInvite?.status === 'PENDING' ? 'pending' :
+    mail.cityInvite?.status === 'ACCEPTED' ? 'accepted' :
+    mail.cityInvite?.status === 'DECLINED' ? 'declined' : 'pending'
+  );
+  const fetchMyCityInfo = useCityStore(s => s.fetchMyCityInfo);
 
   const handlePress = () => {
     setExpanded((v) => !v);
     if (!mail.isRead) onMarkRead();
+  };
+
+  const handleInviteRespond = async (accept: boolean) => {
+    if (!mail.cityInvite) return;
+    setInviteStatus('loading');
+    try {
+      if (accept) {
+        await api.acceptCityInvite(mail.cityInvite.token);
+        await fetchMyCityInfo();
+        setInviteStatus('accepted');
+      } else {
+        await api.declineCityInvite(mail.cityInvite.token);
+        setInviteStatus('declined');
+      }
+    } catch {
+      setInviteStatus(accept ? 'pending' : 'pending');
+    }
   };
 
   return (
@@ -109,7 +138,44 @@ function MailRow({
 
         {expanded && (
           <View style={[styles.bodyWrap, { borderTopColor: theme.divider }]}>
-            <LocaleText style={[styles.body, { color: theme.text }]}>{mail.body}</LocaleText>
+            {mail.cityInvite ? (
+              <View style={[styles.inviteCard, { backgroundColor: theme.surfaceCard ?? theme.surfaceSub }]}>
+                <View style={styles.inviteHeader}>
+                  <Image source={CITY_ICON} style={styles.inviteCityIcon} contentFit="contain" />
+                  <View style={{ flex: 1 }}>
+                    <LocaleText style={[styles.inviteCityName, { color: theme.text }]}>
+                      {mail.cityInvite.cityName}
+                    </LocaleText>
+                    <LocaleText style={[styles.inviteCityLevel, { color: theme.textMuted }]}>
+                      {t('mail.cityLevel', { level: mail.cityInvite.cityLevel })}
+                    </LocaleText>
+                  </View>
+                </View>
+                {inviteStatus === 'pending' && (
+                  <View style={styles.inviteActions}>
+                    <Pressable
+                      style={[styles.inviteAccept]}
+                      onPress={() => handleInviteRespond(true)}
+                    >
+                      <Image source={OK_ICON} style={styles.inviteActionIcon} contentFit="contain" />
+                      <LocaleText style={styles.inviteAcceptText}>{t('mail.accept')}</LocaleText>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.inviteDecline]}
+                      onPress={() => handleInviteRespond(false)}
+                    >
+                      <Image source={NO_ICON} style={styles.inviteActionIcon} contentFit="contain" />
+                      <LocaleText style={styles.inviteDeclineText}>{t('mail.decline')}</LocaleText>
+                    </Pressable>
+                  </View>
+                )}
+                {inviteStatus === 'loading' && <ActivityIndicator size="small" color="#3FA535" style={{ marginTop: 8 }} />}
+                {inviteStatus === 'accepted' && <LocaleText style={[styles.inviteResult, { color: '#3FA535' }]}>{t('mail.inviteAccepted')}</LocaleText>}
+                {inviteStatus === 'declined' && <LocaleText style={[styles.inviteResult, { color: theme.textMuted }]}>{t('mail.inviteDeclined')}</LocaleText>}
+              </View>
+            ) : (
+              <LocaleText style={[styles.body, { color: theme.text }]}>{mail.body}</LocaleText>
+            )}
             <View style={styles.bodyActions}>
               <Pressable
                 onPress={onDelete}
@@ -560,5 +626,74 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 6,
+  },
+  inviteCard: {
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 10,
+    gap: 10,
+  },
+  inviteHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  inviteCityIcon: {
+    width: 36,
+    height: 36,
+  },
+  inviteCityName: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    lineHeight: 18,
+  },
+  inviteCityLevel: {
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  inviteActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  inviteAccept: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#3FA535',
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  inviteDecline: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(180,60,60,0.13)',
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  inviteActionIcon: {
+    width: 16,
+    height: 16,
+  },
+  inviteAcceptText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: '#fff',
+  },
+  inviteDeclineText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    color: '#B43C3C',
+  },
+  inviteResult: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 14,
+    textAlign: 'center',
+    paddingVertical: 4,
   },
 });

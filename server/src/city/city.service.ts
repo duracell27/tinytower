@@ -223,39 +223,102 @@ export class CityService {
       throw new ForbiddenException('Insufficient role to invite');
     }
 
-    const target = await this.prisma.player.findUnique({
-      where: { id: targetPlayerId },
-      include: {
-        floors: { select: { id: true } },
-        cityMembership: true,
-      },
-    });
+    const [target, city] = await Promise.all([
+      this.prisma.player.findUnique({
+        where: { id: targetPlayerId },
+        select: { id: true, playerName: true, openedFloorsCount: true, cityMembership: { select: { cityId: true } } },
+      }),
+      this.prisma.city.findUnique({
+        where: { id: cityId },
+        include: { members: { select: { playerId: true } } },
+      }),
+    ]);
     if (!target) throw new NotFoundException('Player not found');
     if (target.cityMembership) throw new ConflictException('Player is already in a city');
-    if (target.floors.length < MIN_FLOORS_TO_JOIN) {
+    if (target.openedFloorsCount < MIN_FLOORS_TO_JOIN) {
       throw new BadRequestException(`Player needs at least ${MIN_FLOORS_TO_JOIN} floors`);
     }
-
-    const city = await this.prisma.city.findUnique({
-      where: { id: cityId },
-      include: { members: { select: { playerId: true } } },
-    });
     if (!city) throw new NotFoundException('City not found');
 
-    const cityXp = city.cityXp;
-    const level = getCityLevel(cityXp);
-    const maxMembers = getCityMaxMembers(level);
-    if (city.members.length >= maxMembers) {
+    const level = getCityLevel(city.cityXp);
+    if (city.members.length >= getCityMaxMembers(level)) {
       throw new BadRequestException('City is at maximum capacity');
     }
 
+    // Check no pending invite already exists
+    const existing = await this.prisma.cityInvite.findFirst({
+      where: { cityId, invitedPlayerId: targetPlayerId, status: 'PENDING' },
+    });
+    if (existing) throw new ConflictException('Invite already pending for this player');
+
+    const actor = await this.prisma.player.findUnique({
+      where: { id: actorId },
+      select: { playerName: true },
+    });
+
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await this.prisma.$transaction(async (tx) => {
+      const invite = await tx.cityInvite.create({
+        data: { cityId, invitedById: actorId, invitedPlayerId: targetPlayerId, expiresAt },
+      });
+      await tx.mailMessage.create({
+        data: {
+          fromId: actorId,
+          toId: targetPlayerId,
+          subject: `City Invite: ${city.name}`,
+          body: JSON.stringify({
+            type: 'city_invite',
+            cityId,
+            cityName: city.name,
+            cityLevel: level,
+            invitedByName: actor?.playerName ?? 'Unknown',
+            token: invite.token,
+          }),
+          cityInviteId: invite.id,
+        },
+      });
+    });
+  }
+
+  async respondToInvite(playerId: string, token: string, accept: boolean): Promise<void> {
+    const invite = await this.prisma.cityInvite.findUnique({
+      where: { token },
+      include: { city: { include: { members: { select: { playerId: true } } } } },
+    });
+    if (!invite) throw new NotFoundException('Invite not found');
+    if (invite.invitedPlayerId !== playerId) throw new ForbiddenException('Not your invite');
+    if (invite.status !== 'PENDING') throw new BadRequestException('Invite already responded');
+    if (invite.expiresAt < new Date()) {
+      await this.prisma.cityInvite.update({ where: { token }, data: { status: 'EXPIRED' } });
+      throw new BadRequestException('Invite has expired');
+    }
+
+    if (!accept) {
+      await this.prisma.cityInvite.update({ where: { token }, data: { status: 'DECLINED' } });
+      return;
+    }
+
+    // Check player still eligible
+    const player = await this.prisma.player.findUnique({
+      where: { id: playerId },
+      select: { cityMembership: true },
+    });
+    if (player?.cityMembership) throw new ConflictException('You are already in a city');
+
+    const cityLevel = getCityLevel(invite.city.cityXp);
+    if (invite.city.members.length >= getCityMaxMembers(cityLevel)) {
+      throw new BadRequestException('City is now at maximum capacity');
+    }
+
     await this.prisma.$transaction([
+      this.prisma.cityInvite.update({ where: { token }, data: { status: 'ACCEPTED' } }),
       this.prisma.cityMembership.create({
-        data: { cityId, playerId: targetPlayerId, role: CityRole.NEWBIE },
+        data: { cityId: invite.cityId, playerId, role: CityRole.NEWBIE },
       }),
       this.prisma.player.update({
-        where: { id: targetPlayerId },
-        data: { city: city.name },
+        where: { id: playerId },
+        data: { city: invite.city.name },
       }),
     ]);
   }
@@ -412,6 +475,29 @@ export class CityService {
       page,
       pageSize: PAGE_SIZE,
     };
+  }
+
+  async deleteCity(actorId: string, cityId: string): Promise<void> {
+    const actorMs = await this.prisma.cityMembership.findUnique({
+      where: { playerId: actorId },
+    });
+    if (!actorMs || actorMs.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
+    if (actorMs.role !== CityRole.MAYOR) throw new ForbiddenException('Only the Mayor can delete the city');
+
+    const memberIds = await this.prisma.cityMembership.findMany({
+      where: { cityId },
+      select: { playerId: true },
+    });
+
+    await this.prisma.$transaction([
+      this.prisma.cityMembership.deleteMany({ where: { cityId } }),
+      this.prisma.player.updateMany({
+        where: { id: { in: memberIds.map((m) => m.playerId) } },
+        data: { city: null },
+      }),
+      this.prisma.cityInvite.deleteMany({ where: { cityId } }),
+      this.prisma.city.delete({ where: { id: cityId } }),
+    ]);
   }
 
   async getCityBonusForPlayer(playerId: string): Promise<{ level: number } | null> {

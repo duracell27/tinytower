@@ -16,6 +16,7 @@ import { useFriendStore } from '../../src/stores/friendStore';
 import { useGameStore } from '../../src/stores/gameStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useBlockStore } from '../../src/stores/blockStore';
+import { useCityStore } from '../../src/stores/cityStore';
 
 const STAR_FULL      = require('../../assets/img/starFull.png');
 const STAR_66        = require('../../assets/img/star66.png');
@@ -36,6 +37,7 @@ const MARKETING_ICON = require('../../assets/img/MarketingIcon.png');
 const PR_ICON        = require('../../assets/img/PRIcon.png');
 const CANCEL_ICON    = require('../../assets/img/CancellIcon.png');
 const OK_ICON        = require('../../assets/img/OkIcon.png');
+const CITY_ICON      = require('../../assets/img/city/cityBuildings.png');
 
 const TIER_ICONS: Record<number, any> = {
   0: require('../../assets/img/achivment/0TierAchive.png'),
@@ -150,6 +152,27 @@ export default function UserProfileScreen() {
   const unblockPlayer = useBlockStore(s => s.unblockPlayer);
   const blockSubmitting = useBlockStore(s => s.isSubmitting);
   const blocked = id ? isBlockedFn(id) : false;
+
+  const myCity = useCityStore(s => s.city);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteSent, setInviteSent] = useState(false);
+
+  const canInviteRoles = ['MAYOR', 'ACTING_MAYOR', 'VICE_MAYOR', 'ADVISOR'] as const;
+  const canSendInvite =
+    !!myCity &&
+    !!myCity.myRole &&
+    (canInviteRoles as readonly string[]).includes(myCity.myRole) &&
+    !!profile?.canBeInvited;
+
+  const handleCityInvite = async () => {
+    if (!myCity || !id) return;
+    setInviteLoading(true);
+    try {
+      await api.inviteToCity(myCity.id, id);
+      setInviteSent(true);
+    } catch { /* silent — 409 if already invited */ }
+    setInviteLoading(false);
+  };
 
   const sendMail = useMailStore(s => s.sendMail);
   const [composeOpen, setComposeOpen] = useState(false);
@@ -385,6 +408,20 @@ export default function UserProfileScreen() {
                 </Pressable>
               )}
             </>
+          )}
+
+          {/* City Invite button */}
+          {currentPlayerId && id !== currentPlayerId && !blocked && canSendInvite && (
+            <Pressable
+              style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+              onPress={handleCityInvite}
+              disabled={inviteLoading || inviteSent}
+            >
+              <Image source={CITY_ICON} style={pStyles.actionIcon} contentFit="contain" />
+              <LocaleText style={[pStyles.actionBtnText, { flex: 1, color: inviteSent ? theme.textMuted : theme.text }]}>
+                {inviteSent ? t('userProfile.cityInviteSent') : t('userProfile.inviteToCity', { city: myCity?.name ?? '' })}
+              </LocaleText>
+            </Pressable>
           )}
 
           {/* Block 3: Achievements */}

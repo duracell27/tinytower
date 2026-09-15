@@ -61,10 +61,28 @@ export class CityController {
     return this.cityService.invitePlayer(req.user.playerId, cityId, targetPlayerId);
   }
 
+  @Post('invite/:token/accept')
+  @UseGuards(JwtAuthGuard)
+  acceptInvite(@Req() req: AuthReq, @Param('token') token: string) {
+    return this.cityService.respondToInvite(req.user.playerId, token, true);
+  }
+
+  @Post('invite/:token/decline')
+  @UseGuards(JwtAuthGuard)
+  declineInvite(@Req() req: AuthReq, @Param('token') token: string) {
+    return this.cityService.respondToInvite(req.user.playerId, token, false);
+  }
+
   @Delete('leave')
   @UseGuards(JwtAuthGuard)
   leaveCity(@Req() req: AuthReq) {
     return this.cityService.leaveCity(req.user.playerId);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  deleteCity(@Req() req: AuthReq, @Param('id') cityId: string) {
+    return this.cityService.deleteCity(req.user.playerId, cityId);
   }
 
   @Delete(':id/kick/:playerId')

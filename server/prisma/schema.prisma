@@ -45,10 +45,12 @@ model Player {
   reports         Report[]
   sentRequests     FriendRequest[] @relation("SentRequests")
   receivedRequests FriendRequest[] @relation("ReceivedRequests")
-  sentMail         MailMessage[]   @relation("SentMail")
-  receivedMail     MailMessage[]   @relation("ReceivedMail")
-  blocksGiven      Block[]         @relation("BlockerBlocks")
-  blocksReceived   Block[]         @relation("BlockedByBlocks")
+  sentMail              MailMessage[]   @relation("SentMail")
+  receivedMail          MailMessage[]   @relation("ReceivedMail")
+  cityInvitesSent       CityInvite[]    @relation("CityInvitesSent")
+  cityInvitesReceived   CityInvite[]    @relation("CityInvitesReceived")
+  blocksGiven           Block[]         @relation("BlockerBlocks")
+  blocksReceived        Block[]         @relation("BlockedByBlocks")
 }
 
 model PlayerState {
@@ -352,16 +354,18 @@ model Block {
 }
 
 model MailMessage {
-  id        String   @id @default(uuid())
-  fromId    String
-  toId      String
-  subject   String
-  body      String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  fromId        String
+  toId          String
+  subject       String
+  body          String
+  isRead        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  cityInviteId  String?  @unique
 
-  from Player @relation("SentMail",     fields: [fromId], references: [id], onDelete: Cascade)
-  to   Player @relation("ReceivedMail", fields: [toId],   references: [id], onDelete: Cascade)
+  from       Player      @relation("SentMail",     fields: [fromId], references: [id], onDelete: Cascade)
+  to         Player      @relation("ReceivedMail", fields: [toId],   references: [id], onDelete: Cascade)
+  cityInvite CityInvite? @relation(fields: [cityInviteId], references: [id], onDelete: SetNull)
 
   @@index([toId, isRead])
   @@index([toId, createdAt])
@@ -399,6 +403,7 @@ model City {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   members     CityMembership[]
+  invites     CityInvite[]
 }
 
 model CityMembership {
@@ -409,5 +414,31 @@ model CityMembership {
   city     City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
   player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
+  @@index([cityId])
+}
+
+enum CityInviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+model CityInvite {
+  id              String           @id @default(uuid())
+  token           String           @unique @default(uuid())
+  cityId          String
+  invitedById     String
+  invitedPlayerId String
+  status          CityInviteStatus @default(PENDING)
+  createdAt       DateTime         @default(now())
+  expiresAt       DateTime
+
+  city          City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  invitedBy     Player @relation("CityInvitesSent",     fields: [invitedById],     references: [id], onDelete: Cascade)
+  invitedPlayer Player @relation("CityInvitesReceived", fields: [invitedPlayerId], references: [id], onDelete: Cascade)
+  mail          MailMessage?
+
+  @@index([invitedPlayerId, status])
   @@index([cityId])
 }

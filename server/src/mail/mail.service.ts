@@ -1,5 +1,15 @@
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { getCityLevel } from '../city/city-level';
+
+export interface CityInviteDto {
+  token: string;
+  cityId: string;
+  cityName: string;
+  cityLevel: number;
+  invitedByName: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED';
+}
 
 export interface MailMessageDto {
   id: string;
@@ -10,6 +20,7 @@ export interface MailMessageDto {
   body: string;
   isRead: boolean;
   createdAt: string;
+  cityInvite?: CityInviteDto | null;
 }
 
 export interface SentMailMessageDto {
@@ -57,7 +68,10 @@ export class MailService {
       where: { toId: myId },
       orderBy: { createdAt: 'desc' },
       take: 50,
-      include: { from: { select: { playerName: true, playerLevel: true } } },
+      include: {
+        from: { select: { playerName: true, playerLevel: true } },
+        cityInvite: { select: { token: true, cityId: true, status: true, city: { select: { name: true, cityXp: true } }, invitedBy: { select: { playerName: true } } } },
+      },
     });
     return messages.map((m) => ({
       id: m.id,
@@ -68,6 +82,16 @@ export class MailService {
       body: m.body,
       isRead: m.isRead,
       createdAt: m.createdAt.toISOString(),
+      cityInvite: m.cityInvite
+        ? {
+            token: m.cityInvite.token,
+            cityId: m.cityInvite.cityId,
+            cityName: m.cityInvite.city.name,
+            cityLevel: getCityLevel(m.cityInvite.city.cityXp),
+            invitedByName: m.cityInvite.invitedBy.playerName,
+            status: m.cityInvite.status as CityInviteDto['status'],
+          }
+        : null,
     }));
   }
 

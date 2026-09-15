@@ -40,6 +40,7 @@ export interface PlayerProfileResult {
   totalWorkers: number;
   businessUpgrades: Record<string, number>;
   categoryProgress: Record<string, number>;
+  canBeInvited: boolean;
 }
 
 const USER_SELECT = {
@@ -275,6 +276,7 @@ export class PlayersService {
         red:    player.state?.businessUpgradeRed    ?? 0,
       },
       categoryProgress,
+      canBeInvited: !player.city && player.openedFloorsCount >= 10,
     };
   }
 }
