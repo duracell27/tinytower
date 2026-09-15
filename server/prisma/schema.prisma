@@ -401,12 +401,13 @@ model City {
 }
 
 model CityMembership {
-  cityId   String
-  playerId String   @id
-  role     CityRole @default(NEWBIE)
-  joinedAt DateTime @default(now())
-  city     City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  cityId    String
+  playerId  String   @id
+  role      CityRole @default(NEWBIE)
+  joinedAt  DateTime @default(now())
+  xpAtJoin  Int      @default(0)
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([cityId])
 }

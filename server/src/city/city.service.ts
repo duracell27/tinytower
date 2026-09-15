@@ -89,11 +89,11 @@ export class CityService {
   }
 
   private async computeCityXp(cityId: string): Promise<number> {
-    const result = await this.prisma.player.aggregate({
-      where: { cityMembership: { cityId } },
-      _sum: { playerXp: true },
+    const memberships = await this.prisma.cityMembership.findMany({
+      where: { cityId },
+      select: { xpAtJoin: true, player: { select: { playerXp: true } } },
     });
-    return result._sum.playerXp ?? 0;
+    return memberships.reduce((sum, m) => sum + Math.max(0, m.player.playerXp - m.xpAtJoin), 0);
   }
 
   private async buildCityDetail(cityId: string, myPlayerId: string | null): Promise<CityDetailDto> {
@@ -165,12 +165,14 @@ export class CityService {
     const existing = await this.prisma.city.findUnique({ where: { name: trimmed } });
     if (existing) throw new ConflictException('City name already taken');
 
+    const currentXp = player.playerXp ?? 0;
+
     const [city] = await this.prisma.$transaction([
       this.prisma.city.create({
         data: {
           name: trimmed,
           members: {
-            create: { playerId, role: CityRole.MAYOR },
+            create: { playerId, role: CityRole.MAYOR, xpAtJoin: currentXp },
           },
         },
       }),
@@ -260,9 +262,11 @@ export class CityService {
       throw new BadRequestException('City is at maximum capacity');
     }
 
+    const targetXpAtJoin = target.playerXp ?? 0;
+
     await this.prisma.$transaction([
       this.prisma.cityMembership.create({
-        data: { cityId, playerId: targetPlayerId, role: CityRole.NEWBIE },
+        data: { cityId, playerId: targetPlayerId, role: CityRole.NEWBIE, xpAtJoin: targetXpAtJoin },
       }),
       this.prisma.player.update({
         where: { id: targetPlayerId },
