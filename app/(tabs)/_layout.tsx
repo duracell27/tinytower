@@ -26,7 +26,7 @@ export default function TabsLayout() {
 
       {!isOnboarding && (
         <NativeTabs.Trigger name="city">
-          <NativeTabs.Trigger.Icon sf="map.fill" selectedColor={TAB_COLORS.city} />
+          <NativeTabs.Trigger.Icon sf="building.2.fill" selectedColor={TAB_COLORS.city} />
           <NativeTabs.Trigger.Label selectedStyle={{ color: TAB_COLORS.city }}>{t('labels.city')}</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
       )}

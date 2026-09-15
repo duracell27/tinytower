@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, useColorScheme } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
@@ -14,6 +15,17 @@ import { formatNum } from '../../src/utils/format';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
+
+const IMG = {
+  cityBuildings:   require('../../assets/img/city/cityBuildings.png'),
+  advertising:     require('../../assets/img/city/cityBuildingAdvertisingagency.png'),
+  academy:         require('../../assets/img/city/cityBuildingStateAcademy.png'),
+  bank:            require('../../assets/img/city/cityBuildingCityBank.png'),
+  vipClub:         require('../../assets/img/city/cityBuildingVIPClub.png'),
+  chat:            require('../../assets/img/city/cityChat.png'),
+  notice:          require('../../assets/img/city/cityNotice.png'),
+  marketing:       require('../../assets/img/MarketingIcon.png'),
+};
 
 export default function CityScreen() {
   const { t } = useTranslation('tabs');
@@ -95,33 +107,44 @@ export default function CityScreen() {
   );
 }
 
+function SectionDivider({ label, isDark }: { label: string; isDark: boolean }) {
+  return (
+    <View style={styles.dividerRow}>
+      <View style={[styles.dividerLine, isDark && { backgroundColor: 'rgba(255,255,255,0.12)' }]} />
+      <LocaleText style={[styles.dividerLabel, isDark && { color: '#8A9A80' }]}>{label}</LocaleText>
+      <View style={[styles.dividerLine, isDark && { backgroundColor: 'rgba(255,255,255,0.12)' }]} />
+    </View>
+  );
+}
+
 function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: any }) {
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} style={styles.scrollView}>
       {/* Hero */}
       <View style={styles.hero}>
-        <LocaleText style={styles.heroEmoji}>🏙️</LocaleText>
+        <Image source={IMG.cityBuildings} style={styles.heroImage} contentFit="contain" />
         <LocaleText style={[styles.heroTagline, isDark && { color: '#DDE8D8' }]}>{t('city.tagline')}</LocaleText>
         <LocaleText style={[styles.heroDescription, isDark && { color: '#8A9A80' }]}>{t('city.description')}</LocaleText>
       </View>
 
-      {/* Bonus card */}
+      {/* Info cards */}
       <View style={[styles.card, isDark ? { backgroundColor: 'rgba(40,90,55,0.35)' } : styles.cardBonus]}>
-        <LocaleText style={styles.cardIcon}>🎁</LocaleText>
+        <Image source={IMG.marketing} style={styles.cardImg} contentFit="contain" />
         <View style={styles.cardBody}>
           <LocaleText style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.bonusTitle')}</LocaleText>
           <LocaleText style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.bonusDescription')}</LocaleText>
         </View>
       </View>
 
-      {/* Requirement card */}
       <View style={[styles.card, isDark ? { backgroundColor: 'rgba(100,75,15,0.35)' } : styles.cardRequirement]}>
-        <LocaleText style={styles.cardIcon}>🏗️</LocaleText>
+        <Image source={IMG.academy} style={styles.cardImg} contentFit="contain" />
         <View style={styles.cardBody}>
           <LocaleText style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.requirementTitle')}</LocaleText>
           <LocaleText style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.requirementDescription')}</LocaleText>
         </View>
       </View>
+
+      <SectionDivider label={t('city.joinTitle')} isDark={isDark} />
 
       {/* Browse Cities */}
       <TouchableOpacity
@@ -130,7 +153,7 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
         activeOpacity={0.7}
       >
         <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-          <LocaleText style={styles.actionCardEmoji}>🔍</LocaleText>
+          <Image source={IMG.cityBuildings} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
           <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.joinButton')}</LocaleText>
@@ -146,11 +169,10 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
         activeOpacity={0.7}
       >
         <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-          <LocaleText style={styles.actionCardEmoji}>🏛️</LocaleText>
+          <Image source={IMG.bank} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
           <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.createButton')}</LocaleText>
-          <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.createDescription')}</LocaleText>
         </View>
         <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
       </TouchableOpacity>
@@ -162,7 +184,7 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
         activeOpacity={0.7}
       >
         <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-          <LocaleText style={styles.actionCardEmoji}>🏆</LocaleText>
+          <Image source={IMG.vipClub} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
           <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.rankings.button')}</LocaleText>
@@ -184,7 +206,7 @@ function MyCityView({ city, isDark, t, router }: { city: any; isDark: boolean; t
         activeOpacity={0.8}
       >
         <View style={styles.cityCardTop}>
-          <LocaleText style={styles.cityEmoji}>🏙️</LocaleText>
+          <Image source={IMG.cityBuildings} style={styles.cityCardImg} contentFit="contain" />
           <View style={styles.cityCardInfo}>
             <LocaleText style={[styles.cityName, isDark && { color: '#DDE8D8' }]}>{city.name}</LocaleText>
             <LocaleText style={[styles.cityLevel, isDark && { color: '#6BAED0' }]}>
@@ -218,14 +240,16 @@ function MyCityView({ city, isDark, t, router }: { city: any; isDark: boolean; t
         )}
       </TouchableOpacity>
 
-      {/* Action buttons */}
+      <SectionDivider label={t('city.members')} isDark={isDark} />
+
+      {/* Members */}
       <TouchableOpacity
         style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(30,70,110,0.35)' } : styles.actionCardBlue]}
         onPress={() => router.push(`/city/${city.id}`)}
         activeOpacity={0.7}
       >
         <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-          <LocaleText style={styles.actionCardEmoji}>👥</LocaleText>
+          <Image source={IMG.chat} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
           <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.members')}</LocaleText>
@@ -243,7 +267,7 @@ function MyCityView({ city, isDark, t, router }: { city: any; isDark: boolean; t
           activeOpacity={0.7}
         >
           <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-            <LocaleText style={styles.actionCardEmoji}>⚙️</LocaleText>
+            <Image source={IMG.notice} style={styles.actionImg} contentFit="contain" />
           </View>
           <View style={styles.actionCardBody}>
             <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.settingsTitle')}</LocaleText>
@@ -259,7 +283,7 @@ function MyCityView({ city, isDark, t, router }: { city: any; isDark: boolean; t
         activeOpacity={0.7}
       >
         <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-          <LocaleText style={styles.actionCardEmoji}>🏆</LocaleText>
+          <Image source={IMG.vipClub} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
           <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.rankings.button')}</LocaleText>
@@ -280,16 +304,21 @@ const styles = StyleSheet.create({
   loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
   // Hero (no city)
-  hero: { alignItems: 'center', paddingTop: 8, paddingBottom: 24 },
-  heroEmoji: { fontSize: 64, marginBottom: 10 },
+  hero: { alignItems: 'center', paddingTop: 8, paddingBottom: 20 },
+  heroImage: { width: 140, height: 110, marginBottom: 12 },
   heroTagline: { fontFamily: 'Fredoka_700Bold', fontSize: 20, color: '#1C2C1A', textAlign: 'center', marginBottom: 6 },
   heroDescription: { fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#5A6650', textAlign: 'center' },
 
+  // Divider
+  dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 14, gap: 10 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(0,0,0,0.1)' },
+  dividerLabel: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#7A9080', letterSpacing: 0.3 },
+
   // Info cards
-  card: { flexDirection: 'row', alignItems: 'flex-start', borderRadius: 14, padding: 14, marginBottom: 10, gap: 12 },
+  card: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, padding: 14, marginBottom: 10, gap: 12 },
   cardBonus: { backgroundColor: '#D4EDDA' },
   cardRequirement: { backgroundColor: '#FFF3CD' },
-  cardIcon: { fontSize: 28, marginTop: 2 },
+  cardImg: { width: 44, height: 44 },
   cardBody: { flex: 1 },
   cardTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#1C2C1A', marginBottom: 3 },
   cardText: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#4A5540', lineHeight: 18 },
@@ -300,18 +329,18 @@ const styles = StyleSheet.create({
   actionCardGreen: { backgroundColor: '#C8EDD4' },
   actionCardAmber: { backgroundColor: '#FFF0C8' },
   actionCardGold: { backgroundColor: '#FFF5D0' },
-  actionCardLeft: { width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.6)', alignItems: 'center', justifyContent: 'center' },
-  actionCardEmoji: { fontSize: 26 },
+  actionCardLeft: { width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.6)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  actionImg: { width: 40, height: 40 },
   actionCardBody: { flex: 1 },
   actionCardTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#1C2C1A', marginBottom: 2 },
   actionCardSubtitle: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#4A6050', lineHeight: 17 },
   actionCardChevron: { fontSize: 26, color: '#7A9A8A', lineHeight: 30 },
 
   // My city card
-  cityCard: { borderRadius: 18, padding: 18, marginBottom: 12 },
+  cityCard: { borderRadius: 18, padding: 18, marginBottom: 4 },
   cityCardLight: { backgroundColor: '#D0E8F8' },
   cityCardTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 12 },
-  cityEmoji: { fontSize: 40 },
+  cityCardImg: { width: 52, height: 52 },
   cityCardInfo: { flex: 1 },
   cityName: { fontFamily: 'Fredoka_700Bold', fontSize: 20, color: '#0A1C30', marginBottom: 2 },
   cityLevel: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#2E6EC9' },
