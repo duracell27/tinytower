@@ -218,12 +218,12 @@ const styles = StyleSheet.create({
   scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
   sheet: {
     height: SHEET_HEIGHT,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    backgroundColor: '#F0F8FF',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    backgroundColor: '#F0EAFF',
     overflow: 'hidden',
   },
-  sheetDark: { backgroundColor: '#0D1F2D' },
+  sheetDark: { backgroundColor: '#1C1535' },
 
   // Header
   header: { paddingBottom: 14 },
@@ -231,8 +231,8 @@ const styles = StyleSheet.create({
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.5)' },
   titleRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
   titleText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF', flex: 1, textAlign: 'center' },
-  closeBtn: { position: 'absolute', right: 16 },
-  closeBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: 'rgba(255,255,255,0.85)' },
+  closeBtn: { position: 'absolute', right: 16, backgroundColor: 'rgba(30,0,70,0.35)', borderRadius: 14, width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
+  closeBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 14, color: '#FFFFFF', lineHeight: 16 },
 
   // Content
   scroll: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 40 },
