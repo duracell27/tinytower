@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   gemIcon: { width: 22, height: 22 },
   input: {
     backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1.5, borderColor: '#B0C8D8',
-    paddingHorizontal: 16, paddingVertical: 14, fontSize: 17, fontFamily: 'Fredoka_500Medium',
+    paddingHorizontal: 16, paddingVertical: 14, fontSize: 17, fontFamily: 'Geologica_500Medium',
     color: '#0A1C30', marginBottom: 12,
   },
   inputDark: { backgroundColor: '#1A2E3E', borderColor: '#2A4A60', color: '#DDE8D8' },
