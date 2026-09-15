@@ -251,7 +251,8 @@ async function request<T>(
     throw new Error(error.message || `HTTP ${res.status}`);
   }
 
-  return res.json();
+  const text = await res.text();
+  return text ? (JSON.parse(text) as T) : (undefined as T);
 }
 
 export interface GlobalStats {
