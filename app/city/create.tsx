@@ -18,7 +18,19 @@ const IMG = {
   chat:          require('../../assets/img/city/cityChat.png'),
   advertising:   require('../../assets/img/city/cityBuildingAdvertisingagency.png'),
   marketing:     require('../../assets/img/MarketingIcon.png'),
+  autopark:      require('../../assets/img/city/cityBuildingAutopark.png'),
+  bank:          require('../../assets/img/city/cityBuildingCityBank.png'),
+  school:        require('../../assets/img/city/cityBuildingSchoolofBusiness.png'),
+  academy:       require('../../assets/img/city/cityBuildingStateAcademy.png'),
 };
+
+const CITY_BUILDINGS = [
+  IMG.advertising,
+  IMG.autopark,
+  IMG.bank,
+  IMG.school,
+  IMG.academy,
+] as const;
 
 export default function CreateCityScreen() {
   const { t } = useTranslation('tabs');
@@ -74,7 +86,15 @@ export default function CreateCityScreen() {
   return (
     <AppBackground style={[styles.background, isDark && styles.backgroundDark]}>
       <Stack.Screen options={{
-        title: t('city.create.title'),
+        title: '',
+        headerTitle: () => (
+          <LocaleText style={styles.headerTitle}>{t('city.create.title')}</LocaleText>
+        ),
+        headerRight: () => (
+          <TouchableOpacity onPress={() => router.back()} hitSlop={10}>
+            <LocaleText style={styles.headerClose}>✕</LocaleText>
+          </TouchableOpacity>
+        ),
         headerStyle: { backgroundColor: headerBg } as any,
         headerTintColor: '#FFFFFF',
         headerShadowVisible: false,
@@ -83,6 +103,14 @@ export default function CreateCityScreen() {
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.iconRow}>
             <Image source={IMG.cityBuildings} style={styles.heroImg} contentFit="contain" />
+          </View>
+
+          <View style={styles.buildingsRow}>
+            {CITY_BUILDINGS.map((src, i) => (
+              <View key={i} style={[styles.buildingWrap, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+                <Image source={src} style={styles.buildingIcon} contentFit="contain" />
+              </View>
+            ))}
           </View>
 
           <View style={[styles.costCard, { backgroundColor: isDark ? '#F0B030' : '#E7A52B' }]}>
@@ -140,7 +168,12 @@ const styles = StyleSheet.create({
   backgroundDark: { backgroundColor: '#0D1F2D' },
   scroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 },
   iconRow: { alignItems: 'center', marginBottom: 12 },
+  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
+  headerClose: { fontFamily: 'Fredoka_700Bold', fontSize: 20, color: 'rgba(255,255,255,0.85)', lineHeight: 22 },
   heroImg: { width: 110, height: 110 },
+  buildingsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 8 },
+  buildingWrap: { flex: 1, aspectRatio: 1, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.05)', alignItems: 'center', justifyContent: 'center', padding: 6 },
+  buildingIcon: { width: '100%', height: '100%' },
   costCard: { borderRadius: 14, paddingVertical: 12, paddingHorizontal: 16, marginBottom: 20, alignItems: 'center', gap: 4 },
   costText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: 'rgba(255,255,255,0.8)' },
   costAmountRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
