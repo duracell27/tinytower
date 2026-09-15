@@ -269,8 +269,8 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
 
         {/* Level + XP row */}
         <View style={styles.levelXpRow}>
-          <View style={[styles.levelBadge, { backgroundColor: theme.surfaceSub }]}>
-            <LocaleText style={[styles.levelText, { color: theme.text }]}>
+          <View style={styles.levelBadge}>
+            <LocaleText style={styles.levelText}>
               {t('city.levelLabel', { level: city.level })}
             </LocaleText>
           </View>
@@ -627,8 +627,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 5,
+    backgroundColor: 'rgba(46,110,201,0.13)',
   },
-  levelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+  levelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#2E6EC9' },
   xpValueRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   xpNum: { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
   xpIconImg: { width: 18, height: 18 },
