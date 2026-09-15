@@ -18,6 +18,8 @@ interface SyncResponse {
   newAchievements: NewAchievementGrant[];
   coinBonusPercent: number;
   xpBonusPercent: number;
+  cityMarketingBonus?: number;
+  cityPrBonus?: number;
   categoryProgress: Record<string, CategoryProgressState>;
   dailyLoginReward?: { coins: number; gems: number } | null;
   acceptedCommandIds?: string[];
@@ -128,8 +130,8 @@ async function doSync(): Promise<void> {
       }
     }
     useGameStore.setState({
-      coinBonusPercent: response.coinBonusPercent ?? 0,
-      xpBonusPercent: response.xpBonusPercent ?? 0,
+      coinBonusPercent: (response.coinBonusPercent ?? 0) + (response.cityMarketingBonus ?? 0),
+      xpBonusPercent: (response.xpBonusPercent ?? 0) + (response.cityPrBonus ?? 0),
       categoryProgress: mergedCP,
     });
     if (

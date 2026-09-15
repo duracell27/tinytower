@@ -17,6 +17,7 @@ import { FriendsModule } from './friends/friends.module';
 import { MailModule } from './mail/mail.module';
 import { ReportModule } from './report/report.module';
 import { BlockModule } from './block/block.module';
+import { CityModule } from './city/city.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { BlockModule } from './block/block.module';
     MailModule,
     ReportModule,
     BlockModule,
+    CityModule,
   ],
 })
 export class AppModule {}

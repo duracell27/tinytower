@@ -48,6 +48,40 @@ export interface PlayerProfile {
   categoryProgress: Record<string, number>;
 }
 
+export type CityRole = 'MAYOR' | 'ACTING_MAYOR' | 'VICE_MAYOR' | 'ADVISOR' | 'BUSINESSMAN' | 'CITIZEN' | 'NEWBIE';
+
+export interface CityMember {
+  playerId: string;
+  playerName: string;
+  playerLevel: number;
+  role: CityRole;
+  joinedAt: string;
+  lastSeenAt: string;
+}
+
+export interface CityDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  level: number;
+  xp: number;
+  xpForNextLevel: number | null;
+  memberCount: number;
+  maxMembers: number;
+  members: CityMember[];
+  myRole: CityRole | null;
+  createdAt: string;
+}
+
+export interface CitySummary {
+  id: string;
+  name: string;
+  description: string | null;
+  level: number;
+  memberCount: number;
+  maxMembers: number;
+}
+
 export interface FriendEntry {
   requestId: string;
   playerId: string;
@@ -261,6 +295,24 @@ export const api = {
     request<{ player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: false }; registrationGems: number }>(
       'POST', '/auth/convert', { email, password, playerName },
     ),
+  createCity: (name: string) =>
+    request<CityDetail>('POST', '/city', { name }),
+  getMyCityInfo: () =>
+    request<CityDetail | null>('GET', '/city/my'),
+  searchCities: (q: string) =>
+    request<CitySummary[]>('GET', `/city/search?q=${encodeURIComponent(q)}`),
+  getCityById: (id: string) =>
+    request<CityDetail>('GET', `/city/${id}`),
+  inviteToCity: (cityId: string, playerId: string) =>
+    request<void>('POST', `/city/${cityId}/invite/${playerId}`),
+  leaveCity: () =>
+    request<void>('DELETE', '/city/leave'),
+  kickFromCity: (cityId: string, playerId: string) =>
+    request<void>('DELETE', `/city/${cityId}/kick/${playerId}`),
+  changeCityMemberRole: (cityId: string, playerId: string, role: CityRole) =>
+    request<void>('PATCH', `/city/${cityId}/member/${playerId}/role`, { role }),
+  updateCity: (cityId: string, updates: { name?: string; description?: string }) =>
+    request<CityDetail>('PATCH', `/city/${cityId}`, updates),
   setTokens,
   clearTokens,
   getAccessToken,

@@ -116,6 +116,10 @@ export default function RootLayout() {
         <Stack.Screen name="daily-tasks" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="my-business" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="my-business/[category]" options={{ headerShown: false }} />
+        <Stack.Screen name="city/create" options={{ animation: 'slide_from_bottom', presentation: 'modal', headerShown: true, title: '' }} />
+        <Stack.Screen name="city/search" options={{ animation: 'slide_from_right', headerShown: true, title: '' }} />
+        <Stack.Screen name="city/[id]" options={{ animation: 'slide_from_right', headerShown: true, title: '' }} />
+        <Stack.Screen name="city/settings" options={{ animation: 'slide_from_right', headerShown: true, title: '' }} />
       </Stack>
       <GlobalOverlay />
       <OnboardingOverlay />

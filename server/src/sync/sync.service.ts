@@ -12,6 +12,7 @@ import type { GameState, Command, Floor, Production, Worker } from '@shared/type
 import type { NewAchievementGrant, CategoryProgressState } from '@shared/types/achievements';
 import { AchievementService } from '../achievement/achievement.service';
 import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS } from '../referral/referral-constants';
+import { CityService } from '../city/city.service';
 
 export interface SyncResult {
   state: GameState;
@@ -23,6 +24,8 @@ export interface SyncResult {
   newAchievements: NewAchievementGrant[];
   coinBonusPercent: number;
   xpBonusPercent: number;
+  cityMarketingBonus: number;
+  cityPrBonus: number;
   categoryProgress: Record<string, CategoryProgressState>;
   dailyLoginReward: { coins: number; gems: number } | null;
   acceptedCommandIds: string[];
@@ -47,6 +50,7 @@ export class SyncService {
   constructor(
     private prisma: PrismaService,
     private achievementService: AchievementService,
+    private cityService: CityService,
   ) {}
 
   async processSync(
@@ -600,6 +604,10 @@ export class SyncService {
     const finalCoinBonus = gameState.coinBonusPercent + coinBonusDelta;
     const finalXpBonus   = gameState.xpBonusPercent   + xpBonusDelta;
 
+    const cityBonus = await this.cityService.getCityBonusForPlayer(playerId);
+    const cityMarketingBonus = cityBonus?.level ?? 0;
+    const cityPrBonus = cityBonus?.level ?? 0;
+
     return {
       state: gameState,
       stateVersion: updatedPlayer?.stateVersion ?? player.stateVersion,
@@ -610,6 +618,8 @@ export class SyncService {
       newAchievements: allNewGrants,
       coinBonusPercent: finalCoinBonus,
       xpBonusPercent: finalXpBonus,
+      cityMarketingBonus,
+      cityPrBonus,
       categoryProgress,
       dailyLoginReward,
       pendingReferralClaims,

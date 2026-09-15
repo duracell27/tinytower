@@ -26,6 +26,7 @@ model Player {
   createdAt          DateTime            @default(now())
   referralCode       String?             @unique
   city               String?
+  cityMembership     CityMembership?
   referrals          Referral[]          @relation("ReferrerReferrals")
   referredBy         Referral?           @relation("ReferredReferral")
   purchaseNotifications ReferralPurchaseNotification[]
@@ -378,4 +379,34 @@ model Report {
   @@unique([reporterId, targetType, targetId])
   @@index([targetType, targetId])
   @@index([createdAt])
+}
+
+enum CityRole {
+  MAYOR
+  ACTING_MAYOR
+  VICE_MAYOR
+  ADVISOR
+  BUSINESSMAN
+  CITIZEN
+  NEWBIE
+}
+
+model City {
+  id          String           @id @default(uuid())
+  name        String           @unique @db.VarChar(30)
+  description String?          @db.VarChar(500)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  members     CityMembership[]
+}
+
+model CityMembership {
+  cityId   String
+  playerId String   @id
+  role     CityRole @default(NEWBIE)
+  joinedAt DateTime @default(now())
+  city     City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([cityId])
 }

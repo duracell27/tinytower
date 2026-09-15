@@ -199,22 +199,99 @@
   },
   "city": {
     "title": "City",
-    "comingSoon": "Nothing here yet",
     "tagline": "A City is all about community!",
     "description": "Players in a city communicate and help each other.",
     "bonusTitle": "Free Bonuses for All Members",
-    "bonusDescription": "All city members receive free bonuses that boost revenue and experience!",
+    "bonusDescription": "All city members receive Marketing and PR bonuses equal to the city level percent.",
     "requirementTitle": "Who Can Join?",
     "requirementDescription": "Cities accept players who have built 10 or more floors.",
-    "joinTitle": "Join an Existing City",
-    "joinDescription": "Submit a request and you'll be invited by the city's mayor.",
-    "joinButton": "Join a City!",
-    "rankingsTitle": "City Rankings",
-    "rankingsSubtitle": "Top cities in the game",
-    "rankingsDescription": "Or find a city in the rankings and leave a request on the city forum.",
-    "createTitle": "Start Your Own",
-    "createDescription": "Create your own city and become its Mayor!",
-    "createButton": "Create a City"
+    "joinTitle": "Looking for a City?",
+    "joinDescription": "Search for a city by name and ask the Mayor to invite you.",
+    "joinButton": "Browse Cities",
+    "createButton": "Create a City",
+    "createDescription": "Found your own city and become its Mayor! Costs 1000 💎",
+    "browseCities": "Browse Cities",
+    "createCity": "Create City",
+    "notInCity": "You are not in a city",
+    "memberCount": "{{count}} / {{max}} members",
+    "levelLabel": "Level {{level}}",
+    "xpLabel": "City XP",
+    "bonusLabel": "+{{percent}}% Marketing & PR",
+    "myRole": "Your role",
+    "members": "Members",
+    "settingsTitle": "City Settings",
+    "leaveCity": "Leave City",
+    "leaveCityConfirm": "Are you sure you want to leave the city?",
+    "leaveCityMayorWarning": "You are the Mayor. Transfer your role before leaving, or leave as the last member (city will be dissolved).",
+    "roles": {
+      "MAYOR": "Mayor",
+      "ACTING_MAYOR": "Acting Mayor",
+      "VICE_MAYOR": "Vice Mayor",
+      "ADVISOR": "Advisor",
+      "BUSINESSMAN": "Businessman",
+      "CITIZEN": "Citizen",
+      "NEWBIE": "Newbie"
+    },
+    "search": {
+      "title": "Find a City",
+      "placeholder": "Search by city name...",
+      "empty": "No cities found",
+      "minChars": "Enter at least 2 characters",
+      "viewCity": "View"
+    },
+    "detail": {
+      "membersTab": "Members",
+      "infoTab": "Info",
+      "invite": "Invite to City",
+      "kick": "Kick",
+      "changeRole": "Change Role",
+      "transferMayor": "Transfer Mayor",
+      "joined": "Joined {{date}}",
+      "lastSeen": "Last seen {{time}}",
+      "level": "Lv. {{level}}"
+    },
+    "create": {
+      "title": "Create City",
+      "namePlaceholder": "City name (max 30 chars)",
+      "cost": "Founding cost: 1000 💎",
+      "submit": "Found City",
+      "errorNoName": "Enter a city name",
+      "errorNameTooLong": "Name must be 30 characters or less",
+      "errorNotEnoughGems": "Not enough gems. You need 1000 💎",
+      "errorNotEnoughFloors": "You need at least 10 floors to found a city",
+      "errorNameTaken": "This city name is already taken",
+      "success": "City founded!"
+    },
+    "settings": {
+      "title": "City Settings",
+      "nameLabel": "City Name",
+      "namePlaceholder": "New city name",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "City motto or description (optional)",
+      "renameInfo": "Renaming costs 500 coins",
+      "save": "Save",
+      "saveSuccess": "City updated"
+    },
+    "invite": {
+      "success": "Player invited to the city",
+      "error": "Failed to invite player"
+    },
+    "kick": {
+      "confirm": "Kick {{name}} from the city?",
+      "success": "Player kicked",
+      "error": "Failed to kick player"
+    },
+    "roleChange": {
+      "title": "Change Role",
+      "confirm": "Set {{name}}'s role to {{role}}?",
+      "success": "Role updated",
+      "error": "Failed to change role"
+    },
+    "errors": {
+      "load": "Failed to load city",
+      "leave": "Failed to leave city",
+      "create": "Failed to create city"
+    }
   },
   "shop": {
     "title": "Shop",
