@@ -152,7 +152,7 @@ export default function CreateCityScreen() {
 const styles = StyleSheet.create({
   background: { flex: 1, backgroundColor: '#F0F8FF' },
   backgroundDark: { backgroundColor: '#0D1F2D' },
-  scroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 },
+  scroll: { paddingHorizontal: 24, paddingTop: 0, paddingBottom: 40 },
   customHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     paddingTop: 16, paddingBottom: 14, paddingHorizontal: 16,
