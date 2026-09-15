@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import CreateCitySheet from '../../src/components/CreateCitySheet';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
@@ -31,6 +32,7 @@ export default function CityScreen() {
   const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   const router = useRouter();
+  const [showCreateSheet, setShowCreateSheet] = useState(false);
 
   const balance = useBalance();
   const playerLevel = useGameStore((s) => s.playerLevel);
@@ -94,7 +96,7 @@ export default function CityScreen() {
         ) : city ? (
           <MyCityView city={city} isDark={isDark} t={t} router={router} />
         ) : (
-          <NoCityView isDark={isDark} t={t} router={router} />
+          <NoCityView isDark={isDark} t={t} router={router} onCreatePress={() => setShowCreateSheet(true)} />
         )}
       </AppBackground>
 
@@ -103,6 +105,8 @@ export default function CityScreen() {
           <GuestWall message="Create a free account to access city features" />
         </View>
       )}
+
+      <CreateCitySheet visible={showCreateSheet} onClose={() => setShowCreateSheet(false)} />
     </View>
   );
 }
@@ -117,7 +121,7 @@ function SectionDivider({ label, isDark }: { label: string; isDark: boolean }) {
   );
 }
 
-function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: any }) {
+function NoCityView({ isDark, t, router, onCreatePress }: { isDark: boolean; t: any; router: any; onCreatePress: () => void }) {
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} style={styles.scrollView}>
       {/* Hero */}
@@ -170,7 +174,7 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
       {/* Create City */}
       <TouchableOpacity
         style={[styles.actionCard, { backgroundColor: isDark ? '#A87EDE' : '#9A6FD0' }]}
-        onPress={() => router.push('/city/create')}
+        onPress={onCreatePress}
         activeOpacity={0.7}
       >
         <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
