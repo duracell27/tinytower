@@ -599,10 +599,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  starsRow: { flexDirection: 'row', gap: 6, marginBottom: 12 },
+  starsRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   star: { width: 22, height: 22 },
 
-  cityNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  cityNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
   cityNameIcon: { width: 22, height: 22, opacity: 0.6 },
   cityHeroName: {
     fontFamily: 'Fredoka_700Bold',
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
   foundedDate: {
     fontFamily: 'Fredoka_400Regular',
     fontSize: 13,
-    marginBottom: 14,
+    marginBottom: 18,
   },
 
   levelXpRow: {
