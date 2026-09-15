@@ -91,10 +91,8 @@ export default function CreateCityScreen() {
           <LocaleText style={styles.headerTitle}>{t('city.create.title')}</LocaleText>
         ),
         headerRight: () => (
-          <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-            <View style={styles.headerCloseBtn}>
-              <LocaleText style={styles.headerClose}>✕</LocaleText>
-            </View>
+          <TouchableOpacity onPress={() => router.back()} hitSlop={8} style={styles.headerCloseBtn}>
+            <LocaleText style={styles.headerClose}>✕</LocaleText>
           </TouchableOpacity>
         ),
         headerStyle: { backgroundColor: headerBg } as any,
@@ -164,8 +162,8 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 },
   iconRow: { alignItems: 'center', marginBottom: 12 },
   headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
-  headerCloseBtn: { backgroundColor: 'rgba(50,10,90,0.45)', borderRadius: 7, width: 26, height: 26, alignItems: 'center', justifyContent: 'center' },
-  headerClose: { fontFamily: 'Fredoka_700Bold', fontSize: 13, color: 'rgba(255,255,255,0.9)', lineHeight: 15 },
+  headerCloseBtn: { padding: 4 },
+  headerClose: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: 'rgba(255,255,255,0.85)' },
   heroImg: { width: 110, height: 110 },
   buildingsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 8 },
   buildingWrap: { flex: 1, aspectRatio: 1, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.05)', alignItems: 'center', justifyContent: 'center', padding: 6 },
