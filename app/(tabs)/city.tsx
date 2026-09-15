@@ -128,15 +128,15 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
       </View>
 
       {/* Info cards */}
-      <View style={[styles.card, isDark ? { backgroundColor: '#384434' } : styles.cardBonus]}>
+      <View style={[styles.card, { backgroundColor: isDark ? '#6BA34A' : '#5E8F42' }]}>
         <Image source={IMG.marketing} style={styles.cardImg} contentFit="contain" />
         <View style={styles.cardBody}>
-          <LocaleText style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.bonusTitle')}</LocaleText>
-          <LocaleText style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.bonusDescription')}</LocaleText>
+          <LocaleText style={[styles.cardTitle, { color: '#FFFFFF' }]}>{t('city.bonusTitle')}</LocaleText>
+          <LocaleText style={[styles.cardText, { color: 'rgba(255,255,255,0.82)' }]}>{t('city.bonusDescription')}</LocaleText>
         </View>
       </View>
 
-      <View style={[styles.card, isDark ? { backgroundColor: '#483E34' } : styles.cardRequirement]}>
+      <View style={[styles.card, { backgroundColor: isDark ? '#F0B030' : '#E7A52B' }]}>
         <View style={styles.floorIconWrap}>
           <Image source={IMG.floorIcon} style={styles.cardImg} contentFit="contain" />
           <View style={styles.floorBadge}>
@@ -144,8 +144,8 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
           </View>
         </View>
         <View style={styles.cardBody}>
-          <LocaleText style={[styles.cardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.requirementTitle')}</LocaleText>
-          <LocaleText style={[styles.cardText, isDark && { color: '#8A9A80' }]}>{t('city.requirementDescription')}</LocaleText>
+          <LocaleText style={[styles.cardTitle, { color: '#FFFFFF' }]}>{t('city.requirementTitle')}</LocaleText>
+          <LocaleText style={[styles.cardText, { color: 'rgba(255,255,255,0.82)' }]}>{t('city.requirementDescription')}</LocaleText>
         </View>
       </View>
 
@@ -153,50 +153,50 @@ function NoCityView({ isDark, t, router }: { isDark: boolean; t: any; router: an
 
       {/* Browse Cities */}
       <TouchableOpacity
-        style={[styles.actionCard, isDark ? { backgroundColor: '#323E52' } : styles.actionCardBlue]}
+        style={[styles.actionCard, { backgroundColor: isDark ? '#3A7ED8' : '#2E6EC9' }]}
         onPress={() => router.push('/city/search')}
         activeOpacity={0.7}
       >
-        <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+        <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
           <Image source={IMG.cityBuildings} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
-          <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.joinButton')}</LocaleText>
-          <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.joinDescription')}</LocaleText>
+          <LocaleText style={[styles.actionCardTitle, { color: '#FFFFFF' }]}>{t('city.joinButton')}</LocaleText>
+          <LocaleText style={[styles.actionCardSubtitle, { color: 'rgba(255,255,255,0.78)' }]}>{t('city.joinDescription')}</LocaleText>
         </View>
-        <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
+        <LocaleText style={[styles.actionCardChevron, { color: 'rgba(255,255,255,0.7)' }]}>›</LocaleText>
       </TouchableOpacity>
 
       {/* Create City */}
       <TouchableOpacity
-        style={[styles.actionCard, isDark ? { backgroundColor: '#3E3454' } : styles.actionCardGreen]}
+        style={[styles.actionCard, { backgroundColor: isDark ? '#A87EDE' : '#9A6FD0' }]}
         onPress={() => router.push('/city/create')}
         activeOpacity={0.7}
       >
-        <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+        <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
           <Image source={IMG.bank} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
-          <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.createButton')}</LocaleText>
-          <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.createSubtitle')}</LocaleText>
+          <LocaleText style={[styles.actionCardTitle, { color: '#FFFFFF' }]}>{t('city.createButton')}</LocaleText>
+          <LocaleText style={[styles.actionCardSubtitle, { color: 'rgba(255,255,255,0.78)' }]}>{t('city.createSubtitle')}</LocaleText>
         </View>
-        <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
+        <LocaleText style={[styles.actionCardChevron, { color: 'rgba(255,255,255,0.7)' }]}>›</LocaleText>
       </TouchableOpacity>
 
       {/* Rankings */}
       <TouchableOpacity
-        style={[styles.actionCard, isDark ? { backgroundColor: '#4C3434' } : styles.actionCardGold]}
+        style={[styles.actionCard, { backgroundColor: isDark ? '#E86060' : '#E05050' }]}
         onPress={() => router.push('/city/rankings')}
         activeOpacity={0.7}
       >
-        <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+        <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
           <Image source={IMG.vipClub} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
-          <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.rankings.button')}</LocaleText>
-          <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.rankings.subtitle')}</LocaleText>
+          <LocaleText style={[styles.actionCardTitle, { color: '#FFFFFF' }]}>{t('city.rankings.button')}</LocaleText>
+          <LocaleText style={[styles.actionCardSubtitle, { color: 'rgba(255,255,255,0.78)' }]}>{t('city.rankings.subtitle')}</LocaleText>
         </View>
-        <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
+        <LocaleText style={[styles.actionCardChevron, { color: 'rgba(255,255,255,0.7)' }]}>›</LocaleText>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -250,52 +250,52 @@ function MyCityView({ city, isDark, t, router }: { city: any; isDark: boolean; t
 
       {/* Members */}
       <TouchableOpacity
-        style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(30,70,110,0.35)' } : styles.actionCardBlue]}
+        style={[styles.actionCard, { backgroundColor: isDark ? '#3A7ED8' : '#2E6EC9' }]}
         onPress={() => router.push(`/city/${city.id}`)}
         activeOpacity={0.7}
       >
-        <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+        <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
           <Image source={IMG.chat} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
-          <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.members')}</LocaleText>
-          <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>
+          <LocaleText style={[styles.actionCardTitle, { color: '#FFFFFF' }]}>{t('city.members')}</LocaleText>
+          <LocaleText style={[styles.actionCardSubtitle, { color: 'rgba(255,255,255,0.78)' }]}>
             {t('city.memberCount', { count: city.memberCount, max: city.maxMembers })}
           </LocaleText>
         </View>
-        <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
+        <LocaleText style={[styles.actionCardChevron, { color: 'rgba(255,255,255,0.7)' }]}>›</LocaleText>
       </TouchableOpacity>
 
       {(city.myRole === 'MAYOR' || city.myRole === 'ACTING_MAYOR') && (
         <TouchableOpacity
-          style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(80,50,15,0.35)' } : styles.actionCardAmber]}
+          style={[styles.actionCard, { backgroundColor: isDark ? '#F0B030' : '#E7A52B' }]}
           onPress={() => router.push(`/city/settings?cityId=${city.id}`)}
           activeOpacity={0.7}
         >
-          <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+          <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
             <Image source={IMG.notice} style={styles.actionImg} contentFit="contain" />
           </View>
           <View style={styles.actionCardBody}>
-            <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.settingsTitle')}</LocaleText>
+            <LocaleText style={[styles.actionCardTitle, { color: '#FFFFFF' }]}>{t('city.settingsTitle')}</LocaleText>
           </View>
-          <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
+          <LocaleText style={[styles.actionCardChevron, { color: 'rgba(255,255,255,0.7)' }]}>›</LocaleText>
         </TouchableOpacity>
       )}
 
       {/* Rankings */}
       <TouchableOpacity
-        style={[styles.actionCard, isDark ? { backgroundColor: 'rgba(80,55,10,0.35)' } : styles.actionCardGold]}
+        style={[styles.actionCard, { backgroundColor: isDark ? '#E86060' : '#E05050' }]}
         onPress={() => router.push('/city/rankings')}
         activeOpacity={0.7}
       >
-        <View style={[styles.actionCardLeft, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+        <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
           <Image source={IMG.vipClub} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
-          <LocaleText style={[styles.actionCardTitle, isDark && { color: '#DDE8D8' }]}>{t('city.rankings.button')}</LocaleText>
-          <LocaleText style={[styles.actionCardSubtitle, isDark && { color: '#8A9A80' }]}>{t('city.rankings.subtitle')}</LocaleText>
+          <LocaleText style={[styles.actionCardTitle, { color: '#FFFFFF' }]}>{t('city.rankings.button')}</LocaleText>
+          <LocaleText style={[styles.actionCardSubtitle, { color: 'rgba(255,255,255,0.78)' }]}>{t('city.rankings.subtitle')}</LocaleText>
         </View>
-        <LocaleText style={[styles.actionCardChevron, isDark && { color: '#8A9A80' }]}>›</LocaleText>
+        <LocaleText style={[styles.actionCardChevron, { color: 'rgba(255,255,255,0.7)' }]}>›</LocaleText>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -322,8 +322,6 @@ const styles = StyleSheet.create({
 
   // Info cards
   card: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, padding: 14, marginBottom: 10, gap: 12 },
-  cardBonus: { backgroundColor: '#E8F5E5' },
-  cardRequirement: { backgroundColor: '#FDF5E4' },
   cardImg: { width: 44, height: 44 },
   floorIconWrap: { width: 44, height: 44, position: 'relative' },
   floorBadge: {
@@ -340,11 +338,7 @@ const styles = StyleSheet.create({
 
   // Action cards
   actionCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: 16, marginBottom: 10, gap: 14 },
-  actionCardBlue: { backgroundColor: '#E5EEFD' },
-  actionCardGreen: { backgroundColor: '#F2ECFF' },
-  actionCardAmber: { backgroundColor: '#FDF5E4' },
-  actionCardGold: { backgroundColor: '#FFF0F0' },
-  actionCardLeft: { width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.6)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  actionCardLeft: { width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   actionImg: { width: 40, height: 40 },
   actionCardBody: { flex: 1 },
   actionCardTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#1C2C1A', marginBottom: 2 },
