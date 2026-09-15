@@ -24,7 +24,7 @@ const IMG = {
   chat:            require('../../assets/img/city/cityChat.png'),
   notice:          require('../../assets/img/city/cityNotice.png'),
   marketing:       require('../../assets/img/MarketingIcon.png'),
-  floorIcon:       require('../../assets/img/floorIcon.png'),
+  floorIcon:       require('../../assets/img/floor.png'),
 };
 
 export default function CityScreen() {
