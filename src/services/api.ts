@@ -214,24 +214,36 @@ export function setAuthFailureCallback(cb: () => void) {
   onAuthFailure = cb;
 }
 
+// Singleton promise prevents concurrent refresh races: if the access token
+// expires and multiple requests simultaneously hit 401, they all await the
+// same refresh call instead of each invalidating the refresh token in Redis.
+let activeRefresh: Promise<boolean> | null = null;
+
 async function refreshTokens(): Promise<boolean> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return false;
+  if (activeRefresh) return activeRefresh;
+
+  activeRefresh = (async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return false;
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      setTokens(data.accessToken, data.refreshToken);
+      return true;
+    } catch {
+      return false;
+    }
+  })();
 
   try {
-    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
-    });
-
-    if (!res.ok) return false;
-
-    const data = await res.json();
-    setTokens(data.accessToken, data.refreshToken);
-    return true;
-  } catch {
-    return false;
+    return await activeRefresh;
+  } finally {
+    activeRefresh = null;
   }
 }
 
