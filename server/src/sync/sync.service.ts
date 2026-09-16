@@ -93,8 +93,15 @@ export class SyncService {
       .filter((c) => !existingIds.has(c.id) && c.timestamp > lastAckCursor)
       .sort((a, b) => a.timestamp - b.timestamp);
 
-    if (newCommands.length > 0) {
-      this.logger.log(`Processing ${newCommands.length} new commands: ${newCommands.map((c) => c.type).join(', ')}`);
+    this.logger.log(
+      `[sync] player=${playerId} total=${commands.length} existing=${existingIds.size} ` +
+      `belowCursor=${commands.filter(c => c.timestamp <= lastAckCursor && !existingIds.has(c.id)).length} ` +
+      `new=${newCommands.length} cursor=${lastAckCursor}`,
+    );
+    if (commands.length > 0) {
+      this.logger.log(
+        `[sync] all types: ${commands.map(c => `${c.type}(ts=${c.timestamp},inLog=${existingIds.has(c.id)})`).join(' | ')}`,
+      );
     }
 
     let gameState = checkDailyReset(this.dbToGameState(player), serverNow);
@@ -141,7 +148,9 @@ export class SyncService {
         gameState = result.state;
         acceptedCommands.push(command);
       } else {
-        this.logger.warn(`Command ${command.id} (${command.type}) failed: ${result.error}`);
+        this.logger.warn(
+          `[sync] FAILED cmd=${command.id} type=${command.type} ts=${command.timestamp} error="${result.error}"`,
+        );
       }
     }
 
@@ -641,6 +650,14 @@ export class SyncService {
         !acceptedCommands.some(a => a.id === c.id),
       )
       .map(c => c.id);
+
+    if (failedVisitorIds.length > 0) {
+      this.logger.log(`[sync] acking ${failedVisitorIds.length} failed visitor cmds: ${failedVisitorIds.join(', ')}`);
+    }
+    this.logger.log(
+      `[sync] result: accepted=${acceptedCommands.length} existingAcked=${existingIds.size} ` +
+      `visitorAcked=${failedVisitorIds.length} totalAcked=${acceptedCommands.length + existingIds.size + failedVisitorIds.length}`,
+    );
 
     return {
       state: gameState,
