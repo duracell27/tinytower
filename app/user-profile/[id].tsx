@@ -6,7 +6,7 @@ import { Image } from 'expo-image';
 import Svg, { Polyline, Path } from 'react-native-svg';
 import AppBackground from '../../src/components/AppBackground';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
-import { api, type PlayerProfile } from '../../src/services/api';
+import { api, type PlayerProfile, type CityRole } from '../../src/services/api';
 import { getUserIcon } from '../../src/utils/userIcon';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { formatNum } from '../../src/utils/format';
@@ -38,6 +38,7 @@ const PR_ICON        = require('../../assets/img/PRIcon.png');
 const CANCEL_ICON    = require('../../assets/img/CancellIcon.png');
 const OK_ICON        = require('../../assets/img/OkIcon.png');
 const CITY_ICON      = require('../../assets/img/city/cityBuildings.png');
+const MANAGER_ICON   = require('../../assets/img/managerIcon.png');
 
 const TIER_ICONS: Record<number, any> = {
   0: require('../../assets/img/achivment/0TierAchive.png'),
@@ -154,6 +155,11 @@ export default function UserProfileScreen() {
   const blocked = id ? isBlockedFn(id) : false;
 
   const myCity = useCityStore(s => s.city);
+  const fetchMyCityInfo = useCityStore(s => s.fetchMyCityInfo);
+  const kickMember = useCityStore(s => s.kickMember);
+  const changeMemberRole = useCityStore(s => s.changeMemberRole);
+  const showCityConfirm = useGameStore(s => s.showCityConfirm);
+  const showCityAlert = useGameStore(s => s.showCityAlert);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteSent, setInviteSent] = useState(false);
 
@@ -163,6 +169,67 @@ export default function UserProfileScreen() {
     !!myCity.myRole &&
     (canInviteRoles as readonly string[]).includes(myCity.myRole) &&
     !!profile?.canBeInvited;
+
+  // City management actions — only when viewing a member of my own city
+  const cityMember = myCity?.members.find(m => m.playerId === id);
+  const myRole = myCity?.myRole ?? null;
+  const ROLE_ORDER: CityRole[] = ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
+  const roleRank = (r: CityRole) => ROLE_ORDER.indexOf(r);
+  const canKick = myRole && cityMember && id !== currentPlayerId && (
+    myRole === 'MAYOR' ||
+    (myRole === 'ACTING_MAYOR' && cityMember.role !== 'MAYOR') ||
+    (myRole === 'VICE_MAYOR' && roleRank(cityMember.role) <= roleRank('ADVISOR'))
+  );
+  const canPromote = myRole && cityMember && id !== currentPlayerId && (
+    myRole === 'MAYOR' || myRole === 'ACTING_MAYOR' || myRole === 'VICE_MAYOR'
+  );
+
+  const handleKick = () => {
+    if (!myCity || !cityMember) return;
+    showCityConfirm({
+      title: t('city.detail.kick'),
+      message: t('city.kick.confirm', { name: cityMember.playerName }),
+      confirmText: t('city.detail.kick'),
+      danger: true,
+      onConfirm: async () => {
+        try {
+          await kickMember(myCity.id, cityMember.playerId);
+          await fetchMyCityInfo();
+        } catch {
+          showCityAlert({ message: t('city.kick.error') });
+        }
+      },
+    });
+  };
+
+  const handleChangeRole = () => {
+    if (!myCity || !cityMember || !myRole) return;
+    const { Alert } = require('react-native');
+    const availableRoles: CityRole[] = myRole === 'VICE_MAYOR'
+      ? ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR']
+      : ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
+
+    Alert.alert(
+      t('city.roleChange.title'),
+      cityMember.playerName,
+      [
+        ...availableRoles
+          .filter(r => r !== cityMember.role)
+          .map(role => ({
+            text: t(`city.roles.${role}`),
+            onPress: async () => {
+              try {
+                await changeMemberRole(myCity.id, cityMember.playerId, role);
+                await fetchMyCityInfo();
+              } catch {
+                showCityAlert({ message: t('city.roleChange.error') });
+              }
+            },
+          })),
+        { text: t('userProfile.cancel'), style: 'cancel' as const },
+      ],
+    );
+  };
 
   const handleCityInvite = async () => {
     if (!myCity || !id) return;
@@ -422,6 +489,34 @@ export default function UserProfileScreen() {
                 {inviteSent ? t('userProfile.cityInviteSent') : t('userProfile.inviteToCity', { city: myCity?.name ?? '' })}
               </LocaleText>
             </Pressable>
+          )}
+
+          {/* City management — promote/kick */}
+          {currentPlayerId && id !== currentPlayerId && cityMember && (
+            <>
+              {canPromote && (
+                <Pressable
+                  style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+                  onPress={handleChangeRole}
+                >
+                  <Image source={MANAGER_ICON} style={pStyles.actionIcon} contentFit="contain" />
+                  <LocaleText style={[pStyles.actionBtnText, { color: theme.text }]}>
+                    {t('city.roleChange.title')}
+                  </LocaleText>
+                </Pressable>
+              )}
+              {canKick && (
+                <Pressable
+                  style={[pStyles.actionBtn, { backgroundColor: isDark ? 'rgba(200,50,50,0.15)' : '#FCE8E8' }]}
+                  onPress={handleKick}
+                >
+                  <Image source={CANCEL_ICON} style={pStyles.actionIcon} contentFit="contain" />
+                  <LocaleText style={[pStyles.actionBtnText, { color: '#C03030' }]}>
+                    {t('city.detail.kick')}
+                  </LocaleText>
+                </Pressable>
+              )}
+            </>
           )}
 
           {/* Block 3: Achievements */}

@@ -51,18 +51,6 @@ const SECTION_CARDS = [
 const MEMBERS_PER_PAGE = 10;
 const ROLE_ORDER: CityRole[] = ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
 
-function roleRank(role: CityRole) { return ROLE_ORDER.indexOf(role); }
-
-function canKick(actorRole: CityRole, targetRole: CityRole): boolean {
-  if (actorRole === 'MAYOR') return true;
-  if (actorRole === 'ACTING_MAYOR') return targetRole !== 'MAYOR';
-  if (actorRole === 'VICE_MAYOR') return roleRank(targetRole) <= roleRank('ADVISOR');
-  return false;
-}
-
-function canPromote(actorRole: CityRole): boolean {
-  return actorRole === 'MAYOR' || actorRole === 'ACTING_MAYOR' || actorRole === 'VICE_MAYOR';
-}
 
 function formatFoundedDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -156,7 +144,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
   const [memberPage, setMemberPage] = useState(0);
   const theme = useAppTheme();
   const player = useAuthStore((s) => s.player);
-  const { leaveCity, kickMember, changeMemberRole } = useCityStore();
+  const { leaveCity } = useCityStore();
   const showCityAlert = useGameStore((s) => s.showCityAlert);
   const showCityConfirm = useGameStore((s) => s.showCityConfirm);
 
@@ -197,42 +185,6 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
         }
       },
     });
-  };
-
-  const handleKick = (member: CityMember) => {
-    showCityConfirm({
-      title: t('city.detail.kick'),
-      message: t('city.kick.confirm', { name: member.playerName }),
-      confirmText: t('city.detail.kick'),
-      danger: true,
-      onConfirm: async () => {
-        try { await kickMember(city.id, member.playerId); }
-        catch { showCityAlert({ message: t('city.kick.error') }); }
-      },
-    });
-  };
-
-  const handleChangeRole = (member: CityMember) => {
-    if (!myRole) return;
-    const availableRoles: CityRole[] = myRole === 'VICE_MAYOR'
-      ? ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR']
-      : ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
-
-    const options = availableRoles
-      .filter((r) => r !== member.role)
-      .map((role) => ({
-        text: t(`city.roles.${role}`),
-        onPress: async () => {
-          try { await changeMemberRole(city.id, member.playerId, role); }
-          catch { showCityAlert({ message: t('city.roleChange.error') }); }
-        },
-      }));
-    // Role change keeps native alert (multi-option picker)
-    const { Alert } = require('react-native');
-    Alert.alert(t('city.roleChange.title'), member.playerName, [
-      ...options,
-      { text: 'Cancel', style: 'cancel' as const },
-    ]);
   };
 
   return (
@@ -345,28 +297,26 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
         <View style={[styles.membersListBg, isDark && styles.membersListBgDark]}>
         {pagedMembers.map((member, idx) => {
           const globalIdx = memberPage * MEMBERS_PER_PAGE + idx + 1;
-          const isMe = member.playerId === player?.id;
-          const showKick = isMyCity && !isMe && myRole && canKick(myRole, member.role);
-          const showRole = isMyCity && !isMe && myRole && canPromote(myRole);
 
           return (
-            <View key={member.playerId} style={[styles.memberRow, isDark && styles.memberRowDark]}>
+            <TouchableOpacity
+              key={member.playerId}
+              style={[styles.memberRow, isDark && styles.memberRowDark]}
+              onPress={() => router.push(`/user-profile/${member.playerId}`)}
+              activeOpacity={0.7}
+            >
               <LocaleText style={[styles.memberRank, isDark && { color: '#5A7090' }]}>{globalIdx}</LocaleText>
 
               <View style={[styles.memberRankDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
 
-              <TouchableOpacity
-                style={styles.memberInfo}
-                onPress={() => router.push(`/user-profile/${member.playerId}`)}
-                activeOpacity={0.7}
-              >
+              <View style={styles.memberInfo}>
                 <LocaleText style={[styles.memberName, isDark && { color: '#DDE8D8' }]}>
                   {member.playerName}
                 </LocaleText>
                 <LocaleText style={[styles.memberMeta, isDark && { color: '#8A9A80' }]}>
                   {t(`city.roles.${member.role}`)} · {t('city.detail.level', { level: member.playerLevel })}
                 </LocaleText>
-              </TouchableOpacity>
+              </View>
 
               <View style={styles.memberXpRow}>
                 <LocaleText style={[styles.memberXp, isDark && { color: '#6BAED0' }]}>
@@ -374,30 +324,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
                 </LocaleText>
                 <Image source={XP_ICON} style={styles.memberXpIcon} contentFit="contain" />
               </View>
-
-              {(showRole || showKick) && (
-                <View style={styles.memberActions}>
-                  {showRole && (
-                    <TouchableOpacity
-                      style={[styles.memberActionBtn, isDark && styles.memberActionBtnDark]}
-                      onPress={() => handleChangeRole(member)}
-                      activeOpacity={0.7}
-                    >
-                      <LocaleText style={[styles.memberActionText, isDark && { color: '#DDE8D8' }]}>⬆</LocaleText>
-                    </TouchableOpacity>
-                  )}
-                  {showKick && (
-                    <TouchableOpacity
-                      style={[styles.memberActionBtn, styles.kickBtn]}
-                      onPress={() => handleKick(member)}
-                      activeOpacity={0.7}
-                    >
-                      <LocaleText style={styles.kickBtnText}>✕</LocaleText>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
-            </View>
+            </TouchableOpacity>
           );
         })}
         </View>
