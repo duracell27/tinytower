@@ -105,7 +105,7 @@ async function doSync(): Promise<void> {
     if (needsReconcile && !duringOnboarding) {
       store.reconcile(response.state, response.stateVersion, response.ackCursor, acceptedIds, sentIds, response.playerLevel, response.playerXp);
     } else {
-      store.clearAckedCommands(response.ackCursor, acceptedIds, response.playerLevel, response.playerXp);
+      store.clearAckedCommands(response.ackCursor, acceptedIds, response.playerLevel, response.playerXp, response.state.lastDailyReset);
     }
     if (response.newAchievements && response.newAchievements.length > 0) {
       const unshown = response.newAchievements.filter(

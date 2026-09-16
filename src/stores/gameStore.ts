@@ -239,7 +239,7 @@ interface GameActions {
     dailyTipsRewardClaimed?: boolean;
   }) => void;
   reconcile: (state: GameState, stateVersion: number, ackCursor: number, acceptedIds: Set<string>, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
-  clearAckedCommands: (ackCursor: number, acceptedIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
+  clearAckedCommands: (ackCursor: number, acceptedIds: Set<string>, playerLevel?: number, playerXp?: number, serverLastDailyReset?: number) => void;
   exchangeGemsForCoins: (gems: number) => void;
   speedUpConstruction: (floorId: number) => void;
   speedUpDelivery: (floorId: number, slotIdx: number) => void;
@@ -1607,7 +1607,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     };
   }),
 
-  clearAckedCommands: (ackCursor, acceptedIds, playerLevel, playerXp) => set((cur) => ({
+  clearAckedCommands: (ackCursor, acceptedIds, playerLevel, playerXp, serverLastDailyReset) => set((cur) => ({
     lastAckCursor: ackCursor,
     playerLevel: playerLevel ?? cur.playerLevel,
     playerXp: playerXp ?? cur.playerXp,
@@ -1615,12 +1615,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (acceptedIds.has(cmd.id)) return false;
       // Visitor-session commands from before the daily reset can never succeed
       // (lobby is cleared on reset). Drop them to prevent permanent queue bloat.
-      // Use today's UTC midnight rather than cur.lastDailyReset — the stored value
-      // may still be yesterday's midnight if no command has fired a reset yet.
+      // Use serverLastDailyReset (from the sync response) — it's authoritative
+      // and avoids device-clock drift (device may still be on the previous day).
       if (cmd.type === 'lift_visitor' || cmd.type === 'collect_tip' || cmd.type === 'spawn_visitor') {
-        const now = new Date();
-        const todayMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-        if (cmd.timestamp < todayMidnight) return false;
+        const resetThreshold = serverLastDailyReset ?? cur.lastDailyReset;
+        if (cmd.timestamp < resetThreshold) return false;
       }
       return true;
     }),
