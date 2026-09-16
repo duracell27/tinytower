@@ -1376,7 +1376,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // Commands that remain pending after this reconcile: already-queued commands minus
     // those the server confirmed as accepted.  Rejected offline commands stay in the queue
     // so they are automatically retried on the next sync cycle.
-    const pendingQueue = cur.commandQueue.filter((cmd) => !acceptedIds.has(cmd.id));
+    const pendingQueue = cur.commandQueue.filter((cmd) => {
+      if (acceptedIds.has(cmd.id)) return false;
+      // Visitor-session commands from before the daily reset can never succeed
+      // (lobby is cleared on reset). Drop them to prevent permanent queue bloat.
+      if (
+        (cmd.type === 'lift_visitor' || cmd.type === 'collect_tip' || cmd.type === 'spawn_visitor') &&
+        cmd.timestamp < serverState.lastDailyReset
+      ) return false;
+      return true;
+    });
 
     const workers = (() => {
       // Re-apply pending worker commands over server state to preserve optimistic effects.
@@ -1602,7 +1611,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     lastAckCursor: ackCursor,
     playerLevel: playerLevel ?? cur.playerLevel,
     playerXp: playerXp ?? cur.playerXp,
-    commandQueue: cur.commandQueue.filter((cmd) => !acceptedIds.has(cmd.id)),
+    commandQueue: cur.commandQueue.filter((cmd) => {
+      if (acceptedIds.has(cmd.id)) return false;
+      // Visitor-session commands from before the daily reset can never succeed
+      // (lobby is cleared on reset). Drop them to prevent permanent queue bloat.
+      if (
+        (cmd.type === 'lift_visitor' || cmd.type === 'collect_tip' || cmd.type === 'spawn_visitor') &&
+        cmd.timestamp < cur.lastDailyReset
+      ) return false;
+      return true;
+    }),
   })),
 
   buyVehicle: (vehicleType) => {
