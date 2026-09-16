@@ -238,7 +238,7 @@ export const BuyAllCommandSchema = TimestampedBaseSchema.extend({
 export const ClaimDailyTaskCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('claim_daily_task'),
   taskKey: z.string(),
-  tokenCount: z.number().int().min(1).max(5),
+  tokenCount: z.number().int().min(1).max(10),
   tokenColor: z.enum(['green', 'blue', 'yellow', 'purple', 'red']),
   materialType: z.enum(['briks', 'glass', 'nails', 'screw', 'wood', 'cement']).optional(),
 });
