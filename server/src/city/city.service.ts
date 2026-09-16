@@ -513,6 +513,50 @@ export class CityService {
     return { level: getCityLevel(membership.city.cityXp) };
   }
 
+  async getXpStats(cityId: string, requesterId: string) {
+    const city = await this.prisma.city.findUnique({
+      where: { id: cityId },
+      include: {
+        members: {
+          include: { player: { select: { playerName: true, playerLevel: true } } },
+        },
+      },
+    });
+    if (!city) throw new NotFoundException('City not found');
+
+    const isMember = city.members.some((m) => m.playerId === requesterId);
+    if (!isMember) throw new ForbiddenException('Not a member of this city');
+
+    const sorted = [...city.members].sort((a, b) => b.xpPeriod - a.xpPeriod);
+    const totalXpPeriod = sorted.reduce((sum, m) => sum + m.xpPeriod, 0);
+
+    return {
+      periodStart: city.xpPeriodStart.toISOString(),
+      totalXpPeriod,
+      members: sorted.map((m) => ({
+        playerId: m.playerId,
+        playerName: m.player.playerName,
+        playerLevel: m.player.playerLevel,
+        role: m.role,
+        xpPeriod: m.xpPeriod,
+        percent: totalXpPeriod > 0 ? Math.round((m.xpPeriod / totalXpPeriod) * 100) : 0,
+      })),
+    };
+  }
+
+  async resetXpPeriod(cityId: string, actorId: string): Promise<void> {
+    const actorMs = await this.prisma.cityMembership.findUnique({
+      where: { playerId: actorId },
+    });
+    if (!actorMs || actorMs.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
+    if (actorMs.role !== CityRole.MAYOR) throw new ForbiddenException('Only the Mayor can reset the XP period');
+
+    await this.prisma.$transaction([
+      this.prisma.cityMembership.updateMany({ where: { cityId }, data: { xpPeriod: 0 } }),
+      this.prisma.city.update({ where: { id: cityId }, data: { xpPeriodStart: new Date() } }),
+    ]);
+  }
+
   private canActOnTarget(actorRole: CityRole, targetRole: CityRole, action: 'kick' | 'promote'): boolean {
     if (actorRole === CityRole.MAYOR) return true;
 

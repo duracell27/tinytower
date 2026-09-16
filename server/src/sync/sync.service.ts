@@ -282,7 +282,10 @@ export class SyncService {
             }),
             tx.cityMembership.update({
               where: { playerId },
-              data: { cityXp: { increment: totalXpGained } },
+              data: {
+                cityXp: { increment: totalXpGained },
+                xpPeriod: { increment: totalXpGained },
+              },
             }),
           ]);
         }

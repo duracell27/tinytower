@@ -357,10 +357,14 @@ export default function CityDetailScreen() {
 
         {/* ── NAV ITEMS ─────────────────────────────────── */}
         <View style={[styles.block, styles.navBlock, isDark && styles.blockDark]}>
-          <TouchableOpacity style={styles.navRow} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.navRow}
+            onPress={() => router.push(`/city/xp-stats?id=${city.id}`)}
+            activeOpacity={0.7}
+          >
             <LocaleText style={styles.navIcon}>📊</LocaleText>
             <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>
-              {t('city.statistics')}
+              {t('city.xpStats.title')}
             </LocaleText>
             <LocaleText style={[styles.navChevron, isDark && { color: '#5A7090' }]}>›</LocaleText>
           </TouchableOpacity>

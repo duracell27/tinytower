@@ -115,4 +115,16 @@ export class CityController {
   ) {
     return this.cityService.updateCity(req.user.playerId, cityId, body);
   }
+
+  @Get(':id/xp-stats')
+  @UseGuards(JwtAuthGuard)
+  getXpStats(@Req() req: AuthReq, @Param('id') cityId: string) {
+    return this.cityService.getXpStats(cityId, req.user.playerId);
+  }
+
+  @Post(':id/reset-xp-period')
+  @UseGuards(JwtAuthGuard)
+  resetXpPeriod(@Req() req: AuthReq, @Param('id') cityId: string) {
+    return this.cityService.resetXpPeriod(cityId, req.user.playerId);
+  }
 }

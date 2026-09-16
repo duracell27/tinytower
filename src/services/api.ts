@@ -102,6 +102,21 @@ export interface CityRankingsResponse {
   pageSize: number;
 }
 
+export interface CityXpStatMember {
+  playerId: string;
+  playerName: string;
+  playerLevel: number;
+  role: CityRole;
+  xpPeriod: number;
+  percent: number;
+}
+
+export interface CityXpStats {
+  periodStart: string;
+  totalXpPeriod: number;
+  members: CityXpStatMember[];
+}
+
 export interface FriendEntry {
   requestId: string;
   playerId: string;
@@ -352,6 +367,10 @@ export const api = {
     request<CityDetail>('PATCH', `/city/${cityId}`, updates),
   deleteCity: (cityId: string) =>
     request<void>('DELETE', `/city/${cityId}`),
+  getCityXpStats: (cityId: string) =>
+    request<CityXpStats>('GET', `/city/${cityId}/xp-stats`),
+  resetCityXpPeriod: (cityId: string) =>
+    request<void>('POST', `/city/${cityId}/reset-xp-period`),
   setTokens,
   clearTokens,
   getAccessToken,

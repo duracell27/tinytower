@@ -396,24 +396,26 @@ enum CityRole {
 }
 
 model City {
-  id          String           @id @default(uuid())
-  name        String           @unique @db.VarChar(30)
-  description String?          @db.VarChar(500)
-  cityXp      Int              @default(0)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  members     CityMembership[]
-  invites     CityInvite[]
+  id            String           @id @default(uuid())
+  name          String           @unique @db.VarChar(30)
+  description   String?          @db.VarChar(500)
+  cityXp        Int              @default(0)
+  xpPeriodStart DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  members       CityMembership[]
+  invites       CityInvite[]
 }
 
 model CityMembership {
-  cityId   String
-  playerId String   @id
-  role     CityRole @default(NEWBIE)
-  cityXp   Int      @default(0)
-  joinedAt DateTime @default(now())
-  city     City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  cityId    String
+  playerId  String   @id
+  role      CityRole @default(NEWBIE)
+  cityXp    Int      @default(0)
+  xpPeriod  Int      @default(0)
+  joinedAt  DateTime @default(now())
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([cityId])
 }

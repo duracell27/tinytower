@@ -324,6 +324,17 @@
     "happyWorkers": "Happy",
     "membersPage": "{{from}} of {{total}}",
     "statistics": "City Statistics",
+    "xpStats": {
+      "title": "Experience Statistics",
+      "totalLabel": "Total XP for period",
+      "since": "Statistics since {{date}}",
+      "resetTitle": "Reset Period",
+      "resetConfirm": "Reset XP statistics for all members? This action cannot be undone.",
+      "resetBtn": "Reset Period",
+      "resetting": "Resetting...",
+      "resetError": "Failed to reset period",
+      "empty": "No data yet for this period"
+    },
     "citizenRankings": "Citizen Rankings",
     "sections": {
       "budget": "Budget",

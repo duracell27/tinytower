@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, type CityDetail, type CitySummary, type CityRole, type CityRankingsResponse } from '../services/api';
+import { api, type CityDetail, type CitySummary, type CityRole, type CityRankingsResponse, type CityXpStats } from '../services/api';
 import { useGameStore } from './gameStore';
 
 interface CityState {
@@ -20,6 +20,8 @@ interface CityActions {
   searchCities: (q: string) => Promise<CitySummary[]>;
   getCityById: (id: string) => Promise<CityDetail>;
   getCityRankings: (page: number) => Promise<CityRankingsResponse>;
+  getCityXpStats: (cityId: string) => Promise<CityXpStats>;
+  resetCityXpPeriod: (cityId: string) => Promise<void>;
   clearCity: () => void;
 }
 
@@ -123,6 +125,14 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
 
   getCityRankings: async (page: number) => {
     return api.getCityRankings(page);
+  },
+
+  getCityXpStats: async (cityId: string) => {
+    return api.getCityXpStats(cityId);
+  },
+
+  resetCityXpPeriod: async (cityId: string) => {
+    return api.resetCityXpPeriod(cityId);
   },
 
   clearCity: () => set({ city: null, error: null }),
