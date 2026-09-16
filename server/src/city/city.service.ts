@@ -107,7 +107,6 @@ export class CityService {
     const xpForNextLevel = getCityXpForNextLevel(level);
     const xpCurrentLevelBase = CITY_LEVEL_THRESHOLDS[level - 1] ?? 0;
     const xpRelative = xp - xpCurrentLevelBase;
-    const xpForNextLevelRelative = xpForNextLevel != null ? xpForNextLevel - xpCurrentLevelBase : null;
 
     const myMembership = myPlayerId
       ? city.members.find((m) => m.playerId === myPlayerId)
@@ -119,7 +118,7 @@ export class CityService {
       description: city.description,
       level,
       xp: xpRelative,
-      xpForNextLevel: xpForNextLevelRelative,
+      xpForNextLevel,
       memberCount: city.members.length,
       maxMembers,
       myRole: myMembership?.role ?? null,
