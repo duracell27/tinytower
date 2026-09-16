@@ -501,7 +501,7 @@ export default function UserProfileScreen() {
                 >
                   <Image source={MANAGER_ICON} style={pStyles.actionIcon} contentFit="contain" />
                   <LocaleText style={[pStyles.actionBtnText, { color: theme.text }]}>
-                    {t('city.roleChange.title')}
+                    {t('city.detail.changeCityRole')}
                   </LocaleText>
                 </Pressable>
               )}
@@ -512,7 +512,7 @@ export default function UserProfileScreen() {
                 >
                   <Image source={CANCEL_ICON} style={pStyles.actionIcon} contentFit="contain" />
                   <LocaleText style={[pStyles.actionBtnText, { color: '#C03030' }]}>
-                    {t('city.detail.kick')}
+                    {t('city.detail.kickFromCity')}
                   </LocaleText>
                 </Pressable>
               )}
