@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CityRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { getCityLevel, getCityMaxMembers, getCityXpForNextLevel } from './city-level';
+import { getCityLevel, getCityMaxMembers, getCityXpForNextLevel, CITY_LEVEL_THRESHOLDS } from './city-level';
 
 const CITY_FOUND_COST_GEMS = 1000;
 const CITY_RENAME_COST_BALANCE = 500;
@@ -105,6 +105,9 @@ export class CityService {
     const level = getCityLevel(xp);
     const maxMembers = getCityMaxMembers(level);
     const xpForNextLevel = getCityXpForNextLevel(level);
+    const xpCurrentLevelBase = CITY_LEVEL_THRESHOLDS[level - 1] ?? 0;
+    const xpRelative = xp - xpCurrentLevelBase;
+    const xpForNextLevelRelative = xpForNextLevel != null ? xpForNextLevel - xpCurrentLevelBase : null;
 
     const myMembership = myPlayerId
       ? city.members.find((m) => m.playerId === myPlayerId)
@@ -115,8 +118,8 @@ export class CityService {
       name: city.name,
       description: city.description,
       level,
-      xp,
-      xpForNextLevel,
+      xp: xpRelative,
+      xpForNextLevel: xpForNextLevelRelative,
       memberCount: city.members.length,
       maxMembers,
       myRole: myMembership?.role ?? null,
@@ -471,7 +474,16 @@ export class CityService {
       return { id: city.id, name: city.name, description: city.description, level, xp: city.cityXp, memberCount: city.members.length, maxMembers: getCityMaxMembers(level) };
     });
 
-    entries.sort((a, b) => b.xp - a.xp);
+    entries.sort((a, b) => {
+      if (b.level !== a.level) return b.level - a.level;
+      // Same level: higher XP progress to next level wins
+      const currentThreshold = CITY_LEVEL_THRESHOLDS[a.level - 1] ?? 0;
+      const nextThreshold = getCityXpForNextLevel(a.level);
+      if (nextThreshold === null) return 0; // both at max level
+      const range = nextThreshold - currentThreshold;
+      if (range === 0) return 0;
+      return (b.xp - currentThreshold) / range - (a.xp - currentThreshold) / range;
+    });
 
     return {
       entries: entries.map((e, i) => ({ rank: skip + i + 1, ...e })),

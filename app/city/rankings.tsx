@@ -2,12 +2,15 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, useColorScheme,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
 import { useCityStore } from '../../src/stores/cityStore';
 import type { CityRankingEntry } from '../../src/services/api';
+
+const LVL_ICON = require('../../assets/img/lvlIcon.png');
 
 const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
@@ -58,14 +61,12 @@ export default function CityRankingsScreen() {
           <LocaleText style={[styles.cityName, isDark && { color: '#DDE8D8' }]} numberOfLines={1}>
             {item.name}
           </LocaleText>
-          <LocaleText style={[styles.cityMeta, isDark && { color: '#8A9A80' }]}>
-            {t('city.levelLabel', { level: item.level })} · {t('city.memberCount', { count: item.memberCount, max: item.maxMembers })}
-          </LocaleText>
         </View>
 
-        <View style={styles.xpBox}>
-          <LocaleText style={[styles.xpText, isDark && { color: '#6BAED0' }]}>
-            {t('city.rankings.xpLabel', { xp: formatXp(item.xp) })}
+        <View style={styles.levelBox}>
+          <Image source={LVL_ICON} style={styles.lvlIcon} contentFit="contain" />
+          <LocaleText style={[styles.levelText, isDark && { color: '#6BAED0' }]}>
+            {item.level}
           </LocaleText>
         </View>
       </TouchableOpacity>
@@ -127,12 +128,6 @@ export default function CityRankingsScreen() {
   );
 }
 
-function formatXp(xp: number): string {
-  if (xp >= 1_000_000_000) return `${(xp / 1_000_000_000).toFixed(1)}B`;
-  if (xp >= 1_000_000) return `${(xp / 1_000_000).toFixed(1)}M`;
-  if (xp >= 1_000) return `${(xp / 1_000).toFixed(1)}K`;
-  return String(xp);
-}
 
 const styles = StyleSheet.create({
   bg: { flex: 1, backgroundColor: '#F0F8FF' },
@@ -162,11 +157,11 @@ const styles = StyleSheet.create({
   rankText: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#7A8A80' },
 
   cityInfo: { flex: 1 },
-  cityName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#0A1C30', marginBottom: 2 },
-  cityMeta: { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#5A7090' },
+  cityName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#0A1C30' },
 
-  xpBox: { alignItems: 'flex-end' },
-  xpText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#2E6EC9' },
+  levelBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  lvlIcon: { width: 22, height: 22 },
+  levelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#2E6EC9' },
 
   emptyText: { fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#7A8A80' },
 

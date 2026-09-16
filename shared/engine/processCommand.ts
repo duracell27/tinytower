@@ -806,7 +806,7 @@ function handleCollect(
   const revenue = Math.floor(baseValueCoin * starMult.value * coinMultiplier * workerMultiplier);
 
   const baseValueXp = typeConfig.batchValue * (1 + (bonuses.baseXpBoostPercent ?? 0) / 100);
-  const xpMultiplier = 1 + bonuses.xpPercent / 100;
+  const xpMultiplier = 1 + (bonuses.xpPercent + categoryBonus) / 100;
   const xpGained = Math.floor(baseValueXp * starMult.value * xpMultiplier * workerMultiplier);
 
   return {
