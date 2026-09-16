@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, StyleSheet, TextInput, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, Alert, useColorScheme,
+  KeyboardAvoidingView, Platform, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Stack, useRouter } from 'expo-router';
@@ -42,55 +42,52 @@ export default function CreateCityScreen() {
   const { createCity } = useCityStore();
   const gems = useGameStore((s) => s.gems);
   const floorCount = useGameStore((s) => s.floors.length);
+  const showCityAlert = useGameStore((s) => s.showCityAlert);
+  const showCityConfirm = useGameStore((s) => s.showCityConfirm);
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      Alert.alert('', t('city.create.errorNoName'));
+      showCityAlert({ message: t('city.create.errorNoName') });
       return;
     }
     if (trimmed.length > 30) {
-      Alert.alert('', t('city.create.errorNameTooLong'));
+      showCityAlert({ message: t('city.create.errorNameTooLong') });
       return;
     }
     if (floorCount + 1 < 10) {
-      Alert.alert('', t('city.create.errorNotEnoughFloors'));
+      showCityAlert({ message: t('city.create.errorNotEnoughFloors') });
       return;
     }
     if (gems < 1000) {
-      Alert.alert('', t('city.create.errorNotEnoughGems'));
+      showCityAlert({ message: t('city.create.errorNotEnoughGems') });
       return;
     }
 
-    Alert.alert(
-      t('city.create.confirmTitle'),
-      t('city.create.confirmMessage', { name: trimmed }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('city.create.submit'),
-          style: 'default',
-          onPress: async () => {
-            setSubmitting(true);
-            try {
-              await createCity(trimmed);
-              router.back();
-            } catch (e: any) {
-              const msg = e?.message ?? '';
-              if (msg.includes('floors')) {
-                Alert.alert('', t('city.create.errorNotEnoughFloors'));
-              } else if (msg.includes('name')) {
-                Alert.alert('', t('city.create.errorNameTaken'));
-              } else {
-                Alert.alert('', t('city.errors.create'));
-              }
-            } finally {
-              setSubmitting(false);
-            }
-          },
-        },
-      ],
-    );
+    showCityConfirm({
+      title: t('city.create.confirmTitle'),
+      message: t('city.create.confirmMessage', { name: trimmed }),
+      confirmText: t('city.create.submit'),
+      gems: 1000,
+      onConfirm: async () => {
+        setSubmitting(true);
+        try {
+          await createCity(trimmed);
+          router.back();
+        } catch (e: any) {
+          const msg = e?.message ?? '';
+          if (msg.includes('floors')) {
+            showCityAlert({ message: t('city.create.errorNotEnoughFloors') });
+          } else if (msg.includes('name')) {
+            showCityAlert({ message: t('city.create.errorNameTaken') });
+          } else {
+            showCityAlert({ message: t('city.errors.create') });
+          }
+        } finally {
+          setSubmitting(false);
+        }
+      },
+    });
   };
 
   const perks = [

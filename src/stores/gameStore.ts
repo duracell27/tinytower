@@ -187,6 +187,8 @@ interface UIState {
   activeSheetCount: number;
   floorUpgradeModal: { floorId: number } | null;
   productionDetailModal: { floorId: number; slotIdx: number } | null;
+  cityAlert: { message: string; type?: 'error' | 'success' | 'info' } | null;
+  cityConfirm: { title: string; message: string; confirmText: string; danger?: boolean; gems?: number; onConfirm: () => void | Promise<void> } | null;
 }
 
 
@@ -283,6 +285,10 @@ interface GameActions {
   closeFloorUpgradeModal: () => void;
   openProductionDetailModal: (floorId: number, slotIdx: number) => void;
   closeProductionDetailModal: () => void;
+  showCityAlert: (payload: { message: string; type?: 'error' | 'success' | 'info' }) => void;
+  clearCityAlert: () => void;
+  showCityConfirm: (payload: { title: string; message: string; confirmText: string; danger?: boolean; gems?: number; onConfirm: () => void | Promise<void> }) => void;
+  clearCityConfirm: () => void;
 }
 
 type GameStore = GameState & PlayerStats & SyncState & UIState & GameActions;
@@ -492,6 +498,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   activeSheetCount: 0,
   floorUpgradeModal: null,
   productionDetailModal: null,
+  cityAlert: null,
+  cityConfirm: null,
 
   exchangeGemsForCoins: (gems) => {
     executeCommand(get, set, { id: uuid(), type: 'exchange_gems', gems, timestamp: clock.now() });
@@ -548,6 +556,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   openProductionDetailModal: (floorId, slotIdx) =>
     set({ productionDetailModal: { floorId, slotIdx } }),
   closeProductionDetailModal: () => set({ productionDetailModal: null }),
+  showCityAlert: (payload) => set({ cityAlert: payload }),
+  clearCityAlert: () => set({ cityAlert: null }),
+  showCityConfirm: (payload) => set({ cityConfirm: payload }),
+  clearCityConfirm: () => set({ cityConfirm: null }),
   speedUpConstruction: (floorId) => {
     const state = get();
     const now = clock.now();
@@ -706,6 +718,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     activeSheetCount: 0,
     floorUpgradeModal: null,
     productionDetailModal: null,
+    cityAlert: null,
+    cityConfirm: null,
   }),
 
   initOnboardingProductions: () => set((cur) => {

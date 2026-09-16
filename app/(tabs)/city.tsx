@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, ScrollView, StyleSheet, TouchableOpacity,
-  ActivityIndicator, useColorScheme, Alert, Dimensions,
+  ActivityIndicator, useColorScheme, Dimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -157,6 +157,8 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
   const theme = useAppTheme();
   const player = useAuthStore((s) => s.player);
   const { leaveCity, kickMember, changeMemberRole } = useCityStore();
+  const showCityAlert = useGameStore((s) => s.showCityAlert);
+  const showCityConfirm = useGameStore((s) => s.showCityConfirm);
 
   // Current player's own worker stats (city-wide aggregate requires backend update)
   const workers = useGameStore((s) => s.workers);
@@ -182,38 +184,32 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
   );
 
   const handleLeave = () => {
-    Alert.alert(
-      t('city.leaveCity'),
-      myRole === 'MAYOR' ? t('city.leaveCityMayorWarning') : t('city.leaveCityConfirm'),
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: t('city.leaveCity'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await leaveCity();
-            } catch {
-              Alert.alert('', t('city.errors.leave'));
-            }
-          },
-        },
-      ],
-    );
+    showCityConfirm({
+      title: t('city.leaveCity'),
+      message: myRole === 'MAYOR' ? t('city.leaveCityMayorWarning') : t('city.leaveCityConfirm'),
+      confirmText: t('city.leaveCity'),
+      danger: true,
+      onConfirm: async () => {
+        try {
+          await leaveCity();
+        } catch {
+          showCityAlert({ message: t('city.errors.leave') });
+        }
+      },
+    });
   };
 
   const handleKick = (member: CityMember) => {
-    Alert.alert('', t('city.kick.confirm', { name: member.playerName }), [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: t('city.detail.kick'),
-        style: 'destructive',
-        onPress: async () => {
-          try { await kickMember(city.id, member.playerId); }
-          catch { Alert.alert('', t('city.kick.error')); }
-        },
+    showCityConfirm({
+      title: t('city.detail.kick'),
+      message: t('city.kick.confirm', { name: member.playerName }),
+      confirmText: t('city.detail.kick'),
+      danger: true,
+      onConfirm: async () => {
+        try { await kickMember(city.id, member.playerId); }
+        catch { showCityAlert({ message: t('city.kick.error') }); }
       },
-    ]);
+    });
   };
 
   const handleChangeRole = (member: CityMember) => {
@@ -222,22 +218,21 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
       ? ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR']
       : ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
 
-    Alert.alert(
-      t('city.roleChange.title'),
-      member.playerName,
-      [
-        ...availableRoles
-          .filter((r) => r !== member.role)
-          .map((role) => ({
-            text: t(`city.roles.${role}`),
-            onPress: async () => {
-              try { await changeMemberRole(city.id, member.playerId, role); }
-              catch { Alert.alert('', t('city.roleChange.error')); }
-            },
-          })),
-        { text: 'Cancel', style: 'cancel' as const },
-      ],
-    );
+    const options = availableRoles
+      .filter((r) => r !== member.role)
+      .map((role) => ({
+        text: t(`city.roles.${role}`),
+        onPress: async () => {
+          try { await changeMemberRole(city.id, member.playerId, role); }
+          catch { showCityAlert({ message: t('city.roleChange.error') }); }
+        },
+      }));
+    // Role change keeps native alert (multi-option picker)
+    const { Alert } = require('react-native');
+    Alert.alert(t('city.roleChange.title'), member.playerName, [
+      ...options,
+      { text: 'Cancel', style: 'cancel' as const },
+    ]);
   };
 
   return (

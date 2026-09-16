@@ -11,6 +11,7 @@ import PurchaseSuccessModal from './PurchaseSuccessModal';
 import FloorUpgradeModal from './FloorUpgradeModal';
 import ProductionDetailModal from './ProductionDetailModal';
 import WarehouseFullModal from './WarehouseFullModal';
+import CityAlertModal from './CityAlertModal';
 
 export default function GlobalOverlay() {
   return (
@@ -26,6 +27,7 @@ export default function GlobalOverlay() {
       <FloorUpgradeModal />
       <ProductionDetailModal />
       <WarehouseFullModal />
+      <CityAlertModal />
     </View>
   );
 }

@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, StyleSheet, TextInput, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, Alert, Modal, useColorScheme,
+  KeyboardAvoidingView, Platform, Modal, useColorScheme, Animated, Easing,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
 import { useCityStore } from '../../src/stores/cityStore';
+import { useGameStore } from '../../src/stores/gameStore';
 
 export default function CitySettingsScreen() {
   const { t } = useTranslation('tabs');
@@ -23,6 +26,21 @@ export default function CitySettingsScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const showCityAlert = useGameStore((s) => s.showCityAlert);
+  const scaleAnim = useRef(new Animated.Value(0.7)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (deleteModalVisible) {
+      Animated.parallel([
+        Animated.timing(opacityAnim, { toValue: 1, duration: 180, useNativeDriver: true }),
+        Animated.timing(scaleAnim, { toValue: 1, duration: 280, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      ]).start();
+    } else {
+      scaleAnim.setValue(0.7);
+      opacityAnim.setValue(0);
+    }
+  }, [deleteModalVisible]);
 
   useEffect(() => {
     if (city) {
@@ -37,8 +55,8 @@ export default function CitySettingsScreen() {
     try {
       const updates: { name?: string; description?: string } = {};
       if (name.trim() !== city?.name) {
-        if (!name.trim()) { Alert.alert('', t('city.create.errorNoName')); return; }
-        if (name.trim().length > 30) { Alert.alert('', t('city.create.errorNameTooLong')); return; }
+        if (!name.trim()) { showCityAlert({ message: t('city.create.errorNoName') }); return; }
+        if (name.trim().length > 30) { showCityAlert({ message: t('city.create.errorNameTooLong') }); return; }
         updates.name = name.trim();
       }
       if (description !== (city?.description ?? '')) {
@@ -47,16 +65,16 @@ export default function CitySettingsScreen() {
       if (Object.keys(updates).length > 0) {
         await updateCity(cityId, updates);
       }
-      Alert.alert('', t('city.settings.saveSuccess'));
+      showCityAlert({ message: t('city.settings.saveSuccess'), type: 'success' });
       router.back();
     } catch (e: any) {
       const msg = e?.message ?? '';
       if (msg.includes('500') || msg.includes('coins')) {
-        Alert.alert('', t('city.settings.renameInfo'));
+        showCityAlert({ message: t('city.settings.renameInfo'), type: 'info' });
       } else if (msg.includes('name')) {
-        Alert.alert('', t('city.create.errorNameTaken'));
+        showCityAlert({ message: t('city.create.errorNameTaken') });
       } else {
-        Alert.alert('', t('city.errors.create'));
+        showCityAlert({ message: t('city.errors.create') });
       }
     } finally {
       setSaving(false);
@@ -70,10 +88,10 @@ export default function CitySettingsScreen() {
     try {
       await deleteCity(cityId);
       setDeleteModalVisible(false);
-      Alert.alert('', t('city.settings.deleteSuccess'));
+      showCityAlert({ message: t('city.settings.deleteSuccess'), type: 'success' });
       router.replace('/(tabs)/city');
     } catch {
-      Alert.alert('', t('city.settings.deleteError'));
+      showCityAlert({ message: t('city.settings.deleteError') });
     } finally {
       setDeleting(false);
     }
@@ -141,17 +159,28 @@ export default function CitySettingsScreen() {
       <Modal
         visible={deleteModalVisible}
         transparent
-        animationType="fade"
+        animationType="none"
         onRequestClose={() => setDeleteModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, isDark && styles.modalCardDark]}>
+        <Animated.View style={[styles.modalOverlay, { opacity: opacityAnim }]}>
+          <Animated.View
+            style={[
+              styles.modalCard,
+              isDark && styles.modalCardDark,
+              { transform: [{ scale: scaleAnim }] },
+            ]}
+          >
+            {/* Icon */}
+            <View style={[styles.deleteIconCircle, { backgroundColor: isDark ? '#3A1218' : '#FDECEA' }]}>
+              <Image source={require('../../assets/img/delete.png')} style={styles.deleteIconImg} contentFit="contain" />
+            </View>
+
             <LocaleText style={[styles.modalTitle, isDark && { color: '#FF6B6B' }]}>
               {t('city.settings.deleteModalTitle')}
             </LocaleText>
 
-            <View style={styles.warningBox}>
-              <LocaleText style={styles.warningText}>
+            <View style={[styles.warningBox, isDark && styles.warningBoxDark]}>
+              <LocaleText style={[styles.warningText, isDark && { color: '#FF9898' }]}>
                 {t('city.settings.deleteWarning')}
               </LocaleText>
             </View>
@@ -172,30 +201,36 @@ export default function CitySettingsScreen() {
               autoCorrect={false}
             />
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalCancelBtn, isDark && styles.modalCancelBtnDark]}
-                onPress={() => setDeleteModalVisible(false)}
-                disabled={deleting}
-                activeOpacity={0.8}
+            {/* Delete button */}
+            <TouchableOpacity
+              style={[styles.deleteConfirmBtn, (!nameMatches || deleting) && styles.btnDisabled]}
+              onPress={handleDeleteCity}
+              disabled={!nameMatches || deleting}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={['#E54030', '#C42A20']}
+                style={styles.deleteBtnGradient}
               >
-                <LocaleText style={[styles.modalCancelText, isDark && { color: '#DDE8D8' }]}>
-                  {t('city.settings.cancel')}
-                </LocaleText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalDeleteBtn, (!nameMatches || deleting) && styles.btnDisabled]}
-                onPress={handleDeleteCity}
-                disabled={!nameMatches || deleting}
-                activeOpacity={0.8}
-              >
-                <LocaleText style={styles.btnDeleteText}>
+                <LocaleText style={styles.deleteBtnText}>
                   {deleting ? '...' : t('city.settings.deleteConfirmBtn')}
                 </LocaleText>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Cancel button */}
+            <TouchableOpacity
+              style={[styles.modalCancelBtn, isDark && styles.modalCancelBtnDark]}
+              onPress={() => setDeleteModalVisible(false)}
+              disabled={deleting}
+              activeOpacity={0.8}
+            >
+              <LocaleText style={[styles.modalCancelText, isDark && { color: '#DDE8D8' }]}>
+                {t('city.settings.cancel')}
+              </LocaleText>
+            </TouchableOpacity>
+          </Animated.View>
+        </Animated.View>
       </Modal>
     </AppBackground>
   );
@@ -244,7 +279,7 @@ const styles = StyleSheet.create({
   // Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(0,0,0,0.58)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -252,59 +287,87 @@ const styles = StyleSheet.create({
   modalCard: {
     width: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 24,
+    alignItems: 'center',
+    gap: 12,
+    shadowColor: 'rgba(30,50,80,1)',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.28,
+    shadowRadius: 30,
+    elevation: 12,
   },
   modalCardDark: { backgroundColor: '#1A2E3E' },
+  deleteIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  deleteIconImg: {
+    width: 34,
+    height: 34,
+  },
   modalTitle: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 22,
     color: '#D93025',
-    marginBottom: 16,
     textAlign: 'center',
   },
   warningBox: {
+    width: '100%',
     backgroundColor: '#FFF3F2',
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#FFCDC9',
     padding: 14,
-    marginBottom: 20,
+  },
+  warningBoxDark: {
+    backgroundColor: '#2A1010',
+    borderColor: '#5A2020',
   },
   warningText: {
     fontFamily: 'Geologica_400Regular',
     fontSize: 13,
     color: '#9B2020',
     lineHeight: 20,
+    textAlign: 'center',
   },
   confirmLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
     color: '#1A2C3A',
-    marginBottom: 4,
+    textAlign: 'center',
   },
   confirmHint: {
     fontFamily: 'Fredoka_400Regular',
     fontSize: 12,
     color: '#8A9AA8',
-    marginBottom: 8,
+    textAlign: 'center',
   },
-  confirmInput: { marginTop: 0 },
-  modalButtons: { flexDirection: 'row', gap: 12, marginTop: 20 },
+  confirmInput: { width: '100%', marginTop: 0 },
+  deleteConfirmBtn: {
+    width: '100%',
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginTop: 4,
+  },
+  deleteBtnGradient: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 15,
+    borderRadius: 14,
+  },
+  deleteBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#FFFFFF' },
   modalCancelBtn: {
-    flex: 1,
+    width: '100%',
     backgroundColor: '#EEF3F8',
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
   },
   modalCancelBtnDark: { backgroundColor: '#243040' },
   modalCancelText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#3A5068' },
-  modalDeleteBtn: {
-    flex: 1,
-    backgroundColor: '#D93025',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
 });

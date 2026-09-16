@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, StyleSheet, TextInput, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, Modal, Dimensions, Pressable, useColorScheme, Alert,
+  KeyboardAvoidingView, Platform, Modal, Dimensions, Pressable, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,6 +11,7 @@ import Animated, {
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
 import LocaleText from './LocaleText';
+import CityAlertModal from './CityAlertModal';
 import { useCityStore } from '../stores/cityStore';
 import { useGameStore } from '../stores/gameStore';
 import { syncService } from '../services/sync';
@@ -136,6 +137,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
   const { createCity } = useCityStore();
   const gems = useGameStore((s) => s.gems);
   const floorCount = useGameStore((s) => s.floors.length);
+  const showCityConfirm = useGameStore((s) => s.showCityConfirm);
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -182,21 +184,20 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
   const scrimStyle = useAnimatedStyle(() => ({ opacity: scrimOpacity.value }));
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     const trimmed = name.trim();
     if (!trimmed) { setErrorMsg(t('city.create.errorNoName')); return; }
     if (trimmed.length > 30) { setErrorMsg(t('city.create.errorNameTooLong')); return; }
     if (floorCount + 1 < 10) { setErrorMsg(t('city.create.errorNotEnoughFloors')); setErrorIcon(null); return; }
     if (gems < 1000) { setErrorMsg(t('city.create.errorNotEnoughGems')); setErrorIcon(IMG.diamond); return; }
 
-    Alert.alert(
-      t('city.create.confirmTitle'),
-      t('city.create.confirmMessage', { name: trimmed }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: t('city.create.submit'), style: 'default', onPress: doCreate },
-      ],
-    );
+    showCityConfirm({
+      title: t('city.create.confirmTitle'),
+      message: t('city.create.confirmMessage', { name: trimmed }),
+      confirmText: t('city.create.submit'),
+      gems: 1000,
+      onConfirm: doCreate,
+    });
   };
 
   const doCreate = async () => {
@@ -303,6 +304,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
               </ScrollView>
             </KeyboardAvoidingView>
           </Animated.View>
+          <CityAlertModal asOverlay />
         </GestureHandlerRootView>
       )}
       <ErrorPopup message={errorMsg} onClose={() => { setErrorMsg(null); setErrorIcon(null); }} isDark={isDark} icon={errorIcon} />

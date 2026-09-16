@@ -3,6 +3,7 @@ import {
   View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
   Alert, useColorScheme, Dimensions,
 } from 'react-native';
+import { useGameStore } from '../../src/stores/gameStore';
 
 const CARD_WIDTH = (Dimensions.get('window').width - 32 - 16) / 3; // 2×margin + 2×gap
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -52,6 +53,8 @@ export default function CityDetailScreen() {
   const router = useRouter();
   const player = useAuthStore((s) => s.player);
   const { getCityById, kickMember, changeMemberRole, leaveCity } = useCityStore();
+  const showCityAlert = useGameStore((s) => s.showCityAlert);
+  const showCityConfirm = useGameStore((s) => s.showCityConfirm);
 
   const [city, setCity] = useState<CityDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,21 +74,20 @@ export default function CityDetailScreen() {
   useEffect(() => { load(); }, [id]);
 
   const handleKick = (member: CityMember) => {
-    Alert.alert('', t('city.kick.confirm', { name: member.playerName }), [
-      { text: t('city.kick.error'), style: 'cancel' },
-      {
-        text: t('city.detail.kick'),
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await kickMember(id!, member.playerId);
-            await load();
-          } catch {
-            Alert.alert('', t('city.kick.error'));
-          }
-        },
+    showCityConfirm({
+      title: t('city.detail.kick'),
+      message: t('city.kick.confirm', { name: member.playerName }),
+      confirmText: t('city.detail.kick'),
+      danger: true,
+      onConfirm: async () => {
+        try {
+          await kickMember(id!, member.playerId);
+          await load();
+        } catch {
+          showCityAlert({ message: t('city.kick.error') });
+        }
       },
-    ]);
+    });
   };
 
   const handleChangeRole = (member: CityMember) => {
@@ -105,11 +107,12 @@ export default function CityDetailScreen() {
             await changeMemberRole(id!, member.playerId, role);
             await load();
           } catch {
-            Alert.alert('', t('city.roleChange.error'));
+            showCityAlert({ message: t('city.roleChange.error') });
           }
         },
       }));
 
+    // Role change keeps native alert (multi-option picker)
     Alert.alert(t('city.roleChange.title'), member.playerName, [
       ...options,
       { text: 'Cancel', style: 'cancel' },
@@ -118,25 +121,20 @@ export default function CityDetailScreen() {
 
   const handleLeave = () => {
     const isMayor = city?.myRole === 'MAYOR';
-    Alert.alert(
-      t('city.leaveCity'),
-      isMayor ? t('city.leaveCityMayorWarning') : t('city.leaveCityConfirm'),
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: t('city.leaveCity'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await leaveCity();
-              router.back();
-            } catch {
-              Alert.alert('', t('city.errors.leave'));
-            }
-          },
-        },
-      ],
-    );
+    showCityConfirm({
+      title: t('city.leaveCity'),
+      message: isMayor ? t('city.leaveCityMayorWarning') : t('city.leaveCityConfirm'),
+      confirmText: t('city.leaveCity'),
+      danger: true,
+      onConfirm: async () => {
+        try {
+          await leaveCity();
+          router.back();
+        } catch {
+          showCityAlert({ message: t('city.errors.leave') });
+        }
+      },
+    });
   };
 
   if (loading) {
