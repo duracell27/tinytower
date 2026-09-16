@@ -195,6 +195,8 @@ export class SyncService {
       gameState.businessUpgrades,
       gameState.coinBonusPercent + cityMarketingBonus,
       gameState.floorStars,
+      gameState.coinBoostPercent,
+      gameState.coinBoostExpiresAt,
     );
     const currentOpenedFloors = gameConfig.floors.length + Object.keys(gameState.openedFloorTypes ?? {}).length;
 
