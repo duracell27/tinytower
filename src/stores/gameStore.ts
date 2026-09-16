@@ -1615,10 +1615,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (acceptedIds.has(cmd.id)) return false;
       // Visitor-session commands from before the daily reset can never succeed
       // (lobby is cleared on reset). Drop them to prevent permanent queue bloat.
-      if (
-        (cmd.type === 'lift_visitor' || cmd.type === 'collect_tip' || cmd.type === 'spawn_visitor') &&
-        cmd.timestamp < cur.lastDailyReset
-      ) return false;
+      // Use today's UTC midnight rather than cur.lastDailyReset — the stored value
+      // may still be yesterday's midnight if no command has fired a reset yet.
+      if (cmd.type === 'lift_visitor' || cmd.type === 'collect_tip' || cmd.type === 'spawn_visitor') {
+        const now = new Date();
+        const todayMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+        if (cmd.timestamp < todayMidnight) return false;
+      }
       return true;
     }),
   })),
