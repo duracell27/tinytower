@@ -180,6 +180,12 @@ export class SyncService {
       });
     }
 
+    // Fetch city bonus early so maxRevenuePerMin reflects the player's actual
+    // revenue including the marketing bonus, not just the base achievement bonus.
+    const cityBonus = await this.cityService.getCityBonusForPlayer(playerId);
+    const cityMarketingBonus = cityBonus?.level ?? 0;
+    const cityPrBonus = cityBonus?.level ?? 0;
+
     const currentRevenue = calcRevenuePerMin(
       gameState.floors,
       gameState.workers,
@@ -187,7 +193,7 @@ export class SyncService {
       gameConfig,
       serverNow,
       gameState.businessUpgrades,
-      gameState.coinBonusPercent,
+      gameState.coinBonusPercent + cityMarketingBonus,
       gameState.floorStars,
     );
     const currentOpenedFloors = gameConfig.floors.length + Object.keys(gameState.openedFloorTypes ?? {}).length;
@@ -621,10 +627,6 @@ export class SyncService {
 
     const finalCoinBonus = gameState.coinBonusPercent + coinBonusDelta;
     const finalXpBonus   = gameState.xpBonusPercent   + xpBonusDelta;
-
-    const cityBonus = await this.cityService.getCityBonusForPlayer(playerId);
-    const cityMarketingBonus = cityBonus?.level ?? 0;
-    const cityPrBonus = cityBonus?.level ?? 0;
 
     // Ack failed collect_tip / lift_visitor commands — they carry no resource cost
     // (no gems or coins are spent), so acking them when they fail is safe.
