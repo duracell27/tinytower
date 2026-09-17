@@ -639,24 +639,25 @@ export class SyncService {
     const finalCoinBonus = gameState.coinBonusPercent + coinBonusDelta;
     const finalXpBonus   = gameState.xpBonusPercent   + xpBonusDelta;
 
-    // Ack failed collect_tip / lift_visitor commands — they carry no resource cost
-    // (no gems or coins are spent), so acking them when they fail is safe.
-    // These commands fail when the elevator/visitor state has already moved on
-    // (e.g. the visitor session completed in a later sync, elevator was reset).
-    // Leaving them unacked causes permanent queue bloat.
-    const failedVisitorIds = newCommands
+    // Ack all failed commands (except shop_purchase which is backed by real payment).
+    // processCommand evaluates state at command.timestamp, which never changes —
+    // so a command that fails now will fail on every future sync too.
+    // The server state is authoritative; reconcile will correct any optimistic
+    // client-side effects when stateVersion changes after accepted commands.
+    const NEVER_AUTO_ACK = new Set(['shop_purchase']);
+    const failedCommandIds = newCommands
       .filter(c =>
-        (c.type === 'collect_tip' || c.type === 'lift_visitor') &&
-        !acceptedCommands.some(a => a.id === c.id),
+        !acceptedCommands.some(a => a.id === c.id) &&
+        !NEVER_AUTO_ACK.has(c.type),
       )
       .map(c => c.id);
 
-    if (failedVisitorIds.length > 0) {
-      this.logger.log(`[sync] acking ${failedVisitorIds.length} failed visitor cmds: ${failedVisitorIds.join(', ')}`);
+    if (failedCommandIds.length > 0) {
+      this.logger.log(`[sync] acking ${failedCommandIds.length} failed cmds: ${failedCommandIds.join(', ')}`);
     }
     this.logger.log(
       `[sync] result: accepted=${acceptedCommands.length} existingAcked=${existingIds.size} ` +
-      `visitorAcked=${failedVisitorIds.length} totalAcked=${acceptedCommands.length + existingIds.size + failedVisitorIds.length}`,
+      `failedAcked=${failedCommandIds.length} totalAcked=${acceptedCommands.length + existingIds.size + failedCommandIds.length}`,
     );
 
     return {
@@ -678,7 +679,7 @@ export class SyncService {
       // Include previously-logged (already-accepted) command IDs so the client can
       // prune "ghost" commands that were accepted in an earlier intermediate batch but
       // never removed from the queue due to the interim-batch acceptedCommandIds bug.
-      acceptedCommandIds: [...acceptedCommands.map((c) => c.id), ...existingIds, ...failedVisitorIds],
+      acceptedCommandIds: [...acceptedCommands.map((c) => c.id), ...existingIds, ...failedCommandIds],
     };
   }
 
