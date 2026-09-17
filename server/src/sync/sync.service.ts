@@ -164,6 +164,16 @@ export class SyncService {
     }
     const passengersCount = gameState.stats.totalPassengersLifted - gameStateBefore.stats.totalPassengersLifted;
 
+    // Compute failed command IDs here (before the transaction) so we can use
+    // failedCommandIds.length in the stateVersion bump condition below.
+    const NEVER_AUTO_ACK = new Set(['shop_purchase']);
+    const failedCommandIds = newCommands
+      .filter(c =>
+        !acceptedCommands.some(a => a.id === c.id) &&
+        !NEVER_AUTO_ACK.has(c.type),
+      )
+      .map(c => c.id);
+
     // Capture balances after commands but before XP level-up rewards
     const baseBalance = gameState.balance;
     const baseGems = gameState.gems;
@@ -319,7 +329,7 @@ export class SyncService {
             totalCollected:        { increment: collectCount },
             totalPassengersLifted: { increment: passengersCount },
             stateVersion: {
-              increment: (acceptedCommands.length > 0 || allNewGrants.length > 0 || !!dailyLoginReward) ? 1 : 0,
+              increment: (acceptedCommands.length > 0 || allNewGrants.length > 0 || !!dailyLoginReward || failedCommandIds.length > 0) ? 1 : 0,
             },
             lastSeenAt: new Date(serverNow),
             openedFloorsCount: currentOpenedFloors,
@@ -642,16 +652,6 @@ export class SyncService {
     // Ack all failed commands (except shop_purchase which is backed by real payment).
     // processCommand evaluates state at command.timestamp, which never changes —
     // so a command that fails now will fail on every future sync too.
-    // The server state is authoritative; reconcile will correct any optimistic
-    // client-side effects when stateVersion changes after accepted commands.
-    const NEVER_AUTO_ACK = new Set(['shop_purchase']);
-    const failedCommandIds = newCommands
-      .filter(c =>
-        !acceptedCommands.some(a => a.id === c.id) &&
-        !NEVER_AUTO_ACK.has(c.type),
-      )
-      .map(c => c.id);
-
     if (failedCommandIds.length > 0) {
       this.logger.log(`[sync] acking ${failedCommandIds.length} failed cmds: ${failedCommandIds.join(', ')}`);
     }
