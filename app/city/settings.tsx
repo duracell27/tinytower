@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
 import { useCityStore } from '../../src/stores/cityStore';
@@ -21,6 +22,7 @@ const INFO_ICON    = require('../../assets/img/InformationIcon.png');
 export default function CitySettingsScreen() {
   const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { cityId } = useLocalSearchParams<{ cityId: string }>();
   const { city, updateCity, deleteCity } = useCityStore();
@@ -108,7 +110,7 @@ export default function CitySettingsScreen() {
   return (
     <AppBackground style={[styles.background, isDark && styles.backgroundDark]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 16 }]} keyboardShouldPersistTaps="handled">
 
           {/* Header hero */}
           <View style={[styles.heroCard, isDark && styles.heroCardDark]}>
