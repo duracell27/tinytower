@@ -166,6 +166,8 @@ interface UIState {
   achievementQueue: NewAchievementGrant[];
   coinBonusPercent: number;
   xpBonusPercent: number;
+  cityMarketingBonus: number;
+  cityPrBonus: number;
   vehicles: Vehicles;
   buyVehicle: (vehicleType: keyof Vehicles) => void;
   categoryProgress: Record<string, CategoryProgressState>;
@@ -479,6 +481,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   locallyGrantedAchievements: new Set<string>(),
   coinBonusPercent: 0,
   xpBonusPercent: 0,
+  cityMarketingBonus: 0,
+  cityPrBonus: 0,
   vehicles: { taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 },
   categoryProgress: {},
   failedCommandLog: [],
@@ -703,6 +707,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     achievementQueue: [],
     coinBonusPercent: 0,
     xpBonusPercent: 0,
+    cityMarketingBonus: 0,
+    cityPrBonus: 0,
     categoryProgress: {},
     locallyGrantedAchievements: new Set<string>(),
     pendingReferralNotifications: [],

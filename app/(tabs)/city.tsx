@@ -413,7 +413,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
         </TouchableOpacity>
       )}
 
-      <View style={{ height: 48 }} />
+      <View style={{ height: 80 }} />
     </ScrollView>
   );
 }

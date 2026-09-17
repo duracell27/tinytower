@@ -99,6 +99,15 @@ export default function CityRankingsScreen() {
             <LocaleText style={[styles.headerSubtitle, isDark && { color: '#8A9A80' }]}>
               {t('city.rankings.subtitle')}
             </LocaleText>
+            <TouchableOpacity
+              style={[styles.findCityBtn, isDark && styles.findCityBtnDark]}
+              onPress={() => router.push('/city/search')}
+              activeOpacity={0.7}
+            >
+              <LocaleText style={[styles.findCityBtnText, isDark && { color: '#6BAED0' }]}>
+                {t('city.rankings.findCity')}
+              </LocaleText>
+            </TouchableOpacity>
           </View>
         }
         ListEmptyComponent={
@@ -138,7 +147,16 @@ const styles = StyleSheet.create({
   header: { alignItems: 'center', paddingTop: 20, paddingBottom: 16, paddingHorizontal: 16 },
   headerEmoji: { fontSize: 48, marginBottom: 8 },
   headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#0A1C30', marginBottom: 4 },
-  headerSubtitle: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#5A7090' },
+  headerSubtitle: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#5A7090', marginBottom: 14 },
+  findCityBtn: {
+    backgroundColor: '#E8F2FA',
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  findCityBtnDark: { backgroundColor: 'rgba(46,110,201,0.15)' },
+  findCityBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2E6EC9' },
 
   row: {
     flexDirection: 'row',

@@ -32,6 +32,7 @@ export function processLobbyCommand(
     extraLobbyCapacity?: number;
     extraGemExchangeLimit?: number;
     xpPerVisitor?: number;
+    xpPercent?: number;
   } = {},
 ): ProcessResult {
   state = checkDailyReset(state, command.timestamp);
@@ -42,9 +43,9 @@ export function processLobbyCommand(
     case 'lift_visitor':
       return handleLiftVisitor(state, command);
     case 'collect_tip':
-      return handleCollectTip(state, config, playerLevel, command.timestamp, command, bonuses);
+      return handleCollectTip(state, config, playerLevel, command.timestamp, command, { ...bonuses, xpPercent: bonuses.xpPercent });
     case 'deliver_all':
-      return handleDeliverAll(state, config, playerLevel, command.timestamp, command, bonuses);
+      return handleDeliverAll(state, config, playerLevel, command.timestamp, command, { ...bonuses, xpPercent: bonuses.xpPercent });
     case 'upgrade_elevator':
       return handleUpgradeElevator(state, config);
     case 'upgrade_lobby':
@@ -306,7 +307,7 @@ function handleCollectTip(
   playerLevel: number,
   now: number,
   command: Extract<Command, { type: 'collect_tip' }>,
-  bonuses: { tipPercent?: number; extraGemExchangeLimit?: number; xpPerVisitor?: number } = {},
+  bonuses: { tipPercent?: number; extraGemExchangeLimit?: number; xpPerVisitor?: number; xpPercent?: number } = {},
 ): ProcessResult {
   if (state.lobbyVisitors.length === 0) {
     return { success: false, state, error: 'No visitors' };
@@ -348,7 +349,7 @@ function handleCollectTip(
       },
     } : newState.dailyTasks,
   };
-  return { success: true, state: newState, xpGained: (newState.balance - state.balance) + (bonuses.xpPerVisitor ?? 0) };
+  return { success: true, state: newState, xpGained: (newState.balance - state.balance) + Math.floor((bonuses.xpPerVisitor ?? 0) * (1 + (bonuses.xpPercent ?? 0) / 100)) };
 }
 
 function handleDeliverAll(
@@ -437,7 +438,7 @@ function handleDeliverAll(
     } : newState.dailyTasks,
   };
   const coinDelta = newState.balance - state.balance;
-  return { success: true, state: newState, xpGained: coinDelta + (bonuses.xpPerVisitor ?? 0) * passengersDelivered };
+  return { success: true, state: newState, xpGained: coinDelta + Math.floor((bonuses.xpPerVisitor ?? 0) * (1 + (bonuses.xpPercent ?? 0) / 100)) * passengersDelivered };
 }
 
 function handleUpgradeElevator(state: GameState, config: GameConfig): ProcessResult {

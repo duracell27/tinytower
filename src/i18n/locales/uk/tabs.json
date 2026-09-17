@@ -283,7 +283,7 @@
       "namePlaceholder": "Нова назва міста",
       "descriptionLabel": "Опис",
       "descriptionPlaceholder": "Девіз або опис міста (необов'язково)",
-      "renameInfo": "Перейменування коштує 500 монет",
+      "renameInfo": "Перейменування коштує 500 💎",
       "save": "Зберегти",
       "saveSuccess": "Місто оновлено",
       "deleteZone": "Небезпечна зона",
@@ -319,7 +319,8 @@
       "xpLabel": "{{xp}} XP",
       "empty": "Міст ще немає",
       "loadMore": "Завантажити ще",
-      "button": "Рейтинг міст"
+      "button": "Рейтинг міст",
+      "findCity": "🔍 Знайти місто"
     },
     "founded": "Засновано {{date}}",
     "allWorkers": "Робітники",
@@ -403,7 +404,9 @@
       "happy": "Задоволені",
       "specialists": "Спеціалісти",
       "currentPerMin": "Поточне / хв",
-      "bestPerMin": "Найкраще / хв"
+      "bestPerMin": "Найкраще / хв",
+      "cityMarketing": "Маркетинг міста",
+      "cityPr": "PR міста"
     },
     "menuInfo": {
       "achievements": {
@@ -630,6 +633,8 @@
     "xpBonus": "Бонус XP",
     "currentPerMin": "Поточне / хв",
     "bestPerMin": "Найкраще / хв",
+    "cityMarketing": "Маркетинг міста",
+    "cityPr": "PR міста",
     "daysInGame": "Днів у грі",
     "online": "Онлайн",
     "lastSeenMins": "Був {{mins}} хв тому",

@@ -10,7 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { getCityLevel, getCityMaxMembers, getCityXpForNextLevel, CITY_LEVEL_THRESHOLDS } from './city-level';
 
 const CITY_FOUND_COST_GEMS = 1000;
-const CITY_RENAME_COST_BALANCE = 500;
+const CITY_RENAME_COST_GEMS = 500;
 const MIN_FLOORS_TO_JOIN = 10;
 
 const ROLE_ORDER: CityRole[] = [
@@ -435,16 +435,16 @@ export class CityService {
       const existing = await this.prisma.city.findUnique({ where: { name: trimmed } });
       if (existing && existing.id !== cityId) throw new ConflictException('City name already taken');
 
-      const player = await this.prisma.player.findUnique({ where: { id: actorId }, select: { balance: true } });
-      if (!player || player.balance < CITY_RENAME_COST_BALANCE) {
-        throw new BadRequestException(`Renaming costs ${CITY_RENAME_COST_BALANCE} coins`);
+      const playerState = await this.prisma.playerState.findUnique({ where: { playerId: actorId }, select: { gems: true } });
+      if (!playerState || playerState.gems < CITY_RENAME_COST_GEMS) {
+        throw new BadRequestException(`Renaming costs ${CITY_RENAME_COST_GEMS} gems`);
       }
 
       data.name = trimmed;
 
       await this.prisma.$transaction([
         this.prisma.city.update({ where: { id: cityId }, data }),
-        this.prisma.player.update({ where: { id: actorId }, data: { balance: { decrement: CITY_RENAME_COST_BALANCE } } }),
+        this.prisma.playerState.update({ where: { playerId: actorId }, data: { gems: { decrement: CITY_RENAME_COST_GEMS } } }),
         this.prisma.player.updateMany({ where: { cityMembership: { cityId } }, data: { city: trimmed } }),
       ]);
 

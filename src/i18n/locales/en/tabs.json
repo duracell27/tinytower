@@ -283,7 +283,7 @@
       "namePlaceholder": "New city name",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "City motto or description (optional)",
-      "renameInfo": "Renaming costs 500 coins",
+      "renameInfo": "Renaming costs 500 💎",
       "save": "Save",
       "saveSuccess": "City updated",
       "deleteZone": "Danger Zone",
@@ -319,7 +319,8 @@
       "xpLabel": "{{xp}} XP",
       "empty": "No cities yet",
       "loadMore": "Load More",
-      "button": "City Rankings"
+      "button": "City Rankings",
+      "findCity": "🔍 Find City"
     },
     "founded": "Founded {{date}}",
     "allWorkers": "Workers",
@@ -403,7 +404,9 @@
       "happy": "Happy",
       "specialists": "Specialists",
       "currentPerMin": "Current / min",
-      "bestPerMin": "Best / min"
+      "bestPerMin": "Best / min",
+      "cityMarketing": "City Marketing",
+      "cityPr": "City PR"
     },
     "menuInfo": {
       "achievements": {
@@ -630,6 +633,8 @@
     "xpBonus": "XP bonus",
     "currentPerMin": "Current / min",
     "bestPerMin": "Best / min",
+    "cityMarketing": "City Marketing",
+    "cityPr": "City PR",
     "daysInGame": "Days in game",
     "online": "Online",
     "lastSeenMins": "Last seen {{mins}}m ago",

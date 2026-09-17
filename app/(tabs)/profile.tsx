@@ -32,9 +32,11 @@ import { useMailStore } from '../../src/stores/mailStore';
 import { useBlockStore } from '../../src/stores/blockStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 
-const COIN_ICON     = require('../../assets/img/coin.png');
-const BEST_RPM_ICON = require('../../assets/img/bestRPM.png');
-const SAND_CLOCK    = require('../../assets/img/sandClock.png');
+const COIN_ICON        = require('../../assets/img/coin.png');
+const BEST_RPM_ICON    = require('../../assets/img/bestRPM.png');
+const SAND_CLOCK       = require('../../assets/img/sandClock.png');
+const MARKETING_ICON   = require('../../assets/img/MarketingIcon.png');
+const PR_ICON          = require('../../assets/img/PRIcon.png');
 
 const COMMAND_LABELS: Record<string, string> = {
   buy: 'Buy product',
@@ -403,6 +405,8 @@ const player = useAuthStore((s) => s.player);
   });
 
   const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
+  const cityMarketingBonus = useGameStore((s) => s.cityMarketingBonus);
+  const cityPrBonus = useGameStore((s) => s.cityPrBonus);
 
   const floorCount = floors.length;
   const totalStars = Object.values(floorStars ?? {}).reduce((s, v) => s + v, 0);
@@ -613,6 +617,34 @@ const player = useAuthStore((s) => s.player);
                       </View>
                     </View>
                   </View>
+                  {(cityMarketingBonus > 0 || cityPrBonus > 0) && (
+                    <>
+                      <View style={[styles.workerStatsDivider, { backgroundColor: theme.divider }]} />
+                      <View style={styles.revenueRow}>
+                        {cityMarketingBonus > 0 && (
+                          <View style={styles.revenueItem}>
+                            <Image source={MARKETING_ICON} style={styles.revenueIcon} contentFit="contain" />
+                            <View style={styles.workerStatTextCol}>
+                              <LocaleText style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.cityMarketing')}</LocaleText>
+                              <LocaleText style={[styles.workerStatValue, { color: '#E7A52B' }]}>+{cityMarketingBonus}%</LocaleText>
+                            </View>
+                          </View>
+                        )}
+                        {cityMarketingBonus > 0 && cityPrBonus > 0 && (
+                          <View style={[styles.workerStatsDivider, { backgroundColor: theme.divider, width: 1, height: 32, marginTop: 0 }]} />
+                        )}
+                        {cityPrBonus > 0 && (
+                          <View style={styles.revenueItem}>
+                            <Image source={PR_ICON} style={styles.revenueIcon} contentFit="contain" />
+                            <View style={styles.workerStatTextCol}>
+                              <LocaleText style={[styles.workerStatLabel, { color: theme.textMuted }]}>{t('profile.stats.cityPr')}</LocaleText>
+                              <LocaleText style={[styles.workerStatValue, { color: '#9A6FD0' }]}>+{cityPrBonus}%</LocaleText>
+                            </View>
+                          </View>
+                        )}
+                      </View>
+                    </>
+                  )}
                 </>
               )}
             </>

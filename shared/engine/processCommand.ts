@@ -89,6 +89,7 @@ export function processCommand(
         extraLobbyCapacity: bonuses.extraLobbyCapacity,
         extraGemExchangeLimit: bonuses.extraGemExchangeLimit,
         xpPerVisitor: bonuses.xpPerVisitor,
+        xpPercent: bonuses.xpPercent,
       });
     case 'upgrade_warehouse': {
       const nextLevel = (state.warehouseLevel ?? 0) + 1;
@@ -704,7 +705,7 @@ function handleBuy(
 
   return {
     success: true,
-    xpGained: Math.floor(effectiveCost * (1 + (bonuses.xpPercent ?? 0) / 100)) + (bonuses.xpPerBuy ?? 0),
+    xpGained: Math.floor(effectiveCost * (1 + (bonuses.xpPercent ?? 0) / 100)) + Math.floor((bonuses.xpPerBuy ?? 0) * (1 + (bonuses.xpPercent ?? 0) / 100)),
     state: {
       ...state,
       balance: state.balance - effectiveCost,
@@ -750,7 +751,7 @@ function handleList(
 
   return {
     success: true,
-    xpGained: Math.floor(10 * (1 + (bonuses.xpPercent ?? 0) / 100)) + (bonuses.xpPerSell ?? 0),
+    xpGained: Math.floor(10 * (1 + (bonuses.xpPercent ?? 0) / 100)) + Math.floor((bonuses.xpPerSell ?? 0) * (1 + (bonuses.xpPercent ?? 0) / 100)),
     state: {
       ...state,
       floors: updateProduction(state.floors, floorIdx, slotIdx, {

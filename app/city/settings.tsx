@@ -12,6 +12,12 @@ import AppBackground from '../../src/components/AppBackground';
 import { useCityStore } from '../../src/stores/cityStore';
 import { useGameStore } from '../../src/stores/gameStore';
 
+const CITY_ICON    = require('../../assets/img/city/cityBuildings.png');
+const EDIT_ICON    = require('../../assets/img/edit.png');
+const DELETE_ICON  = require('../../assets/img/delete.png');
+const GEM_ICON     = require('../../assets/img/diamond.png');
+const INFO_ICON    = require('../../assets/img/InformationIcon.png');
+
 export default function CitySettingsScreen() {
   const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
@@ -69,7 +75,7 @@ export default function CitySettingsScreen() {
       router.back();
     } catch (e: any) {
       const msg = e?.message ?? '';
-      if (msg.includes('500') || msg.includes('coins')) {
+      if (msg.includes('500') || msg.includes('gems') || msg.includes('coins')) {
         showCityAlert({ message: t('city.settings.renameInfo'), type: 'info' });
       } else if (msg.includes('name')) {
         showCityAlert({ message: t('city.create.errorNameTaken') });
@@ -103,55 +109,109 @@ export default function CitySettingsScreen() {
     <AppBackground style={[styles.background, isDark && styles.backgroundDark]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <LocaleText style={[styles.label, isDark && { color: '#DDE8D8' }]}>{t('city.settings.nameLabel')}</LocaleText>
-          <TextInput
-            style={[styles.input, isDark && styles.inputDark]}
-            placeholder={t('city.settings.namePlaceholder')}
-            placeholderTextColor={isDark ? '#667080' : '#A0AEB8'}
-            value={name}
-            onChangeText={setName}
-            maxLength={30}
-          />
-          <LocaleText style={[styles.hint, isDark && { color: '#8A9A80' }]}>{t('city.settings.renameInfo')}</LocaleText>
 
-          <LocaleText style={[styles.label, isDark && { color: '#DDE8D8' }]}>{t('city.settings.descriptionLabel')}</LocaleText>
-          <TextInput
-            style={[styles.input, styles.textArea, isDark && styles.inputDark]}
-            placeholder={t('city.settings.descriptionPlaceholder')}
-            placeholderTextColor={isDark ? '#667080' : '#A0AEB8'}
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            maxLength={500}
-            numberOfLines={4}
-          />
+          {/* Header hero */}
+          <View style={[styles.heroCard, isDark && styles.heroCardDark]}>
+            <View style={[styles.heroIconCircle, { backgroundColor: isDark ? '#1A3A5C' : '#E8F4FF' }]}>
+              <Image source={CITY_ICON} style={styles.heroIcon} contentFit="contain" />
+            </View>
+            <LocaleText style={[styles.heroTitle, isDark && { color: '#DDE8D8' }]}>
+              {city?.name ?? ''}
+            </LocaleText>
+            <LocaleText style={[styles.heroSub, isDark && { color: '#8A9A80' }]}>
+              {t('city.settings.title')}
+            </LocaleText>
+          </View>
 
+          {/* Name section */}
+          <View style={[styles.section, isDark && styles.sectionDark]}>
+            <View style={styles.sectionHeader}>
+              <View style={[styles.sectionIconBox, { backgroundColor: isDark ? '#1A3A5C' : '#E8F4FF' }]}>
+                <Image source={EDIT_ICON} style={styles.sectionIcon} contentFit="contain" />
+              </View>
+              <LocaleText style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>
+                {t('city.settings.nameLabel')}
+              </LocaleText>
+            </View>
+            <TextInput
+              style={[styles.input, isDark && styles.inputDark]}
+              placeholder={t('city.settings.namePlaceholder')}
+              placeholderTextColor={isDark ? '#667080' : '#A0AEB8'}
+              value={name}
+              onChangeText={setName}
+              maxLength={30}
+            />
+            {/* Rename cost hint */}
+            <View style={[styles.costHint, isDark && styles.costHintDark]}>
+              <Image source={GEM_ICON} style={styles.costHintIcon} contentFit="contain" />
+              <LocaleText style={[styles.costHintText, isDark && { color: '#8A9A80' }]}>
+                {t('city.settings.renameInfo')}
+              </LocaleText>
+            </View>
+          </View>
+
+          {/* Description section */}
+          <View style={[styles.section, isDark && styles.sectionDark]}>
+            <View style={styles.sectionHeader}>
+              <View style={[styles.sectionIconBox, { backgroundColor: isDark ? '#2A3A20' : '#EDF8E8' }]}>
+                <Image source={INFO_ICON} style={styles.sectionIcon} contentFit="contain" />
+              </View>
+              <LocaleText style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>
+                {t('city.settings.descriptionLabel')}
+              </LocaleText>
+            </View>
+            <TextInput
+              style={[styles.input, styles.textArea, isDark && styles.inputDark]}
+              placeholder={t('city.settings.descriptionPlaceholder')}
+              placeholderTextColor={isDark ? '#667080' : '#A0AEB8'}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              maxLength={500}
+              numberOfLines={4}
+            />
+          </View>
+
+          {/* Save button */}
           <TouchableOpacity
-            style={[styles.btn, saving && styles.btnDisabled]}
+            style={[styles.saveBtn, saving && styles.btnDisabled]}
             onPress={handleSave}
             disabled={saving}
             activeOpacity={0.8}
           >
-            <LocaleText style={styles.btnText}>
-              {saving ? '...' : t('city.settings.save')}
-            </LocaleText>
+            <LinearGradient
+              colors={['#3A80D8', '#2E6EC9']}
+              style={styles.saveBtnGradient}
+            >
+              <LocaleText style={styles.saveBtnText}>
+                {saving ? '...' : t('city.settings.save')}
+              </LocaleText>
+            </LinearGradient>
           </TouchableOpacity>
 
           {/* Danger Zone */}
           <View style={styles.dangerDivider} />
-          <LocaleText style={[styles.dangerZoneLabel, isDark && { color: '#FF6B6B' }]}>
-            {t('city.settings.deleteZone')}
-          </LocaleText>
-          <TouchableOpacity
-            style={styles.btnDelete}
-            onPress={() => {
-              setDeleteConfirmName('');
-              setDeleteModalVisible(true);
-            }}
-            activeOpacity={0.8}
-          >
-            <LocaleText style={styles.btnDeleteText}>{t('city.settings.deleteBtn')}</LocaleText>
-          </TouchableOpacity>
+          <View style={[styles.dangerSection, isDark && styles.dangerSectionDark]}>
+            <View style={styles.sectionHeader}>
+              <View style={[styles.sectionIconBox, { backgroundColor: isDark ? '#3A1218' : '#FDECEA' }]}>
+                <Image source={DELETE_ICON} style={styles.sectionIcon} contentFit="contain" />
+              </View>
+              <LocaleText style={[styles.dangerZoneLabel, isDark && { color: '#FF6B6B' }]}>
+                {t('city.settings.deleteZone')}
+              </LocaleText>
+            </View>
+            <TouchableOpacity
+              style={styles.btnDelete}
+              onPress={() => {
+                setDeleteConfirmName('');
+                setDeleteModalVisible(true);
+              }}
+              activeOpacity={0.8}
+            >
+              <LocaleText style={styles.btnDeleteText}>{t('city.settings.deleteBtn')}</LocaleText>
+            </TouchableOpacity>
+          </View>
+
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -172,7 +232,7 @@ export default function CitySettingsScreen() {
           >
             {/* Icon */}
             <View style={[styles.deleteIconCircle, { backgroundColor: isDark ? '#3A1218' : '#FDECEA' }]}>
-              <Image source={require('../../assets/img/delete.png')} style={styles.deleteIconImg} contentFit="contain" />
+              <Image source={DELETE_ICON} style={styles.deleteIconImg} contentFit="contain" />
             </View>
 
             <LocaleText style={[styles.modalTitle, isDark && { color: '#FF6B6B' }]}>
@@ -239,43 +299,119 @@ export default function CitySettingsScreen() {
 const styles = StyleSheet.create({
   background: { flex: 1, backgroundColor: '#F0F8FF' },
   backgroundDark: { backgroundColor: '#0D1F2D' },
-  scroll: { paddingHorizontal: 24, paddingTop: 32, paddingBottom: 40 },
-  label: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#1A2C3A', marginBottom: 8, marginTop: 16 },
-  input: {
+  scroll: { paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48 },
+
+  // Hero card
+  heroCard: {
     backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: 'rgba(30,60,100,1)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  heroCardDark: { backgroundColor: '#1A2E3E' },
+  heroIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  heroIcon: { width: 44, height: 44 },
+  heroTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#0A1C30', marginBottom: 4, textAlign: 'center' },
+  heroSub: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#5A7090' },
+
+  // Section card
+  section: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: 'rgba(30,60,100,1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sectionDark: { backgroundColor: '#1A2E3E' },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
+  sectionIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionIcon: { width: 22, height: 22 },
+  sectionTitle: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#1A2C3A', flex: 1 },
+
+  input: {
+    backgroundColor: '#F4F8FC',
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#B0C8D8',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderColor: '#C8D8E8',
+    paddingHorizontal: 14,
+    paddingVertical: 11,
     fontSize: 16,
     fontFamily: 'Geologica_500Medium',
     color: '#0A1C30',
   },
-  inputDark: { backgroundColor: '#1A2E3E', borderColor: '#2A4A60', color: '#DDE8D8' },
+  inputDark: { backgroundColor: '#243040', borderColor: '#2A4A60', color: '#DDE8D8' },
   inputMatch: { borderColor: '#D93025' },
   textArea: { height: 100, textAlignVertical: 'top' },
-  hint: { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#8A9AA8', marginTop: 4, marginBottom: 4 },
-  btn: { backgroundColor: '#2E6EC9', borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
+
+  // Cost hint
+  costHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F0F8FF',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 10,
+  },
+  costHintDark: { backgroundColor: 'rgba(46,110,201,0.1)' },
+  costHintIcon: { width: 16, height: 16 },
+  costHintText: { fontFamily: 'Fredoka_400Regular', fontSize: 13, color: '#5A7090', flex: 1 },
+
+  // Save button
+  saveBtn: { borderRadius: 14, overflow: 'hidden', marginTop: 4, marginBottom: 4 },
   btnDisabled: { opacity: 0.4 },
-  btnText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
+  saveBtnGradient: { paddingVertical: 16, alignItems: 'center', borderRadius: 14 },
+  saveBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
+
   // Danger zone
-  dangerDivider: { height: 1, backgroundColor: '#FFD0CC', marginTop: 36, marginBottom: 16 },
+  dangerDivider: { height: 1, backgroundColor: 'rgba(255,80,60,0.15)', marginTop: 20, marginBottom: 16 },
+  dangerSection: {
+    backgroundColor: '#FFF8F8',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,80,60,0.12)',
+  },
+  dangerSectionDark: { backgroundColor: '#1E1010', borderColor: 'rgba(255,80,60,0.2)' },
   dangerZoneLabel: {
     fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13,
+    fontSize: 15,
     color: '#D93025',
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    flex: 1,
   },
   btnDelete: {
     backgroundColor: '#D93025',
-    borderRadius: 14,
-    paddingVertical: 16,
+    borderRadius: 12,
+    paddingVertical: 14,
     alignItems: 'center',
+    marginTop: 4,
   },
-  btnDeleteText: { fontFamily: 'Fredoka_700Bold', fontSize: 18, color: '#FFFFFF' },
+  btnDeleteText: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#FFFFFF' },
+
   // Modal
   modalOverlay: {
     flex: 1,

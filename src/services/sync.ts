@@ -133,6 +133,8 @@ async function doSync(): Promise<void> {
     useGameStore.setState({
       coinBonusPercent: (response.coinBonusPercent ?? 0) + (response.cityMarketingBonus ?? 0),
       xpBonusPercent: (response.xpBonusPercent ?? 0) + (response.cityPrBonus ?? 0),
+      cityMarketingBonus: response.cityMarketingBonus ?? 0,
+      cityPrBonus: response.cityPrBonus ?? 0,
       categoryProgress: mergedCP,
     });
     if (
