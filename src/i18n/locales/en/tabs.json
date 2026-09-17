@@ -283,7 +283,7 @@
       "namePlaceholder": "New city name",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "City motto or description (optional)",
-      "renameInfo": "Renaming costs 500 💎",
+      "renameInfo": "Renaming costs 500",
       "save": "Save",
       "saveSuccess": "City updated",
       "deleteZone": "Danger Zone",

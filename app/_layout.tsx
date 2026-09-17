@@ -127,7 +127,7 @@ export default function RootLayout() {
         <Stack.Screen name="city/create" options={{ animation: 'slide_from_bottom', presentation: 'modal', ...cityHeaderOptions }} />
         <Stack.Screen name="city/search" options={{ animation: 'slide_from_right', ...cityHeaderOptions }} />
         <Stack.Screen name="city/[id]" options={{ animation: 'slide_from_right', ...cityHeaderOptions }} />
-        <Stack.Screen name="city/settings" options={{ animation: 'slide_from_right', ...cityHeaderOptions }} />
+        <Stack.Screen name="city/settings" options={{ animation: 'slide_from_right', headerShown: false }} />
         <Stack.Screen name="city/rankings" options={{ animation: 'slide_from_right', ...cityHeaderOptions }} />
       </Stack>
       <GlobalOverlay />

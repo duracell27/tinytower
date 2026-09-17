@@ -143,10 +143,10 @@ export default function CitySettingsScreen() {
             />
             {/* Rename cost hint */}
             <View style={[styles.costHint, isDark && styles.costHintDark]}>
-              <Image source={GEM_ICON} style={styles.costHintIcon} contentFit="contain" />
               <LocaleText style={[styles.costHintText, isDark && { color: '#8A9A80' }]}>
                 {t('city.settings.renameInfo')}
               </LocaleText>
+              <Image source={GEM_ICON} style={styles.costHintIcon} contentFit="contain" />
             </View>
           </View>
 

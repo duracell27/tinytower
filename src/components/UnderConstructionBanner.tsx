@@ -9,6 +9,7 @@ import { shadeColor } from '../utils/color';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
+import i18n from '../i18n';
 import { useGameClock } from '../hooks/useGameClock';
 import { useAppTheme } from '../hooks/useAppTheme';
 
@@ -45,7 +46,10 @@ function formatCountdown(ms: number): string {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  if (hours > 0) return `${hours}г ${String(minutes).padStart(2, '0')}хв`;
+  if (hours > 0) {
+    const uk = i18n.language === 'uk';
+    return uk ? `${hours}г ${String(minutes).padStart(2, '0')}хв` : `${hours}h ${String(minutes).padStart(2, '0')}m`;
+  }
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
