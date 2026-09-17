@@ -1,6 +1,7 @@
 // server/src/players/players.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CityService } from '../city/city.service';
 import { calcRevenuePerMin } from '@shared/engine/ratingUtils';
 import { getWorkerMood } from '@shared/engine/workerUtils';
 import { gameConfig } from '@shared/config/gameConfig';
@@ -53,7 +54,7 @@ const USER_SELECT = {
 
 @Injectable()
 export class PlayersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private cityService: CityService) {}
 
   async getOnlinePlayers(page: number): Promise<UsersListResult> {
     const since = new Date(Date.now() - ONLINE_THRESHOLD_MS);
@@ -136,6 +137,10 @@ export class PlayersService {
           select: {
             coinBonusPercent: true,
             xpBonusPercent: true,
+            coinBoostPercent: true,
+            xpBoostPercent: true,
+            coinBoostExpiresAt: true,
+            xpBoostExpiresAt: true,
             businessUpgradeGreen: true,
             businessUpgradeBlue: true,
             businessUpgradeYellow: true,
@@ -172,6 +177,17 @@ export class PlayersService {
     });
 
     if (!player) return null;
+
+    // Compute total bonuses: permanent + city + active purchased boost
+    const now = Date.now();
+    const cityBonus = await this.cityService.getCityBonusForPlayer(id);
+    const cityLevel = cityBonus?.level ?? 0;
+    const activeCoinBoost = Number(player.state?.coinBoostExpiresAt ?? 0) > now
+      ? (player.state?.coinBoostPercent ?? 0) : 0;
+    const activeXpBoost = Number(player.state?.xpBoostExpiresAt ?? 0) > now
+      ? (player.state?.xpBoostPercent ?? 0) : 0;
+    const totalCoinBonus = (player.state?.coinBonusPercent ?? 0) + cityLevel + activeCoinBoost;
+    const totalXpBonus   = (player.state?.xpBonusPercent   ?? 0) + cityLevel + activeXpBoost;
 
     // Build openedFloorTypes map for calcRevenuePerMin
     const openedFloorTypes: Record<string, string> = {};
@@ -263,8 +279,8 @@ export class PlayersService {
       avgStars,
       revenuePerMin,
       maxRevenuePerMin: player.maxRevenuePerMin,
-      coinBonusPercent: player.state?.coinBonusPercent ?? 0,
-      xpBonusPercent: player.state?.xpBonusPercent ?? 0,
+      coinBonusPercent: totalCoinBonus,
+      xpBonusPercent: totalXpBonus,
       happyWorkers,
       specialistWorkers: player.workers.filter((w) => w.isSpecialist).length,
       totalWorkers: player.workers.length,
