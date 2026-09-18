@@ -51,6 +51,7 @@ model Player {
   cityInvitesReceived   CityInvite[]    @relation("CityInvitesReceived")
   blocksGiven           Block[]         @relation("BlockerBlocks")
   blocksReceived        Block[]         @relation("BlockedByBlocks")
+  cityBudgetTransactions CityBudgetTransaction[] @relation("CityBudgetTransactions")
 }
 
 model PlayerState {
@@ -403,8 +404,17 @@ model City {
   xpPeriodStart DateTime         @default(now())
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+  budgetCoins  Int @default(0)
+  budgetGems   Int @default(0)
+  budgetBriks  Int @default(0)
+  budgetGlass  Int @default(0)
+  budgetNails  Int @default(0)
+  budgetScrew  Int @default(0)
+  budgetWood   Int @default(0)
+  budgetCement Int @default(0)
   members       CityMembership[]
   invites       CityInvite[]
+  budgetTransactions CityBudgetTransaction[]
 }
 
 model CityMembership {
@@ -414,6 +424,9 @@ model CityMembership {
   cityXp    Int      @default(0)
   xpPeriod  Int      @default(0)
   joinedAt  DateTime @default(now())
+  gemsGivenThisWeek Int      @default(0)
+  gemsShopBonus     Int      @default(0)
+  gemsWeekStart     DateTime @default(now())
   city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
   player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
@@ -444,4 +457,26 @@ model CityInvite {
 
   @@index([invitedPlayerId, status])
   @@index([cityId])
+}
+
+model CityBudgetTransaction {
+  id        String   @id @default(uuid())
+  cityId    String
+  playerId  String?
+  type      String
+  coins     Int      @default(0)
+  gems      Int      @default(0)
+  briks     Int      @default(0)
+  glass     Int      @default(0)
+  nails     Int      @default(0)
+  screw     Int      @default(0)
+  wood      Int      @default(0)
+  cement    Int      @default(0)
+  note      String?
+  createdAt DateTime @default(now())
+
+  city   City    @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  player Player? @relation("CityBudgetTransactions", fields: [playerId], references: [id], onDelete: SetNull)
+
+  @@index([cityId, createdAt])
 }
