@@ -320,11 +320,13 @@ const styles = StyleSheet.create({
   budgetNum:  { fontFamily: 'Fredoka_700Bold', fontSize: 22, flex: 1 },
   budgetUnit: { fontFamily: 'Fredoka_400Regular', fontSize: 14 },
 
-  toolsGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  toolsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   toolCell:  {
-    width: '33.33%',
+    width: '30%',
+    flex: 1,
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
     gap: 4,
   },
   toolIcon:  { width: 28, height: 28 },
