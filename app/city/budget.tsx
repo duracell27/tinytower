@@ -183,18 +183,26 @@ export default function CityBudgetScreen() {
             <LocaleText style={[styles.cardLabel, { color: theme.textMuted }]}>
               {t('city.budget.tools')}
             </LocaleText>
-            <View style={styles.toolsGrid}>
-              {TOOL_KEYS.map((k) => {
-                const budgetKey = `budget${k.charAt(0).toUpperCase() + k.slice(1)}` as keyof typeof budget;
-                const val = budget ? (budget[budgetKey] as number ?? 0) : 0;
-                return (
-                  <View key={k} style={styles.toolCell}>
-                    <Image source={TOOL_ICONS[k]} style={styles.toolIcon} contentFit="contain" />
-                    <LocaleText style={[styles.toolVal, { color: theme.text }]}>{String(val)}</LocaleText>
-                  </View>
-                );
-              })}
-            </View>
+            {([0, 1] as const).map((row) => (
+              <View key={row}>
+                {row === 1 && <View style={[styles.toolRowDivider, { backgroundColor: theme.divider }]} />}
+                <View style={styles.toolsRow}>
+                  {TOOL_KEYS.slice(row * 3, row * 3 + 3).map((k, col) => {
+                    const budgetKey = `budget${k.charAt(0).toUpperCase() + k.slice(1)}` as keyof typeof budget;
+                    const val = budget ? (budget[budgetKey] as number ?? 0) : 0;
+                    return (
+                      <React.Fragment key={k}>
+                        {col > 0 && <View style={[styles.toolColDivider, { backgroundColor: theme.divider }]} />}
+                        <View style={styles.toolCell}>
+                          <Image source={TOOL_ICONS[k]} style={styles.toolIcon} contentFit="contain" />
+                          <LocaleText style={[styles.toolVal, { color: theme.text }]}>{String(val)}</LocaleText>
+                        </View>
+                      </React.Fragment>
+                    );
+                  })}
+                </View>
+              </View>
+            ))}
           </View>
 
           {/* ── My Donation ── */}
@@ -320,17 +328,17 @@ const styles = StyleSheet.create({
   budgetNum:  { fontFamily: 'Fredoka_700Bold', fontSize: 22, flex: 1 },
   budgetUnit: { fontFamily: 'Fredoka_400Regular', fontSize: 14 },
 
-  toolsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  toolCell:  {
-    width: '30%',
+  toolsRow:       { flexDirection: 'row' },
+  toolRowDivider: { height: 1, marginVertical: 2 },
+  toolColDivider: { width: 1, marginHorizontal: 2 },
+  toolCell: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-    gap: 4,
+    paddingVertical: 12,
+    gap: 6,
   },
-  toolIcon:  { width: 28, height: 28 },
-  toolVal:   { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+  toolIcon: { width: 28, height: 28 },
+  toolVal:  { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
 
   selectorRow: { gap: 8, paddingBottom: 12 },
   selectorChip: {
