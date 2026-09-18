@@ -274,6 +274,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
             key={card.key}
             style={[styles.sectionCard, isDark && styles.sectionCardDark]}
             activeOpacity={0.7}
+            onPress={card.key === 'budget' ? () => router.push(`/city/budget?id=${city.id}`) : undefined}
           >
             <Image source={card.img} style={styles.sectionCardImg} contentFit="contain" />
             <LocaleText style={[styles.sectionCardLabel, isDark && { color: '#DDE8D8' }]}>
