@@ -32,6 +32,11 @@ const TOOL_ICONS: Record<string, any> = {
 const TOOL_KEYS = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'] as const;
 type ToolKey    = typeof TOOL_KEYS[number];
 
+function sanitizeNum(v: string): string {
+  const digits = v.replace(/[^0-9]/g, '');
+  return digits === '' ? '' : String(parseInt(digits, 10));
+}
+
 function getCountdown(targetMs: number, nowMs: number) {
   const diff      = Math.max(0, targetMs - nowMs);
   const totalSecs = Math.floor(diff / 1000);
@@ -202,10 +207,10 @@ export default function CityBudgetScreen() {
               <TextInput
                 style={[styles.input, { color: theme.text, borderColor: theme.divider, backgroundColor: theme.surfaceSub }]}
                 value={coins}
-                onChangeText={setCoins}
+                onChangeText={(v) => setCoins(sanitizeNum(v))}
                 placeholder="0"
                 placeholderTextColor={theme.textMuted}
-                keyboardType="numeric"
+                keyboardType="number-pad"
               />
               <LocaleText style={[styles.inputHint, { color: theme.textMuted }]}>
                 {formatNum(balance)}
@@ -218,10 +223,10 @@ export default function CityBudgetScreen() {
               <TextInput
                 style={[styles.input, { color: theme.text, borderColor: theme.divider, backgroundColor: theme.surfaceSub }]}
                 value={gemAmt}
-                onChangeText={setGemAmt}
+                onChangeText={(v) => setGemAmt(sanitizeNum(v))}
                 placeholder="0"
                 placeholderTextColor={theme.textMuted}
-                keyboardType="numeric"
+                keyboardType="number-pad"
               />
               <LocaleText style={[styles.inputHint, { color: theme.textMuted }]}>
                 {String(budget?.myRemaining ?? 100)}
@@ -247,10 +252,10 @@ export default function CityBudgetScreen() {
               <TextInput
                 style={[styles.input, { color: theme.text, borderColor: theme.divider, backgroundColor: theme.surfaceSub }]}
                 value={toolAmt}
-                onChangeText={setToolAmt}
+                onChangeText={(v) => setToolAmt(sanitizeNum(v))}
                 placeholder="0"
                 placeholderTextColor={theme.textMuted}
-                keyboardType="numeric"
+                keyboardType="number-pad"
               />
               <LocaleText style={[styles.inputHint, { color: theme.textMuted }]}>
                 {String((tools as any)?.[selectedTool] ?? 0)}
