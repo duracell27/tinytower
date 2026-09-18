@@ -80,6 +80,42 @@ export interface CityRankingsDto {
   pageSize: number;
 }
 
+export interface CityBudgetDto {
+  budgetCoins: number;
+  budgetGems: number;
+  budgetBriks: number;
+  budgetGlass: number;
+  budgetNails: number;
+  budgetScrew: number;
+  budgetWood: number;
+  budgetCement: number;
+  myWeekLimit: number;
+  myRemaining: number;
+  weekResetAt: string;
+}
+
+export interface DonatePayload {
+  coins?: number;
+  gems?: number;
+  tools?: {
+    briks?: number;
+    glass?: number;
+    nails?: number;
+    screw?: number;
+    wood?: number;
+    cement?: number;
+  };
+}
+
+function getMondayUTC(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getUTCDay(); // 0 = Sun
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setUTCDate(d.getUTCDate() + diff);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+
 @Injectable()
 export class CityService {
   constructor(private prisma: PrismaService) {}
@@ -584,5 +620,141 @@ export class CityService {
     }
 
     return false;
+  }
+
+  private computeGemQuota(membership: {
+    gemsGivenThisWeek: number;
+    gemsShopBonus: number;
+    gemsWeekStart: Date;
+  }) {
+    const weekLimit = 100 + membership.gemsShopBonus;
+    const currentMondayUTC = getMondayUTC(new Date());
+    const isNewWeek = membership.gemsWeekStart < currentMondayUTC;
+    const donated = isNewWeek ? 0 : membership.gemsGivenThisWeek;
+    const remaining = weekLimit - donated;
+    const nextMondayUTC = new Date(currentMondayUTC.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return { weekLimit, remaining, weekResetAt: nextMondayUTC, isNewWeek, currentMondayUTC };
+  }
+
+  async getBudget(cityId: string, playerId: string): Promise<CityBudgetDto> {
+    const membership = await this.prisma.cityMembership.findUnique({
+      where: { playerId },
+    });
+    if (!membership || membership.cityId !== cityId) {
+      throw new ForbiddenException('Not a member of this city');
+    }
+
+    const city = await this.prisma.city.findUnique({
+      where: { id: cityId },
+      select: {
+        budgetCoins: true, budgetGems: true,
+        budgetBriks: true, budgetGlass: true, budgetNails: true,
+        budgetScrew: true, budgetWood: true,  budgetCement: true,
+      },
+    });
+    if (!city) throw new NotFoundException('City not found');
+
+    const { weekLimit, remaining, weekResetAt } = this.computeGemQuota(membership);
+
+    return {
+      budgetCoins: city.budgetCoins,
+      budgetGems:  city.budgetGems,
+      budgetBriks: city.budgetBriks,
+      budgetGlass: city.budgetGlass,
+      budgetNails: city.budgetNails,
+      budgetScrew: city.budgetScrew,
+      budgetWood:  city.budgetWood,
+      budgetCement: city.budgetCement,
+      myWeekLimit: weekLimit,
+      myRemaining: remaining,
+      weekResetAt: weekResetAt.toISOString(),
+    };
+  }
+
+  async donate(playerId: string, cityId: string, payload: DonatePayload): Promise<void> {
+    const coins  = payload.coins ?? 0;
+    const gems   = payload.gems  ?? 0;
+    const briks  = payload.tools?.briks  ?? 0;
+    const glass  = payload.tools?.glass  ?? 0;
+    const nails  = payload.tools?.nails  ?? 0;
+    const screw  = payload.tools?.screw  ?? 0;
+    const wood   = payload.tools?.wood   ?? 0;
+    const cement = payload.tools?.cement ?? 0;
+
+    if (coins === 0 && gems === 0 && briks === 0 && glass === 0 && nails === 0 && screw === 0 && wood === 0 && cement === 0) {
+      throw new BadRequestException('Nothing to donate');
+    }
+
+    const [membership, player] = await Promise.all([
+      this.prisma.cityMembership.findUnique({ where: { playerId } }),
+      this.prisma.player.findUnique({
+        where: { id: playerId },
+        select: {
+          balance: true,
+          state: { select: { gems: true, briks: true, glass: true, nails: true, screw: true, wood: true, cement: true } },
+        },
+      }),
+    ]);
+
+    if (!membership || membership.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
+    if (!player) throw new NotFoundException('Player not found');
+
+    if (coins > 0 && player.balance < coins)                  throw new BadRequestException('Not enough coins');
+    if (gems > 0  && (player.state?.gems   ?? 0) < gems)      throw new BadRequestException('Not enough gems');
+    if (briks > 0 && (player.state?.briks  ?? 0) < briks)     throw new BadRequestException('Not enough tools');
+    if (glass > 0 && (player.state?.glass  ?? 0) < glass)     throw new BadRequestException('Not enough tools');
+    if (nails > 0 && (player.state?.nails  ?? 0) < nails)     throw new BadRequestException('Not enough tools');
+    if (screw > 0 && (player.state?.screw  ?? 0) < screw)     throw new BadRequestException('Not enough tools');
+    if (wood  > 0 && (player.state?.wood   ?? 0) < wood)      throw new BadRequestException('Not enough tools');
+    if (cement > 0 && (player.state?.cement ?? 0) < cement)   throw new BadRequestException('Not enough tools');
+
+    const { remaining, isNewWeek, currentMondayUTC } = this.computeGemQuota(membership);
+    if (gems > remaining) throw new BadRequestException('Weekly gem donation limit exceeded');
+
+    await this.prisma.$transaction(async (tx) => {
+      if (coins > 0) {
+        await tx.player.update({ where: { id: playerId }, data: { balance: { decrement: coins } } });
+      }
+
+      const stateData: Record<string, any> = {};
+      if (gems   > 0) stateData.gems   = { decrement: gems };
+      if (briks  > 0) stateData.briks  = { decrement: briks };
+      if (glass  > 0) stateData.glass  = { decrement: glass };
+      if (nails  > 0) stateData.nails  = { decrement: nails };
+      if (screw  > 0) stateData.screw  = { decrement: screw };
+      if (wood   > 0) stateData.wood   = { decrement: wood };
+      if (cement > 0) stateData.cement = { decrement: cement };
+
+      if (Object.keys(stateData).length > 0) {
+        await tx.playerState.update({ where: { playerId }, data: stateData });
+      }
+
+      await tx.city.update({
+        where: { id: cityId },
+        data: {
+          ...(coins  > 0 && { budgetCoins:  { increment: coins } }),
+          ...(gems   > 0 && { budgetGems:   { increment: gems } }),
+          ...(briks  > 0 && { budgetBriks:  { increment: briks } }),
+          ...(glass  > 0 && { budgetGlass:  { increment: glass } }),
+          ...(nails  > 0 && { budgetNails:  { increment: nails } }),
+          ...(screw  > 0 && { budgetScrew:  { increment: screw } }),
+          ...(wood   > 0 && { budgetWood:   { increment: wood } }),
+          ...(cement > 0 && { budgetCement: { increment: cement } }),
+        },
+      });
+
+      if (gems > 0) {
+        await tx.cityMembership.update({
+          where: { playerId },
+          data: isNewWeek
+            ? { gemsGivenThisWeek: gems, gemsWeekStart: currentMondayUTC }
+            : { gemsGivenThisWeek: { increment: gems } },
+        });
+      }
+
+      await tx.cityBudgetTransaction.create({
+        data: { cityId, playerId, type: 'deposit', coins, gems, briks, glass, nails, screw, wood, cement },
+      });
+    });
   }
 }
