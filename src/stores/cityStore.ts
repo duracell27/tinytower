@@ -1,11 +1,13 @@
 import { create } from 'zustand';
-import { api, type CityDetail, type CitySummary, type CityRole, type CityRankingsResponse, type CityXpStats } from '../services/api';
+import { api, type CityDetail, type CitySummary, type CityRole, type CityRankingsResponse, type CityXpStats, type CityBudget, type DonateBudgetPayload } from '../services/api';
 import { useGameStore } from './gameStore';
 
 interface CityState {
   city: CityDetail | null;
   loading: boolean;
   error: string | null;
+  budget: CityBudget | null;
+  budgetLoading: boolean;
 }
 
 interface CityActions {
@@ -22,6 +24,8 @@ interface CityActions {
   getCityRankings: (page: number) => Promise<CityRankingsResponse>;
   getCityXpStats: (cityId: string) => Promise<CityXpStats>;
   resetCityXpPeriod: (cityId: string) => Promise<void>;
+  fetchBudget: (cityId: string) => Promise<void>;
+  donate: (cityId: string, payload: DonateBudgetPayload) => Promise<void>;
   clearCity: () => void;
 }
 
@@ -29,6 +33,8 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
   city: null,
   loading: false,
   error: null,
+  budget: null,
+  budgetLoading: false,
 
   fetchMyCityInfo: async () => {
     set({ loading: true, error: null });
@@ -133,6 +139,22 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
 
   resetCityXpPeriod: async (cityId: string) => {
     return api.resetCityXpPeriod(cityId);
+  },
+
+  fetchBudget: async (cityId: string) => {
+    set({ budgetLoading: true });
+    try {
+      const budget = await api.getCityBudget(cityId);
+      set({ budget, budgetLoading: false });
+    } catch {
+      set({ budgetLoading: false });
+    }
+  },
+
+  donate: async (cityId: string, payload: DonateBudgetPayload) => {
+    await api.donateToCityBudget(cityId, payload);
+    const budget = await api.getCityBudget(cityId);
+    set({ budget });
   },
 
   clearCity: () => set({ city: null, error: null }),

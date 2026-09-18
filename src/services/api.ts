@@ -119,6 +119,33 @@ export interface CityXpStats {
   members: CityXpStatMember[];
 }
 
+export interface CityBudget {
+  budgetCoins: number;
+  budgetGems: number;
+  budgetBriks: number;
+  budgetGlass: number;
+  budgetNails: number;
+  budgetScrew: number;
+  budgetWood: number;
+  budgetCement: number;
+  myWeekLimit: number;
+  myRemaining: number;
+  weekResetAt: string;
+}
+
+export interface DonateBudgetPayload {
+  coins?: number;
+  gems?: number;
+  tools?: {
+    briks?: number;
+    glass?: number;
+    nails?: number;
+    screw?: number;
+    wood?: number;
+    cement?: number;
+  };
+}
+
 export interface FriendEntry {
   requestId: string;
   playerId: string;
@@ -385,6 +412,10 @@ export const api = {
     request<CityXpStats>('GET', `/city/${cityId}/xp-stats`),
   resetCityXpPeriod: (cityId: string) =>
     request<void>('POST', `/city/${cityId}/reset-xp-period`),
+  getCityBudget: (cityId: string) =>
+    request<CityBudget>('GET', `/city/${cityId}/budget`),
+  donateToCityBudget: (cityId: string, payload: DonateBudgetPayload) =>
+    request<void>('POST', `/city/${cityId}/budget/donate`, payload),
   setTokens,
   clearTokens,
   getAccessToken,
