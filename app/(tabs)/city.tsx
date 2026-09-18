@@ -40,10 +40,10 @@ const WORKER_ICON = require('../../assets/img/worker.png');
 const HAPPY_ICON  = require('../../assets/img/happySmile.png');
 
 const SECTION_CARDS = [
-  { key: 'budget',        img: require('../../assets/img/coin.png') },
+  { key: 'budget',        img: require('../../assets/img/city/cityBank.png') },
   { key: 'tasks',         img: require('../../assets/img/city/cityTasks.png') },
   { key: 'chat',          img: require('../../assets/img/city/cityChat.png') },
-  { key: 'history',       img: require('../../assets/img/city/cityNotice.png') },
+  { key: 'history',       img: require('../../assets/img/city/cityHistory.png') },
   { key: 'buildings',     img: require('../../assets/img/city/cityBuildings.png') },
   { key: 'notifications', img: require('../../assets/img/city/cityNotice.png') },
 ] as const;
