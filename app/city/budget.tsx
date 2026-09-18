@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, ScrollView, StyleSheet, TouchableOpacity,
-  TextInput, ActivityIndicator, useColorScheme,
+  TextInput, ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -16,8 +16,9 @@ import type { DonateBudgetPayload } from '../../src/services/api';
 
 const PRIMARY = '#2E6EC9';
 
-const COIN_ICON = require('../../assets/img/coin.png');
-const GEM_ICON  = require('../../assets/img/diamond.png');
+const COIN_ICON   = require('../../assets/img/coin.png');
+const GEM_ICON    = require('../../assets/img/diamond.png');
+const BUDGET_ICON = require('../../assets/img/coin.png');
 const TOOL_ICONS: Record<string, any> = {
   briks:  require('../../assets/img/tools/briks.png'),
   glass:  require('../../assets/img/tools/glass.png'),
@@ -29,15 +30,6 @@ const TOOL_ICONS: Record<string, any> = {
 
 const TOOL_KEYS = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'] as const;
 type ToolKey = typeof TOOL_KEYS[number];
-
-function getMondayUTC(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getUTCDay(); // 0 = Sun
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setUTCDate(d.getUTCDate() + diff);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
-}
 
 function getCountdown(targetMs: number, nowMs: number) {
   const diff = Math.max(0, targetMs - nowMs);
@@ -52,7 +44,6 @@ export default function CityBudgetScreen() {
   const { id: cityId } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation('tabs');
   const theme = useAppTheme();
-  const isDark = useColorScheme() === 'dark';
   const router = useRouter();
 
   const { budget, budgetLoading, budgetError, fetchBudget, donate } = useCityStore();
@@ -74,10 +65,8 @@ export default function CityBudgetScreen() {
     if (cityId) fetchBudget(cityId);
   }, [cityId]);
 
-  const nextMonday = budget
-    ? new Date(budget.weekResetAt)
-    : null;
-  const countdown = nextMonday ? getCountdown(nextMonday.getTime(), now) : null;
+  const nextMonday = budget ? new Date(budget.weekResetAt) : null;
+  const countdown  = nextMonday ? getCountdown(nextMonday.getTime(), now) : null;
 
   const coinsNum = parseInt(coins,  10) || 0;
   const gemNum   = parseInt(gemAmt, 10) || 0;
@@ -121,31 +110,41 @@ export default function CityBudgetScreen() {
     }
   }, [cityId, coinsNum, gemNum, toolNums, hasAmount, donate, t]);
 
-  const screenBg = isDark ? '#0D1F2D' : '#DCEFF6';
+  const screenBg = theme.isDark ? '#0D1F2D' : '#DCEFF6';
 
   if (budgetLoading && !budget) {
     return (
       <View style={[styles.container, { backgroundColor: screenBg }]}>
+        <View style={[styles.header, { backgroundColor: theme.surface }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+            <LocaleText style={[styles.backText, { color: PRIMARY }]}>‹</LocaleText>
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Image source={BUDGET_ICON} style={styles.headerIcon} contentFit="contain" />
+            <LocaleText style={[styles.headerTitle, { color: theme.text }]}>
+              {t('city.budget.title')}
+            </LocaleText>
+          </View>
+          <View style={{ width: 36 }} />
+        </View>
         <ActivityIndicator size="large" color={PRIMARY} style={{ marginTop: 100 }} />
       </View>
     );
   }
 
-  const weekLimit  = budget?.myWeekLimit  ?? 100;
-  const remaining  = budget?.myRemaining  ?? 100;
-  const gemDonated = weekLimit - remaining;
-  const quotaPct   = weekLimit > 0 ? Math.min(gemDonated / weekLimit, 1) : 0;
-
   return (
     <View style={[styles.container, { backgroundColor: screenBg }]}>
-      {/* Header */}
+      {/* ── Header ── */}
       <View style={[styles.header, { backgroundColor: theme.surface }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
           <LocaleText style={[styles.backText, { color: PRIMARY }]}>‹</LocaleText>
         </TouchableOpacity>
-        <LocaleText style={[styles.headerTitle, { color: theme.text }]}>
-          {t('city.budget.title')}
-        </LocaleText>
+        <View style={styles.headerCenter}>
+          <Image source={BUDGET_ICON} style={styles.headerIcon} contentFit="contain" />
+          <LocaleText style={[styles.headerTitle, { color: theme.text }]}>
+            {t('city.budget.title')}
+          </LocaleText>
+        </View>
         <View style={{ width: 36 }} />
       </View>
 
@@ -160,110 +159,119 @@ export default function CityBudgetScreen() {
           </View>
         )}
 
-        {/* ── Current Budget ── */}
+        {/* ── Current Budget: Coins ── */}
+        <LocaleText style={[styles.sectionTitle, { color: theme.textMuted }]}>
+          {t('city.budget.currentBudget')}
+        </LocaleText>
+
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
-          <LocaleText style={[styles.cardTitle, { color: theme.text }]}>
-            {t('city.budget.currentBudget')}
-          </LocaleText>
-
           <View style={styles.budgetRow}>
-            <BudgetItem icon={COIN_ICON} value={formatNum(budget?.budgetCoins ?? 0)} label={t('city.budget.coins')} theme={theme} />
-            <BudgetItem icon={GEM_ICON}  value={String(budget?.budgetGems ?? 0)}     label={t('city.budget.gems')}  theme={theme} />
+            <Image source={COIN_ICON} style={styles.budgetIcon} contentFit="contain" />
+            <LocaleText style={[styles.budgetBigNum, { color: theme.text }]}>
+              {formatNum(budget?.budgetCoins ?? 0)}
+            </LocaleText>
+            <LocaleText style={[styles.budgetUnit, { color: theme.textMuted }]}>
+              {t('city.budget.coins')}
+            </LocaleText>
           </View>
+        </View>
 
-          <LocaleText style={[styles.toolsLabel, { color: theme.textMuted }]}>
+        {/* ── Current Budget: Diamonds ── */}
+        <View style={[styles.card, { backgroundColor: theme.surface }]}>
+          <View style={styles.budgetRow}>
+            <Image source={GEM_ICON} style={styles.budgetIcon} contentFit="contain" />
+            <LocaleText style={[styles.budgetBigNum, { color: theme.text }]}>
+              {String(budget?.budgetGems ?? 0)}
+            </LocaleText>
+            <LocaleText style={[styles.budgetUnit, { color: theme.textMuted }]}>
+              {t('city.budget.gems')}
+            </LocaleText>
+          </View>
+        </View>
+
+        {/* ── Current Budget: Tools ── */}
+        <View style={[styles.card, { backgroundColor: theme.surface }]}>
+          <LocaleText style={[styles.cardLabel, { color: theme.textMuted }]}>
             {t('city.budget.tools')}
           </LocaleText>
           <View style={styles.toolsGrid}>
             {TOOL_KEYS.map((k) => {
-              const capKey = (k.charAt(0).toUpperCase() + k.slice(1)) as string;
+              const capKey  = k.charAt(0).toUpperCase() + k.slice(1);
               const budgetKey = `budget${capKey}` as keyof typeof budget;
               const val = budget ? (budget[budgetKey] as number ?? 0) : 0;
               return (
-                <BudgetItem
-                  key={k}
-                  icon={TOOL_ICONS[k]}
-                  value={String(val)}
-                  label={k}
-                  theme={theme}
-                  small
-                />
+                <View key={k} style={styles.toolItem}>
+                  <Image source={TOOL_ICONS[k]} style={styles.toolIconSm} contentFit="contain" />
+                  <LocaleText style={[styles.toolVal, { color: theme.text }]}>{String(val)}</LocaleText>
+                </View>
               );
             })}
           </View>
         </View>
 
-        {/* ── Diamond Quota ── */}
-        <View style={[styles.card, { backgroundColor: theme.surface }]}>
-          <LocaleText style={[styles.cardTitle, { color: theme.text }]}>
-            {t('city.budget.weeklyQuota')}
-          </LocaleText>
-          <View style={styles.quotaRow}>
-            <LocaleText style={[styles.quotaRemaining, { color: PRIMARY }]}>
-              {remaining}
-            </LocaleText>
-            <LocaleText style={[styles.quotaOf, { color: theme.textMuted }]}>
-              {' '}{t('city.budget.of')}{' '}{weekLimit}
-            </LocaleText>
-            <Image source={GEM_ICON} style={styles.gemIcon} contentFit="contain" />
-          </View>
-          <View style={[styles.quotaBarBg, { backgroundColor: theme.divider }]}>
-            <View
-              style={[
-                styles.quotaBarFill,
-                { width: `${Math.round(quotaPct * 100)}%` as any, backgroundColor: PRIMARY },
-              ]}
-            />
-          </View>
-          <LocaleText style={[styles.quotaSubtext, { color: theme.textMuted }]}>
-            {t('city.budget.remaining')}: {remaining} {t('city.budget.gems')}
-          </LocaleText>
-        </View>
-
         {/* ── My Donation ── */}
+        <LocaleText style={[styles.sectionTitle, { color: theme.textMuted }]}>
+          {t('city.budget.myDonation')}
+        </LocaleText>
+
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
-          <LocaleText style={[styles.cardTitle, { color: theme.text }]}>
-            {t('city.budget.myDonation')}
-          </LocaleText>
+          {/* Coins row */}
+          <View style={styles.inputRow}>
+            <Image source={COIN_ICON} style={styles.inputIcon} contentFit="contain" />
+            <View style={styles.inputBody}>
+              <TextInput
+                style={[styles.input, { color: theme.text, borderColor: theme.divider, backgroundColor: theme.surfaceSub }]}
+                value={coins}
+                onChangeText={setCoins}
+                placeholder="0"
+                placeholderTextColor={theme.textMuted}
+                keyboardType="numeric"
+              />
+            </View>
+            <LocaleText style={[styles.inputBalance, { color: theme.textMuted }]}>
+              {formatNum(balance)}
+            </LocaleText>
+          </View>
 
-          {/* Coins */}
-          <DonateRow
-            icon={COIN_ICON}
-            label={t('city.budget.coins')}
-            value={coins}
-            onChangeText={setCoins}
-            hint={`${t('city.budget.remaining')}: ${formatNum(balance)}`}
-            theme={theme}
-            isDark={isDark}
-          />
+          {/* Gems row */}
+          <View style={styles.inputRow}>
+            <Image source={GEM_ICON} style={styles.inputIcon} contentFit="contain" />
+            <View style={styles.inputBody}>
+              <TextInput
+                style={[styles.input, { color: theme.text, borderColor: theme.divider, backgroundColor: theme.surfaceSub }]}
+                value={gemAmt}
+                onChangeText={setGemAmt}
+                placeholder="0"
+                placeholderTextColor={theme.textMuted}
+                keyboardType="numeric"
+              />
+            </View>
+            <LocaleText style={[styles.inputBalance, { color: theme.textMuted }]}>
+              {String(budget?.myRemaining ?? 100)}
+            </LocaleText>
+          </View>
 
-          {/* Gems */}
-          <DonateRow
-            icon={GEM_ICON}
-            label={t('city.budget.gems')}
-            value={gemAmt}
-            onChangeText={setGemAmt}
-            hint={`${t('city.budget.remaining')}: ${remaining}`}
-            theme={theme}
-            isDark={isDark}
-          />
+          <View style={[styles.divider, { backgroundColor: theme.divider }]} />
 
-          {/* Tools */}
-          <LocaleText style={[styles.toolsLabel, { color: theme.textMuted, marginTop: 12 }]}>
-            {t('city.budget.tools')}
-          </LocaleText>
-          {TOOL_KEYS.map((k) => (
-            <DonateRow
-              key={k}
-              icon={TOOL_ICONS[k]}
-              label={k}
-              value={toolAmts[k]}
-              onChangeText={(v) => setToolAmts((prev) => ({ ...prev, [k]: v }))}
-              hint={`${t('city.budget.remaining')}: ${(tools as any)?.[k] ?? 0}`}
-              theme={theme}
-              isDark={isDark}
-            />
-          ))}
+          {/* Tools grid inputs */}
+          <View style={styles.toolInputsGrid}>
+            {TOOL_KEYS.map((k) => (
+              <View key={k} style={styles.toolInputCell}>
+                <Image source={TOOL_ICONS[k]} style={styles.toolIconSm} contentFit="contain" />
+                <TextInput
+                  style={[styles.toolInput, { color: theme.text, borderColor: theme.divider, backgroundColor: theme.surfaceSub }]}
+                  value={toolAmts[k]}
+                  onChangeText={(v) => setToolAmts((prev) => ({ ...prev, [k]: v }))}
+                  placeholder="0"
+                  placeholderTextColor={theme.textMuted}
+                  keyboardType="numeric"
+                />
+                <LocaleText style={[styles.toolInputBalance, { color: theme.textMuted }]}>
+                  {String((tools as any)?.[k] ?? 0)}
+                </LocaleText>
+              </View>
+            ))}
+          </View>
 
           {error ? (
             <LocaleText style={styles.errorText}>{error}</LocaleText>
@@ -303,62 +311,6 @@ export default function CityBudgetScreen() {
   );
 }
 
-// ── Sub-components ─────────────────────────────────────────────────────────────
-
-function BudgetItem({ icon, value, label, theme, small }: {
-  icon: any;
-  value: string;
-  label: string;
-  theme: ReturnType<typeof useAppTheme>;
-  small?: boolean;
-}) {
-  return (
-    <View style={[styles.budgetItem, small && styles.budgetItemSmall]}>
-      <Image source={icon} style={small ? styles.budgetIconSm : styles.budgetIcon} contentFit="contain" />
-      <LocaleText style={[styles.budgetValue, { color: theme.text }, small && styles.budgetValueSm]}>
-        {value}
-      </LocaleText>
-      <LocaleText style={[styles.budgetLabel, { color: theme.textMuted }]}>{label}</LocaleText>
-    </View>
-  );
-}
-
-function DonateRow({ icon, label, value, onChangeText, hint, theme, isDark }: {
-  icon: any;
-  label: string;
-  value: string;
-  onChangeText: (v: string) => void;
-  hint: string;
-  theme: ReturnType<typeof useAppTheme>;
-  isDark: boolean;
-}) {
-  return (
-    <View style={styles.donateRow}>
-      <Image source={icon} style={styles.donateIcon} contentFit="contain" />
-      <View style={styles.donateRowBody}>
-        <LocaleText style={[styles.donateRowLabel, { color: theme.textMuted }]}>{label}</LocaleText>
-        <TextInput
-          style={[
-            styles.donateInput,
-            {
-              color: theme.text,
-              borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
-            },
-          ]}
-          value={value}
-          onChangeText={onChangeText}
-          placeholder="0"
-          placeholderTextColor={theme.textMuted}
-          keyboardType="numeric"
-        />
-        <LocaleText style={[styles.donateHint, { color: theme.textMuted }]}>{hint}</LocaleText>
-      </View>
-    </View>
-  );
-}
-
-// ── Styles ─────────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
@@ -370,40 +322,40 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     paddingHorizontal: 16,
   },
-  backBtn:     { width: 36, alignItems: 'center' },
-  backText:    { fontSize: 28, lineHeight: 32, fontFamily: 'Fredoka_600SemiBold' },
-  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
+  backBtn:      { width: 36, alignItems: 'center' },
+  backText:     { fontSize: 28, lineHeight: 32, fontFamily: 'Fredoka_600SemiBold' },
+  headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerIcon:   { width: 26, height: 26 },
+  headerTitle:  { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
 
-  scroll: { paddingHorizontal: 16, paddingTop: 16 },
+  scroll: { paddingHorizontal: 16, paddingTop: 12 },
 
-  card:      { borderRadius: 16, padding: 16, marginBottom: 14 },
-  cardTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 16, marginBottom: 14 },
+  sectionTitle: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 13,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 8,
+    marginTop: 4,
+  },
 
-  budgetRow:       { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  budgetItem:      { flex: 1, alignItems: 'center', gap: 4 },
-  budgetItemSmall: { flex: 0, width: '30%' },
-  budgetIcon:      { width: 32, height: 32 },
-  budgetIconSm:    { width: 24, height: 24 },
-  budgetValue:     { fontFamily: 'Fredoka_700Bold', fontSize: 18 },
-  budgetValueSm:   { fontSize: 14 },
-  budgetLabel:     { fontFamily: 'Fredoka_400Regular', fontSize: 11 },
+  card:      { borderRadius: 16, padding: 16, marginBottom: 12 },
+  cardLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 13, marginBottom: 10 },
 
-  toolsLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 13, marginBottom: 8 },
-  toolsGrid:  { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  budgetRow:   { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  budgetIcon:  { width: 32, height: 32 },
+  budgetBigNum:{ fontFamily: 'Fredoka_700Bold', fontSize: 24, flex: 1 },
+  budgetUnit:  { fontFamily: 'Fredoka_400Regular', fontSize: 14 },
 
-  quotaRow:       { flexDirection: 'row', alignItems: 'baseline', marginBottom: 10 },
-  quotaRemaining: { fontFamily: 'Fredoka_700Bold', fontSize: 28 },
-  quotaOf:        { fontFamily: 'Fredoka_400Regular', fontSize: 15 },
-  gemIcon:        { width: 18, height: 18, marginLeft: 4 },
-  quotaBarBg:     { height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 8 },
-  quotaBarFill:   { height: '100%', borderRadius: 4 },
-  quotaSubtext:   { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
+  toolsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  toolItem:  { alignItems: 'center', gap: 4, minWidth: 44 },
+  toolIconSm:{ width: 28, height: 28 },
+  toolVal:   { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
 
-  donateRow:      { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 12 },
-  donateIcon:     { width: 28, height: 28, marginTop: 18 },
-  donateRowBody:  { flex: 1 },
-  donateRowLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 12, marginBottom: 4 },
-  donateInput: {
+  inputRow:     { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  inputIcon:    { width: 28, height: 28 },
+  inputBody:    { flex: 1 },
+  input: {
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 12,
@@ -411,20 +363,35 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_500Medium',
     fontSize: 16,
   },
-  donateHint: { fontFamily: 'Fredoka_400Regular', fontSize: 11, marginTop: 3 },
+  inputBalance: { fontFamily: 'Fredoka_400Regular', fontSize: 12, minWidth: 40, textAlign: 'right' },
+
+  divider: { height: 1, marginVertical: 12 },
+
+  toolInputsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 12 },
+  toolInputCell: { width: '30%', alignItems: 'center', gap: 4 },
+  toolInput: {
+    width: '100%',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  toolInputBalance: { fontFamily: 'Fredoka_400Regular', fontSize: 10 },
 
   errorBanner: {
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   errorBannerText: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 13,
     textAlign: 'center',
   },
-
   errorText: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 13,
