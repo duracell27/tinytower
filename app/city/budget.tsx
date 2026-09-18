@@ -238,9 +238,11 @@ export default function CityBudgetScreen() {
                 activeOpacity={0.7}
               >
                 <Image source={TOOL_ICONS[selectedTool]} style={styles.toolPickerBtnIcon} contentFit="contain" />
-                <LocaleText style={[styles.toolPickerArrow, { color: theme.textMuted }]}>
-                  {toolPickerOpen ? '▲' : '▼'}
-                </LocaleText>
+                <View style={[
+                  styles.chevron,
+                  { borderColor: theme.textMuted },
+                  toolPickerOpen && styles.chevronUp,
+                ]} />
               </TouchableOpacity>
               <TextInput
                 style={[styles.input, { color: theme.text, borderColor: theme.divider, backgroundColor: theme.surfaceSub }]}
@@ -383,7 +385,18 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   toolPickerBtnIcon: { width: 28, height: 28 },
-  toolPickerArrow:   { fontSize: 8, lineHeight: 10 },
+  chevron: {
+    width: 7,
+    height: 7,
+    borderRightWidth: 1.5,
+    borderBottomWidth: 1.5,
+    transform: [{ rotate: '45deg' }],
+    marginBottom: 3,
+  },
+  chevronUp: {
+    transform: [{ rotate: '-135deg' }],
+    marginBottom: -3,
+  },
 
   toolDropdown: {
     borderRadius: 12,
