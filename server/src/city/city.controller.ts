@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { CityRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CityService } from './city.service';
+import { CityService, DonateDto } from './city.service';
 
 type AuthReq = { user: { playerId: string } };
 
@@ -139,7 +139,7 @@ export class CityController {
   donateToCityBudget(
     @Req() req: AuthReq,
     @Param('id') cityId: string,
-    @Body() body: { coins?: number; gems?: number; tools?: { briks?: number; glass?: number; nails?: number; screw?: number; wood?: number; cement?: number } },
+    @Body() body: DonateDto,
   ) {
     return this.cityService.donate(req.user.playerId, cityId, body);
   }

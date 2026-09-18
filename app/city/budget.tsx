@@ -55,7 +55,7 @@ export default function CityBudgetScreen() {
   const isDark = useColorScheme() === 'dark';
   const router = useRouter();
 
-  const { budget, budgetLoading, fetchBudget, donate } = useCityStore();
+  const { budget, budgetLoading, budgetError, fetchBudget, donate } = useCityStore();
   const balance = useBalance();
   const gems    = useGameStore((s) => s.gems);
   const tools   = useGameStore((s) => s.tools);
@@ -75,7 +75,7 @@ export default function CityBudgetScreen() {
   }, [cityId]);
 
   const nextMonday = budget
-    ? new Date(getMondayUTC(new Date(budget.weekResetAt)).getTime())
+    ? new Date(budget.weekResetAt)
     : null;
   const countdown = nextMonday ? getCountdown(nextMonday.getTime(), now) : null;
 
@@ -154,6 +154,12 @@ export default function CityBudgetScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        {budgetError && (
+          <View style={[styles.errorBanner, { backgroundColor: theme.surfaceDanger }]}>
+            <LocaleText style={[styles.errorBannerText, { color: theme.text }]}>{budgetError}</LocaleText>
+          </View>
+        )}
+
         {/* ── Current Budget ── */}
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
           <LocaleText style={[styles.cardTitle, { color: theme.text }]}>
@@ -406,6 +412,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   donateHint: { fontFamily: 'Fredoka_400Regular', fontSize: 11, marginTop: 3 },
+
+  errorBanner: {
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 14,
+  },
+  errorBannerText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 13,
+    textAlign: 'center',
+  },
 
   errorText: {
     fontFamily: 'Fredoka_500Medium',

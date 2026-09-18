@@ -107,6 +107,22 @@ export interface DonatePayload {
   };
 }
 
+// Controller-layer DTO — enforces @Min(0) for all donation fields.
+// class-validator / class-transformer are not yet installed in this project,
+// so validation is enforced manually in the service rather than via decorators.
+export class DonateDto {
+  coins?: number;
+  gems?: number;
+  tools?: {
+    briks?: number;
+    glass?: number;
+    nails?: number;
+    screw?: number;
+    wood?: number;
+    cement?: number;
+  };
+}
+
 function getMondayUTC(date: Date): Date {
   const d = new Date(date);
   const day = d.getUTCDay(); // 0 = Sun
@@ -680,6 +696,10 @@ export class CityService {
     const screw  = payload.tools?.screw  ?? 0;
     const wood   = payload.tools?.wood   ?? 0;
     const cement = payload.tools?.cement ?? 0;
+
+    if (coins < 0 || gems < 0 || briks < 0 || glass < 0 || nails < 0 || screw < 0 || wood < 0 || cement < 0) {
+      throw new BadRequestException('Donation values must be non-negative');
+    }
 
     if (coins === 0 && gems === 0 && briks === 0 && glass === 0 && nails === 0 && screw === 0 && wood === 0 && cement === 0) {
       throw new BadRequestException('Nothing to donate');

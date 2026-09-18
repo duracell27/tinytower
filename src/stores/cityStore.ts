@@ -8,6 +8,7 @@ interface CityState {
   error: string | null;
   budget: CityBudget | null;
   budgetLoading: boolean;
+  budgetError: string | null;
 }
 
 interface CityActions {
@@ -35,6 +36,7 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
   error: null,
   budget: null,
   budgetLoading: false,
+  budgetError: null,
 
   fetchMyCityInfo: async () => {
     set({ loading: true, error: null });
@@ -142,12 +144,12 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
   },
 
   fetchBudget: async (cityId: string) => {
-    set({ budgetLoading: true });
+    set({ budgetLoading: true, budgetError: null });
     try {
       const budget = await api.getCityBudget(cityId);
       set({ budget, budgetLoading: false });
-    } catch {
-      set({ budgetLoading: false });
+    } catch (e: any) {
+      set({ budgetLoading: false, budgetError: e?.message ?? 'Failed to load budget' });
     }
   },
 
