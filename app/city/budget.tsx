@@ -229,34 +229,31 @@ export default function CityBudgetScreen() {
 
             <View style={[styles.toolRowDivider, { backgroundColor: theme.divider, marginVertical: 10 }]} />
 
-            {/* Tool picker */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.toolPickerRow}
-            >
-              {TOOL_KEYS.map((k) => {
-                const active = selectedTool === k;
-                return (
-                  <TouchableOpacity
-                    key={k}
-                    style={[
-                      styles.toolChip,
-                      { borderColor: active ? PRIMARY : theme.divider },
-                      active && { backgroundColor: PRIMARY + '18' },
-                    ]}
-                    onPress={() => setSelectedTool(k)}
-                    activeOpacity={0.7}
-                  >
-                    <Image source={TOOL_ICONS[k]} style={styles.chipIcon} contentFit="contain" />
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-
-            {/* Tool input */}
-            <View style={[styles.inputRow, { marginTop: 8 }]}>
-              <Image source={TOOL_ICONS[selectedTool]} style={styles.inputIcon} contentFit="contain" />
+            {/* Tool input — picker is inline where the icon was */}
+            <View style={styles.inputRow}>
+              <View style={styles.toolPickerGrid}>
+                {([0, 1] as const).map((row) => (
+                  <View key={row} style={styles.toolPickerGridRow}>
+                    {TOOL_KEYS.slice(row * 3, row * 3 + 3).map((k) => {
+                      const active = selectedTool === k;
+                      return (
+                        <TouchableOpacity
+                          key={k}
+                          style={[
+                            styles.toolPickerCell,
+                            { borderColor: active ? PRIMARY : theme.divider },
+                            active && { backgroundColor: PRIMARY + '20' },
+                          ]}
+                          onPress={() => setSelectedTool(k)}
+                          activeOpacity={0.7}
+                        >
+                          <Image source={TOOL_ICONS[k]} style={styles.toolPickerIcon} contentFit="contain" />
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                ))}
+              </View>
               <TextInput
                 style={[styles.input, { color: theme.text, borderColor: theme.divider, backgroundColor: theme.surfaceSub }]}
                 value={toolAmt}
@@ -363,16 +360,17 @@ const styles = StyleSheet.create({
   },
   inputHint: { fontFamily: 'Fredoka_400Regular', fontSize: 12, minWidth: 44, textAlign: 'right' },
 
-  toolPickerRow: { gap: 8, paddingBottom: 4 },
-  toolChip: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+  toolPickerGrid:    { gap: 4 },
+  toolPickerGridRow: { flexDirection: 'row', gap: 4 },
+  toolPickerCell: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chipIcon: { width: 26, height: 26 },
+  toolPickerIcon: { width: 20, height: 20 },
 
   errorBanner: {
     borderRadius: 10,
