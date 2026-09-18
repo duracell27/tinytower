@@ -341,6 +341,31 @@
       "empty": "No data yet for this period"
     },
     "citizenRankings": "Citizen Rankings",
+    "budget": {
+      "title": "City Budget",
+      "currentBudget": "Current Budget",
+      "myDonation": "My Donation",
+      "coins": "Coins",
+      "gems": "Diamonds",
+      "tools": "Tools",
+      "weeklyQuota": "Weekly Diamond Limit",
+      "remaining": "Available this week",
+      "of": "of",
+      "resetIn": "Resets in",
+      "days": "d",
+      "hours": "h",
+      "minutes": "m",
+      "donateButton": "Donate",
+      "donated": "Donated",
+      "nothingToDonate": "Enter an amount to donate",
+      "errors": {
+        "gemLimitExceeded": "Weekly diamond limit exceeded",
+        "notEnoughCoins": "Not enough coins",
+        "notEnoughGems": "Not enough diamonds",
+        "notEnoughTools": "Not enough tools",
+        "donateFailed": "Donation failed. Please try again."
+      }
+    },
     "sections": {
       "budget": "Budget",
       "tasks": "City Tasks",

@@ -341,6 +341,31 @@
       "empty": "Ще немає даних за цей період"
     },
     "citizenRankings": "Рейтинг містян",
+    "budget": {
+      "title": "Бюджет міста",
+      "currentBudget": "Поточний бюджет",
+      "myDonation": "Мій внесок",
+      "coins": "Монети",
+      "gems": "Діаманти",
+      "tools": "Інструменти",
+      "weeklyQuota": "Тижневий ліміт алмазів",
+      "remaining": "Доступно цього тижня",
+      "of": "з",
+      "resetIn": "Оновлення через",
+      "days": "д",
+      "hours": "г",
+      "minutes": "хв",
+      "donateButton": "Задонатити",
+      "donated": "Задоначено",
+      "nothingToDonate": "Введіть суму для донату",
+      "errors": {
+        "gemLimitExceeded": "Тижневий ліміт алмазів вичерпано",
+        "notEnoughCoins": "Недостатньо монет",
+        "notEnoughGems": "Недостатньо алмазів",
+        "notEnoughTools": "Недостатньо інструментів",
+        "donateFailed": "Помилка донату. Спробуйте ще раз."
+      }
+    },
     "sections": {
       "budget": "Бюджет",
       "tasks": "Завдання міста",
