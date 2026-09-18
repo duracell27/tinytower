@@ -376,7 +376,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
           <LocaleText style={[styles.navChevron, isDark && { color: '#5A7090' }]}>›</LocaleText>
         </TouchableOpacity>
         <View style={[styles.navDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.07)' }]} />
-        <TouchableOpacity style={styles.navRow} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.navRow} onPress={() => router.push('/city/citizen-rankings')} activeOpacity={0.7}>
           <Image source={require('../../assets/img/menu/rating.png')} style={styles.navImg} contentFit="contain" />
           <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>{t('city.citizenRankings')}</LocaleText>
           <LocaleText style={[styles.navChevron, isDark && { color: '#5A7090' }]}>›</LocaleText>

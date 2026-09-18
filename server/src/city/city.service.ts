@@ -31,6 +31,8 @@ export interface MemberDto {
   playerId: string;
   playerName: string;
   playerLevel: number;
+  floorCount: number;
+  revenuePerMin: number;
   role: CityRole;
   cityXp: number;
   joinedAt: string;
@@ -94,7 +96,7 @@ export class CityService {
       where: { id: cityId },
       include: {
         members: {
-          include: { player: { select: { playerName: true, playerLevel: true, lastSeenAt: true } } },
+          include: { player: { select: { playerName: true, playerLevel: true, openedFloorsCount: true, maxRevenuePerMin: true, lastSeenAt: true } } },
           orderBy: { joinedAt: 'asc' },
         },
       },
@@ -129,6 +131,8 @@ export class CityService {
           playerId: m.playerId,
           playerName: m.player.playerName,
           playerLevel: m.player.playerLevel,
+          floorCount: m.player.openedFloorsCount,
+          revenuePerMin: m.player.maxRevenuePerMin,
           role: m.role,
           cityXp: m.cityXp,
           joinedAt: m.joinedAt.toISOString(),

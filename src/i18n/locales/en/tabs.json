@@ -243,7 +243,9 @@
       "placeholder": "Search by city name...",
       "empty": "No cities found",
       "minChars": "Enter at least 2 characters",
-      "viewCity": "View"
+      "viewCity": "View",
+      "description": "Search by name and join a city to earn income bonuses",
+      "citiesCount": "{{count}} cities available"
     },
     "detail": {
       "membersTab": "Members",
@@ -320,7 +322,7 @@
       "empty": "No cities yet",
       "loadMore": "Load More",
       "button": "City Rankings",
-      "findCity": "🔍 Find City"
+      "findCity": "Find City"
     },
     "founded": "Founded {{date}}",
     "allWorkers": "Workers",
@@ -352,6 +354,23 @@
       "load": "Failed to load city",
       "leave": "Failed to leave city",
       "create": "Failed to create city"
+    },
+    "citizenRanking": {
+      "title": "Citizen Rankings",
+      "subtitle": "City members ranked by XP contribution",
+      "xpLabel": "City XP",
+      "empty": "No members yet",
+      "cityXp": "City XP",
+      "tabLevel": "Level",
+      "tabFloors": "Floors",
+      "tabRevenue": "Revenue",
+      "valueLvl": "LVL",
+      "valueFloors": "FLOORS",
+      "valueRevenue": "REV/MIN",
+      "label_cityXp": "City XP",
+      "label_level": "LVL",
+      "label_floors": "Floors",
+      "label_revenue": "Rev/min"
     }
   },
   "shop": {
@@ -371,26 +390,80 @@
     "each5": "5 pcs",
     "basePrice": "Base price",
     "packs": {
-      "diamonds_1": { "name": "Handful" },
-      "diamonds_2": { "name": "Pouch" },
-      "diamonds_3": { "name": "Box" },
-      "diamonds_4": { "name": "Chest" },
-      "diamonds_5": { "name": "Vault" },
-      "diamonds_6": { "name": "Treasure" },
-      "bundle_1":   { "name": "Starter Pack",    "description": "Perfect for new players — gems, tools & tokens to get you started" },
-      "bundle_2":   { "name": "Resource Bundle", "description": "Stock up on everything you need to keep building fast" },
-      "bundle_3":   { "name": "Growth Bundle",   "description": "Supercharge your tower with premium resources and extra gems" },
-      "bundle_4":   { "name": "VIP Bundle",      "description": "The ultimate value pack — massive gems, full tool & token supply" },
-      "builder_1":  { "name": "Mini Kit",        "description": "A small starter kit with gems and all 6 materials to kick things off" },
-      "builder_2":  { "name": "Starter Builder", "description": "Enough supplies to push through the next few floors without stopping" },
-      "builder_3":  { "name": "Pro Builder",     "description": "A serious supply drop — gems and materials to keep your tower rising fast" },
-      "builder_4":  { "name": "Master Builder",  "description": "Maximum value — massive gem and material haul for elite builders" },
-      "mat_briks":  { "name": "Bricks",          "description": "Solid red bricks for walls and foundations" },
-      "mat_glass":  { "name": "Glass",           "description": "Crystal-clear glass panels for windows and facades" },
-      "mat_nails":  { "name": "Nails",           "description": "Heavy-duty nails to keep every joint tight" },
-      "mat_screw":  { "name": "Screws",          "description": "Precision screws for secure fixtures and fittings" },
-      "mat_wood":   { "name": "Wood",            "description": "Premium timber planks for floors and frames" },
-      "mat_cement": { "name": "Cement",          "description": "Fast-setting cement mix for slabs and structure" }
+      "diamonds_1": {
+        "name": "Handful"
+      },
+      "diamonds_2": {
+        "name": "Pouch"
+      },
+      "diamonds_3": {
+        "name": "Box"
+      },
+      "diamonds_4": {
+        "name": "Chest"
+      },
+      "diamonds_5": {
+        "name": "Vault"
+      },
+      "diamonds_6": {
+        "name": "Treasure"
+      },
+      "bundle_1": {
+        "name": "Starter Pack",
+        "description": "Perfect for new players — gems, tools & tokens to get you started"
+      },
+      "bundle_2": {
+        "name": "Resource Bundle",
+        "description": "Stock up on everything you need to keep building fast"
+      },
+      "bundle_3": {
+        "name": "Growth Bundle",
+        "description": "Supercharge your tower with premium resources and extra gems"
+      },
+      "bundle_4": {
+        "name": "VIP Bundle",
+        "description": "The ultimate value pack — massive gems, full tool & token supply"
+      },
+      "builder_1": {
+        "name": "Mini Kit",
+        "description": "A small starter kit with gems and all 6 materials to kick things off"
+      },
+      "builder_2": {
+        "name": "Starter Builder",
+        "description": "Enough supplies to push through the next few floors without stopping"
+      },
+      "builder_3": {
+        "name": "Pro Builder",
+        "description": "A serious supply drop — gems and materials to keep your tower rising fast"
+      },
+      "builder_4": {
+        "name": "Master Builder",
+        "description": "Maximum value — massive gem and material haul for elite builders"
+      },
+      "mat_briks": {
+        "name": "Bricks",
+        "description": "Solid red bricks for walls and foundations"
+      },
+      "mat_glass": {
+        "name": "Glass",
+        "description": "Crystal-clear glass panels for windows and facades"
+      },
+      "mat_nails": {
+        "name": "Nails",
+        "description": "Heavy-duty nails to keep every joint tight"
+      },
+      "mat_screw": {
+        "name": "Screws",
+        "description": "Precision screws for secure fixtures and fittings"
+      },
+      "mat_wood": {
+        "name": "Wood",
+        "description": "Premium timber planks for floors and frames"
+      },
+      "mat_cement": {
+        "name": "Cement",
+        "description": "Fast-setting cement mix for slabs and structure"
+      }
     }
   },
   "profile": {

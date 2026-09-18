@@ -55,6 +55,8 @@ export interface CityMember {
   playerId: string;
   playerName: string;
   playerLevel: number;
+  floorCount: number;
+  revenuePerMin: number;
   role: CityRole;
   cityXp: number;
   joinedAt: string;

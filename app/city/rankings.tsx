@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
@@ -11,6 +12,7 @@ import { useCityStore } from '../../src/stores/cityStore';
 import type { CityRankingEntry } from '../../src/services/api';
 
 const LVL_ICON = require('../../assets/img/lvlIcon.png');
+const CUP_1    = require('../../assets/img/rating/1PlaceCup.png');
 
 const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
@@ -18,6 +20,7 @@ export default function CityRankingsScreen() {
   const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { getCityRankings } = useCityStore();
 
   const [entries, setEntries] = useState<CityRankingEntry[]>([]);
@@ -76,7 +79,7 @@ export default function CityRankingsScreen() {
   if (loading) {
     return (
       <AppBackground style={[styles.bg, isDark && styles.bgDark]}>
-        <View style={styles.center}>
+        <View style={[styles.center, { paddingTop: insets.top }]}>
           <ActivityIndicator color={isDark ? '#6BAED0' : '#2E6EC9'} />
         </View>
       </AppBackground>
@@ -88,17 +91,24 @@ export default function CityRankingsScreen() {
       <FlatList
         data={entries}
         keyExtractor={(e) => e.id}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingTop: insets.top }]}
         renderItem={renderItem}
         ListHeaderComponent={
           <View style={styles.header}>
-            <LocaleText style={styles.headerEmoji}>🏆</LocaleText>
-            <LocaleText style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>
-              {t('city.rankings.title')}
-            </LocaleText>
-            <LocaleText style={[styles.headerSubtitle, isDark && { color: '#8A9A80' }]}>
-              {t('city.rankings.subtitle')}
-            </LocaleText>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+              <LocaleText style={[styles.backIcon, isDark && { color: '#6BAED0' }]}>‹</LocaleText>
+            </TouchableOpacity>
+
+            <View style={styles.headerCenter}>
+              <Image source={CUP_1} style={styles.cupIcon} contentFit="contain" />
+              <LocaleText style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>
+                {t('city.rankings.title')}
+              </LocaleText>
+              <LocaleText style={[styles.headerSubtitle, isDark && { color: '#8A9A80' }]}>
+                {t('city.rankings.subtitle')}
+              </LocaleText>
+            </View>
+
             <TouchableOpacity
               style={[styles.findCityBtn, isDark && styles.findCityBtnDark]}
               onPress={() => router.push('/city/search')}
@@ -144,10 +154,15 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 },
   list: { paddingBottom: 40 },
 
-  header: { alignItems: 'center', paddingTop: 20, paddingBottom: 16, paddingHorizontal: 16 },
-  headerEmoji: { fontSize: 48, marginBottom: 8 },
+  header: { paddingBottom: 16, paddingHorizontal: 16 },
+  backBtn: { paddingTop: 4, paddingBottom: 8, alignSelf: 'flex-start' },
+  backIcon: { fontSize: 34, color: '#2E6EC9', lineHeight: 36 },
+
+  headerCenter: { alignItems: 'center', paddingBottom: 14 },
+  cupIcon: { width: 56, height: 56, marginBottom: 8 },
   headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#0A1C30', marginBottom: 4 },
-  headerSubtitle: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#5A7090', marginBottom: 14 },
+  headerSubtitle: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#5A7090', marginBottom: 0 },
+
   findCityBtn: {
     backgroundColor: '#E8F2FA',
     borderRadius: 12,
