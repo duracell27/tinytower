@@ -57,9 +57,10 @@ export default function CityBudgetScreen() {
 
   const [coins,       setCoins]       = useState('');
   const [gemAmt,      setGemAmt]      = useState('');
-  const [selectedTool, setSelectedTool] = useState<ToolKey>('briks');
-  const [toolAmt,     setToolAmt]     = useState('');
-  const [donating,    setDonating]    = useState(false);
+  const [selectedTool,  setSelectedTool]  = useState<ToolKey>('briks');
+  const [toolPickerOpen, setToolPickerOpen] = useState(false);
+  const [toolAmt,       setToolAmt]       = useState('');
+  const [donating,      setDonating]      = useState(false);
   const [error,       setError]       = useState<string | null>(null);
 
   useEffect(() => { if (cityId) fetchBudget(cityId); }, [cityId]);
@@ -229,31 +230,18 @@ export default function CityBudgetScreen() {
 
             <View style={[styles.toolRowDivider, { backgroundColor: theme.divider, marginVertical: 10 }]} />
 
-            {/* Tool input — picker is inline where the icon was */}
+            {/* Tool input */}
             <View style={styles.inputRow}>
-              <View style={styles.toolPickerGrid}>
-                {([0, 1] as const).map((row) => (
-                  <View key={row} style={styles.toolPickerGridRow}>
-                    {TOOL_KEYS.slice(row * 3, row * 3 + 3).map((k) => {
-                      const active = selectedTool === k;
-                      return (
-                        <TouchableOpacity
-                          key={k}
-                          style={[
-                            styles.toolPickerCell,
-                            { borderColor: active ? PRIMARY : theme.divider },
-                            active && { backgroundColor: PRIMARY + '20' },
-                          ]}
-                          onPress={() => setSelectedTool(k)}
-                          activeOpacity={0.7}
-                        >
-                          <Image source={TOOL_ICONS[k]} style={styles.toolPickerIcon} contentFit="contain" />
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                ))}
-              </View>
+              <TouchableOpacity
+                style={[styles.toolPickerBtn, { borderColor: toolPickerOpen ? PRIMARY : theme.divider, backgroundColor: theme.surfaceSub }]}
+                onPress={() => setToolPickerOpen((v) => !v)}
+                activeOpacity={0.7}
+              >
+                <Image source={TOOL_ICONS[selectedTool]} style={styles.toolPickerBtnIcon} contentFit="contain" />
+                <LocaleText style={[styles.toolPickerArrow, { color: theme.textMuted }]}>
+                  {toolPickerOpen ? '▲' : '▼'}
+                </LocaleText>
+              </TouchableOpacity>
               <TextInput
                 style={[styles.input, { color: theme.text, borderColor: theme.divider, backgroundColor: theme.surfaceSub }]}
                 value={toolAmt}
@@ -266,6 +254,31 @@ export default function CityBudgetScreen() {
                 {String((tools as any)?.[selectedTool] ?? 0)}
               </LocaleText>
             </View>
+
+            {toolPickerOpen && (
+              <View style={[styles.toolDropdown, { backgroundColor: theme.surfaceSub, borderColor: theme.divider }]}>
+                {([0, 1] as const).map((row) => (
+                  <View key={row} style={styles.toolDropdownRow}>
+                    {TOOL_KEYS.slice(row * 3, row * 3 + 3).map((k) => {
+                      const active = selectedTool === k;
+                      return (
+                        <TouchableOpacity
+                          key={k}
+                          style={[
+                            styles.toolDropdownCell,
+                            active && { backgroundColor: PRIMARY + '20' },
+                          ]}
+                          onPress={() => { setSelectedTool(k); setToolPickerOpen(false); }}
+                          activeOpacity={0.7}
+                        >
+                          <Image source={TOOL_ICONS[k]} style={styles.toolDropdownIcon} contentFit="contain" />
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                ))}
+              </View>
+            )}
 
             {error ? (
               <LocaleText style={styles.errorText}>{error}</LocaleText>
@@ -360,17 +373,33 @@ const styles = StyleSheet.create({
   },
   inputHint: { fontFamily: 'Fredoka_400Regular', fontSize: 12, minWidth: 44, textAlign: 'right' },
 
-  toolPickerGrid:    { gap: 4 },
-  toolPickerGridRow: { flexDirection: 'row', gap: 4 },
-  toolPickerCell: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
+  toolPickerBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 2,
   },
-  toolPickerIcon: { width: 20, height: 20 },
+  toolPickerBtnIcon: { width: 28, height: 28 },
+  toolPickerArrow:   { fontSize: 8, lineHeight: 10 },
+
+  toolDropdown: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 6,
+    gap: 4,
+    marginBottom: 10,
+  },
+  toolDropdownRow:  { flexDirection: 'row', justifyContent: 'space-around' },
+  toolDropdownCell: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  toolDropdownIcon: { width: 28, height: 28 },
 
   errorBanner: {
     borderRadius: 10,
