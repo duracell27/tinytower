@@ -317,6 +317,18 @@ export class SyncService {
           ]);
         }
 
+        // Increment gemsShopBonus on CityMembership for every acked shop_purchase with gems > 0
+        const totalGemsFromPurchases = acceptedCommands
+          .filter((c) => c.type === 'shop_purchase' && (c as any).gems > 0)
+          .reduce((sum, c) => sum + (c as any).gems, 0);
+
+        if (totalGemsFromPurchases > 0 && player.cityMembership) {
+          await tx.cityMembership.update({
+            where: { playerId },
+            data: { gemsShopBonus: { increment: totalGemsFromPurchases } },
+          });
+        }
+
         // Single consolidated player update with all final values
         await tx.player.update({
           where: { id: playerId },

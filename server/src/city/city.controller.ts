@@ -127,4 +127,20 @@ export class CityController {
   resetXpPeriod(@Req() req: AuthReq, @Param('id') cityId: string) {
     return this.cityService.resetXpPeriod(cityId, req.user.playerId);
   }
+
+  @Get(':id/budget')
+  @UseGuards(JwtAuthGuard)
+  getCityBudget(@Req() req: AuthReq, @Param('id') cityId: string) {
+    return this.cityService.getBudget(cityId, req.user.playerId);
+  }
+
+  @Post(':id/budget/donate')
+  @UseGuards(JwtAuthGuard)
+  donateToCityBudget(
+    @Req() req: AuthReq,
+    @Param('id') cityId: string,
+    @Body() body: { coins?: number; gems?: number; tools?: { briks?: number; glass?: number; nails?: number; screw?: number; wood?: number; cement?: number } },
+  ) {
+    return this.cityService.donate(req.user.playerId, cityId, body);
+  }
 }
