@@ -543,7 +543,7 @@ const player = useAuthStore((s) => s.player);
             <View style={styles.statItemXp}>
               <View style={styles.statValueRow}>
                 {isHydrated
-                  ? <LocaleText style={[styles.statValue, { color: theme.text }]}>{formatCompact(playerXp)} / {formatCompact(xpNeeded)}</LocaleText>
+                  ? <LocaleText style={[styles.statValue, { color: theme.text }]}>{formatCompact(playerXp, 2)} / {formatCompact(xpNeeded)}</LocaleText>
                   : <SkeletonBox width={90} />}
                 <Image source={require('../../assets/img/xpIcon.png')} style={styles.statIcon} contentFit="contain" />
               </View>

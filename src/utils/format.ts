@@ -18,12 +18,13 @@ export function formatNumFull(n: number): string {
   return parts.join(' ');
 }
 
-export function formatCompact(n: number): string {
+export function formatCompact(n: number, decimals?: number): string {
   let i18n: { language?: string } | undefined;
   try { i18n = require('../i18n').default; } catch {}
   const uk = i18n?.language === 'uk';
-  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(n % 1_000_000_000 === 0 ? 0 : 1) + (uk ? 'г' : 'g');
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1) + (uk ? 'м' : 'm');
-  if (n >= 1_000) return (n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1) + (uk ? 'к' : 'k');
+  const d = (exact: boolean) => decimals ?? (exact ? 0 : 1);
+  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(d(n % 1_000_000_000 === 0)) + (uk ? 'г' : 'g');
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(d(n % 1_000_000 === 0)) + (uk ? 'м' : 'm');
+  if (n >= 1_000) return (n / 1_000).toFixed(d(n % 1_000 === 0)) + (uk ? 'к' : 'k');
   return String(n);
 }
