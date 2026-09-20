@@ -350,6 +350,7 @@ function executeCommand(
   if (!result.success) {
     if (result.error === 'WAREHOUSE_FULL') {
       set({ warehouseFullNotice: true });
+      return false;
     }
     const curLog = get().failedCommandLog;
     set({
