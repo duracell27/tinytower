@@ -82,7 +82,7 @@ export class PlayersService {
       AND: [
         { OR: [{ city: null }, { city: '' }] },
         { lastSeenAt: { gte: since } },
-        { openedFloorsCount: { gte: 10 } },
+        { openedFloorsCount: { gte: 9 } },
       ],
     };
     const [rows, total] = await Promise.all([
@@ -272,7 +272,7 @@ export class PlayersService {
       playerName: player.playerName,
       playerLevel: player.playerLevel,
       playerXp: player.playerXp,
-      openedFloorsCount: player.openedFloorsCount,
+      openedFloorsCount: player.openedFloorsCount + 1,
       city: player.city,
       lastSeenAt: player.lastSeenAt.toISOString(),
       createdAt: player.createdAt.toISOString(),
@@ -292,7 +292,7 @@ export class PlayersService {
         red:    player.state?.businessUpgradeRed    ?? 0,
       },
       categoryProgress,
-      canBeInvited: !player.city && player.openedFloorsCount >= 10,
+      canBeInvited: !player.city && player.openedFloorsCount >= 9,
     };
   }
 }

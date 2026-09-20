@@ -18,7 +18,7 @@ const LIGHT: AppTheme = {
   isDark: false,
   surface: '#ffffff',
   surfaceCard: '#ffffff',
-  surfaceElevated: '#ffffff',
+  surfaceElevated: '#F5F2EA',
   surfaceSub: '#F5F3EC',
   surfaceDanger: '#FEF1EE',
   text: '#27331F',

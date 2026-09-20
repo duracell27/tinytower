@@ -133,6 +133,35 @@ export interface CityBudget {
   weekResetAt: string;
 }
 
+export interface CityBudgetContrib {
+  playerId: string;
+  playerName: string;
+  coins: number;
+  gems: number;
+  toolsTotal: number;
+}
+
+export interface CityBudgetDonation {
+  playerId: string;
+  playerName: string;
+  coins?: number;
+  gems?: number;
+  briks?: number;
+  glass?: number;
+  nails?: number;
+  screw?: number;
+  wood?: number;
+  cement?: number;
+  toolsTotal?: number;
+  donatedAt: string;
+}
+
+export interface CityBudgetContribsData {
+  lastResetAt: string | null;
+  contribs: CityBudgetContrib[];
+  history: CityBudgetDonation[];
+}
+
 export interface DonateBudgetPayload {
   coins?: number;
   gems?: number;
@@ -416,6 +445,10 @@ export const api = {
     request<CityBudget>('GET', `/city/${cityId}/budget`),
   donateToCityBudget: (cityId: string, payload: DonateBudgetPayload) =>
     request<void>('POST', `/city/${cityId}/budget/donate`, payload),
+  getCityBudgetContribs: (cityId: string) =>
+    request<CityBudgetContribsData>('GET', `/city/${cityId}/budget/contribs`),
+  resetCityBudget: (cityId: string) =>
+    request<void>('POST', `/city/${cityId}/budget/reset`),
   setTokens,
   clearTokens,
   getAccessToken,

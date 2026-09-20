@@ -777,4 +777,85 @@ export class CityService {
       });
     });
   }
+
+  async getBudgetContribs(cityId: string, playerId: string) {
+    const membership = await this.prisma.cityMembership.findUnique({ where: { playerId } });
+    if (!membership || membership.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
+
+    const [city, grouped, txns] = await Promise.all([
+      this.prisma.city.findUnique({
+        where: { id: cityId },
+        select: { budgetLastResetAt: true },
+      }),
+      this.prisma.cityBudgetTransaction.groupBy({
+        by: ['playerId'],
+        where: { cityId, type: 'deposit', playerId: { not: null } },
+        _sum: { coins: true, gems: true, briks: true, glass: true, nails: true, screw: true, wood: true, cement: true },
+      }),
+      this.prisma.cityBudgetTransaction.findMany({
+        where: { cityId, type: 'deposit', playerId: { not: null } },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+        include: { player: { select: { playerName: true } } },
+      }),
+    ]);
+
+    const playerIds = grouped.map(g => g.playerId!).filter(Boolean);
+    const players = await this.prisma.player.findMany({
+      where: { id: { in: playerIds } },
+      select: { id: true, playerName: true },
+    });
+    const nameMap = new Map(players.map(p => [p.id, p.playerName]));
+
+    const contribs = grouped.map(g => ({
+      playerId:    g.playerId!,
+      playerName:  nameMap.get(g.playerId!) ?? 'Unknown',
+      coins:       g._sum.coins ?? 0,
+      gems:        g._sum.gems  ?? 0,
+      toolsTotal:  (g._sum.briks ?? 0) + (g._sum.glass ?? 0) + (g._sum.nails ?? 0)
+                 + (g._sum.screw ?? 0) + (g._sum.wood  ?? 0) + (g._sum.cement ?? 0),
+    }));
+
+    const history = txns.map(tx => ({
+      playerId:   tx.playerId!,
+      playerName: tx.player?.playerName ?? 'Unknown',
+      coins:      tx.coins  || undefined,
+      gems:       tx.gems   || undefined,
+      briks:      tx.briks  || undefined,
+      glass:      tx.glass  || undefined,
+      nails:      tx.nails  || undefined,
+      screw:      tx.screw  || undefined,
+      wood:       tx.wood   || undefined,
+      cement:     tx.cement || undefined,
+      toolsTotal: (tx.briks + tx.glass + tx.nails + tx.screw + tx.wood + tx.cement) || undefined,
+      donatedAt:  tx.createdAt.toISOString(),
+    }));
+
+    return {
+      lastResetAt: city?.budgetLastResetAt?.toISOString() ?? null,
+      contribs,
+      history,
+    };
+  }
+
+  async resetBudget(cityId: string, actorId: string): Promise<void> {
+    const membership = await this.prisma.cityMembership.findUnique({ where: { playerId: actorId } });
+    if (!membership || membership.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
+    if (membership.role !== CityRole.MAYOR) throw new ForbiddenException('Only the Mayor can reset the budget');
+
+    await this.prisma.$transaction([
+      this.prisma.city.update({
+        where: { id: cityId },
+        data: {
+          budgetCoins: 0, budgetGems: 0,
+          budgetBriks: 0, budgetGlass: 0, budgetNails: 0,
+          budgetScrew: 0, budgetWood:  0, budgetCement: 0,
+          budgetLastResetAt: new Date(),
+        },
+      }),
+      this.prisma.cityBudgetTransaction.create({
+        data: { cityId, playerId: actorId, type: 'reset' },
+      }),
+    ]);
+  }
 }

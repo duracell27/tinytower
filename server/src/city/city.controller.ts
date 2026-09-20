@@ -143,4 +143,16 @@ export class CityController {
   ) {
     return this.cityService.donate(req.user.playerId, cityId, body);
   }
+
+  @Get(':id/budget/contribs')
+  @UseGuards(JwtAuthGuard)
+  getBudgetContribs(@Req() req: AuthReq, @Param('id') cityId: string) {
+    return this.cityService.getBudgetContribs(cityId, req.user.playerId);
+  }
+
+  @Post(':id/budget/reset')
+  @UseGuards(JwtAuthGuard)
+  resetBudget(@Req() req: AuthReq, @Param('id') cityId: string) {
+    return this.cityService.resetBudget(cityId, req.user.playerId);
+  }
 }

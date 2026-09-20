@@ -404,14 +404,15 @@ model City {
   xpPeriodStart DateTime         @default(now())
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
-  budgetCoins  Int @default(0)
-  budgetGems   Int @default(0)
-  budgetBriks  Int @default(0)
-  budgetGlass  Int @default(0)
-  budgetNails  Int @default(0)
-  budgetScrew  Int @default(0)
-  budgetWood   Int @default(0)
-  budgetCement Int @default(0)
+  budgetCoins       Int       @default(0)
+  budgetGems        Int       @default(0)
+  budgetBriks       Int       @default(0)
+  budgetGlass       Int       @default(0)
+  budgetNails       Int       @default(0)
+  budgetScrew       Int       @default(0)
+  budgetWood        Int       @default(0)
+  budgetCement      Int       @default(0)
+  budgetLastResetAt DateTime?
   members       CityMembership[]
   invites       CityInvite[]
   budgetTransactions CityBudgetTransaction[]

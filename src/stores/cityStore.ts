@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, type CityDetail, type CitySummary, type CityRole, type CityRankingsResponse, type CityXpStats, type CityBudget, type DonateBudgetPayload } from '../services/api';
+import { api, type CityDetail, type CitySummary, type CityRole, type CityRankingsResponse, type CityXpStats, type CityBudget, type CityBudgetContribsData, type DonateBudgetPayload } from '../services/api';
 import { useGameStore } from './gameStore';
 
 interface CityState {
@@ -9,6 +9,8 @@ interface CityState {
   budget: CityBudget | null;
   budgetLoading: boolean;
   budgetError: string | null;
+  budgetContribsData: CityBudgetContribsData | null;
+  budgetContribsLoading: boolean;
 }
 
 interface CityActions {
@@ -27,6 +29,8 @@ interface CityActions {
   resetCityXpPeriod: (cityId: string) => Promise<void>;
   fetchBudget: (cityId: string) => Promise<void>;
   donate: (cityId: string, payload: DonateBudgetPayload) => Promise<void>;
+  fetchBudgetContribs: (cityId: string) => Promise<void>;
+  resetBudget: (cityId: string) => Promise<void>;
   clearCity: () => void;
 }
 
@@ -37,6 +41,8 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
   budget: null,
   budgetLoading: false,
   budgetError: null,
+  budgetContribsData: null,
+  budgetContribsLoading: false,
 
   fetchMyCityInfo: async () => {
     set({ loading: true, error: null });
@@ -155,8 +161,44 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
 
   donate: async (cityId: string, payload: DonateBudgetPayload) => {
     await api.donateToCityBudget(cityId, payload);
+    // Deduct donated resources from client state so the next sync doesn't
+    // overwrite the server's correctly-decremented values.
+    useGameStore.setState((s) => {
+      const update: { balance?: number; gems?: number; tools?: typeof s.tools } = {};
+      if (payload.coins) update.balance = Math.max(0, s.balance - payload.coins);
+      if (payload.gems)  update.gems    = Math.max(0, s.gems    - payload.gems);
+      if (payload.tools) {
+        const tools = { ...s.tools };
+        const t = payload.tools;
+        if (t.briks)  tools.briks  = Math.max(0, tools.briks  - t.briks);
+        if (t.glass)  tools.glass  = Math.max(0, tools.glass  - t.glass);
+        if (t.nails)  tools.nails  = Math.max(0, tools.nails  - t.nails);
+        if (t.screw)  tools.screw  = Math.max(0, tools.screw  - t.screw);
+        if (t.wood)   tools.wood   = Math.max(0, tools.wood   - t.wood);
+        if (t.cement) tools.cement = Math.max(0, tools.cement - t.cement);
+        update.tools = tools;
+      }
+      return update;
+    });
     const budget = await api.getCityBudget(cityId);
     set({ budget });
+  },
+
+  fetchBudgetContribs: async (cityId: string) => {
+    set({ budgetContribsLoading: true });
+    try {
+      const budgetContribsData = await api.getCityBudgetContribs(cityId);
+      set({ budgetContribsData, budgetContribsLoading: false });
+    } catch {
+      set({ budgetContribsLoading: false });
+    }
+  },
+
+  resetBudget: async (cityId: string) => {
+    await api.resetCityBudget(cityId);
+    const budget = await api.getCityBudget(cityId);
+    const budgetContribsData = await api.getCityBudgetContribs(cityId);
+    set({ budget, budgetContribsData });
   },
 
   clearCity: () => set({ city: null, error: null }),
