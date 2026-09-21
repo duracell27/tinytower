@@ -130,6 +130,7 @@ export default function GameScreen() {
   const unreadMailCount = useMailStore((s) => s.unreadCount);
   const fetchUnreadMailCount = useMailStore((s) => s.fetchUnreadCount);
   const incomingFriendCount = useFriendStore((s) => s.incomingRequests.length);
+  const fetchIncoming = useFriendStore((s) => s.fetchIncoming);
   const tutorialComplete = useGameStore((s) =>
     s.tutorialTasks.currentIndex >= TUTORIAL_TASKS.length && s.tutorialTasks.claimedFinal
   );
@@ -620,6 +621,13 @@ export default function GameScreen() {
     const id = setInterval(() => void fetchUnreadMailCount(), 60_000);
     return () => clearInterval(id);
   }, [isAuthenticated, fetchUnreadMailCount]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    void fetchIncoming();
+    const id = setInterval(() => void fetchIncoming(), 60_000);
+    return () => clearInterval(id);
+  }, [isAuthenticated, fetchIncoming]);
 
   // When starting in collapsed mode, FlashList never fires onContentSizeChange,
   // so we reveal the tower here instead.
