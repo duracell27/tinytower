@@ -141,7 +141,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     api.post('/auth/logout').catch(() => {});
     api.clearTokens();
     getStorage().remove('player');
-    set({ player: null, isAuthenticated: false, isGuest: false });
+    getStorage().remove('pendingRegistration');
+    set({ player: null, isAuthenticated: false, isGuest: false, pendingRegistration: false });
   },
 
   enterAsGuest: async () => {
@@ -158,6 +159,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       useGameStore.getState().initOnboardingProductions();
     } catch {
       const offlinePlayer: PlayerInfo = { id: OFFLINE_GUEST_ID, email: '', playerName: 'Guest', isTemporary: true };
+      getStorage().set('player', JSON.stringify(offlinePlayer));
+      getStorage().set('pendingRegistration', 'true');
+      saveLastPlayer(offlinePlayer);
       setupUserPersistence(OFFLINE_GUEST_ID);
       useGameStore.setState({ isHydrated: true });
       set({ player: offlinePlayer, isAuthenticated: true, isGuest: true, pendingRegistration: true, isLoading: false });
@@ -174,6 +178,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       migrateToNewUser(data.player.id);
       api.setTokens(data.accessToken, data.refreshToken);
       getStorage().set('player', JSON.stringify(data.player));
+      getStorage().remove('pendingRegistration');
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, pendingRegistration: false });
       setupUserPersistence(data.player.id);
@@ -202,12 +207,24 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     const lastPlayer = loadLastPlayer();
     const token = api.getAccessToken();
     const playerStr = getStorage().getString('player');
+    const isPendingReg = getStorage().getString('pendingRegistration') === 'true';
+
     if (token && playerStr) {
       try {
         const player = JSON.parse(playerStr) as PlayerInfo;
         set({ player, lastPlayer: lastPlayer ?? player, isAuthenticated: true });
         setupUserPersistence(player.id);
       } catch {
+        set({ player: null, lastPlayer, isAuthenticated: false });
+      }
+    } else if (isPendingReg && playerStr) {
+      try {
+        const player = JSON.parse(playerStr) as PlayerInfo;
+        setupUserPersistence(player.id);
+        useGameStore.setState({ isHydrated: true });
+        set({ player, lastPlayer: lastPlayer ?? player, isAuthenticated: true, isGuest: true, pendingRegistration: true });
+      } catch {
+        getStorage().remove('pendingRegistration');
         set({ player: null, lastPlayer, isAuthenticated: false });
       }
     } else {
