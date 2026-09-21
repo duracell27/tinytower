@@ -60,11 +60,6 @@ function loadLastPlayer(): PlayerInfo | null {
 
 const OFFLINE_GUEST_ID = 'offline-guest';
 
-function isNetworkError(e: unknown): boolean {
-  if (e instanceof TypeError) return true;
-  const msg = (e as Error)?.message ?? '';
-  return msg === 'Network request failed';
-}
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
   player: null,
@@ -161,18 +156,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       useOnboardingStore.getState().reset();
       useOnboardingStore.getState().start();
       useGameStore.getState().initOnboardingProductions();
-    } catch (e) {
-      if (isNetworkError(e)) {
-        const offlinePlayer: PlayerInfo = { id: OFFLINE_GUEST_ID, email: '', playerName: 'Guest', isTemporary: true };
-        setupUserPersistence(OFFLINE_GUEST_ID);
-        set({ player: offlinePlayer, isAuthenticated: true, isGuest: true, pendingRegistration: true, isLoading: false });
-        useOnboardingStore.getState().reset();
-        useOnboardingStore.getState().start();
-        useGameStore.getState().initOnboardingProductions();
-      } else {
-        set({ isLoading: false });
-        throw e;
-      }
+    } catch {
+      const offlinePlayer: PlayerInfo = { id: OFFLINE_GUEST_ID, email: '', playerName: 'Guest', isTemporary: true };
+      setupUserPersistence(OFFLINE_GUEST_ID);
+      set({ player: offlinePlayer, isAuthenticated: true, isGuest: true, pendingRegistration: true, isLoading: false });
+      useOnboardingStore.getState().reset();
+      useOnboardingStore.getState().start();
+      useGameStore.getState().initOnboardingProductions();
     }
   },
 
