@@ -162,6 +162,28 @@ export interface CityBudgetContribsData {
   history: CityBudgetDonation[];
 }
 
+export type CityHistoryEventType = 'CITY_CREATED' | 'ROLE_CHANGED' | 'CITY_LEVEL_UP';
+
+export interface CityHistoryEvent {
+  id: string;
+  eventType: CityHistoryEventType;
+  actorId: string | null;
+  actorName: string;
+  targetId: string | null;
+  targetName: string | null;
+  fromRole: string | null;
+  toRole: string | null;
+  toLevel: number | null;
+  createdAt: string;
+}
+
+export interface CityHistoryResponse {
+  events: CityHistoryEvent[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface DonateBudgetPayload {
   coins?: number;
   gems?: number;
@@ -449,6 +471,8 @@ export const api = {
     request<CityBudgetContribsData>('GET', `/city/${cityId}/budget/contribs`),
   resetCityBudget: (cityId: string) =>
     request<void>('POST', `/city/${cityId}/budget/reset`),
+  getCityHistory: (cityId: string, page: number) =>
+    request<CityHistoryResponse>('GET', `/city/${cityId}/history?page=${page}`),
   setTokens,
   clearTokens,
   getAccessToken,

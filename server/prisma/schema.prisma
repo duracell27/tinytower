@@ -52,6 +52,8 @@ model Player {
   blocksGiven           Block[]         @relation("BlockerBlocks")
   blocksReceived        Block[]         @relation("BlockedByBlocks")
   cityBudgetTransactions CityBudgetTransaction[] @relation("CityBudgetTransactions")
+  cityHistoryActed       CityHistoryEvent[]      @relation("CityHistoryActor")
+  cityHistoryTargeted    CityHistoryEvent[]      @relation("CityHistoryTarget")
 }
 
 model PlayerState {
@@ -416,6 +418,7 @@ model City {
   members       CityMembership[]
   invites       CityInvite[]
   budgetTransactions CityBudgetTransaction[]
+  historyEvents  CityHistoryEvent[]
 }
 
 model CityMembership {
@@ -478,6 +481,26 @@ model CityBudgetTransaction {
 
   city   City    @relation(fields: [cityId], references: [id], onDelete: Cascade)
   player Player? @relation("CityBudgetTransactions", fields: [playerId], references: [id], onDelete: SetNull)
+
+  @@index([cityId, createdAt])
+}
+
+model CityHistoryEvent {
+  id         String   @id @default(uuid())
+  cityId     String
+  eventType  String
+  actorId    String?
+  actorName  String
+  targetId   String?
+  targetName String?
+  fromRole   String?
+  toRole     String?
+  toLevel    Int?
+  createdAt  DateTime @default(now())
+
+  city   City    @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  actor  Player? @relation("CityHistoryActor", fields: [actorId], references: [id], onDelete: SetNull)
+  target Player? @relation("CityHistoryTarget", fields: [targetId], references: [id], onDelete: SetNull)
 
   @@index([cityId, createdAt])
 }

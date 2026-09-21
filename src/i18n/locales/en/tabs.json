@@ -368,9 +368,10 @@
       "lastReset": "Last reset",
       "neverReset": "Statistics have never been reset",
       "resetBudget": "Reset Budget",
-      "resetConfirm": "Reset the city budget? All accumulated resources will be cleared.",
+      "resetConfirm": "Reset budget statistics? Donation history and contributor rankings will be cleared.",
       "resetSuccess": "Budget has been reset",
       "resetFailed": "Failed to reset budget",
+      "cancel": "Cancel",
       "errors": {
         "gemLimitExceeded": "Weekly diamond limit exceeded",
         "notEnoughCoins": "Not enough coins",
@@ -387,6 +388,20 @@
       "buildings": "Buildings",
       "notifications": "Notifications",
       "description": "Description"
+    },
+    "history": {
+      "empty": "No history events yet",
+      "loadError": "Failed to load history",
+      "headerDesc": "Key moments in the city's life",
+      "cityCreated": "founded the city",
+      "levelUp": "City reached level {{level}}!",
+      "roleChanged1": "changed the role of",
+      "roleChanged2": "from {{from}} to {{to}}",
+      "types": {
+        "CITY_CREATED": "City Founded",
+        "ROLE_CHANGED": "Role Change",
+        "CITY_LEVEL_UP": "Level Up"
+      }
     },
     "errors": {
       "load": "Failed to load city",

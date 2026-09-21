@@ -13,6 +13,7 @@ import type { NewAchievementGrant, CategoryProgressState } from '@shared/types/a
 import { AchievementService } from '../achievement/achievement.service';
 import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS } from '../referral/referral-constants';
 import { CityService } from '../city/city.service';
+import { getCityLevel } from '../city/city-level';
 
 export interface SyncResult {
   state: GameState;
@@ -302,19 +303,35 @@ export class SyncService {
 
         // Contribute XP earned this sync to the city if the player is a member
         if (totalXpGained > 0 && player.cityMembership) {
-          await Promise.all([
-            tx.city.update({
-              where: { id: player.cityMembership.cityId },
-              data: { cityXp: { increment: totalXpGained } },
-            }),
-            tx.cityMembership.update({
-              where: { playerId },
+          const cityId = player.cityMembership.cityId;
+          const cityBefore = await tx.city.findUnique({ where: { id: cityId }, select: { cityXp: true } });
+          const oldLevel = cityBefore ? getCityLevel(cityBefore.cityXp) : 1;
+
+          const updatedCity = await tx.city.update({
+            where: { id: cityId },
+            data: { cityXp: { increment: totalXpGained } },
+            select: { cityXp: true },
+          });
+          await tx.cityMembership.update({
+            where: { playerId },
+            data: {
+              cityXp: { increment: totalXpGained },
+              xpPeriod: { increment: totalXpGained },
+            },
+          });
+
+          const newLevel = getCityLevel(updatedCity.cityXp);
+          if (newLevel > oldLevel) {
+            await tx.cityHistoryEvent.create({
               data: {
-                cityXp: { increment: totalXpGained },
-                xpPeriod: { increment: totalXpGained },
+                cityId,
+                eventType: 'CITY_LEVEL_UP',
+                actorId: playerId,
+                actorName: player.playerName,
+                toLevel: newLevel,
               },
-            }),
-          ]);
+            });
+          }
         }
 
         // Increment gemsShopBonus on CityMembership for every acked shop_purchase with gems > 0

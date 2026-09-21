@@ -155,4 +155,11 @@ export class CityController {
   resetBudget(@Req() req: AuthReq, @Param('id') cityId: string) {
     return this.cityService.resetBudget(cityId, req.user.playerId);
   }
+
+  @Get(':id/history')
+  @UseGuards(JwtAuthGuard)
+  getCityHistory(@Req() req: AuthReq, @Param('id') cityId: string, @Query('page') page: string) {
+    const p = Math.max(1, parseInt(page ?? '1', 10) || 1);
+    return this.cityService.getCityHistory(cityId, req.user.playerId, p);
+  }
 }

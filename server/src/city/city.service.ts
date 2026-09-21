@@ -53,6 +53,26 @@ export interface CityDetailDto {
   createdAt: string;
 }
 
+export interface CityHistoryEventDto {
+  id: string;
+  eventType: 'CITY_CREATED' | 'ROLE_CHANGED' | 'CITY_LEVEL_UP';
+  actorId: string | null;
+  actorName: string;
+  targetId: string | null;
+  targetName: string | null;
+  fromRole: string | null;
+  toRole: string | null;
+  toLevel: number | null;
+  createdAt: string;
+}
+
+export interface CityHistoryDto {
+  events: CityHistoryEventDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface CitySummaryDto {
   id: string;
   name: string;
@@ -219,24 +239,33 @@ export class CityService {
     const existing = await this.prisma.city.findUnique({ where: { name: trimmed } });
     if (existing) throw new ConflictException('City name already taken');
 
-    const [city] = await this.prisma.$transaction([
-      this.prisma.city.create({
+    const city = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.city.create({
         data: {
           name: trimmed,
           members: {
             create: { playerId, role: CityRole.MAYOR },
           },
         },
-      }),
-      this.prisma.playerState.update({
+      });
+      await tx.playerState.update({
         where: { playerId },
         data: { gems: { decrement: CITY_FOUND_COST_GEMS } },
-      }),
-      this.prisma.player.update({
+      });
+      await tx.player.update({
         where: { id: playerId },
         data: { city: trimmed },
-      }),
-    ]);
+      });
+      await tx.cityHistoryEvent.create({
+        data: {
+          cityId: created.id,
+          eventType: 'CITY_CREATED',
+          actorId: playerId,
+          actorName: player.playerName,
+        },
+      });
+      return created;
+    });
 
     return this.buildCityDetail(city.id, playerId);
   }
@@ -449,24 +478,37 @@ export class CityService {
       throw new ForbiddenException('Vice Mayor can only promote up to Advisor');
     }
 
-    // If assigning MAYOR, demote current actor from MAYOR to ACTING_MAYOR (transfer)
-    const updates: any[] = [
-      this.prisma.cityMembership.update({
+    const [actorPlayer, targetPlayer] = await Promise.all([
+      this.prisma.player.findUnique({ where: { id: actorId }, select: { playerName: true } }),
+      this.prisma.player.findUnique({ where: { id: targetPlayerId }, select: { playerName: true } }),
+    ]);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.cityMembership.update({
         where: { playerId: targetPlayerId },
         data: { role: newRole },
-      }),
-    ];
+      });
 
-    if (newRole === CityRole.MAYOR && actorMs.role === CityRole.MAYOR) {
-      updates.push(
-        this.prisma.cityMembership.update({
+      if (newRole === CityRole.MAYOR && actorMs.role === CityRole.MAYOR) {
+        await tx.cityMembership.update({
           where: { playerId: actorId },
           data: { role: CityRole.ACTING_MAYOR },
-        }),
-      );
-    }
+        });
+      }
 
-    await this.prisma.$transaction(updates);
+      await tx.cityHistoryEvent.create({
+        data: {
+          cityId,
+          eventType: 'ROLE_CHANGED',
+          actorId,
+          actorName: actorPlayer?.playerName ?? 'Unknown',
+          targetId: targetPlayerId,
+          targetName: targetPlayer?.playerName ?? 'Unknown',
+          fromRole: targetMs.role,
+          toRole: newRole,
+        },
+      });
+    });
   }
 
   async updateCity(actorId: string, cityId: string, updates: { name?: string; description?: string }): Promise<CityDetailDto> {
@@ -622,6 +664,42 @@ export class CityService {
       this.prisma.cityMembership.updateMany({ where: { cityId }, data: { xpPeriod: 0 } }),
       this.prisma.city.update({ where: { id: cityId }, data: { xpPeriodStart: new Date() } }),
     ]);
+  }
+
+  async getCityHistory(cityId: string, requesterId: string, page: number): Promise<CityHistoryDto> {
+    const membership = await this.prisma.cityMembership.findUnique({ where: { playerId: requesterId } });
+    if (!membership || membership.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
+
+    const PAGE_SIZE = 30;
+    const skip = (page - 1) * PAGE_SIZE;
+
+    const [events, total] = await Promise.all([
+      this.prisma.cityHistoryEvent.findMany({
+        where: { cityId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: PAGE_SIZE,
+      }),
+      this.prisma.cityHistoryEvent.count({ where: { cityId } }),
+    ]);
+
+    return {
+      events: events.map((e) => ({
+        id: e.id,
+        eventType: e.eventType as CityHistoryEventDto['eventType'],
+        actorId: e.actorId,
+        actorName: e.actorName,
+        targetId: e.targetId,
+        targetName: e.targetName,
+        fromRole: e.fromRole,
+        toRole: e.toRole,
+        toLevel: e.toLevel,
+        createdAt: e.createdAt.toISOString(),
+      })),
+      total,
+      page,
+      pageSize: PAGE_SIZE,
+    };
   }
 
   private canActOnTarget(actorRole: CityRole, targetRole: CityRole, action: 'kick' | 'promote'): boolean {
@@ -844,14 +922,12 @@ export class CityService {
     if (membership.role !== CityRole.MAYOR) throw new ForbiddenException('Only the Mayor can reset the budget');
 
     await this.prisma.$transaction([
+      this.prisma.cityBudgetTransaction.deleteMany({
+        where: { cityId, type: 'deposit' },
+      }),
       this.prisma.city.update({
         where: { id: cityId },
-        data: {
-          budgetCoins: 0, budgetGems: 0,
-          budgetBriks: 0, budgetGlass: 0, budgetNails: 0,
-          budgetScrew: 0, budgetWood:  0, budgetCement: 0,
-          budgetLastResetAt: new Date(),
-        },
+        data: { budgetLastResetAt: new Date() },
       }),
       this.prisma.cityBudgetTransaction.create({
         data: { cityId, playerId: actorId, type: 'reset' },
