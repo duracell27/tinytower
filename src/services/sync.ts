@@ -47,6 +47,12 @@ let pendingSync = false;
 
 async function doSync(): Promise<void> {
   if (isSyncing) { pendingSync = true; return; }
+
+  if (useAuthStore.getState().pendingRegistration) {
+    await useAuthStore.getState().retryRegistration();
+    return;
+  }
+
   if (!useAuthStore.getState().isAuthenticated) return;
 
   const { commandQueue, lastAckCursor } = useGameStore.getState();

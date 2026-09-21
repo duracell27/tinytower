@@ -187,6 +187,17 @@ export function setupUserPersistence(userId: string): void {
   });
 }
 
+export function migrateToNewUser(newUserId: string): void {
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+    saveTimeout = null;
+  }
+  saveGameState(useGameStore.getState());
+  currentUserId = newUserId;
+  storage = null;
+  saveGameState(useGameStore.getState());
+}
+
 export function teardownPersistence(): void {
   if (storeUnsubscribe) {
     storeUnsubscribe();

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createMMKV } from 'react-native-mmkv';
 import i18n from '../i18n';
 import { api } from '../services/api';
-import { setupUserPersistence, teardownPersistence } from '../services/persistence';
+import { setupUserPersistence, teardownPersistence, migrateToNewUser } from '../services/persistence';
 import { useOnboardingStore } from './onboardingStore';
 import { useGameStore } from './gameStore';
 
@@ -23,6 +23,7 @@ interface AuthState {
   isGuest: boolean;
   isLoading: boolean;
   pendingConvertModal: boolean;
+  pendingRegistration: boolean;
 }
 
 interface AuthActions {
@@ -33,6 +34,7 @@ interface AuthActions {
   logout: () => void;
   loadTokens: () => void;
   enterAsGuest: () => Promise<void>;
+  retryRegistration: () => Promise<void>;
   convertAccount: (email: string, password: string, playerName: string) => Promise<number>;
   requestConvertModal: () => void;
   clearConvertModal: () => void;
@@ -56,6 +58,14 @@ function loadLastPlayer(): PlayerInfo | null {
   try { return JSON.parse(str) as PlayerInfo; } catch { return null; }
 }
 
+const OFFLINE_GUEST_ID = 'offline-guest';
+
+function isNetworkError(e: unknown): boolean {
+  if (e instanceof TypeError) return true;
+  const msg = (e as Error)?.message ?? '';
+  return msg === 'Network request failed';
+}
+
 export const useAuthStore = create<AuthStore>((set, get) => ({
   player: null,
   lastPlayer: null,
@@ -63,6 +73,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   isGuest: false,
   isLoading: false,
   pendingConvertModal: false,
+  pendingRegistration: false,
   requestConvertModal: () => set({ pendingConvertModal: true }),
   clearConvertModal: () => set({ pendingConvertModal: false }),
 
@@ -151,8 +162,32 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       useOnboardingStore.getState().start();
       useGameStore.getState().initOnboardingProductions();
     } catch (e) {
-      set({ isLoading: false });
-      throw e;
+      if (isNetworkError(e)) {
+        const offlinePlayer: PlayerInfo = { id: OFFLINE_GUEST_ID, email: '', playerName: 'Guest', isTemporary: true };
+        setupUserPersistence(OFFLINE_GUEST_ID);
+        set({ player: offlinePlayer, isAuthenticated: true, isGuest: true, pendingRegistration: true, isLoading: false });
+        useOnboardingStore.getState().reset();
+        useOnboardingStore.getState().start();
+        useGameStore.getState().initOnboardingProductions();
+      } else {
+        set({ isLoading: false });
+        throw e;
+      }
+    }
+  },
+
+  retryRegistration: async () => {
+    if (!get().pendingRegistration) return;
+    try {
+      const data = await api.registerAsGuest();
+      migrateToNewUser(data.player.id);
+      api.setTokens(data.accessToken, data.refreshToken);
+      getStorage().set('player', JSON.stringify(data.player));
+      saveLastPlayer(data.player);
+      set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, pendingRegistration: false });
+      setupUserPersistence(data.player.id);
+    } catch {
+      // Still offline, retry next sync cycle
     }
   },
 
