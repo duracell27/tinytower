@@ -874,8 +874,8 @@ const player = useAuthStore((s) => s.player);
 
         {/* Sync status card */}
         <Pressable
-          onPress={() => hasExpandContent && setSyncExpanded((v) => !v)}
-          style={({ pressed }) => [styles.syncCard, { backgroundColor: theme.surface }, pressed && hasExpandContent && styles.syncCardPressed]}
+          onPress={() => { syncService.triggerSync(); if (hasExpandContent) setSyncExpanded((v) => !v); }}
+          style={({ pressed }) => [styles.syncCard, { backgroundColor: theme.surface }, pressed && styles.syncCardPressed]}
         >
           <View style={styles.syncRow}>
             <View style={[
@@ -894,14 +894,10 @@ const player = useAuthStore((s) => s.player);
               {syncStatus === 'pending' && t('profile.sync.pending', { count: commandQueueLength })}
               {syncStatus === 'critical' && t('profile.sync.critical', { count: commandQueueLength })}
             </LocaleText>
-            <Pressable
-              onPress={() => syncService.triggerSync()}
-              style={({ pressed }) => [styles.syncTimeRow, pressed && { opacity: 0.6 }]}
-              hitSlop={8}
-            >
+            <View style={styles.syncTimeRow}>
               <SyncIcon color={theme.textMuted} />
               <LocaleText style={[styles.syncTime, { color: theme.textMuted }]}>{formatSyncTime(lastSyncAt, now)}</LocaleText>
-            </Pressable>
+            </View>
             {hasExpandContent && (
               <View style={styles.chevron}>
                 <ChevronIcon expanded={syncExpanded} />
