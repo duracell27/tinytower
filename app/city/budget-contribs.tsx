@@ -317,6 +317,7 @@ export default function BudgetContribsScreen() {
       <Modal visible={confirmReset} transparent animationType="fade" onRequestClose={() => setConfirmReset(false)}>
         <Pressable style={styles.overlay} onPress={() => setConfirmReset(false)}>
           <Pressable style={[styles.popupCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+            <Image source={require('../../assets/img/warningIcon.png')} style={styles.popupWarnImg} contentFit="contain" />
             <LocaleText style={[styles.popupTitle, { color: theme.text }]}>
               {t('city.budget.resetBudget')}
             </LocaleText>
@@ -325,20 +326,22 @@ export default function BudgetContribsScreen() {
             </LocaleText>
             <View style={styles.popupBtns}>
               <TouchableOpacity
-                style={[styles.popupActionBtn, { backgroundColor: isDark ? '#0D1F2D' : '#F0F4FA' }]}
+                style={[styles.popupActionBtn, { backgroundColor: isDark ? '#243448' : '#F0F4FA' }]}
                 onPress={() => setConfirmReset(false)}
                 activeOpacity={0.7}
               >
-                <LocaleText style={[styles.popupCancelText, { color: theme.textMuted as string }]}>
-                  {t('common.cancel')}
+                <LocaleText style={[styles.popupCancelText, { color: isDark ? '#8AAFD4' : '#555' }]}>
+                  {t('city.budget.cancel')}
                 </LocaleText>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.popupActionBtn, { backgroundColor: '#FCE8E8' }]}
+                style={[styles.popupActionBtn, { backgroundColor: isDark ? '#3A1010' : '#FCE8E8' }]}
                 onPress={handleReset}
                 activeOpacity={0.7}
               >
-                <LocaleText style={styles.popupResetText}>{t('city.budget.resetBudget')}</LocaleText>
+                <LocaleText style={[styles.popupResetText, { color: isDark ? '#FF6B6B' : '#C03030' }]}>
+                  {t('city.budget.resetBudget')}
+                </LocaleText>
               </TouchableOpacity>
             </View>
           </Pressable>
@@ -529,6 +532,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
+  popupWarnImg:   { width: 52, height: 52 },
   popupTitle:     { fontFamily: 'Fredoka_700Bold', fontSize: 18 },
   popupBody:      { fontFamily: 'Fredoka_500Medium', fontSize: 14, textAlign: 'center', lineHeight: 20 },
   popupIcon:      { width: 52, height: 52 },
