@@ -27,6 +27,7 @@ import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
 import * as Clipboard from 'expo-clipboard';
 import type { Command } from '../../shared/types';
 import { api, type PlayerProfile } from '../../src/services/api';
+import { syncService } from '../../src/services/sync';
 import { useFriendStore } from '../../src/stores/friendStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useBlockStore } from '../../src/stores/blockStore';
@@ -893,10 +894,14 @@ const player = useAuthStore((s) => s.player);
               {syncStatus === 'pending' && t('profile.sync.pending', { count: commandQueueLength })}
               {syncStatus === 'critical' && t('profile.sync.critical', { count: commandQueueLength })}
             </LocaleText>
-            <View style={styles.syncTimeRow}>
+            <Pressable
+              onPress={() => syncService.triggerSync()}
+              style={({ pressed }) => [styles.syncTimeRow, pressed && { opacity: 0.6 }]}
+              hitSlop={8}
+            >
               <SyncIcon color={theme.textMuted} />
               <LocaleText style={[styles.syncTime, { color: theme.textMuted }]}>{formatSyncTime(lastSyncAt, now)}</LocaleText>
-            </View>
+            </Pressable>
             {hasExpandContent && (
               <View style={styles.chevron}>
                 <ChevronIcon expanded={syncExpanded} />
