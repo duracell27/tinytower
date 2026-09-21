@@ -291,6 +291,7 @@ const player = useAuthStore((s) => s.player);
   const logout = useAuthStore((s) => s.logout);
   const convertAccount = useAuthStore((s) => s.convertAccount);
   const isTemporary = player?.isTemporary ?? false;
+  const pendingRegistration = useAuthStore((s) => s.pendingRegistration);
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
@@ -733,7 +734,7 @@ const player = useAuthStore((s) => s.player);
           </View>
         </Pressable>
 
-        {isTemporary && (
+        {isTemporary && !pendingRegistration && (
           <Pressable
             onPress={() => setConvertOpen(true)}
             style={({ pressed }) => [styles.convertBanner, pressed && { opacity: 0.88 }]}

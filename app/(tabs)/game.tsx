@@ -122,6 +122,7 @@ export default function GameScreen() {
   const player = useAuthStore((s) => s.player);
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
   const isTemporary = player?.isTemporary ?? false;
+  const pendingRegistration = useAuthStore((s) => s.pendingRegistration);
 
   const isOnboarding = useOnboardingStore((s) => s.isActive);
   const onboardingStep = useOnboardingStore((s) => s.step);
@@ -958,7 +959,7 @@ export default function GameScreen() {
               useOnboardingStore.getState().notifyElevatorOpened();
             }}
           />
-          {isTemporary && !isOnboarding && (
+          {isTemporary && !pendingRegistration && !isOnboarding && (
             <Pressable
               onPress={() => { useAuthStore.getState().requestConvertModal(); router.navigate('/(tabs)/profile'); }}
               style={({ pressed }) => [styles.registerBanner, pressed && { opacity: 0.82 }]}
