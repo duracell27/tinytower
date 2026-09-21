@@ -159,6 +159,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     } catch {
       const offlinePlayer: PlayerInfo = { id: OFFLINE_GUEST_ID, email: '', playerName: 'Guest', isTemporary: true };
       setupUserPersistence(OFFLINE_GUEST_ID);
+      useGameStore.setState({ isHydrated: true });
       set({ player: offlinePlayer, isAuthenticated: true, isGuest: true, pendingRegistration: true, isLoading: false });
       useOnboardingStore.getState().reset();
       useOnboardingStore.getState().start();
