@@ -18,6 +18,7 @@ import { MailModule } from './mail/mail.module';
 import { ReportModule } from './report/report.module';
 import { BlockModule } from './block/block.module';
 import { CityModule } from './city/city.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { CityModule } from './city/city.module';
     ReportModule,
     BlockModule,
     CityModule,
+    PaymentsModule,
   ],
 })
 export class AppModule {}
