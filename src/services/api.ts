@@ -1,4 +1,5 @@
 import { createMMKV } from 'react-native-mmkv';
+import type { ShopRewards } from '../../shared/types';
 
 export interface LeaderboardEntry {
   rank: number;
@@ -475,6 +476,8 @@ export const api = {
     request<void>('POST', `/city/${cityId}/budget/reset`),
   getCityHistory: (cityId: string, page: number) =>
     request<CityHistoryResponse>('GET', `/city/${cityId}/history?page=${page}`),
+  notifyPurchase: (body: { packId: string; transactionId: string }) =>
+    request<{ rewards: ShopRewards }>('POST', '/payments/notify', body),
   setTokens,
   clearTokens,
   getAccessToken,
