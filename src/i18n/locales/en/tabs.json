@@ -610,7 +610,20 @@
       "simplifiedRewardsDesc": "Shows items received in the elevator below the transport button, instead of separate popups",
       "languageSection": "Language",
       "languageEn": "🇺🇸 English",
-      "languageUk": "🇺🇦 Ukrainian"
+      "languageUk": "🇺🇦 Ukrainian",
+      "dangerZoneSection": "Danger zone",
+      "deleteAccount": "Delete account",
+      "deleteAccountDesc": "Permanently removes your account and all data"
+    },
+    "deleteAccountModal": {
+      "title": "Delete account",
+      "warning": "This action is permanent and cannot be undone. All your progress, coins, gems and data will be lost forever.",
+      "confirmLabel": "Type your nickname to confirm",
+      "confirmPlaceholder": "Your nickname",
+      "confirmButton": "Delete my account",
+      "cancelButton": "Cancel",
+      "errorMismatch": "Nickname does not match",
+      "errorGeneric": "Failed to delete account. Please try again."
     }
   },
   "menu": {

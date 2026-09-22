@@ -120,6 +120,11 @@ export class AuthService {
     if (keys.length > 0) await this.redis.del(...keys);
   }
 
+  async deleteAccount(playerId: string) {
+    await this.logout(playerId);
+    await this.playerService.deleteById(playerId);
+  }
+
   private async generateUniqueGuestName(): Promise<string> {
     for (let i = 0; i < 10; i++) {
       const adj = GUEST_ADJECTIVES[Math.floor(Math.random() * GUEST_ADJECTIVES.length)];

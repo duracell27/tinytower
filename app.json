@@ -37,8 +37,7 @@
       "expo-image",
       "expo-font",
       "expo-router",
-      "expo-localization",
-      "react-native-purchases"
+      "expo-localization"
     ]
   }
 }

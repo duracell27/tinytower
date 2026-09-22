@@ -434,6 +434,8 @@ export const api = {
     request<{ player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: false }; registrationGems: number }>(
       'POST', '/auth/convert', { email, password, playerName },
     ),
+  deleteAccount: () =>
+    request<void>('DELETE', '/auth/account'),
   createCity: (name: string) =>
     request<CityDetail>('POST', '/city', { name }),
   getMyCityInfo: () =>

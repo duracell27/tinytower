@@ -32,6 +32,7 @@ interface AuthActions {
   quickLogin: (password: string) => Promise<void>;
   clearLastPlayer: () => void;
   logout: () => void;
+  deleteAccount: () => Promise<void>;
   loadTokens: () => void;
   enterAsGuest: () => Promise<void>;
   retryRegistration: () => Promise<void>;
@@ -143,6 +144,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     getStorage().remove('player');
     getStorage().remove('pendingRegistration');
     set({ player: null, isAuthenticated: false, isGuest: false, pendingRegistration: false });
+  },
+
+  deleteAccount: async () => {
+    await api.deleteAccount();
+    teardownPersistence();
+    api.clearTokens();
+    getStorage().remove('player');
+    getStorage().remove('pendingRegistration');
+    getStorage().remove('lastPlayer');
+    set({ player: null, lastPlayer: null, isAuthenticated: false, isGuest: false, pendingRegistration: false });
   },
 
   enterAsGuest: async () => {

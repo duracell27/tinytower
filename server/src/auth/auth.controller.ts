@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Req, HttpCode, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Delete, Body, UseGuards, Req, HttpCode, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RegisterSchema } from './dto/register.dto';
@@ -53,6 +53,14 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async logout(@Req() req: { user: { playerId: string } }) {
     await this.authService.logout(req.user.playerId);
+    return {};
+  }
+
+  @Delete('account')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async deleteAccount(@Req() req: { user: { playerId: string } }) {
+    await this.authService.deleteAccount(req.user.playerId);
     return {};
   }
 }

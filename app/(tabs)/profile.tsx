@@ -367,6 +367,34 @@ const player = useAuthStore((s) => s.player);
 
   const settingsScrimStyle = useAnimatedStyle(() => ({ opacity: settingsScrimOpacity.value }));
   const settingsSheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: settingsTranslateY.value }] }));
+  const deleteAccount = useAuthStore((s) => s.deleteAccount);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteNickInput, setDeleteNickInput] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleOpenDeleteModal = useCallback(() => {
+    setDeleteNickInput('');
+    setDeleteError('');
+    setDeleteModalVisible(true);
+  }, []);
+
+  const handleDeleteAccount = async () => {
+    if (deleteNickInput.trim() !== (player?.playerName ?? '')) {
+      setDeleteError(t('profile.deleteAccountModal.errorMismatch'));
+      return;
+    }
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      await deleteAccount();
+      router.replace('/');
+    } catch {
+      setDeleteError(t('profile.deleteAccountModal.errorGeneric'));
+      setDeleteLoading(false);
+    }
+  };
+
   const liftSimplifiedRewards = useSettingsStore((s) => s.liftSimplifiedRewards);
   const setLiftSimplifiedRewards = useSettingsStore((s) => s.setLiftSimplifiedRewards);
   const totalWorkers = workers.length;
@@ -825,6 +853,7 @@ const player = useAuthStore((s) => s.player);
               >
                 <View style={settingsStyles.handle} />
                 <LocaleText style={[settingsStyles.title, { color: theme.text }]}>{t('profile.settings.title')}</LocaleText>
+                <ScrollView bounces={false} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
                 <LocaleText style={[settingsStyles.sectionHeader, { color: theme.textMuted }]}>
                   {t('profile.settings.liftSection')}
@@ -869,10 +898,82 @@ const player = useAuthStore((s) => s.player);
                     );
                   })}
                 </View>
+
+                {!isTemporary && (
+                  <>
+                    <LocaleText style={[settingsStyles.sectionHeader, { color: '#C0372A', marginTop: 24 }]}>
+                      {t('profile.settings.dangerZoneSection')}
+                    </LocaleText>
+                    <Pressable
+                      onPress={handleOpenDeleteModal}
+                      style={({ pressed }) => [settingsStyles.deleteRow, pressed && { opacity: 0.75 }]}
+                    >
+                      <View style={settingsStyles.rowLeft}>
+                        <LocaleText style={[settingsStyles.rowTitle, { color: '#C0372A' }]}>
+                          {t('profile.settings.deleteAccount')}
+                        </LocaleText>
+                        <LocaleText style={[settingsStyles.rowDesc, { color: theme.textMuted }]}>
+                          {t('profile.settings.deleteAccountDesc')}
+                        </LocaleText>
+                      </View>
+                    </Pressable>
+                  </>
+                )}
+                </ScrollView>
               </Animated.View>
             </GestureDetector>
           </GestureHandlerRootView>
         </Modal>}
+
+        {/* Delete account confirmation modal */}
+        <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
+          <KeyboardAvoidingView style={styles.convertOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={16}>
+            <Pressable style={styles.convertBackdrop} onPress={() => !deleteLoading && setDeleteModalVisible(false)} />
+            <View style={[deleteStyles.card, { backgroundColor: theme.surface }]}>
+              <View style={deleteStyles.warningBadge}>
+                <LocaleText style={deleteStyles.warningBadgeText}>⚠</LocaleText>
+              </View>
+              <LocaleText style={[deleteStyles.title, { color: '#C0372A' }]}>
+                {t('profile.deleteAccountModal.title')}
+              </LocaleText>
+              <LocaleText style={[deleteStyles.warningText, { color: theme.textMuted }]}>
+                {t('profile.deleteAccountModal.warning')}
+              </LocaleText>
+              <LocaleText style={[styles.convertLabel, { color: theme.textMuted }]}>
+                {t('profile.deleteAccountModal.confirmLabel')}
+              </LocaleText>
+              <TextInput
+                style={[styles.convertInput, { borderColor: '#C0372A', color: theme.text, backgroundColor: theme.surfaceSub }]}
+                value={deleteNickInput}
+                onChangeText={setDeleteNickInput}
+                placeholder={player?.playerName ?? t('profile.deleteAccountModal.confirmPlaceholder')}
+                placeholderTextColor={theme.textMuted}
+                autoCapitalize="none"
+                editable={!deleteLoading}
+              />
+              {deleteError ? <LocaleText style={styles.convertErrorText}>{deleteError}</LocaleText> : null}
+              <Pressable
+                onPress={handleDeleteAccount}
+                disabled={deleteLoading || deleteNickInput.trim() !== (player?.playerName ?? '')}
+                style={[deleteStyles.deleteBtn, (deleteLoading || deleteNickInput.trim() !== (player?.playerName ?? '')) && deleteStyles.deleteBtnDisabled]}
+              >
+                {deleteLoading
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : <LocaleText style={deleteStyles.deleteBtnText}>{t('profile.deleteAccountModal.confirmButton')}</LocaleText>
+                }
+              </Pressable>
+              <Pressable
+                onPress={() => setDeleteModalVisible(false)}
+                disabled={deleteLoading}
+                style={({ pressed }) => [deleteStyles.cancelBtn, { borderColor: theme.divider }, pressed && { opacity: 0.7 }]}
+              >
+                <LocaleText style={[deleteStyles.cancelBtnText, { color: theme.textMuted }]}>
+                  {t('profile.deleteAccountModal.cancelButton')}
+                </LocaleText>
+              </Pressable>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
 
         {/* Sync status card */}
         <Pressable
@@ -1492,6 +1593,75 @@ const styles = StyleSheet.create({
   },
 });
 
+const deleteStyles = StyleSheet.create({
+  card: {
+    width: '100%',
+    borderRadius: 24,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  warningBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(192,55,42,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  warningBadgeText: {
+    fontSize: 26,
+  },
+  title: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 22,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  warningText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13.5,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  deleteBtn: {
+    marginTop: 14,
+    width: '100%',
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: '#C0372A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteBtnDisabled: {
+    opacity: 0.45,
+  },
+  deleteBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 17,
+    color: '#fff',
+  },
+  cancelBtn: {
+    marginTop: 10,
+    width: '100%',
+    height: 48,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+  },
+});
+
 const settingsStyles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -1504,6 +1674,7 @@ const settingsStyles = StyleSheet.create({
   sheet: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    maxHeight: '85%',
     paddingBottom: 40,
     paddingHorizontal: 20,
     shadowColor: '#000',
@@ -1567,5 +1738,11 @@ const settingsStyles = StyleSheet.create({
   langBtnText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
+  },
+  deleteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    gap: 12,
   },
 });

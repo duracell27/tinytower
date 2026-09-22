@@ -610,7 +610,20 @@
       "simplifiedRewardsDesc": "Показує отримані предмети у ліфті під кнопкою транспортування, замість окремих вікон",
       "languageSection": "Мова",
       "languageEn": "🇺🇸 Англійська",
-      "languageUk": "🇺🇦 Українська"
+      "languageUk": "🇺🇦 Українська",
+      "dangerZoneSection": "Небезпечна зона",
+      "deleteAccount": "Видалити акаунт",
+      "deleteAccountDesc": "Назавжди видаляє акаунт і всі дані"
+    },
+    "deleteAccountModal": {
+      "title": "Видалення акаунту",
+      "warning": "Ця дія незворотна. Весь ваш прогрес, монети, кристали та дані будуть втрачені назавжди.",
+      "confirmLabel": "Введіть нікнейм для підтвердження",
+      "confirmPlaceholder": "Ваш нікнейм",
+      "confirmButton": "Видалити мій акаунт",
+      "cancelButton": "Скасувати",
+      "errorMismatch": "Нікнейм не співпадає",
+      "errorGeneric": "Не вдалося видалити акаунт. Спробуйте ще раз."
     }
   },
   "menu": {

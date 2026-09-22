@@ -29,6 +29,10 @@ export class PlayerService {
     return this.prisma.player.findUnique({ where: { referralCode: code } });
   }
 
+  async deleteById(playerId: string) {
+    return this.prisma.player.delete({ where: { id: playerId } });
+  }
+
   async createWithInitialState(email: string, passwordHash: string, playerName: string, isTemporary = false) {
     const initial = createInitialState(gameConfig);
 
