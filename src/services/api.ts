@@ -437,6 +437,8 @@ export const api = {
     request<CityDetail>('POST', '/city', { name }),
   getMyCityInfo: () =>
     request<CityDetail | null>('GET', '/city/my'),
+  browseCities: () =>
+    request<CitySummary[]>('GET', '/city/browse'),
   searchCities: (q: string) =>
     request<CitySummary[]>('GET', `/city/search?q=${encodeURIComponent(q)}`),
   getCityRankings: (page: number) =>

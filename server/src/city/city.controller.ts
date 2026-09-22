@@ -38,6 +38,12 @@ export class CityController {
     return this.cityService.searchCities(q ?? '');
   }
 
+  @Get('browse')
+  @UseGuards(JwtAuthGuard)
+  browseCities() {
+    return this.cityService.browseCities();
+  }
+
   @Get('rankings')
   @UseGuards(JwtAuthGuard)
   getCityRankings(@Query('page') page: string) {

@@ -22,6 +22,7 @@ interface CityActions {
   kickMember: (cityId: string, playerId: string) => Promise<void>;
   changeMemberRole: (cityId: string, playerId: string, role: CityRole) => Promise<void>;
   updateCity: (cityId: string, updates: { name?: string; description?: string }) => Promise<void>;
+  browseCities: () => Promise<CitySummary[]>;
   searchCities: (q: string) => Promise<CitySummary[]>;
   getCityById: (id: string) => Promise<CityDetail>;
   getCityRankings: (page: number) => Promise<CityRankingsResponse>;
@@ -127,6 +128,10 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
     } catch (e: any) {
       throw e;
     }
+  },
+
+  browseCities: async () => {
+    return api.browseCities();
   },
 
   searchCities: async (q: string) => {

@@ -469,7 +469,7 @@ function NoCityView({ isDark, t, router, onCreatePress }: { isDark: boolean; t: 
 
       <TouchableOpacity
         style={[styles.actionCard, { backgroundColor: isDark ? '#3A7ED8' : '#2E6EC9' }]}
-        onPress={() => router.push('/city/search')}
+        onPress={() => router.push('/city/browse')}
         activeOpacity={0.7}
       >
         <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
   loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
   // NoCityView scroll
-  scroll: { paddingHorizontal: 20, paddingTop: 130, paddingBottom: 100 },
+  scroll: { paddingHorizontal: 20, paddingTop: 180, paddingBottom: 100 },
 
   // MyCityView scroll
   cityScroll: { paddingTop: 155, paddingBottom: 8 },

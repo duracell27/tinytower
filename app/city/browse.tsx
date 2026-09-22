@@ -1,7 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View, StyleSheet, TextInput, FlatList, TouchableOpacity,
-  ActivityIndicator, useColorScheme,
+  View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -16,44 +15,38 @@ const WORKER_ICON = require('../../assets/img/worker.png');
 const CITY_ICON   = require('../../assets/img/city/cityBuildings.png');
 const LVL_ICON    = require('../../assets/img/lvlIcon.png');
 
-export default function CitySearchScreen() {
+export default function CityBrowseScreen() {
   const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { searchCities, getCityRankings } = useCityStore();
+  const { browseCities } = useCityStore();
 
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<CitySummary[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
-  const [totalCities, setTotalCities] = useState<number | null>(null);
+  const [cities, setCities] = useState<CitySummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    getCityRankings(1).then((res) => setTotalCities(res.total)).catch(() => {});
-  }, []);
-
-  const handleSearch = useCallback(async (q: string) => {
-    if (q.length < 2) return;
+  const load = useCallback(async () => {
     setLoading(true);
-    setSearched(true);
     try {
-      const data = await searchCities(q);
-      setResults(data);
+      const data = await browseCities();
+      setCities(data);
     } finally {
       setLoading(false);
     }
-  }, [searchCities]);
+  }, [browseCities]);
 
-  const onChangeText = (text: string) => {
-    setQuery(text);
-    if (text.length >= 2) {
-      handleSearch(text);
-    } else {
-      setResults([]);
-      setSearched(false);
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const data = await browseCities();
+      setCities(data);
+    } finally {
+      setRefreshing(false);
     }
-  };
+  }, [browseCities]);
+
+  useEffect(() => { load(); }, [load]);
 
   const renderItem = ({ item }: { item: CitySummary }) => (
     <TouchableOpacity
@@ -89,14 +82,23 @@ export default function CitySearchScreen() {
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <AppBackground style={[styles.bg, isDark && styles.bgDark]}>
+        <View style={[styles.center, { paddingTop: insets.top }]}>
+          <ActivityIndicator color={isDark ? '#6BAED0' : '#2E6EC9'} />
+        </View>
+      </AppBackground>
+    );
+  }
+
   return (
     <AppBackground style={[styles.bg, isDark && styles.bgDark]}>
       <FlatList
-        data={results}
-        keyExtractor={(item) => item.id}
+        data={cities}
+        keyExtractor={(e) => e.id}
         contentContainerStyle={[styles.list, { paddingTop: insets.top }]}
         renderItem={renderItem}
-        keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
@@ -106,48 +108,46 @@ export default function CitySearchScreen() {
             <View style={styles.headerCenter}>
               <Image source={CITY_ICON} style={styles.cityHeaderIcon} contentFit="contain" />
               <LocaleText style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>
-                {t('city.search.title')}
+                {t('city.browse.title')}
               </LocaleText>
-              {totalCities != null && (
-                <View style={[styles.countBadge, isDark && styles.countBadgeDark]}>
-                  <LocaleText style={[styles.countBadgeText, isDark && { color: '#6BAED0' }]}>
-                    {t('city.search.citiesCount', { count: totalCities })}
-                  </LocaleText>
-                </View>
-              )}
+              <LocaleText style={[styles.headerSubtitle, isDark && { color: '#8A9A80' }]}>
+                {t('city.browse.subtitle')}
+              </LocaleText>
             </View>
 
-            <View style={styles.inputWrap}>
-              <TextInput
-                style={[styles.input, isDark && styles.inputDark]}
-                placeholder={t('city.search.placeholder')}
-                placeholderTextColor={isDark ? '#667080' : '#A0AEB8'}
-                value={query}
-                onChangeText={onChangeText}
-                autoFocus
-                returnKeyType="search"
-                onSubmitEditing={() => handleSearch(query)}
-              />
-            </View>
+            <TouchableOpacity
+              style={[styles.searchBtn, isDark && styles.searchBtnDark]}
+              onPress={() => router.push('/city/search')}
+              activeOpacity={0.7}
+            >
+              <LocaleText style={[styles.searchBtnText, isDark && { color: '#6BAED0' }]}>
+                {t('city.search.title')}
+              </LocaleText>
+            </TouchableOpacity>
           </View>
         }
         ListEmptyComponent={
-          loading ? (
-            <View style={styles.center}>
-              <ActivityIndicator color={isDark ? '#6BAED0' : '#2E6EC9'} />
-            </View>
-          ) : query.length < 2 && !searched ? (
-            <View style={styles.center}>
-              <LocaleText style={[styles.hint, isDark && { color: '#8A9A80' }]}>
-                {t('city.search.minChars')}
-              </LocaleText>
-            </View>
-          ) : searched && results.length === 0 ? (
-            <View style={styles.center}>
-              <LocaleText style={[styles.hint, isDark && { color: '#8A9A80' }]}>
-                {t('city.search.empty')}
-              </LocaleText>
-            </View>
+          <View style={styles.center}>
+            <LocaleText style={[styles.emptyText, isDark && { color: '#8A9A80' }]}>
+              {t('city.browse.empty')}
+            </LocaleText>
+          </View>
+        }
+        ListFooterComponent={
+          cities.length > 0 ? (
+            <TouchableOpacity
+              style={[styles.refreshBtn, isDark && styles.refreshBtnDark]}
+              onPress={refresh}
+              disabled={refreshing}
+              activeOpacity={0.7}
+            >
+              {refreshing
+                ? <ActivityIndicator color={isDark ? '#6BAED0' : '#2E6EC9'} />
+                : <LocaleText style={[styles.refreshBtnText, isDark && { color: '#6BAED0' }]}>
+                    {t('city.browse.refresh')}
+                  </LocaleText>
+              }
+            </TouchableOpacity>
           ) : null
         }
       />
@@ -158,7 +158,7 @@ export default function CitySearchScreen() {
 const styles = StyleSheet.create({
   bg: { flex: 1, backgroundColor: '#F0F8FF' },
   bgDark: { backgroundColor: '#0D1F2D' },
-  center: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 },
   list: { paddingBottom: 40 },
 
   header: { paddingBottom: 16, paddingHorizontal: 16 },
@@ -167,30 +167,18 @@ const styles = StyleSheet.create({
 
   headerCenter: { alignItems: 'center', paddingBottom: 14 },
   cityHeaderIcon: { width: 56, height: 56, marginBottom: 8 },
-  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#0A1C30', marginBottom: 8 },
+  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#0A1C30', marginBottom: 4 },
+  headerSubtitle: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#5A7090' },
 
-  countBadge: {
+  searchBtn: {
     backgroundColor: '#E8F2FA',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-  },
-  countBadgeDark: { backgroundColor: 'rgba(46,110,201,0.15)' },
-  countBadgeText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#2E6EC9' },
-
-  inputWrap: { marginTop: 4 },
-  input: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#B0C8D8',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    fontFamily: 'Geologica_500Medium',
-    color: '#0A1C30',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    alignItems: 'center',
   },
-  inputDark: { backgroundColor: '#1A2E3E', borderColor: '#2A4A60', color: '#DDE8D8' },
+  searchBtnDark: { backgroundColor: 'rgba(46,110,201,0.15)' },
+  searchBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2E6EC9' },
 
   row: {
     flexDirection: 'row',
@@ -225,5 +213,17 @@ const styles = StyleSheet.create({
   pillIcon: { width: 18, height: 18 },
   memberPillText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#2E6EC9' },
 
-  hint: { fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#7A8A80' },
+  emptyText: { fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#7A8A80' },
+
+  refreshBtn: {
+    marginHorizontal: 16,
+    marginTop: 4,
+    marginBottom: 16,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: '#E8F0F8',
+    alignItems: 'center',
+  },
+  refreshBtnDark: { backgroundColor: 'rgba(255,255,255,0.07)' },
+  refreshBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2E6EC9' },
 });
