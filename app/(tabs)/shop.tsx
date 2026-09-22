@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, useWindowDimensions, useColorScheme,
+  View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, useWindowDimensions, useColorScheme, Alert,
 } from 'react-native';
 import LocaleText from '../../src/components/LocaleText';
 import { Image } from 'expo-image';
@@ -13,6 +13,7 @@ import { useAuthStore } from '../../src/stores/authStore';
 import { xpForLevel } from '../../shared/engine/xp';
 import { formatNum } from '../../src/utils/format';
 import { useGameClock } from '../../src/hooks/useGameClock';
+import { usePurchase } from '../../src/hooks/usePurchase';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
@@ -377,7 +378,6 @@ export default function ShopScreen() {
   const playerXp     = useGameStore((s) => s.playerXp);
   const gems         = useGameStore((s) => s.gems);
   const player       = useAuthStore((s) => s.player);
-  const shopPurchase = useGameStore((s) => s.shopPurchase);
   const coinBoostPercent   = useGameStore((s) => s.coinBoostPercent);
   const xpBoostPercent     = useGameStore((s) => s.xpBoostPercent);
   const coinBoostExpiresAt = useGameStore((s) => s.coinBoostExpiresAt);
@@ -400,20 +400,23 @@ export default function ShopScreen() {
   const cardWidth = Math.floor((screenWidth - 32 - 12) / 2);
   const fullWidth = screenWidth - 32;
 
+  const { purchasing, purchase, error, clearError } = usePurchase();
   const [buyingId, setBuyingId] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, []);
+    if (error) {
+      Alert.alert('Помилка покупки', error, [{ text: 'OK', onPress: clearError }]);
+    }
+  }, [error]);
 
-  const handleBuy = (pack: ShopPack) => {
-    if (buyingId) return;
+  const handleBuy = async (pack: ShopPack) => {
+    if (purchasing) return;
     setBuyingId(pack.id);
-    timerRef.current = setTimeout(() => {
-      shopPurchase(pack);
+    try {
+      await purchase(pack);
+    } finally {
       setBuyingId(null);
-    }, 3000);
+    }
   };
 
   return (
@@ -443,7 +446,7 @@ export default function ShopScreen() {
           <View style={styles.grid}>
             {DIAMOND_PACKS.map((pack) => (
               <DiamondCard key={pack.id} pack={pack} onBuy={handleBuy}
-                buying={buyingId === pack.id} disabled={buyingId !== null}
+                buying={buyingId === pack.id} disabled={purchasing}
                 cardWidth={cardWidth} btnColor={pack.btnColor ?? SECTION_THEME.diamonds.btn} />
             ))}
           </View>
@@ -453,7 +456,7 @@ export default function ShopScreen() {
           <View style={styles.column}>
             {BUNDLE_PACKS.map((pack) => (
               <FullWidthCard key={pack.id} pack={pack} onBuy={handleBuy}
-                buying={buyingId === pack.id} disabled={buyingId !== null}
+                buying={buyingId === pack.id} disabled={purchasing}
                 fullWidth={fullWidth} btnColor={pack.btnColor ?? SECTION_THEME.bundles.btn} />
             ))}
           </View>
@@ -463,7 +466,7 @@ export default function ShopScreen() {
           <View style={styles.column}>
             {BUILDER_PACKS.map((pack) => (
               <FullWidthCard key={pack.id} pack={pack} onBuy={handleBuy}
-                buying={buyingId === pack.id} disabled={buyingId !== null}
+                buying={buyingId === pack.id} disabled={purchasing}
                 fullWidth={fullWidth} btnColor={pack.btnColor ?? SECTION_THEME.builder.btn} />
             ))}
           </View>
@@ -473,7 +476,7 @@ export default function ShopScreen() {
           <View style={styles.grid}>
             {MATERIAL_PACKS.map((pack) => (
               <MaterialCard key={pack.id} pack={pack} onBuy={handleBuy}
-                buying={buyingId === pack.id} disabled={buyingId !== null}
+                buying={buyingId === pack.id} disabled={purchasing}
                 cardWidth={cardWidth} btnColor={pack.btnColor ?? SECTION_THEME.materials.btn} />
             ))}
           </View>
