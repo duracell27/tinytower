@@ -8,12 +8,16 @@ import InsufficientResourcesModal from './InsufficientResourcesModal';
 import TokenInsufficientModal from './TokenInsufficientModal';
 import TaskRewardModal from './TaskRewardModal';
 import PurchaseSuccessModal from './PurchaseSuccessModal';
+import PurchaseLoadingOverlay from './PurchaseLoadingOverlay';
 import FloorUpgradeModal from './FloorUpgradeModal';
 import ProductionDetailModal from './ProductionDetailModal';
 import WarehouseFullModal from './WarehouseFullModal';
 import CityAlertModal from './CityAlertModal';
+import { useGameStore } from '../stores/gameStore';
 
 export default function GlobalOverlay() {
+  const purchasingActive = useGameStore((s) => s.purchasingActive);
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <AchievementModal />
@@ -24,6 +28,7 @@ export default function GlobalOverlay() {
       <TokenInsufficientModal />
       <TaskRewardModal />
       <PurchaseSuccessModal />
+      <PurchaseLoadingOverlay visible={purchasingActive} />
       <FloorUpgradeModal />
       <ProductionDetailModal />
       <WarehouseFullModal />

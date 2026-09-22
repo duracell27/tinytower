@@ -185,6 +185,7 @@ interface UIState {
   pendingOpenHotel: boolean;
   pendingOpenWarehouse: boolean;
   pendingPurchaseSuccess: PurchaseSuccessPayload | null;
+  purchasingActive: boolean;
   isHydrated: boolean;
   activeSheetCount: number;
   floorUpgradeModal: { floorId: number } | null;
@@ -269,6 +270,7 @@ interface GameActions {
   setManualPurchaseSuccess: (payload: PurchaseSuccessPayload) => void;
   buyBoost: (pkg: BoostPackage) => void;
   clearPurchaseSuccess: () => void;
+  setPurchasingActive: (v: boolean) => void;
   setPendingDeliverAll: (summary: DeliverAllSummary) => void;
   clearPendingDeliverAll: () => void;
   showHotelFullNotice: () => void;
@@ -499,6 +501,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   pendingOpenHotel: false,
   pendingOpenWarehouse: false,
   pendingPurchaseSuccess: null,
+  purchasingActive: false,
   isHydrated: false,
   activeSheetCount: 0,
   floorUpgradeModal: null,
@@ -604,6 +607,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setTaskReward: (payload) => set({ pendingTaskReward: payload }),
   clearTaskReward: () => set({ pendingTaskReward: null }),
   clearPurchaseSuccess: () => set({ pendingPurchaseSuccess: null }),
+  setPurchasingActive: (v) => set({ purchasingActive: v }),
   setManualPurchaseSuccess: (payload) => {
     set({ pendingPurchaseSuccess: { packName: payload.packName, price: payload.price, rewards: payload.rewards } });
   },
@@ -694,6 +698,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     pendingOpenHotel: false,
     pendingOpenWarehouse: false,
     dailyTasks: { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
+    purchasingActive: false,
     isHydrated: false,
     activeSheetCount: 0,
     floorUpgradeModal: null,
