@@ -15,6 +15,8 @@ export interface ShopPack {
   bonusGems?:   number;       // extra gems on top of base in diamond packs
   description?: string;       // tagline for bundle cards
   badge?:       'best' | 'popular';
+  rcProductId:  string;
+  priceUsd:     number;
   rewards:      ShopRewards;
 }
 
@@ -29,6 +31,7 @@ export const DIAMOND_PACKS: ShopPack[] = [
     id: 'diamonds_1', section: 'diamonds', name: 'shop.packs.diamonds_1.name', price: '$0.99',
     image: require('../../assets/img/shop/purchase1.png'),
     btnColor: '#C9637E',
+    rcProductId: 'com.shmidt.vibetower.shop.diamonds_1', priceUsd: 0.99,
     rewards: { gems: 200 },
   },
   {
@@ -36,6 +39,7 @@ export const DIAMOND_PACKS: ShopPack[] = [
     image: require('../../assets/img/shop/purchase2.png'),
     bonusGems: 20,
     btnColor: '#5E8F42',
+    rcProductId: 'com.shmidt.vibetower.shop.diamonds_2', priceUsd: 1.99,
     rewards: { gems: 420 },
   },
   {
@@ -43,6 +47,7 @@ export const DIAMOND_PACKS: ShopPack[] = [
     image: require('../../assets/img/shop/purchase3.png'),
     bonusGems: 100,
     btnColor: '#2E6EC9',
+    rcProductId: 'com.shmidt.vibetower.shop.diamonds_3', priceUsd: 4.99,
     rewards: { gems: 1100 },
   },
   {
@@ -51,6 +56,7 @@ export const DIAMOND_PACKS: ShopPack[] = [
     bonusGems: 300,
     badge: 'popular',
     btnColor: '#E7A52B', btnTextColor: '#FFF',
+    rcProductId: 'com.shmidt.vibetower.shop.diamonds_4', priceUsd: 9.99,
     rewards: { gems: 2300 },
   },
   {
@@ -59,6 +65,7 @@ export const DIAMOND_PACKS: ShopPack[] = [
     bonusGems: 800,
     badge: 'best',
     btnColor: '#9A6FD0',
+    rcProductId: 'com.shmidt.vibetower.shop.diamonds_5', priceUsd: 19.99,
     rewards: { gems: 4800 },
   },
   {
@@ -66,6 +73,7 @@ export const DIAMOND_PACKS: ShopPack[] = [
     image: require('../../assets/img/shop/purchase6.png'),
     bonusGems: 2500,
     btnColor: '#E05050',
+    rcProductId: 'com.shmidt.vibetower.shop.diamonds_6', priceUsd: 49.99,
     rewards: { gems: 12500 },
   },
 ];
@@ -78,6 +86,7 @@ export const BUNDLE_PACKS: ShopPack[] = [
     imageBgDark: ['#0C4A2C', '#063018'],
     btnColor: '#0C8050',
     description: 'shop.packs.bundle_1.description',
+    rcProductId: 'com.shmidt.vibetower.shop.bundle_1', priceUsd: 1.99,
     rewards: { gems: 150, tools: ALL_TOOLS(3), tokens: ALL_TOKENS(3) },
   },
   {
@@ -87,6 +96,7 @@ export const BUNDLE_PACKS: ShopPack[] = [
     imageBgDark: ['#0A2E60', '#061840'],
     btnColor: '#0A60B0',
     description: 'shop.packs.bundle_2.description',
+    rcProductId: 'com.shmidt.vibetower.shop.bundle_2', priceUsd: 4.99,
     rewards: { gems: 500, tools: ALL_TOOLS(8), tokens: ALL_TOKENS(8) },
   },
   {
@@ -97,6 +107,7 @@ export const BUNDLE_PACKS: ShopPack[] = [
     badge: 'popular',
     btnColor: '#A06000',
     description: 'shop.packs.bundle_3.description',
+    rcProductId: 'com.shmidt.vibetower.shop.bundle_3', priceUsd: 9.99,
     rewards: { gems: 1100, tools: ALL_TOOLS(15), tokens: ALL_TOKENS(20) },
   },
   {
@@ -107,6 +118,7 @@ export const BUNDLE_PACKS: ShopPack[] = [
     badge: 'best',
     btnColor: '#5018A0',
     description: 'shop.packs.bundle_4.description',
+    rcProductId: 'com.shmidt.vibetower.shop.bundle_4', priceUsd: 24.99,
     rewards: { gems: 3000, tools: ALL_TOOLS(30), tokens: ALL_TOKENS(50) },
   },
 ];
@@ -119,6 +131,7 @@ export const BUILDER_PACKS: ShopPack[] = [
     imageBgDark: ['#0A3C20', '#052412'],
     btnColor: '#107838',
     description: 'shop.packs.builder_1.description',
+    rcProductId: 'com.shmidt.vibetower.shop.builder_1', priceUsd: 1.99,
     rewards: { gems: 100, tools: ALL_TOOLS(5) },
   },
   {
@@ -128,6 +141,7 @@ export const BUILDER_PACKS: ShopPack[] = [
     imageBgDark: ['#0A2848', '#06182C'],
     btnColor: '#0848A0',
     description: 'shop.packs.builder_2.description',
+    rcProductId: 'com.shmidt.vibetower.shop.builder_2', priceUsd: 3.99,
     rewards: { gems: 250, tools: ALL_TOOLS(12) },
   },
   {
@@ -138,6 +152,7 @@ export const BUILDER_PACKS: ShopPack[] = [
     badge: 'popular',
     btnColor: '#881858',
     description: 'shop.packs.builder_3.description',
+    rcProductId: 'com.shmidt.vibetower.shop.builder_3', priceUsd: 7.99,
     rewards: { gems: 600, tools: ALL_TOOLS(25) },
   },
   {
@@ -148,6 +163,7 @@ export const BUILDER_PACKS: ShopPack[] = [
     badge: 'best',
     btnColor: '#380888',
     description: 'shop.packs.builder_4.description',
+    rcProductId: 'com.shmidt.vibetower.shop.builder_4', priceUsd: 14.99,
     rewards: { gems: 1200, tools: ALL_TOOLS(50) },
   },
 ];
@@ -158,35 +174,41 @@ export const MATERIAL_PACKS: ShopPack[] = [
     imageBgDark: ['#580C06', '#380806'],
     btnColor: '#B01800',
     description: 'shop.packs.mat_briks.description',
+    rcProductId: 'com.shmidt.vibetower.shop.mat_briks', priceUsd: 0.99,
     image: require('../../assets/img/tools/briks.png'),  rewards: { tools: { briks:  5 } } },
   { id: 'mat_glass',  section: 'materials', name: 'shop.packs.mat_glass.name',  price: '$0.99',
     imageBg:     ['#18C8F0', '#00A0D0'],
     imageBgDark: ['#083C58', '#042438'],
     btnColor: '#007898',
     description: 'shop.packs.mat_glass.description',
+    rcProductId: 'com.shmidt.vibetower.shop.mat_glass', priceUsd: 0.99,
     image: require('../../assets/img/tools/glass.png'),  rewards: { tools: { glass:  5 } } },
   { id: 'mat_nails',  section: 'materials', name: 'shop.packs.mat_nails.name',  price: '$0.99',
     imageBg:     ['#5878C8', '#3050A8'],
     imageBgDark: ['#142040', '#0C1428'],
     btnColor: '#1E3888',
     description: 'shop.packs.mat_nails.description',
+    rcProductId: 'com.shmidt.vibetower.shop.mat_nails', priceUsd: 0.99,
     image: require('../../assets/img/tools/nails.png'),  rewards: { tools: { nails:  5 } } },
   { id: 'mat_screw',  section: 'materials', name: 'shop.packs.mat_screw.name',  price: '$0.99',
     imageBg:     ['#6878A8', '#485888'],
     imageBgDark: ['#182030', '#0E1420'],
     btnColor: '#2E3858',
     description: 'shop.packs.mat_screw.description',
+    rcProductId: 'com.shmidt.vibetower.shop.mat_screw', priceUsd: 0.99,
     image: require('../../assets/img/tools/screw.png'),  rewards: { tools: { screw:  5 } } },
   { id: 'mat_wood',   section: 'materials', name: 'shop.packs.mat_wood.name',   price: '$0.99',
     imageBg:     ['#F0A010', '#D07800'],
     imageBgDark: ['#4C2C00', '#301C00'],
     btnColor: '#A05800',
     description: 'shop.packs.mat_wood.description',
+    rcProductId: 'com.shmidt.vibetower.shop.mat_wood', priceUsd: 0.99,
     image: require('../../assets/img/tools/wood.png'),   rewards: { tools: { wood:   5 } } },
   { id: 'mat_cement', section: 'materials', name: 'shop.packs.mat_cement.name', price: '$0.99',
     imageBg:     ['#788870', '#586858'],
     imageBgDark: ['#182018', '#0E1410'],
     btnColor: '#384838',
     description: 'shop.packs.mat_cement.description',
+    rcProductId: 'com.shmidt.vibetower.shop.mat_cement', priceUsd: 0.99,
     image: require('../../assets/img/tools/cement.png'), rewards: { tools: { cement: 5 } } },
 ];
