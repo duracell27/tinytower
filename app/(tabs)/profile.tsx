@@ -376,7 +376,8 @@ const player = useAuthStore((s) => s.player);
   const handleOpenDeleteModal = useCallback(() => {
     setDeleteNickInput('');
     setDeleteError('');
-    setDeleteModalVisible(true);
+    setSettingsVisible(false);
+    setTimeout(() => setDeleteModalVisible(true), 450);
   }, []);
 
   const handleDeleteAccount = async () => {
@@ -901,22 +902,20 @@ const player = useAuthStore((s) => s.player);
 
                 {!isTemporary && (
                   <>
-                    <LocaleText style={[settingsStyles.sectionHeader, { color: '#C0372A', marginTop: 24 }]}>
-                      {t('profile.settings.dangerZoneSection')}
-                    </LocaleText>
-                    <Pressable
-                      onPress={handleOpenDeleteModal}
-                      style={({ pressed }) => [settingsStyles.deleteRow, pressed && { opacity: 0.75 }]}
-                    >
-                      <View style={settingsStyles.rowLeft}>
-                        <LocaleText style={[settingsStyles.rowTitle, { color: '#C0372A' }]}>
+                    <View style={[settingsStyles.dangerDivider, { backgroundColor: theme.divider }]} />
+                    <View style={settingsStyles.dangerBlock}>
+                      <LocaleText style={settingsStyles.dangerLabel}>
+                        {t('profile.settings.deleteAccountDesc')}
+                      </LocaleText>
+                      <Pressable
+                        onPress={handleOpenDeleteModal}
+                        style={({ pressed }) => [settingsStyles.dangerBtn, pressed && settingsStyles.dangerBtnPressed]}
+                      >
+                        <LocaleText style={settingsStyles.dangerBtnText}>
                           {t('profile.settings.deleteAccount')}
                         </LocaleText>
-                        <LocaleText style={[settingsStyles.rowDesc, { color: theme.textMuted }]}>
-                          {t('profile.settings.deleteAccountDesc')}
-                        </LocaleText>
-                      </View>
-                    </Pressable>
+                      </Pressable>
+                    </View>
                   </>
                 )}
                 </ScrollView>
@@ -924,56 +923,6 @@ const player = useAuthStore((s) => s.player);
             </GestureDetector>
           </GestureHandlerRootView>
         </Modal>}
-
-        {/* Delete account confirmation modal */}
-        <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
-          <KeyboardAvoidingView style={styles.convertOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={16}>
-            <Pressable style={styles.convertBackdrop} onPress={() => !deleteLoading && setDeleteModalVisible(false)} />
-            <View style={[deleteStyles.card, { backgroundColor: theme.surface }]}>
-              <View style={deleteStyles.warningBadge}>
-                <LocaleText style={deleteStyles.warningBadgeText}>⚠</LocaleText>
-              </View>
-              <LocaleText style={[deleteStyles.title, { color: '#C0372A' }]}>
-                {t('profile.deleteAccountModal.title')}
-              </LocaleText>
-              <LocaleText style={[deleteStyles.warningText, { color: theme.textMuted }]}>
-                {t('profile.deleteAccountModal.warning')}
-              </LocaleText>
-              <LocaleText style={[styles.convertLabel, { color: theme.textMuted }]}>
-                {t('profile.deleteAccountModal.confirmLabel')}
-              </LocaleText>
-              <TextInput
-                style={[styles.convertInput, { borderColor: '#C0372A', color: theme.text, backgroundColor: theme.surfaceSub }]}
-                value={deleteNickInput}
-                onChangeText={setDeleteNickInput}
-                placeholder={player?.playerName ?? t('profile.deleteAccountModal.confirmPlaceholder')}
-                placeholderTextColor={theme.textMuted}
-                autoCapitalize="none"
-                editable={!deleteLoading}
-              />
-              {deleteError ? <LocaleText style={styles.convertErrorText}>{deleteError}</LocaleText> : null}
-              <Pressable
-                onPress={handleDeleteAccount}
-                disabled={deleteLoading || deleteNickInput.trim() !== (player?.playerName ?? '')}
-                style={[deleteStyles.deleteBtn, (deleteLoading || deleteNickInput.trim() !== (player?.playerName ?? '')) && deleteStyles.deleteBtnDisabled]}
-              >
-                {deleteLoading
-                  ? <ActivityIndicator color="#fff" size="small" />
-                  : <LocaleText style={deleteStyles.deleteBtnText}>{t('profile.deleteAccountModal.confirmButton')}</LocaleText>
-                }
-              </Pressable>
-              <Pressable
-                onPress={() => setDeleteModalVisible(false)}
-                disabled={deleteLoading}
-                style={({ pressed }) => [deleteStyles.cancelBtn, { borderColor: theme.divider }, pressed && { opacity: 0.7 }]}
-              >
-                <LocaleText style={[deleteStyles.cancelBtnText, { color: theme.textMuted }]}>
-                  {t('profile.deleteAccountModal.cancelButton')}
-                </LocaleText>
-              </Pressable>
-            </View>
-          </KeyboardAvoidingView>
-        </Modal>
 
         {/* Sync status card */}
         <Pressable
@@ -1083,6 +1032,56 @@ const player = useAuthStore((s) => s.player);
           )}
         </Pressable>
       </ScrollView>
+
+      {/* Delete account confirmation modal — must be outside ScrollView */}
+      <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => !deleteLoading && setDeleteModalVisible(false)}>
+        <KeyboardAvoidingView style={styles.convertOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={16}>
+          <Pressable style={styles.convertBackdrop} onPress={() => !deleteLoading && setDeleteModalVisible(false)} />
+          <View style={[deleteStyles.card, { backgroundColor: theme.surface }]}>
+            <View style={deleteStyles.warningBadge}>
+              <LocaleText style={deleteStyles.warningBadgeText}>⚠</LocaleText>
+            </View>
+            <LocaleText style={[deleteStyles.title, { color: '#C0372A' }]}>
+              {t('profile.deleteAccountModal.title')}
+            </LocaleText>
+            <LocaleText style={[deleteStyles.warningText, { color: theme.textMuted }]}>
+              {t('profile.deleteAccountModal.warning')}
+            </LocaleText>
+            <LocaleText style={[styles.convertLabel, { color: theme.textMuted }]}>
+              {t('profile.deleteAccountModal.confirmLabel')}
+            </LocaleText>
+            <TextInput
+              style={[styles.convertInput, { borderColor: '#C0372A', color: theme.text, backgroundColor: theme.surfaceSub }]}
+              value={deleteNickInput}
+              onChangeText={setDeleteNickInput}
+              placeholder={player?.playerName ?? t('profile.deleteAccountModal.confirmPlaceholder')}
+              placeholderTextColor={theme.textMuted}
+              autoCapitalize="none"
+              editable={!deleteLoading}
+            />
+            {deleteError ? <LocaleText style={styles.convertErrorText}>{deleteError}</LocaleText> : null}
+            <Pressable
+              onPress={handleDeleteAccount}
+              disabled={deleteLoading || deleteNickInput.trim() !== (player?.playerName ?? '')}
+              style={[deleteStyles.deleteBtn, (deleteLoading || deleteNickInput.trim() !== (player?.playerName ?? '')) && deleteStyles.deleteBtnDisabled]}
+            >
+              {deleteLoading
+                ? <ActivityIndicator color="#fff" size="small" />
+                : <LocaleText style={deleteStyles.deleteBtnText}>{t('profile.deleteAccountModal.confirmButton')}</LocaleText>
+              }
+            </Pressable>
+            <Pressable
+              onPress={() => setDeleteModalVisible(false)}
+              disabled={deleteLoading}
+              style={({ pressed }) => [deleteStyles.cancelBtn, { borderColor: theme.divider }, pressed && { opacity: 0.7 }]}
+            >
+              <LocaleText style={[deleteStyles.cancelBtnText, { color: theme.textMuted }]}>
+                {t('profile.deleteAccountModal.cancelButton')}
+              </LocaleText>
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </AppBackground>
   );
 }
@@ -1739,10 +1738,38 @@ const settingsStyles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
   },
-  deleteRow: {
-    flexDirection: 'row',
+  dangerDivider: {
+    height: 1,
+    marginTop: 24,
+    marginBottom: 20,
+  },
+  dangerBlock: {
     alignItems: 'center',
-    paddingVertical: 14,
     gap: 12,
+    paddingBottom: 4,
+  },
+  dangerLabel: {
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 12.5,
+    color: '#9BA3B0',
+    textAlign: 'center',
+    lineHeight: 17,
+  },
+  dangerBtn: {
+    width: '100%',
+    paddingVertical: 13,
+    borderRadius: 14,
+    backgroundColor: 'rgba(192,55,42,0.09)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(192,55,42,0.3)',
+    alignItems: 'center',
+  },
+  dangerBtnPressed: {
+    backgroundColor: 'rgba(192,55,42,0.18)',
+  },
+  dangerBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 15,
+    color: '#C0372A',
   },
 });
