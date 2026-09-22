@@ -80,3 +80,20 @@ export interface VehicleBonuses {
   extraLobbyCapacity: number;
   extraGemExchangeLimit: number;
 }
+
+// Shop / IAP types (shared between client and server)
+export type ToolKey   = 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement';
+export type TokenColor = 'green' | 'blue' | 'yellow' | 'purple' | 'red';
+
+export interface ShopRewards {
+  gems?:   number;
+  tools?:  Partial<Record<ToolKey, number>>;
+  tokens?: Partial<Record<TokenColor, number>>;
+}
+
+export interface ShopPackData {
+  id:          string;
+  rcProductId: string;
+  priceUsd:    number;
+  rewards:     ShopRewards;
+}

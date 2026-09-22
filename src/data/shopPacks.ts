@@ -1,11 +1,5 @@
-export type ToolKey   = 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement';
-export type TokenColor = 'green' | 'blue' | 'yellow' | 'purple' | 'red';
-
-export interface ShopRewards {
-  gems?:   number;
-  tools?:  Partial<Record<ToolKey, number>>;
-  tokens?: Partial<Record<TokenColor, number>>;
-}
+import type { ToolKey, TokenColor, ShopRewards } from '@shared/types';
+export type { ToolKey, TokenColor, ShopRewards };
 
 export interface ShopPack {
   id:           string;
