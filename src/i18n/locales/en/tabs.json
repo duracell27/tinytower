@@ -593,7 +593,8 @@
       "submit": "Save Progress",
       "errorFillAll": "Please fill in all fields.",
       "errorPasswordShort": "Password must be at least 6 characters.",
-      "errorGeneric": "Something went wrong. Please try again."
+      "errorGeneric": "Something went wrong. Please try again.",
+      "accountCreated": "Account created!"
     },
     "settings": {
       "title": "Settings",

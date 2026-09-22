@@ -474,7 +474,7 @@ const player = useAuthStore((s) => s.player);
       // iOS to fail dismissing the parent VC, freezing all UI interaction.
       setTimeout(() => {
         useGameStore.getState().setTaskReward({
-          taskTitle: 'Account created!',
+          taskTitle: t('profile.convert.accountCreated'),
           coins: 1000,
           gems,
           tokenCount: 0,
@@ -1031,6 +1031,8 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 22,
+    lineHeight: 34,
+    paddingTop: 3,
     color: '#27331F',
   },
   email: {
@@ -1072,7 +1074,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 36,
     color: '#27331F',
-    marginTop: 6,
   },
   statLabel: {
     fontFamily: 'Nunito_600SemiBold',

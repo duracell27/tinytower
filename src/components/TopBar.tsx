@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: 7,
     paddingHorizontal: 12,
     zIndex: 2,
   },
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 17,
     color: '#27331F',
-    lineHeight: 17,
+    lineHeight: 23,
   },
   nameColumn: {
     flexDirection: 'column',
