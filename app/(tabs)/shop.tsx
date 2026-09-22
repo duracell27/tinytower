@@ -15,6 +15,7 @@ import { formatNum } from '../../src/utils/format';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import {
   DIAMOND_PACKS, BUNDLE_PACKS, BUILDER_PACKS, MATERIAL_PACKS, ShopPack,
 } from '../../src/data/shopPacks';
@@ -388,10 +389,12 @@ export default function ShopScreen() {
   const coinBonusPercent = useGameStore((s) => s.coinBonusPercent);
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const floorStars       = useGameStore((s) => s.floorStars);
+  const vehicles         = useGameStore((s) => s.vehicles);
+  const baseCoinBoostPercent = React.useMemo(() => computeVehicleBonuses(vehicles).baseCoinBoostPercent, [vehicles]);
   const now = useGameClock(60_000);
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt),
-    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt, baseCoinBoostPercent),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt, baseCoinBoostPercent],
   );
 
   const cardWidth = Math.floor((screenWidth - 32 - 12) / 2);

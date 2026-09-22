@@ -115,7 +115,7 @@ export default function GameScreen() {
   const vehicles = useGameStore((s) => s.vehicles);
   const vehicleSpeedBonuses = React.useMemo(() => {
     const vb = computeVehicleBonuses(vehicles);
-    return { salesSpeedPercent: vb.salesSpeedPercent, deliverySpeedPercent: vb.deliverySpeedPercent, extraLobbyCapacity: vb.extraLobbyCapacity };
+    return { salesSpeedPercent: vb.salesSpeedPercent, deliverySpeedPercent: vb.deliverySpeedPercent, extraLobbyCapacity: vb.extraLobbyCapacity, baseCoinBoostPercent: vb.baseCoinBoostPercent };
   }, [vehicles]);
   const effectiveLobbyCapacity = lobbyCapacity + vehicleSpeedBonuses.extraLobbyCapacity;
   const spawnVisitor = useGameStore((s) => s.spawnVisitor);
@@ -176,8 +176,8 @@ export default function GameScreen() {
   const activeXpBoost   = now < xpBoostExpiresAt   ? xpBoostPercent   : 0;
 
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, revenueNow, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt),
-    [floors, workers, openedFloorTypes, revenueNow, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, revenueNow, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt, vehicleSpeedBonuses.baseCoinBoostPercent),
+    [floors, workers, openedFloorTypes, revenueNow, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt, vehicleSpeedBonuses],
   );
 
   const hasBetterWorker = React.useMemo(

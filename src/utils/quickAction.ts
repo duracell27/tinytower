@@ -4,7 +4,7 @@ import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { getFloorDiscount, getFloorSpecialistBonus, getRevenueMultiplier, getWorkerForSlot } from '../../shared/engine/workerUtils';
 import type { Floor, Worker, Production } from '../../shared/types';
 
-type SpeedBonuses = { salesSpeedPercent?: number; deliverySpeedPercent?: number };
+type SpeedBonuses = { salesSpeedPercent?: number; deliverySpeedPercent?: number; baseCoinBoostPercent?: number };
 
 export type QuickActionMode = 'collect' | 'list' | 'buy' | 'hire';
 
@@ -110,6 +110,7 @@ export function getFloorActionInfo(
       const floorType = staticFloorType ?? openedFloorTypes[String(floor.id)] ?? '';
       const categoryBonus = (businessUpgrades[floorType] ?? 0) * 5;
       const coinMultiplier = 1 + (coinBonusPercent + specialistBonusPercent + categoryBonus) / 100;
+      const baseCoinBoost = 1 + (speedBonuses.baseCoinBoostPercent ?? 0) / 100;
       const totalCoins = floor.productions.reduce((sum, prod, slotIdx) => {
         if (!prod.typeId) return sum;
         const tc = gameConfig.productionTypes[prod.typeId];
@@ -118,7 +119,7 @@ export function getFloorActionInfo(
         const worker = getWorkerForSlot(workers, floor.id, slotIdx);
         if (!worker) return sum;
         const workerMultiplier = getRevenueMultiplier(worker, floorType, prod.typeId);
-        return sum + Math.floor(tc.batchValue * starMult.value * coinMultiplier * workerMultiplier);
+        return sum + Math.floor(tc.batchValue * baseCoinBoost * starMult.value * coinMultiplier * workerMultiplier);
       }, 0);
       return totalCoins > 0 ? { mode: 'collect', totalCoins } : null;
     }

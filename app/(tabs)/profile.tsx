@@ -19,6 +19,7 @@ import { DAILY_TASKS } from '../../shared/config/dailyTasksConfig';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { formatNum, formatCompact, formatNumFull } from '../../src/utils/format';
 import { BUSINESS_UPGRADE_COSTS } from '../../shared/config/businessUpgradeCosts';
@@ -410,9 +411,10 @@ const player = useAuthStore((s) => s.player);
   const totalStars = Object.values(floorStars ?? {}).reduce((s, v) => s + v, 0);
   const avgStars = floorCount > 0 ? totalStars / floorCount : 0;
 
+  const baseCoinBoostPercent = useMemo(() => computeVehicleBonuses(vehicles).baseCoinBoostPercent, [vehicles]);
   const revenuePerMin = useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars),
-    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, undefined, undefined, baseCoinBoostPercent),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, baseCoinBoostPercent],
   );
 
   const [myProfile, setMyProfile] = useState<PlayerProfile | null>(null);

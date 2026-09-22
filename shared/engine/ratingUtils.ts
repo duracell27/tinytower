@@ -13,9 +13,11 @@ export function calcRevenuePerMin(
   floorStars?: Record<string, number>,
   coinBoostPercent?: number,
   coinBoostExpiresAt?: number,
+  baseCoinBoostPercent?: number,
 ): number {
   const activeCoinBoost = (coinBoostPercent ?? 0) > 0 && Date.now() < (coinBoostExpiresAt ?? 0)
     ? (coinBoostPercent ?? 0) : 0;
+  const baseCoinBoost = 1 + (baseCoinBoostPercent ?? 0) / 100;
   let total = 0;
   for (const floor of floors) {
     const floorConfig = config.floors.find((f) => f.id === floor.id);
@@ -38,7 +40,7 @@ export function calcRevenuePerMin(
         ? getRevenueMultiplier(worker, floorType, production.typeId)
         : 1;
 
-      const effectiveRevenue = Math.floor(typeConfig.batchValue * starMult.value * coinMultiplier * multiplier);
+      const effectiveRevenue = Math.floor(typeConfig.batchValue * baseCoinBoost * starMult.value * coinMultiplier * multiplier);
       const sellDurationMinutes = effectiveSellDuration / 60_000;
       total += Math.floor(effectiveRevenue / sellDurationMinutes);
     });

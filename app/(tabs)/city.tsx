@@ -20,6 +20,7 @@ import { useGameClock } from '../../src/hooks/useGameClock';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import type { CityDetail, CityMember, CityRole } from '../../src/services/api';
 
@@ -77,12 +78,14 @@ export default function CityScreen() {
   const xpBoostPercent = useGameStore((s) => s.xpBoostPercent);
   const coinBoostExpiresAt = useGameStore((s) => s.coinBoostExpiresAt);
   const xpBoostExpiresAt = useGameStore((s) => s.xpBoostExpiresAt);
+  const vehicles = useGameStore((s) => s.vehicles);
+  const baseCoinBoostPercent = React.useMemo(() => computeVehicleBonuses(vehicles).baseCoinBoostPercent, [vehicles]);
   const now = useGameClock(60_000);
   const activeCoinBoost = now < coinBoostExpiresAt ? coinBoostPercent : 0;
   const activeXpBoost = now < xpBoostExpiresAt ? xpBoostPercent : 0;
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt),
-    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt, baseCoinBoostPercent),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt, baseCoinBoostPercent],
   );
 
   const player = useAuthStore((s) => s.player);
