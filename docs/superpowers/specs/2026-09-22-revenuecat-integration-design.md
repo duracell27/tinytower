@@ -72,26 +72,26 @@ Webhook захищає від:
 
 | Pack ID         | Product ID (App Store)                  | Price Tier |
 |-----------------|-----------------------------------------|------------|
-| diamonds_1      | com.tinytower.shop.diamonds_1           | $0.99      |
-| diamonds_2      | com.tinytower.shop.diamonds_2           | $1.99      |
-| diamonds_3      | com.tinytower.shop.diamonds_3           | $4.99      |
-| diamonds_4      | com.tinytower.shop.diamonds_4           | $9.99      |
-| diamonds_5      | com.tinytower.shop.diamonds_5           | $19.99     |
-| diamonds_6      | com.tinytower.shop.diamonds_6           | $49.99     |
-| bundle_1        | com.tinytower.shop.bundle_1             | $1.99      |
-| bundle_2        | com.tinytower.shop.bundle_2             | $4.99      |
-| bundle_3        | com.tinytower.shop.bundle_3             | $9.99      |
-| bundle_4        | com.tinytower.shop.bundle_4             | $24.99     |
-| builder_1       | com.tinytower.shop.builder_1            | $1.99      |
-| builder_2       | com.tinytower.shop.builder_2            | $3.99      |
-| builder_3       | com.tinytower.shop.builder_3            | $7.99      |
-| builder_4       | com.tinytower.shop.builder_4            | $14.99     |
-| mat_briks       | com.tinytower.shop.mat_briks            | $0.99      |
-| mat_glass       | com.tinytower.shop.mat_glass            | $0.99      |
-| mat_nails       | com.tinytower.shop.mat_nails            | $0.99      |
-| mat_screw       | com.tinytower.shop.mat_screw            | $0.99      |
-| mat_wood        | com.tinytower.shop.mat_wood             | $0.99      |
-| mat_cement      | com.tinytower.shop.mat_cement           | $0.99      |
+| diamonds_1      | com.shmidt.vibetower.shop.diamonds_1    | $0.99      |
+| diamonds_2      | com.shmidt.vibetower.shop.diamonds_2    | $1.99      |
+| diamonds_3      | com.shmidt.vibetower.shop.diamonds_3    | $4.99      |
+| diamonds_4      | com.shmidt.vibetower.shop.diamonds_4    | $9.99      |
+| diamonds_5      | com.shmidt.vibetower.shop.diamonds_5    | $19.99     |
+| diamonds_6      | com.shmidt.vibetower.shop.diamonds_6    | $49.99     |
+| bundle_1        | com.shmidt.vibetower.shop.bundle_1      | $1.99      |
+| bundle_2        | com.shmidt.vibetower.shop.bundle_2      | $4.99      |
+| bundle_3        | com.shmidt.vibetower.shop.bundle_3      | $9.99      |
+| bundle_4        | com.shmidt.vibetower.shop.bundle_4      | $24.99     |
+| builder_1       | com.shmidt.vibetower.shop.builder_1     | $1.99      |
+| builder_2       | com.shmidt.vibetower.shop.builder_2     | $3.99      |
+| builder_3       | com.shmidt.vibetower.shop.builder_3     | $7.99      |
+| builder_4       | com.shmidt.vibetower.shop.builder_4     | $14.99     |
+| mat_briks       | com.shmidt.vibetower.shop.mat_briks     | $0.99      |
+| mat_glass       | com.shmidt.vibetower.shop.mat_glass     | $0.99      |
+| mat_nails       | com.shmidt.vibetower.shop.mat_nails     | $0.99      |
+| mat_screw       | com.shmidt.vibetower.shop.mat_screw     | $0.99      |
+| mat_wood        | com.shmidt.vibetower.shop.mat_wood      | $0.99      |
+| mat_cement      | com.shmidt.vibetower.shop.mat_cement    | $0.99      |
 
 Ті самі Product IDs реєструються в Google Play Console (Android).
 
@@ -113,7 +113,7 @@ export interface ShopPack {
 }
 ```
 
-Кожен пак отримує `rcProductId: 'com.tinytower.shop.<packId>'` та `priceUsd` відповідно до `price` (наприклад, `'$0.99'` → `0.99`).
+Кожен пак отримує `rcProductId: 'com.shmidt.vibetower.shop.<packId>'` та `priceUsd` відповідно до `price` (наприклад, `'$0.99'` → `0.99`).
 
 ---
 

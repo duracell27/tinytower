@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.duracell27.tinytower-init",
+      "bundleIdentifier": "com.shmidt.vibetower",
       "buildNumber": "1",
       "icon": {
         "light": "./assets/img/LogoWhite (1).png",
@@ -28,7 +28,7 @@
         "foregroundImage": "./assets/img/LogoBlack (1).png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.duracell27.tinytowerinit"
+      "package": "com.shmidt.vibetower"
     },
     "web": {
       "favicon": "./assets/favicon.png"
