@@ -1,5 +1,5 @@
 // server/src/payments/payments.service.ts
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RevenueCatClient } from './revenuecat.client';
 import { ReferralService } from '../referral/referral.service';
@@ -22,7 +22,7 @@ export class PaymentsService {
     transactionId: string,
   ): Promise<ShopRewards> {
     const pack = SHOP_PACKS_MAP[packId];
-    if (!pack) throw new BadRequestException(`Unknown packId: ${packId}`);
+    if (!pack) throw new NotFoundException(`Unknown packId: ${packId}`);
 
     // Idempotency
     const existing = await this.prisma.purchase.findUnique({ where: { transactionId } });

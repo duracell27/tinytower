@@ -1,6 +1,6 @@
 // server/src/payments/__tests__/payments.service.spec.ts
 import { PaymentsService } from '../payments.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 const mockPrisma: any = {
   purchase: {
@@ -41,7 +41,7 @@ describe('PaymentsService', () => {
     it('throws 400 for unknown packId', async () => {
       await expect(
         service.notifyPurchase('player-1', 'unknown_pack', 'txn_1'),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('returns saved rewards on duplicate transactionId (idempotency)', async () => {
