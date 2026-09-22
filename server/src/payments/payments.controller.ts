@@ -6,14 +6,17 @@ import {
   UseGuards,
   HttpCode,
   UnauthorizedException,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { createHmac } from 'crypto';
+import * as crypto from 'node:crypto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PaymentsService } from './payments.service';
 import { NotifyPurchaseDto } from './dto/notify-purchase.dto';
 import { ConfigService } from '@nestjs/config';
 
+@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @Controller('payments')
 export class PaymentsController {
   constructor(
@@ -49,8 +52,10 @@ export class PaymentsController {
       throw new UnauthorizedException('Invalid webhook signature');
     }
 
-    const expected = createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
-    if (signature !== expected) {
+    const expected = crypto.createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
+    const sigBuffer = Buffer.from(signature, 'hex');
+    const expectedBuffer = Buffer.from(expected, 'hex');
+    if (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
       throw new UnauthorizedException('Invalid webhook signature');
     }
 
