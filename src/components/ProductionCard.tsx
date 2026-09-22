@@ -824,7 +824,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       fontFamily: 'Fredoka_700Bold',
       fontSize: 8,
       color: '#fff',
-      lineHeight: 8,
+      lineHeight: 11,
     },
     bonusBubble: {
       borderRadius: 8,

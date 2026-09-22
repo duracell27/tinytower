@@ -424,6 +424,13 @@
       "label_level": "LVL",
       "label_floors": "Floors",
       "label_revenue": "Rev/min"
+    },
+    "browse": {
+      "title": "Browse Cities",
+      "subtitle": "Discover cities and find your community",
+      "refresh": "Show more cities",
+      "empty": "No cities found",
+      "membersLabel": "{{count}} members"
     }
   },
   "shop": {
@@ -673,7 +680,9 @@
     }
   },
   "topBar": {
-    "perMin": "/min"
+    "perMin": "/min",
+    "hours": "h",
+    "lessThan1h": "<1h"
   },
   "game": {
     "buyFloor": "Buy floor {{number}}",

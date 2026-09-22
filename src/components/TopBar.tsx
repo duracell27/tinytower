@@ -24,12 +24,12 @@ interface TopBarProps {
   xpBoostExpiresAt?: number;
 }
 
-function boostTimeLabel(expiresAt: number | undefined): string {
+function boostTimeLabel(expiresAt: number | undefined, hoursLabel: string, lessThan1h: string): string {
   if (!expiresAt) return '';
   const msLeft = expiresAt - Date.now();
   if (msLeft <= 0) return '';
   const h = Math.floor(msLeft / (1000 * 60 * 60));
-  return h >= 1 ? ` ${h}h` : ' <1h';
+  return h >= 1 ? ` ${h}${hoursLabel}` : ` ${lessThan1h}`;
 }
 
 function ProgressRing({ progress, size = 50 }: { progress: number; size?: number }) {
@@ -98,13 +98,13 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
                 {(activeCoinBoost ?? 0) + cityLevel > 0 && (
                   <View style={[styles.boostPill, theme.isDark && { backgroundColor: 'rgba(212,134,10,0.55)' }]}>
                     <Image source={require('../../assets/img/MarketingIcon.png')} style={styles.boostIcon} contentFit="contain" />
-                    <LocaleText style={[styles.boostCoinText, theme.isDark && { color: '#fff' }]}>+{(activeCoinBoost ?? 0) + cityLevel}%{boostTimeLabel(coinBoostExpiresAt)}</LocaleText>
+                    <LocaleText style={[styles.boostCoinText, theme.isDark && { color: '#fff' }]}>+{(activeCoinBoost ?? 0) + cityLevel}%{boostTimeLabel(coinBoostExpiresAt, t('topBar.hours'), t('topBar.lessThan1h'))}</LocaleText>
                   </View>
                 )}
                 {(activeXpBoost ?? 0) + cityLevel > 0 && (
                   <View style={[styles.boostPill, theme.isDark && { backgroundColor: 'rgba(112,64,184,0.55)' }]}>
                     <Image source={require('../../assets/img/PRIcon.png')} style={styles.boostIcon} contentFit="contain" />
-                    <LocaleText style={[styles.boostXpText, theme.isDark && { color: '#fff' }]}>+{(activeXpBoost ?? 0) + cityLevel}%{boostTimeLabel(xpBoostExpiresAt)}</LocaleText>
+                    <LocaleText style={[styles.boostXpText, theme.isDark && { color: '#fff' }]}>+{(activeXpBoost ?? 0) + cityLevel}%{boostTimeLabel(xpBoostExpiresAt, t('topBar.hours'), t('topBar.lessThan1h'))}</LocaleText>
                   </View>
                 )}
               </View>
