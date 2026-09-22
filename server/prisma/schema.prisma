@@ -54,6 +54,7 @@ model Player {
   cityBudgetTransactions CityBudgetTransaction[] @relation("CityBudgetTransactions")
   cityHistoryActed       CityHistoryEvent[]      @relation("CityHistoryActor")
   cityHistoryTargeted    CityHistoryEvent[]      @relation("CityHistoryTarget")
+  purchases              Purchase[]
 }
 
 model PlayerState {
@@ -503,4 +504,22 @@ model CityHistoryEvent {
   target Player? @relation("CityHistoryTarget", fields: [targetId], references: [id], onDelete: SetNull)
 
   @@index([cityId, createdAt])
+}
+
+model Purchase {
+  id            String   @id @default(uuid())
+  playerId      String
+  transactionId String   @unique
+  packId        String
+  rcProductId   String
+  status        String
+  gemsGranted   Int      @default(0)
+  toolsGranted  Json?
+  tokensGranted Json?
+  source        String
+  createdAt     DateTime @default(now())
+
+  player        Player   @relation(fields: [playerId], references: [id])
+
+  @@index([playerId])
 }
