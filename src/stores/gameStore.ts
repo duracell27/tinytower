@@ -185,6 +185,7 @@ interface UIState {
   pendingOpenHotel: boolean;
   pendingOpenWarehouse: boolean;
   pendingPurchaseSuccess: PurchaseSuccessPayload | null;
+  purchasingActive: boolean;
   isHydrated: boolean;
   activeSheetCount: number;
   floorUpgradeModal: { floorId: number } | null;
@@ -266,9 +267,10 @@ interface GameActions {
   clearTokenInsufficient: () => void;
   setTaskReward: (payload: PendingTaskReward) => void;
   clearTaskReward: () => void;
-  shopPurchase: (pack: import('../data/shopPacks').ShopPack) => void;
+  setManualPurchaseSuccess: (payload: PurchaseSuccessPayload) => void;
   buyBoost: (pkg: BoostPackage) => void;
   clearPurchaseSuccess: () => void;
+  setPurchasingActive: (v: boolean) => void;
   setPendingDeliverAll: (summary: DeliverAllSummary) => void;
   clearPendingDeliverAll: () => void;
   showHotelFullNotice: () => void;
@@ -499,6 +501,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   pendingOpenHotel: false,
   pendingOpenWarehouse: false,
   pendingPurchaseSuccess: null,
+  purchasingActive: false,
   isHydrated: false,
   activeSheetCount: 0,
   floorUpgradeModal: null,
@@ -604,35 +607,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setTaskReward: (payload) => set({ pendingTaskReward: payload }),
   clearTaskReward: () => set({ pendingTaskReward: null }),
   clearPurchaseSuccess: () => set({ pendingPurchaseSuccess: null }),
-  shopPurchase: (pack) => {
-    executeCommand(get, set, {
-      id: uuid(),
-      type: 'shop_purchase',
-      gems:   pack.rewards.gems ?? 0,
-      tools:  {
-        briks:  pack.rewards.tools?.briks  ?? 0,
-        glass:  pack.rewards.tools?.glass  ?? 0,
-        nails:  pack.rewards.tools?.nails  ?? 0,
-        screw:  pack.rewards.tools?.screw  ?? 0,
-        wood:   pack.rewards.tools?.wood   ?? 0,
-        cement: pack.rewards.tools?.cement ?? 0,
-      },
-      tokens: {
-        green:  pack.rewards.tokens?.green  ?? 0,
-        blue:   pack.rewards.tokens?.blue   ?? 0,
-        yellow: pack.rewards.tokens?.yellow ?? 0,
-        purple: pack.rewards.tokens?.purple ?? 0,
-        red:    pack.rewards.tokens?.red    ?? 0,
-      },
-      timestamp: clock.now(),
-    });
-    set({
-      pendingPurchaseSuccess: {
-        packName: pack.name,
-        price:    pack.price,
-        rewards:  pack.rewards,
-      },
-    });
+  setPurchasingActive: (v) => set({ purchasingActive: v }),
+  setManualPurchaseSuccess: (payload) => {
+    set({ pendingPurchaseSuccess: { packName: payload.packName, price: payload.price, rewards: payload.rewards } });
   },
   setPendingDeliverAll: (summary) => set({ pendingDeliverAll: summary }),
   clearPendingDeliverAll: () => set({ pendingDeliverAll: null }),
@@ -721,6 +698,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     pendingOpenHotel: false,
     pendingOpenWarehouse: false,
     dailyTasks: { progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0, gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 }, claimed: [], doubleRewardActive: false },
+    purchasingActive: false,
     isHydrated: false,
     activeSheetCount: 0,
     floorUpgradeModal: null,

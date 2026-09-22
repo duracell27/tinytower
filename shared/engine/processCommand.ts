@@ -117,40 +117,8 @@ export function processCommand(
     }
     case 'dev_add_gems':
       return { success: true, state: { ...state, gems: state.gems + command.amount } };
-    case 'shop_purchase': {
-      const newDailyTasks = command.gems > 0 && command.timestamp >= state.lastDailyReset
-        ? {
-            ...state.dailyTasks,
-            progress: {
-              ...state.dailyTasks.progress,
-              gemsPurchased: state.dailyTasks.progress.gemsPurchased + command.gems,
-            },
-          }
-        : state.dailyTasks;
-      return {
-        success: true,
-        state: {
-          ...state,
-          gems:   state.gems + command.gems,
-          tools: {
-            briks:  (state.tools.briks  ?? 0) + (command.tools.briks  ?? 0),
-            glass:  (state.tools.glass  ?? 0) + (command.tools.glass  ?? 0),
-            nails:  (state.tools.nails  ?? 0) + (command.tools.nails  ?? 0),
-            screw:  (state.tools.screw  ?? 0) + (command.tools.screw  ?? 0),
-            wood:   (state.tools.wood   ?? 0) + (command.tools.wood   ?? 0),
-            cement: (state.tools.cement ?? 0) + (command.tools.cement ?? 0),
-          },
-          tokens: {
-            green:  (state.tokens.green  ?? 0) + (command.tokens.green  ?? 0),
-            blue:   (state.tokens.blue   ?? 0) + (command.tokens.blue   ?? 0),
-            yellow: (state.tokens.yellow ?? 0) + (command.tokens.yellow ?? 0),
-            purple: (state.tokens.purple ?? 0) + (command.tokens.purple ?? 0),
-            red:    (state.tokens.red    ?? 0) + (command.tokens.red    ?? 0),
-          },
-          dailyTasks: newDailyTasks,
-        },
-      };
-    }
+    case 'shop_purchase':
+      return { success: false, state, error: 'shop_purchase is not processed server-side; use PaymentsService' };
     case 'collect_all':
       return handleCollectAll(state, config, now, bonuses);
     case 'list_all':

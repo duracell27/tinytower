@@ -33,6 +33,7 @@ import {
 } from '@expo-google-fonts/comfortaa';
 import { useAuthStore } from '../src/stores/authStore';
 import { setAuthFailureCallback } from '../src/services/api';
+import { purchaseService } from '../src/services/purchaseService';
 import * as Linking from 'expo-linking';
 import { createMMKV } from 'react-native-mmkv';
 import GlobalOverlay from '../src/components/GlobalOverlay';
@@ -61,6 +62,7 @@ function handleReferralLink(url: string | null) {
 export default function RootLayout() {
   const router = useRouter();
   const isDark = useColorScheme() === 'dark';
+  const player = useAuthStore((s) => s.player);
   const cityHeaderOptions = {
     headerShown: true,
     title: '',
@@ -101,6 +103,12 @@ export default function RootLayout() {
     const sub = Linking.addEventListener('url', ({ url }) => handleReferralLink(url));
     return () => sub.remove();
   }, [router]);
+
+  useEffect(() => {
+    if (player?.id) {
+      purchaseService.initialize(player.id);
+    }
+  }, [player?.id]);
 
   if (!fontsLoaded) {
     return (

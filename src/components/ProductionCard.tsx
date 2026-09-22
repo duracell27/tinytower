@@ -653,7 +653,7 @@ export default function ProductionCard({
             onPress={handleSpeedUp}
             style={({ pressed }) => [styles.pill, { backgroundColor: accentColor + '20', borderColor: accentColor, borderWidth: 1 }, pressed && { opacity: 0.7 }]}
           >
-            <LocaleText style={[styles.pillText, { color: accentColor }]}>speed up {speedUpCost}</LocaleText>
+            <LocaleText style={[styles.pillText, { color: accentColor }]}>{t('productionCard.speedUp')} {speedUpCost}</LocaleText>
             <GemIcon size={12} />
           </Pressable>
         ) : effectiveStage === 'READY_TO_LIST' && subText ? (
@@ -824,7 +824,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       fontFamily: 'Fredoka_700Bold',
       fontSize: 8,
       color: '#fff',
-      lineHeight: 8,
+      lineHeight: 11,
     },
     bonusBubble: {
       borderRadius: 8,

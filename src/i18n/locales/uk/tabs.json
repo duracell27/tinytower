@@ -424,6 +424,13 @@
       "label_level": "РВН",
       "label_floors": "Поверхи",
       "label_revenue": "Вир/хв"
+    },
+    "browse": {
+      "title": "Переглянути міста",
+      "subtitle": "Знайди спільноту і вступи в місто",
+      "refresh": "Показати інші міста",
+      "empty": "Міст не знайдено",
+      "membersLabel": "{{count}} учасників"
     }
   },
   "shop": {
@@ -593,7 +600,8 @@
       "submit": "Зберегти прогрес",
       "errorFillAll": "Будь ласка, заповніть усі поля.",
       "errorPasswordShort": "Пароль має бути не менше 6 символів.",
-      "errorGeneric": "Щось пішло не так. Спробуйте ще раз."
+      "errorGeneric": "Щось пішло не так. Спробуйте ще раз.",
+      "accountCreated": "Акаунт створено!"
     },
     "settings": {
       "title": "Налаштування",
@@ -672,7 +680,9 @@
     }
   },
   "topBar": {
-    "perMin": "/хв"
+    "perMin": "/хв",
+    "hours": "г",
+    "lessThan1h": "<1г"
   },
   "game": {
     "buyFloor": "Купити поверх {{number}}",

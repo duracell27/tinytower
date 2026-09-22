@@ -19,6 +19,7 @@ import { DAILY_TASKS } from '../../shared/config/dailyTasksConfig';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { formatNum, formatCompact, formatNumFull } from '../../src/utils/format';
 import { BUSINESS_UPGRADE_COSTS } from '../../shared/config/businessUpgradeCosts';
@@ -27,6 +28,7 @@ import { CoinIcon, GemIcon } from '../../src/components/CurrencyIcons';
 import * as Clipboard from 'expo-clipboard';
 import type { Command } from '../../shared/types';
 import { api, type PlayerProfile } from '../../src/services/api';
+import { syncService } from '../../src/services/sync';
 import { useFriendStore } from '../../src/stores/friendStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useBlockStore } from '../../src/stores/blockStore';
@@ -291,6 +293,7 @@ const player = useAuthStore((s) => s.player);
   const logout = useAuthStore((s) => s.logout);
   const convertAccount = useAuthStore((s) => s.convertAccount);
   const isTemporary = player?.isTemporary ?? false;
+  const pendingRegistration = useAuthStore((s) => s.pendingRegistration);
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const gems = useGameStore((s) => s.gems);
@@ -408,9 +411,10 @@ const player = useAuthStore((s) => s.player);
   const totalStars = Object.values(floorStars ?? {}).reduce((s, v) => s + v, 0);
   const avgStars = floorCount > 0 ? totalStars / floorCount : 0;
 
+  const baseCoinBoostPercent = useMemo(() => computeVehicleBonuses(vehicles).baseCoinBoostPercent, [vehicles]);
   const revenuePerMin = useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars),
-    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, undefined, undefined, baseCoinBoostPercent),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, baseCoinBoostPercent],
   );
 
   const [myProfile, setMyProfile] = useState<PlayerProfile | null>(null);
@@ -472,7 +476,7 @@ const player = useAuthStore((s) => s.player);
       // iOS to fail dismissing the parent VC, freezing all UI interaction.
       setTimeout(() => {
         useGameStore.getState().setTaskReward({
-          taskTitle: 'Account created!',
+          taskTitle: t('profile.convert.accountCreated'),
           coins: 1000,
           gems,
           tokenCount: 0,
@@ -733,7 +737,7 @@ const player = useAuthStore((s) => s.player);
           </View>
         </Pressable>
 
-        {isTemporary && (
+        {isTemporary && !pendingRegistration && (
           <Pressable
             onPress={() => setConvertOpen(true)}
             style={({ pressed }) => [styles.convertBanner, pressed && { opacity: 0.88 }]}
@@ -872,8 +876,8 @@ const player = useAuthStore((s) => s.player);
 
         {/* Sync status card */}
         <Pressable
-          onPress={() => hasExpandContent && setSyncExpanded((v) => !v)}
-          style={({ pressed }) => [styles.syncCard, { backgroundColor: theme.surface }, pressed && hasExpandContent && styles.syncCardPressed]}
+          onPress={() => { syncService.triggerSync(); if (hasExpandContent) setSyncExpanded((v) => !v); }}
+          style={({ pressed }) => [styles.syncCard, { backgroundColor: theme.surface }, pressed && styles.syncCardPressed]}
         >
           <View style={styles.syncRow}>
             <View style={[
@@ -1029,6 +1033,8 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 22,
+    lineHeight: 34,
+    paddingTop: 3,
     color: '#27331F',
   },
   email: {
@@ -1070,7 +1076,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 36,
     color: '#27331F',
-    marginTop: 6,
   },
   statLabel: {
     fontFamily: 'Nunito_600SemiBold',

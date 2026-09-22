@@ -214,6 +214,15 @@ describe('getFloorActionInfo', () => {
     expect(info).toEqual({ mode: 'collect', totalCoins: Math.floor(tc.batchValue * 1.5) });
   });
 
+  it('collect — applies baseCoinBoostPercent (armored truck) to reported total', () => {
+    const floor = makeFloor(1, [
+      { typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 },
+    ]);
+    const worker = makeWorker('w1', 1, 0);
+    const info = getFloorActionInfo('collect', floor, now, [worker], 0, {}, {}, {}, { baseCoinBoostPercent: 25 });
+    expect(info).toEqual({ mode: 'collect', totalCoins: Math.floor(tc.batchValue * 1.25) });
+  });
+
   it('collect — applies workerMultiplier (2x good mood) to reported total', () => {
     const floor = makeFloor(1, [
       { typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 },

@@ -66,7 +66,8 @@
     "status": {
       "delivering": "Delivering",
       "selling": "Selling"
-    }
+    },
+    "speedUp": "Speed up"
   },
   "hotelPanel": {
     "title": "Hotel",
@@ -129,25 +130,63 @@
   "achievement": {
     "claim": "Collect Reward",
     "tier": "Tier {{tier}}",
-    "buyer": { "title": "Shopaholic" },
-    "lister": { "title": "Merchant" },
-    "seller": { "title": "Sales Star" },
+    "buyer": {
+      "title": "Shopaholic"
+    },
+    "lister": {
+      "title": "Merchant"
+    },
+    "seller": {
+      "title": "Sales Star"
+    },
     "categories": {
       "buy": {
         "title": "Purchasing",
-        "levels": { "1": "Beginner", "2": "Buyer", "3": "Supplier", "4": "Wholesaler", "5": "Importer", "6": "Tycoon", "7": "Purchase King" }
+        "levels": {
+          "1": "Beginner",
+          "2": "Buyer",
+          "3": "Supplier",
+          "4": "Wholesaler",
+          "5": "Importer",
+          "6": "Tycoon",
+          "7": "Purchase King"
+        }
       },
       "list": {
         "title": "Stocking Shelves",
-        "levels": { "1": "Intern", "2": "Salesperson", "3": "Consultant", "4": "Manager", "5": "Director", "6": "Top Manager", "7": "Shelf Legend" }
+        "levels": {
+          "1": "Intern",
+          "2": "Salesperson",
+          "3": "Consultant",
+          "4": "Manager",
+          "5": "Director",
+          "6": "Top Manager",
+          "7": "Shelf Legend"
+        }
       },
       "collect": {
         "title": "Collecting Coins",
-        "levels": { "1": "Collector", "2": "Cashier", "3": "Accountant", "4": "Financier", "5": "Banker", "6": "Investor", "7": "Billionaire" }
+        "levels": {
+          "1": "Collector",
+          "2": "Cashier",
+          "3": "Accountant",
+          "4": "Financier",
+          "5": "Banker",
+          "6": "Investor",
+          "7": "Billionaire"
+        }
       },
       "elevator": {
         "title": "Elevator Service",
-        "levels": { "1": "Newcomer", "2": "Elevator Boy", "3": "Doorman", "4": "Dispatcher", "5": "Engineer", "6": "Lift Master", "7": "Elevator King" }
+        "levels": {
+          "1": "Newcomer",
+          "2": "Elevator Boy",
+          "3": "Doorman",
+          "4": "Dispatcher",
+          "5": "Engineer",
+          "6": "Lift Master",
+          "7": "Elevator King"
+        }
       }
     },
     "screenTitle": "Achievements",
@@ -159,18 +198,18 @@
     "coinsBonus": "+{{percent}}% coins",
     "xpBonus": "+{{percent}}% XP",
     "categoryDesc": {
-      "buy":      "Buy goods for your floors to restock production",
-      "list":     "Put delivered goods on shelves to start selling",
-      "collect":  "Collect earned coins from completed sales",
+      "buy": "Buy goods for your floors to restock production",
+      "list": "Put delivered goods on shelves to start selling",
+      "collect": "Collect earned coins from completed sales",
       "elevator": "Transport visitors between floors in the elevator"
     },
     "info": {
       "ranksTitle": "Achievement Ranks",
-      "ranksText":  "Each category has 7 ranks to unlock by reaching in-game milestones — buying goods, lifting visitors, collecting revenue, and more.",
-      "gemsTitle":  "Gem Rewards",
-      "gemsText":   "Completing each rank earns gems. Higher ranks give more gems per completion.",
+      "ranksText": "Each category has 7 ranks to unlock by reaching in-game milestones — buying goods, lifting visitors, collecting revenue, and more.",
+      "gemsTitle": "Gem Rewards",
+      "gemsText": "Completing each rank earns gems. Higher ranks give more gems per completion.",
       "bonusTitle": "Income & XP Bonuses",
-      "bonusText":  "Some ranks also grant a permanent income or XP bonus that applies to all future earnings."
+      "bonusText": "Some ranks also grant a permanent income or XP bonus that applies to all future earnings."
     }
   },
   "dailyLoginReward": {
@@ -201,17 +240,50 @@
     "done": "Done"
   },
   "dailyTaskItems": {
-    "transporter":     { "title": "Transporter",          "description": "Lift 100 visitors in the elevator" },
-    "vip_transporter": { "title": "VIP Transporter",      "description": "Lift 10 VIP guests in the elevator" },
-    "wholesale":       { "title": "Wholesale Purchase",   "description": "Buy 50 products in the market" },
-    "new_residents":   { "title": "New Residents",        "description": "Welcome 25 new residents to your hotel" },
-    "easy_money":      { "title": "Easy Money",           "description": "Collect 10 gems from elevator visitors" },
-    "investor":        { "title": "Investor",             "description": "Purchase 200 gems in the store" },
-    "money_collector": { "title": "Money Collector",      "description": "Collect 150 products from your businesses" },
-    "build_floor":     { "title": "Higher and Higher!",   "description": "Build 1 new floor in your tower" },
-    "major_investor":  { "title": "Major Investor",       "description": "Purchase 1,000 gems in the store" },
-    "hasta_la_vista":  { "title": "Hasta la vista, Baby!","description": "Evict 15 residents from your hotel" },
-    "goods_to_sell":   { "title": "Goods to Sell",        "description": "List 100 products for sale" }
+    "transporter": {
+      "title": "Transporter",
+      "description": "Lift 100 visitors in the elevator"
+    },
+    "vip_transporter": {
+      "title": "VIP Transporter",
+      "description": "Lift 10 VIP guests in the elevator"
+    },
+    "wholesale": {
+      "title": "Wholesale Purchase",
+      "description": "Buy 50 products in the market"
+    },
+    "new_residents": {
+      "title": "New Residents",
+      "description": "Welcome 25 new residents to your hotel"
+    },
+    "easy_money": {
+      "title": "Easy Money",
+      "description": "Collect 10 gems from elevator visitors"
+    },
+    "investor": {
+      "title": "Investor",
+      "description": "Purchase 200 gems in the store"
+    },
+    "money_collector": {
+      "title": "Money Collector",
+      "description": "Collect 150 products from your businesses"
+    },
+    "build_floor": {
+      "title": "Higher and Higher!",
+      "description": "Build 1 new floor in your tower"
+    },
+    "major_investor": {
+      "title": "Major Investor",
+      "description": "Purchase 1,000 gems in the store"
+    },
+    "hasta_la_vista": {
+      "title": "Hasta la vista, Baby!",
+      "description": "Evict 15 residents from your hotel"
+    },
+    "goods_to_sell": {
+      "title": "Goods to Sell",
+      "description": "List 100 products for sale"
+    }
   },
   "dailyTasks": {
     "title": "Daily Tasks",
@@ -378,43 +450,73 @@
     "claimReward": "Claim Reward"
   },
   "tutorialTaskItems": {
-    "hire_workers":         { "title": "Staff Up",          "description": "Hire 3 workers. Any worker beats an empty slot — you can swap them anytime." },
-    "lift_visitors":        { "title": "Elevator Operator", "description": "Lift 30 visitors in the elevator" },
-    "collect_revenue":      { "title": "Collect Revenue",   "description": "Collect revenue from your floors 10 times" },
-    "build_floor":          { "title": "Going Higher",      "description": "Build a new floor — reach floor 5" },
-    "complete_daily_tasks": { "title": "Daily Grind",       "description": "Complete 3 daily tasks" },
-    "upgrade_elevator":     { "title": "Speed Boost",       "description": "Upgrade the elevator" },
-    "upgrade_lobby":        { "title": "Grand Lobby",       "description": "Upgrade the lobby" },
-    "upgrade_floor":        { "title": "Level Up",          "description": "Upgrade one of your floors to level 2" },
-    "invite_friend":        { "title": "Bring a Friend",    "description": "Send a friend request to any player. Find them in the leaderboard, chat, forum, or visit their profile." },
-    "upgrade_business":     { "title": "Business Pro",      "description": "Upgrade one business category. You can do it in your profile." }
+    "hire_workers": {
+      "title": "Staff Up",
+      "description": "Hire 3 workers. Any worker beats an empty slot — you can swap them anytime."
+    },
+    "lift_visitors": {
+      "title": "Elevator Operator",
+      "description": "Lift 30 visitors in the elevator"
+    },
+    "collect_revenue": {
+      "title": "Collect Revenue",
+      "description": "Collect revenue from your floors 10 times"
+    },
+    "build_floor": {
+      "title": "Going Higher",
+      "description": "Build a new floor — reach floor 5"
+    },
+    "complete_daily_tasks": {
+      "title": "Daily Grind",
+      "description": "Complete 3 daily tasks"
+    },
+    "upgrade_elevator": {
+      "title": "Speed Boost",
+      "description": "Upgrade the elevator"
+    },
+    "upgrade_lobby": {
+      "title": "Grand Lobby",
+      "description": "Upgrade the lobby"
+    },
+    "upgrade_floor": {
+      "title": "Level Up",
+      "description": "Upgrade one of your floors to level 2"
+    },
+    "invite_friend": {
+      "title": "Bring a Friend",
+      "description": "Send a friend request to any player. Find them in the leaderboard, chat, forum, or visit their profile."
+    },
+    "upgrade_business": {
+      "title": "Business Pro",
+      "description": "Upgrade one business category. You can do it in your profile."
+    }
   },
   "floorTypePicker": {
-    "title":     "Choose business type",
-    "subtitle":  "Floor {{floorId}}",
+    "title": "Choose business type",
+    "subtitle": "Floor {{floorId}}",
     "exhausted": "All floors of this category already built",
-    "built":     "Built",
-    "waiting":   "{{count}} waiting in the hotel"
+    "built": "Built",
+    "waiting": "{{count}} waiting in the hotel"
   },
   "onboarding": {
-    "collect_slot_1":       "Collect revenue from your business",
-    "collect_slot_2":       "Collect revenue from one more floor",
-    "buy_goods_1":          "Restock goods so production keeps running",
-    "buy_goods_2":          "Restock another production",
-    "open_elevator_1":      "Open the elevator — visitors are waiting",
-    "deliver_visitor":      "Open the elevator and take the guest to their floor",
-    "assign_worker":        "Tap a worker slot — assign your first employee to a floor!",
-    "buy_floor":            "Buy a new floor to expand your tower!",
-    "choose_floor_type":    "All types earn equally. Green floors need frequent attention, red ones less often",
-    "speed_up_construction":"Speed up construction so you don't have to wait",
-    "expand_floor_card":    "Expand the floor card to see which materials are needed",
-    "open_business":        "You have the resources! Tap to open the business",
-    "final_message":        "Welcome!\nThe tower is yours! 🎉",
-    "final_message_dismiss":"Let's go!",
-    "final_message_bullet_1":"Build new floors and collect revenue",
-    "final_message_bullet_2":"Hire and upgrade workers",
-    "final_message_bullet_3":"Take guests by elevator — earn tips",
-    "final_message_bullet_4":"Climb to the top of the leaderboard",
-    "nextTasksHint":        "Complete newcomer tasks and level up your character"
+    "collect_slot_1": "Collect revenue from your business",
+    "collect_slot_2": "Collect revenue from one more floor",
+    "buy_goods_1": "Restock goods so production keeps running",
+    "buy_goods_2": "Restock another production",
+    "open_elevator_1": "Open the elevator — visitors are waiting",
+    "deliver_visitor": "Open the elevator and take the guest to their floor",
+    "assign_worker": "Tap a worker slot — assign your first employee to a floor!",
+    "buy_floor": "Buy a new floor to expand your tower!",
+    "choose_floor_type": "All types earn equally. Green floors need frequent attention, red ones less often",
+    "speed_up_construction": "Speed up construction so you don't have to wait",
+    "expand_floor_card": "Expand the floor card to see which materials are needed",
+    "open_business": "You have the resources! Tap to open the business",
+    "final_message": "Welcome!\nThe tower is yours! 🎉",
+    "final_message_dismiss": "Let's go!",
+    "final_message_bullet_1": "Build new floors and collect revenue",
+    "final_message_bullet_2": "Hire and upgrade workers",
+    "final_message_bullet_3": "Take guests by elevator — earn tips",
+    "final_message_bullet_4": "Climb to the top of the leaderboard",
+    "nextTasksHint": "Complete newcomer tasks and level up your character"
   }
 }

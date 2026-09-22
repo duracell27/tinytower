@@ -20,6 +20,7 @@ import { useGameClock } from '../../src/hooks/useGameClock';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import type { CityDetail, CityMember, CityRole } from '../../src/services/api';
 
@@ -77,12 +78,14 @@ export default function CityScreen() {
   const xpBoostPercent = useGameStore((s) => s.xpBoostPercent);
   const coinBoostExpiresAt = useGameStore((s) => s.coinBoostExpiresAt);
   const xpBoostExpiresAt = useGameStore((s) => s.xpBoostExpiresAt);
+  const vehicles = useGameStore((s) => s.vehicles);
+  const baseCoinBoostPercent = React.useMemo(() => computeVehicleBonuses(vehicles).baseCoinBoostPercent, [vehicles]);
   const now = useGameClock(60_000);
   const activeCoinBoost = now < coinBoostExpiresAt ? coinBoostPercent : 0;
   const activeXpBoost = now < xpBoostExpiresAt ? xpBoostPercent : 0;
   const revenuePerMin = React.useMemo(
-    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt),
-    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt],
+    () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt, baseCoinBoostPercent),
+    [floors, workers, openedFloorTypes, now, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt, baseCoinBoostPercent],
   );
 
   const player = useAuthStore((s) => s.player);
@@ -469,7 +472,7 @@ function NoCityView({ isDark, t, router, onCreatePress }: { isDark: boolean; t: 
 
       <TouchableOpacity
         style={[styles.actionCard, { backgroundColor: isDark ? '#3A7ED8' : '#2E6EC9' }]}
-        onPress={() => router.push('/city/search')}
+        onPress={() => router.push('/city/browse')}
         activeOpacity={0.7}
       >
         <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
@@ -525,7 +528,7 @@ const styles = StyleSheet.create({
   loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
   // NoCityView scroll
-  scroll: { paddingHorizontal: 20, paddingTop: 130, paddingBottom: 100 },
+  scroll: { paddingHorizontal: 20, paddingTop: 180, paddingBottom: 100 },
 
   // MyCityView scroll
   cityScroll: { paddingTop: 155, paddingBottom: 8 },

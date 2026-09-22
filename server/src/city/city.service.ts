@@ -280,6 +280,29 @@ export class CityService {
     return this.buildCityDetail(cityId, requesterId);
   }
 
+  async browseCities(): Promise<CitySummaryDto[]> {
+    const rows = await this.prisma.$queryRaw<Array<{
+      id: string; name: string; description: string | null; cityXp: number; memberCount: bigint;
+    }>>`
+      SELECT c.id, c.name, c.description, c."cityXp",
+             (SELECT COUNT(*) FROM "CityMembership" WHERE "cityId" = c.id)::int AS "memberCount"
+      FROM "City" c
+      ORDER BY RANDOM()
+      LIMIT 10
+    `;
+    return rows.map((city) => {
+      const level = getCityLevel(city.cityXp);
+      return {
+        id: city.id,
+        name: city.name,
+        description: city.description,
+        level,
+        memberCount: Number(city.memberCount),
+        maxMembers: getCityMaxMembers(level),
+      };
+    });
+  }
+
   async searchCities(q: string): Promise<CitySummaryDto[]> {
     const cities = await this.prisma.city.findMany({
       where: q ? { name: { contains: q, mode: 'insensitive' } } : {},
