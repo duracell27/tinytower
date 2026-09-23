@@ -325,6 +325,19 @@
       "findCity": "Знайти місто"
     },
     "founded": "Засновано {{date}}",
+    "chat": {
+      "title": "Чат міста",
+      "inputPlaceholder": "Написати повідомлення...",
+      "send": "Надіслати",
+      "refresh": "Оновити",
+      "reply": "Відповісти",
+      "noMessages": "Поки немає повідомлень. Привітайся!",
+      "timeAgo": {
+        "minutes": "{{n}}хв тому",
+        "hours": "{{n}}год тому",
+        "days": "{{n}}д тому"
+      }
+    },
     "allWorkers": "Робітники",
     "happyWorkers": "Щасливі",
     "membersPage": "{{from}} з {{total}}",

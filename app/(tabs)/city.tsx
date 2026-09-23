@@ -281,6 +281,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
               card.key === 'budget'        ? () => router.push(`/city/budget?id=${city.id}`) :
               card.key === 'history'       ? () => router.push(`/city/history?id=${city.id}`) :
               card.key === 'notifications' ? () => router.push(`/city/notifications?id=${city.id}`) :
+              card.key === 'chat'          ? () => router.push(`/city/chat?id=${city.id}`) :
               undefined
             }
           >
@@ -306,6 +307,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
         <View style={[styles.membersListBg, isDark && styles.membersListBgDark]}>
         {pagedMembers.map((member, idx) => {
           const globalIdx = memberPage * MEMBERS_PER_PAGE + idx + 1;
+          const isMe = member.playerId === player?.id;
 
           return (
             <TouchableOpacity
@@ -314,7 +316,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
               onPress={() => router.push(`/user-profile/${member.playerId}`)}
               activeOpacity={0.7}
             >
-              <LocaleText style={[styles.memberRank, isDark && { color: '#5A7090' }]}>{globalIdx}</LocaleText>
+              <LocaleText style={[styles.memberRank, isDark && { color: '#5A7090' }, isMe && { color: '#2E6EC9' }]}>{globalIdx}</LocaleText>
 
               <View style={[styles.memberRankDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
 

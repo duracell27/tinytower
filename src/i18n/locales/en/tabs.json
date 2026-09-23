@@ -325,6 +325,19 @@
       "findCity": "Find City"
     },
     "founded": "Founded {{date}}",
+    "chat": {
+      "title": "City Chat",
+      "inputPlaceholder": "Write a message...",
+      "send": "Send",
+      "refresh": "Refresh",
+      "reply": "Reply",
+      "noMessages": "No messages yet. Say hi!",
+      "timeAgo": {
+        "minutes": "{{n}}m ago",
+        "hours": "{{n}}h ago",
+        "days": "{{n}}d ago"
+      }
+    },
     "allWorkers": "Workers",
     "happyWorkers": "Happy",
     "membersPage": "{{from}} of {{total}}",
