@@ -27,9 +27,9 @@ export default function CityNotifFAB({ slot, onPress }: Props) {
         pressed && { opacity: 0.82 },
       ]}
     >
-      <Image source={CITY_ICON}  style={styles.mainIcon}    contentFit="contain" />
+      <Image source={NOTIF_ICON} style={styles.mainIcon}    contentFit="contain" />
       <View style={[styles.badgeIcon, { backgroundColor: theme.isDark ? '#0D1F2D' : '#FFFFFF', borderColor: theme.surface }]}>
-        <Image source={NOTIF_ICON} style={styles.badgeIconImg} contentFit="contain" />
+        <Image source={CITY_ICON} style={styles.badgeIconImg} contentFit="contain" />
       </View>
     </Pressable>
   );
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   mainIcon: { width: 28, height: 28 },
   badgeIcon: {
     position: 'absolute',
-    bottom: -2,
+    top: -2,
     right: -2,
     width: 20,
     height: 20,
