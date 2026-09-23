@@ -18,6 +18,7 @@ import { MailModule } from './mail/mail.module';
 import { ReportModule } from './report/report.module';
 import { BlockModule } from './block/block.module';
 import { CityModule } from './city/city.module';
+import { CityChatModule } from './city-chat/city-chat.module';
 import { PaymentsModule } from './payments/payments.module';
 import { DevModule } from './dev/dev.module';
 
@@ -42,6 +43,7 @@ import { DevModule } from './dev/dev.module';
     ReportModule,
     BlockModule,
     CityModule,
+    CityChatModule,
     PaymentsModule,
     DevModule,
   ],
