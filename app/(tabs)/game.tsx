@@ -57,6 +57,9 @@ import { FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
 import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import { hasAnyBetterCandidate } from '../../src/utils/workerCandidate';
 import { getWorkerForSlot } from '../../shared/engine/workerUtils';
+import { useCityStore } from '../../src/stores/cityStore';
+import { useCityNotifStore } from '../../src/stores/cityNotifStore';
+import CityNotifFAB from '../../src/components/CityNotifFAB';
 
 type FloorItem =
   | { type: 'production'; id: number }
@@ -132,6 +135,11 @@ export default function GameScreen() {
   const fetchUnreadMailCount = useMailStore((s) => s.fetchUnreadCount);
   const incomingFriendCount = useFriendStore((s) => s.incomingRequests.length);
   const fetchIncoming = useFriendStore((s) => s.fetchIncoming);
+  const cityId = useCityStore((s) => s.city?.id);
+  const fetchPending = useCityNotifStore((s) => s.fetchPending);
+  const cityNotifPending = useCityNotifStore((s) => s.pending);
+  const cityNotifDismissed = useCityNotifStore((s) => s.dismissed);
+  const reopenCityNotif = useCityNotifStore((s) => s.reopen);
   const tutorialComplete = useGameStore((s) =>
     s.tutorialTasks.currentIndex >= TUTORIAL_TASKS.length && s.tutorialTasks.claimedFinal
   );
@@ -629,6 +637,13 @@ export default function GameScreen() {
     const id = setInterval(() => void fetchIncoming(), 60_000);
     return () => clearInterval(id);
   }, [isAuthenticated, fetchIncoming]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    void fetchPending();
+    const id = setInterval(() => void fetchPending(), 60_000);
+    return () => clearInterval(id);
+  }, [isAuthenticated, fetchPending]);
 
   // When starting in collapsed mode, FlashList never fires onContentSizeChange,
   // so we reveal the tower here instead.
@@ -1135,7 +1150,9 @@ export default function GameScreen() {
           const hasTutorial = onboardingStep === 'done' && !(tutorialComplete);
           const qaSlot = (availableMode !== null ? 1 : 0) + (hasTutorial ? 1 : 0);
           const hasDaily = unclaimedDailyTasksCount > 0;
-          const hasMail  = unreadMailCount > 0;
+          const hasMail     = unreadMailCount > 0;
+          const hasFriend   = incomingFriendCount > 0;
+          const hasCityNotif = !!cityNotifPending && cityNotifDismissed;
           return (
             <>
               {hasTutorial && (
@@ -1156,6 +1173,12 @@ export default function GameScreen() {
                 badgeColor="#3376E5"
                 onPress={() => router.push('/(tabs)/profile')}
               />
+              {hasCityNotif && (
+                <CityNotifFAB
+                  slot={qaSlot + (hasDaily ? 1 : 0) + (hasMail ? 1 : 0) + (hasFriend ? 1 : 0)}
+                  onPress={reopenCityNotif}
+                />
+              )}
             </>
           );
         })()}
