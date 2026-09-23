@@ -93,14 +93,7 @@ export default function CityNotificationsScreen() {
           {isLeader && (
             <View style={[styles.sendCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
               <TextInput
-                style={[
-                  styles.input,
-                  {
-                    color: theme.text,
-                    borderColor: theme.divider,
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F7F9FB',
-                  },
-                ]}
+                style={[styles.input, isDark && styles.inputDark]}
                 placeholder={t('city.notifications.sendPlaceholder')}
                 placeholderTextColor={theme.textMuted}
                 value={draft}
@@ -228,15 +221,19 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   input: {
-    borderWidth: 1,
-    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#C8D8E8',
+    backgroundColor: '#F4F8FC',
+    borderRadius: 12,
     padding: 12,
-    fontFamily: 'Fredoka_400Regular',
+    fontFamily: 'Geologica_500Medium',
     fontSize: 15,
+    color: '#0A1C30',
     minHeight: 80,
     textAlignVertical: 'top',
     marginBottom: 8,
   },
+  inputDark: { backgroundColor: '#243040', borderColor: '#2A4A60', color: '#DDE8D8' },
   sendRow: {
     flexDirection: 'row',
     alignItems: 'center',

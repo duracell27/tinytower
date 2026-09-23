@@ -161,7 +161,7 @@ export default function CityChatScreen() {
           <View style={[styles.inputBar, { backgroundColor: theme.surface }]}>
             <TextInput
               ref={inputRef}
-              style={[styles.input, { color: theme.text, backgroundColor: isDark ? '#1A2E3E' : '#F0F5FF' }]}
+              style={[styles.input, isDark && styles.inputDark]}
               placeholder={t('city.chat.inputPlaceholder')}
               placeholderTextColor={theme.textMuted}
               value={draft}
@@ -286,9 +286,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   input: {
-    height: 40, borderRadius: 10, paddingHorizontal: 12,
-    fontFamily: 'Fredoka_400Regular', fontSize: 15,
+    height: 42, borderRadius: 12, paddingHorizontal: 14,
+    borderWidth: 1.5, borderColor: '#C8D8E8',
+    backgroundColor: '#F4F8FC',
+    fontFamily: 'Geologica_500Medium', fontSize: 15, color: '#0A1C30',
   },
+  inputDark: { backgroundColor: '#243040', borderColor: '#2A4A60', color: '#DDE8D8' },
   inputActions: {
     flexDirection: 'row',
     alignItems: 'center',
