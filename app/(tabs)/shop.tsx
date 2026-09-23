@@ -408,17 +408,19 @@ export default function ShopScreen() {
 
   const [devGranting, setDevGranting] = useState(false);
   const handleDevGrant = useCallback(async (rewards: ShopRewards) => {
-    if (devGranting) return;
     setDevGranting(true);
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout: server not responding (15s)')), 15000),
+    );
     try {
-      await api.devGrant(rewards);
+      await Promise.race([api.devGrant(rewards), timeout]);
       syncService.triggerSync();
     } catch (e) {
       Alert.alert('Dev grant failed', e instanceof Error ? e.message : String(e));
     } finally {
       setDevGranting(false);
     }
-  }, [devGranting]);
+  }, []);
 
   useEffect(() => {
     if (error) {
@@ -500,28 +502,42 @@ export default function ShopScreen() {
 
           {process.env.EXPO_PUBLIC_DEV_CHEATS === 'true' && (
             <View style={styles.devSection}>
-              <Text style={styles.devTitle}>⚙️ DEV CHEATS</Text>
+              <Text style={styles.devTitle}>DEV CHEATS</Text>
               <View style={styles.devRow}>
-                <Pressable style={styles.devBtn} disabled={devGranting}
-                  onPress={() => handleDevGrant({ gems: 500 })}>
-                  <Text style={styles.devBtnText}>+500 💎</Text>
+                <Pressable style={[styles.devBtn, devGranting && styles.devBtnDisabled]}
+                  disabled={devGranting} onPress={() => handleDevGrant({ gems: 500 })}>
+                  <Image source={DIAMOND_ICON} style={styles.devIcon} contentFit="contain" />
+                  <Text style={styles.devBtnText}>+500</Text>
                 </Pressable>
-                <Pressable style={styles.devBtn} disabled={devGranting}
-                  onPress={() => handleDevGrant({ gems: 2000 })}>
-                  <Text style={styles.devBtnText}>+2000 💎</Text>
+                <Pressable style={[styles.devBtn, devGranting && styles.devBtnDisabled]}
+                  disabled={devGranting} onPress={() => handleDevGrant({ gems: 2000 })}>
+                  <Image source={DIAMOND_ICON} style={styles.devIcon} contentFit="contain" />
+                  <Text style={styles.devBtnText}>+2000</Text>
                 </Pressable>
               </View>
               <View style={styles.devRow}>
-                <Pressable style={styles.devBtn} disabled={devGranting}
+                <Pressable style={[styles.devBtn, devGranting && styles.devBtnDisabled]}
+                  disabled={devGranting}
                   onPress={() => handleDevGrant({ tools: { briks: 20, glass: 20, nails: 20, screw: 20, wood: 20, cement: 20 } })}>
-                  <Text style={styles.devBtnText}>+20 🔧 всіх</Text>
+                  <View style={styles.devIconRow}>
+                    {(['briks','glass','nails'] as const).map(k => (
+                      <Image key={k} source={TOOL_ICONS[k]} style={styles.devIconSm} contentFit="contain" />
+                    ))}
+                  </View>
+                  <Text style={styles.devBtnText}>+20 всіх</Text>
                 </Pressable>
-                <Pressable style={styles.devBtn} disabled={devGranting}
+                <Pressable style={[styles.devBtn, devGranting && styles.devBtnDisabled]}
+                  disabled={devGranting}
                   onPress={() => handleDevGrant({ tokens: { green: 5, blue: 5, yellow: 5, purple: 5, red: 5 } })}>
-                  <Text style={styles.devBtnText}>+5 🪙 всіх</Text>
+                  <View style={styles.devIconRow}>
+                    {(['green','blue','yellow'] as const).map(k => (
+                      <Image key={k} source={TOKEN_ICONS[k]} style={styles.devIconSm} contentFit="contain" />
+                    ))}
+                  </View>
+                  <Text style={styles.devBtnText}>+5 всіх</Text>
                 </Pressable>
               </View>
-              {devGranting && <ActivityIndicator style={{ marginTop: 8 }} color="#666" />}
+              {devGranting && <ActivityIndicator style={{ marginTop: 8 }} color="#a0a0b0" />}
             </View>
           )}
 
@@ -541,13 +557,19 @@ const styles = StyleSheet.create({
                    paddingHorizontal: 16, paddingBottom: 8 },
   column:        { flexDirection: 'column', gap: 12,
                    paddingHorizontal: 16, paddingBottom: 8 },
-  devSection:    { marginHorizontal: 16, marginTop: 24, padding: 16,
-                   backgroundColor: '#1a1a2e', borderRadius: 12 },
-  devTitle:      { color: '#ff6b6b', fontWeight: '700', fontSize: 13,
-                   marginBottom: 10, letterSpacing: 1 },
+  devSection:    { marginHorizontal: 16, marginTop: 24, padding: 14,
+                   backgroundColor: '#1a1a2e', borderRadius: 12,
+                   borderWidth: 1, borderColor: '#2a2a4e' },
+  devTitle:      { color: '#8888aa', fontWeight: '700', fontSize: 11,
+                   marginBottom: 10, letterSpacing: 2, textTransform: 'uppercase' },
   devRow:        { flexDirection: 'row', gap: 8, marginBottom: 8 },
   devBtn:        { flex: 1, backgroundColor: '#16213e', borderRadius: 8,
-                   paddingVertical: 10, alignItems: 'center',
+                   paddingVertical: 10, paddingHorizontal: 6,
+                   alignItems: 'center', gap: 4,
                    borderWidth: 1, borderColor: '#0f3460' },
-  devBtnText:    { color: '#e0e0e0', fontSize: 13, fontWeight: '600' },
+  devBtnDisabled:{ opacity: 0.5 },
+  devBtnText:    { color: '#c8c8e0', fontSize: 12, fontWeight: '700' },
+  devIcon:       { width: 28, height: 28 },
+  devIconSm:     { width: 18, height: 18 },
+  devIconRow:    { flexDirection: 'row', gap: 2 },
 });
