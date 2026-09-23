@@ -54,6 +54,8 @@ model Player {
   cityBudgetTransactions CityBudgetTransaction[] @relation("CityBudgetTransactions")
   cityHistoryActed       CityHistoryEvent[]      @relation("CityHistoryActor")
   cityHistoryTargeted    CityHistoryEvent[]      @relation("CityHistoryTarget")
+  cityNotificationsAuthored CityNotification[]   @relation("CityNotificationAuthor")
+  cityNotificationReads     CityNotificationRead[]
   purchases              Purchase[]
 }
 
@@ -420,6 +422,7 @@ model City {
   invites       CityInvite[]
   budgetTransactions CityBudgetTransaction[]
   historyEvents  CityHistoryEvent[]
+  notifications  CityNotification[]
 }
 
 model CityMembership {
@@ -504,6 +507,33 @@ model CityHistoryEvent {
   target Player? @relation("CityHistoryTarget", fields: [targetId], references: [id], onDelete: SetNull)
 
   @@index([cityId, createdAt])
+}
+
+model CityNotification {
+  id          String   @id @default(uuid())
+  cityId      String
+  authorId    String?
+  authorName  String
+  authorLevel Int      @default(1)
+  text        String   @db.VarChar(500)
+  createdAt   DateTime @default(now())
+
+  city   City    @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  author Player? @relation("CityNotificationAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  reads  CityNotificationRead[]
+
+  @@index([cityId, createdAt])
+}
+
+model CityNotificationRead {
+  notificationId String
+  playerId       String
+  readAt         DateTime @default(now())
+
+  notification CityNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  player       Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@id([notificationId, playerId])
 }
 
 model Purchase {
