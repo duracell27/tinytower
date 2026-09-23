@@ -13,6 +13,7 @@ import FloorUpgradeModal from './FloorUpgradeModal';
 import ProductionDetailModal from './ProductionDetailModal';
 import WarehouseFullModal from './WarehouseFullModal';
 import CityAlertModal from './CityAlertModal';
+import CityNotifPopup from './CityNotifPopup';
 import { useGameStore } from '../stores/gameStore';
 
 export default function GlobalOverlay() {
@@ -33,6 +34,7 @@ export default function GlobalOverlay() {
       <ProductionDetailModal />
       <WarehouseFullModal />
       <CityAlertModal />
+      <CityNotifPopup />
     </View>
   );
 }
