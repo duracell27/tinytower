@@ -200,23 +200,25 @@ export default function CityChatScreen() {
           contentContainerStyle={styles.msgList}
           showsVerticalScrollIndicator={false}
         >
-          {isLoading && displayed.length === 0 ? (
-            <ActivityIndicator style={{ marginTop: 40 }} color={isDark ? '#6BAED0' : '#2E6EC9'} />
-          ) : displayed.length === 0 ? (
-            <LocaleText style={[styles.empty, { color: theme.textMuted }]}>
-              {t('city.chat.noMessages')}
-            </LocaleText>
-          ) : (
-            displayed.map((msg) => (
-              <React.Fragment key={msg.id}>
-                <ChatMessageRow
-                  msg={msg} myName={myName} onReply={handleReply}
-                  t={t} theme={theme} isDark={isDark}
-                />
-                <View style={[styles.separator, { backgroundColor: theme.divider }]} />
-              </React.Fragment>
-            ))
-          )}
+          <View style={[styles.msgCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+            {isLoading && displayed.length === 0 ? (
+              <ActivityIndicator style={{ marginVertical: 40 }} color={isDark ? '#6BAED0' : '#2E6EC9'} />
+            ) : displayed.length === 0 ? (
+              <LocaleText style={[styles.empty, { color: theme.textMuted }]}>
+                {t('city.chat.noMessages')}
+              </LocaleText>
+            ) : (
+              displayed.map((msg, i) => (
+                <React.Fragment key={msg.id}>
+                  {i > 0 && <View style={styles.separator} />}
+                  <ChatMessageRow
+                    msg={msg} myName={myName} onReply={handleReply}
+                    t={t} theme={theme} isDark={isDark}
+                  />
+                </React.Fragment>
+              ))
+            )}
+          </View>
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -243,7 +245,7 @@ export default function CityChatScreen() {
             </View>
           )}
 
-          <View style={{ height: 40 }} />
+          <View style={{ height: 16 }} />
         </ScrollView>
         </KeyboardAvoidingView>
 
@@ -308,8 +310,12 @@ const styles = StyleSheet.create({
   refreshIcon: { fontSize: 18, lineHeight: 20 },
   refreshLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
 
-  msgList: { paddingHorizontal: 12, paddingTop: 12 },
-  msgRow: { paddingVertical: 10 },
+  msgList: { paddingHorizontal: 14, paddingTop: 4, paddingBottom: 8 },
+  msgCard: {
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  msgRow: { paddingVertical: 10, paddingHorizontal: 14 },
   msgMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
   msgLeft: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
   avatar: { width: 22, height: 22, borderRadius: 11 },
@@ -318,7 +324,7 @@ const styles = StyleSheet.create({
   replyBtn: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#2E6EC9' },
   msgBody: { fontFamily: 'Fredoka_400Regular', fontSize: 14, lineHeight: 20, paddingLeft: 28 },
   mention: { color: '#2E6EC9', fontFamily: 'Fredoka_600SemiBold' },
-  separator: { height: 1, marginVertical: 2 },
+  separator: { height: 1, backgroundColor: '#2E6EC9', opacity: 0.18 },
   empty: { textAlign: 'center', marginTop: 60, fontFamily: 'Fredoka_500Medium', fontSize: 15 },
 
   pagination: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginVertical: 12 },
