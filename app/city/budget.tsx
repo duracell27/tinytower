@@ -575,10 +575,12 @@ const styles = StyleSheet.create({
   donateIcon: { width: 26, height: 26 },
   donateInput: {
     borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#C8D8E8',
     paddingHorizontal: 14,
     paddingVertical: 10,
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 18,
+    fontFamily: 'Geologica_500Medium',
+    fontSize: 17,
   },
   gemLimitRow: {
     flexDirection: 'row',
