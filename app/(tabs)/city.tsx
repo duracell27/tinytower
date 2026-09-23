@@ -278,8 +278,9 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
             style={[styles.sectionCard, isDark && styles.sectionCardDark]}
             activeOpacity={0.7}
             onPress={
-              card.key === 'budget' ? () => router.push(`/city/budget?id=${city.id}`) :
-              card.key === 'history' ? () => router.push(`/city/history?id=${city.id}`) :
+              card.key === 'budget'        ? () => router.push(`/city/budget?id=${city.id}`) :
+              card.key === 'history'       ? () => router.push(`/city/history?id=${city.id}`) :
+              card.key === 'notifications' ? () => router.push(`/city/notifications?id=${city.id}`) :
               undefined
             }
           >
