@@ -15,7 +15,7 @@ import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useCityStore } from '../../src/stores/cityStore';
 import { xpForLevel } from '../../shared/engine/xp';
-import { formatNum } from '../../src/utils/format';
+import { formatNum, formatXp } from '../../src/utils/format';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
@@ -51,7 +51,6 @@ const SECTION_CARDS = [
 
 const MEMBERS_PER_PAGE = 10;
 const ROLE_ORDER: CityRole[] = ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
-
 
 function formatFoundedDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -168,8 +167,11 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
   const myRole = city.myRole;
   const isMyCity = !!myRole;
   const xpPercent = city.xpForNextLevel ? Math.min(city.xp / city.xpForNextLevel, 1) : 1;
-  const totalPages = Math.max(1, Math.ceil(city.members.length / MEMBERS_PER_PAGE));
-  const pagedMembers = city.members.slice(
+  const sortedMembers = [...city.members].sort(
+    (a, b) => ROLE_ORDER.indexOf(b.role) - ROLE_ORDER.indexOf(a.role),
+  );
+  const totalPages = Math.max(1, Math.ceil(sortedMembers.length / MEMBERS_PER_PAGE));
+  const pagedMembers = sortedMembers.slice(
     memberPage * MEMBERS_PER_PAGE,
     (memberPage + 1) * MEMBERS_PER_PAGE,
   );
@@ -235,8 +237,8 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
           </View>
           <View style={styles.xpValueRow}>
             <LocaleText style={[styles.xpNum, { color: theme.textMuted }]}>
-              {city.xp}
-              {city.xpForNextLevel != null ? ` / ${city.xpForNextLevel}` : ''}
+              {formatXp(city.xp)}
+              {city.xpForNextLevel != null ? ` / ${formatXp(city.xpForNextLevel)}` : ''}
             </LocaleText>
             <Image source={XP_ICON} style={styles.xpIconImg} contentFit="contain" />
           </View>
@@ -331,7 +333,7 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
 
               <View style={styles.memberXpRow}>
                 <LocaleText style={[styles.memberXp, isDark && { color: '#6BAED0' }]}>
-                  {(member.cityXp ?? 0).toLocaleString()}
+                  {formatXp(member.cityXp ?? 0)}
                 </LocaleText>
                 <Image source={XP_ICON} style={styles.memberXpIcon} contentFit="contain" />
               </View>
@@ -713,13 +715,13 @@ const styles = StyleSheet.create({
   memberXp: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#2E6EC9' },
   memberXpIcon: { width: 16, height: 16 },
   memberActions: { flexDirection: 'row', gap: 8 },
-  memberActionBtn: {
+  actionBtn: {
     width: 34, height: 34, borderRadius: 8,
     backgroundColor: '#E8F0F8',
     alignItems: 'center', justifyContent: 'center',
   },
-  memberActionBtnDark: { backgroundColor: 'rgba(255,255,255,0.1)' },
-  memberActionText: { fontSize: 16, color: '#2E6EC9' },
+  actionBtnDark: { backgroundColor: 'rgba(255,255,255,0.1)' },
+  actionBtnText: { fontSize: 16, color: '#2E6EC9' },
   kickBtn: { backgroundColor: '#FCE8E8' },
   kickBtnText: { fontSize: 14, color: '#C03030' },
 

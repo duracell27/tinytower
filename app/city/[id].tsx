@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
-  Alert, useColorScheme, Dimensions,
+  useColorScheme, Dimensions,
 } from 'react-native';
 import { useGameStore } from '../../src/stores/gameStore';
 
@@ -12,25 +12,10 @@ import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
 import { useCityStore } from '../../src/stores/cityStore';
 import { useAuthStore } from '../../src/stores/authStore';
-import type { CityDetail, CityMember, CityRole } from '../../src/services/api';
+import { formatXp } from '../../src/utils/format';
+import type { CityDetail, CityRole } from '../../src/services/api';
 
 const MEMBERS_PER_PAGE = 10;
-const ROLE_ORDER: CityRole[] = ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
-
-function roleRank(role: CityRole): number {
-  return ROLE_ORDER.indexOf(role);
-}
-
-function canKick(actorRole: CityRole, targetRole: CityRole): boolean {
-  if (actorRole === 'MAYOR') return true;
-  if (actorRole === 'ACTING_MAYOR') return targetRole !== 'MAYOR';
-  if (actorRole === 'VICE_MAYOR') return roleRank(targetRole) <= roleRank('ADVISOR');
-  return false;
-}
-
-function canPromote(actorRole: CityRole): boolean {
-  return actorRole === 'MAYOR' || actorRole === 'ACTING_MAYOR' || actorRole === 'VICE_MAYOR';
-}
 
 function formatFoundedDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -52,7 +37,7 @@ export default function CityDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const player = useAuthStore((s) => s.player);
-  const { getCityById, kickMember, changeMemberRole, leaveCity } = useCityStore();
+  const { getCityById, leaveCity } = useCityStore();
   const showCityAlert = useGameStore((s) => s.showCityAlert);
   const showCityConfirm = useGameStore((s) => s.showCityConfirm);
 
@@ -72,52 +57,6 @@ export default function CityDetailScreen() {
   };
 
   useEffect(() => { load(); }, [id]);
-
-  const handleKick = (member: CityMember) => {
-    showCityConfirm({
-      title: t('city.detail.kick'),
-      message: t('city.kick.confirm', { name: member.playerName }),
-      confirmText: t('city.detail.kick'),
-      danger: true,
-      onConfirm: async () => {
-        try {
-          await kickMember(id!, member.playerId);
-          await load();
-        } catch {
-          showCityAlert({ message: t('city.kick.error') });
-        }
-      },
-    });
-  };
-
-  const handleChangeRole = (member: CityMember) => {
-    const myRole = city?.myRole;
-    if (!myRole) return;
-
-    const availableRoles: CityRole[] = myRole === 'VICE_MAYOR'
-      ? ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR']
-      : ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
-
-    const options = availableRoles
-      .filter((r) => r !== member.role)
-      .map((role) => ({
-        text: t(`city.roles.${role}`),
-        onPress: async () => {
-          try {
-            await changeMemberRole(id!, member.playerId, role);
-            await load();
-          } catch {
-            showCityAlert({ message: t('city.roleChange.error') });
-          }
-        },
-      }));
-
-    // Role change keeps native alert (multi-option picker)
-    Alert.alert(t('city.roleChange.title'), member.playerName, [
-      ...options,
-      { text: 'Cancel', style: 'cancel' },
-    ]);
-  };
 
   const handleLeave = () => {
     const isMayor = city?.myRole === 'MAYOR';
@@ -201,11 +140,11 @@ export default function CityDetailScreen() {
           <View style={styles.xpSection}>
             <View style={styles.xpLabelRow}>
               <LocaleText style={[styles.xpNum, isDark && { color: '#9AAAB8' }]}>
-                {city.xp} XP
+                {formatXp(city.xp)} XP
               </LocaleText>
               {city.xpForNextLevel != null && (
                 <LocaleText style={[styles.xpNum, isDark && { color: '#9AAAB8' }]}>
-                  {city.xpForNextLevel} XP
+                  {formatXp(city.xpForNextLevel)} XP
                 </LocaleText>
               )}
             </View>
@@ -266,55 +205,31 @@ export default function CityDetailScreen() {
           {pagedMembers.map((member, idx) => {
             const globalIdx = memberPage * MEMBERS_PER_PAGE + idx + 1;
             const isMe = member.playerId === player?.id;
-            const showKick = isMyCity && !isMe && myRole && canKick(myRole, member.role);
-            const showRole = isMyCity && !isMe && myRole && canPromote(myRole);
 
             return (
-              <View key={member.playerId} style={[styles.memberRow, isDark && styles.memberRowDark]}>
+              <TouchableOpacity
+                key={member.playerId}
+                style={[styles.memberRow, isDark && styles.memberRowDark]}
+                onPress={() => router.push(`/user-profile/${member.playerId}`)}
+                activeOpacity={0.7}
+              >
                 <LocaleText style={[styles.memberRank, isDark && { color: '#5A7090' }]}>
                   {globalIdx}
                 </LocaleText>
 
-                <TouchableOpacity
-                  style={styles.memberInfo}
-                  onPress={() => router.push(`/user-profile/${member.playerId}`)}
-                  activeOpacity={0.7}
-                >
+                <View style={styles.memberInfo}>
                   <LocaleText style={[styles.memberName, isDark && { color: '#DDE8D8' }]}>
                     {member.playerName}{isMe ? ' ✦' : ''}
                   </LocaleText>
                   <LocaleText style={[styles.memberMeta, isDark && { color: '#8A9A80' }]}>
                     {t(`city.roles.${member.role}`)} · {t('city.detail.level', { level: member.playerLevel })}
                   </LocaleText>
-                </TouchableOpacity>
+                </View>
 
                 <LocaleText style={[styles.memberXp, isDark && { color: '#6BAED0' }]}>
-                  {(member.cityXp ?? 0).toLocaleString()} XP
+                  {formatXp(member.cityXp ?? 0)} XP
                 </LocaleText>
-
-                {(showRole || showKick) && (
-                  <View style={styles.memberActions}>
-                    {showRole && (
-                      <TouchableOpacity
-                        style={[styles.actionBtn, isDark && styles.actionBtnDark]}
-                        onPress={() => handleChangeRole(member)}
-                        activeOpacity={0.7}
-                      >
-                        <LocaleText style={[styles.actionBtnText, isDark && { color: '#DDE8D8' }]}>⬆</LocaleText>
-                      </TouchableOpacity>
-                    )}
-                    {showKick && (
-                      <TouchableOpacity
-                        style={[styles.actionBtn, styles.kickBtn]}
-                        onPress={() => handleKick(member)}
-                        activeOpacity={0.7}
-                      >
-                        <LocaleText style={styles.kickBtnText}>✕</LocaleText>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                )}
-              </View>
+              </TouchableOpacity>
             );
           })}
 

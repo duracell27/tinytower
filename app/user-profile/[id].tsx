@@ -178,11 +178,30 @@ export default function UserProfileScreen() {
   const canKick = myRole && cityMember && id !== currentPlayerId && (
     myRole === 'MAYOR' ||
     (myRole === 'ACTING_MAYOR' && cityMember.role !== 'MAYOR') ||
-    (myRole === 'VICE_MAYOR' && roleRank(cityMember.role) <= roleRank('ADVISOR'))
+    (myRole === 'VICE_MAYOR' && roleRank(cityMember.role) <= roleRank('BUSINESSMAN'))
   );
   const canPromote = myRole && cityMember && id !== currentPlayerId && (
-    myRole === 'MAYOR' || myRole === 'ACTING_MAYOR' || myRole === 'VICE_MAYOR'
+    myRole === 'MAYOR' ||
+    (myRole === 'ACTING_MAYOR' && cityMember.role !== 'MAYOR') ||
+    (myRole === 'VICE_MAYOR' && roleRank(cityMember.role) <= roleRank('ADVISOR'))
   );
+
+  const maxAssignableRank = myRole === 'VICE_MAYOR' ? roleRank('ADVISOR') : roleRank('ACTING_MAYOR');
+  const memberRank = cityMember ? roleRank(cityMember.role) : -1;
+  const canRoleUp   = !!canPromote && memberRank < maxAssignableRank;
+  const canRoleDown = !!canPromote && memberRank > roleRank('NEWBIE');
+
+  const handleRoleStep = async (direction: 1 | -1) => {
+    if (!myCity || !cityMember) return;
+    const newRole = ROLE_ORDER[memberRank + direction];
+    if (!newRole) return;
+    try {
+      await changeMemberRole(myCity.id, cityMember.playerId, newRole);
+      await fetchMyCityInfo();
+    } catch {
+      showCityAlert({ message: t('city.roleChange.error') });
+    }
+  };
 
   const handleKick = () => {
     if (!myCity || !cityMember) return;
@@ -202,34 +221,6 @@ export default function UserProfileScreen() {
     });
   };
 
-  const handleChangeRole = () => {
-    if (!myCity || !cityMember || !myRole) return;
-    const { Alert } = require('react-native');
-    const availableRoles: CityRole[] = myRole === 'VICE_MAYOR'
-      ? ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR']
-      : ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
-
-    Alert.alert(
-      t('city.roleChange.title'),
-      cityMember.playerName,
-      [
-        ...availableRoles
-          .filter(r => r !== cityMember.role)
-          .map(role => ({
-            text: t(`city.roles.${role}`),
-            onPress: async () => {
-              try {
-                await changeMemberRole(myCity.id, cityMember.playerId, role);
-                await fetchMyCityInfo();
-              } catch {
-                showCityAlert({ message: t('city.roleChange.error') });
-              }
-            },
-          })),
-        { text: t('userProfile.cancel'), style: 'cancel' as const },
-      ],
-    );
-  };
 
   const handleCityInvite = async () => {
     if (!myCity || !id) return;
@@ -491,32 +482,46 @@ export default function UserProfileScreen() {
             </Pressable>
           )}
 
-          {/* City management — promote/kick */}
-          {currentPlayerId && id !== currentPlayerId && cityMember && (
-            <>
-              {canPromote && (
-                <Pressable
-                  style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
-                  onPress={handleChangeRole}
-                >
-                  <Image source={MANAGER_ICON} style={pStyles.actionIcon} contentFit="contain" />
-                  <LocaleText style={[pStyles.actionBtnText, { color: theme.text }]}>
-                    {t('city.detail.changeCityRole')}
-                  </LocaleText>
-                </Pressable>
-              )}
-              {canKick && (
-                <Pressable
-                  style={[pStyles.actionBtn, { backgroundColor: isDark ? 'rgba(200,50,50,0.15)' : '#FCE8E8' }]}
-                  onPress={handleKick}
-                >
-                  <Image source={CANCEL_ICON} style={pStyles.actionIcon} contentFit="contain" />
-                  <LocaleText style={[pStyles.actionBtnText, { color: '#C03030' }]}>
-                    {t('city.detail.kickFromCity')}
-                  </LocaleText>
-                </Pressable>
-              )}
-            </>
+          {/* City management — role stepper + kick */}
+          {currentPlayerId && id !== currentPlayerId && cityMember && canPromote && (
+            <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
+              <Image source={MANAGER_ICON} style={pStyles.actionIcon} contentFit="contain" />
+              <View style={{ flex: 1 }}>
+                <LocaleText style={[pStyles.roleStepLabel, { color: theme.textMuted }]}>
+                  {t('city.detail.cityRole')}
+                </LocaleText>
+                <LocaleText style={[pStyles.roleStepValue, { color: theme.text }]}>
+                  {t(`city.roles.${cityMember.role}`)}
+                </LocaleText>
+              </View>
+              <Pressable
+                style={[pStyles.roleArrowBtn, !canRoleDown && pStyles.roleArrowBtnOff]}
+                onPress={() => handleRoleStep(-1)}
+                disabled={!canRoleDown}
+                hitSlop={8}
+              >
+                <LocaleText style={pStyles.roleArrowText}>▼</LocaleText>
+              </Pressable>
+              <Pressable
+                style={[pStyles.roleArrowBtn, !canRoleUp && pStyles.roleArrowBtnOff]}
+                onPress={() => handleRoleStep(1)}
+                disabled={!canRoleUp}
+                hitSlop={8}
+              >
+                <LocaleText style={pStyles.roleArrowText}>▲</LocaleText>
+              </Pressable>
+            </View>
+          )}
+          {currentPlayerId && id !== currentPlayerId && cityMember && canKick && (
+            <Pressable
+              style={[pStyles.actionBtn, { backgroundColor: isDark ? 'rgba(200,50,50,0.15)' : '#FCE8E8' }]}
+              onPress={handleKick}
+            >
+              <Image source={CANCEL_ICON} style={pStyles.actionIcon} contentFit="contain" />
+              <LocaleText style={[pStyles.actionBtnText, { color: '#C03030' }]}>
+                {t('city.detail.kickFromCity')}
+              </LocaleText>
+            </Pressable>
           )}
 
           {/* Block 3: Achievements */}
@@ -894,6 +899,18 @@ const pStyles = StyleSheet.create({
     fontSize: 14,
     color: '#E05A4A',
   },
+  /* Role stepper */
+  roleStepLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
+  roleStepValue: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, marginTop: 1 },
+  roleArrowBtn: {
+    width: 36, height: 36, borderRadius: 10,
+    backgroundColor: 'rgba(46,110,201,0.12)',
+    alignItems: 'center', justifyContent: 'center',
+    marginLeft: 6,
+  },
+  roleArrowBtnOff: { opacity: 0.3 },
+  roleArrowText: { fontSize: 14, color: '#2E6EC9' },
+
   /* Close button */
   closeBtnWrap: {
     position: 'absolute', bottom: 36, left: 0, right: 0,

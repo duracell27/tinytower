@@ -11,7 +11,7 @@ import AppBackground from '../../src/components/AppBackground';
 import { useCityStore } from '../../src/stores/cityStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { getUserIcon } from '../../src/utils/userIcon';
-import { formatNum } from '../../src/utils/format';
+import { formatNum, formatXp } from '../../src/utils/format';
 import type { CityMember } from '../../src/services/api';
 
 const CUP_1   = require('../../assets/img/rating/1PlaceCup.png');
@@ -69,7 +69,7 @@ export default function CitizenRankingsScreen() {
   ];
 
   function getMemberValue(m: CityMember): string {
-    if (tab === 'cityXp')  return (m.cityXp ?? 0).toLocaleString();
+    if (tab === 'cityXp')  return formatXp(m.cityXp ?? 0);
     if (tab === 'level')   return String(m.playerLevel);
     if (tab === 'floors')  return String(m.floorCount ?? 0);
     return formatNum(m.revenuePerMin ?? 0);
@@ -153,7 +153,7 @@ export default function CitizenRankingsScreen() {
                       />
                     </View>
                   ) : (
-                    <LocaleText style={[styles.memberRank, isDark && { color: '#5A7090' }]}>
+                    <LocaleText style={[styles.memberRank, isDark && { color: '#5A7090' }, isMe && styles.memberRankMe]}>
                       {item.rank}
                     </LocaleText>
                   )}
@@ -273,6 +273,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold', fontSize: 15,
     color: '#8A9A80', minWidth: 22, textAlign: 'center',
   },
+  memberRankMe: { color: '#2E6EC9' },
   memberRankDivider: {
     width: 1, height: 32,
     backgroundColor: 'rgba(0,0,0,0.08)',

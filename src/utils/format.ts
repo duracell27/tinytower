@@ -18,6 +18,17 @@ export function formatNumFull(n: number): string {
   return parts.join(' ');
 }
 
+export function formatXp(n: number): string {
+  let i18n: { language?: string } | undefined;
+  try { i18n = require('../i18n').default; } catch {}
+  const uk = i18n?.language === 'uk';
+  const trim = (val: number) => val.toFixed(2).replace(/\.?0+$/, '');
+  if (n >= 1_000_000_000) return trim(n / 1_000_000_000) + (uk ? 'г' : 'g');
+  if (n >= 1_000_000)     return trim(n / 1_000_000)     + (uk ? 'м' : 'm');
+  if (n >= 1_000)         return trim(n / 1_000)         + (uk ? 'к' : 'k');
+  return String(n);
+}
+
 export function formatCompact(n: number, decimals?: number): string {
   let i18n: { language?: string } | undefined;
   try { i18n = require('../i18n').default; } catch {}

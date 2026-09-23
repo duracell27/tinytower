@@ -510,6 +510,11 @@ export class CityService {
     const canPromote = this.canActOnTarget(actorMs.role, targetMs.role, 'promote');
     if (!canPromote) throw new ForbiddenException('Insufficient role to change this member\'s role');
 
+    // Mayor role cannot be assigned to anyone
+    if (newRole === CityRole.MAYOR) {
+      throw new ForbiddenException('Mayor role cannot be transferred');
+    }
+
     // VICE_MAYOR can only set roles up to ADVISOR
     if (actorMs.role === CityRole.VICE_MAYOR && roleRank(newRole) >= roleRank(CityRole.VICE_MAYOR)) {
       throw new ForbiddenException('Vice Mayor can only promote up to Advisor');
@@ -525,13 +530,6 @@ export class CityService {
         where: { playerId: targetPlayerId },
         data: { role: newRole },
       });
-
-      if (newRole === CityRole.MAYOR && actorMs.role === CityRole.MAYOR) {
-        await tx.cityMembership.update({
-          where: { playerId: actorId },
-          data: { role: CityRole.ACTING_MAYOR },
-        });
-      }
 
       await tx.cityHistoryEvent.create({
         data: {

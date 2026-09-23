@@ -12,6 +12,7 @@ import AppBackground from '../../src/components/AppBackground';
 import { useCityStore } from '../../src/stores/cityStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useGameStore } from '../../src/stores/gameStore';
+import { formatXp } from '../../src/utils/format';
 import type { CityXpStats, CityXpStatMember } from '../../src/services/api';
 
 const XP_ICON = require('../../assets/img/xpIcon.png');
@@ -120,7 +121,7 @@ export default function CityXpStatsScreen() {
             {t('city.xpStats.totalLabel')}
           </LocaleText>
           <LocaleText style={[styles.totalXp, isDark && { color: '#6BAED0' }]}>
-            {stats.totalXpPeriod.toLocaleString()} XP
+            {formatXp(stats.totalXpPeriod)} XP
           </LocaleText>
         </View>
 
@@ -210,7 +211,7 @@ function MemberRow({
       <View style={styles.xpCol}>
         <View style={styles.xpRow}>
           <LocaleText style={[styles.xpValue, isDark && { color: '#6BAED0' }]}>
-            {member.xpPeriod.toLocaleString()}
+            {formatXp(member.xpPeriod)}
           </LocaleText>
           <Image source={XP_ICON} style={styles.xpIcon} contentFit="contain" />
         </View>
