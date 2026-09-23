@@ -752,7 +752,7 @@ export class CityService {
       include: { player: { select: { playerName: true, playerLevel: true } } },
     });
     if (!membership || membership.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
-    if (!SENDER_ROLES.includes(membership.role as CityRole)) throw new ForbiddenException('Insufficient role');
+    if (!(SENDER_ROLES as readonly CityRole[]).includes(membership.role)) throw new ForbiddenException('Insufficient role');
 
     const trimmed = text.trim().slice(0, 500);
     if (!trimmed) throw new BadRequestException('Text is required');
