@@ -170,25 +170,28 @@ export default function CityChatScreen() {
               returnKeyType="send"
               onSubmitEditing={handleSend}
             />
-            <TouchableOpacity
-              style={[styles.sendBtn, (!draft.trim() || isSending) && styles.sendBtnDisabled]}
-              onPress={handleSend}
-              disabled={isSending || !draft.trim()}
-              activeOpacity={0.75}
-            >
-              {isSending ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <LocaleText style={styles.sendBtnText}>{t('city.chat.send')}</LocaleText>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => cityId && void fetchPage(cityId, page)}
-              style={styles.refreshBtn}
-              activeOpacity={0.7}
-            >
-              <LocaleText style={[styles.refreshIcon, { color: '#2E6EC9' }]}>↻</LocaleText>
-            </TouchableOpacity>
+            <View style={styles.inputActions}>
+              <TouchableOpacity
+                style={[styles.sendBtn, (!draft.trim() || isSending) && styles.sendBtnDisabled]}
+                onPress={handleSend}
+                disabled={isSending || !draft.trim()}
+                activeOpacity={0.75}
+              >
+                {isSending ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <LocaleText style={styles.sendBtnText}>{t('city.chat.send')}</LocaleText>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => cityId && void fetchPage(cityId, page)}
+                style={styles.refreshBtn}
+                activeOpacity={0.7}
+              >
+                <LocaleText style={[styles.refreshIcon, { color: '#2E6EC9' }]}>↻</LocaleText>
+                <LocaleText style={[styles.refreshLabel, { color: '#2E6EC9' }]}>{t('city.chat.refresh')}</LocaleText>
+              </TouchableOpacity>
+            </View>
           </View>
 
         {/* ── Messages ───────────────────────────────────── */}
@@ -276,28 +279,31 @@ const styles = StyleSheet.create({
   heroSub:      { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
 
   inputBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
     borderRadius: 14,
     marginHorizontal: 14,
     marginBottom: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    padding: 12,
+    gap: 8,
   },
   input: {
-    flex: 1, height: 40, borderRadius: 10, paddingHorizontal: 12,
+    height: 40, borderRadius: 10, paddingHorizontal: 12,
     fontFamily: 'Fredoka_400Regular', fontSize: 15,
   },
+  inputActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   sendBtn: {
-    backgroundColor: '#2E6EC9', borderRadius: 10, paddingHorizontal: 16,
-    height: 40, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#2E6EC9', borderRadius: 10, paddingHorizontal: 20,
+    height: 36, alignItems: 'center', justifyContent: 'center',
   },
   sendBtnDisabled: { opacity: 0.5 },
   sendBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#FFFFFF' },
 
-  refreshBtn: { padding: 6 },
-  refreshIcon: { fontSize: 20, lineHeight: 22, color: '#2E6EC9' },
+  refreshBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  refreshIcon: { fontSize: 18, lineHeight: 20 },
+  refreshLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
 
   msgList: { paddingHorizontal: 12, paddingTop: 12 },
   msgRow: { paddingVertical: 10 },
