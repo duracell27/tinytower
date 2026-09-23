@@ -515,6 +515,7 @@ model CityNotification {
   authorId    String?
   authorName  String
   authorLevel Int      @default(1)
+  authorRole  String   @default("MAYOR")
   text        String   @db.VarChar(500)
   createdAt   DateTime @default(now())
 

@@ -158,6 +158,9 @@ export default function CityNotificationsScreen() {
                       !notif.isReadByMe && { borderLeftColor: accentColor, borderLeftWidth: 3 },
                     ]}
                   >
+                    <LocaleText style={[styles.notifText, { color: theme.text }]}>
+                      {notif.text}
+                    </LocaleText>
                     <TouchableOpacity
                       style={styles.authorRow}
                       onPress={notif.authorId ? () => router.push(`/user-profile/${notif.authorId}`) : undefined}
@@ -173,13 +176,10 @@ export default function CityNotificationsScreen() {
                           {notif.authorName}
                         </LocaleText>
                         <LocaleText style={[styles.notifDate, { color: theme.textMuted }]}>
-                          {fmtDate(notif.createdAt)}
+                          {t(`city.roles.${notif.authorRole}`)} · {fmtDate(notif.createdAt)}
                         </LocaleText>
                       </View>
                     </TouchableOpacity>
-                    <LocaleText style={[styles.notifText, { color: theme.text }]}>
-                      {notif.text}
-                    </LocaleText>
                   </View>
                 );
               })}
@@ -275,13 +275,13 @@ const styles = StyleSheet.create({
   authorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 8,
+    gap: 8,
+    marginTop: 8,
   },
   avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
   },
   authorMeta: { gap: 1 },
   authorName: {

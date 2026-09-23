@@ -74,7 +74,16 @@ export default function CityNotifPopup() {
               </Pressable>
             </View>
 
-            {/* Author row */}
+            {/* Text body */}
+            <View style={[styles.textBox, { borderColor: theme.divider, backgroundColor: theme.isDark ? 'rgba(255,255,255,0.05)' : '#F7F9FB' }]}>
+              <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 180 }}>
+                <LocaleText style={[styles.bodyText, { color: theme.text }]}>
+                  {pending.text}
+                </LocaleText>
+              </ScrollView>
+            </View>
+
+            {/* Author row — below text */}
             <Pressable
               style={styles.authorRow}
               onPress={pending.authorId ? () => router.push(`/user-profile/${pending.authorId}`) : undefined}
@@ -89,19 +98,10 @@ export default function CityNotifPopup() {
                   {pending.authorName}
                 </LocaleText>
                 <LocaleText style={[styles.authorDate, { color: theme.textMuted }]}>
-                  {fmtDate(pending.createdAt)}
+                  {t(`city.roles.${pending.authorRole}`)} · {fmtDate(pending.createdAt)}
                 </LocaleText>
               </View>
             </Pressable>
-
-            {/* Text body */}
-            <View style={[styles.textBox, { borderColor: theme.divider, backgroundColor: theme.isDark ? 'rgba(255,255,255,0.05)' : '#F7F9FB' }]}>
-              <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 180 }}>
-                <LocaleText style={[styles.bodyText, { color: theme.text }]}>
-                  {pending.text}
-                </LocaleText>
-              </ScrollView>
-            </View>
 
             {/* Acknowledge button */}
             <Pressable
@@ -168,13 +168,14 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
     authorRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
-      marginBottom: 12,
+      gap: 8,
+      marginTop: 10,
+      marginBottom: 14,
     },
     authorAvatar: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
+      width: 24,
+      height: 24,
+      borderRadius: 12,
     },
     authorInfo: { gap: 1 },
     authorName: {
@@ -190,7 +191,6 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       borderWidth: 1,
       borderRadius: 12,
       padding: 12,
-      marginBottom: 16,
     },
     bodyText: {
       fontFamily: 'Fredoka_400Regular',

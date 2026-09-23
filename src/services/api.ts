@@ -193,6 +193,7 @@ export interface CityNotification {
   authorId: string | null;
   authorName: string;
   authorLevel: number;
+  authorRole: string;
   text: string;
   createdAt: string;
   isReadByMe: boolean;

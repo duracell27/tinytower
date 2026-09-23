@@ -81,6 +81,7 @@ export interface CityNotificationDto {
   authorId: string | null;
   authorName: string;
   authorLevel: number;
+  authorRole: string;
   text: string;
   createdAt: string;
   isReadByMe: boolean;
@@ -763,6 +764,7 @@ export class CityService {
         authorId,
         authorName: membership.player.playerName,
         authorLevel: membership.player.playerLevel,
+        authorRole: membership.role,
         text: trimmed,
       },
     });
@@ -773,6 +775,7 @@ export class CityService {
       authorId: notif.authorId,
       authorName: notif.authorName,
       authorLevel: notif.authorLevel,
+      authorRole: notif.authorRole,
       text: notif.text,
       createdAt: notif.createdAt.toISOString(),
       isReadByMe: false,
@@ -796,6 +799,7 @@ export class CityService {
       authorId: n.authorId,
       authorName: n.authorName,
       authorLevel: n.authorLevel,
+      authorRole: n.authorRole,
       text: n.text,
       createdAt: n.createdAt.toISOString(),
       isReadByMe: n.reads.length > 0,
@@ -835,6 +839,7 @@ export class CityService {
       authorId: notif.authorId,
       authorName: notif.authorName,
       authorLevel: notif.authorLevel,
+      authorRole: notif.authorRole,
       text: notif.text,
       createdAt: notif.createdAt.toISOString(),
       isReadByMe: false,
