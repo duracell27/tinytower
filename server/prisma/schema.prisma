@@ -56,6 +56,8 @@ model Player {
   cityHistoryTargeted    CityHistoryEvent[]      @relation("CityHistoryTarget")
   cityNotificationsAuthored CityNotification[]   @relation("CityNotificationAuthor")
   cityNotificationReads     CityNotificationRead[]
+  cityChatMessages          CityChatMessage[]    @relation("CityChatMessages")
+  cityChatMentions          CityChatMessage[]    @relation("CityChatMentions")
   purchases              Purchase[]
 }
 
@@ -423,6 +425,7 @@ model City {
   budgetTransactions CityBudgetTransaction[]
   historyEvents  CityHistoryEvent[]
   notifications  CityNotification[]
+  chatMessages   CityChatMessage[]
 }
 
 model CityMembership {
@@ -435,6 +438,7 @@ model CityMembership {
   gemsGivenThisWeek Int      @default(0)
   gemsShopBonus     Int      @default(0)
   gemsWeekStart     DateTime @default(now())
+  cityChatLastReadAt DateTime @default(now())
   city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
   player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
@@ -535,6 +539,26 @@ model CityNotificationRead {
   player       Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@id([notificationId, playerId])
+}
+
+model CityChatMessage {
+  id                String    @id @default(uuid())
+  cityId            String
+  playerId          String?
+  playerName        String
+  playerLevel       Int       @default(1)
+  playerRole        String    @default("NEWBIE")
+  body              String    @db.VarChar(500)
+  mentionedPlayerId String?
+  mentionedName     String?
+  createdAt         DateTime  @default(now())
+
+  city            City    @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  player          Player? @relation("CityChatMessages", fields: [playerId], references: [id], onDelete: SetNull)
+  mentionedPlayer Player? @relation("CityChatMentions", fields: [mentionedPlayerId], references: [id], onDelete: SetNull)
+
+  @@index([cityId, createdAt])
+  @@index([mentionedPlayerId, createdAt])
 }
 
 model Purchase {
