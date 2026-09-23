@@ -10,7 +10,7 @@ export class DevController {
 
   @Post('grant')
   async grant(@Req() req: any, @Body() body: ShopRewards) {
-    const playerId: string = req.user.id;
+    const playerId: string = req.user.playerId;
     const gems   = body.gems   ?? 0;
     const tools  = body.tools  ?? {};
     const tokens = body.tokens ?? {};
