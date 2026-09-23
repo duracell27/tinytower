@@ -404,6 +404,19 @@
         "CITY_LEVEL_UP": "Level Up"
       }
     },
+    "notifications": {
+      "title": "Notifications",
+      "headerDesc": "Announcements from city leadership",
+      "empty": "No notifications yet",
+      "loadError": "Failed to load notifications",
+      "sendError": "Failed to send notification",
+      "sendPlaceholder": "Write an announcement (up to 500 characters)...",
+      "send": "Send",
+      "acknowledge": "Got it!",
+      "from": "From",
+      "popupTitle": "City Notification",
+      "charCount": "{{count}}/500"
+    },
     "errors": {
       "load": "Failed to load city",
       "leave": "Failed to leave city",
