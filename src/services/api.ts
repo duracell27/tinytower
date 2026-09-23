@@ -199,6 +199,26 @@ export interface CityNotification {
   isReadByMe: boolean;
 }
 
+export interface CityChatMessage {
+  id: string;
+  cityId: string;
+  playerId: string | null;
+  playerName: string;
+  playerLevel: number;
+  playerRole: string;
+  body: string;
+  mentionedPlayerId: string | null;
+  mentionedName: string | null;
+  createdAt: string;
+}
+
+export interface CityChatMessagesResponse {
+  messages: CityChatMessage[];
+  page: number;
+  totalPages: number;
+  total: number;
+}
+
 export interface DonateBudgetPayload {
   coins?: number;
   gems?: number;
@@ -500,6 +520,23 @@ export const api = {
     request<CityNotification>('POST', `/city/${cityId}/notifications`, { text }),
   acknowledgeCityNotification: (cityId: string, notifId: string) =>
     request<void>('POST', `/city/${cityId}/notifications/${notifId}/acknowledge`),
+  getCityChatMessages: (cityId: string, page = 1) =>
+    request<CityChatMessagesResponse>('GET', `/city/${cityId}/chat?page=${page}`),
+  sendCityChatMessage: (
+    cityId: string,
+    body: string,
+    mentionedPlayerId?: string,
+    mentionedName?: string,
+  ) =>
+    request<{ message: CityChatMessage }>('POST', `/city/${cityId}/chat`, {
+      body,
+      ...(mentionedPlayerId ? { mentionedPlayerId } : {}),
+      ...(mentionedName    ? { mentionedName }    : {}),
+    }),
+  getCityChatPendingMention: (cityId: string) =>
+    request<{ hasMention: boolean }>('GET', `/city/${cityId}/chat/pending-mention`),
+  readCityChatMentions: (cityId: string) =>
+    request<{ success: boolean }>('POST', `/city/${cityId}/chat/read-mentions`),
   notifyPurchase: (body: { packId: string; transactionId: string }) =>
     request<{ rewards: ShopRewards }>('POST', '/payments/notify', body),
   devGrant: (rewards: ShopRewards) =>
