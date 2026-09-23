@@ -75,6 +75,17 @@ export interface CityHistoryDto {
   pageSize: number;
 }
 
+export interface CityNotificationDto {
+  id: string;
+  cityId: string;
+  authorId: string | null;
+  authorName: string;
+  authorLevel: number;
+  text: string;
+  createdAt: string;
+  isReadByMe: boolean;
+}
+
 export interface CitySummaryDto {
   id: string;
   name: string;
@@ -730,6 +741,103 @@ export class CityService {
       total,
       page,
       pageSize: PAGE_SIZE,
+    };
+  }
+
+  async createCityNotification(cityId: string, authorId: string, text: string): Promise<CityNotificationDto> {
+    const SENDER_ROLES = [CityRole.MAYOR, CityRole.ACTING_MAYOR, CityRole.VICE_MAYOR];
+
+    const membership = await this.prisma.cityMembership.findUnique({
+      where: { playerId: authorId },
+      include: { player: { select: { playerName: true, playerLevel: true } } },
+    });
+    if (!membership || membership.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
+    if (!SENDER_ROLES.includes(membership.role as CityRole)) throw new ForbiddenException('Insufficient role');
+
+    const trimmed = text.trim().slice(0, 500);
+    if (!trimmed) throw new BadRequestException('Text is required');
+
+    const notif = await this.prisma.cityNotification.create({
+      data: {
+        cityId,
+        authorId,
+        authorName: membership.player.playerName,
+        authorLevel: membership.player.playerLevel,
+        text: trimmed,
+      },
+    });
+
+    return {
+      id: notif.id,
+      cityId: notif.cityId,
+      authorId: notif.authorId,
+      authorName: notif.authorName,
+      authorLevel: notif.authorLevel,
+      text: notif.text,
+      createdAt: notif.createdAt.toISOString(),
+      isReadByMe: false,
+    };
+  }
+
+  async getCityNotifications(cityId: string, requesterId: string): Promise<CityNotificationDto[]> {
+    const membership = await this.prisma.cityMembership.findUnique({ where: { playerId: requesterId } });
+    if (!membership || membership.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
+
+    const notifications = await this.prisma.cityNotification.findMany({
+      where: { cityId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: { reads: { where: { playerId: requesterId }, select: { playerId: true } } },
+    });
+
+    return notifications.map((n) => ({
+      id: n.id,
+      cityId: n.cityId,
+      authorId: n.authorId,
+      authorName: n.authorName,
+      authorLevel: n.authorLevel,
+      text: n.text,
+      createdAt: n.createdAt.toISOString(),
+      isReadByMe: n.reads.length > 0,
+    }));
+  }
+
+  async acknowledgeCityNotification(notificationId: string, playerId: string): Promise<void> {
+    const notif = await this.prisma.cityNotification.findUnique({ where: { id: notificationId } });
+    if (!notif) throw new NotFoundException('Notification not found');
+
+    const membership = await this.prisma.cityMembership.findUnique({ where: { playerId } });
+    if (!membership || membership.cityId !== notif.cityId) throw new ForbiddenException('Not a member of this city');
+
+    await this.prisma.cityNotificationRead.upsert({
+      where: { notificationId_playerId: { notificationId, playerId } },
+      create: { notificationId, playerId },
+      update: {},
+    });
+  }
+
+  async getPendingCityNotification(playerId: string): Promise<CityNotificationDto | null> {
+    const membership = await this.prisma.cityMembership.findUnique({ where: { playerId } });
+    if (!membership) return null;
+
+    const notif = await this.prisma.cityNotification.findFirst({
+      where: {
+        cityId: membership.cityId,
+        reads: { none: { playerId } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!notif) return null;
+
+    return {
+      id: notif.id,
+      cityId: notif.cityId,
+      authorId: notif.authorId,
+      authorName: notif.authorName,
+      authorLevel: notif.authorLevel,
+      text: notif.text,
+      createdAt: notif.createdAt.toISOString(),
+      isReadByMe: false,
     };
   }
 
