@@ -134,13 +134,9 @@ export default function CityChatScreen() {
   return (
     <View style={styles.container}>
       <AppBackground style={[styles.bg, isDark && styles.bgDark]}>
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={0}
-        >
-          {/* ── Hero header ────────────────────────────────── */}
-          <View style={{ paddingTop: insets.top + 8 }}>
+
+        {/* ── Hero header ────────────────────────────────── */}
+        <View style={{ paddingTop: insets.top + 8 }}>
           <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
               <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
@@ -154,8 +150,13 @@ export default function CityChatScreen() {
             </View>
             <View style={{ width: 36 }} />
           </View>
-          </View>
+        </View>
 
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={0}
+        >
           {/* ── Input bar ──────────────────────────────────── */}
           <View style={[styles.inputBar, { backgroundColor: theme.surface }]}>
           <View style={styles.inputRow}>
@@ -247,6 +248,7 @@ export default function CityChatScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
         </KeyboardAvoidingView>
+
       </AppBackground>
     </View>
   );
@@ -257,25 +259,26 @@ export default function CityChatScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   flex: { flex: 1 },
-  bg: { flex: 1, backgroundColor: '#DCEFF6' },
-  bgDark: { backgroundColor: '#0D1F2D' },
+  bg:     { flex: 1, backgroundColor: '#EEF4FB' },
+  bgDark: { backgroundColor: '#0D1520' },
 
+  /* Header — identical to budget.tsx */
   hero: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 20,
-    paddingBottom: 16,
+    paddingVertical: 16,
     paddingHorizontal: 14,
-    marginBottom: 4,
+    marginBottom: 10,
     marginHorizontal: 14,
   },
-  backBtn: { width: 36 },
-  backText: { fontSize: 28, lineHeight: 32, fontFamily: 'Fredoka_600SemiBold' },
-  heroCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-  heroIcon: { width: 36, height: 36 },
+  backBtn:      { width: 36 },
+  backText:     { fontSize: 28, lineHeight: 32, fontFamily: 'Fredoka_600SemiBold' },
+  heroCenter:   { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  heroIcon:     { width: 36, height: 36 },
   heroTextWrap: { gap: 1 },
-  heroTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
-  heroSub: { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
+  heroTitle:    { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
+  heroSub:      { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
 
   inputBar: {
     paddingTop: 8,
