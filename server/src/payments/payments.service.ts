@@ -104,6 +104,13 @@ export class PaymentsService {
         },
       });
 
+      // Bump stateVersion so the next sync triggers a full reconcile and the
+      // client sees the updated gems/tools/tokens immediately.
+      await tx.player.update({
+        where: { id: playerId },
+        data: { stateVersion: { increment: 1 } },
+      });
+
       if (gems > 0) {
         const membership = await tx.cityMembership.findUnique({ where: { playerId } });
         if (membership) {
