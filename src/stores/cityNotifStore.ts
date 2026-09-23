@@ -30,7 +30,10 @@ export const useCityNotifStore = create<CityNotifState & CityNotifActions>((set)
   fetchPending: async () => {
     try {
       const pending = await api.getPendingCityNotification();
-      set({ pending: pending ?? null, dismissed: false });
+      set((s) => ({
+        pending: pending ?? null,
+        dismissed: s.pending?.id === pending?.id ? s.dismissed : false,
+      }));
     } catch {
       // silent — keep last known value
     }
