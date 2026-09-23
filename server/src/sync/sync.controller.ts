@@ -27,7 +27,7 @@ export class SyncController {
     @Body() body: unknown,
   ) {
     const result = SyncRequestSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
 
     return this.syncService.processSync(
       req.user.playerId,

@@ -73,28 +73,28 @@ export class AdminController {
   @Patch('players/:id/info')
   updateInfo(@Param('id') id: string, @Body() body: unknown) {
     const result = UpdateInfoSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.adminService.updatePlayerInfo(id, result.data);
   }
 
   @Patch('players/:id/economy')
   updateEconomy(@Param('id') id: string, @Body() body: unknown) {
     const result = UpdateEconomySchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.adminService.updatePlayerEconomy(id, result.data);
   }
 
   @Patch('players/:id/materials')
   updateMaterials(@Param('id') id: string, @Body() body: unknown) {
     const result = UpdateMaterialsSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.adminService.updatePlayerMaterials(id, result.data);
   }
 
   @Patch('players/:id/tokens')
   updateTokens(@Param('id') id: string, @Body() body: unknown) {
     const result = UpdateTokensSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.adminService.updatePlayerTokens(id, result.data);
   }
 
@@ -136,21 +136,21 @@ export class AdminController {
   @Post('forum/posts')
   async createForumPost(@Req() req: AuthReq, @Body() body: unknown) {
     const result = CreateForumPostSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.adminService.createForumPost(req.user.playerId, result.data.category as ForumCategory, result.data.title, result.data.body);
   }
 
   @Patch('forum/posts/:id/pin')
   pinForumPost(@Param('id') id: string, @Body() body: unknown) {
     const result = ForumPinSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.adminService.pinForumPost(id, result.data.isPinned);
   }
 
   @Patch('forum/posts/:id/close')
   closeForumPost(@Param('id') id: string, @Body() body: unknown) {
     const result = ForumCloseSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.adminService.closeForumPost(id, result.data.isClosed);
   }
 

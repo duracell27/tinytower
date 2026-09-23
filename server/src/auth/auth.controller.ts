@@ -13,7 +13,7 @@ export class AuthController {
   @Post('register')
   async register(@Body() body: unknown) {
     const result = RegisterSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.authService.register(result.data);
   }
 
@@ -21,7 +21,7 @@ export class AuthController {
   @HttpCode(200)
   async login(@Body() body: unknown) {
     const result = LoginSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.authService.login(result.data);
   }
 
@@ -29,7 +29,7 @@ export class AuthController {
   @HttpCode(200)
   async refresh(@Body() body: unknown) {
     const result = RefreshSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.authService.refresh(result.data.refreshToken);
   }
 
@@ -44,7 +44,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async convertAccount(@Req() req: { user: { playerId: string } }, @Body() body: unknown) {
     const result = ConvertSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.authService.convertAccount(req.user.playerId, result.data);
   }
 

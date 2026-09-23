@@ -31,7 +31,7 @@ export class ReferralController {
     @Body() body: unknown,
   ) {
     const result = ClaimSchema.safeParse(body);
-    if (!result.success) throw new BadRequestException(result.error.issues);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.referralService.claimMilestone(
       req.user.playerId,
       result.data.referralId,

@@ -390,7 +390,11 @@ async function request<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(error.message || `HTTP ${res.status}`);
+    const raw = error.message;
+    const message = Array.isArray(raw)
+      ? raw.map((m: unknown) => (typeof m === 'string' ? m : (m as Record<string, string>)?.message)).filter(Boolean).join(', ') || `HTTP ${res.status}`
+      : raw || `HTTP ${res.status}`;
+    throw new Error(message);
   }
 
   const text = await res.text();
