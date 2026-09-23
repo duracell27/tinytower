@@ -4,7 +4,7 @@ import {
   ActivityIndicator, useColorScheme, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { Stack, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
@@ -49,7 +49,7 @@ function ChatMessageRow({
   theme: any;
   isDark: boolean;
 }) {
-  const parts = splitHighlight(msg.body, `@${myName}`);
+  const parts = myName ? splitHighlight(msg.body, `@${myName}`) : [{ text: msg.body, highlight: false }];
 
   return (
     <View style={styles.msgRow}>
@@ -111,11 +111,11 @@ export default function CityChatScreen() {
     const mentionedPlayerId = mentionedName
       ? (messages.find((m) => m.playerName === mentionedName)?.playerId ?? undefined)
       : undefined;
-    setDraft('');
     try {
       await sendMessage(cityId, trimmed, mentionedPlayerId ?? undefined, mentionedName);
+      setDraft('');
     } catch {
-      // error visible via store.error
+      // draft preserved; error visible via store.error
     }
   };
 
@@ -129,6 +129,7 @@ export default function CityChatScreen() {
 
   return (
     <AppBackground style={[styles.bg, isDark && styles.bgDark]}>
+      <Stack.Screen options={{ title: t('city.chat.title') }} />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
