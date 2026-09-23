@@ -69,9 +69,6 @@ export default function CityNotifPopup() {
               <LocaleText style={[styles.headerTitle, { color: theme.text }]}>
                 {t('city.notifications.popupTitle')}
               </LocaleText>
-              <Pressable onPress={dismiss} style={styles.closeBtn} hitSlop={10}>
-                <LocaleText style={[styles.closeX, { color: theme.textMuted }]}>✕</LocaleText>
-              </Pressable>
             </View>
 
             {/* Text body */}
@@ -146,24 +143,14 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
       marginBottom: 14,
       gap: 8,
     },
     headerIcon: { width: 28, height: 28 },
     headerTitle: {
-      flex: 1,
       fontFamily: 'Fredoka_700Bold',
       fontSize: 18,
-    },
-    closeBtn: {
-      width: 28,
-      height: 28,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    closeX: {
-      fontFamily: 'Fredoka_600SemiBold',
-      fontSize: 16,
     },
     authorRow: {
       flexDirection: 'row',
@@ -178,7 +165,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       height: 24,
       borderRadius: 12,
     },
-    authorInfo: { gap: 1 },
+    authorInfo: { gap: 1, alignItems: 'center' },
     authorName: {
       fontFamily: 'Fredoka_600SemiBold',
       fontSize: 14,
@@ -197,6 +184,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       fontFamily: 'Fredoka_600SemiBold',
       fontSize: 15,
       lineHeight: 22,
+      textAlign: 'center',
     },
     ackBtn: {
       borderRadius: 14,
