@@ -336,7 +336,8 @@
         "minutes": "{{n}}m ago",
         "hours": "{{n}}h ago",
         "days": "{{n}}d ago"
-      }
+      },
+      "headerDesc": "Chat with city members"
     },
     "allWorkers": "Workers",
     "happyWorkers": "Happy",

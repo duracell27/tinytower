@@ -4,7 +4,7 @@ import {
   ActivityIndicator, useColorScheme, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Stack, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
@@ -14,6 +14,9 @@ import { useAuthStore } from '../../src/stores/authStore';
 import { useCityChatStore } from '../../src/stores/cityChatStore';
 import { getUserIcon } from '../../src/utils/userIcon';
 import type { CityChatMessage } from '../../src/services/api';
+
+const PRIMARY = '#2E6EC9';
+const CHAT_ICON = require('../../assets/img/city/cityChat.png');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -83,6 +86,7 @@ function ChatMessageRow({
 export default function CityChatScreen() {
   const { t } = useTranslation('tabs');
   const { id: cityId } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const isDark = useColorScheme() === 'dark';
   const theme = useAppTheme();
@@ -129,14 +133,28 @@ export default function CityChatScreen() {
 
   return (
     <AppBackground style={[styles.bg, isDark && styles.bgDark]}>
-      <Stack.Screen options={{ title: t('city.chat.title') }} />
+      {/* ── Hero header ────────────────────────────────── */}
+      <View style={[styles.hero, { paddingTop: insets.top + 8, backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+          <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
+        </TouchableOpacity>
+        <View style={styles.heroCenter}>
+          <Image source={CHAT_ICON} style={styles.heroIcon} contentFit="contain" />
+          <View style={styles.heroTextWrap}>
+            <LocaleText style={[styles.heroTitle, { color: theme.text }]}>{t('city.chat.title')}</LocaleText>
+            <LocaleText style={[styles.heroSub, { color: theme.textMuted }]}>{t('city.chat.headerDesc')}</LocaleText>
+          </View>
+        </View>
+        <View style={{ width: 36 }} />
+      </View>
+
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={insets.top + 60}
+        keyboardVerticalOffset={60}
       >
         {/* ── Input bar ──────────────────────────────────── */}
-        <View style={[styles.inputBar, { paddingTop: insets.top + 8, backgroundColor: theme.surface }]}>
+        <View style={[styles.inputBar, { backgroundColor: theme.surface }]}>
           <View style={styles.inputRow}>
             <TextInput
               ref={inputRef}
@@ -237,7 +255,25 @@ const styles = StyleSheet.create({
   bg: { flex: 1, backgroundColor: '#DCEFF6' },
   bgDark: { backgroundColor: '#0D1F2D' },
 
+  hero: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    paddingBottom: 16,
+    paddingHorizontal: 14,
+    marginBottom: 4,
+    marginHorizontal: 14,
+  },
+  backBtn: { width: 36 },
+  backText: { fontSize: 28, lineHeight: 32, fontFamily: 'Fredoka_600SemiBold' },
+  heroCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  heroIcon: { width: 36, height: 36 },
+  heroTextWrap: { gap: 1 },
+  heroTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
+  heroSub: { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
+
   inputBar: {
+    paddingTop: 8,
     paddingHorizontal: 12,
     paddingBottom: 10,
     shadowColor: '#000',
