@@ -51,6 +51,12 @@ export class CityController {
     return this.cityService.getCityRankings(p);
   }
 
+  @Get('notifications/pending')
+  @UseGuards(JwtAuthGuard)
+  getPendingNotification(@Req() req: AuthReq) {
+    return this.cityService.getPendingCityNotification(req.user.playerId);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   getCityById(@Req() req: AuthReq, @Param('id') id: string) {
@@ -167,5 +173,31 @@ export class CityController {
   getCityHistory(@Req() req: AuthReq, @Param('id') cityId: string, @Query('page') page: string) {
     const p = Math.max(1, parseInt(page ?? '1', 10) || 1);
     return this.cityService.getCityHistory(cityId, req.user.playerId, p);
+  }
+
+  @Get(':id/notifications')
+  @UseGuards(JwtAuthGuard)
+  getCityNotifications(@Req() req: AuthReq, @Param('id') cityId: string) {
+    return this.cityService.getCityNotifications(cityId, req.user.playerId);
+  }
+
+  @Post(':id/notifications')
+  @UseGuards(JwtAuthGuard)
+  createCityNotification(
+    @Req() req: AuthReq,
+    @Param('id') cityId: string,
+    @Body() body: { text: string },
+  ) {
+    return this.cityService.createCityNotification(cityId, req.user.playerId, body.text ?? '');
+  }
+
+  @Post(':id/notifications/:notifId/acknowledge')
+  @UseGuards(JwtAuthGuard)
+  acknowledgeNotification(
+    @Req() req: AuthReq,
+    @Param('id') _cityId: string,
+    @Param('notifId') notifId: string,
+  ) {
+    return this.cityService.acknowledgeCityNotification(notifId, req.user.playerId);
   }
 }
