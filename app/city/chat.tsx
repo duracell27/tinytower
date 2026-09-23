@@ -281,15 +281,10 @@ const styles = StyleSheet.create({
   heroSub:      { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
 
   inputBar: {
-    paddingTop: 8,
-    paddingHorizontal: 12,
-    paddingBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 10,
+    borderRadius: 14,
+    marginHorizontal: 14,
+    marginBottom: 10,
+    padding: 14,
   },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   input: {
