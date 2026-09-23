@@ -275,6 +275,7 @@ const styles = StyleSheet.create({
   authorRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
     marginTop: 8,
   },
@@ -294,7 +295,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   notifText: {
-    fontFamily: 'Fredoka_400Regular',
+    fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
     lineHeight: 22,
   },

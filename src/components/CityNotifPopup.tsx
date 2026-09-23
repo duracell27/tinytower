@@ -168,6 +168,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
     authorRow: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
       gap: 8,
       marginTop: 10,
       marginBottom: 14,
@@ -193,7 +194,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       padding: 12,
     },
     bodyText: {
-      fontFamily: 'Fredoka_400Regular',
+      fontFamily: 'Fredoka_600SemiBold',
       fontSize: 15,
       lineHeight: 22,
     },
