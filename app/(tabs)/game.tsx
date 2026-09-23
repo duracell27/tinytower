@@ -60,6 +60,8 @@ import { getWorkerForSlot } from '../../shared/engine/workerUtils';
 import { useCityStore } from '../../src/stores/cityStore';
 import { useCityNotifStore } from '../../src/stores/cityNotifStore';
 import CityNotifFAB from '../../src/components/CityNotifFAB';
+import CityChatFAB from '../../src/components/CityChatFAB';
+import { useCityChatStore } from '../../src/stores/cityChatStore';
 
 type FloorItem =
   | { type: 'production'; id: number }
@@ -140,6 +142,8 @@ export default function GameScreen() {
   const cityNotifPending = useCityNotifStore((s) => s.pending);
   const cityNotifDismissed = useCityNotifStore((s) => s.dismissed);
   const reopenCityNotif = useCityNotifStore((s) => s.reopen);
+  const cityChatHasMention  = useCityChatStore((s) => s.hasPendingMention);
+  const checkCityChatMention = useCityChatStore((s) => s.checkMention);
   const tutorialComplete = useGameStore((s) =>
     s.tutorialTasks.currentIndex >= TUTORIAL_TASKS.length && s.tutorialTasks.claimedFinal
   );
@@ -644,6 +648,13 @@ export default function GameScreen() {
     const id = setInterval(() => void fetchPending(), 60_000);
     return () => clearInterval(id);
   }, [isAuthenticated, fetchPending]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !cityId) return;
+    void checkCityChatMention(cityId);
+    const id = setInterval(() => void checkCityChatMention(cityId), 60_000);
+    return () => clearInterval(id);
+  }, [isAuthenticated, cityId, checkCityChatMention]);
 
   // When starting in collapsed mode, FlashList never fires onContentSizeChange,
   // so we reveal the tower here instead.
@@ -1153,6 +1164,7 @@ export default function GameScreen() {
           const hasMail     = unreadMailCount > 0;
           const hasFriend   = incomingFriendCount > 0;
           const hasCityNotif = !!cityNotifPending && cityNotifDismissed;
+          const hasCityChat = !!cityId && cityChatHasMention;
           return (
             <>
               {hasTutorial && (
@@ -1177,6 +1189,12 @@ export default function GameScreen() {
                 <CityNotifFAB
                   slot={qaSlot + (hasDaily ? 1 : 0) + (hasMail ? 1 : 0) + (hasFriend ? 1 : 0)}
                   onPress={reopenCityNotif}
+                />
+              )}
+              {hasCityChat && (
+                <CityChatFAB
+                  slot={qaSlot + (hasDaily ? 1 : 0) + (hasMail ? 1 : 0) + (hasFriend ? 1 : 0) + (hasCityNotif ? 1 : 0)}
+                  onPress={() => router.push(`/city/chat?id=${cityId}`)}
                 />
               )}
             </>
