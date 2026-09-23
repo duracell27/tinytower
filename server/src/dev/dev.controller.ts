@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ShopRewards, ToolKey, TokenColor } from '@shared/types';
@@ -10,15 +10,7 @@ export class DevController {
 
   @Post('grant')
   async grant(@Req() req: any, @Body() body: ShopRewards) {
-    const allowedIds = (process.env.DEV_GRANT_ALLOWED_IDS ?? '')
-      .split(',').map(s => s.trim()).filter(Boolean);
-    const isDev = process.env.NODE_ENV !== 'production';
     const playerId: string = req.user.id;
-
-    if (!isDev && !allowedIds.includes(playerId)) {
-      throw new ForbiddenException('Not available');
-    }
-
     const gems   = body.gems   ?? 0;
     const tools  = body.tools  ?? {};
     const tokens = body.tokens ?? {};
