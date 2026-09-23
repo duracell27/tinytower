@@ -128,8 +128,8 @@ export default function CityChatScreen() {
     setTimeout(() => inputRef.current?.focus(), 50);
   };
 
-  // API returns DESC; reverse so oldest is at top
-  const displayed = [...messages].reverse();
+  // API returns DESC — newest first, shown at top of card
+  const displayed = messages;
 
   return (
     <View style={styles.container}>
