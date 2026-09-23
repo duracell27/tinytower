@@ -17,8 +17,8 @@ export class RevenueCatClient {
     transactionId: string,
     rcProductId: string,
   ): Promise<boolean> {
-    // RC Test Store transactions cannot be verified via REST API — skip verification in sandbox mode
-    if (this.secretKey.startsWith('sk_test_') && transactionId.startsWith('test_')) {
+    // RC Test Store transactions cannot be verified via REST API — skip in non-production
+    if (process.env.NODE_ENV !== 'production' && transactionId.startsWith('test_')) {
       return true;
     }
 
