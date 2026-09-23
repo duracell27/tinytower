@@ -10,11 +10,15 @@ export class DevController {
 
   @Post('grant')
   async grant(@Req() req: any, @Body() body: ShopRewards) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new ForbiddenException('Not available in production');
+    const allowedIds = (process.env.DEV_GRANT_ALLOWED_IDS ?? '')
+      .split(',').map(s => s.trim()).filter(Boolean);
+    const isDev = process.env.NODE_ENV !== 'production';
+    const playerId: string = req.user.id;
+
+    if (!isDev && !allowedIds.includes(playerId)) {
+      throw new ForbiddenException('Not available');
     }
 
-    const playerId: string = req.user.id;
     const gems   = body.gems   ?? 0;
     const tools  = body.tools  ?? {};
     const tokens = body.tokens ?? {};
