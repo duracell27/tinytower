@@ -170,8 +170,10 @@ export interface CityHistoryEvent {
   eventType: CityHistoryEventType;
   actorId: string | null;
   actorName: string;
+  actorLevel: number | null;
   targetId: string | null;
   targetName: string | null;
+  targetLevel: number | null;
   fromRole: string | null;
   toRole: string | null;
   toLevel: number | null;

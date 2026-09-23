@@ -58,8 +58,10 @@ export interface CityHistoryEventDto {
   eventType: 'CITY_CREATED' | 'ROLE_CHANGED' | 'CITY_LEVEL_UP';
   actorId: string | null;
   actorName: string;
+  actorLevel: number | null;
   targetId: string | null;
   targetName: string | null;
+  targetLevel: number | null;
   fromRole: string | null;
   toRole: string | null;
   toLevel: number | null;
@@ -702,6 +704,10 @@ export class CityService {
         orderBy: { createdAt: 'desc' },
         skip,
         take: PAGE_SIZE,
+        include: {
+          actor: { select: { playerLevel: true } },
+          target: { select: { playerLevel: true } },
+        },
       }),
       this.prisma.cityHistoryEvent.count({ where: { cityId } }),
     ]);
@@ -712,8 +718,10 @@ export class CityService {
         eventType: e.eventType as CityHistoryEventDto['eventType'],
         actorId: e.actorId,
         actorName: e.actorName,
+        actorLevel: e.actor?.playerLevel ?? null,
         targetId: e.targetId,
         targetName: e.targetName,
+        targetLevel: e.target?.playerLevel ?? null,
         fromRole: e.fromRole,
         toRole: e.toRole,
         toLevel: e.toLevel,

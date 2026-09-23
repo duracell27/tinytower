@@ -12,9 +12,18 @@ import AppBackground from '../../src/components/AppBackground';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { api } from '../../src/services/api';
 import type { CityHistoryEvent } from '../../src/services/api';
+import { getUserIcon } from '../../src/utils/userIcon';
 
 const PRIMARY      = '#2E6EC9';
 const HISTORY_ICON = require('../../assets/img/city/cityHistory.png');
+
+const LVL_ICON = require('../../assets/img/lvlIcon.png');
+
+const EVENT_ICON_IMGS: Record<string, ReturnType<typeof require>> = {
+  CITY_CREATED: require('../../assets/img/city/cityBuildings.png'),
+  ROLE_CHANGED: require('../../assets/img/addfriend.png'),
+  CITY_LEVEL_UP: require('../../assets/img/greenArrowUp.png'),
+};
 
 function fmtDate(iso: string): string {
   const d = new Date(iso);
@@ -25,12 +34,6 @@ function fmtDate(iso: string): string {
   const min = String(d.getMinutes()).padStart(2, '0');
   return `${dd}.${mm}.${yy} ${hh}:${min}`;
 }
-
-const EVENT_ICONS: Record<string, string> = {
-  CITY_CREATED: '🏙️',
-  ROLE_CHANGED: '👑',
-  CITY_LEVEL_UP: '⬆️',
-};
 
 const EVENT_COLORS: Record<string, string> = {
   CITY_CREATED: '#2E6EC9',
@@ -90,7 +93,9 @@ export default function CityHistoryScreen() {
           <TouchableOpacity
             onPress={ev.actorId ? () => router.push(`/user-profile/${ev.actorId}`) : undefined}
             activeOpacity={ev.actorId ? 0.7 : 1}
+            style={styles.playerChip}
           >
+            <Image source={getUserIcon(ev.actorLevel ?? 1)} style={styles.chipAvatar} contentFit="cover" />
             <LocaleText style={[styles.link, { color }]}>{ev.actorName}</LocaleText>
           </TouchableOpacity>
           <LocaleText style={[styles.eventText, { color: theme.text }]}>
@@ -102,9 +107,15 @@ export default function CityHistoryScreen() {
 
     if (ev.eventType === 'CITY_LEVEL_UP') {
       return (
-        <LocaleText style={[styles.eventText, { color: theme.text }]}>
-          {t('city.history.levelUp', { level: ev.toLevel })}
-        </LocaleText>
+        <View style={styles.inlineRow}>
+          <LocaleText style={[styles.eventText, { color: theme.text }]}>
+            {t('city.history.levelUpPre')}{' '}
+          </LocaleText>
+          <Image source={LVL_ICON} style={styles.lvlIcon} contentFit="contain" />
+          <LocaleText style={[styles.eventText, { color, fontFamily: 'Fredoka_600SemiBold' }]}>
+            {ev.toLevel}!
+          </LocaleText>
+        </View>
       );
     }
 
@@ -116,7 +127,9 @@ export default function CityHistoryScreen() {
           <TouchableOpacity
             onPress={ev.actorId ? () => router.push(`/user-profile/${ev.actorId}`) : undefined}
             activeOpacity={ev.actorId ? 0.7 : 1}
+            style={styles.playerChip}
           >
+            <Image source={getUserIcon(ev.actorLevel ?? 1)} style={styles.chipAvatar} contentFit="cover" />
             <LocaleText style={[styles.link, { color }]}>{ev.actorName}</LocaleText>
           </TouchableOpacity>
           <LocaleText style={[styles.eventText, { color: theme.text }]}>
@@ -125,7 +138,9 @@ export default function CityHistoryScreen() {
           <TouchableOpacity
             onPress={ev.targetId ? () => router.push(`/user-profile/${ev.targetId}`) : undefined}
             activeOpacity={ev.targetId ? 0.7 : 1}
+            style={styles.playerChip}
           >
+            <Image source={getUserIcon(ev.targetLevel ?? 1)} style={styles.chipAvatar} contentFit="cover" />
             <LocaleText style={[styles.link, { color }]}>{ev.targetName ?? '?'}</LocaleText>
           </TouchableOpacity>
           <LocaleText style={[styles.eventText, { color: theme.text }]}>
@@ -193,9 +208,14 @@ export default function CityHistoryScreen() {
                       </View>
                       <View style={styles.eventContent}>
                         <View style={styles.eventHeaderRow}>
-                          <LocaleText style={[styles.eventTypeLabel, { color: accentColor }]}>
-                            {EVENT_ICONS[ev.eventType]} {t(`city.history.types.${ev.eventType}`)}
-                          </LocaleText>
+                          <View style={styles.eventTypeLabelRow}>
+                            {EVENT_ICON_IMGS[ev.eventType] && (
+                              <Image source={EVENT_ICON_IMGS[ev.eventType]} style={styles.eventTypeIcon} contentFit="contain" />
+                            )}
+                            <LocaleText style={[styles.eventTypeLabel, { color: accentColor }]}>
+                              {t(`city.history.types.${ev.eventType}`)}
+                            </LocaleText>
+                          </View>
                           <LocaleText style={[styles.eventDate, { color: theme.textMuted }]}>
                             {fmtDate(ev.createdAt)}
                           </LocaleText>
@@ -309,9 +329,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 4,
   },
+  eventTypeLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  eventTypeIcon: {
+    width: 16,
+    height: 16,
+  },
   eventTypeLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 13,
+  },
+  playerChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  chipAvatar: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+  },
+  lvlIcon: {
+    width: 16,
+    height: 16,
+    marginHorizontal: 2,
   },
   eventDate: {
     fontFamily: 'Fredoka_400Regular',

@@ -395,6 +395,7 @@
       "headerDesc": "Key moments in the city's life",
       "cityCreated": "founded the city",
       "levelUp": "City reached level {{level}}!",
+      "levelUpPre": "City reached level",
       "roleChanged1": "changed the role of",
       "roleChanged2": "from {{from}} to {{to}}",
       "types": {
