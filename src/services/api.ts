@@ -187,6 +187,17 @@ export interface CityHistoryResponse {
   pageSize: number;
 }
 
+export interface CityNotification {
+  id: string;
+  cityId: string;
+  authorId: string | null;
+  authorName: string;
+  authorLevel: number;
+  text: string;
+  createdAt: string;
+  isReadByMe: boolean;
+}
+
 export interface DonateBudgetPayload {
   coins?: number;
   gems?: number;
@@ -480,6 +491,14 @@ export const api = {
     request<void>('POST', `/city/${cityId}/budget/reset`),
   getCityHistory: (cityId: string, page: number) =>
     request<CityHistoryResponse>('GET', `/city/${cityId}/history?page=${page}`),
+  getPendingCityNotification: () =>
+    request<CityNotification | null>('GET', '/city/notifications/pending'),
+  getCityNotifications: (cityId: string) =>
+    request<CityNotification[]>('GET', `/city/${cityId}/notifications`),
+  createCityNotification: (cityId: string, text: string) =>
+    request<CityNotification>('POST', `/city/${cityId}/notifications`, { text }),
+  acknowledgeCityNotification: (cityId: string, notifId: string) =>
+    request<void>('POST', `/city/${cityId}/notifications/${notifId}/acknowledge`),
   notifyPurchase: (body: { packId: string; transactionId: string }) =>
     request<{ rewards: ShopRewards }>('POST', '/payments/notify', body),
   devGrant: (rewards: ShopRewards) =>
