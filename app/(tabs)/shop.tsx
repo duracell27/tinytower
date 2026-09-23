@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, useWindowDimensions, useColorScheme, Alert,
 } from 'react-native';
@@ -14,6 +14,9 @@ import { xpForLevel } from '../../shared/engine/xp';
 import { formatNum } from '../../src/utils/format';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { usePurchase } from '../../src/hooks/usePurchase';
+import { api } from '../../src/services/api';
+import { syncService } from '../../src/services/sync';
+import type { ShopRewards } from '../../shared/types';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
@@ -403,6 +406,20 @@ export default function ShopScreen() {
   const { purchasing, purchase, error, clearError } = usePurchase();
   const [buyingId, setBuyingId] = useState<string | null>(null);
 
+  const [devGranting, setDevGranting] = useState(false);
+  const handleDevGrant = useCallback(async (rewards: ShopRewards) => {
+    if (devGranting) return;
+    setDevGranting(true);
+    try {
+      await api.devGrant(rewards);
+      syncService.triggerSync();
+    } catch (e) {
+      Alert.alert('Dev grant failed', e instanceof Error ? e.message : String(e));
+    } finally {
+      setDevGranting(false);
+    }
+  }, [devGranting]);
+
   useEffect(() => {
     if (error) {
       Alert.alert('Помилка покупки', error, [{ text: 'OK', onPress: clearError }]);
@@ -481,6 +498,33 @@ export default function ShopScreen() {
             ))}
           </View>
 
+          {process.env.EXPO_PUBLIC_DEV_CHEATS === 'true' && (
+            <View style={styles.devSection}>
+              <Text style={styles.devTitle}>⚙️ DEV CHEATS</Text>
+              <View style={styles.devRow}>
+                <Pressable style={styles.devBtn} disabled={devGranting}
+                  onPress={() => handleDevGrant({ gems: 500 })}>
+                  <Text style={styles.devBtnText}>+500 💎</Text>
+                </Pressable>
+                <Pressable style={styles.devBtn} disabled={devGranting}
+                  onPress={() => handleDevGrant({ gems: 2000 })}>
+                  <Text style={styles.devBtnText}>+2000 💎</Text>
+                </Pressable>
+              </View>
+              <View style={styles.devRow}>
+                <Pressable style={styles.devBtn} disabled={devGranting}
+                  onPress={() => handleDevGrant({ tools: { briks: 20, glass: 20, nails: 20, screw: 20, wood: 20, cement: 20 } })}>
+                  <Text style={styles.devBtnText}>+20 🔧 всіх</Text>
+                </Pressable>
+                <Pressable style={styles.devBtn} disabled={devGranting}
+                  onPress={() => handleDevGrant({ tokens: { green: 5, blue: 5, yellow: 5, purple: 5, red: 5 } })}>
+                  <Text style={styles.devBtnText}>+5 🪙 всіх</Text>
+                </Pressable>
+              </View>
+              {devGranting && <ActivityIndicator style={{ marginTop: 8 }} color="#666" />}
+            </View>
+          )}
+
           <View style={{ height: 40 }} />
         </ScrollView>
       </AppBackground>
@@ -497,4 +541,13 @@ const styles = StyleSheet.create({
                    paddingHorizontal: 16, paddingBottom: 8 },
   column:        { flexDirection: 'column', gap: 12,
                    paddingHorizontal: 16, paddingBottom: 8 },
+  devSection:    { marginHorizontal: 16, marginTop: 24, padding: 16,
+                   backgroundColor: '#1a1a2e', borderRadius: 12 },
+  devTitle:      { color: '#ff6b6b', fontWeight: '700', fontSize: 13,
+                   marginBottom: 10, letterSpacing: 1 },
+  devRow:        { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  devBtn:        { flex: 1, backgroundColor: '#16213e', borderRadius: 8,
+                   paddingVertical: 10, alignItems: 'center',
+                   borderWidth: 1, borderColor: '#0f3460' },
+  devBtnText:    { color: '#e0e0e0', fontSize: 13, fontWeight: '600' },
 });

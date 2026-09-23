@@ -480,6 +480,8 @@ export const api = {
     request<CityHistoryResponse>('GET', `/city/${cityId}/history?page=${page}`),
   notifyPurchase: (body: { packId: string; transactionId: string }) =>
     request<{ rewards: ShopRewards }>('POST', '/payments/notify', body),
+  devGrant: (rewards: ShopRewards) =>
+    request<{ ok: boolean }>('POST', '/dev/grant', rewards),
   setTokens,
   clearTokens,
   getAccessToken,
