@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   replyBtn: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#2E6EC9' },
   msgBody: { fontFamily: 'Fredoka_400Regular', fontSize: 14, lineHeight: 20, paddingLeft: 28 },
   mention: { color: '#2E6EC9', fontFamily: 'Fredoka_600SemiBold' },
-  separator: { height: 1, backgroundColor: '#2E6EC9', opacity: 0.18 },
+  separator: { height: 1, backgroundColor: '#2E6EC9', marginHorizontal: 14 },
   empty: { textAlign: 'center', marginTop: 60, fontFamily: 'Fredoka_500Medium', fontSize: 15 },
 
   pagination: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginVertical: 12 },
