@@ -17,6 +17,11 @@ export class RevenueCatClient {
     transactionId: string,
     rcProductId: string,
   ): Promise<boolean> {
+    // RC Test Store transactions cannot be verified via REST API — skip verification in sandbox mode
+    if (this.secretKey.startsWith('sk_test_') && transactionId.startsWith('test_')) {
+      return true;
+    }
+
     try {
       const res = await fetch(`${RC_API_BASE}/subscribers/${encodeURIComponent(appUserId)}`, {
         headers: {
