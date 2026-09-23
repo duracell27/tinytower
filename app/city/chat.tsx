@@ -159,7 +159,6 @@ export default function CityChatScreen() {
         >
           {/* ── Input bar ──────────────────────────────────── */}
           <View style={[styles.inputBar, { backgroundColor: theme.surface }]}>
-          <View style={styles.inputRow}>
             <TextInput
               ref={inputRef}
               style={[styles.input, { color: theme.text, backgroundColor: isDark ? '#1A2E3E' : '#F0F5FF' }]}
@@ -183,18 +182,14 @@ export default function CityChatScreen() {
                 <LocaleText style={styles.sendBtnText}>{t('city.chat.send')}</LocaleText>
               )}
             </TouchableOpacity>
-          </View>
-          <View style={styles.refreshRow}>
             <TouchableOpacity
               onPress={() => cityId && void fetchPage(cityId, page)}
               style={styles.refreshBtn}
               activeOpacity={0.7}
             >
               <LocaleText style={[styles.refreshIcon, { color: '#2E6EC9' }]}>↻</LocaleText>
-              <LocaleText style={[styles.refreshLabel, { color: '#2E6EC9' }]}>{t('city.chat.refresh')}</LocaleText>
             </TouchableOpacity>
           </View>
-        </View>
 
         {/* ── Messages ───────────────────────────────────── */}
         <ScrollView
@@ -281,12 +276,15 @@ const styles = StyleSheet.create({
   heroSub:      { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
 
   inputBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     borderRadius: 14,
     marginHorizontal: 14,
     marginBottom: 10,
-    padding: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
   },
-  inputRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   input: {
     flex: 1, height: 40, borderRadius: 10, paddingHorizontal: 12,
     fontFamily: 'Fredoka_400Regular', fontSize: 15,
@@ -298,10 +296,8 @@ const styles = StyleSheet.create({
   sendBtnDisabled: { opacity: 0.5 },
   sendBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#FFFFFF' },
 
-  refreshRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 6 },
-  refreshBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 4 },
-  refreshIcon: { fontSize: 18, lineHeight: 20 },
-  refreshLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
+  refreshBtn: { padding: 6 },
+  refreshIcon: { fontSize: 20, lineHeight: 22, color: '#2E6EC9' },
 
   msgList: { paddingHorizontal: 12, paddingTop: 12 },
   msgRow: { paddingVertical: 10 },
