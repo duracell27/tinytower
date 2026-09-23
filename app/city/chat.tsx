@@ -132,29 +132,32 @@ export default function CityChatScreen() {
   const displayed = [...messages].reverse();
 
   return (
-    <AppBackground style={[styles.bg, isDark && styles.bgDark]}>
-      {/* ── Hero header ────────────────────────────────── */}
-      <View style={[styles.hero, { paddingTop: insets.top + 8, backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
-          <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
-        </TouchableOpacity>
-        <View style={styles.heroCenter}>
-          <Image source={CHAT_ICON} style={styles.heroIcon} contentFit="contain" />
-          <View style={styles.heroTextWrap}>
-            <LocaleText style={[styles.heroTitle, { color: theme.text }]}>{t('city.chat.title')}</LocaleText>
-            <LocaleText style={[styles.heroSub, { color: theme.textMuted }]}>{t('city.chat.headerDesc')}</LocaleText>
+    <View style={styles.container}>
+      <AppBackground style={[styles.bg, isDark && styles.bgDark]}>
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={0}
+        >
+          {/* ── Hero header ────────────────────────────────── */}
+          <View style={{ paddingTop: insets.top + 8 }}>
+          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+              <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
+            </TouchableOpacity>
+            <View style={styles.heroCenter}>
+              <Image source={CHAT_ICON} style={styles.heroIcon} contentFit="contain" />
+              <View style={styles.heroTextWrap}>
+                <LocaleText style={[styles.heroTitle, { color: theme.text }]}>{t('city.chat.title')}</LocaleText>
+                <LocaleText style={[styles.heroSub, { color: theme.textMuted }]}>{t('city.chat.headerDesc')}</LocaleText>
+              </View>
+            </View>
+            <View style={{ width: 36 }} />
           </View>
-        </View>
-        <View style={{ width: 36 }} />
-      </View>
+          </View>
 
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={60}
-      >
-        {/* ── Input bar ──────────────────────────────────── */}
-        <View style={[styles.inputBar, { backgroundColor: theme.surface }]}>
+          {/* ── Input bar ──────────────────────────────────── */}
+          <View style={[styles.inputBar, { backgroundColor: theme.surface }]}>
           <View style={styles.inputRow}>
             <TextInput
               ref={inputRef}
@@ -243,14 +246,16 @@ export default function CityChatScreen() {
 
           <View style={{ height: 40 }} />
         </ScrollView>
-      </KeyboardAvoidingView>
-    </AppBackground>
+        </KeyboardAvoidingView>
+      </AppBackground>
+    </View>
   );
 }
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  container: { flex: 1 },
   flex: { flex: 1 },
   bg: { flex: 1, backgroundColor: '#DCEFF6' },
   bgDark: { backgroundColor: '#0D1F2D' },
