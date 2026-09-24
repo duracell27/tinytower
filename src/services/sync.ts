@@ -21,6 +21,15 @@ interface SyncResponse {
   xpBonusPercent: number;
   cityMarketingBonus?: number;
   cityPrBonus?: number;
+  cityBuildingBonuses?: {
+    deliveryBonus: number;
+    sellBonus: number;
+    revenueBonus: number;
+    personalXpBonus: number;
+    cityXpBonus: number;
+    elevatorDiamondBonus: number;
+    hotelBonus: number;
+  };
   categoryProgress: Record<string, CategoryProgressState>;
   dailyLoginReward?: { coins: number; gems: number } | null;
   acceptedCommandIds?: string[];
@@ -136,11 +145,19 @@ async function doSync(): Promise<void> {
         } : local;
       }
     }
+    const cb = response.cityBuildingBonuses;
     useGameStore.setState({
       coinBonusPercent: (response.coinBonusPercent ?? 0) + (response.cityMarketingBonus ?? 0),
       xpBonusPercent: (response.xpBonusPercent ?? 0) + (response.cityPrBonus ?? 0),
       cityMarketingBonus: response.cityMarketingBonus ?? 0,
       cityPrBonus: response.cityPrBonus ?? 0,
+      cityDeliveryBonus: cb?.deliveryBonus ?? 0,
+      citySellBonus: cb?.sellBonus ?? 0,
+      cityRevenueBonus: cb?.revenueBonus ?? 0,
+      cityPersonalXpBonus: cb?.personalXpBonus ?? 0,
+      cityCityXpBonus: cb?.cityXpBonus ?? 0,
+      cityElevatorDiamondBonus: cb?.elevatorDiamondBonus ?? 0,
+      cityHotelBonus: cb?.hotelBonus ?? 0,
       categoryProgress: mergedCP,
     });
     if (

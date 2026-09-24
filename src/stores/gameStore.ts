@@ -168,6 +168,13 @@ interface UIState {
   xpBonusPercent: number;
   cityMarketingBonus: number;
   cityPrBonus: number;
+  cityDeliveryBonus: number;
+  citySellBonus: number;
+  cityRevenueBonus: number;
+  cityPersonalXpBonus: number;
+  cityCityXpBonus: number;
+  cityElevatorDiamondBonus: number;
+  cityHotelBonus: number;
   vehicles: Vehicles;
   buyVehicle: (vehicleType: keyof Vehicles) => void;
   categoryProgress: Record<string, CategoryProgressState>;
@@ -347,6 +354,10 @@ function executeCommand(
       coinPercent: store.coinBonusPercent + (command.timestamp < store.coinBoostExpiresAt ? (store.coinBoostPercent ?? 0) : 0),
       xpPercent:   store.xpBonusPercent   + (command.timestamp < store.xpBoostExpiresAt   ? (store.xpBoostPercent   ?? 0) : 0),
       ...vehicleBonuses,
+      salesSpeedPercent:    (vehicleBonuses.salesSpeedPercent    ?? 0) + store.citySellBonus,
+      deliverySpeedPercent: (vehicleBonuses.deliverySpeedPercent ?? 0) + store.cityDeliveryBonus,
+      extraGemExchangeLimit: (vehicleBonuses.extraGemExchangeLimit ?? 0) + store.cityElevatorDiamondBonus,
+      extraHotelCapacity: store.cityHotelBonus,
     },
   );
   if (!result.success) {
@@ -486,6 +497,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   xpBonusPercent: 0,
   cityMarketingBonus: 0,
   cityPrBonus: 0,
+  cityDeliveryBonus: 0,
+  citySellBonus: 0,
+  cityRevenueBonus: 0,
+  cityPersonalXpBonus: 0,
+  cityCityXpBonus: 0,
+  cityElevatorDiamondBonus: 0,
+  cityHotelBonus: 0,
   vehicles: { taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 },
   categoryProgress: {},
   failedCommandLog: [],
@@ -687,6 +705,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     xpBonusPercent: 0,
     cityMarketingBonus: 0,
     cityPrBonus: 0,
+    cityDeliveryBonus: 0,
+    citySellBonus: 0,
+    cityRevenueBonus: 0,
+    cityPersonalXpBonus: 0,
+    cityCityXpBonus: 0,
+    cityElevatorDiamondBonus: 0,
+    cityHotelBonus: 0,
     categoryProgress: {},
     locallyGrantedAchievements: new Set<string>(),
     pendingReferralNotifications: [],
@@ -906,15 +931,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     if (role === 'guest' && targetFloor === 1) {
       const hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
+      const effectiveHotelCap = state.hotelCapacity + state.cityHotelBonus;
       if (isVip) {
-        const spotsLeft = state.hotelCapacity - hotelOccupied;
+        const spotsLeft = effectiveHotelCap - hotelOccupied;
         if (spotsLeft > 0) {
           // Random colors for VIP batch — no floor type override so workers are diverse
           newWorkers = Array.from({ length: spotsLeft }, () =>
             generateRandomWorkers(1, gameConfig)[0],
           );
         }
-      } else if (hotelOccupied < state.hotelCapacity) {
+      } else if (hotelOccupied < effectiveHotelCap) {
         const pendingFloorType = active?.pendingFloorType;
         let maxBizIdx: number | undefined;
         if (pendingFloorType && gameConfig.floorTypes[pendingFloorType]) {
@@ -1026,15 +1052,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
         maxBizIdx = Math.min(builtCount + WORKER_LOOKAHEAD - 1, gameConfig.floorTypes[pendingFloorType].businesses.length - 1);
       }
 
+      const effectiveHotelCapDeliverAll = state.hotelCapacity + state.cityHotelBonus;
       if (resolved.isVip ?? false) {
-        const spotsLeft = state.hotelCapacity - hotelOccupied;
+        const spotsLeft = effectiveHotelCapDeliverAll - hotelOccupied;
         const batch: ReturnType<typeof generateRandomWorkers>[0][] = [];
         for (let i = 0; i < spotsLeft; i++) {
           batch.push(generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0]);
           hotelOccupied++;
         }
         vipGuestWorkerBatches.push(batch);
-      } else if (hotelOccupied < state.hotelCapacity) {
+      } else if (hotelOccupied < effectiveHotelCapDeliverAll) {
         preGeneratedWorkers.push(generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0]);
         hotelOccupied++;
       }
@@ -1056,7 +1083,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       state.dailyGemsCollected,
       state.playerLevel,
       state.workers.filter((w) => w.assignedFloorId === null).length,
-      state.hotelCapacity,
+      state.hotelCapacity + state.cityHotelBonus,
     );
     set({ pendingDeliverAll: summary });
   },
@@ -1154,7 +1181,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   buyAllDailyGems: () => {
     const state = get();
-    const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + state.playerLevel + computeVehicleBonuses(state.vehicles).extraGemExchangeLimit;
+    const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + state.playerLevel + computeVehicleBonuses(state.vehicles).extraGemExchangeLimit + state.cityElevatorDiamondBonus;
     const gemsRemaining = gemLimit - state.dailyGemsCollected;
     if (gemsRemaining <= 0) return;
     const cost = calculateBuyDailyGemsCost(gemsRemaining, state.playerLevel);
