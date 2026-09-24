@@ -3,6 +3,8 @@ import { NotFoundException } from '@nestjs/common';
 import { SyncService } from '../sync.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AchievementService } from '../../achievement/achievement.service';
+import { CityService } from '../../city/city.service';
+import { CityBuildingService } from '../../city/city-building.service';
 import type { Command } from '@shared/types';
 
 describe('SyncService', () => {
@@ -175,6 +177,21 @@ describe('SyncService', () => {
               gemsToAdd: 0,
               coinBonusDelta: 0,
               xpBonusDelta: 0,
+            }),
+          },
+        },
+        {
+          provide: CityService,
+          useValue: {
+            getCityBonusForPlayer: jest.fn().mockResolvedValue(null),
+          },
+        },
+        {
+          provide: CityBuildingService,
+          useValue: {
+            getBuildingBonusesForCity: jest.fn().mockResolvedValue({
+              deliveryBonus: 0, sellBonus: 0, revenueBonus: 0,
+              personalXpBonus: 0, cityXpBonus: 0, elevatorDiamondBonus: 0, hotelBonus: 0,
             }),
           },
         },
