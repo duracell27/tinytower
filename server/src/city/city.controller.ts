@@ -10,15 +10,19 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
-import { CityRole } from '@prisma/client';
+import { CityRole, CityBuildingType } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CityService, DonateDto } from './city.service';
+import { CityBuildingService } from './city-building.service';
 
 type AuthReq = { user: { playerId: string } };
 
 @Controller('city')
 export class CityController {
-  constructor(private cityService: CityService) {}
+  constructor(
+    private cityService: CityService,
+    private cityBuildingService: CityBuildingService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -199,5 +203,42 @@ export class CityController {
     @Param('notifId') notifId: string,
   ) {
     return this.cityService.acknowledgeCityNotification(notifId, req.user.playerId);
+  }
+
+  @Get(':id/buildings')
+  @UseGuards(JwtAuthGuard)
+  getBuildings(@Param('id') cityId: string) {
+    return this.cityBuildingService.listBuildings(cityId);
+  }
+
+  @Post(':id/buildings/:type/upgrade')
+  @UseGuards(JwtAuthGuard)
+  startUpgrade(
+    @Req() req: AuthReq,
+    @Param('id') cityId: string,
+    @Param('type') buildingType: CityBuildingType,
+  ) {
+    return this.cityBuildingService.startUpgrade(cityId, buildingType, req.user.playerId);
+  }
+
+  @Post(':id/buildings/:type/skip')
+  @UseGuards(JwtAuthGuard)
+  skipBuild(
+    @Req() req: AuthReq,
+    @Param('id') cityId: string,
+    @Param('type') buildingType: CityBuildingType,
+  ) {
+    return this.cityBuildingService.skipBuild(cityId, buildingType, req.user.playerId);
+  }
+
+  @Post(':id/buildings/:type/boost')
+  @UseGuards(JwtAuthGuard)
+  activateBoost(
+    @Req() req: AuthReq,
+    @Param('id') cityId: string,
+    @Param('type') buildingType: CityBuildingType,
+    @Body('boostType') boostType: 'coins' | 'gems',
+  ) {
+    return this.cityBuildingService.activateBoost(cityId, buildingType, boostType, req.user.playerId);
   }
 }
