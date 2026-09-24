@@ -202,6 +202,9 @@ export class CityBuildingService {
     if (!building || building.state !== CityBuildingState.ACTIVE) {
       throw new BadRequestException('Building must be ACTIVE to boost');
     }
+    if (building.boostFinishesAt && building.boostFinishesAt > new Date()) {
+      throw new BadRequestException('Boost already active');
+    }
 
     const cfg = getLevelConfig(building.level);
     const boostMultiplier = boostType === 'gems' ? 2.0 : 1.3;
@@ -222,8 +225,26 @@ export class CityBuildingService {
   }
 
   async listBuildings(cityId: string): Promise<CityBuildingDto[]> {
-    const buildings = await this.prisma.cityBuilding.findMany({ where: { cityId } });
     const now = new Date();
+    const buildings = await this.prisma.cityBuilding.findMany({ where: { cityId } });
+
+    const toActivateIds = buildings
+      .filter(b => b.state === CityBuildingState.BUILDING && b.buildFinishesAt && b.buildFinishesAt <= now)
+      .map(b => b.id);
+
+    if (toActivateIds.length > 0) {
+      await this.prisma.cityBuilding.updateMany({
+        where: { id: { in: toActivateIds } },
+        data: { state: CityBuildingState.ACTIVE, buildFinishesAt: null },
+      });
+      for (const b of buildings) {
+        if (toActivateIds.includes(b.id)) {
+          b.state = CityBuildingState.ACTIVE;
+          b.buildFinishesAt = null;
+        }
+      }
+    }
+
     return buildings.map(b => {
       const isBoosted = b.boostFinishesAt != null && b.boostFinishesAt > now;
       const boostMult = isBoosted ? (b.boostMultiplier ?? 1) : 1;

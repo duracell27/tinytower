@@ -348,4 +348,57 @@ describe('activateBoost', () => {
       data: expect.objectContaining({ boostMultiplier: 1.3 }),
     }));
   });
+
+  it('throws BadRequestException when boost is already active', async () => {
+    const future = new Date(Date.now() + 1_000_000);
+    const prisma = {
+      cityMembership: {
+        findUnique: jest.fn().mockResolvedValue({ cityId: 'city1', role: 'ADVISOR' }),
+      },
+      cityBuilding: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'b1',
+          level: 3,
+          state: CityBuildingState.ACTIVE,
+          boostFinishesAt: future,
+        }),
+        update: jest.fn(),
+      },
+      city: { update: jest.fn() },
+    };
+    const svc = makeService(prisma);
+    await expect(
+      svc.activateBoost('city1', CityBuildingType.MOTOR_POOL, 'gems', 'player1'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+});
+
+// ── listBuildings ─────────────────────────────────────────────────────────────
+
+describe('listBuildings', () => {
+  it('lazily activates a building whose timer expired and returns it as ACTIVE', async () => {
+    const past = new Date(Date.now() - 1);
+    const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    const prisma = {
+      cityBuilding: {
+        findMany: jest.fn().mockResolvedValue([{
+          id: 'b1',
+          buildingType: CityBuildingType.CITY_BANK,
+          level: 2,
+          state: CityBuildingState.BUILDING,
+          buildFinishesAt: past,
+          boostFinishesAt: null,
+          boostMultiplier: null,
+        }]),
+        updateMany,
+      },
+    };
+    const svc = makeService(prisma);
+    const list = await svc.listBuildings('city1');
+    expect(list[0].state).toBe('ACTIVE');
+    expect(list[0].buildFinishesAt).toBeNull();
+    expect(updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: { state: CityBuildingState.ACTIVE, buildFinishesAt: null },
+    }));
+  });
 });
