@@ -135,6 +135,14 @@ export class CityChatService {
     return !!mention;
   }
 
+  async getUnreadCount(cityId: string, playerId: string): Promise<number> {
+    const membership = await this.prisma.cityMembership.findUnique({ where: { playerId } });
+    if (!membership || membership.cityId !== cityId) return 0;
+    return this.prisma.cityChatMessage.count({
+      where: { cityId, createdAt: { gt: membership.cityChatLastReadAt } },
+    });
+  }
+
   async readMentions(cityId: string, playerId: string): Promise<void> {
     const membership = await this.prisma.cityMembership.findUnique({ where: { playerId } });
     if (!membership || membership.cityId !== cityId) return;

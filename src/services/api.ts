@@ -537,6 +537,8 @@ export const api = {
       ...(mentionedPlayerId ? { mentionedPlayerId } : {}),
       ...(mentionedName    ? { mentionedName }    : {}),
     }),
+  getCityChatUnreadCount: (cityId: string) =>
+    request<{ count: number }>('GET', `/city/${cityId}/chat/unread-count`),
   getCityChatPendingMention: (cityId: string) =>
     request<{ hasMention: boolean }>('GET', `/city/${cityId}/chat/pending-mention`),
   readCityChatMentions: (cityId: string) =>

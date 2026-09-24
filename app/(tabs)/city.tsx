@@ -14,6 +14,7 @@ import GuestWall from '../../src/components/GuestWall';
 import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useCityStore } from '../../src/stores/cityStore';
+import { useCityChatStore } from '../../src/stores/cityChatStore';
 import { xpForLevel } from '../../shared/engine/xp';
 import { formatNum, formatXp } from '../../src/utils/format';
 import { useGameClock } from '../../src/hooks/useGameClock';
@@ -92,10 +93,15 @@ export default function CityScreen() {
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
 
   const { city, loading, fetchMyCityInfo } = useCityStore();
+  const { unreadCount, checkUnreadCount } = useCityChatStore();
 
   useEffect(() => {
     if (isAuthenticated) fetchMyCityInfo();
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated && city) checkUnreadCount(city.id);
+  }, [isAuthenticated, city?.id]);
 
   const topBar = (
     <TopBar
@@ -123,7 +129,7 @@ export default function CityScreen() {
             <ActivityIndicator size="large" color={isDark ? '#6BAED0' : '#2E6EC9'} />
           </View>
         ) : city ? (
-          <MyCityView city={city} isDark={isDark} t={t} router={router} />
+          <MyCityView city={city} isDark={isDark} t={t} router={router} chatUnreadCount={unreadCount} />
         ) : (
           <NoCityView isDark={isDark} t={t} router={router} onCreatePress={() => setShowCreateSheet(true)} />
         )}
@@ -142,7 +148,7 @@ export default function CityScreen() {
 
 // ─── My City ────────────────────────────────────────────────────────────────
 
-function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boolean; t: any; router: any }) {
+function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDetail; isDark: boolean; t: any; router: any; chatUnreadCount: number }) {
   const [memberPage, setMemberPage] = useState(0);
   const theme = useAppTheme();
   const player = useAuthStore((s) => s.player);
@@ -287,7 +293,16 @@ function MyCityView({ city, isDark, t, router }: { city: CityDetail; isDark: boo
               undefined
             }
           >
-            <Image source={card.img} style={styles.sectionCardImg} contentFit="contain" />
+            <View style={styles.sectionCardImgWrap}>
+              <Image source={card.img} style={styles.sectionCardImg} contentFit="contain" />
+              {card.key === 'chat' && chatUnreadCount > 0 && (
+                <View style={styles.unreadBadge}>
+                  <LocaleText style={styles.unreadBadgeText}>
+                    {chatUnreadCount > 99 ? '99+' : String(chatUnreadCount)}
+                  </LocaleText>
+                </View>
+              )}
+            </View>
             <LocaleText style={[styles.sectionCardLabel, isDark && { color: '#DDE8D8' }]}>
               {t(`city.sections.${card.key}`)}
             </LocaleText>
@@ -663,7 +678,26 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   sectionCardDark: { backgroundColor: '#1A2E3E' },
+  sectionCardImgWrap: { position: 'relative', width: 32, height: 32 },
   sectionCardImg: { width: 32, height: 32 },
+  unreadBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -8,
+    backgroundColor: '#E03030',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  unreadBadgeText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 10,
+    color: '#FFFFFF',
+    lineHeight: 13,
+  },
   sectionCardLabel: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 12,

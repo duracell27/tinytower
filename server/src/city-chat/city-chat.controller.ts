@@ -46,6 +46,12 @@ export class CityChatController {
     return { message };
   }
 
+  @Get('unread-count')
+  async getUnreadCount(@Param('cityId') cityId: string, @Req() req: AuthReq) {
+    const count = await this.cityChatService.getUnreadCount(cityId, req.user.playerId);
+    return { count };
+  }
+
   @Get('pending-mention')
   async getPendingMention(@Param('cityId') cityId: string, @Req() req: AuthReq) {
     const hasMention = await this.cityChatService.hasPendingMention(cityId, req.user.playerId);

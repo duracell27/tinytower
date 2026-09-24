@@ -8,6 +8,7 @@ interface CityChatState {
   isLoading: boolean;
   isSending: boolean;
   hasPendingMention: boolean;
+  unreadCount: number;
   error: string | null;
 }
 
@@ -17,6 +18,7 @@ interface CityChatActions {
   refresh: (cityId: string) => Promise<void>;
   checkMention: (cityId: string) => Promise<void>;
   clearMention: (cityId: string) => Promise<void>;
+  checkUnreadCount: (cityId: string) => Promise<void>;
 }
 
 export const useCityChatStore = create<CityChatState & CityChatActions>((set, get) => ({
@@ -26,6 +28,7 @@ export const useCityChatStore = create<CityChatState & CityChatActions>((set, ge
   isLoading: false,
   isSending: false,
   hasPendingMention: false,
+  unreadCount: 0,
   error: null,
 
   fetchPage: async (cityId, page) => {
@@ -65,11 +68,20 @@ export const useCityChatStore = create<CityChatState & CityChatActions>((set, ge
   },
 
   clearMention: async (cityId) => {
-    set({ hasPendingMention: false });
+    set({ hasPendingMention: false, unreadCount: 0 });
     try {
       await api.readCityChatMentions(cityId);
     } catch {
       // silent — local state already cleared
+    }
+  },
+
+  checkUnreadCount: async (cityId) => {
+    try {
+      const { count } = await api.getCityChatUnreadCount(cityId);
+      set({ unreadCount: count });
+    } catch {
+      // silent
     }
   },
 }));
