@@ -9,6 +9,8 @@ import {
   INSTANT_SKIP_GEMS_PER_HOUR,
 } from './city-building.constants';
 
+const ALL_BUILDING_TYPES = Object.values(CityBuildingType);
+
 const ROLE_RANK = ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
 
 function isAdvisorOrAbove(role: string): boolean {
@@ -245,7 +247,22 @@ export class CityBuildingService {
       }
     }
 
-    return buildings.map(b => {
+    const byType = new Map(buildings.map(b => [b.buildingType, b]));
+
+    return ALL_BUILDING_TYPES.map(type => {
+      const b = byType.get(type);
+      if (!b) {
+        return {
+          buildingType: type,
+          level: 0,
+          state: 'IDLE' as const,
+          isBoosted: false,
+          boostMultiplier: null,
+          boostFinishesAt: null,
+          buildFinishesAt: null,
+          currentBonus: 0,
+        };
+      }
       const isBoosted = b.boostFinishesAt != null && b.boostFinishesAt > now;
       const boostMult = isBoosted ? (b.boostMultiplier ?? 1) : 1;
       const bonus =

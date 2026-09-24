@@ -395,10 +395,20 @@ describe('listBuildings', () => {
     };
     const svc = makeService(prisma);
     const list = await svc.listBuildings('city1');
-    expect(list[0].state).toBe('ACTIVE');
-    expect(list[0].buildFinishesAt).toBeNull();
+    // Returns all 7 types; find CITY_BANK specifically
+    const cityBank = list.find(b => b.buildingType === CityBuildingType.CITY_BANK)!;
+    expect(cityBank.state).toBe('ACTIVE');
+    expect(cityBank.buildFinishesAt).toBeNull();
+    expect(list).toHaveLength(7);
     expect(updateMany).toHaveBeenCalledWith(expect.objectContaining({
       data: { state: CityBuildingState.ACTIVE, buildFinishesAt: null },
     }));
+  });
+
+  it('returns all 7 building types including IDLE ones not yet in DB', async () => {
+    const svc = makeService(); // no buildings in DB
+    const list = await svc.listBuildings('city1');
+    expect(list).toHaveLength(7);
+    expect(list.every(b => b.state === 'IDLE' && b.level === 0 && b.currentBonus === 0)).toBe(true);
   });
 });
