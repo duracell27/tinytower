@@ -13,6 +13,7 @@ import type { NewAchievementGrant, CategoryProgressState } from '@shared/types/a
 import { AchievementService } from '../achievement/achievement.service';
 import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS } from '../referral/referral-constants';
 import { CityService } from '../city/city.service';
+import { CityBuildingService, CityBuildingBonuses } from '../city/city-building.service';
 import { getCityLevel } from '../city/city-level';
 
 export interface SyncResult {
@@ -27,6 +28,7 @@ export interface SyncResult {
   xpBonusPercent: number;
   cityMarketingBonus: number;
   cityPrBonus: number;
+  cityBuildingBonuses: CityBuildingBonuses;
   categoryProgress: Record<string, CategoryProgressState>;
   dailyLoginReward: { coins: number; gems: number } | null;
   acceptedCommandIds: string[];
@@ -52,6 +54,7 @@ export class SyncService {
     private prisma: PrismaService,
     private achievementService: AchievementService,
     private cityService: CityService,
+    private cityBuildingService: CityBuildingService,
   ) {}
 
   async processSync(
@@ -110,6 +113,13 @@ export class SyncService {
     const acceptedCommands: Command[] = [];
     let totalXpGained = 0;
 
+    const _cityMembershipId = player.cityMembership?.cityId ?? null;
+    const _playerFloorCount = player.floors.length;
+    const _zeroBonuses: CityBuildingBonuses = { deliveryBonus: 0, sellBonus: 0, revenueBonus: 0, personalXpBonus: 0, cityXpBonus: 0, elevatorDiamondBonus: 0, hotelBonus: 0 };
+    const cityBuildingBonuses: CityBuildingBonuses = _cityMembershipId
+      ? await this.cityBuildingService.getBuildingBonusesForCity(_cityMembershipId, _playerFloorCount)
+      : _zeroBonuses;
+
     const todayMidnight = (() => {
       const d = new Date(serverNow);
       d.setHours(0, 0, 0, 0);
@@ -129,12 +139,17 @@ export class SyncService {
       const prevBalance = gameState.balance;
       let result: ReturnType<typeof processCommand>;
       try {
+        const vb = computeVehicleBonuses(gameState.vehicles);
         result = processCommand(
           gameState, command, gameConfig, command.timestamp, player.playerLevel,
           {
-            coinPercent: gameState.coinBonusPercent + (command.timestamp < gameState.coinBoostExpiresAt ? (gameState.coinBoostPercent ?? 0) : 0),
-            xpPercent:   gameState.xpBonusPercent   + (command.timestamp < gameState.xpBoostExpiresAt   ? (gameState.xpBoostPercent   ?? 0) : 0),
-            ...computeVehicleBonuses(gameState.vehicles),
+            coinPercent: gameState.coinBonusPercent + (command.timestamp < gameState.coinBoostExpiresAt ? (gameState.coinBoostPercent ?? 0) : 0) + cityBuildingBonuses.revenueBonus,
+            xpPercent:   gameState.xpBonusPercent   + (command.timestamp < gameState.xpBoostExpiresAt   ? (gameState.xpBoostPercent   ?? 0) : 0) + cityBuildingBonuses.personalXpBonus,
+            ...vb,
+            salesSpeedPercent:    (vb.salesSpeedPercent    ?? 0) + cityBuildingBonuses.sellBonus,
+            deliverySpeedPercent: (vb.deliverySpeedPercent ?? 0) + cityBuildingBonuses.deliveryBonus,
+            extraGemExchangeLimit: (vb.extraGemExchangeLimit ?? 0) + cityBuildingBonuses.elevatorDiamondBonus,
+            extraHotelCapacity: cityBuildingBonuses.hotelBonus,
           },
         );
       } catch (e) {
@@ -205,6 +220,7 @@ export class SyncService {
     const cityBonus = await this.cityService.getCityBonusForPlayer(playerId);
     const cityMarketingBonus = cityBonus?.level ?? 0;
     const cityPrBonus = cityBonus?.level ?? 0;
+
 
     const currentRevenue = calcRevenuePerMin(
       gameState.floors,
@@ -307,16 +323,17 @@ export class SyncService {
           const cityBefore = await tx.city.findUnique({ where: { id: cityId }, select: { cityXp: true } });
           const oldLevel = cityBefore ? getCityLevel(cityBefore.cityXp) : 1;
 
+          const cityXpContribution = Math.floor(totalXpGained * (1 + cityBuildingBonuses.cityXpBonus / 100));
           const updatedCity = await tx.city.update({
             where: { id: cityId },
-            data: { cityXp: { increment: totalXpGained } },
+            data: { cityXp: { increment: cityXpContribution } },
             select: { cityXp: true },
           });
           await tx.cityMembership.update({
             where: { playerId },
             data: {
-              cityXp: { increment: totalXpGained },
-              xpPeriod: { increment: totalXpGained },
+              cityXp: { increment: cityXpContribution },
+              xpPeriod: { increment: cityXpContribution },
             },
           });
 
@@ -689,6 +706,7 @@ export class SyncService {
       xpBonusPercent: finalXpBonus,
       cityMarketingBonus,
       cityPrBonus,
+      cityBuildingBonuses,
       categoryProgress,
       dailyLoginReward,
       pendingReferralClaims,

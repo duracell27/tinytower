@@ -31,6 +31,7 @@ export function processLobbyCommand(
     tipPercent?: number;
     extraLobbyCapacity?: number;
     extraGemExchangeLimit?: number;
+    extraHotelCapacity?: number;
     xpPerVisitor?: number;
     xpPercent?: number;
   } = {},
@@ -140,7 +141,7 @@ function applyVisitorEffect(
   now: number,
   preGeneratedWorkerBatch?: { id: string; name: string; female: boolean; floorType: string; dreamJob: string; level: number; hairColor: string }[],
   preGeneratedTools?: string[],
-  bonuses: { tipPercent?: number; extraGemExchangeLimit?: number } = {},
+  bonuses: { tipPercent?: number; extraGemExchangeLimit?: number; extraHotelCapacity?: number } = {},
 ): GameState {
   const role = visitor.role ?? 'guest';
   const isVip = visitor.isVip ?? false;
@@ -194,15 +195,16 @@ function applyVisitorEffect(
   }
 
   if (role === 'guest' && targetFloor === 1) {
+    const effectiveHotelCapacity = state.hotelCapacity + (bonuses.extraHotelCapacity ?? 0);
     const hotelOccupied = workers.filter((w) => w.assignedFloorId === null).length;
     if (isVip) {
       // Fill hotel to capacity
       for (const workerData of preGeneratedWorkerBatch ?? []) {
-        if (workers.filter((w) => w.assignedFloorId === null).length < state.hotelCapacity) {
+        if (workers.filter((w) => w.assignedFloorId === null).length < effectiveHotelCapacity) {
           workers = [...workers, { ...workerData, assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false }];
         }
       }
-    } else if (hotelOccupied < state.hotelCapacity) {
+    } else if (hotelOccupied < effectiveHotelCapacity) {
       const workerData = preGeneratedWorkerBatch?.[0] ?? generateRandomWorkers(1, config)[0];
       const newWorker: Worker = { ...workerData, assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false };
       workers = [...workers, newWorker];
@@ -307,7 +309,7 @@ function handleCollectTip(
   playerLevel: number,
   now: number,
   command: Extract<Command, { type: 'collect_tip' }>,
-  bonuses: { tipPercent?: number; extraGemExchangeLimit?: number; xpPerVisitor?: number; xpPercent?: number } = {},
+  bonuses: { tipPercent?: number; extraGemExchangeLimit?: number; extraHotelCapacity?: number; xpPerVisitor?: number; xpPercent?: number } = {},
 ): ProcessResult {
   if (state.lobbyVisitors.length === 0) {
     return { success: false, state, error: 'No visitors' };

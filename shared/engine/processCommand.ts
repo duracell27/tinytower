@@ -44,6 +44,7 @@ export function processCommand(
     tipPercent?: number;
     extraLobbyCapacity?: number;
     extraGemExchangeLimit?: number;
+    extraHotelCapacity?: number;
   } = { coinPercent: 0, xpPercent: 0 },
 ): ProcessResult {
   switch (command.type) {
@@ -88,6 +89,7 @@ export function processCommand(
         tipPercent: (bonuses.tipPercent ?? 0) + (bonuses.coinPercent ?? 0),
         extraLobbyCapacity: bonuses.extraLobbyCapacity,
         extraGemExchangeLimit: bonuses.extraGemExchangeLimit,
+        extraHotelCapacity: bonuses.extraHotelCapacity,
         xpPerVisitor: bonuses.xpPerVisitor,
         xpPercent: bonuses.xpPercent,
       });
