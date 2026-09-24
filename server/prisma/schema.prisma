@@ -403,6 +403,22 @@ enum CityRole {
   NEWBIE
 }
 
+enum CityBuildingType {
+  MOTOR_POOL
+  AD_AGENCY
+  CITY_BANK
+  BUSINESS_SCHOOL
+  STATE_ACADEMY
+  VIP_CLUB
+  VIP_HOTEL
+}
+
+enum CityBuildingState {
+  IDLE
+  BUILDING
+  ACTIVE
+}
+
 model City {
   id            String           @id @default(uuid())
   name          String           @unique @db.VarChar(30)
@@ -426,6 +442,21 @@ model City {
   historyEvents  CityHistoryEvent[]
   notifications  CityNotification[]
   chatMessages   CityChatMessage[]
+  buildings      CityBuilding[]
+}
+
+model CityBuilding {
+  id              String            @id @default(uuid())
+  cityId          String
+  city            City              @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  buildingType    CityBuildingType
+  level           Int               @default(0)
+  state           CityBuildingState @default(IDLE)
+  buildFinishesAt DateTime?
+  boostFinishesAt DateTime?
+  boostMultiplier Float?
+
+  @@unique([cityId, buildingType])
 }
 
 model CityMembership {
