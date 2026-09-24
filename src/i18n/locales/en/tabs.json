@@ -465,7 +465,12 @@
         "idleDesc": "Build this building to unlock bonuses for all city members.",
         "buildBtn": "Build Level 1",
         "upgradeBtn": "Upgrade to Lv. {{next}}",
-        "skipBtn": "Skip"
+        "skipBtn": "Skip",
+        "tileTimeLeft": "⏱ Time Left",
+        "tileSkip": "💎 Skip",
+        "tileBuildTime": "⏱ Build Time",
+        "daysUnit": "d",
+        "hoursUnitShort": "h"
       },
       "headerDesc": "{{active}} of {{total}} active",
       "sectionLabel": "Buildings",

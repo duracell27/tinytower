@@ -465,7 +465,12 @@
         "idleDesc": "Побудуйте цю будівлю, щоб отримати бонус для всіх учасників міста.",
         "buildBtn": "Побудувати рів. 1",
         "upgradeBtn": "Покращити до рів. {{next}}",
-        "skipBtn": "Пропустити"
+        "skipBtn": "Пропустити",
+        "tileTimeLeft": "⏱ Залишилось",
+        "tileSkip": "💎 Пропустити",
+        "tileBuildTime": "⏱ Час будівництва",
+        "daysUnit": "д",
+        "hoursUnitShort": "г"
       },
       "headerDesc": "{{active}} з {{total}} активних",
       "sectionLabel": "Будівлі",

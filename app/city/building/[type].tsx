@@ -12,7 +12,7 @@ import AppBackground from '../../../src/components/AppBackground';
 import { useAppTheme } from '../../../src/hooks/useAppTheme';
 import { api, CityBuildingDto } from '../../../src/services/api';
 import { useGameClock } from '../../../src/hooks/useGameClock';
-import { formatCompact } from '../../../src/utils/format';
+import { formatCompact, formatNumFull } from '../../../src/utils/format';
 
 // ─── Static config (mirrors server city-building.constants.ts) ───────────────
 
@@ -61,7 +61,7 @@ const BONUS_UNIT: Record<string, string> = {
 
 const PRIMARY    = '#2E6EC9';
 const COIN_COLOR = '#C87E00';
-const GEM_COLOR  = '#7B3FC0';
+const GEM_COLOR  = '#2592AB';
 
 const BUILDING_ACCENT: Record<string, { light: string; dark: string }> = {
   MOTOR_POOL:      { light: '#5E8F42', dark: '#6BA34A' },
@@ -115,6 +115,15 @@ function getTimeLeft(isoDate: string | null, nowMs: number): string {
 function getHoursLeft(isoDate: string | null, nowMs: number): number {
   if (!isoDate) return 0;
   return Math.ceil(Math.max(0, new Date(isoDate).getTime() - nowMs) / 3_600_000);
+}
+
+function formatDuration(hours: number, hUnit: string, dUnit: string): string {
+  if (hours >= 24) {
+    const d = Math.floor(hours / 24);
+    const h = hours % 24;
+    return h > 0 ? `${d}${dUnit} ${h}${hUnit}` : `${d}${dUnit}`;
+  }
+  return `${hours}${hUnit}`;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -176,48 +185,6 @@ export default function BuildingDetailScreen() {
 
   const cardBg   = isDark ? '#1E2C42' : '#FFFFFF';
   const pageBg   = isDark ? '#0D1F2D' : '#DCEFF6';
-
-  // Cost display for next upgrade
-  function upgradeCostRow() {
-    if (!nextCfg) return null;
-    if (isVip) {
-      return (
-        <View style={styles.costRow}>
-          <Image source={GEM_ICON} style={styles.costIcon} contentFit="contain" />
-          <LocaleText style={[styles.costAmount, { color: GEM_COLOR }]}>
-            {formatCompact(nextCfg.vipGems)}
-          </LocaleText>
-          <LocaleText style={[styles.costFrom, { color: theme.textMuted }]}>
-            {t('city.buildings.detail.fromBudget')}
-          </LocaleText>
-        </View>
-      );
-    }
-    if (nextCfg.gemsCost != null) {
-      return (
-        <View style={styles.costRow}>
-          <Image source={GEM_ICON} style={styles.costIcon} contentFit="contain" />
-          <LocaleText style={[styles.costAmount, { color: GEM_COLOR }]}>
-            {formatCompact(nextCfg.gemsCost)}
-          </LocaleText>
-          <LocaleText style={[styles.costFrom, { color: theme.textMuted }]}>
-            {t('city.buildings.detail.fromBudget')}
-          </LocaleText>
-        </View>
-      );
-    }
-    return (
-      <View style={styles.costRow}>
-        <Image source={COIN_ICON} style={styles.costIcon} contentFit="contain" />
-        <LocaleText style={[styles.costAmount, { color: COIN_COLOR }]}>
-          {formatCompact(nextCfg.coinsCost!)}
-        </LocaleText>
-        <LocaleText style={[styles.costFrom, { color: theme.textMuted }]}>
-          {t('city.buildings.detail.fromBudget')}
-        </LocaleText>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -303,9 +270,26 @@ export default function BuildingDetailScreen() {
                   <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                     {t('city.buildings.detail.buildingTitle')}
                   </LocaleText>
-                  <LocaleText style={[styles.timerText, { color: COIN_COLOR }]}>
-                    ⏱ {t('city.buildings.detail.timeLeft', { time: buildTimeLeft })}
-                  </LocaleText>
+
+                  <View style={styles.infoTiles}>
+                    <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
+                      <LocaleText style={[styles.infoTileLabel, { color: theme.textMuted }]}>
+                        {t('city.buildings.detail.tileTimeLeft')}
+                      </LocaleText>
+                      <LocaleText style={[styles.infoTileValue, { color: COIN_COLOR }]}>
+                        {buildTimeLeft}
+                      </LocaleText>
+                    </View>
+                    <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
+                      <LocaleText style={[styles.infoTileLabel, { color: theme.textMuted }]}>
+                        {t('city.buildings.detail.tileSkip')}
+                      </LocaleText>
+                      <LocaleText style={[styles.infoTileValue, { color: GEM_COLOR }]}>
+                        {formatNumFull(skipGems)}
+                      </LocaleText>
+                    </View>
+                  </View>
+
                   <TouchableOpacity
                     style={[styles.actionBtn, { backgroundColor: GEM_COLOR }, busy && styles.disabled]}
                     activeOpacity={0.78}
@@ -314,7 +298,7 @@ export default function BuildingDetailScreen() {
                   >
                     <Image source={GEM_ICON} style={styles.btnIcon} contentFit="contain" />
                     <LocaleText style={styles.btnText}>
-                      {t('city.buildings.detail.skipCost', { gems: skipGems })}
+                      {t('city.buildings.detail.skipBtn')}
                     </LocaleText>
                   </TouchableOpacity>
                 </View>
@@ -329,16 +313,37 @@ export default function BuildingDetailScreen() {
                       : t('city.buildings.detail.upgradeTitle')}
                   </LocaleText>
 
-                  <View style={styles.upgradeInfoBlock}>
-                    <View style={styles.upgradeRow}>
-                      <LocaleText style={[styles.upgradeCostLabel, { color: theme.textMuted }]}>
-                        {t('city.buildings.detail.nextLevelCost', { level: level + 1 })}
+                  <View style={styles.infoTiles}>
+                    {/* Cost tile */}
+                    <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
+                      <View style={styles.infoTileIconRow}>
+                        <Image
+                          source={isVip || nextCfg.gemsCost != null ? GEM_ICON : COIN_ICON}
+                          style={styles.infoTileIcon}
+                          contentFit="contain"
+                        />
+                        <LocaleText style={[styles.infoTileLabel, { color: theme.textMuted }]}>
+                          {t('city.buildings.detail.fromBudget')}
+                        </LocaleText>
+                      </View>
+                      <LocaleText style={[styles.infoTileValue, {
+                        color: (isVip || nextCfg.gemsCost != null) ? GEM_COLOR : COIN_COLOR,
+                      }]}>
+                        {formatNumFull(isVip
+                          ? nextCfg.vipGems
+                          : nextCfg.gemsCost ?? nextCfg.coinsCost!)}
                       </LocaleText>
-                      {upgradeCostRow()}
                     </View>
-                    <LocaleText style={[styles.upgradeDuration, { color: theme.textMuted }]}>
-                      {t('city.buildings.detail.buildDuration', { hours: nextCfg.durationH })}
-                    </LocaleText>
+
+                    {/* Duration tile */}
+                    <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
+                      <LocaleText style={[styles.infoTileLabel, { color: theme.textMuted }]}>
+                        {t('city.buildings.detail.tileBuildTime')}
+                      </LocaleText>
+                      <LocaleText style={[styles.infoTileValue, { color: theme.text }]}>
+                        {formatDuration(nextCfg.durationH, t('city.buildings.detail.hoursUnitShort'), t('city.buildings.detail.daysUnit'))}
+                      </LocaleText>
+                    </View>
                   </View>
 
                   <TouchableOpacity
@@ -516,18 +521,21 @@ const styles = StyleSheet.create({
   boostBadgeIcon: { width: 16, height: 16 },
   boostBadgeText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
 
-  /* Upgrade */
-  upgradeInfoBlock: { gap: 4 },
-  upgradeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  upgradeCostLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 14 },
-  costRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  costIcon: { width: 18, height: 18 },
-  costAmount: { fontFamily: 'Fredoka_700Bold', fontSize: 16 },
-  costFrom: { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
-  upgradeDuration: { fontFamily: 'Fredoka_400Regular', fontSize: 13 },
-
-  /* Timer */
-  timerText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15 },
+  /* Info tiles */
+  infoTiles: { flexDirection: 'row', gap: 10 },
+  infoTile: {
+    flex: 1,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    gap: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoTileIconRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  infoTileIcon: { width: 14, height: 14 },
+  infoTileLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 12, textAlign: 'center' },
+  infoTileValue: { fontFamily: 'Fredoka_700Bold', fontSize: 18, textAlign: 'center' },
 
   /* Boost buttons */
   boostBtns: { flexDirection: 'row', gap: 10 },
@@ -553,7 +561,7 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     gap: 8,
   },
-  btnText: { color: '#FFFFFF', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+  btnText: { color: '#FFFFFF', fontFamily: 'Fredoka_700Bold', fontSize: 18 },
   btnIcon: { width: 18, height: 18 },
 
   disabled: { opacity: 0.5 },
