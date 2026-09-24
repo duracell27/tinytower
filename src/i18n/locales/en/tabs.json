@@ -432,7 +432,15 @@
         "STATE_ACADEMY": "+5% city XP / lv",
         "VIP_CLUB": "+1 💎 elevator cap / lv",
         "VIP_HOTEL": "+3 hotel capacity / lv"
-      }
+      },
+      "headerDesc": "{{active}} of {{total}} active",
+      "sectionLabel": "Buildings",
+      "levelLabel": "Lv. {{level}}",
+      "maxLevel": "Max",
+      "activeBonusLine": "+{{value}}%{{boosted}}",
+      "hoursUnit": "h",
+      "instant": "Instant",
+      "bonusLabel": "Bonus:"
     },
     "history": {
       "empty": "No history events yet",

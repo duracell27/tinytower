@@ -432,7 +432,15 @@
         "STATE_ACADEMY": "+5% міського XP / рів",
         "VIP_CLUB": "+1 💎 у ліфті / рів",
         "VIP_HOTEL": "+3 місця у готелі / рів"
-      }
+      },
+      "headerDesc": "{{active}} з {{total}} активних",
+      "sectionLabel": "Будівлі",
+      "levelLabel": "Рів. {{level}}",
+      "maxLevel": "Макс.",
+      "activeBonusLine": "+{{value}}%{{boosted}}",
+      "hoursUnit": "г",
+      "instant": "Миттєво",
+      "bonusLabel": "Бонус:"
     },
     "history": {
       "empty": "Подій ще немає",
