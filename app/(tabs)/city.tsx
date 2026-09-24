@@ -290,6 +290,7 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
               card.key === 'history'       ? () => router.push(`/city/history?id=${city.id}`) :
               card.key === 'notifications' ? () => router.push(`/city/notifications?id=${city.id}`) :
               card.key === 'chat'          ? () => router.push(`/city/chat?id=${city.id}`) :
+              card.key === 'buildings'     ? () => router.push(`/city/buildings?id=${city.id}`) :
               undefined
             }
           >

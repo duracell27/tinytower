@@ -295,6 +295,17 @@ export interface SentMailMessage {
   createdAt: string;
 }
 
+export interface CityBuildingDto {
+  buildingType: string;
+  level: number;
+  state: 'IDLE' | 'BUILDING' | 'ACTIVE';
+  isBoosted: boolean;
+  boostMultiplier: number | null;
+  boostFinishesAt: string | null;
+  buildFinishesAt: string | null;
+  currentBonus: number;
+}
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? (
   __DEV__ ? 'http://localhost:3000' : 'https://api.tinytower.com'
 );
@@ -547,6 +558,14 @@ export const api = {
     request<{ rewards: ShopRewards }>('POST', '/payments/notify', body),
   devGrant: (rewards: ShopRewards) =>
     request<{ ok: boolean }>('POST', '/dev/grant', rewards),
+  getCityBuildings: (cityId: string) =>
+    request<CityBuildingDto[]>('GET', `/city/${cityId}/buildings`),
+  startCityBuildingUpgrade: (cityId: string, buildingType: string) =>
+    request<CityBuildingDto>('POST', `/city/${cityId}/buildings/${buildingType}/upgrade`),
+  skipCityBuilding: (cityId: string, buildingType: string) =>
+    request<CityBuildingDto>('POST', `/city/${cityId}/buildings/${buildingType}/skip`),
+  activateCityBuildingBoost: (cityId: string, buildingType: string, boostType: 'coins' | 'gems') =>
+    request<CityBuildingDto>('POST', `/city/${cityId}/buildings/${buildingType}/boost`, { boostType }),
   setTokens,
   clearTokens,
   getAccessToken,

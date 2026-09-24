@@ -404,6 +404,36 @@
       "notifications": "Сповіщення міста",
       "description": "Опис міста"
     },
+    "buildings": {
+      "title": "Будівлі міста",
+      "levelOf": "Рівень {{level}} / 15",
+      "build": "Побудувати",
+      "upgrade": "Покращити до рів. {{next}}",
+      "building": "Будується…",
+      "skipBtn": "Миттєво ({{gems}} 💎)",
+      "boostCoins": "Буст ×1.3 (монети)",
+      "boostGems": "Буст ×2 (💎)",
+      "boostActive": "Буст ×{{mult}} ще {{hours}}г",
+      "loadError": "Не вдалося завантажити будівлі",
+      "names": {
+        "MOTOR_POOL": "Автопарк",
+        "AD_AGENCY": "Рекламне агентство",
+        "CITY_BANK": "Міський банк",
+        "BUSINESS_SCHOOL": "Школа бізнесу",
+        "STATE_ACADEMY": "Державна академія",
+        "VIP_CLUB": "VIP клуб",
+        "VIP_HOTEL": "VIP готель"
+      },
+      "bonusLabels": {
+        "MOTOR_POOL": "−2% доставки / рів",
+        "AD_AGENCY": "+2% продажів / рів",
+        "CITY_BANK": "+2% виручки / рів",
+        "BUSINESS_SCHOOL": "+5% особист. XP / рів",
+        "STATE_ACADEMY": "+5% міського XP / рів",
+        "VIP_CLUB": "+1 💎 у ліфті / рів",
+        "VIP_HOTEL": "+3 місця у готелі / рів"
+      }
+    },
     "history": {
       "empty": "Подій ще немає",
       "loadError": "Не вдалося завантажити історію",

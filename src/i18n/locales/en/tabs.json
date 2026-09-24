@@ -404,6 +404,36 @@
       "notifications": "Notifications",
       "description": "Description"
     },
+    "buildings": {
+      "title": "City Buildings",
+      "levelOf": "Level {{level}} / 15",
+      "build": "Build",
+      "upgrade": "Upgrade to Lv. {{next}}",
+      "building": "Building…",
+      "skipBtn": "Instant ({{gems}} 💎)",
+      "boostCoins": "Boost ×1.3 (coins)",
+      "boostGems": "Boost ×2 (💎)",
+      "boostActive": "Boost ×{{mult}} for {{hours}}h",
+      "loadError": "Failed to load buildings",
+      "names": {
+        "MOTOR_POOL": "Motor Pool",
+        "AD_AGENCY": "Ad Agency",
+        "CITY_BANK": "City Bank",
+        "BUSINESS_SCHOOL": "Business School",
+        "STATE_ACADEMY": "State Academy",
+        "VIP_CLUB": "VIP Club",
+        "VIP_HOTEL": "VIP Hotel"
+      },
+      "bonusLabels": {
+        "MOTOR_POOL": "−2% delivery / lv",
+        "AD_AGENCY": "+2% sales speed / lv",
+        "CITY_BANK": "+2% revenue / lv",
+        "BUSINESS_SCHOOL": "+5% personal XP / lv",
+        "STATE_ACADEMY": "+5% city XP / lv",
+        "VIP_CLUB": "+1 💎 elevator cap / lv",
+        "VIP_HOTEL": "+3 hotel capacity / lv"
+      }
+    },
     "history": {
       "empty": "No history events yet",
       "loadError": "Failed to load history",
