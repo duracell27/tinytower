@@ -99,7 +99,6 @@ export default function CityBuildingsScreen() {
 
   const [buildings, setBuildings] = useState<CityBuildingDto[]>([]);
   const [loading,   setLoading]   = useState(true);
-  const [busy,      setBusy]      = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!cityId) return;
@@ -117,13 +116,6 @@ export default function CityBuildingsScreen() {
   }, [cityId, t]);
 
   useEffect(() => { load(); }, [load]);
-
-  async function act(type: string, fn: () => Promise<any>) {
-    setBusy(type);
-    try { await fn(); await load(); }
-    catch (e: any) { Alert.alert('', e?.message ?? 'Error'); }
-    finally { setBusy(null); }
-  }
 
   const activeCount = buildings.filter(b => b.state === 'ACTIVE').length;
 
@@ -162,26 +154,24 @@ export default function CityBuildingsScreen() {
             </View>
           ) : (
             buildings.map(b => {
-              const scheme   = BUILDING_ACCENT[b.buildingType] ?? { light: PRIMARY, dark: PRIMARY };
-              const accent   = isDark ? scheme.dark : scheme.light;
-              const isActive = b.state === 'ACTIVE';
-              const isBuild  = b.state === 'BUILDING';
-              const maxed    = b.level >= MAX_LEVEL;
-              const isBusy   = busy === b.buildingType;
-
-              const hoursLeft  = getHoursLeft(b.buildFinishesAt, now);
-              const skipGems   = hoursLeft * 10;
+              const scheme     = BUILDING_ACCENT[b.buildingType] ?? { light: PRIMARY, dark: PRIMARY };
+              const accent     = isDark ? scheme.dark : scheme.light;
+              const isBuild    = b.state === 'BUILDING';
+              const maxed      = b.level >= MAX_LEVEL;
               const boostHours = getHoursLeft(b.boostFinishesAt, now);
               const isGemBoost = (b.boostMultiplier ?? 0) >= 2;
-
-              const hasActions = (isActive && !maxed) || isBuild || (isActive && !b.isBoosted);
-
-              const cardBg = isDark ? '#1E2C42' : '#FFFFFF';
+              const cardBg     = isDark ? '#1E2C42' : '#FFFFFF';
 
               return (
-                <View key={b.buildingType} style={[styles.card, { backgroundColor: cardBg, borderLeftColor: accent, borderLeftWidth: 4 }]}>
-
-                  {/* ── Cap ── */}
+                <TouchableOpacity
+                  key={b.buildingType}
+                  activeOpacity={0.75}
+                  onPress={() => router.push({
+                    pathname: '/city/building/[type]',
+                    params: { type: b.buildingType, id: cityId },
+                  })}
+                  style={[styles.card, { backgroundColor: cardBg, borderLeftColor: accent, borderLeftWidth: 4 }]}
+                >
                   <View style={styles.cap}>
                     {/* Icon */}
                     <View style={[styles.iconWrap, { backgroundColor: accent + '28' }]}>
@@ -194,12 +184,11 @@ export default function CityBuildingsScreen() {
 
                     {/* Text block */}
                     <View style={styles.capBody}>
-                      {/* Name */}
                       <LocaleText style={[styles.capName, { color: theme.text }]}>
                         {t(`city.buildings.names.${b.buildingType}`)}
                       </LocaleText>
 
-                      {/* Bonus row — always visible */}
+                      {/* Bonus row */}
                       <View style={styles.bonusRow}>
                         <LocaleText style={[styles.bonusLabel, { color: theme.textMuted }]}>
                           {t('city.buildings.bonusLabel')}
@@ -221,7 +210,7 @@ export default function CityBuildingsScreen() {
                         )}
                       </View>
 
-                      {/* Boost line */}
+                      {/* Boost / Timer line */}
                       {b.isBoosted && boostHours > 0 && (
                         <View style={styles.boostLine}>
                           <Image
@@ -234,83 +223,28 @@ export default function CityBuildingsScreen() {
                           </LocaleText>
                         </View>
                       )}
+                      {isBuild && b.buildFinishesAt && (
+                        <LocaleText style={[styles.boostLineText, { color: COIN_COLOR }]}>
+                          ⏱ {getTimeLeft(b.buildFinishesAt, now)}
+                        </LocaleText>
+                      )}
                     </View>
 
-                    {/* Level circle */}
-                    <View style={[styles.levelCircle, { backgroundColor: accent }]}>
-                      <LocaleText style={styles.levelText}>
-                        {b.level}
-                      </LocaleText>
+                    {/* Right side: level circle + chevron */}
+                    <View style={styles.cardRight}>
+                      {maxed ? (
+                        <View style={[styles.levelCircle, { backgroundColor: accent }]}>
+                          <LocaleText style={styles.levelTextSmall}>MAX</LocaleText>
+                        </View>
+                      ) : (
+                        <View style={[styles.levelCircle, { backgroundColor: accent }]}>
+                          <LocaleText style={styles.levelText}>{b.level}</LocaleText>
+                        </View>
+                      )}
+                      <LocaleText style={[styles.chevron, { color: isDark ? '#4A6A8A' : '#AACCDD' }]}>›</LocaleText>
                     </View>
                   </View>
-
-                  {/* ── Actions ── */}
-                  {hasActions && (
-                    <View style={[styles.actions, { borderTopColor: theme.divider }]}>
-                      {/* Building timer */}
-                      {isBuild && b.buildFinishesAt && (
-                        <View style={styles.timerRow}>
-                          <LocaleText style={styles.timerText}>
-                            ⏱ {getTimeLeft(b.buildFinishesAt, now)}
-                          </LocaleText>
-                          <TouchableOpacity
-                            style={[styles.skipBtn, isBusy && styles.btnDisabled]}
-                            activeOpacity={0.75}
-                            disabled={isBusy}
-                            onPress={() => act(b.buildingType, () =>
-                              api.skipCityBuilding(cityId!, b.buildingType))}
-                          >
-                            <Image source={GEM_ICON} style={styles.btnIcon} contentFit="contain" />
-                            <LocaleText style={styles.btnText}>
-                              {skipGems} {t('city.buildings.instant')}
-                            </LocaleText>
-                          </TouchableOpacity>
-                        </View>
-                      )}
-
-                      {/* Upgrade */}
-                      {isActive && !maxed && (
-                        <TouchableOpacity
-                          style={[styles.upgradeBtn, { backgroundColor: accent }, isBusy && styles.btnDisabled]}
-                          activeOpacity={0.75}
-                          disabled={isBusy}
-                          onPress={() => act(b.buildingType, () =>
-                            api.startCityBuildingUpgrade(cityId!, b.buildingType))}
-                        >
-                          <LocaleText style={styles.btnText}>
-                            {t('city.buildings.upgrade', { next: b.level + 1 })}
-                          </LocaleText>
-                        </TouchableOpacity>
-                      )}
-
-                      {/* Boost */}
-                      {isActive && !b.isBoosted && (
-                        <View style={styles.boostRow}>
-                          <TouchableOpacity
-                            style={[styles.boostBtn, styles.boostCoin, isBusy && styles.btnDisabled]}
-                            activeOpacity={0.75}
-                            disabled={isBusy}
-                            onPress={() => act(b.buildingType, () =>
-                              api.activateCityBuildingBoost(cityId!, b.buildingType, 'coins'))}
-                          >
-                            <Image source={COIN_ICON} style={styles.btnIcon} contentFit="contain" />
-                            <LocaleText style={styles.btnText}>{t('city.buildings.boostCoins')}</LocaleText>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            style={[styles.boostBtn, styles.boostGem, isBusy && styles.btnDisabled]}
-                            activeOpacity={0.75}
-                            disabled={isBusy}
-                            onPress={() => act(b.buildingType, () =>
-                              api.activateCityBuildingBoost(cityId!, b.buildingType, 'gems'))}
-                          >
-                            <Image source={GEM_ICON} style={styles.btnIcon} contentFit="contain" />
-                            <LocaleText style={styles.btnText}>{t('city.buildings.boostGems')}</LocaleText>
-                          </TouchableOpacity>
-                        </View>
-                      )}
-                    </View>
-                  )}
-                </View>
+                </TouchableOpacity>
               );
             })
           )}
@@ -386,50 +320,8 @@ const styles = StyleSheet.create({
   },
   levelText: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#FFFFFF' },
 
-  /* Actions strip */
-  actions: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 10,
-  },
+  cardRight: { alignItems: 'center', gap: 4 },
+  chevron: { fontSize: 22, lineHeight: 24, fontFamily: 'Fredoka_600SemiBold' },
 
-  timerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  timerText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, flex: 1, color: COIN_COLOR },
-
-  upgradeBtn: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 11,
-    paddingVertical: 11,
-  },
-
-  boostRow: { flexDirection: 'row', gap: 10 },
-  boostBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 11,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    gap: 6,
-  },
-  boostCoin: { backgroundColor: '#C87E00' },
-  boostGem:  { backgroundColor: '#7B3FC0' },
-
-  skipBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 11,
-    paddingVertical: 9,
-    paddingHorizontal: 13,
-    gap: 6,
-    backgroundColor: '#7B52CC',
-  },
-
-  btnDisabled: { opacity: 0.5 },
-  btnText: { color: '#FFFFFF', fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
-  btnIcon: { width: 16, height: 16 },
+  levelTextSmall: { fontFamily: 'Fredoka_700Bold', fontSize: 10, color: '#FFFFFF' },
 });

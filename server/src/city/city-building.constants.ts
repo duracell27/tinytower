@@ -61,7 +61,7 @@ export const IS_VIP_BUILDING = new Set<CityBuildingType>([
   CityBuildingType.VIP_HOTEL,
 ]);
 
-export const BOOST_DURATION_MS = 20 * H;
+export const BOOST_DURATION_MS = 30 * H;
 
 export const INSTANT_SKIP_GEMS_PER_HOUR = 10;
 
