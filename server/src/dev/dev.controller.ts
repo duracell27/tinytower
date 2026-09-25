@@ -3,6 +3,13 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ShopRewards, ToolKey, TokenColor } from '@shared/types';
 
+interface CityBudgetGrantBody {
+  cityId: string;
+  coins?: number;
+  gems?: number;
+  tools?: Partial<Record<ToolKey, number>>;
+}
+
 @Controller('dev')
 @UseGuards(JwtAuthGuard)
 export class DevController {
@@ -46,6 +53,32 @@ export class DevController {
         data: { stateVersion: { increment: 1 } },
       }),
     ]);
+
+    return { ok: true };
+  }
+
+  @Post('city-budget-grant')
+  async cityBudgetGrant(@Req() req: any, @Body() body: CityBudgetGrantBody) {
+    const playerId: string = req.user.playerId;
+    const { cityId, coins = 0, gems = 0, tools = {} } = body;
+
+    const TOOL_FIELD: Record<ToolKey, string> = {
+      briks: 'budgetBriks', glass: 'budgetGlass', nails: 'budgetNails',
+      screw: 'budgetScrew', wood:  'budgetWood',  cement: 'budgetCement',
+    };
+
+    await this.prisma.city.update({
+      where: { id: cityId },
+      data: {
+        ...(coins > 0 ? { budgetCoins: { increment: coins } } : {}),
+        ...(gems  > 0 ? { budgetGems:  { increment: gems  } } : {}),
+        ...(Object.fromEntries(
+          (Object.entries(tools) as [ToolKey, number][])
+            .filter(([, v]) => v > 0)
+            .map(([k, v]) => [TOOL_FIELD[k], { increment: v }]),
+        )),
+      },
+    });
 
     return { ok: true };
   }

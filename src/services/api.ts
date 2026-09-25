@@ -1,5 +1,5 @@
 import { createMMKV } from 'react-native-mmkv';
-import type { ShopRewards } from '../../shared/types';
+import type { ShopRewards, ToolKey } from '../../shared/types';
 
 export interface LeaderboardEntry {
   rank: number;
@@ -558,6 +558,8 @@ export const api = {
     request<{ rewards: ShopRewards }>('POST', '/payments/notify', body),
   devGrant: (rewards: ShopRewards) =>
     request<{ ok: boolean }>('POST', '/dev/grant', rewards),
+  devCityBudgetGrant: (cityId: string, payload: { coins?: number; gems?: number; tools?: Partial<Record<ToolKey, number>> }) =>
+    request<{ ok: boolean }>('POST', '/dev/city-budget-grant', { cityId, ...payload }),
   getCityBuildings: (cityId: string) =>
     request<CityBuildingDto[]>('GET', `/city/${cityId}/buildings`),
   startCityBuildingUpgrade: (cityId: string, buildingType: string) =>

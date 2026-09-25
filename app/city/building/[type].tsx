@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, ScrollView, StyleSheet, TouchableOpacity,
-  ActivityIndicator, Alert, useColorScheme,
+  ActivityIndicator, Alert, useColorScheme, Animated,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -11,6 +11,7 @@ import LocaleText from '../../../src/components/LocaleText';
 import AppBackground from '../../../src/components/AppBackground';
 import { useAppTheme } from '../../../src/hooks/useAppTheme';
 import { api, CityBuildingDto } from '../../../src/services/api';
+import { useCityStore } from '../../../src/stores/cityStore';
 import { useGameClock } from '../../../src/hooks/useGameClock';
 import { formatCompact, formatNumFull } from '../../../src/utils/format';
 
@@ -98,18 +99,24 @@ const GEM_ICON  = require('../../../assets/img/diamond.png');
 
 const MAX_LEVEL = 15;
 
+const ROLE_RANK = ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
+function isAdvisorOrHigher(role: string | null | undefined): boolean {
+  if (!role) return false;
+  return ROLE_RANK.indexOf(role) >= ROLE_RANK.indexOf('ADVISOR');
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getTimeLeft(isoDate: string | null, nowMs: number): string {
+function getTimeLeft(isoDate: string | null, nowMs: number, dUnit: string, hUnit: string, mUnit: string): string {
   if (!isoDate) return '';
   const diff = Math.max(0, new Date(isoDate).getTime() - nowMs);
   const totalSecs = Math.floor(diff / 1000);
   const d = Math.floor(totalSecs / 86400);
   const h = Math.floor((totalSecs % 86400) / 3600);
   const m = Math.floor((totalSecs % 3600) / 60);
-  if (d > 0) return `${d}д ${h}г`;
-  if (h > 0) return `${h}г ${m}хв`;
-  return `${m}хв`;
+  if (d > 0) return `${d}${dUnit} ${h}${hUnit}`;
+  if (h > 0) return `${h}${hUnit} ${m}${mUnit}`;
+  return `${m}${mUnit}`;
 }
 
 function getHoursLeft(isoDate: string | null, nowMs: number): number {
@@ -136,6 +143,9 @@ export default function BuildingDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const now    = useGameClock(5_000);
+
+  const myRole = useCityStore((s) => s.city?.myRole);
+  const canAct = isAdvisorOrHigher(myRole);
 
   const [building, setBuilding] = useState<CityBuildingDto | null>(null);
   const [loading,  setLoading]  = useState(true);
@@ -178,10 +188,28 @@ export default function BuildingDetailScreen() {
   const currentCfg    = level > 0 ? LEVEL_CONFIGS[level - 1] : null;
 
   const boostHoursLeft  = getHoursLeft(building?.boostFinishesAt ?? null, now);
-  const buildTimeLeft   = getTimeLeft(building?.buildFinishesAt ?? null, now);
+  const buildTimeLeft   = getTimeLeft(
+    building?.buildFinishesAt ?? null, now,
+    t('city.buildings.detail.daysUnit'),
+    t('city.buildings.detail.hoursUnitShort'),
+    t('city.buildings.detail.minsUnitShort'),
+  );
   const skipGems        = getHoursLeft(building?.buildFinishesAt ?? null, now) * 10;
 
   const isGemBoost = (building?.boostMultiplier ?? 0) >= 2;
+
+  const blinkAnim = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (state !== 'BUILDING') { blinkAnim.setValue(1); return; }
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(blinkAnim, { toValue: 0.15, duration: 1500, useNativeDriver: true }),
+        Animated.timing(blinkAnim, { toValue: 1,    duration: 1500, useNativeDriver: true }),
+      ]),
+    );
+    anim.start();
+    return () => anim.stop();
+  }, [state]);
 
   const cardBg   = isDark ? '#1E2C42' : '#FFFFFF';
   const pageBg   = isDark ? '#0D1F2D' : '#DCEFF6';
@@ -220,7 +248,7 @@ export default function BuildingDetailScreen() {
               <View style={styles.levelCircleGroup}>
                 <View style={[styles.levelCircle, { backgroundColor: accent }]}>
                   <LocaleText style={styles.levelCircleText}>
-                    {maxed ? 'MAX' : level}
+                    {maxed ? 'MAX' : (state === 'BUILDING' ? level - 1 : level)}
                   </LocaleText>
                 </View>
                 <View style={styles.levelBonusRow}>
@@ -235,15 +263,24 @@ export default function BuildingDetailScreen() {
               </View>
             </View>
             <View style={styles.progressSegments}>
-              {Array.from({ length: MAX_LEVEL }, (_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.progressSegment,
-                    { backgroundColor: i < level ? accent : accent + '35' },
-                  ]}
-                />
-              ))}
+              {Array.from({ length: MAX_LEVEL }, (_, i) => {
+                const filledLevel = state === 'BUILDING' ? level - 1 : level;
+                const isBuilding  = state === 'BUILDING' && i === level - 1;
+                if (isBuilding) {
+                  return (
+                    <Animated.View
+                      key={i}
+                      style={[styles.progressSegment, { backgroundColor: accent, opacity: blinkAnim }]}
+                    />
+                  );
+                }
+                return (
+                  <View
+                    key={i}
+                    style={[styles.progressSegment, { backgroundColor: i < filledLevel ? accent : accent + '35' }]}
+                  />
+                );
+              })}
             </View>
           </View>
 
@@ -265,7 +302,7 @@ export default function BuildingDetailScreen() {
               </View>
 
               {/* ── Building in progress ── */}
-              {state === 'BUILDING' && building?.buildFinishesAt && (
+              {canAct && state === 'BUILDING' && building?.buildFinishesAt && (
                 <View style={[styles.section, { backgroundColor: cardBg }]}>
                   <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                     {t('city.buildings.detail.buildingTitle')}
@@ -281,9 +318,12 @@ export default function BuildingDetailScreen() {
                       </LocaleText>
                     </View>
                     <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
-                      <LocaleText style={[styles.infoTileLabel, { color: theme.textMuted }]}>
-                        {t('city.buildings.detail.tileSkip')}
-                      </LocaleText>
+                      <View style={styles.infoTileIconRow}>
+                        <Image source={GEM_ICON} style={styles.infoTileIcon} contentFit="contain" />
+                        <LocaleText style={[styles.infoTileLabel, { color: theme.textMuted }]}>
+                          {t('city.buildings.detail.tileSkip')}
+                        </LocaleText>
+                      </View>
                       <LocaleText style={[styles.infoTileValue, { color: GEM_COLOR }]}>
                         {formatNumFull(skipGems)}
                       </LocaleText>
@@ -305,7 +345,7 @@ export default function BuildingDetailScreen() {
               )}
 
               {/* ── Upgrade / Build ── */}
-              {(state === 'IDLE' || (state === 'ACTIVE' && !maxed)) && nextCfg && (
+              {canAct && (state === 'IDLE' || (state === 'ACTIVE' && !maxed)) && nextCfg && (
                 <View style={[styles.section, { backgroundColor: cardBg }]}>
                   <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                     {state === 'IDLE'
@@ -350,7 +390,24 @@ export default function BuildingDetailScreen() {
                     style={[styles.actionBtn, { backgroundColor: accent }, busy && styles.disabled]}
                     activeOpacity={0.78}
                     disabled={busy}
-                    onPress={() => act(() => api.startCityBuildingUpgrade(cityId!, btype))}
+                    onPress={() => {
+                      const isIdle = state === 'IDLE';
+                      Alert.alert(
+                        t('city.buildings.detail.confirmTitle'),
+                        isIdle
+                          ? t('city.buildings.detail.confirmBuildMsg')
+                          : t('city.buildings.detail.confirmUpgradeMsg', { next: level + 1 }),
+                        [
+                          { text: t('city.buildings.detail.confirmNo'), style: 'cancel' },
+                          {
+                            text: isIdle
+                              ? t('city.buildings.detail.confirmYes')
+                              : t('city.buildings.detail.confirmUpgradeYes'),
+                            onPress: () => act(() => api.startCityBuildingUpgrade(cityId!, btype)),
+                          },
+                        ],
+                      );
+                    }}
                   >
                     <LocaleText style={styles.btnText}>
                       {state === 'IDLE'
@@ -374,7 +431,7 @@ export default function BuildingDetailScreen() {
               )}
 
               {/* ── Boost ── */}
-              {state === 'ACTIVE' && !building?.isBoosted && currentCfg && (
+              {canAct && state === 'ACTIVE' && !building?.isBoosted && currentCfg && (
                 <View style={[styles.section, { backgroundColor: cardBg }]}>
                   <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                     {t('city.buildings.detail.boostTitle')}
@@ -412,9 +469,12 @@ export default function BuildingDetailScreen() {
                         <LocaleText style={styles.btnText}>
                           {t('city.buildings.detail.boostGemBtn')}
                         </LocaleText>
-                        <LocaleText style={styles.boostBtnCost}>
-                          {formatCompact(currentCfg.boostGems)} 💎
-                        </LocaleText>
+                        <View style={styles.boostBtnCostRow}>
+                          <LocaleText style={styles.boostBtnCost}>
+                            {formatCompact(currentCfg.boostGems)}
+                          </LocaleText>
+                          <Image source={GEM_ICON} style={styles.boostBtnCostIcon} contentFit="contain" />
+                        </View>
                       </View>
                     </TouchableOpacity>
                   </View>
@@ -550,7 +610,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   boostBtnInner: { alignItems: 'center', gap: 2 },
+  boostBtnCostRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   boostBtnCost: { color: 'rgba(255,255,255,0.75)', fontFamily: 'Fredoka_400Regular', fontSize: 12 },
+  boostBtnCostIcon: { width: 12, height: 12, opacity: 0.75 },
 
   /* Action button */
   actionBtn: {

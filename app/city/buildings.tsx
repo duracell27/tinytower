@@ -17,9 +17,10 @@ const PRIMARY    = '#2E6EC9';
 const COIN_COLOR = '#F5A623';
 const GEM_COLOR  = '#9B59D0';
 
-const BUILDINGS_ICON = require('../../assets/img/city/cityBuildings.png');
-const COIN_ICON      = require('../../assets/img/coin.png');
-const GEM_ICON       = require('../../assets/img/diamond.png');
+const BUILDINGS_ICON  = require('../../assets/img/city/cityBuildings.png');
+const NO_BUILDING_ICON = require('../../assets/img/city/NoBuilding.png');
+const COIN_ICON       = require('../../assets/img/coin.png');
+const GEM_ICON        = require('../../assets/img/diamond.png');
 
 const BUILDING_ICONS: Record<string, any> = {
   MOTOR_POOL:      require('../../assets/img/city/cityBuildingAutopark.png'),
@@ -176,7 +177,7 @@ export default function CityBuildingsScreen() {
                     {/* Icon */}
                     <View style={[styles.iconWrap, { backgroundColor: accent + '28' }]}>
                       <Image
-                        source={BUILDING_ICONS[b.buildingType]}
+                        source={b.level === 0 ? NO_BUILDING_ICON : BUILDING_ICONS[b.buildingType]}
                         style={styles.capIcon}
                         contentFit="contain"
                       />
@@ -238,7 +239,7 @@ export default function CityBuildingsScreen() {
                         </View>
                       ) : (
                         <View style={[styles.levelCircle, { backgroundColor: accent }]}>
-                          <LocaleText style={styles.levelText}>{b.level}</LocaleText>
+                          <LocaleText style={styles.levelText}>{isBuild ? b.level - 1 : b.level}</LocaleText>
                         </View>
                       )}
                       <LocaleText style={[styles.chevron, { color: isDark ? '#4A6A8A' : '#AACCDD' }]}>›</LocaleText>
