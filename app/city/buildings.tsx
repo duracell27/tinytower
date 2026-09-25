@@ -72,16 +72,16 @@ const BUILDING_ORDER = [
 
 const MAX_LEVEL = 15;
 
-function getTimeLeft(isoDate: string | null, nowMs: number): string {
+function getTimeLeft(isoDate: string | null, nowMs: number, dUnit: string, hUnit: string, mUnit: string): string {
   if (!isoDate) return '';
   const diff = Math.max(0, new Date(isoDate).getTime() - nowMs);
   const totalSecs = Math.floor(diff / 1000);
   const d = Math.floor(totalSecs / 86400);
   const h = Math.floor((totalSecs % 86400) / 3600);
   const m = Math.floor((totalSecs % 3600) / 60);
-  if (d > 0) return `${d}д ${h}г`;
-  if (h > 0) return `${h}г ${m}хв`;
-  return `${m}хв`;
+  if (d > 0) return `${d}${dUnit} ${h}${hUnit}`;
+  if (h > 0) return `${h}${hUnit} ${m}${mUnit}`;
+  return `${m}${mUnit}`;
 }
 
 function getHoursLeft(isoDate: string | null, nowMs: number): number {
@@ -191,7 +191,7 @@ export default function CityBuildingsScreen() {
 
                       {/* Bonus row */}
                       <View style={styles.bonusRow}>
-                        <LocaleText style={[styles.bonusLabel, { color: theme.textMuted }]}>
+                        <LocaleText style={[styles.bonusLabel, { color: accent }]}>
                           {t('city.buildings.bonusLabel')}
                         </LocaleText>
                         <Image
@@ -199,19 +199,33 @@ export default function CityBuildingsScreen() {
                           style={styles.bonusIcon}
                           contentFit="contain"
                         />
-                        <LocaleText style={[styles.bonusValue, { color: b.currentBonus > 0 ? accent : theme.textMuted }]}>
+                        <LocaleText style={[styles.bonusValue, { color: accent }]}>
                           {`+${Math.round(b.currentBonus)}${BONUS_UNIT[b.buildingType] ?? '%'}`}
                         </LocaleText>
-                        {isBuild && (
+                      </View>
+
+                      {/* Building tag + timer on one row */}
+                      {isBuild && (
+                        <View style={styles.buildingRow}>
                           <View style={[styles.buildingTag, { backgroundColor: COIN_COLOR + '22' }]}>
                             <LocaleText style={[styles.buildingTagText, { color: COIN_COLOR }]}>
                               {t('city.buildings.building')}
                             </LocaleText>
                           </View>
-                        )}
-                      </View>
+                          {b.buildFinishesAt && (
+                            <LocaleText style={[styles.boostLineText, { color: COIN_COLOR }]}>
+                              ⏱ {getTimeLeft(
+                                b.buildFinishesAt, now,
+                                t('city.buildings.detail.daysUnit'),
+                                t('city.buildings.detail.hoursUnitShort'),
+                                t('city.buildings.detail.minsUnitShort'),
+                              )}
+                            </LocaleText>
+                          )}
+                        </View>
+                      )}
 
-                      {/* Boost / Timer line */}
+                      {/* Boost line */}
                       {b.isBoosted && boostHours > 0 && (
                         <View style={styles.boostLine}>
                           <Image
@@ -223,11 +237,6 @@ export default function CityBuildingsScreen() {
                             ×{b.boostMultiplier}{'  '}{boostHours}{t('city.buildings.hoursUnit')}
                           </LocaleText>
                         </View>
-                      )}
-                      {isBuild && b.buildFinishesAt && (
-                        <LocaleText style={[styles.boostLineText, { color: COIN_COLOR }]}>
-                          ⏱ {getTimeLeft(b.buildFinishesAt, now)}
-                        </LocaleText>
                       )}
                     </View>
 
@@ -298,11 +307,12 @@ const styles = StyleSheet.create({
 
   /* Bonus row */
   bonusRow:   { flexDirection: 'row', alignItems: 'center', gap: 5, flexWrap: 'wrap' },
-  bonusLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 13 },
+  bonusLabel: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
   bonusIcon:  { width: 16, height: 16 },
   bonusValue: { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
   bonusDesc:  { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
 
+  buildingRow:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
   buildingTag:     { borderRadius: 5, paddingHorizontal: 6, paddingVertical: 1 },
   buildingTagText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 11 },
 

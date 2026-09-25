@@ -132,12 +132,24 @@ export class CityBuildingService {
     const cfg = getLevelConfig(nextLevel);
     const isVip = IS_VIP_BUILDING.has(buildingType);
 
+    const city = await this.prisma.city.findUnique({
+      where: { id: cityId },
+      select: { budgetGems: true, budgetCoins: true },
+    });
+    if (!city) throw new BadRequestException('City not found');
+
     const budgetUpdate: Record<string, any> = {};
     if (isVip) {
+      if (city.budgetGems < cfg.vipCostGems)
+        throw new BadRequestException('Insufficient gems in city budget');
       budgetUpdate.budgetGems = { decrement: cfg.vipCostGems };
     } else if (cfg.standardCostGems != null) {
+      if (city.budgetGems < cfg.standardCostGems)
+        throw new BadRequestException('Insufficient gems in city budget');
       budgetUpdate.budgetGems = { decrement: cfg.standardCostGems };
     } else {
+      if (city.budgetCoins < cfg.standardCostCoins!)
+        throw new BadRequestException('Insufficient coins in city budget');
       budgetUpdate.budgetCoins = { decrement: cfg.standardCostCoins! };
     }
 
@@ -173,6 +185,13 @@ export class CityBuildingService {
     const remainingMs = building.buildFinishesAt.getTime() - Date.now();
     const hoursRemaining = Math.ceil(Math.max(0, remainingMs) / (60 * 60 * 1000));
     const gemCost = hoursRemaining * INSTANT_SKIP_GEMS_PER_HOUR;
+
+    const city = await this.prisma.city.findUnique({
+      where: { id: cityId },
+      select: { budgetGems: true },
+    });
+    if (!city || city.budgetGems < gemCost)
+      throw new BadRequestException('Insufficient gems in city budget');
 
     await this.prisma.city.update({
       where: { id: cityId },
@@ -210,6 +229,17 @@ export class CityBuildingService {
 
     const cfg = getLevelConfig(building.level);
     const boostMultiplier = boostType === 'gems' ? 2.0 : 1.3;
+
+    const city = await this.prisma.city.findUnique({
+      where: { id: cityId },
+      select: { budgetGems: true, budgetCoins: true },
+    });
+    if (!city) throw new BadRequestException('City not found');
+    if (boostType === 'gems' && city.budgetGems < cfg.boostGemsCost)
+      throw new BadRequestException('Insufficient gems in city budget');
+    if (boostType === 'coins' && city.budgetCoins < cfg.boostCoinsCost)
+      throw new BadRequestException('Insufficient coins in city budget');
+
     const budgetUpdate =
       boostType === 'gems'
         ? { budgetGems: { decrement: cfg.boostGemsCost } }

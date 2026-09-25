@@ -447,14 +447,16 @@ export default function BuildingDetailScreen() {
                       disabled={busy}
                       onPress={() => act(() => api.activateCityBuildingBoost(cityId!, btype, 'coins'))}
                     >
-                      <Image source={COIN_ICON} style={styles.btnIcon} contentFit="contain" />
                       <View style={styles.boostBtnInner}>
                         <LocaleText style={styles.btnText}>
                           {t('city.buildings.detail.boostCoinBtn')}
                         </LocaleText>
-                        <LocaleText style={styles.boostBtnCost}>
-                          {formatCompact(currentCfg.boostCoins)}
-                        </LocaleText>
+                        <View style={styles.boostBtnCostRow}>
+                          <LocaleText style={styles.boostBtnCost}>
+                            {formatCompact(currentCfg.boostCoins)}
+                          </LocaleText>
+                          <Image source={COIN_ICON} style={styles.boostBtnCostIcon} contentFit="contain" />
+                        </View>
                       </View>
                     </TouchableOpacity>
 
@@ -464,7 +466,6 @@ export default function BuildingDetailScreen() {
                       disabled={busy}
                       onPress={() => act(() => api.activateCityBuildingBoost(cityId!, btype, 'gems'))}
                     >
-                      <Image source={GEM_ICON} style={styles.btnIcon} contentFit="contain" />
                       <View style={styles.boostBtnInner}>
                         <LocaleText style={styles.btnText}>
                           {t('city.buildings.detail.boostGemBtn')}
@@ -609,10 +610,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     gap: 8,
   },
-  boostBtnInner: { alignItems: 'center', gap: 2 },
-  boostBtnCostRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  boostBtnCost: { color: 'rgba(255,255,255,0.75)', fontFamily: 'Fredoka_400Regular', fontSize: 12 },
-  boostBtnCostIcon: { width: 12, height: 12, opacity: 0.75 },
+  boostBtnInner: { alignItems: 'center', gap: 8 },
+  boostBtnCostRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.35)',
+    borderRadius: 20,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  boostBtnCost: { color: '#FFFFFF', fontFamily: 'Fredoka_600SemiBold', fontSize: 15 },
+  boostBtnCostIcon: { width: 13, height: 13 },
 
   /* Action button */
   actionBtn: {
