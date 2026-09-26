@@ -3,6 +3,8 @@ import {
   View, ScrollView, StyleSheet, TouchableOpacity,
   ActivityIndicator, Alert, useColorScheme, Animated,
 } from 'react-native';
+import CityBudgetInsufficientModal from '../../../src/components/CityBudgetInsufficientModal';
+import CityBuildingConfirmModal, { CityBuildingConfirmPayload } from '../../../src/components/CityBuildingConfirmModal';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -150,6 +152,8 @@ export default function BuildingDetailScreen() {
   const [building, setBuilding] = useState<CityBuildingDto | null>(null);
   const [loading,  setLoading]  = useState(true);
   const [busy,     setBusy]     = useState(false);
+  const [confirm,  setConfirm]  = useState<CityBuildingConfirmPayload | null>(null);
+  const [insuffErr, setInsuffErr] = useState<{ currency: 'gems' | 'coins'; need: number; have: number } | null>(null);
 
   const load = useCallback(async () => {
     if (!cityId || !type) return;
@@ -169,7 +173,19 @@ export default function BuildingDetailScreen() {
   async function act(fn: () => Promise<any>) {
     setBusy(true);
     try { await fn(); await load(); }
-    catch (e: any) { Alert.alert('', e?.message ?? 'Error'); }
+    catch (e: any) {
+      const msg: string = e?.message ?? '';
+      if (msg.startsWith('INSUFFICIENT_GEMS|') || msg.startsWith('INSUFFICIENT_COINS|')) {
+        const [code, need, have] = msg.split('|');
+        setInsuffErr({
+          currency: code === 'INSUFFICIENT_GEMS' ? 'gems' : 'coins',
+          need: Number(need),
+          have: Number(have),
+        });
+      } else {
+        Alert.alert('', msg || 'Error');
+      }
+    }
     finally { setBusy(false); }
   }
 
@@ -334,7 +350,13 @@ export default function BuildingDetailScreen() {
                     style={[styles.actionBtn, { backgroundColor: GEM_COLOR }, busy && styles.disabled]}
                     activeOpacity={0.78}
                     disabled={busy}
-                    onPress={() => act(() => api.skipCityBuilding(cityId!, btype))}
+                    onPress={() => setConfirm({
+                      title: t('city.buildings.detail.confirmSkipTitle'),
+                      confirmText: t('city.buildings.detail.confirmSkipYes'),
+                      currency: 'gems',
+                      amount: skipGems,
+                      onConfirm: () => act(() => api.skipCityBuilding(cityId!, btype)),
+                    })}
                   >
                     <Image source={GEM_ICON} style={styles.btnIcon} contentFit="contain" />
                     <LocaleText style={styles.btnText}>
@@ -392,21 +414,22 @@ export default function BuildingDetailScreen() {
                     disabled={busy}
                     onPress={() => {
                       const isIdle = state === 'IDLE';
-                      Alert.alert(
-                        t('city.buildings.detail.confirmTitle'),
-                        isIdle
-                          ? t('city.buildings.detail.confirmBuildMsg')
-                          : t('city.buildings.detail.confirmUpgradeMsg', { next: level + 1 }),
-                        [
-                          { text: t('city.buildings.detail.confirmNo'), style: 'cancel' },
-                          {
-                            text: isIdle
-                              ? t('city.buildings.detail.confirmYes')
-                              : t('city.buildings.detail.confirmUpgradeYes'),
-                            onPress: () => act(() => api.startCityBuildingUpgrade(cityId!, btype)),
-                          },
-                        ],
-                      );
+                      const costCurrency: 'gems' | 'coins' =
+                        isVip || nextCfg!.gemsCost != null ? 'gems' : 'coins';
+                      const costAmount = isVip
+                        ? nextCfg!.vipGems
+                        : nextCfg!.gemsCost ?? nextCfg!.coinsCost!;
+                      setConfirm({
+                        title: isIdle
+                          ? t('city.buildings.detail.confirmTitle')
+                          : t('city.buildings.detail.confirmUpgradeTitle', { next: level + 1 }),
+                        confirmText: isIdle
+                          ? t('city.buildings.detail.confirmYes')
+                          : t('city.buildings.detail.confirmUpgradeYes'),
+                        currency: costCurrency,
+                        amount: costAmount,
+                        onConfirm: () => act(() => api.startCityBuildingUpgrade(cityId!, btype)),
+                      });
                     }}
                   >
                     <LocaleText style={styles.btnText}>
@@ -445,7 +468,13 @@ export default function BuildingDetailScreen() {
                       style={[styles.boostBtn, { backgroundColor: COIN_COLOR }, busy && styles.disabled]}
                       activeOpacity={0.78}
                       disabled={busy}
-                      onPress={() => act(() => api.activateCityBuildingBoost(cityId!, btype, 'coins'))}
+                      onPress={() => setConfirm({
+                        title: t('city.buildings.detail.confirmBoostTitle'),
+                        confirmText: t('city.buildings.detail.confirmBoostYes'),
+                        currency: 'coins',
+                        amount: currentCfg!.boostCoins,
+                        onConfirm: () => act(() => api.activateCityBuildingBoost(cityId!, btype, 'coins')),
+                      })}
                     >
                       <View style={styles.boostBtnInner}>
                         <LocaleText style={styles.btnText}>
@@ -464,7 +493,13 @@ export default function BuildingDetailScreen() {
                       style={[styles.boostBtn, { backgroundColor: GEM_COLOR }, busy && styles.disabled]}
                       activeOpacity={0.78}
                       disabled={busy}
-                      onPress={() => act(() => api.activateCityBuildingBoost(cityId!, btype, 'gems'))}
+                      onPress={() => setConfirm({
+                        title: t('city.buildings.detail.confirmBoostTitle'),
+                        confirmText: t('city.buildings.detail.confirmBoostYes'),
+                        currency: 'gems',
+                        amount: currentCfg!.boostGems,
+                        onConfirm: () => act(() => api.activateCityBuildingBoost(cityId!, btype, 'gems')),
+                      })}
                     >
                       <View style={styles.boostBtnInner}>
                         <LocaleText style={styles.btnText}>
@@ -485,6 +520,13 @@ export default function BuildingDetailScreen() {
           )}
         </ScrollView>
       </AppBackground>
+
+      <CityBuildingConfirmModal
+        payload={confirm}
+        onClose={() => setConfirm(null)}
+        accent={accent}
+      />
+      <CityBudgetInsufficientModal payload={insuffErr} onClose={() => setInsuffErr(null)} />
     </View>
   );
 }
@@ -636,4 +678,5 @@ const styles = StyleSheet.create({
   btnIcon: { width: 18, height: 18 },
 
   disabled: { opacity: 0.5 },
+
 });
