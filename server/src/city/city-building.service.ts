@@ -141,15 +141,15 @@ export class CityBuildingService {
     const budgetUpdate: Record<string, any> = {};
     if (isVip) {
       if (city.budgetGems < cfg.vipCostGems)
-        throw new BadRequestException('Insufficient gems in city budget');
+        throw new BadRequestException(`INSUFFICIENT_GEMS|${cfg.vipCostGems}|${city.budgetGems}`);
       budgetUpdate.budgetGems = { decrement: cfg.vipCostGems };
     } else if (cfg.standardCostGems != null) {
       if (city.budgetGems < cfg.standardCostGems)
-        throw new BadRequestException('Insufficient gems in city budget');
+        throw new BadRequestException(`INSUFFICIENT_GEMS|${cfg.standardCostGems}|${city.budgetGems}`);
       budgetUpdate.budgetGems = { decrement: cfg.standardCostGems };
     } else {
       if (city.budgetCoins < cfg.standardCostCoins!)
-        throw new BadRequestException('Insufficient coins in city budget');
+        throw new BadRequestException(`INSUFFICIENT_COINS|${cfg.standardCostCoins}|${city.budgetCoins}`);
       budgetUpdate.budgetCoins = { decrement: cfg.standardCostCoins! };
     }
 
@@ -191,7 +191,7 @@ export class CityBuildingService {
       select: { budgetGems: true },
     });
     if (!city || city.budgetGems < gemCost)
-      throw new BadRequestException('Insufficient gems in city budget');
+      throw new BadRequestException(`INSUFFICIENT_GEMS|${gemCost}|${city?.budgetGems ?? 0}`);
 
     await this.prisma.city.update({
       where: { id: cityId },
@@ -223,8 +223,13 @@ export class CityBuildingService {
     if (!building || building.state !== CityBuildingState.ACTIVE) {
       throw new BadRequestException('Building must be ACTIVE to boost');
     }
-    if (building.boostFinishesAt && building.boostFinishesAt > new Date()) {
-      throw new BadRequestException('Boost already active');
+    const boostActive = building.boostFinishesAt && building.boostFinishesAt > new Date();
+    if (boostActive) {
+      const currentIsGem = (building.boostMultiplier ?? 0) >= 2;
+      if (currentIsGem || boostType === 'coins') {
+        throw new BadRequestException('Boost already active');
+      }
+      // coin boost active + requesting gems → allow upgrade (overwrite)
     }
 
     const cfg = getLevelConfig(building.level);
@@ -236,9 +241,9 @@ export class CityBuildingService {
     });
     if (!city) throw new BadRequestException('City not found');
     if (boostType === 'gems' && city.budgetGems < cfg.boostGemsCost)
-      throw new BadRequestException('Insufficient gems in city budget');
+      throw new BadRequestException(`INSUFFICIENT_GEMS|${cfg.boostGemsCost}|${city.budgetGems}`);
     if (boostType === 'coins' && city.budgetCoins < cfg.boostCoinsCost)
-      throw new BadRequestException('Insufficient coins in city budget');
+      throw new BadRequestException(`INSUFFICIENT_COINS|${cfg.boostCoinsCost}|${city.budgetCoins}`);
 
     const budgetUpdate =
       boostType === 'gems'

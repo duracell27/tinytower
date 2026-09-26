@@ -508,8 +508,8 @@ export default function BuildingDetailScreen() {
                 </View>
               )}
 
-              {/* ── Boost ── */}
-              {canAct && state === 'ACTIVE' && !building?.isBoosted && currentCfg && (
+              {/* ── Boost ── показуємо секцію якщо нема бусту АБО активний тільки монетний (можна апгрейд) */}
+              {canAct && state === 'ACTIVE' && (!building?.isBoosted || !isGemBoost) && currentCfg && (
                 <View style={[styles.section, { backgroundColor: cardBg }]}>
                   <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                     {t('city.buildings.detail.boostTitle')}
@@ -519,31 +519,35 @@ export default function BuildingDetailScreen() {
                   </LocaleText>
 
                   <View style={styles.boostBtns}>
-                    <TouchableOpacity
-                      style={[styles.boostBtn, { backgroundColor: COIN_COLOR }, busy && styles.disabled]}
-                      activeOpacity={0.78}
-                      disabled={busy}
-                      onPress={() => setConfirm({
-                        title: t('city.buildings.detail.confirmBoostTitle'),
-                        confirmText: t('city.buildings.detail.confirmBoostYes'),
-                        currency: 'coins',
-                        amount: currentCfg!.boostCoins,
-                        onConfirm: () => act(() => api.activateCityBuildingBoost(cityId!, btype, 'coins')),
-                      })}
-                    >
-                      <View style={styles.boostBtnInner}>
-                        <LocaleText style={styles.btnText}>
-                          {t('city.buildings.detail.boostCoinBtn')}
-                        </LocaleText>
-                        <View style={styles.boostBtnCostRow}>
-                          <LocaleText style={styles.boostBtnCost}>
-                            {formatCompact(currentCfg.boostCoins)}
+                    {/* Монетний буст — тільки якщо немає жодного активного */}
+                    {!building?.isBoosted && (
+                      <TouchableOpacity
+                        style={[styles.boostBtn, { backgroundColor: COIN_COLOR }, busy && styles.disabled]}
+                        activeOpacity={0.78}
+                        disabled={busy}
+                        onPress={() => setConfirm({
+                          title: t('city.buildings.detail.confirmBoostTitle'),
+                          confirmText: t('city.buildings.detail.confirmBoostYes'),
+                          currency: 'coins',
+                          amount: currentCfg!.boostCoins,
+                          onConfirm: () => act(() => api.activateCityBuildingBoost(cityId!, btype, 'coins')),
+                        })}
+                      >
+                        <View style={styles.boostBtnInner}>
+                          <LocaleText style={styles.btnText}>
+                            {t('city.buildings.detail.boostCoinBtn')}
                           </LocaleText>
-                          <Image source={COIN_ICON} style={styles.boostBtnCostIcon} contentFit="contain" />
+                          <View style={styles.boostBtnCostRow}>
+                            <LocaleText style={styles.boostBtnCost}>
+                              {formatCompact(currentCfg.boostCoins)}
+                            </LocaleText>
+                            <Image source={COIN_ICON} style={styles.boostBtnCostIcon} contentFit="contain" />
+                          </View>
                         </View>
-                      </View>
-                    </TouchableOpacity>
+                      </TouchableOpacity>
+                    )}
 
+                    {/* Gem-буст — завжди доступний (×2 замінює ×1.3) */}
                     <TouchableOpacity
                       style={[styles.boostBtn, { backgroundColor: GEM_COLOR }, busy && styles.disabled]}
                       activeOpacity={0.78}
