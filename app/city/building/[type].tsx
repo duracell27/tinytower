@@ -204,6 +204,12 @@ export default function BuildingDetailScreen() {
   const currentCfg    = level > 0 ? LEVEL_CONFIGS[level - 1] : null;
 
   const boostHoursLeft  = getHoursLeft(building?.boostFinishesAt ?? null, now);
+  const boostTimeLeft   = getTimeLeft(
+    building?.boostFinishesAt ?? null, now,
+    t('city.buildings.detail.daysUnit'),
+    t('city.buildings.detail.hoursUnitShort'),
+    t('city.buildings.detail.minsUnitShort'),
+  );
   const buildTimeLeft   = getTimeLeft(
     building?.buildFinishesAt ?? null, now,
     t('city.buildings.detail.daysUnit'),
@@ -211,6 +217,7 @@ export default function BuildingDetailScreen() {
     t('city.buildings.detail.minsUnitShort'),
   );
   const skipGems        = getHoursLeft(building?.buildFinishesAt ?? null, now) * 10;
+  const BOOST_TOTAL_H   = 30;
 
   const isGemBoost = (building?.boostMultiplier ?? 0) >= 2;
 
@@ -316,6 +323,54 @@ export default function BuildingDetailScreen() {
                   {t(`city.buildings.descriptions.${btype}`)}
                 </LocaleText>
               </View>
+
+              {/* ── Active boost status ── */}
+              {state === 'ACTIVE' && building?.isBoosted && boostHoursLeft > 0 && (
+                <View style={[styles.section, { backgroundColor: cardBg }]}>
+                  <View style={styles.boostActiveHeader}>
+                    <Image
+                      source={isGemBoost ? GEM_ICON : COIN_ICON}
+                      style={styles.boostActiveIcon}
+                      contentFit="contain"
+                    />
+                    <LocaleText style={[styles.sectionTitle, { color: accent }]}>
+                      {t('city.buildings.detail.boostActiveTitle')}
+                    </LocaleText>
+                  </View>
+
+                  <View style={styles.infoTiles}>
+                    <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
+                      <LocaleText style={[styles.infoTileLabel, { color: theme.textMuted }]}>
+                        {t('city.buildings.detail.boostMultLabel')}
+                      </LocaleText>
+                      <LocaleText style={[styles.infoTileValue, { color: isGemBoost ? GEM_COLOR : COIN_COLOR }]}>
+                        ×{building?.boostMultiplier}
+                      </LocaleText>
+                    </View>
+                    <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
+                      <LocaleText style={[styles.infoTileLabel, { color: theme.textMuted }]}>
+                        {t('city.buildings.detail.tileTimeLeft')}
+                      </LocaleText>
+                      <LocaleText style={[styles.infoTileValue, { color: accent }]}>
+                        {boostTimeLeft}
+                      </LocaleText>
+                    </View>
+                  </View>
+
+                  {/* Progress bar */}
+                  <View style={[styles.boostProgressTrack, { backgroundColor: isDark ? '#243248' : '#E8EEF8' }]}>
+                    <View
+                      style={[
+                        styles.boostProgressFill,
+                        {
+                          backgroundColor: accent,
+                          width: `${Math.max(2, Math.round((boostHoursLeft / BOOST_TOTAL_H) * 100))}%`,
+                        },
+                      ]}
+                    />
+                  </View>
+                </View>
+              )}
 
               {/* ── Building in progress ── */}
               {canAct && state === 'BUILDING' && building?.buildFinishesAt && (
@@ -639,6 +694,19 @@ const styles = StyleSheet.create({
   infoTileIcon: { width: 14, height: 14 },
   infoTileLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 12, textAlign: 'center' },
   infoTileValue: { fontFamily: 'Fredoka_700Bold', fontSize: 18, textAlign: 'center' },
+
+  /* Active boost status */
+  boostActiveHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  boostActiveIcon:   { width: 20, height: 20 },
+  boostProgressTrack: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  boostProgressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
 
   /* Boost buttons */
   boostBtns: { flexDirection: 'row', gap: 10 },

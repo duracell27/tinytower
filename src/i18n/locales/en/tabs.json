@@ -456,6 +456,8 @@
         "timeLeft": "Time left: {{time}}",
         "skipCost": "Instant — {{gems}} 💎",
         "boostTitle": "Activate Boost",
+        "boostActiveTitle": "Boost Active",
+        "boostMultLabel": "Multiplier",
         "boostCoinBtn": "×1.3 for 30h",
         "boostGemBtn": "×2 for 30h",
         "fromBudget": "from city budget",
