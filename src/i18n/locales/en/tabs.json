@@ -383,7 +383,7 @@
       "lastReset": "Last reset",
       "neverReset": "Statistics have never been reset",
       "resetBudget": "Reset Budget",
-      "resetConfirm": "Reset budget statistics? Donation history and contributor rankings will be cleared.",
+      "resetConfirm": "Reset budget statistics? Donation history and contributor rankings will be cleared. Budget funds remain unchanged.",
       "resetSuccess": "Budget has been reset",
       "resetFailed": "Failed to reset budget",
       "cancel": "Cancel",
