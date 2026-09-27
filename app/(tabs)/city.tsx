@@ -4,7 +4,7 @@ import {
   ActivityIndicator, useColorScheme, Dimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import CreateCitySheet from '../../src/components/CreateCitySheet';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
@@ -23,7 +23,8 @@ import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerMood } from '../../shared/engine/workerUtils';
 import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
-import type { CityDetail, CityMember, CityRole } from '../../src/services/api';
+import { api } from '../../src/services/api';
+import type { CityDetail, CityMember, CityRole, CityBuildingDto } from '../../src/services/api';
 
 const IMG = {
   cityBuildings: require('../../assets/img/city/cityBuildings.png'),
@@ -34,6 +35,16 @@ const IMG = {
   notice:        require('../../assets/img/city/cityNotice.png'),
   marketing:     require('../../assets/img/MarketingIcon.png'),
   floorIcon:     require('../../assets/img/floor.png'),
+};
+
+const BUILDING_ICONS: Record<string, any> = {
+  MOTOR_POOL:      require('../../assets/img/city/cityBuildingAutopark.png'),
+  AD_AGENCY:       require('../../assets/img/city/cityBuildingAdvertisingagency.png'),
+  CITY_BANK:       require('../../assets/img/city/cityBuildingCityBank.png'),
+  BUSINESS_SCHOOL: require('../../assets/img/city/cityBuildingSchoolofBusiness.png'),
+  STATE_ACADEMY:   require('../../assets/img/city/cityBuildingStateAcademy.png'),
+  VIP_CLUB:        require('../../assets/img/city/cityBuildingVIPClub.png'),
+  VIP_HOTEL:       require('../../assets/img/city/cityBuildingVIPHotel.png'),
 };
 
 const STAR_EMPTY = require('../../assets/img/starEmpty.png');
@@ -150,7 +161,16 @@ export default function CityScreen() {
 
 function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDetail; isDark: boolean; t: any; router: any; chatUnreadCount: number }) {
   const [memberPage, setMemberPage] = useState(0);
+  const [buildings, setBuildings] = useState<CityBuildingDto[]>([]);
   const theme = useAppTheme();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      api.getCityBuildings(city.id).then(setBuildings).catch(() => {});
+    }, [city.id]),
+  );
+
+  const activeBuildings = buildings.filter((b) => b.state === 'ACTIVE' && b.level > 0);
   const player = useAuthStore((s) => s.player);
   const { leaveCity } = useCityStore();
   const showCityAlert = useGameStore((s) => s.showCityAlert);
@@ -225,6 +245,41 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
           {t('city.founded', { date: formatFoundedDate(city.createdAt) })}
         </LocaleText>
 
+        {/* Active buildings strip */}
+        {activeBuildings.length > 0 && (
+          <>
+            <View style={styles.buildingsDivider} />
+            {(() => {
+              const n = activeBuildings.length;
+              const rows = n > 5
+                ? [activeBuildings.slice(0, Math.ceil(n / 2)), activeBuildings.slice(Math.ceil(n / 2))]
+                : [activeBuildings];
+              return rows.map((row, ri) => (
+                <View key={ri} style={styles.buildingsRow}>
+                  {row.map((b) => (
+                    <TouchableOpacity
+                      key={b.buildingType}
+                      style={styles.buildingItem}
+                      activeOpacity={0.7}
+                      onPress={() => router.push({ pathname: '/city/building/[type]', params: { type: b.buildingType, id: city.id } })}
+                    >
+                      <Image
+                        source={BUILDING_ICONS[b.buildingType]}
+                        style={styles.buildingIcon}
+                        contentFit="contain"
+                      />
+                      <View style={styles.buildingLevelBadge}>
+                        <LocaleText style={styles.buildingLevelText}>{b.level}</LocaleText>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ));
+            })()}
+            <View style={styles.buildingsDivider} />
+          </>
+        )}
+
         {/* Level + XP row */}
         <View style={styles.levelXpRow}>
           <View style={styles.levelXpLeft}>
@@ -242,7 +297,7 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
             )}
           </View>
           <View style={styles.xpValueRow}>
-            <LocaleText style={[styles.xpNum, { color: theme.textMuted }]}>
+            <LocaleText style={[styles.xpNum, { color: '#2E6EC9' }]}>
               {formatXp(city.xp)}
               {city.xpForNextLevel != null ? ` / ${formatXp(city.xpForNextLevel)}` : ''}
             </LocaleText>
@@ -251,12 +306,12 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
         </View>
 
         {/* XP bar */}
-        <View style={[styles.xpBarBg, { backgroundColor: theme.divider }]}>
+        <View style={[styles.xpBarBg, { backgroundColor: 'rgba(46,110,201,0.15)' }]}>
           <View style={[styles.xpBarFill, { width: `${Math.round(xpPercent * 100)}%` as any }]} />
         </View>
 
         {/* Workers / Happy divider */}
-        <View style={[styles.workersDividerLine, { backgroundColor: theme.divider }]} />
+        <View style={[styles.workersDividerLine, { backgroundColor: '#2E6EC9', opacity: 0.5 }]} />
 
         {/* Workers row — profile-style */}
         <View style={styles.workerStatsRow}>
@@ -267,7 +322,7 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
               <LocaleText style={[styles.workerStatValue, { color: theme.text }]}>{totalWorkers}</LocaleText>
             </View>
           </View>
-          <View style={[styles.workerStatDivider, { backgroundColor: theme.divider }]} />
+          <View style={[styles.workerStatDivider, { backgroundColor: '#2E6EC9', opacity: 0.5 }]} />
           <View style={styles.workerStatItem}>
             <Image source={HAPPY_ICON} style={styles.workerStatIcon} contentFit="contain" />
             <View style={styles.workerStatText}>
@@ -402,19 +457,19 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
         >
           <Image source={require('../../assets/img/xpIcon.png')} style={styles.navImg} contentFit="contain" />
           <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>{t('city.xpStats.title')}</LocaleText>
-          <LocaleText style={[styles.navChevron, isDark && { color: '#5A7090' }]}>›</LocaleText>
+          <LocaleText style={styles.navChevron}>›</LocaleText>
         </TouchableOpacity>
-        <View style={[styles.navDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.07)' }]} />
+        <View style={styles.navDivider} />
         <TouchableOpacity style={styles.navRow} onPress={() => router.push('/city/citizen-rankings')} activeOpacity={0.7}>
           <Image source={require('../../assets/img/menu/rating.png')} style={styles.navImg} contentFit="contain" />
           <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>{t('city.citizenRankings')}</LocaleText>
-          <LocaleText style={[styles.navChevron, isDark && { color: '#5A7090' }]}>›</LocaleText>
+          <LocaleText style={styles.navChevron}>›</LocaleText>
         </TouchableOpacity>
-        <View style={[styles.navDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.07)' }]} />
+        <View style={styles.navDivider} />
         <TouchableOpacity style={styles.navRow} onPress={() => router.push('/city/rankings')} activeOpacity={0.7}>
           <Image source={require('../../assets/img/rating/1PlaceCup.png')} style={styles.navImg} contentFit="contain" />
           <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>{t('city.rankings.button')}</LocaleText>
-          <LocaleText style={[styles.navChevron, isDark && { color: '#5A7090' }]}>›</LocaleText>
+          <LocaleText style={styles.navChevron}>›</LocaleText>
         </TouchableOpacity>
       </View>
 
@@ -635,8 +690,46 @@ const styles = StyleSheet.create({
   },
   xpPercentText: { fontFamily: 'Fredoka_500Medium', fontSize: 11, color: '#2E6EC9' },
   xpValueRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  xpNum: { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
+  xpNum: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
   xpIconImg: { width: 18, height: 18 },
+
+  buildingsDivider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#2E6EC9',
+    opacity: 0.5,
+    marginVertical: 12,
+    alignSelf: 'center',
+  },
+  buildingsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 4,
+  },
+  buildingItem: {
+    position: 'relative',
+    alignItems: 'center',
+  },
+  buildingIcon: { width: 40, height: 40 },
+  buildingLevelBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#2E6EC9',
+    borderRadius: 7,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  buildingLevelText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 10,
+    color: '#FFFFFF',
+    lineHeight: 12,
+  },
 
   bonusBadge: {
     backgroundColor: 'rgba(50,160,80,0.13)',
@@ -795,8 +888,8 @@ const styles = StyleSheet.create({
   navRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   navImg: { width: 26, height: 26 },
   navLabel: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#0A1C30' },
-  navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: '#8A9A80', lineHeight: 24 },
-  navDivider: { height: 1, marginLeft: 56, backgroundColor: 'rgba(0,0,0,0.06)' },
+  navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: '#6BAED0', lineHeight: 24 },
+  navDivider: { height: 1, marginLeft: 56, backgroundColor: '#2E6EC9', opacity: 0.5 },
 
   // ── Settings ───────────────────────────────────────
   settingsBtn: { backgroundColor: '#E8F2FA', borderRadius: 14, paddingVertical: 15, alignItems: 'center' },

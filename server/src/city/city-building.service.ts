@@ -223,6 +223,9 @@ export class CityBuildingService {
     if (!building || building.state !== CityBuildingState.ACTIVE) {
       throw new BadRequestException('Building must be ACTIVE to boost');
     }
+    if (IS_VIP_BUILDING.has(buildingType)) {
+      throw new BadRequestException('VIP buildings cannot be boosted');
+    }
     const boostActive = building.boostFinishesAt && building.boostFinishesAt > new Date();
     if (boostActive) {
       const currentIsGem = (building.boostMultiplier ?? 0) >= 2;

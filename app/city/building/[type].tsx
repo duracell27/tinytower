@@ -508,8 +508,8 @@ export default function BuildingDetailScreen() {
                 </View>
               )}
 
-              {/* ── Boost ── показуємо секцію якщо нема бусту АБО активний тільки монетний (можна апгрейд) */}
-              {canAct && state === 'ACTIVE' && (!building?.isBoosted || !isGemBoost) && currentCfg && (
+              {/* ── Boost ── не для VIP будівель; показуємо якщо нема бусту АБО активний тільки монетний */}
+              {canAct && !isVip && state === 'ACTIVE' && (!building?.isBoosted || !isGemBoost) && currentCfg && (
                 <View style={[styles.section, { backgroundColor: cardBg }]}>
                   <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                     {t('city.buildings.detail.boostTitle')}
