@@ -427,6 +427,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const now = useGameClock(1000);
   const playerLevel = useGameStore((s) => s.playerLevel);
   const vehicles = useGameStore((s) => s.vehicles);
+  const cityElevatorDiamondBonus = useGameStore((s) => s.cityElevatorDiamondBonus);
   useEffect(() => {
     if (!lobbyVisitors?.length) setInlineReward(null);
   }, [lobbyVisitors]);
@@ -498,7 +499,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const lobbyMaxed = lobbyCapacity >= maxLobbyCapacity;
 
   // Gem limit for businessman
-  const dailyGemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel + vehicleBonuses.extraGemExchangeLimit;
+  const dailyGemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel + vehicleBonuses.extraGemExchangeLimit + cityElevatorDiamondBonus;
   const gemsRemaining = Math.max(0, dailyGemLimit - effectiveDailyGemsCollected);
   const buyAllGemsCost = 100 * gemsRemaining * playerLevel;
 

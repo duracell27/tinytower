@@ -120,6 +120,10 @@ export class SyncService {
       ? await this.cityBuildingService.getBuildingBonusesForCity(_cityMembershipId, _playerFloorCount)
       : _zeroBonuses;
 
+    const _cityLevelBonus = await this.cityService.getCityBonusForPlayer(playerId);
+    const cityMarketingBonus = _cityLevelBonus?.level ?? 0;
+    const cityPrBonus        = _cityLevelBonus?.level ?? 0;
+
     const todayMidnight = (() => {
       const d = new Date(serverNow);
       d.setHours(0, 0, 0, 0);
@@ -143,8 +147,8 @@ export class SyncService {
         result = processCommand(
           gameState, command, gameConfig, command.timestamp, player.playerLevel,
           {
-            coinPercent: gameState.coinBonusPercent + (command.timestamp < gameState.coinBoostExpiresAt ? (gameState.coinBoostPercent ?? 0) : 0) + cityBuildingBonuses.revenueBonus,
-            xpPercent:   gameState.xpBonusPercent   + (command.timestamp < gameState.xpBoostExpiresAt   ? (gameState.xpBoostPercent   ?? 0) : 0) + cityBuildingBonuses.personalXpBonus,
+            coinPercent: gameState.coinBonusPercent + cityMarketingBonus + (command.timestamp < gameState.coinBoostExpiresAt ? (gameState.coinBoostPercent ?? 0) : 0) + cityBuildingBonuses.revenueBonus,
+            xpPercent:   gameState.xpBonusPercent   + cityPrBonus        + (command.timestamp < gameState.xpBoostExpiresAt   ? (gameState.xpBoostPercent   ?? 0) : 0) + cityBuildingBonuses.personalXpBonus,
             ...vb,
             salesSpeedPercent:    (vb.salesSpeedPercent    ?? 0) + cityBuildingBonuses.sellBonus,
             deliverySpeedPercent: (vb.deliverySpeedPercent ?? 0) + cityBuildingBonuses.deliveryBonus,
@@ -215,11 +219,7 @@ export class SyncService {
       });
     }
 
-    // Fetch city bonus early so maxRevenuePerMin reflects the player's actual
-    // revenue including the marketing bonus, not just the base achievement bonus.
-    const cityBonus = await this.cityService.getCityBonusForPlayer(playerId);
-    const cityMarketingBonus = cityBonus?.level ?? 0;
-    const cityPrBonus = cityBonus?.level ?? 0;
+    // cityMarketingBonus / cityPrBonus are already computed above the command loop.
 
 
     const currentRevenue = calcRevenuePerMin(

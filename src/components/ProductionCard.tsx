@@ -79,9 +79,17 @@ function formatDuration(ms: number): string {
   const totalSec = Math.round(ms / 1000);
   if (totalSec < 60) return i18n.t('hotel:productionCard.time.seconds', { count: totalSec });
   const min = Math.floor(totalSec / 60);
-  if (min < 60) return i18n.t('hotel:productionCard.time.minutes', { count: min });
+  const remSec = totalSec % 60;
+  if (min < 60) {
+    if (remSec > 0) return i18n.t('hotel:productionCard.time.minutesSeconds', { minutes: min, seconds: remSec });
+    return i18n.t('hotel:productionCard.time.minutes', { count: min });
+  }
   const hours = Math.floor(min / 60);
-  if (hours < 24) return i18n.t('hotel:productionCard.time.hours', { count: hours });
+  const remMin = min % 60;
+  if (hours < 24) {
+    if (remMin > 0) return i18n.t('hotel:productionCard.time.hoursMinutes', { hours, minutes: remMin });
+    return i18n.t('hotel:productionCard.time.hours', { count: hours });
+  }
   return i18n.t('hotel:productionCard.time.days', { count: Math.floor(hours / 24) });
 }
 
@@ -253,12 +261,14 @@ export default function ProductionCard({
   const stars = floorStars?.[String(floorId)] ?? 0;
   const starMult = FLOOR_STAR_MULTIPLIERS[stars] ?? FLOOR_STAR_MULTIPLIERS[0];
   const vehicles = useGameStore((s) => s.vehicles);
+  const cityDeliveryBonus = useGameStore((s) => s.cityDeliveryBonus);
+  const citySellBonus     = useGameStore((s) => s.citySellBonus);
   const vb = computeVehicleBonuses(vehicles);
   const effectiveDeliveryDuration = typeConfig
-    ? Math.max(1_000, typeConfig.deliveryDuration * (1 - vb.deliverySpeedPercent / 100))
+    ? Math.max(1_000, typeConfig.deliveryDuration * (1 - (vb.deliverySpeedPercent + cityDeliveryBonus) / 100))
     : 0;
   const effectiveSellDuration = typeConfig
-    ? Math.max(1_000, typeConfig.sellDuration * starMult.time * (1 - vb.salesSpeedPercent / 100))
+    ? Math.max(1_000, typeConfig.sellDuration * starMult.time * (1 - (vb.salesSpeedPercent + citySellBonus) / 100))
     : 0;
 
   const shirtColor = floorType && gameConfig.floorTypes[floorType]
@@ -373,12 +383,13 @@ export default function ProductionCard({
   const coinBonusPercent   = useGameStore(s => s.coinBonusPercent);
   const coinBoostPercent   = useGameStore(s => s.coinBoostPercent);
   const coinBoostExpiresAt = useGameStore(s => s.coinBoostExpiresAt);
+  const cityRevenueBonus   = useGameStore(s => s.cityRevenueBonus);
   const businessUpgrades = useGameStore(s => s.businessUpgrades);
   const specialistBonusPercent = Math.round((specialistBonus ?? 0) * 100);
   const categoryBonus = floorType ? (businessUpgrades?.[floorType as keyof typeof businessUpgrades] ?? 0) * 5 : 0;
   const activeCoinBoost = Date.now() < coinBoostExpiresAt ? coinBoostPercent : 0;
   const effectiveRevenue = typeConfig
-    ? Math.floor(typeConfig.batchValue * (1 + vb.baseCoinBoostPercent / 100) * starMult.value * (1 + (coinBonusPercent + activeCoinBoost + specialistBonusPercent + categoryBonus) / 100) * multiplier)
+    ? Math.floor(typeConfig.batchValue * (1 + vb.baseCoinBoostPercent / 100) * starMult.value * (1 + (coinBonusPercent + cityRevenueBonus + activeCoinBoost + specialistBonusPercent + categoryBonus) / 100) * multiplier)
     : 0;
   const hasMultiplier = multiplier > 1;
 

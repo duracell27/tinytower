@@ -36,12 +36,13 @@ function computeDeliverAllSummary(
   playerLevel: number,
   hotelOccupied: number = 0,
   hotelCapacity: number = 999,
+  extraGemExchangeLimit: number = 0,
 ): DeliverAllSummary {
   let guestCount = 0, businessmanCount = 0, delivererCount = 0, sellerCount = 0, builderCount = 0;
   let totalCoins = 0, totalGems = 0, newWorkers = 0;
   const vipBreakdown: Partial<Record<string, number>> = {};
   let gemsCollected = dailyGemsCollected;
-  const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel;
+  const gemLimit = gameConfig.lobbyConfig.dailyGemLimitBase + playerLevel + extraGemExchangeLimit;
   let occupied = hotelOccupied;
 
   for (const v of visitors) {
@@ -351,8 +352,8 @@ function executeCommand(
   const result = processCommand(
     gameState, command, gameConfig, command.timestamp, store.playerLevel,
     {
-      coinPercent: store.coinBonusPercent + (command.timestamp < store.coinBoostExpiresAt ? (store.coinBoostPercent ?? 0) : 0),
-      xpPercent:   store.xpBonusPercent   + (command.timestamp < store.xpBoostExpiresAt   ? (store.xpBoostPercent   ?? 0) : 0),
+      coinPercent: store.coinBonusPercent + (command.timestamp < store.coinBoostExpiresAt ? (store.coinBoostPercent ?? 0) : 0) + store.cityRevenueBonus,
+      xpPercent:   store.xpBonusPercent   + (command.timestamp < store.xpBoostExpiresAt   ? (store.xpBoostPercent   ?? 0) : 0) + store.cityPersonalXpBonus,
       ...vehicleBonuses,
       salesSpeedPercent:    (vehicleBonuses.salesSpeedPercent    ?? 0) + store.citySellBonus,
       deliverySpeedPercent: (vehicleBonuses.deliverySpeedPercent ?? 0) + store.cityDeliveryBonus,
@@ -848,7 +849,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const timestamp = (state.nextVisitorAt > 0 && state.nextVisitorAt < now)
       ? state.nextVisitorAt
       : now;
-    const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel, computeVehicleBonuses(state.vehicles).extraGemExchangeLimit);
+    const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel, computeVehicleBonuses(state.vehicles).extraGemExchangeLimit + state.cityElevatorDiamondBonus);
     const { hairColor, female } = generateVisitorAppearance();
     const floorTypeKeys = Object.keys(gameConfig.floorTypes);
     const pendingFloorType = (role === 'guest' && targetFloor === 1)
@@ -1013,7 +1014,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (v.role != null && v.targetFloor != null) {
         return { role: v.role, isVip: v.isVip, targetFloor: v.targetFloor, pendingFloorType: v.pendingFloorType, female: v.female };
       }
-      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel, computeVehicleBonuses(state.vehicles).extraGemExchangeLimit);
+      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel, computeVehicleBonuses(state.vehicles).extraGemExchangeLimit + state.cityElevatorDiamondBonus);
       const { hairColor, female } = generateVisitorAppearance();
       const floorTypeKeys = Object.keys(gameConfig.floorTypes);
       const pendingFloorType = (role === 'guest' && targetFloor === 1)
@@ -1084,6 +1085,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       state.playerLevel,
       state.workers.filter((w) => w.assignedFloorId === null).length,
       state.hotelCapacity + state.cityHotelBonus,
+      computeVehicleBonuses(state.vehicles).extraGemExchangeLimit + state.cityElevatorDiamondBonus,
     );
     set({ pendingDeliverAll: summary });
   },
@@ -1126,7 +1128,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
     const floorTypeKeys = Object.keys(gameConfig.floorTypes);
     const visitors = Array.from({ length: slotsToFill }, () => {
-      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel, computeVehicleBonuses(state.vehicles).extraGemExchangeLimit);
+      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...state }, gameConfig, now, state.playerLevel, computeVehicleBonuses(state.vehicles).extraGemExchangeLimit + state.cityElevatorDiamondBonus);
       const { hairColor, female } = generateVisitorAppearance();
       const pendingFloorType = (role === 'guest' && targetFloor === 1)
         ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]
@@ -1150,7 +1152,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // acknowledges the commands.
     let cur = get();
     while (cur.lobbyVisitors.length < cur.lobbyCapacity + computeVehicleBonuses(cur.vehicles).extraLobbyCapacity) {
-      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...cur }, gameConfig, now, cur.playerLevel, computeVehicleBonuses(cur.vehicles).extraGemExchangeLimit);
+      const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...cur }, gameConfig, now, cur.playerLevel, computeVehicleBonuses(cur.vehicles).extraGemExchangeLimit + cur.cityElevatorDiamondBonus);
       const { hairColor, female } = generateVisitorAppearance();
       const pendingFloorType = (role === 'guest' && targetFloor === 1)
         ? floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)]

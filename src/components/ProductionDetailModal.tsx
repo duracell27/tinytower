@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, Modal, Pressable, StyleSheet, ScrollView, Dimensions,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import Svg, { Path, Rect } from 'react-native-svg';
 import LocaleText from './LocaleText';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS,
@@ -44,9 +46,17 @@ function formatDuration(ms: number): string {
   const totalSec = Math.round(ms / 1000);
   if (totalSec < 60) return i18n.t('hotel:productionCard.time.seconds', { count: totalSec });
   const min = Math.floor(totalSec / 60);
-  if (min < 60) return i18n.t('hotel:productionCard.time.minutes', { count: min });
+  const remSec = totalSec % 60;
+  if (min < 60) {
+    if (remSec > 0) return i18n.t('hotel:productionCard.time.minutesSeconds', { minutes: min, seconds: remSec });
+    return i18n.t('hotel:productionCard.time.minutes', { count: min });
+  }
   const hours = Math.floor(min / 60);
-  if (hours < 24) return i18n.t('hotel:productionCard.time.hours', { count: hours });
+  const remMin = min % 60;
+  if (hours < 24) {
+    if (remMin > 0) return i18n.t('hotel:productionCard.time.hoursMinutes', { hours, minutes: remMin });
+    return i18n.t('hotel:productionCard.time.hours', { count: hours });
+  }
   return i18n.t('hotel:productionCard.time.days', { count: Math.floor(hours / 24) });
 }
 
@@ -56,6 +66,8 @@ export default function ProductionDetailModal() {
 
   const theme = useAppTheme();
   const { isDark } = theme;
+
+  const [copied, setCopied] = useState(false);
 
   const modal = useGameStore((s) => s.productionDetailModal);
   const close = useGameStore((s) => s.closeProductionDetailModal);
@@ -67,6 +79,9 @@ export default function ProductionDetailModal() {
   const coinBonusPercent   = useGameStore((s) => s.coinBonusPercent);
   const coinBoostPercent   = useGameStore((s) => s.coinBoostPercent);
   const coinBoostExpiresAt = useGameStore((s) => s.coinBoostExpiresAt);
+  const cityRevenueBonus   = useGameStore((s) => s.cityRevenueBonus);
+  const cityDeliveryBonus  = useGameStore((s) => s.cityDeliveryBonus);
+  const citySellBonus      = useGameStore((s) => s.citySellBonus);
   const balance = useGameStore((s) => s.balance);
   const activeCoinBoost = Date.now() < coinBoostExpiresAt ? coinBoostPercent : 0;
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
@@ -81,6 +96,7 @@ export default function ProductionDetailModal() {
     if (modal) {
       translateY.value = SHEET_HEIGHT;
       translateY.value = withTiming(0, SHEET_TIMING);
+      setCopied(false);
     }
   }, [modal]);
 
@@ -157,16 +173,16 @@ export default function ProductionDetailModal() {
         typeConfig.batchValue *
           (1 + vb.baseCoinBoostPercent / 100) *
           starValueMult *
-          (1 + (coinBonusPercent + activeCoinBoost + specialistBonusPercent + categoryBonus) / 100) *
+          (1 + (coinBonusPercent + cityRevenueBonus + activeCoinBoost + specialistBonusPercent + categoryBonus) / 100) *
           multiplier,
       )
     : 0;
 
   const deliveryDuration = typeConfig
-    ? Math.max(1_000, typeConfig.deliveryDuration * (1 - vb.deliverySpeedPercent / 100))
+    ? Math.max(1_000, typeConfig.deliveryDuration * (1 - (vb.deliverySpeedPercent + cityDeliveryBonus) / 100))
     : 0;
   const effectiveSellDuration = typeConfig
-    ? Math.max(1_000, typeConfig.sellDuration * starMult.time * (1 - vb.salesSpeedPercent / 100))
+    ? Math.max(1_000, typeConfig.sellDuration * starMult.time * (1 - (vb.salesSpeedPercent + citySellBonus) / 100))
     : 0;
   const revenuePerMin =
     effectiveSellDuration > 0
@@ -203,6 +219,34 @@ export default function ProductionDetailModal() {
 
   const multiplierText =
     multiplier === 2.0 ? '×2.0' : multiplier === 1.3 ? '×1.3' : '×1.0';
+
+  const handleCopy = async () => {
+    const lines: string[] = [];
+    lines.push(`${productTitle} [${effectiveStage}]`);
+    lines.push(`Worker: ${worker.name} Lv${worker.level}${worker.isSpecialist ? ' ★' : ''}`);
+    lines.push(`Mood: ${moodLabel} ${multiplierText}`);
+    lines.push('');
+    lines.push(`Base revenue: ${formatNum(baseRevenue)}`);
+    if (stars > 0) lines.push(`Stars ×${starValueMult.toFixed(1)}`);
+    lines.push(`Worker: ${multiplierText}`);
+    if (specialistBonusPercent > 0) lines.push(`Specialist: +${specialistBonusPercent}%`);
+    if (categoryBonus > 0) lines.push(`Category: +${categoryBonus}%`);
+    if (coinBonusPercent > 0) lines.push(`Global bonus: +${coinBonusPercent}%`);
+    if (activeCoinBoost > 0) lines.push(`Marketing boost: +${activeCoinBoost}%`);
+    if (forkliftSalesSpeed > 0) lines.push(`Forklift: −${forkliftSalesSpeed}% sell time`);
+    if (deliveryTruckSpeed > 0) lines.push(`Delivery truck: −${deliveryTruckSpeed}% delivery time`);
+    if (armoredBaseCoin > 0) lines.push(`Armored truck: +${armoredBaseCoin}% base revenue`);
+    if (armoredBaseXp > 0) lines.push(`Armored truck: +${armoredBaseXp}% base XP`);
+    lines.push('');
+    lines.push(`Total: ${formatNum(effectiveRevenue)} coins${revenuePerMin > 0 ? ` (${formatNum(revenuePerMin)}/min)` : ''}`);
+    if (deliveryDuration > 0) lines.push(`Delivery: ${formatDuration(deliveryDuration)}`);
+    if (effectiveSellDuration > 0) lines.push(`Sell time: ${formatDuration(effectiveSellDuration)}`);
+    if (effectiveCost > 0) lines.push(`Buy cost: ${formatNum(effectiveCost)}${discountPercent > 0 ? ` (−${discountPercent}% discount)` : ''}`);
+
+    await Clipboard.setStringAsync(lines.join('\n'));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const statusLabels: Record<string, string> = {
     IDLE: t('productionDetail.status.IDLE'),
@@ -245,6 +289,19 @@ export default function ProductionDetailModal() {
               {statusLabels[effectiveStage] ?? effectiveStage}
             </LocaleText>
           </View>
+          <Pressable
+            onPress={handleCopy}
+            style={({ pressed }) => [styles.closeBtn, styles.copyBtn, pressed && { opacity: 0.6 }]}
+            hitSlop={8}
+          >
+            {copied
+              ? <LocaleText style={[styles.closeBtnText, { color: '#fff' }]}>✓</LocaleText>
+              : <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                  <Rect x="9" y="9" width="13" height="13" rx="2" stroke="#fff" strokeWidth="2" />
+                  <Path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                </Svg>
+            }
+          </Pressable>
           <Pressable
             onPress={close}
             style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.6 }]}
@@ -689,6 +746,12 @@ const styles = StyleSheet.create({
   closeBtnText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
+    color: '#fff',
+  },
+  copyBtn: {
+    backgroundColor: 'rgba(0,0,0,0.15)',
+  },
+  copyBtnText: {
     color: '#fff',
   },
   bonusSection: {

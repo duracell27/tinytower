@@ -10,6 +10,7 @@ import type { Command } from '@shared/types';
 describe('SyncService', () => {
   let syncService: SyncService;
   let prisma: Record<string, any>;
+  let cityBuildingServiceMock: Record<string, jest.Mock>;
 
   const mockFloors = [
     {
@@ -188,12 +189,12 @@ describe('SyncService', () => {
         },
         {
           provide: CityBuildingService,
-          useValue: {
+          useValue: (cityBuildingServiceMock = {
             getBuildingBonusesForCity: jest.fn().mockResolvedValue({
               deliveryBonus: 0, sellBonus: 0, revenueBonus: 0,
               personalXpBonus: 0, cityXpBonus: 0, elevatorDiamondBonus: 0, hotelBonus: 0,
             }),
-          },
+          }),
         },
       ],
     }).compile();
@@ -757,6 +758,59 @@ describe('SyncService', () => {
       expect(result.dailyLoginReward).toBeNull();
       expect(result.state.balance).toBe(100);
       expect(result.state.gems).toBe(20);
+    });
+
+    it('city CITY_BANK revenueBonus is applied to collect payout', async () => {
+      // Player is a city member → cityBuildingBonuses should be fetched and applied
+      const playerInCity = {
+        ...mockPlayer,
+        cityMembership: { cityId: 'city-1' },
+        floors: [
+          {
+            ...mockFloors[0],
+            productions: [
+              { id: 1, floorDbId: 1, slotIdx: 0, typeId: 'buns', stage: 'SELLING', stageStartedAt: BigInt(0) },
+              mockFloors[0].productions[1],
+              mockFloors[0].productions[2],
+            ],
+          },
+          ...mockFloors.slice(1),
+        ],
+      };
+
+      // CITY_BANK level 1 gives revenueBonus=2 (2%). Use a large round value to get clean math.
+      // revenueBonus=100 → coinPercent=100 → buns payout doubles: 25 * 2 = 50 → balance 100+50=150
+      cityBuildingServiceMock.getBuildingBonusesForCity.mockResolvedValueOnce({
+        deliveryBonus: 0, sellBonus: 0, revenueBonus: 100,
+        personalXpBonus: 0, cityXpBonus: 0, elevatorDiamondBonus: 0, hotelBonus: 0,
+      });
+
+      txMock.cityMembership = { update: jest.fn().mockResolvedValue({}) };
+      txMock.city = {
+        findUnique: jest.fn().mockResolvedValue({ cityXp: 0 }),
+        update: jest.fn().mockResolvedValue({}),
+      };
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerInCity)
+        .mockResolvedValueOnce({ ...playerInCity, stateVersion: 1 });
+
+      const collectCmd: Command = {
+        id: 'cmd-collect-bonus',
+        type: 'collect',
+        floorId: 2,
+        slotIdx: 0,
+        timestamp: Date.now() + 999_999,
+      };
+
+      const result = await syncService.processSync('player-uuid', [collectCmd], 0);
+
+      // Without revenueBonus the collect earns 25 coins (balance=125).
+      // With revenueBonus=100 the coinMultiplier doubles the BASE portion → 41 coins (balance=141).
+      // The 41 vs 50 delta is because specialist/worker bonuses are additive inside coinMultiplier,
+      // not multiplicative on top of it — only the base value doubles.
+      expect(result.state.balance).toBe(141);
+      expect(cityBuildingServiceMock.getBuildingBonusesForCity).toHaveBeenCalledWith('city-1', 5);
     });
   });
 });
