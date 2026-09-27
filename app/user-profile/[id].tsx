@@ -495,20 +495,20 @@ export default function UserProfileScreen() {
                 </LocaleText>
               </View>
               <Pressable
-                style={[pStyles.roleArrowBtn, !canRoleDown && pStyles.roleArrowBtnOff]}
-                onPress={() => handleRoleStep(-1)}
-                disabled={!canRoleDown}
-                hitSlop={8}
-              >
-                <LocaleText style={pStyles.roleArrowText}>▼</LocaleText>
-              </Pressable>
-              <Pressable
                 style={[pStyles.roleArrowBtn, !canRoleUp && pStyles.roleArrowBtnOff]}
                 onPress={() => handleRoleStep(1)}
                 disabled={!canRoleUp}
                 hitSlop={8}
               >
-                <LocaleText style={pStyles.roleArrowText}>▲</LocaleText>
+                <Image source={require('../../assets/img/cityPositionUp.png')} style={pStyles.roleArrowIconUp} contentFit="contain" />
+              </Pressable>
+              <Pressable
+                style={[pStyles.roleArrowBtn, !canRoleDown && pStyles.roleArrowBtnOff]}
+                onPress={() => handleRoleStep(-1)}
+                disabled={!canRoleDown}
+                hitSlop={8}
+              >
+                <Image source={require('../../assets/img/cityPositionDown.png')} style={pStyles.roleArrowIcon} contentFit="contain" />
               </Pressable>
             </View>
           )}
@@ -903,13 +903,13 @@ const pStyles = StyleSheet.create({
   roleStepLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
   roleStepValue: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, marginTop: 1 },
   roleArrowBtn: {
-    width: 36, height: 36, borderRadius: 10,
-    backgroundColor: 'rgba(46,110,201,0.12)',
+    width: 36, height: 36,
     alignItems: 'center', justifyContent: 'center',
     marginLeft: 6,
   },
   roleArrowBtnOff: { opacity: 0.3 },
-  roleArrowText: { fontSize: 14, color: '#2E6EC9' },
+  roleArrowIcon: { width: 26, height: 26 },
+  roleArrowIconUp: { width: 29, height: 29 },
 
   /* Close button */
   closeBtnWrap: {

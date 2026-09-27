@@ -444,7 +444,7 @@ function handleDeliverAll(
 }
 
 function handleUpgradeElevator(state: GameState, config: GameConfig): ProcessResult {
-  const maxLevel = getMaxElevatorLevel(state.floors.length);
+  const maxLevel = getMaxElevatorLevel(state.floors.length + 1);
   if (state.elevatorLevel >= maxLevel) {
     return { success: false, state, error: 'Elevator at max level' };
   }

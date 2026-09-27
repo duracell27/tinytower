@@ -48,6 +48,20 @@ const BUILDING_ICONS: Record<string, any> = {
 };
 
 const STAR_EMPTY = require('../../assets/img/starEmpty.png');
+const STAR_FULL  = require('../../assets/img/starFull.png');
+const STAR_66    = require('../../assets/img/star66.png');
+const STAR_33    = require('../../assets/img/star33.png');
+
+const MAX_BUILDING_LEVEL = 15;
+const TOTAL_BUILDING_TYPES = Object.keys(BUILDING_ICONS).length;
+
+const cityStarSource = (avg: number, idx: number) => {
+  const rem = avg - idx;
+  if (rem >= 1)     return STAR_FULL;
+  if (rem >= 2 / 3) return STAR_66;
+  if (rem >= 1 / 3) return STAR_33;
+  return STAR_EMPTY;
+};
 const XP_ICON    = require('../../assets/img/xpIcon.png');
 const WORKER_ICON = require('../../assets/img/worker.png');
 const HAPPY_ICON  = require('../../assets/img/happySmile.png');
@@ -171,6 +185,8 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
   );
 
   const activeBuildings = buildings.filter((b) => b.state === 'ACTIVE' && b.level > 0);
+  const totalBuildingLevel = buildings.reduce((sum, b) => sum + b.level, 0);
+  const starsAvg = (totalBuildingLevel / (TOTAL_BUILDING_TYPES * MAX_BUILDING_LEVEL)) * 5;
   const player = useAuthStore((s) => s.player);
   const { leaveCity } = useCityStore();
   const showCityAlert = useGameStore((s) => s.showCityAlert);
@@ -230,7 +246,7 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
         {/* Stars */}
         <View style={styles.starsRow}>
           {[0, 1, 2, 3, 4].map((i) => (
-            <Image key={i} source={STAR_EMPTY} style={styles.star} contentFit="contain" />
+            <Image key={i} source={cityStarSource(starsAvg, i)} style={styles.star} contentFit="contain" />
           ))}
         </View>
 
@@ -271,6 +287,11 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
                       <View style={styles.buildingLevelBadge}>
                         <LocaleText style={styles.buildingLevelText}>{b.level}</LocaleText>
                       </View>
+                      {b.isBoosted && b.boostMultiplier != null && (
+                        <View style={[styles.buildingBoostBadge, { backgroundColor: b.boostMultiplier < 2 ? '#C87E00' : '#2592AB' }]}>
+                          <LocaleText style={styles.buildingBoostText}>×{b.boostMultiplier % 1 === 0 ? b.boostMultiplier : b.boostMultiplier.toFixed(1)}</LocaleText>
+                        </View>
+                      )}
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -698,20 +719,20 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#2E6EC9',
     opacity: 0.5,
-    marginVertical: 12,
+    marginVertical: 8,
     alignSelf: 'center',
   },
   buildingsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
+    gap: 20,
     marginBottom: 4,
   },
   buildingItem: {
     position: 'relative',
     alignItems: 'center',
   },
-  buildingIcon: { width: 40, height: 40 },
+  buildingIcon: { width: 46, height: 46 },
   buildingLevelBadge: {
     position: 'absolute',
     bottom: -4,
@@ -725,6 +746,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 3,
   },
   buildingLevelText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 10,
+    color: '#FFFFFF',
+    lineHeight: 12,
+  },
+  buildingBoostBadge: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    borderRadius: 7,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  buildingBoostText: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 10,
     color: '#FFFFFF',

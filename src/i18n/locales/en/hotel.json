@@ -108,6 +108,20 @@
     },
     "evictLowLevelCard": {
       "title": "Evict all below level 9"
+    },
+    "expandConfirm": {
+      "title": "Expand hotel?",
+      "subtitle": "+1 room added",
+      "cost": "Cost",
+      "confirm": "Expand",
+      "cancel": "Cancel"
+    },
+    "evictLowConfirm": {
+      "title": "Evict all below level 9?",
+      "subtitle": "This action cannot be undone",
+      "cost": "Cost",
+      "confirm": "Evict",
+      "cancel": "Cancel"
     }
   },
   "technicalFloor": {

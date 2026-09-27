@@ -1715,7 +1715,7 @@ export function useLobbyState() {
     nextVisitorAt: state.nextVisitorAt,
     gems: state.gems,
     dailyFillLobbyUses: state.dailyFillLobbyUses,
-    floorsCount: state.floors.length,
+    floorsCount: state.floors.length + 1, // +1 for hotel floor (floor 1)
   })));
 }
 

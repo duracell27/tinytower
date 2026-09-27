@@ -193,28 +193,28 @@ export default function CityBudgetScreen() {
 
           <View style={[styles.card, styles.cardNoTopRadius, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
             {/* Coins */}
-            <View style={[styles.statRow, { backgroundColor: isDark ? '#2A1F00' : '#FFE99A' }]}>
-              <View style={[styles.statIconWrap, { backgroundColor: COIN_COLOR + '44' }]}>
+            <View style={[styles.statRow, { backgroundColor: isDark ? '#2A1F00' : '#FFF3CC' }]}>
+              <View style={[styles.statIconWrap, { backgroundColor: COIN_COLOR + '33' }]}>
                 <Image source={COIN_ICON} style={styles.statIcon} contentFit="contain" />
               </View>
-              <LocaleText style={[styles.statLabel, { color: isDark ? '#C8A040' : '#7A5000' }]}>
+              <LocaleText style={[styles.statLabel, { color: isDark ? '#D4A840' : '#A07020' }]}>
                 {t('city.budget.coins')}
               </LocaleText>
-              <LocaleText style={[styles.statNum, { color: isDark ? '#FFD060' : '#5A3800' }]}>
+              <LocaleText style={[styles.statNum, { color: isDark ? '#FFD060' : '#A07020' }]}>
                 {formatNum(budget?.budgetCoins ?? 0)}
               </LocaleText>
             </View>
 
             {/* Gems */}
-            <View style={[styles.statRow, { backgroundColor: isDark ? '#1E0A30' : '#E8D0FF' }]}>
-              <View style={[styles.statIconWrap, { backgroundColor: GEM_COLOR + '44' }]}>
+            <View style={[styles.statRow, { backgroundColor: isDark ? '#0A2830' : '#D8F0F5' }]}>
+              <View style={[styles.statIconWrap, { backgroundColor: GEM_COLOR + '33' }]}>
                 <Image source={GEM_ICON} style={styles.statIcon} contentFit="contain" />
               </View>
-              <LocaleText style={[styles.statLabel, { color: isDark ? '#B080D0' : '#6A2A90' }]}>
+              <LocaleText style={[styles.statLabel, { color: isDark ? '#3A9AB5' : '#1A6A80' }]}>
                 {t('city.budget.gems')}
               </LocaleText>
-              <LocaleText style={[styles.statNum, { color: isDark ? '#D090FF' : '#4A1870' }]}>
-                {String(budget?.budgetGems ?? 0)}
+              <LocaleText style={[styles.statNum, { color: isDark ? '#50C8E0' : '#1A6A80' }]}>
+                {formatNum(budget?.budgetGems ?? 0)}
               </LocaleText>
             </View>
 

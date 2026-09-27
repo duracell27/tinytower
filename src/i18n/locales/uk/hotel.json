@@ -108,6 +108,20 @@
     },
     "evictLowLevelCard": {
       "title": "Виселити всіх нижче 9 рівня"
+    },
+    "expandConfirm": {
+      "title": "Розширити готель?",
+      "subtitle": "+1 кімната до готелю",
+      "cost": "Вартість",
+      "confirm": "Розширити",
+      "cancel": "Скасувати"
+    },
+    "evictLowConfirm": {
+      "title": "Виселити всіх нижче 9 рівня?",
+      "subtitle": "Цю дію неможливо скасувати",
+      "cost": "Вартість",
+      "confirm": "Виселити",
+      "cancel": "Скасувати"
     }
   },
   "technicalFloor": {

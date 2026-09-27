@@ -35,6 +35,7 @@ import { gameConfig } from '../../shared/config/gameConfig';
 import type { Worker, Floor } from '../../shared/types';
 import { isBetterCandidate } from '../utils/workerCandidate';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
+import HotelConfirmModal from './HotelConfirmModal';
 import { GemIcon } from './CurrencyIcons';
 import { useAppTheme } from '../hooks/useAppTheme';
 
@@ -64,6 +65,8 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
   const [pickerWorker, setPickerWorker] = useState<Worker | null>(null);
   const [infoVisible, setInfoVisible] = useState(false);
+  const [expandConfirmVisible, setExpandConfirmVisible] = useState(false);
+  const [evictLowConfirmVisible, setEvictLowConfirmVisible] = useState(false);
   const theme = useAppTheme();
   const { isDark } = theme;
 
@@ -238,12 +241,12 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
       showInsufficientResources({ currency: 'gems', need: expansionCost, have: gems });
       return;
     }
-    expandHotel();
-  }, [expansionCost, gems, expandHotel, showInsufficientResources]);
+    setExpandConfirmVisible(true);
+  }, [expansionCost, gems, showInsufficientResources]);
 
   const handleEvictLowLevel = useCallback(() => {
-    evictLowLevelWorkers();
-  }, [evictLowLevelWorkers]);
+    setEvictLowConfirmVisible(true);
+  }, []);
 
   const renderItem = useCallback(
     ({ item, index }: { item: ListItem; index: number }) => {
@@ -479,6 +482,35 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
         </Animated.View>
 
         <InsufficientResourcesModal asOverlay />
+
+        {/* Expand hotel confirm */}
+        <HotelConfirmModal
+          visible={expandConfirmVisible}
+          icon={require('../../assets/img/hotel.png')}
+          title={t('hotelPanel.expandConfirm.title')}
+          subtitle={t('hotelPanel.expandConfirm.subtitle')}
+          costLabel={t('hotelPanel.expandConfirm.cost')}
+          cost={expansionCost ?? 0}
+          confirmText={t('hotelPanel.expandConfirm.confirm')}
+          cancelText={t('hotelPanel.expandConfirm.cancel')}
+          onConfirm={() => { setExpandConfirmVisible(false); expandHotel(); }}
+          onCancel={() => setExpandConfirmVisible(false)}
+        />
+
+        {/* Evict low level confirm */}
+        <HotelConfirmModal
+          visible={evictLowConfirmVisible}
+          icon={require('../../assets/img/warningIcon.png')}
+          title={t('hotelPanel.evictLowConfirm.title')}
+          subtitle={t('hotelPanel.evictLowConfirm.subtitle')}
+          costLabel={t('hotelPanel.evictLowConfirm.cost')}
+          cost={1}
+          confirmText={t('hotelPanel.evictLowConfirm.confirm')}
+          cancelText={t('hotelPanel.evictLowConfirm.cancel')}
+          danger
+          onConfirm={() => { setEvictLowConfirmVisible(false); evictLowLevelWorkers(); }}
+          onCancel={() => setEvictLowConfirmVisible(false)}
+        />
 
         {/* Onboarding overlay — dim + spotlight on first worker card + arrow pointing at Find Job */}
         {onboardingStep === 'assign_worker' && workerCardPos !== null && (() => {
