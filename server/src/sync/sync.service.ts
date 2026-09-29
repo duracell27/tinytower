@@ -601,8 +601,17 @@ export class SyncService {
           }
         }
 
+        // Keep commandLog entries long enough to cover the "response lost in transit"
+        // retry window.  The old cursor-based prune kept only 1 entry, so any retry
+        // re-ran all preceding commands against the already-updated state, causing
+        // "No visitors in lobby" failures.  30 minutes covers players who have
+        // intermittent connectivity with gaps up to ~20 minutes between sessions.
+        const COMMAND_LOG_RETENTION_MS = 30 * 60 * 1000;
         await tx.commandLog.deleteMany({
-          where: { playerId, cursor: { lt: ackCursor } },
+          where: {
+            playerId,
+            serverTime: { lt: BigInt(serverNow - COMMAND_LOG_RETENTION_MS) },
+          },
         });
       });
     }
