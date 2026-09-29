@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Dimensions } from 'react-native';
 import LocaleText from './LocaleText';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -52,53 +51,51 @@ export default function LevelUpModal() {
       onRequestClose={dismiss}
     >
       {showModal && (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <View style={styles.scrim}>
-            <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
+        <View style={styles.scrim}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
 
-            {event && (
-              <Animated.View style={[styles.card, cardStyle]}>
-                <LinearGradient colors={isDark ? ['#1E2410', '#161C0A'] : ['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
-                  <View style={styles.starsRow}>
-                    <LocaleText style={[styles.starText, styles.starSmall]}>★</LocaleText>
-                    <LocaleText style={[styles.starText, styles.starLarge]}>★</LocaleText>
-                    <LocaleText style={[styles.starText, styles.starSmall]}>★</LocaleText>
+          {event && (
+            <Animated.View style={[styles.card, cardStyle]}>
+              <LinearGradient colors={isDark ? ['#1E2410', '#161C0A'] : ['#FFF9E6', '#FFF3CC']} style={styles.cardGradient}>
+                <View style={styles.starsRow}>
+                  <LocaleText style={[styles.starText, styles.starSmall]}>★</LocaleText>
+                  <LocaleText style={[styles.starText, styles.starLarge]}>★</LocaleText>
+                  <LocaleText style={[styles.starText, styles.starSmall]}>★</LocaleText>
+                </View>
+
+                <View style={styles.levelCircle}>
+                  <LinearGradient colors={['#74D44F', '#3FA535']} style={styles.levelCircleGradient}>
+                    <LocaleText style={styles.levelNumber}>{event.newLevel}</LocaleText>
+                  </LinearGradient>
+                </View>
+
+                <LocaleText style={[styles.title, { color: isDark ? '#A8E07A' : '#3D6B1E' }]}>{t('levelUp.title')}</LocaleText>
+                <LocaleText style={[styles.subtitle, { color: isDark ? '#7BAF55' : '#7C9A5E' }]}>{t('levelUp.subtitle', { level: event.newLevel })}</LocaleText>
+
+                <View style={styles.rewardsContainer}>
+                  <View style={[styles.rewardRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : '#fff' }]}>
+                    <CoinIcon size={20} />
+                    <LocaleText style={styles.rewardText}>+{formatNum(event.coinReward)}</LocaleText>
                   </View>
-
-                  <View style={styles.levelCircle}>
-                    <LinearGradient colors={['#74D44F', '#3FA535']} style={styles.levelCircleGradient}>
-                      <LocaleText style={styles.levelNumber}>{event.newLevel}</LocaleText>
-                    </LinearGradient>
+                  <View style={[styles.rewardRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : '#fff' }]}>
+                    <GemIcon size={16} />
+                    <LocaleText style={styles.rewardTextGem}>+{event.gemReward}</LocaleText>
                   </View>
+                </View>
 
-                  <LocaleText style={[styles.title, { color: isDark ? '#A8E07A' : '#3D6B1E' }]}>{t('levelUp.title')}</LocaleText>
-                  <LocaleText style={[styles.subtitle, { color: isDark ? '#7BAF55' : '#7C9A5E' }]}>{t('levelUp.subtitle', { level: event.newLevel })}</LocaleText>
-
-                  <View style={styles.rewardsContainer}>
-                    <View style={[styles.rewardRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : '#fff' }]}>
-                      <CoinIcon size={20} />
-                      <LocaleText style={styles.rewardText}>+{formatNum(event.coinReward)}</LocaleText>
-                    </View>
-                    <View style={[styles.rewardRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : '#fff' }]}>
-                      <GemIcon size={16} />
-                      <LocaleText style={styles.rewardTextGem}>+{event.gemReward}</LocaleText>
-                    </View>
-                  </View>
-
-                  <Pressable
-                    onPress={dismiss}
-                    style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-                  >
-                    <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.buttonGradient}>
-                      <LocaleText style={styles.buttonText}>{t('levelUp.claim')}</LocaleText>
-                    </LinearGradient>
-                    <View style={styles.buttonShadow} />
-                  </Pressable>
-                </LinearGradient>
-              </Animated.View>
-            )}
-          </View>
-        </GestureHandlerRootView>
+                <Pressable
+                  onPress={dismiss}
+                  style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+                >
+                  <LinearGradient colors={['#74D44F', '#5BA63C']} style={styles.buttonGradient}>
+                    <LocaleText style={styles.buttonText}>{t('levelUp.claim')}</LocaleText>
+                  </LinearGradient>
+                  <View style={styles.buttonShadow} />
+                </Pressable>
+              </LinearGradient>
+            </Animated.View>
+          )}
+        </View>
       )}
     </Modal>
   );

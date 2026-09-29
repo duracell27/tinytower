@@ -314,7 +314,7 @@ export default function CreateCitySheet({ visible, onClose }: Props) {
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end' },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
+  scrim: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.5)' },
   sheet: {
     height: SHEET_HEIGHT,
     borderTopLeftRadius: 32,
