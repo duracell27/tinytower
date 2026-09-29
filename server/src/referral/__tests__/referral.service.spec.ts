@@ -48,8 +48,14 @@ describe('ReferralService', () => {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
         create: jest.fn().mockResolvedValue({}),
+        update: jest.fn().mockResolvedValue({}),
       },
-      $transaction: jest.fn(async (fn: (tx: any) => Promise<any>) => fn(txMock)),
+      playerState: { update: jest.fn().mockResolvedValue({}) },
+      referralPurchaseNotification: { create: jest.fn().mockResolvedValue({}) },
+      $transaction: jest.fn(async (arg: any) => {
+        if (typeof arg === 'function') return arg(txMock);
+        return Promise.all(arg);
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -188,7 +194,13 @@ describe('ReferralService', () => {
 
       expect(result).toEqual({ ok: true, coins: 15_000, gems: 20 });
       expect(txMock.referral.create).toHaveBeenCalledWith({
-        data: { referrerId: REFERRER_ID, referredId: PLAYER_ID, referredName: 'TestPlayer' },
+        data: expect.objectContaining({
+          referrerId: REFERRER_ID,
+          referredId: PLAYER_ID,
+          referredName: 'TestPlayer',
+          level10ReachedAt: expect.any(Date),
+          level30ReachedAt: null,
+        }),
       });
       expect(txMock.player.update).toHaveBeenCalledWith({
         where: { id: PLAYER_ID },
@@ -254,6 +266,67 @@ describe('ReferralService', () => {
       txMock.referral.create.mockRejectedValue({ code: 'P2002' });
 
       await expect(service.applyReferralCode(PLAYER_ID, CODE)).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('processPurchaseBonus', () => {
+    const BUYER_ID = 'buyer-uuid';
+    const REFERRER_ID = 'referrer-uuid';
+
+    it('gives referrer 10% of priceUsd as gems (e.g. $0.99 → 9 gems)', async () => {
+      prisma.referral.findUnique.mockResolvedValue(makeReferral({ referrerId: REFERRER_ID, referredId: BUYER_ID }));
+
+      await service.processPurchaseBonus(BUYER_ID, 0.99);
+
+      expect(prisma.referral.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { gemBonusEarned: { increment: 9 } } }),
+      );
+      expect(prisma.playerState.update).toHaveBeenCalledWith({
+        where: { playerId: REFERRER_ID },
+        data: { gems: { increment: 9 } },
+      });
+    });
+
+    it('gives correct bonus for $9.99 purchase (99 gems)', async () => {
+      prisma.referral.findUnique.mockResolvedValue(makeReferral({ referrerId: REFERRER_ID, referredId: BUYER_ID }));
+
+      await service.processPurchaseBonus(BUYER_ID, 9.99);
+
+      expect(prisma.playerState.update).toHaveBeenCalledWith({
+        where: { playerId: REFERRER_ID },
+        data: { gems: { increment: 99 } },
+      });
+    });
+
+    it('gives correct bonus for $49.99 purchase (499 gems)', async () => {
+      prisma.referral.findUnique.mockResolvedValue(makeReferral({ referrerId: REFERRER_ID, referredId: BUYER_ID }));
+
+      await service.processPurchaseBonus(BUYER_ID, 49.99);
+
+      expect(prisma.playerState.update).toHaveBeenCalledWith({
+        where: { playerId: REFERRER_ID },
+        data: { gems: { increment: 499 } },
+      });
+    });
+
+    it('does nothing if buyer has no referrer', async () => {
+      prisma.referral.findUnique.mockResolvedValue(null);
+
+      await service.processPurchaseBonus(BUYER_ID, 9.99);
+
+      expect(prisma.playerState.update).not.toHaveBeenCalled();
+    });
+
+    it('creates a purchase notification', async () => {
+      prisma.referral.findUnique.mockResolvedValue(makeReferral({ referrerId: REFERRER_ID, referredId: BUYER_ID }));
+
+      await service.processPurchaseBonus(BUYER_ID, 4.99);
+
+      expect(prisma.referralPurchaseNotification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ referrerId: REFERRER_ID, bonus: 49, purchaseAmount: 4.99 }),
+        }),
+      );
     });
   });
 });

@@ -182,7 +182,7 @@ export class ReferralService {
     });
     if (!referral) return;
 
-    const bonus = Math.floor(purchaseAmount * PURCHASE_BONUS_PERCENT / 100);
+    const bonus = Math.floor(purchaseAmount * PURCHASE_BONUS_PERCENT);
     if (bonus <= 0) return;
 
     await this.prisma.$transaction([
