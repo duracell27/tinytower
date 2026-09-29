@@ -1542,12 +1542,36 @@ export const useGameStore = create<GameStore>((set, get) => ({
         return Math.max(playerXp ?? 0, cur.playerXp);
       })(),
       tools,
-      underConstruction: (serverState.underConstruction ?? [])
-        .filter((uc) => !pendingOpenFloorIds.has(uc.floorId))
-        .map((uc) => {
-          const local = cur.underConstruction.find((u) => u.floorId === uc.floorId);
-          return local?.selectedFloorType ? { ...uc, selectedFloorType: local.selectedFloorType } : uc;
-        }),
+      underConstruction: (() => {
+        const serverUc = (serverState.underConstruction ?? [])
+          .filter((uc) => !pendingOpenFloorIds.has(uc.floorId))
+          .map((uc) => {
+            const local = cur.underConstruction.find((u) => u.floorId === uc.floorId);
+            return local?.selectedFloorType ? { ...uc, selectedFloorType: local.selectedFloorType } : uc;
+          });
+        // Re-apply pending buy_floor commands whose effects the server hasn't confirmed
+        // yet.  Without this a reconcile triggered by an unrelated stateVersion bump
+        // (e.g. elevator activity) wipes the optimistic underConstruction entry and the
+        // floor disappears from the UI until the next successful sync.
+        const serverUcIds = new Set(serverUc.map((uc) => uc.floorId));
+        const serverFloorIds = new Set((serverState.floors ?? []).map((f) => f.id));
+        for (const cmd of pendingQueue) {
+          if (cmd.type !== 'buy_floor') continue;
+          const buyCmd = cmd as Extract<Command, { type: 'buy_floor' }>;
+          if (serverUcIds.has(buyCmd.floorId) || serverFloorIds.has(buyCmd.floorId)) continue;
+          const unlockConfig = gameConfig.floorUnlocks?.find((f) => f.floorId === buyCmd.floorId);
+          if (!unlockConfig) continue;
+          const local = cur.underConstruction.find((u) => u.floorId === buyCmd.floorId);
+          serverUc.push({
+            floorId: buyCmd.floorId,
+            startedAt: buyCmd.timestamp,
+            durationMs: unlockConfig.constructionDurationMs,
+            requiredTools: buyCmd.requiredTools.map(({ tool }) => ({ tool, count: unlockConfig.requiredToolCount })),
+            selectedFloorType: local?.selectedFloorType ?? null,
+          });
+        }
+        return serverUc;
+      })(),
       openedFloorTypes: (() => {
         const base = serverState.openedFloorTypes ?? {};
         // Pending open_floor commands must survive reconcile so subsequent open_floor

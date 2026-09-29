@@ -74,6 +74,9 @@ function handleSpawnVisitor(
   if (state.lobbyVisitors.length >= effectiveCapacity) {
     return { success: false, state, error: 'Lobby is full' };
   }
+  if (state.lobbyVisitors.some((v) => v.id === command.visitorId)) {
+    return { success: true, state };
+  }
   const role = command.role ?? 'guest';
   const visitor: Visitor = {
     id: command.visitorId,
