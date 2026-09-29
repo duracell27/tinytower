@@ -21,12 +21,13 @@ export class StatsService {
       return this.cache.value;
     }
 
-    const [players, floors] = await Promise.all([
+    const [players, floors, cities] = await Promise.all([
       this.prisma.player.count(),
       this.prisma.floor.count(),
+      this.prisma.city.count(),
     ]);
 
-    const value: GlobalStats = { players, floors, cities: 0 };
+    const value: GlobalStats = { players, floors, cities };
     this.cache = { value, expiresAt: now + CACHE_TTL_MS };
     return value;
   }
