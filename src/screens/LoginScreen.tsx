@@ -23,6 +23,7 @@ interface LoginScreenProps {
   onGoogle: () => void;
   onApple: () => void;
   onBack: () => void;
+  initialTab?: 'login' | 'register';
 }
 
 function GoogleIcon() {
@@ -48,9 +49,9 @@ function GoogleIcon() {
   );
 }
 
-export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack }: LoginScreenProps) {
+export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack, initialTab = 'login' }: LoginScreenProps) {
   const { t } = useTranslation('auth');
-  const [tab, setTab] = useState<'login' | 'register'>('login');
+  const [tab, setTab] = useState<'login' | 'register'>(initialTab);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [playerName, setPlayerName] = useState('');

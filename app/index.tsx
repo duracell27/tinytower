@@ -19,7 +19,7 @@ export default function Index() {
       onPlay={handlePlay}
       onGuest={handleGuest}
       onLogin={() => router.push('/login')}
-      onRegister={() => router.push('/login')}
+      onRegister={() => router.push('/login?tab=register')}
     />
   );
 }
