@@ -1475,6 +1475,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return t;
     })();
 
+    // Compute pendingLocal here (outside the lobbyVisitors IIFE) so it can be
+    // reused by the nextVisitorAt calculation below.
+    const serverLobbyIds = new Set(serverState.lobbyVisitors.map((sv) => sv.id));
+    const pendingSpawnIds = new Set(
+      cur.commandQueue
+        .filter((cmd) => cmd.type === 'spawn_visitor')
+        .map((cmd) => (cmd as Extract<Command, { type: 'spawn_visitor' }>).visitorId),
+    );
+    const serverMappedCount = serverState.lobbyVisitors.length;
+    const freeSlots = Math.max(0, cur.lobbyCapacity + computeVehicleBonuses(cur.vehicles).extraLobbyCapacity - serverMappedCount);
+    const pendingLocal = cur.lobbyVisitors
+      .filter((lv) => pendingSpawnIds.has(lv.id) && !serverLobbyIds.has(lv.id))
+      .slice(0, freeSlots);
+
     const lobbyVisitors = (() => {
       // Map all server visitors; supply defaults for legacy visitors that lack role/targetFloor
       // (created by createInitialState before eager generation was added).
@@ -1492,22 +1506,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
               : undefined);
           return { ...sv, role, targetFloor, pendingFloorType };
         });
-      // Preserve locally-spawned visitors not yet acknowledged by the server.
-      // Include both unsent AND already-sent commands: the server may not have processed
-      // them before this sync response was computed, so the visitor would be wiped even
-      // though it was legitimately spawned.  The !serverIds check avoids duplicates when
-      // the server does include the visitor in its response.
-      const serverIds = new Set(serverState.lobbyVisitors.map((sv) => sv.id));
-      const pendingSpawnIds = new Set(
-        cur.commandQueue
-          .filter((cmd) => cmd.type === 'spawn_visitor')
-          .map((cmd) => (cmd as Extract<Command, { type: 'spawn_visitor' }>).visitorId),
-      );
-      // Cap pendingLocal to free lobby slots so we never exceed capacity.
-      const freeSlots = Math.max(0, cur.lobbyCapacity + computeVehicleBonuses(cur.vehicles).extraLobbyCapacity - serverMapped.length);
-      const pendingLocal = cur.lobbyVisitors
-        .filter((lv) => pendingSpawnIds.has(lv.id) && !serverIds.has(lv.id))
-        .slice(0, freeSlots);
       return [...serverMapped, ...pendingLocal];
     })();
 
@@ -1529,7 +1527,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
       dailyTipsStage1Claimed: serverState.dailyTipsStage1Claimed ?? (serverState as any).dailyTipsRewardClaimed ?? false,
       dailyTipsStage2Claimed: serverState.dailyTipsStage2Claimed ?? false,
       lastDailyReset: serverState.lastDailyReset,
-      nextVisitorAt: serverState.nextVisitorAt,
+      nextVisitorAt: (() => {
+        // If pending spawn_visitor commands were re-injected into the lobby
+        // (pendingLocal), the server's nextVisitorAt may already be in the past
+        // (the timer expired before the response arrived).  Using it as-is makes
+        // the spawn effect immediately fire and add a second visitor on top of the
+        // one we just restored, producing a double-spawn.  Advance to a fresh
+        // interval so the effect sees a future timestamp and holds off.
+        if (pendingLocal.length > 0) {
+          const serverNext = serverState.nextVisitorAt;
+          const now = clock.now();
+          if (serverNext === 0 || serverNext <= now) {
+            return now + gameConfig.lobbyConfig.visitorSpawnInterval;
+          }
+        }
+        return serverState.nextVisitorAt;
+      })(),
       dailyFillLobbyUses: serverState.dailyFillLobbyUses ?? 0,
       stateVersion: newVersion,
       lastAckCursor: ackCursor,
