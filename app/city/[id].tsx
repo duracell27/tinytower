@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   navIcon: { fontSize: 20, width: 28 },
   navLabel: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#0A1C30' },
   navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: '#8A9A80', lineHeight: 24 },
-  navDivider: { height: 1, marginLeft: 56, backgroundColor: 'rgba(0,0,0,0.06)' },
+  navDivider: { height: 1, backgroundColor: 'rgba(0,0,0,0.06)' },
 
   leaveBtn: {
     marginHorizontal: 16,
