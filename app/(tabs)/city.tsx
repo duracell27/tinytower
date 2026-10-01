@@ -711,7 +711,7 @@ const styles = StyleSheet.create({
   foundedDate: {
     fontFamily: 'Fredoka_400Regular',
     fontSize: 13,
-    marginBottom: 18,
+    marginBottom: 4,
   },
 
   levelXpRow: {
