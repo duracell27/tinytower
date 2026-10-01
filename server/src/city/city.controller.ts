@@ -77,6 +77,16 @@ export class CityController {
     return this.cityService.invitePlayer(req.user.playerId, cityId, targetPlayerId);
   }
 
+  @Delete(':id/invite/:playerId')
+  @UseGuards(JwtAuthGuard)
+  cancelInvite(
+    @Req() req: AuthReq,
+    @Param('id') cityId: string,
+    @Param('playerId') targetPlayerId: string,
+  ) {
+    return this.cityService.cancelInvite(req.user.playerId, cityId, targetPlayerId);
+  }
+
   @Post('invite/:token/accept')
   @UseGuards(JwtAuthGuard)
   acceptInvite(@Req() req: AuthReq, @Param('token') token: string) {

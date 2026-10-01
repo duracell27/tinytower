@@ -48,6 +48,7 @@ export interface PlayerProfile {
   businessUpgrades: Record<string, number>;
   categoryProgress: Record<string, number>;
   canBeInvited: boolean;
+  hasPendingCityInvite: boolean;
 }
 
 export type CityRole = 'MAYOR' | 'ACTING_MAYOR' | 'VICE_MAYOR' | 'ADVISOR' | 'BUSINESSMAN' | 'CITIZEN' | 'NEWBIE';
@@ -504,6 +505,8 @@ export const api = {
     request<CityDetail>('GET', `/city/${id}`),
   inviteToCity: (cityId: string, playerId: string) =>
     request<void>('POST', `/city/${cityId}/invite/${playerId}`),
+  cancelCityInvite: (cityId: string, playerId: string) =>
+    request<void>('DELETE', `/city/${cityId}/invite/${playerId}`),
   acceptCityInvite: (token: string) =>
     request<void>('POST', `/city/invite/${token}/accept`),
   declineCityInvite: (token: string) =>

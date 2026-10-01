@@ -420,6 +420,30 @@ export class CityService {
     });
   }
 
+  async cancelInvite(actorId: string, cityId: string, targetPlayerId: string): Promise<void> {
+    const actorMembership = await this.prisma.cityMembership.findUnique({
+      where: { playerId: actorId },
+    });
+    if (!actorMembership || actorMembership.cityId !== cityId) {
+      throw new ForbiddenException('Not a member of this city');
+    }
+
+    const canInviteRoles: CityRole[] = [CityRole.MAYOR, CityRole.ACTING_MAYOR, CityRole.VICE_MAYOR, CityRole.ADVISOR];
+    if (!canInviteRoles.includes(actorMembership.role)) {
+      throw new ForbiddenException('Insufficient role to cancel invite');
+    }
+
+    const invite = await this.prisma.cityInvite.findFirst({
+      where: { cityId, invitedPlayerId: targetPlayerId, status: 'PENDING' },
+    });
+    if (!invite) throw new NotFoundException('No pending invite found');
+
+    await this.prisma.$transaction([
+      this.prisma.mailMessage.deleteMany({ where: { cityInviteId: invite.id } }),
+      this.prisma.cityInvite.delete({ where: { id: invite.id } }),
+    ]);
+  }
+
   async respondToInvite(playerId: string, token: string, accept: boolean): Promise<void> {
     const invite = await this.prisma.cityInvite.findUnique({
       where: { token },

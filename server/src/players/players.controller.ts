@@ -1,7 +1,7 @@
 // server/src/players/players.controller.ts
 import {
   Controller, Get, Param, Query, UseGuards,
-  BadRequestException, NotFoundException,
+  BadRequestException, NotFoundException, Req,
 } from '@nestjs/common';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -43,8 +43,8 @@ export class PlayersController {
   }
 
   @Get(':id')
-  async getProfile(@Param('id') id: string) {
-    const profile = await this.playersService.getPlayerProfile(id);
+  async getProfile(@Req() req: { user?: { playerId?: string } }, @Param('id') id: string) {
+    const profile = await this.playersService.getPlayerProfile(id, req.user?.playerId);
     if (!profile) throw new NotFoundException('Player not found');
     return profile;
   }

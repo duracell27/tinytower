@@ -162,6 +162,7 @@ export default function UserProfileScreen() {
   const showCityAlert = useGameStore(s => s.showCityAlert);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteSent, setInviteSent] = useState(false);
+  const [inviteCancelled, setInviteCancelled] = useState(false);
 
   const canInviteRoles = ['MAYOR', 'ACTING_MAYOR', 'VICE_MAYOR', 'ADVISOR'] as const;
   const canSendInvite =
@@ -232,6 +233,17 @@ export default function UserProfileScreen() {
     setInviteLoading(false);
   };
 
+  const handleCancelCityInvite = async () => {
+    if (!myCity || !id) return;
+    setInviteLoading(true);
+    try {
+      await api.cancelCityInvite(myCity.id, id);
+      setInviteSent(false);
+      setInviteCancelled(true);
+    } catch { /* silent */ }
+    setInviteLoading(false);
+  };
+
   const sendMail = useMailStore(s => s.sendMail);
   const [composeOpen, setComposeOpen] = useState(false);
   const [composeSubject, setComposeSubject] = useState('');
@@ -275,7 +287,12 @@ export default function UserProfileScreen() {
     let cancelled = false;
     setLoading(true);
     api.getPlayerProfile(id)
-      .then((p) => { if (!cancelled) setProfile(p); })
+      .then((p) => {
+        if (!cancelled) {
+          setProfile(p);
+          if (p.hasPendingCityInvite) setInviteSent(true);
+        }
+      })
       .catch(() => { if (!cancelled) setError('Failed to load profile'); })
       .finally(() => { if (!cancelled) setLoading(false); });
     if (id && currentPlayerId && id !== currentPlayerId) {
@@ -469,17 +486,32 @@ export default function UserProfileScreen() {
           )}
 
           {/* City Invite button */}
-          {currentPlayerId && id !== currentPlayerId && !blocked && canSendInvite && (
+          {currentPlayerId && id !== currentPlayerId && !blocked && canSendInvite && !inviteSent && !inviteCancelled && (
             <Pressable
               style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
               onPress={handleCityInvite}
-              disabled={inviteLoading || inviteSent}
+              disabled={inviteLoading}
             >
               <Image source={CITY_ICON} style={pStyles.actionIcon} contentFit="contain" />
-              <LocaleText style={[pStyles.actionBtnText, { flex: 1, color: inviteSent ? theme.textMuted : theme.text }]}>
-                {inviteSent ? t('userProfile.cityInviteSent') : t('userProfile.inviteToCity', { city: myCity?.name ?? '' })}
+              <LocaleText style={[pStyles.actionBtnText, { flex: 1, color: theme.text }]}>
+                {t('userProfile.inviteToCity', { city: myCity?.name ?? '' })}
               </LocaleText>
             </Pressable>
+          )}
+          {currentPlayerId && id !== currentPlayerId && !blocked && canSendInvite && inviteSent && (
+            <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
+              <Image source={CITY_ICON} style={pStyles.actionIcon} contentFit="contain" />
+              <LocaleText style={[pStyles.actionBtnText, { flex: 1, color: theme.textMuted }]}>
+                {t('userProfile.cityInviteSent')}
+              </LocaleText>
+              <Pressable
+                style={[pStyles.cancelBtn, { backgroundColor: isDark ? '#2A3040' : '#F0EDE5' }]}
+                onPress={handleCancelCityInvite}
+                disabled={inviteLoading}
+              >
+                <LocaleText style={[pStyles.cancelBtnText, { color: theme.textMuted }]}>{t('userProfile.cancelRequest')}</LocaleText>
+              </Pressable>
+            </View>
           )}
 
           {/* City management — role stepper + kick */}

@@ -42,6 +42,7 @@ export interface PlayerProfileResult {
   businessUpgrades: Record<string, number>;
   categoryProgress: Record<string, number>;
   canBeInvited: boolean;
+  hasPendingCityInvite: boolean;
 }
 
 const USER_SELECT = {
@@ -120,7 +121,7 @@ export class PlayersService {
     };
   }
 
-  async getPlayerProfile(id: string): Promise<PlayerProfileResult | null> {
+  async getPlayerProfile(id: string, requesterId?: string): Promise<PlayerProfileResult | null> {
     const player = await this.prisma.player.findUnique({
       where: { id },
       select: {
@@ -267,7 +268,7 @@ export class PlayersService {
       categoryProgress[cp.categoryKey] = cp.currentLevel;
     }
 
-    return {
+    const result: PlayerProfileResult = {
       id: player.id,
       playerName: player.playerName,
       playerLevel: player.playerLevel,
@@ -293,6 +294,23 @@ export class PlayersService {
       },
       categoryProgress,
       canBeInvited: !player.city && player.openedFloorsCount >= 9,
+      hasPendingCityInvite: false,
     };
+
+    if (requesterId && requesterId !== id) {
+      const requesterMembership = await this.prisma.cityMembership.findUnique({
+        where: { playerId: requesterId },
+        select: { cityId: true },
+      });
+      if (requesterMembership) {
+        const pendingInvite = await this.prisma.cityInvite.findFirst({
+          where: { cityId: requesterMembership.cityId, invitedPlayerId: id, status: 'PENDING' },
+          select: { id: true },
+        });
+        result.hasPendingCityInvite = !!pendingInvite;
+      }
+    }
+
+    return result;
   }
 }
