@@ -197,8 +197,8 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
       translateY.value = withTiming(0, SHEET_TIMING);
       scrimOpacity.value = withTiming(1, SCRIM_TIMING);
     } else {
-      translateY.value = withTiming(SHEET_HEIGHT, SHEET_TIMING, (finished) => {
-        if (finished) runOnJS(setMounted)(false);
+      translateY.value = withTiming(SHEET_HEIGHT, SHEET_TIMING, () => {
+        runOnJS(setMounted)(false);
       });
       scrimOpacity.value = withTiming(0, SCRIM_TIMING);
     }
@@ -421,8 +421,8 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
 
   if (!mounted) return null;
   return (
-    <Modal visible transparent animationType="none" onRequestClose={onClose}>
-      <GestureHandlerRootView style={styles.overlay}>
+    <Modal visible={mounted} transparent animationType="none" onRequestClose={onClose}>
+      {visible && <GestureHandlerRootView style={styles.overlay}>
         <Animated.View style={[styles.scrim, scrimStyle]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         </Animated.View>
@@ -587,7 +587,13 @@ export default function WorkersPanel({ visible, onClose, targetWorkerId }: Worke
 
         </Animated.View>
         <InsufficientResourcesModal asOverlay />
-      </GestureHandlerRootView>
+      </GestureHandlerRootView>}
+      {!visible && mounted && (
+        <Animated.View
+          style={[styles.sheet, sheetStyle, isDark && { backgroundColor: theme.surface }]}
+          pointerEvents="none"
+        />
+      )}
     </Modal>
   );
 }

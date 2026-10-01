@@ -86,8 +86,8 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
       // is still animating away — two concurrent Modals freeze the app.
       return () => { setTimeout(closeSheet, TIMING.duration + 70); };
     } else {
-      translateY.value = withTiming(SCREEN_HEIGHT, TIMING, (finished) => {
-        if (finished) runOnJS(setMounted)(false);
+      translateY.value = withTiming(SCREEN_HEIGHT, TIMING, () => {
+        runOnJS(setMounted)(false);
       });
       scrimOpacity.value = withTiming(0, { duration: 280, easing: Easing.linear });
     }
@@ -119,8 +119,8 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
 
   if (!mounted) return null;
   return (
-    <Modal visible transparent animationType="none" onRequestClose={onClose}>
-      <GestureHandlerRootView style={styles.overlay}>
+    <Modal visible={mounted} transparent animationType="none" onRequestClose={onClose}>
+      {visible && <GestureHandlerRootView style={styles.overlay}>
         <Animated.View style={[styles.scrim, scrimStyle]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         </Animated.View>
@@ -222,7 +222,13 @@ export default function WarehouseSheet({ visible, onClose }: WarehouseSheetProps
           </Pressable>
         )}
         <InsufficientResourcesModal asOverlay />
-      </GestureHandlerRootView>
+      </GestureHandlerRootView>}
+      {!visible && mounted && (
+        <Animated.View
+          style={[styles.sheet, sheetStyle, { backgroundColor: isDark ? theme.surface : '#EAEDF2' }]}
+          pointerEvents="none"
+        />
+      )}
     </Modal>
   );
 }
