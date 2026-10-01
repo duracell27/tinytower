@@ -826,6 +826,7 @@ export class CityService {
       where: {
         cityId: membership.cityId,
         reads: { none: { playerId } },
+        NOT: { authorId: playerId },
       },
       orderBy: { createdAt: 'desc' },
     });

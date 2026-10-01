@@ -202,11 +202,15 @@ export default function CityChatScreen() {
         >
           <View style={[styles.msgCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
             {isLoading && displayed.length === 0 ? (
-              <ActivityIndicator style={{ marginVertical: 40 }} color={isDark ? '#6BAED0' : '#2E6EC9'} />
+              <View style={styles.emptyWrap}>
+                <ActivityIndicator color={isDark ? '#6BAED0' : '#2E6EC9'} />
+              </View>
             ) : displayed.length === 0 ? (
-              <LocaleText style={[styles.empty, { color: theme.textMuted }]}>
-                {t('city.chat.noMessages')}
-              </LocaleText>
+              <View style={styles.emptyWrap}>
+                <LocaleText style={[styles.empty, { color: theme.textMuted }]}>
+                  {t('city.chat.noMessages')}
+                </LocaleText>
+              </View>
             ) : (
               displayed.map((msg, i) => (
                 <React.Fragment key={msg.id}>
@@ -325,7 +329,8 @@ const styles = StyleSheet.create({
   msgBody: { fontFamily: 'Fredoka_400Regular', fontSize: 14, lineHeight: 20, paddingLeft: 28 },
   mention: { color: '#2E6EC9', fontFamily: 'Fredoka_600SemiBold' },
   separator: { height: 1, backgroundColor: '#2E6EC9', marginHorizontal: 14 },
-  empty: { textAlign: 'center', marginTop: 60, fontFamily: 'Fredoka_500Medium', fontSize: 15 },
+  emptyWrap: { minHeight: 120, alignItems: 'center', justifyContent: 'center' },
+  empty: { textAlign: 'center', fontFamily: 'Fredoka_500Medium', fontSize: 15 },
 
   pagination: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginVertical: 12 },
   pageBtn: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
