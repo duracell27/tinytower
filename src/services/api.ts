@@ -76,6 +76,8 @@ export interface CityDetail {
   members: CityMember[];
   myRole: CityRole | null;
   createdAt: string;
+  totalWorkers: number;
+  happyWorkers: number;
 }
 
 export interface CitySummary {

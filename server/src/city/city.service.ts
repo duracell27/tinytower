@@ -51,6 +51,8 @@ export interface CityDetailDto {
   members: MemberDto[];
   myRole: CityRole | null;
   createdAt: string;
+  totalWorkers: number;
+  happyWorkers: number;
 }
 
 export interface CityHistoryEventDto {
@@ -200,6 +202,13 @@ export class CityService {
       ? city.members.find((m) => m.playerId === myPlayerId)
       : null;
 
+    const memberIds = city.members.map((m) => m.playerId);
+
+    const [totalWorkers, happyWorkers] = await Promise.all([
+      this.prisma.worker.count({ where: { playerId: { in: memberIds } } }),
+      this.prisma.worker.count({ where: { playerId: { in: memberIds }, assignedFloorId: { not: null } } }),
+    ]);
+
     return {
       id: city.id,
       name: city.name,
@@ -211,6 +220,8 @@ export class CityService {
       maxMembers,
       myRole: myMembership?.role ?? null,
       createdAt: city.createdAt.toISOString(),
+      totalWorkers,
+      happyWorkers,
       members: city.members
         .sort((a, b) => b.cityXp - a.cityXp)
         .map((m) => ({

@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View, StyleSheet, ScrollView, TouchableOpacity, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
@@ -12,7 +12,7 @@ import { useCityStore } from '../../src/stores/cityStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { getUserIcon } from '../../src/utils/userIcon';
 import { formatNum, formatXp } from '../../src/utils/format';
-import type { CityMember } from '../../src/services/api';
+import type { CityMember, CityDetail } from '../../src/services/api';
 
 const CUP_1   = require('../../assets/img/rating/1PlaceCup.png');
 const CUP_2   = require('../../assets/img/rating/2PlaceCup.png');
@@ -52,9 +52,17 @@ export default function CitizenRankingsScreen() {
   const isDark = useColorScheme() === 'dark';
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { city } = useCityStore();
+  const { cityId } = useLocalSearchParams<{ cityId?: string }>();
+  const { city: myCity, getCityById } = useCityStore();
   const myId = useAuthStore((s) => s.player?.id);
   const [tab, setTab] = useState<Tab>('cityXp');
+  const [externalCity, setExternalCity] = useState<CityDetail | null>(null);
+
+  useEffect(() => {
+    if (cityId) getCityById(cityId).then(setExternalCity).catch(() => {});
+  }, [cityId]);
+
+  const city = cityId ? externalCity : myCity;
 
   const ranked: RankedMember[] = useMemo(
     () => sortByTab(city?.members ?? [], tab),
