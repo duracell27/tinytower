@@ -24,6 +24,7 @@ export interface WorkerItem {
 export interface FloorItem {
   floorId: number;
   floorType: string | null;
+  stars: number;
   productions: Array<{ slotIdx: number; typeId: string | null; stage: string }>;
 }
 
@@ -40,11 +41,65 @@ export interface PlayerDetail {
   gems: number;
   tools: { briks: number; glass: number; nails: number; screw: number };
   tokens: { green: number; blue: number; yellow: number; purple: number; red: number };
+  businessUpgrades: { green: number; blue: number; yellow: number; purple: number; red: number };
+  vehicles: { taxi: number; forklift: number; armoredTruck: number; deliveryTruck: number; bus: number };
   lobbyCapacity: number;
   hotelCapacity: number;
   elevatorLevel: number;
   workers: WorkerItem[];
   floors: FloorItem[];
+}
+
+export interface PurchaseItem {
+  id: string;
+  transactionId: string;
+  packId: string;
+  rcProductId: string;
+  status: string;
+  priceUsd: number | null;
+  gemsGranted: number;
+  toolsGranted: unknown;
+  tokensGranted: unknown;
+  source: string;
+  createdAt: string;
+}
+
+export interface CityListItem {
+  id: string;
+  name: string;
+  description: string | null;
+  cityXp: number;
+  memberCount: number;
+  buildingCount: number;
+  budget: { coins: number; gems: number; briks: number; glass: number; nails: number; screw: number };
+  createdAt: string;
+}
+
+export interface CityMemberItem {
+  playerId: string;
+  playerName: string;
+  playerLevel: number;
+  role: string;
+  cityXp: number;
+  joinedAt: string;
+}
+
+export interface CityBuildingItem {
+  buildingType: string;
+  level: number;
+  state: string;
+  buildFinishesAt: string | null;
+}
+
+export interface CityDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  cityXp: number;
+  budget: { coins: number; gems: number; briks: number; glass: number; nails: number; screw: number };
+  createdAt: string;
+  members: CityMemberItem[];
+  buildings: CityBuildingItem[];
 }
 
 export interface CommandLogItem {

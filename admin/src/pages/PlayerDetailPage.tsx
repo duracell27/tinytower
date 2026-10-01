@@ -10,7 +10,7 @@ import { Layout } from '../components/Layout';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { api } from '../lib/api';
 import { cn } from '../lib/utils';
-import type { PlayerDetail, WorkerItem, FloorItem } from '../types';
+import type { PlayerDetail, WorkerItem, FloorItem, PurchaseItem, PaginatedResponse } from '../types';
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
@@ -307,6 +307,7 @@ function FloorsTab({ floors, playerId }: { floors: FloorItem[]; playerId: string
             <tr className="border-b bg-gray-50">
               <th className="px-4 py-3 text-left font-medium text-gray-700">Floor ID</th>
               <th className="px-4 py-3 text-left font-medium text-gray-700">Type</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Stars</th>
               <th className="px-4 py-3 text-left font-medium text-gray-700">Productions</th>
               <th className="px-4 py-3 text-left font-medium text-gray-700">Slots</th>
               <th className="px-4 py-3 text-left font-medium text-gray-700">Actions</th>
@@ -317,6 +318,9 @@ function FloorsTab({ floors, playerId }: { floors: FloorItem[]; playerId: string
               <tr key={f.floorId} className="border-b last:border-0">
                 <td className="px-4 py-3">{f.floorId}</td>
                 <td className="px-4 py-3">{f.floorType ?? '—'}</td>
+                <td className="px-4 py-3">
+                  {f.stars > 0 ? '★'.repeat(f.stars) : <span className="text-gray-300">—</span>}
+                </td>
                 <td className="px-4 py-3">{f.productions.length}</td>
                 <td className="px-4 py-3 text-xs text-gray-500">
                   {f.productions.map((p) => `${p.slotIdx}:${p.stage}`).join(', ')}
@@ -346,6 +350,96 @@ function FloorsTab({ floors, playerId }: { floors: FloorItem[]; playerId: string
   );
 }
 
+// --- Purchases Tab ---
+function PurchasesTab({ playerId }: { playerId: string }) {
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-player-purchases', playerId, page],
+    queryFn: () => api.get<PaginatedResponse<PurchaseItem>>(`/admin/players/${playerId}/purchases?page=${page}&limit=20`),
+  });
+
+  if (isLoading) return <p className="text-gray-400 text-sm">Loading…</p>;
+  if (!data?.data.length) return <p className="text-gray-400 text-sm">No purchases</p>;
+
+  const totalUsd = data.data.reduce((s, p) => s + (p.priceUsd ?? 0), 0);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-4 mb-1">
+        <p className="text-sm text-gray-500">
+          Total on this page: <span className="font-semibold text-gray-800">${totalUsd.toFixed(2)}</span>
+        </p>
+        <p className="text-xs text-gray-400">({data.total} purchases total)</p>
+      </div>
+      <div className="rounded-md border bg-white overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b bg-gray-50">
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Pack</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Price</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Status</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Gems</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Tools</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Tokens</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Source</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.data.map((p) => (
+              <tr key={p.id} className="border-b last:border-0">
+                <td className="px-4 py-3 font-mono text-xs">{p.packId}</td>
+                <td className="px-4 py-3 font-medium text-green-700">
+                  {p.priceUsd != null ? `$${p.priceUsd.toFixed(2)}` : '—'}
+                </td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    p.status === 'fulfilled' ? 'bg-green-100 text-green-700' :
+                    p.status === 'failed' ? 'bg-red-100 text-red-700' :
+                    'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {p.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3">{p.gemsGranted > 0 ? p.gemsGranted.toLocaleString() : '—'}</td>
+                <td className="px-4 py-3 text-xs text-gray-500">
+                  {p.toolsGranted ? JSON.stringify(p.toolsGranted) : '—'}
+                </td>
+                <td className="px-4 py-3 text-xs text-gray-500">
+                  {p.tokensGranted ? JSON.stringify(p.tokensGranted) : '—'}
+                </td>
+                <td className="px-4 py-3 text-xs">{p.source}</td>
+                <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                  {new Date(p.createdAt).toLocaleString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {data.totalPages > 1 && (
+        <div className="flex items-center gap-2 text-sm">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1 border rounded disabled:opacity-40"
+          >
+            ←
+          </button>
+          <span className="text-gray-500">{page} / {data.totalPages}</span>
+          <button
+            onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+            disabled={page === data.totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-40"
+          >
+            →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- Main Page ---
 const TAB_ITEMS = [
   { value: 'info', label: 'Info' },
@@ -354,6 +448,7 @@ const TAB_ITEMS = [
   { value: 'tokens', label: 'Tokens' },
   { value: 'workers', label: 'Workers' },
   { value: 'floors', label: 'Floors' },
+  { value: 'purchases', label: 'Purchases' },
 ];
 
 export function PlayerDetailPage() {
@@ -399,15 +494,15 @@ export function PlayerDetailPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {[
           { label: 'Coins', value: player.balance.toLocaleString() },
           { label: 'Gems', value: player.gems.toLocaleString() },
           { label: 'XP', value: player.playerXp.toLocaleString() },
           { label: 'Workers', value: player.workers.length },
           { label: 'Floors', value: player.floors.length },
+          { label: 'Stars total', value: player.floors.reduce((s, f) => s + f.stars, 0) },
           { label: 'Briks', value: player.tools.briks },
-          { label: 'Glass', value: player.tools.glass },
           { label: 'Nails / Screws', value: `${player.tools.nails} / ${player.tools.screw}` },
         ].map((s) => (
           <div key={s.label} className="bg-white border rounded-lg px-4 py-3">
@@ -415,6 +510,41 @@ export function PlayerDetailPage() {
             <p className="text-sm font-semibold text-gray-800">{s.value}</p>
           </div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+        <div className="bg-white border rounded-lg px-4 py-3">
+          <p className="text-xs text-gray-500 mb-1">Business upgrades</p>
+          <div className="flex gap-2 text-xs flex-wrap">
+            {(Object.entries(player.businessUpgrades) as [string, number][]).map(([color, val]) => (
+              <span key={color} className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">
+                {color[0].toUpperCase()}: {val}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="bg-white border rounded-lg px-4 py-3">
+          <p className="text-xs text-gray-500 mb-1">Vehicles</p>
+          <div className="flex gap-2 text-xs flex-wrap">
+            {[
+              { label: 'Taxi', val: player.vehicles.taxi },
+              { label: 'Fork', val: player.vehicles.forklift },
+              { label: 'Armored', val: player.vehicles.armoredTruck },
+              { label: 'Delivery', val: player.vehicles.deliveryTruck },
+              { label: 'Bus', val: player.vehicles.bus },
+            ].map(({ label, val }) => (
+              <span key={label} className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">
+                {label}: {val}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="bg-white border rounded-lg px-4 py-3">
+          <p className="text-xs text-gray-500 mb-1">Capacity / Elevator</p>
+          <p className="text-xs text-gray-700">
+            Lobby: {player.lobbyCapacity} · Hotel: {player.hotelCapacity} · Elevator lv{player.elevatorLevel}
+          </p>
+        </div>
       </div>
 
       <Tabs.Root defaultValue="info">
@@ -435,6 +565,7 @@ export function PlayerDetailPage() {
         <Tabs.Content value="tokens" forceMount className="data-[state=inactive]:hidden"><TokensTab player={player} playerId={id!} /></Tabs.Content>
         <Tabs.Content value="workers" forceMount className="data-[state=inactive]:hidden"><WorkersTab workers={player.workers} playerId={id!} /></Tabs.Content>
         <Tabs.Content value="floors" forceMount className="data-[state=inactive]:hidden"><FloorsTab floors={player.floors} playerId={id!} /></Tabs.Content>
+        <Tabs.Content value="purchases" forceMount className="data-[state=inactive]:hidden"><PurchasesTab playerId={id!} /></Tabs.Content>
       </Tabs.Root>
 
       <ConfirmDialog

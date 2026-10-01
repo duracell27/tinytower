@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { ForumCategory } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { SHOP_PACKS_MAP } from '@shared/config/shopPacksConfig';
 
 const FORUM_POST_SELECT = {
   id: true, playerId: true, playerName: true, playerLevel: true,
@@ -72,6 +73,8 @@ export class AdminService {
     });
     if (!player) throw new NotFoundException('Player not found');
 
+    const floorStars = (player.state?.floorStars ?? {}) as Record<string, number>;
+
     return {
       id: player.id,
       email: player.email,
@@ -96,6 +99,20 @@ export class AdminService {
         purple: player.state?.tokenPurple ?? 0,
         red: player.state?.tokenRed ?? 0,
       },
+      businessUpgrades: {
+        green: player.state?.businessUpgradeGreen ?? 0,
+        blue: player.state?.businessUpgradeBlue ?? 0,
+        yellow: player.state?.businessUpgradeYellow ?? 0,
+        purple: player.state?.businessUpgradePurple ?? 0,
+        red: player.state?.businessUpgradeRed ?? 0,
+      },
+      vehicles: {
+        taxi: player.state?.vehicleTaxi ?? 0,
+        forklift: player.state?.vehicleForklift ?? 0,
+        armoredTruck: player.state?.vehicleArmoredTruck ?? 0,
+        deliveryTruck: player.state?.vehicleDeliveryTruck ?? 0,
+        bus: player.state?.vehicleBus ?? 0,
+      },
       lobbyCapacity: player.state?.lobbyCapacity ?? 10,
       hotelCapacity: player.state?.hotelCapacity ?? 10,
       elevatorLevel: player.state?.elevatorLevel ?? 1,
@@ -114,6 +131,7 @@ export class AdminService {
         return {
           floorId: f.floorId,
           floorType: ft?.floorType ?? null,
+          stars: floorStars[String(f.floorId)] ?? 0,
           productions: f.productions.map((p) => ({
             slotIdx: p.slotIdx,
             typeId: p.typeId,
@@ -121,6 +139,126 @@ export class AdminService {
           })),
         };
       }),
+    };
+  }
+
+  async getPlayerPurchases(playerId: string, page: number, limit: number) {
+    const player = await this.prisma.player.findUnique({ where: { id: playerId }, select: { id: true } });
+    if (!player) throw new NotFoundException('Player not found');
+
+    const [purchases, total] = await Promise.all([
+      this.prisma.purchase.findMany({
+        where: { playerId },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.purchase.count({ where: { playerId } }),
+    ]);
+
+    return {
+      data: purchases.map((p) => ({
+        id: p.id,
+        transactionId: p.transactionId,
+        packId: p.packId,
+        rcProductId: p.rcProductId,
+        status: p.status,
+        priceUsd: SHOP_PACKS_MAP[p.packId]?.priceUsd ?? null,
+        gemsGranted: p.gemsGranted,
+        toolsGranted: p.toolsGranted,
+        tokensGranted: p.tokensGranted,
+        source: p.source,
+        createdAt: p.createdAt,
+      })),
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async getCities(page: number, limit: number, search?: string) {
+    const where = search
+      ? { name: { contains: search, mode: 'insensitive' as const } }
+      : {};
+
+    const [cities, total] = await Promise.all([
+      this.prisma.city.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          _count: { select: { members: true, buildings: true } },
+        },
+      }),
+      this.prisma.city.count({ where }),
+    ]);
+
+    return {
+      data: cities.map((c) => ({
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        cityXp: c.cityXp,
+        memberCount: c._count.members,
+        buildingCount: c._count.buildings,
+        budget: {
+          coins: c.budgetCoins,
+          gems: c.budgetGems,
+          briks: c.budgetBriks,
+          glass: c.budgetGlass,
+          nails: c.budgetNails,
+          screw: c.budgetScrew,
+        },
+        createdAt: c.createdAt,
+      })),
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async getCityDetail(id: string) {
+    const city = await this.prisma.city.findUnique({
+      where: { id },
+      include: {
+        members: {
+          include: { player: { select: { id: true, playerName: true, playerLevel: true } } },
+          orderBy: { cityXp: 'desc' },
+        },
+        buildings: { orderBy: { buildingType: 'asc' } },
+      },
+    });
+    if (!city) throw new NotFoundException('City not found');
+
+    return {
+      id: city.id,
+      name: city.name,
+      description: city.description,
+      cityXp: city.cityXp,
+      budget: {
+        coins: city.budgetCoins,
+        gems: city.budgetGems,
+        briks: city.budgetBriks,
+        glass: city.budgetGlass,
+        nails: city.budgetNails,
+        screw: city.budgetScrew,
+      },
+      createdAt: city.createdAt,
+      members: city.members.map((m) => ({
+        playerId: m.playerId,
+        playerName: m.player.playerName,
+        playerLevel: m.player.playerLevel,
+        role: m.role,
+        cityXp: m.cityXp,
+        joinedAt: m.joinedAt,
+      })),
+      buildings: city.buildings.map((b) => ({
+        buildingType: b.buildingType,
+        level: b.level,
+        state: b.state,
+        buildFinishesAt: b.buildFinishesAt,
+      })),
     };
   }
 

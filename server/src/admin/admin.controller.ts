@@ -113,6 +113,29 @@ export class AdminController {
     return this.adminService.deletePlayer(id);
   }
 
+  @Get('players/:id/purchases')
+  getPlayerPurchases(
+    @Param('id') id: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    return this.adminService.getPlayerPurchases(id, Math.max(1, +page || 1), Math.min(Math.max(1, +limit || 20), 100));
+  }
+
+  @Get('cities')
+  getCities(
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getCities(Math.max(1, +page || 1), Math.min(Math.max(1, +limit || 20), 100), search);
+  }
+
+  @Get('cities/:id')
+  getCityDetail(@Param('id') id: string) {
+    return this.adminService.getCityDetail(id);
+  }
+
   @Get('commands')
   getCommandLogs(
     @Query('page') page = '1',
