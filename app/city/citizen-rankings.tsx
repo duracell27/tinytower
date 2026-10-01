@@ -90,21 +90,19 @@ export default function CitizenRankingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Back + title */}
-        <View style={styles.topRow}>
+        <View style={[styles.topRow, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
             <LocaleText style={[styles.backIcon, isDark && { color: '#6BAED0' }]}>‹</LocaleText>
           </TouchableOpacity>
-          <View style={styles.titleCenter}>
-            <Image source={CUP_1} style={styles.headerCup} contentFit="contain" />
-            <View>
-              <LocaleText style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>
+          <View style={styles.heroCenter}>
+            <Image source={CUP_1} style={styles.heroIcon} contentFit="contain" />
+            <View style={styles.heroTextWrap}>
+              <LocaleText style={[styles.heroTitle, isDark && { color: '#DDE8D8' }]}>
                 {t('city.citizenRanking.title')}
               </LocaleText>
-              {city && (
-                <LocaleText style={[styles.headerCityName, isDark && { color: '#8A9A80' }]}>
-                  {city.name}
-                </LocaleText>
-              )}
+              <LocaleText style={[styles.heroSub, isDark && { color: '#8A9A80' }]}>
+                {city ? city.name : t('city.citizenRanking.subtitle')}
+              </LocaleText>
             </View>
           </View>
           <View style={styles.backPlaceholder} />
@@ -206,23 +204,20 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 28,
+    borderRadius: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
-  backBtn: { width: 32 },
-  backPlaceholder: { width: 32 },
-  backIcon: { fontSize: 34, color: '#2E6EC9', lineHeight: 36 },
-  titleCenter: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  headerCup: { width: 44, height: 44 },
-  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 24, color: '#0A1C30' },
-  headerCityName: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#5A7090' },
+  backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
+  backPlaceholder: { width: 36 },
+  backIcon: { fontFamily: 'Fredoka_700Bold', fontSize: 26, color: '#2E6EC9', lineHeight: 26, includeFontPadding: false },
+  heroCenter:   { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  heroIcon:     { width: 36, height: 36 },
+  heroTextWrap: { gap: 1 },
+  heroTitle:    { fontFamily: 'Fredoka_700Bold', fontSize: 20, color: '#0A1C30' },
+  heroSub:      { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#5A7090' },
 
   // ── Members block (copied from city.tsx) ─────────────
   block: { marginHorizontal: 16, marginBottom: 16 },

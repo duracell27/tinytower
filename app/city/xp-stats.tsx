@@ -105,14 +105,22 @@ export default function CityXpStatsScreen() {
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top - 8 }]} showsVerticalScrollIndicator={false}>
 
         {/* ── HEADER ── */}
-        <View style={styles.headerRow}>
+        <View style={[styles.headerRow, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
             <LocaleText style={[styles.backIcon, isDark && { color: '#6BAED0' }]}>‹</LocaleText>
           </TouchableOpacity>
-          <LocaleText style={[styles.title, isDark && { color: '#DDE8D8' }]}>
-            {t('city.xpStats.title')}
-          </LocaleText>
-          <View style={{ width: 40 }} />
+          <View style={styles.heroCenter}>
+            <Image source={XP_ICON} style={styles.heroIcon} contentFit="contain" />
+            <View style={styles.heroTextWrap}>
+              <LocaleText style={[styles.heroTitle, isDark && { color: '#DDE8D8' }]}>
+                {t('city.xpStats.title')}
+              </LocaleText>
+              <LocaleText style={[styles.heroSub, isDark && { color: '#8A9A80' }]}>
+                {t('city.xpStats.headerDesc')}
+              </LocaleText>
+            </View>
+          </View>
+          <View style={{ width: 36 }} />
         </View>
 
         {/* ── TOTAL XP CARD ── */}
@@ -120,9 +128,12 @@ export default function CityXpStatsScreen() {
           <LocaleText style={[styles.totalLabel, isDark && { color: '#8A9A80' }]}>
             {t('city.xpStats.totalLabel')}
           </LocaleText>
-          <LocaleText style={[styles.totalXp, isDark && { color: '#6BAED0' }]}>
-            {formatXp(stats.totalXpPeriod)} XP
-          </LocaleText>
+          <View style={styles.totalXpRow}>
+            <LocaleText style={[styles.totalXp, isDark && { color: '#6BAED0' }]}>
+              {formatXp(stats.totalXpPeriod)}
+            </LocaleText>
+            <Image source={XP_ICON} style={styles.totalXpIcon} contentFit="contain" />
+          </View>
         </View>
 
         {/* ── MEMBERS LIST ── */}
@@ -233,14 +244,19 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    marginBottom: 4,
+    borderRadius: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
-  backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  backIcon: { fontFamily: 'Fredoka_700Bold', fontSize: 30, color: '#2E6EC9', lineHeight: 34 },
-  title: { fontFamily: 'Fredoka_700Bold', fontSize: 20, color: '#0A1C30', flex: 1, textAlign: 'center' },
+  backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
+  backIcon: { fontFamily: 'Fredoka_700Bold', fontSize: 26, color: '#2E6EC9', lineHeight: 26, includeFontPadding: false },
+  heroCenter:   { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  heroIcon:     { width: 36, height: 36 },
+  heroTextWrap: { gap: 1 },
+  heroTitle:    { fontFamily: 'Fredoka_700Bold', fontSize: 20, color: '#0A1C30' },
+  heroSub:      { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#5A7090' },
 
   totalCard: {
     marginHorizontal: 16,
@@ -249,10 +265,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   totalCardDark: { backgroundColor: '#1A2E3E' },
   totalLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 13, color: '#5A7090' },
+  totalXpRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  totalXpIcon: { width: 24, height: 24 },
   totalXp: { fontFamily: 'Fredoka_700Bold', fontSize: 28, color: '#2E6EC9' },
 
   listBlock: { marginHorizontal: 16, gap: 8, marginBottom: 16 },

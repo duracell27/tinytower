@@ -162,8 +162,8 @@ const styles = StyleSheet.create({
   list: { paddingBottom: 40 },
 
   header: { paddingBottom: 16, paddingHorizontal: 16 },
-  backBtn: { paddingTop: 4, paddingBottom: 8, alignSelf: 'flex-start' },
-  backIcon: { fontSize: 34, color: '#2E6EC9', lineHeight: 36 },
+  backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
+  backIcon: { fontFamily: 'Fredoka_700Bold', fontSize: 26, color: '#2E6EC9', lineHeight: 26, includeFontPadding: false },
 
   headerCenter: { alignItems: 'center', paddingBottom: 14 },
   cityHeaderIcon: { width: 56, height: 56, marginBottom: 8 },

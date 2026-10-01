@@ -348,6 +348,7 @@
     "statistics": "City Statistics",
     "xpStats": {
       "title": "Experience Statistics",
+      "headerDesc": "Contributions for current period",
       "totalLabel": "Total XP for period",
       "since": "Statistics since {{date}}",
       "resetTitle": "Reset Period",
