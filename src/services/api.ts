@@ -269,6 +269,9 @@ export interface CityInviteInfo {
   cityId: string;
   cityName: string;
   cityLevel: number;
+  cityDescription: string | null;
+  cityMarketingBonus: number;
+  cityPrBonus: number;
   invitedByName: string;
   status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED';
 }

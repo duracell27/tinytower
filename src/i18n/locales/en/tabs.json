@@ -47,6 +47,8 @@
     "cityLevel": "Level {{level}}",
     "inviteAccepted": "You joined the city!",
     "inviteDeclined": "Invite declined",
+    "cityMarketing": "+{{n}}% Marketing",
+    "cityPr": "+{{n}}% PR",
     "emptyTitle": "No messages yet",
     "emptySubtitle": "When someone sends you a message it'll show up here",
     "emptySentTitle": "No sent messages",

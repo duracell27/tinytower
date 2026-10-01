@@ -7,6 +7,9 @@ export interface CityInviteDto {
   cityId: string;
   cityName: string;
   cityLevel: number;
+  cityDescription: string | null;
+  cityMarketingBonus: number;
+  cityPrBonus: number;
   invitedByName: string;
   status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED';
 }
@@ -70,7 +73,7 @@ export class MailService {
       take: 50,
       include: {
         from: { select: { playerName: true, playerLevel: true } },
-        cityInvite: { select: { token: true, cityId: true, status: true, city: { select: { name: true, cityXp: true } }, invitedBy: { select: { playerName: true } } } },
+        cityInvite: { select: { token: true, cityId: true, status: true, city: { select: { name: true, description: true, cityXp: true } }, invitedBy: { select: { playerName: true } } } },
       },
     });
     return messages.map((m) => ({
@@ -88,6 +91,9 @@ export class MailService {
             cityId: m.cityInvite.cityId,
             cityName: m.cityInvite.city.name,
             cityLevel: getCityLevel(m.cityInvite.city.cityXp),
+            cityDescription: m.cityInvite.city.description ?? null,
+            cityMarketingBonus: getCityLevel(m.cityInvite.city.cityXp),
+            cityPrBonus: getCityLevel(m.cityInvite.city.cityXp),
             invitedByName: m.cityInvite.invitedBy.playerName,
             status: m.cityInvite.status as CityInviteDto['status'],
           }

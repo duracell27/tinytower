@@ -141,7 +141,9 @@ function MailRow({
             {mail.cityInvite ? (
               <View style={[styles.inviteCard, { backgroundColor: theme.surfaceCard ?? theme.surfaceSub }]}>
                 <View style={styles.inviteHeader}>
-                  <Image source={CITY_ICON} style={styles.inviteCityIcon} contentFit="contain" />
+                  <View style={[styles.inviteIconWrap, { backgroundColor: 'rgba(37,146,171,0.12)' }]}>
+                    <Image source={CITY_ICON} style={styles.inviteCityIcon} contentFit="contain" />
+                  </View>
                   <View style={{ flex: 1 }}>
                     <LocaleText style={[styles.inviteCityName, { color: theme.text }]}>
                       {mail.cityInvite.cityName}
@@ -151,6 +153,29 @@ function MailRow({
                     </LocaleText>
                   </View>
                 </View>
+                {!!mail.cityInvite.cityDescription && (
+                  <LocaleText style={[styles.inviteDescription, { color: theme.textMuted }]}>
+                    {mail.cityInvite.cityDescription}
+                  </LocaleText>
+                )}
+                {(mail.cityInvite.cityMarketingBonus > 0 || mail.cityInvite.cityPrBonus > 0) && (
+                  <View style={styles.inviteBonusRow}>
+                    {mail.cityInvite.cityMarketingBonus > 0 && (
+                      <View style={[styles.inviteBonusChip, { backgroundColor: 'rgba(255,196,0,0.15)' }]}>
+                        <LocaleText style={[styles.inviteBonusText, { color: '#C98A00' }]}>
+                          {t('mail.cityMarketing', { n: mail.cityInvite.cityMarketingBonus })}
+                        </LocaleText>
+                      </View>
+                    )}
+                    {mail.cityInvite.cityPrBonus > 0 && (
+                      <View style={[styles.inviteBonusChip, { backgroundColor: 'rgba(37,146,171,0.15)' }]}>
+                        <LocaleText style={[styles.inviteBonusText, { color: '#2592AB' }]}>
+                          {t('mail.cityPr', { n: mail.cityInvite.cityPrBonus })}
+                        </LocaleText>
+                      </View>
+                    )}
+                  </View>
+                )}
                 {inviteStatus === 'pending' && (
                   <View style={styles.inviteActions}>
                     <Pressable
@@ -639,8 +664,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   inviteCityIcon: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
   },
   inviteCityName: {
     fontFamily: 'Fredoka_600SemiBold',
@@ -695,5 +720,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     paddingVertical: 4,
+  },
+  inviteIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inviteDescription: {
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  inviteBonusRow: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  inviteBonusChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  inviteBonusText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
   },
 });

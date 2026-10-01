@@ -47,6 +47,8 @@
     "cityLevel": "Рівень {{level}}",
     "inviteAccepted": "Ви приєдналися до міста!",
     "inviteDeclined": "Запрошення відхилено",
+    "cityMarketing": "+{{n}}% Маркетинг",
+    "cityPr": "+{{n}}% PR",
     "emptyTitle": "Повідомлень ще немає",
     "emptySubtitle": "Коли хтось напише вам — повідомлення з'явиться тут",
     "emptySentTitle": "Немає надісланих повідомлень",
