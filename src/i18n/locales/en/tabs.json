@@ -534,6 +534,12 @@
       "leave": "Failed to leave city",
       "create": "Failed to create city"
     },
+    "offline": {
+      "title": "Internet Connection Required",
+      "desc": "Connect to the internet to view your city.",
+      "bonusNote": "City bonuses from your last sync are already applied to your tower.",
+      "retry": "Try Again"
+    },
     "citizenRanking": {
       "title": "Citizen Rankings",
       "subtitle": "City members ranked by XP contribution",

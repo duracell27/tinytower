@@ -117,7 +117,7 @@ export default function CityScreen() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
 
-  const { city, loading, fetchMyCityInfo } = useCityStore();
+  const { city, loading, error: cityError, fetchMyCityInfo } = useCityStore();
   const { unreadCount, checkUnreadCount } = useCityChatStore();
 
   useEffect(() => {
@@ -155,6 +155,8 @@ export default function CityScreen() {
           </View>
         ) : city ? (
           <MyCityView city={city} isDark={isDark} t={t} router={router} chatUnreadCount={unreadCount} />
+        ) : cityError ? (
+          <OfflineView isDark={isDark} t={t} onRetry={fetchMyCityInfo} />
         ) : (
           <NoCityView isDark={isDark} t={t} router={router} onCreatePress={() => setShowCreateSheet(true)} />
         )}
@@ -520,6 +522,30 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
 
       <View style={{ height: 80 }} />
     </ScrollView>
+  );
+}
+
+// ─── Offline ─────────────────────────────────────────────────────────────────
+
+function OfflineView({ isDark, t, onRetry }: { isDark: boolean; t: any; onRetry: () => void }) {
+  return (
+    <View style={styles.offlineWrap}>
+      <View style={[styles.offlineCard, isDark && styles.offlineCardDark]}>
+        <Image source={IMG.cityBuildings} style={styles.offlineImg} contentFit="contain" />
+        <LocaleText style={[styles.offlineTitle, isDark && { color: '#DDE8D8' }]}>
+          {t('city.offline.title')}
+        </LocaleText>
+        <LocaleText style={[styles.offlineDesc, isDark && { color: '#8A9A80' }]}>
+          {t('city.offline.desc')}
+        </LocaleText>
+        <LocaleText style={[styles.offlineBonusNote, isDark && { color: '#6BAED0' }]}>
+          {t('city.offline.bonusNote')}
+        </LocaleText>
+        <TouchableOpacity style={styles.offlineRetryBtn} onPress={onRetry} activeOpacity={0.8}>
+          <LocaleText style={styles.offlineRetryText}>{t('city.offline.retry')}</LocaleText>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -927,7 +953,7 @@ const styles = StyleSheet.create({
   navImg: { width: 26, height: 26 },
   navLabel: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#0A1C30' },
   navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: '#6BAED0', lineHeight: 24 },
-  navDivider: { height: 1, marginLeft: 56, backgroundColor: '#2E6EC9', opacity: 0.5 },
+  navDivider: { height: 1, backgroundColor: '#2E6EC9', opacity: 0.5 },
 
   // ── Settings ───────────────────────────────────────
   settingsBtn: { backgroundColor: '#E8F2FA', borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
@@ -938,4 +964,47 @@ const styles = StyleSheet.create({
   leaveBtn: { backgroundColor: '#FCE8E8', borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
   leaveBtnDark: { backgroundColor: 'rgba(200,50,50,0.15)' },
   leaveBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#C03030' },
+
+  // ── Offline ────────────────────────────────────────
+  offlineWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
+  offlineCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 28,
+    alignItems: 'center',
+    width: '100%',
+  },
+  offlineCardDark: { backgroundColor: '#1A2E3E' },
+  offlineImg: { width: 90, height: 72, marginBottom: 16 },
+  offlineTitle: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 20,
+    color: '#0A1C30',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  offlineDesc: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 14,
+    color: '#5A7090',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  offlineBonusNote: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 13,
+    color: '#2E6EC9',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 22,
+    opacity: 0.85,
+  },
+  offlineRetryBtn: {
+    backgroundColor: '#2E6EC9',
+    borderRadius: 14,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+  },
+  offlineRetryText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#FFFFFF' },
 });
