@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 26, color: '#2E6EC9', lineHeight: 30 },
+  backBtnText: { fontFamily: 'Fredoka_700Bold', fontSize: 26, color: '#2E6EC9', lineHeight: 26, includeFontPadding: false },
 
   // ── Hero card ──────────────────────────────────────
   heroCard: {
