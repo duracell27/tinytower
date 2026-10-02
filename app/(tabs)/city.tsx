@@ -35,6 +35,8 @@ const IMG = {
   notice:        require('../../assets/img/city/cityNotice.png'),
   marketing:     require('../../assets/img/MarketingIcon.png'),
   floorIcon:     require('../../assets/img/floor.png'),
+  createCity:    require('../../assets/img/city/createCity.png'),
+  cityRanking:   require('../../assets/img/city/CityRanking.png'),
 };
 
 const BUILDING_ICONS: Record<string, any> = {
@@ -614,7 +616,7 @@ function NoCityView({ isDark, t, router, onCreatePress }: { isDark: boolean; t: 
         activeOpacity={0.7}
       >
         <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
-          <Image source={IMG.bank} style={styles.actionImg} contentFit="contain" />
+          <Image source={IMG.createCity} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
           <LocaleText style={[styles.actionCardTitle, { color: '#FFFFFF' }]}>{t('city.createButton')}</LocaleText>
@@ -629,7 +631,7 @@ function NoCityView({ isDark, t, router, onCreatePress }: { isDark: boolean; t: 
         activeOpacity={0.7}
       >
         <View style={[styles.actionCardLeft, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
-          <Image source={IMG.vipClub} style={styles.actionImg} contentFit="contain" />
+          <Image source={IMG.cityRanking} style={styles.actionImg} contentFit="contain" />
         </View>
         <View style={styles.actionCardBody}>
           <LocaleText style={[styles.actionCardTitle, { color: '#FFFFFF' }]}>{t('city.rankings.button')}</LocaleText>
