@@ -9,6 +9,7 @@ import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { api, type PlayerProfile, type CityRole } from '../../src/services/api';
 import { getUserIcon } from '../../src/utils/userIcon';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
+import { VEHICLE_CONFIG, VEHICLE_TYPES } from '../../shared/config/vehicleConfig';
 import { formatNum } from '../../src/utils/format';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -39,6 +40,14 @@ const CANCEL_ICON    = require('../../assets/img/CancellIcon.png');
 const OK_ICON        = require('../../assets/img/OkIcon.png');
 const CITY_ICON      = require('../../assets/img/city/cityBuildings.png');
 const MANAGER_ICON   = require('../../assets/img/managerIcon.png');
+
+const VEHICLE_ICONS: Record<string, any> = {
+  taxi:           require('../../assets/img/TaxiIcon.png'),
+  forklift:       require('../../assets/img/ForkliftIcon.png'),
+  armored_truck:  require('../../assets/img/ArmoredtruckIcon.png'),
+  delivery_truck: require('../../assets/img/DeliverytruckIcon.png'),
+  bus:            require('../../assets/img/BusIcon.png'),
+};
 
 const TIER_ICONS: Record<number, any> = {
   0: require('../../assets/img/achivment/0TierAchive.png'),
@@ -618,7 +627,30 @@ export default function UserProfileScreen() {
             })}
           </View>
 
-          {/* Block 5: Revenue */}
+          {/* Block 5: Vehicles (only shown when at least one vehicle is owned) */}
+          {profile.vehicles && VEHICLE_TYPES.some(k => (profile.vehicles[k] ?? 0) > 0) && (
+            <>
+              <SectionHeader label={t('userProfile.sectionVehicles')} />
+              <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
+                <View style={pStyles.vehRow}>
+                  {VEHICLE_TYPES.filter(k => (profile.vehicles[k] ?? 0) > 0).map((key) => {
+                    const def = VEHICLE_CONFIG[key];
+                    const count = profile.vehicles[key] ?? 0;
+                    return (
+                      <View key={key} style={pStyles.vehItem}>
+                        <Image source={VEHICLE_ICONS[key]} style={pStyles.vehIcon} contentFit="contain" />
+                        <View style={[pStyles.vehBadge, { backgroundColor: def.accentColor }]}>
+                          <LocaleText style={pStyles.vehBadgeText}>{count}</LocaleText>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            </>
+          )}
+
+          {/* Block 7: Revenue */}
           <SectionHeader label={t('userProfile.sectionRevenue')} />
           <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
             {/* Coin bonus + XP bonus on one row */}
@@ -858,6 +890,17 @@ const pStyles = StyleSheet.create({
     color: '#27331F', textTransform: 'uppercase', letterSpacing: 0.5,
     textAlign: 'center',
   },
+
+  /* Vehicles strip */
+  vehRow: { flexDirection: 'row', justifyContent: 'center', gap: 20, paddingVertical: 6 },
+  vehItem: { position: 'relative', alignItems: 'center' },
+  vehIcon: { width: 46, height: 46 },
+  vehBadge: {
+    position: 'absolute', bottom: -4, right: -4,
+    borderRadius: 7, minWidth: 16, height: 16,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
+  },
+  vehBadgeText: { fontFamily: 'Fredoka_700Bold', fontSize: 10, color: '#FFFFFF', lineHeight: 12 },
 
   /* Business */
   businessRow: {

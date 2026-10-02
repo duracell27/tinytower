@@ -49,6 +49,7 @@ export interface PlayerProfile {
   categoryProgress: Record<string, number>;
   canBeInvited: boolean;
   hasPendingCityInvite: boolean;
+  vehicles: Record<string, number>;
 }
 
 export type CityRole = 'MAYOR' | 'ACTING_MAYOR' | 'VICE_MAYOR' | 'ADVISOR' | 'BUSINESSMAN' | 'CITIZEN' | 'NEWBIE';

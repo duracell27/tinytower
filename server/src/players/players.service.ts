@@ -43,6 +43,7 @@ export interface PlayerProfileResult {
   categoryProgress: Record<string, number>;
   canBeInvited: boolean;
   hasPendingCityInvite: boolean;
+  vehicles: Record<string, number>;
 }
 
 const USER_SELECT = {
@@ -148,6 +149,11 @@ export class PlayersService {
             businessUpgradePurple: true,
             businessUpgradeRed: true,
             floorStars: true,
+            vehicleTaxi: true,
+            vehicleForklift: true,
+            vehicleArmoredTruck: true,
+            vehicleDeliveryTruck: true,
+            vehicleBus: true,
           },
         },
         floors: {
@@ -295,6 +301,13 @@ export class PlayersService {
       categoryProgress,
       canBeInvited: !player.city && player.openedFloorsCount >= 9,
       hasPendingCityInvite: false,
+      vehicles: {
+        taxi:           player.state?.vehicleTaxi          ?? 0,
+        forklift:       player.state?.vehicleForklift      ?? 0,
+        armored_truck:  player.state?.vehicleArmoredTruck  ?? 0,
+        delivery_truck: player.state?.vehicleDeliveryTruck ?? 0,
+        bus:            player.state?.vehicleBus           ?? 0,
+      },
     };
 
     if (requesterId && requesterId !== id) {
