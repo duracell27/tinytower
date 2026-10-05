@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { processCommand } from '@shared/engine/processCommand';
 import { computeVehicleBonuses } from '@shared/engine/vehicleUtils';
 import { checkDailyReset } from '@shared/engine/lobbyUtils';
+import { DAILY_TASKS } from '@shared/config/dailyTasksConfig';
 import { xpForCommand, applyXpGain } from '@shared/engine/xp';
 import { gameConfig, createInitialState } from '@shared/config/gameConfig';
 
@@ -108,8 +109,27 @@ export class SyncService {
       );
     }
 
-    let gameState = checkDailyReset(this.dbToGameState(player), serverNow);
     const gameStateBefore = this.dbToGameState(player);
+    let gameState = checkDailyReset(gameStateBefore, serverNow);
+
+    // If a daily reset just fired and doubleRewardActive ended up false, the server may
+    // have missed offline claim_daily_task commands from the previous day (server was down).
+    // Recalculate by combining already-stored claims with yesterday's claims in this batch.
+    if (gameState.lastDailyReset > gameStateBefore.lastDailyReset && !gameState.dailyTasks.doubleRewardActive) {
+      const visibleTaskKeys = new Set<string>(DAILY_TASKS.filter((t) => !t.hidden).map((t) => t.key));
+      const prevDayBatchClaims = newCommands
+        .filter((c) => c.type === 'claim_daily_task' && c.timestamp < gameState.lastDailyReset)
+        .map((c) => (c as Extract<typeof c, { type: 'claim_daily_task' }>).taskKey)
+        .filter((k) => visibleTaskKeys.has(k));
+      const allPrevDayClaims = new Set([
+        ...gameStateBefore.dailyTasks.claimed.filter((k) => visibleTaskKeys.has(k)),
+        ...prevDayBatchClaims,
+      ]);
+      if (allPrevDayClaims.size >= 7) {
+        gameState = { ...gameState, dailyTasks: { ...gameState.dailyTasks, doubleRewardActive: true } };
+        this.logger.log(`[sync] player=${playerId} doubleRewardActive restored from offline claims (${allPrevDayClaims.size} prev-day tasks)`);
+      }
+    }
     const acceptedCommands: Command[] = [];
     let totalXpGained = 0;
 
