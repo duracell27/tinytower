@@ -20,10 +20,26 @@ const HISTORY_ICON = require('../../assets/img/city/cityHistory.png');
 const LVL_ICON = require('../../assets/img/lvlIcon.png');
 
 const EVENT_ICON_IMGS: Record<string, ReturnType<typeof require>> = {
-  CITY_CREATED: require('../../assets/img/city/cityBuildings.png'),
-  ROLE_CHANGED: require('../../assets/img/addfriend.png'),
+  CITY_CREATED:  require('../../assets/img/city/cityBuildings.png'),
   CITY_LEVEL_UP: require('../../assets/img/greenArrowUp.png'),
+  MEMBER_JOINED: require('../../assets/img/addfriend.png'),
+  MEMBER_LEFT:   require('../../assets/img/removefriend.png'),
+  MEMBER_KICKED: require('../../assets/img/removefriend.png'),
 };
+
+const ROLE_RANK: Record<string, number> = {
+  NEWBIE: 0, CITIZEN: 1, BUSINESSMAN: 2, ADVISOR: 3,
+  VICE_MAYOR: 4, ACTING_MAYOR: 5, MAYOR: 6,
+};
+
+const ROLE_CHANGE_UP_IMG   = require('../../assets/img/cityPositionUp.png');
+const ROLE_CHANGE_DOWN_IMG = require('../../assets/img/cityPositionDown.png');
+
+function getRoleChangeIcon(fromRole: string | null, toRole: string | null) {
+  const from = fromRole ? (ROLE_RANK[fromRole] ?? -1) : -1;
+  const to   = toRole   ? (ROLE_RANK[toRole]   ?? -1) : -1;
+  return to >= from ? ROLE_CHANGE_UP_IMG : ROLE_CHANGE_DOWN_IMG;
+}
 
 function fmtDate(iso: string): string {
   const d = new Date(iso);
@@ -36,15 +52,21 @@ function fmtDate(iso: string): string {
 }
 
 const EVENT_COLORS: Record<string, string> = {
-  CITY_CREATED: '#2E6EC9',
-  ROLE_CHANGED: '#9A6FD0',
+  CITY_CREATED:  '#2E6EC9',
+  ROLE_CHANGED:  '#9A6FD0',
   CITY_LEVEL_UP: '#2A9A4A',
+  MEMBER_JOINED: '#2A9A4A',
+  MEMBER_LEFT:   '#E07030',
+  MEMBER_KICKED: '#C0392B',
 };
 
 const EVENT_COLORS_DARK: Record<string, string> = {
-  CITY_CREATED: '#4A8EE8',
-  ROLE_CHANGED: '#B88AEC',
+  CITY_CREATED:  '#4A8EE8',
+  ROLE_CHANGED:  '#B88AEC',
   CITY_LEVEL_UP: '#4ABF6A',
+  MEMBER_JOINED: '#4ABF6A',
+  MEMBER_LEFT:   '#F09050',
+  MEMBER_KICKED: '#E05545',
 };
 
 export default function CityHistoryScreen() {
@@ -150,6 +172,71 @@ export default function CityHistoryScreen() {
       );
     }
 
+    if (ev.eventType === 'MEMBER_JOINED') {
+      return (
+        <View style={styles.inlineRow}>
+          <TouchableOpacity
+            onPress={ev.actorId ? () => router.push(`/user-profile/${ev.actorId}`) : undefined}
+            activeOpacity={ev.actorId ? 0.7 : 1}
+            style={styles.playerChip}
+          >
+            <Image source={getUserIcon(ev.actorLevel ?? 1)} style={styles.chipAvatar} contentFit="cover" />
+            <LocaleText style={[styles.link, { color }]}>{ev.actorName}</LocaleText>
+          </TouchableOpacity>
+          <LocaleText style={[styles.eventText, { color: theme.text }]}>
+            {' '}{t('city.history.memberJoined')}
+          </LocaleText>
+        </View>
+      );
+    }
+
+    if (ev.eventType === 'MEMBER_LEFT') {
+      return (
+        <View style={styles.inlineRow}>
+          <TouchableOpacity
+            onPress={ev.actorId ? () => router.push(`/user-profile/${ev.actorId}`) : undefined}
+            activeOpacity={ev.actorId ? 0.7 : 1}
+            style={styles.playerChip}
+          >
+            <Image source={getUserIcon(ev.actorLevel ?? 1)} style={styles.chipAvatar} contentFit="cover" />
+            <LocaleText style={[styles.link, { color }]}>{ev.actorName}</LocaleText>
+          </TouchableOpacity>
+          <LocaleText style={[styles.eventText, { color: theme.text }]}>
+            {' '}{t('city.history.memberLeft')}
+          </LocaleText>
+        </View>
+      );
+    }
+
+    if (ev.eventType === 'MEMBER_KICKED') {
+      return (
+        <View style={styles.inlineRow}>
+          <TouchableOpacity
+            onPress={ev.actorId ? () => router.push(`/user-profile/${ev.actorId}`) : undefined}
+            activeOpacity={ev.actorId ? 0.7 : 1}
+            style={styles.playerChip}
+          >
+            <Image source={getUserIcon(ev.actorLevel ?? 1)} style={styles.chipAvatar} contentFit="cover" />
+            <LocaleText style={[styles.link, { color }]}>{ev.actorName}</LocaleText>
+          </TouchableOpacity>
+          <LocaleText style={[styles.eventText, { color: theme.text }]}>
+            {' '}{t('city.history.memberKicked')}{' '}
+          </LocaleText>
+          <TouchableOpacity
+            onPress={ev.targetId ? () => router.push(`/user-profile/${ev.targetId}`) : undefined}
+            activeOpacity={ev.targetId ? 0.7 : 1}
+            style={styles.playerChip}
+          >
+            <Image source={getUserIcon(ev.targetLevel ?? 1)} style={styles.chipAvatar} contentFit="cover" />
+            <LocaleText style={[styles.link, { color }]}>{ev.targetName ?? '?'}</LocaleText>
+          </TouchableOpacity>
+          <LocaleText style={[styles.eventText, { color: theme.text }]}>
+            {' '}{t('city.history.memberKickedFrom')}
+          </LocaleText>
+        </View>
+      );
+    }
+
     return <LocaleText style={[styles.eventText, { color: theme.text }]}>{ev.eventType}</LocaleText>;
   }
 
@@ -209,8 +296,14 @@ export default function CityHistoryScreen() {
                       <View style={styles.eventContent}>
                         <View style={styles.eventHeaderRow}>
                           <View style={styles.eventTypeLabelRow}>
-                            {EVENT_ICON_IMGS[ev.eventType] && (
-                              <Image source={EVENT_ICON_IMGS[ev.eventType]} style={styles.eventTypeIcon} contentFit="contain" />
+                            {(ev.eventType === 'ROLE_CHANGED' || EVENT_ICON_IMGS[ev.eventType]) && (
+                              <Image
+                                source={ev.eventType === 'ROLE_CHANGED'
+                                  ? getRoleChangeIcon(ev.fromRole, ev.toRole)
+                                  : EVENT_ICON_IMGS[ev.eventType]}
+                                style={styles.eventTypeIcon}
+                                contentFit="contain"
+                              />
                             )}
                             <LocaleText style={[styles.eventTypeLabel, { color: accentColor }]}>
                               {t(`city.history.types.${ev.eventType}`)}

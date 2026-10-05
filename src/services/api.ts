@@ -167,7 +167,7 @@ export interface CityBudgetContribsData {
   history: CityBudgetDonation[];
 }
 
-export type CityHistoryEventType = 'CITY_CREATED' | 'ROLE_CHANGED' | 'CITY_LEVEL_UP';
+export type CityHistoryEventType = 'CITY_CREATED' | 'ROLE_CHANGED' | 'CITY_LEVEL_UP' | 'MEMBER_JOINED' | 'MEMBER_LEFT' | 'MEMBER_KICKED';
 
 export interface CityHistoryEvent {
   id: string;

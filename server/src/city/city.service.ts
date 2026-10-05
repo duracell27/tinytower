@@ -57,7 +57,7 @@ export interface CityDetailDto {
 
 export interface CityHistoryEventDto {
   id: string;
-  eventType: 'CITY_CREATED' | 'ROLE_CHANGED' | 'CITY_LEVEL_UP';
+  eventType: 'CITY_CREATED' | 'ROLE_CHANGED' | 'CITY_LEVEL_UP' | 'MEMBER_JOINED' | 'MEMBER_LEFT' | 'MEMBER_KICKED';
   actorId: string | null;
   actorName: string;
   actorLevel: number | null;
@@ -474,6 +474,11 @@ export class CityService {
       throw new BadRequestException('City is now at maximum capacity');
     }
 
+    const joiningPlayer = await this.prisma.player.findUnique({
+      where: { id: playerId },
+      select: { playerName: true, playerLevel: true },
+    });
+
     await this.prisma.$transaction([
       this.prisma.cityInvite.update({ where: { token }, data: { status: 'ACCEPTED' } }),
       this.prisma.cityMembership.create({
@@ -482,6 +487,14 @@ export class CityService {
       this.prisma.player.update({
         where: { id: playerId },
         data: { city: invite.city.name },
+      }),
+      this.prisma.cityHistoryEvent.create({
+        data: {
+          cityId: invite.cityId,
+          eventType: 'MEMBER_JOINED',
+          actorId: playerId,
+          actorName: joiningPlayer?.playerName ?? 'Unknown',
+        },
       }),
     ]);
   }
@@ -508,9 +521,22 @@ export class CityService {
       return;
     }
 
+    const leavingPlayer = await this.prisma.player.findUnique({
+      where: { id: playerId },
+      select: { playerName: true },
+    });
+
     await this.prisma.$transaction([
       this.prisma.cityMembership.delete({ where: { playerId } }),
       this.prisma.player.update({ where: { id: playerId }, data: { city: null } }),
+      this.prisma.cityHistoryEvent.create({
+        data: {
+          cityId,
+          eventType: 'MEMBER_LEFT',
+          actorId: playerId,
+          actorName: leavingPlayer?.playerName ?? 'Unknown',
+        },
+      }),
     ]);
   }
 
@@ -527,9 +553,24 @@ export class CityService {
     const canKick = this.canActOnTarget(actorMs.role, targetMs.role, 'kick');
     if (!canKick) throw new ForbiddenException('Insufficient role to kick this member');
 
+    const [actorPlayer, targetPlayer] = await Promise.all([
+      this.prisma.player.findUnique({ where: { id: actorId }, select: { playerName: true } }),
+      this.prisma.player.findUnique({ where: { id: targetPlayerId }, select: { playerName: true } }),
+    ]);
+
     await this.prisma.$transaction([
       this.prisma.cityMembership.delete({ where: { playerId: targetPlayerId } }),
       this.prisma.player.update({ where: { id: targetPlayerId }, data: { city: null } }),
+      this.prisma.cityHistoryEvent.create({
+        data: {
+          cityId,
+          eventType: 'MEMBER_KICKED',
+          actorId,
+          actorName: actorPlayer?.playerName ?? 'Unknown',
+          targetId: targetPlayerId,
+          targetName: targetPlayer?.playerName ?? 'Unknown',
+        },
+      }),
     ]);
   }
 

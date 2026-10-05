@@ -511,10 +511,17 @@
       "levelUpPre": "City reached level",
       "roleChanged1": "changed the role of",
       "roleChanged2": "from {{from}} to {{to}}",
+      "memberJoined": "joined the city",
+      "memberLeft": "left the city",
+      "memberKicked": "kicked",
+      "memberKickedFrom": "from the city",
       "types": {
         "CITY_CREATED": "City Founded",
         "ROLE_CHANGED": "Role Change",
-        "CITY_LEVEL_UP": "Level Up"
+        "CITY_LEVEL_UP": "Level Up",
+        "MEMBER_JOINED": "New Member",
+        "MEMBER_LEFT": "Member Left",
+        "MEMBER_KICKED": "Kicked"
       }
     },
     "notifications": {

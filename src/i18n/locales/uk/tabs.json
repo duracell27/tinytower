@@ -511,10 +511,17 @@
       "levelUpPre": "Місто досягнуло рівня",
       "roleChanged1": "змінив(ла) роль",
       "roleChanged2": "з {{from}} на {{to}}",
+      "memberJoined": "приєднався(лась) до міста",
+      "memberLeft": "покинув(ла) місто",
+      "memberKicked": "виключив(ла)",
+      "memberKickedFrom": "з міста",
       "types": {
         "CITY_CREATED": "Місто засновано",
         "ROLE_CHANGED": "Зміна ролі",
-        "CITY_LEVEL_UP": "Новий рівень"
+        "CITY_LEVEL_UP": "Новий рівень",
+        "MEMBER_JOINED": "Новий учасник",
+        "MEMBER_LEFT": "Вихід з міста",
+        "MEMBER_KICKED": "Виключення"
       }
     },
     "notifications": {
