@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, ScrollView, StyleSheet, TouchableOpacity,
-  ActivityIndicator, useColorScheme, Dimensions,
+  ActivityIndicator, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -360,34 +360,38 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
 
       {/* ── SECTION CARDS ─────────────────────────────── */}
       <View style={styles.cardsGrid}>
-        {SECTION_CARDS.map((card) => (
-          <TouchableOpacity
-            key={card.key}
-            style={[styles.sectionCard, isDark && styles.sectionCardDark]}
-            activeOpacity={0.7}
-            onPress={
-              card.key === 'budget'        ? () => router.push(`/city/budget?id=${city.id}`) :
-              card.key === 'history'       ? () => router.push(`/city/history?id=${city.id}`) :
-              card.key === 'notifications' ? () => router.push(`/city/notifications?id=${city.id}`) :
-              card.key === 'chat'          ? () => router.push(`/city/chat?id=${city.id}`) :
-              card.key === 'buildings'     ? () => router.push(`/city/buildings?id=${city.id}`) :
-              undefined
-            }
-          >
-            <View style={styles.sectionCardImgWrap}>
-              <Image source={card.img} style={styles.sectionCardImg} contentFit="contain" />
-              {card.key === 'chat' && chatUnreadCount > 0 && (
-                <View style={styles.unreadBadge}>
-                  <LocaleText style={styles.unreadBadgeText}>
-                    {chatUnreadCount > 99 ? '99+' : String(chatUnreadCount)}
-                  </LocaleText>
+        {[SECTION_CARDS.slice(0, 3), SECTION_CARDS.slice(3)].map((row, ri) => (
+          <View key={ri} style={styles.cardsRow}>
+            {row.map((card) => (
+              <TouchableOpacity
+                key={card.key}
+                style={[styles.sectionCard, isDark && styles.sectionCardDark]}
+                activeOpacity={0.7}
+                onPress={
+                  card.key === 'budget'        ? () => router.push(`/city/budget?id=${city.id}`) :
+                  card.key === 'history'       ? () => router.push(`/city/history?id=${city.id}`) :
+                  card.key === 'notifications' ? () => router.push(`/city/notifications?id=${city.id}`) :
+                  card.key === 'chat'          ? () => router.push(`/city/chat?id=${city.id}`) :
+                  card.key === 'buildings'     ? () => router.push(`/city/buildings?id=${city.id}`) :
+                  undefined
+                }
+              >
+                <View style={styles.sectionCardImgWrap}>
+                  <Image source={card.img} style={styles.sectionCardImg} contentFit="contain" />
+                  {card.key === 'chat' && chatUnreadCount > 0 && (
+                    <View style={styles.unreadBadge}>
+                      <LocaleText style={styles.unreadBadgeText}>
+                        {chatUnreadCount > 99 ? '99+' : String(chatUnreadCount)}
+                      </LocaleText>
+                    </View>
+                  )}
                 </View>
-              )}
-            </View>
-            <LocaleText style={[styles.sectionCardLabel, isDark && { color: '#DDE8D8' }]}>
-              {t(`city.sections.${card.key}`)}
-            </LocaleText>
-          </TouchableOpacity>
+                <LocaleText style={[styles.sectionCardLabel, isDark && { color: '#DDE8D8' }]}>
+                  {t(`city.sections.${card.key}`)}
+                </LocaleText>
+              </TouchableOpacity>
+            ))}
+          </View>
         ))}
       </View>
 
@@ -821,15 +825,16 @@ const styles = StyleSheet.create({
 
   // ── Section cards ──────────────────────────────────
   cardsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
     marginHorizontal: 16,
     marginBottom: 16,
     gap: 8,
   },
+  cardsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   sectionCard: {
-    width: (Dimensions.get('window').width - 32 - 16) / 3,
+    flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     paddingVertical: 14,
