@@ -20,7 +20,6 @@ import { formatNum, formatXp } from '../../src/utils/format';
 import { useGameClock } from '../../src/hooks/useGameClock';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
-import { getWorkerMood } from '../../shared/engine/workerUtils';
 import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { api } from '../../src/services/api';
@@ -196,19 +195,8 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
   const showCityAlert = useGameStore((s) => s.showCityAlert);
   const showCityConfirm = useGameStore((s) => s.showCityConfirm);
 
-  // Current player's own worker stats (city-wide aggregate requires backend update)
-  const workers = useGameStore((s) => s.workers);
-  const floors = useGameStore((s) => s.floors);
-  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
-  const totalWorkers = workers.length;
-  const happyCount = workers.filter((w) => {
-    if (w.assignedFloorId === null) return false;
-    const staticFloor = gameConfig.floors.find((f) => f.id === w.assignedFloorId);
-    const floorType = staticFloor ? staticFloor.floorType : (openedFloorTypes?.[String(w.assignedFloorId)] ?? '');
-    const floor = floors.find((f) => f.id === w.assignedFloorId);
-    const production = floor?.productions[w.assignedSlotIdx!];
-    return getWorkerMood(w, floorType, production?.typeId ?? null) === 'good';
-  }).length;
+  const totalWorkers = city.totalWorkers;
+  const happyCount = city.happyWorkers;
 
   const myRole = city.myRole;
   const isMyCity = !!myRole;
