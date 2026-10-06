@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import type { QuickActionMode } from '../utils/quickAction';
@@ -24,7 +25,8 @@ const MODE_META: Record<QuickActionMode, {
 
 export default function QuickActionFAB({ availableMode, activeMode, count, onPress }: Props) {
   const theme = useAppTheme();
-  const styles = getStyles(theme);
+  const { bottom: bottomInset } = useSafeAreaInsets();
+  const styles = getStyles(theme, bottomInset);
   if (activeMode !== null) return null;
   if (availableMode === null) return null;
 
@@ -54,12 +56,12 @@ export default function QuickActionFAB({ availableMode, activeMode, count, onPre
   );
 }
 
-function getStyles(theme: ReturnType<typeof useAppTheme>) {
+function getStyles(theme: ReturnType<typeof useAppTheme>, bottomInset: number) {
   return StyleSheet.create({
     btn: {
       position: 'absolute',
       right: 16,
-      bottom: 96,
+      bottom: Platform.OS === 'android' ? 84 + bottomInset : 96,
       width: 54,
       height: 54,
       borderRadius: 27,

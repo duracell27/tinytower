@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useAppTheme } from '../hooks/useAppTheme';
 
@@ -13,6 +14,7 @@ interface Props {
 
 export default function CityNotifFAB({ slot, onPress }: Props) {
   const theme = useAppTheme();
+  const { bottom: bottomInset } = useSafeAreaInsets();
 
   return (
     <Pressable
@@ -20,7 +22,7 @@ export default function CityNotifFAB({ slot, onPress }: Props) {
       style={({ pressed }) => [
         styles.fab,
         {
-          bottom: 96 + slot * 62,
+          bottom: (Platform.OS === 'android' ? 84 + bottomInset : 96) + slot * 62,
           backgroundColor: theme.surface,
           borderColor: theme.isDark ? theme.divider : 'rgba(255,255,255,0.9)',
         },

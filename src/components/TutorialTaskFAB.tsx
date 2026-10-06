@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
@@ -28,11 +29,13 @@ const CIRCUMFERENCE = 2 * Math.PI * R;
 
 export default function TutorialTaskFAB({ slot, aboveBar, onPress }: Props) {
   const theme = useAppTheme();
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const { allDone, claimedFinal, isComplete, delta, currentTask } = useTutorialTaskStore();
 
   if (allDone && claimedFinal) return null;
 
-  const bottomPos = aboveBar ? 160 : 96 + slot * 62;
+  const FAB_BASE = Platform.OS === 'android' ? 84 + bottomInset : 96;
+  const bottomPos = aboveBar ? FAB_BASE + 64 : FAB_BASE + slot * 62;
 
   const ratio = !allDone && currentTask
     ? Math.min(1, delta / currentTask.threshold)

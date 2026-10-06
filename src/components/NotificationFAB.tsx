@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function NotificationFAB({ icon, count, slot, badgeColor = '#3FA535', onPress }: Props) {
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const theme = useAppTheme();
 
   if (count === 0) return null;
@@ -23,7 +25,7 @@ export default function NotificationFAB({ icon, count, slot, badgeColor = '#3FA5
       style={({ pressed }) => [
         styles.fab,
         {
-          bottom: 96 + slot * 62,
+          bottom: (Platform.OS === 'android' ? 84 + bottomInset : 96) + slot * 62,
           backgroundColor: theme.surface,
           borderColor: theme.isDark ? theme.divider : 'rgba(255,255,255,0.9)',
         },

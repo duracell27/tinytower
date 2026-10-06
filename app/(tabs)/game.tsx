@@ -62,6 +62,7 @@ import { useCityNotifStore } from '../../src/stores/cityNotifStore';
 import CityNotifFAB from '../../src/components/CityNotifFAB';
 import CityChatFAB from '../../src/components/CityChatFAB';
 import { useCityChatStore } from '../../src/stores/cityChatStore';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type FloorItem =
   | { type: 'production'; id: number }
@@ -86,6 +87,9 @@ const FRIEND_FAB_ICON = require('../../assets/img/users.png');
 export default function GameScreen() {
   const scheme = useColorScheme();
   const bgSource = scheme === 'dark' ? BG_DARK : BG_LIGHT;
+  const { bottom: bottomInset } = useSafeAreaInsets();
+  // 68px = bar height (56) + paddingTop (4) + paddingBottom (8); add 8px breathing room
+  const androidTabBarH = Platform.OS === 'android' ? 76 + bottomInset : 0;
   const { t } = useTranslation('tabs');
   const { t: tContent } = useTranslation('gameContent');
   const balance = useBalance();
@@ -1011,12 +1015,12 @@ export default function GameScreen() {
       );
     }
     if (item.type === 'bottomAnchor') {
-      return <View style={styles.bottomAnchor} />;
+      return <View style={[styles.bottomAnchor, Platform.OS === 'android' && { height: androidTabBarH }]} />;
     }
     return null;
   }, [balance, hotelOccupied, hotelTotal, hasBetterWorker, lobbyVisitors.length, nextVisitorAt,
       buyFloor, openFloor, nextFloorId, nextFloorUnlock, gems,
-      showInsufficientResources, towerCollapsed, isTemporary, isOnboarding, onboardingStep]);
+      showInsufficientResources, towerCollapsed, isTemporary, isOnboarding, onboardingStep, androidTabBarH]);
 
   const renderQaItem = useCallback(({ item }: { item: FloorItem }) => {
     if (item.type === 'production') {
@@ -1045,7 +1049,7 @@ export default function GameScreen() {
               <ScrollView
                 ref={collapsedScrollRef}
                 style={styles.collapsedScroll}
-                contentContainerStyle={styles.collapsedContainer}
+                contentContainerStyle={[styles.collapsedContainer, Platform.OS === 'android' && { paddingBottom: androidTabBarH }]}
                 alwaysBounceVertical
                 showsVerticalScrollIndicator={false}
               >
@@ -1128,7 +1132,7 @@ export default function GameScreen() {
                   renderItem={renderQaItem}
                   keyExtractor={keyExtractor}
                   getItemType={(item) => item.type}
-                  contentContainerStyle={styles.listContentQA}
+                  contentContainerStyle={[styles.listContentQA, Platform.OS === 'android' && { paddingBottom: 140 + bottomInset }]}
                   showsVerticalScrollIndicator={false}
                   extraData={leavingFloorId}
                 />

@@ -1,6 +1,6 @@
 import '../src/i18n';
 import { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet, LogBox, useColorScheme } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, LogBox, useColorScheme, Platform } from 'react-native';
 
 LogBox.ignoreLogs(['Sending `onAnimatedValueUpdate` with no listeners registered.']);
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -38,6 +38,7 @@ import * as Linking from 'expo-linking';
 import { createMMKV } from 'react-native-mmkv';
 import GlobalOverlay from '../src/components/GlobalOverlay';
 import OnboardingOverlay from '../src/components/OnboardingOverlay';
+import AndroidTabBarGlobal from '../src/components/AndroidTabBarGlobal';
 import { ClockProvider } from '../src/context/ClockContext';
 
 const authStorage = createMMKV({ id: 'auth' });
@@ -141,6 +142,7 @@ export default function RootLayout() {
       </Stack>
       <GlobalOverlay />
       <OnboardingOverlay />
+      {Platform.OS === 'android' && <AndroidTabBarGlobal />}
       </ClockProvider>
     </GestureHandlerRootView>
   );

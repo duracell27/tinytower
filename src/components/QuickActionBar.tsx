@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LocaleText from './LocaleText';
 import * as Haptics from 'expo-haptics';
 import Animated, {
@@ -72,7 +73,8 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   const { t } = useTranslation('common');
   const { colors } = MODE_COLORS[mode];
   const theme = useAppTheme();
-  const styles = getStyles(theme);
+  const { bottom: bottomInset } = useSafeAreaInsets();
+  const styles = getStyles(theme, bottomInset);
 
   const bulkLabel = BULK_MODES.has(mode) ? t('quickAction.all') : undefined;
 
@@ -215,7 +217,7 @@ const staticStyles = StyleSheet.create({
   },
 });
 
-function getStyles(theme: ReturnType<typeof useAppTheme>) {
+function getStyles(theme: ReturnType<typeof useAppTheme>, bottomInset: number = 0) {
   const { isDark } = theme;
   const pillBg = isDark ? 'rgba(46,59,88,0.92)' : 'rgba(255,255,255,0.92)';
   const pillTextColor = isDark ? theme.text : theme.textMuted;
@@ -229,7 +231,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       alignItems: 'flex-end',
       gap: 10,
       paddingHorizontal: 16,
-      paddingBottom: 90,
+      paddingBottom: Platform.OS === 'android' ? 84 + bottomInset : 90,
       paddingTop: 8,
     },
     exitBtn: {

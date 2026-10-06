@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import LocaleText from './LocaleText';
 import Animated, { useSharedValue, useAnimatedProps, useAnimatedStyle, withTiming, withRepeat, withSequence, cancelAnimation, Easing } from 'react-native-reanimated';
 import { useClockNow } from '../context/ClockContext';
@@ -26,17 +26,19 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
 const STROKE_W = 3;
 const BTN_R = 12;
 
-function calcPerimeter(w: number, h: number): number {
-  const r = Math.max(0, BTN_R - STROKE_W / 2);
-  return 2 * (w - STROKE_W) + 2 * (h - STROKE_W) - r * (8 - 2 * Math.PI);
+function calcPerimeter(w: number, h: number, inset?: number): number {
+  const i = inset ?? STROKE_W / 2;
+  const r = Math.max(0, BTN_R - i);
+  return 2 * (w - 2 * i) + 2 * (h - 2 * i) - r * (8 - 2 * Math.PI);
 }
 
-function makeRoundRectPath(btnW: number, btnH: number): string {
-  const x = STROKE_W / 2;
-  const y = STROKE_W / 2;
-  const W = btnW - STROKE_W;
-  const H = btnH - STROKE_W;
-  const r = Math.max(0, BTN_R - STROKE_W / 2);
+function makeRoundRectPath(btnW: number, btnH: number, inset?: number): string {
+  const i = inset ?? STROKE_W / 2;
+  const x = i;
+  const y = i;
+  const W = btnW - i * 2;
+  const H = btnH - i * 2;
+  const r = Math.max(0, BTN_R - i);
   const cx = x + W / 2;
   return [
     `M ${cx} ${y}`,
@@ -193,6 +195,53 @@ const pillStyles = StyleSheet.create({
     fontSize: 10.5,
   },
 });
+
+// Marquee text: scrolls horizontally when content is wider than its container.
+function MarqueeText({ style, children }: { style?: object | object[]; children: React.ReactNode }) {
+  const [outerW, setOuterW] = useState(0);
+  const [innerW, setInnerW] = useState(0);
+  const tx = useSharedValue(0);
+  const gap = Math.max(0, innerW - outerW);
+
+  useEffect(() => {
+    if (gap < 4) {
+      cancelAnimation(tx);
+      tx.value = 0;
+      return;
+    }
+    tx.value = 0;
+    tx.value = withRepeat(
+      withSequence(
+        withTiming(0, { duration: 900 }),
+        withTiming(-gap, { duration: gap * 22, easing: Easing.linear }),
+        withTiming(-gap, { duration: 700 }),
+        withTiming(0, { duration: 0 }),
+      ),
+      -1,
+      false,
+    );
+    return () => cancelAnimation(tx);
+  }, [gap]);
+
+  const animStyle = useAnimatedStyle(() => ({ transform: [{ translateX: tx.value }] }));
+
+  return (
+    <View
+      style={{ overflow: 'hidden', flexShrink: 1 }}
+      onLayout={e => setOuterW(e.nativeEvent.layout.width)}
+    >
+      <Animated.View style={animStyle}>
+        <LocaleText
+          style={style}
+          numberOfLines={1}
+          onLayout={e => setInnerW(e.nativeEvent.layout.width)}
+        >
+          {children}
+        </LocaleText>
+      </Animated.View>
+    </View>
+  );
+}
 
 // Tiny sub-component: delivery lock countdown pill.
 // Re-renders every second so the countdown ticks, without touching the parent.
@@ -552,7 +601,7 @@ export default function ProductionCard({
         </Pressable>
 
         <View style={styles.subContainer}>
-          <LocaleText style={[styles.pillText, { color: accentColor }]}>{t('productionCard.actions.workerWanted')}</LocaleText>
+          <MarqueeText style={[styles.pillText, { color: accentColor }]}>{t('productionCard.actions.workerWanted')}</MarqueeText>
         </View>
       </View>
     );
@@ -614,7 +663,7 @@ export default function ProductionCard({
         )}
       </View>
 
-      <Animated.View style={btnPulseStyle} onLayout={(e) => setBtnSize(e.nativeEvent.layout)}>
+      <Animated.View style={[btnPulseStyle, { overflow: 'visible' }]} onLayout={(e) => setBtnSize(e.nativeEvent.layout)}>
         <Pressable
           onPress={isDeliveryLocked ? undefined : (canAct ? handleAction : undefined)}
           onLongPress={onLongPress}
@@ -633,8 +682,17 @@ export default function ProductionCard({
           }
         </Pressable>
         {isProgressTimer && btnSize.width > 0 && (
-          <View style={StyleSheet.absoluteFill} pointerEvents="none">
-            <Svg width={btnSize.width} height={btnSize.height}>
+          <View
+            style={[
+              StyleSheet.absoluteFill,
+              Platform.OS === 'android' && { borderRadius: BTN_R, overflow: 'hidden', bottom: -1 },
+            ]}
+            pointerEvents="none"
+          >
+            <Svg
+              width={btnSize.width}
+              height={btnSize.height + (Platform.OS === 'android' ? 1 : 0)}
+            >
               <Path
                 d={makeRoundRectPath(btnSize.width, btnSize.height)}
                 fill="none"
@@ -664,7 +722,8 @@ export default function ProductionCard({
             onPress={handleSpeedUp}
             style={({ pressed }) => [styles.pill, { backgroundColor: accentColor + '20', borderColor: accentColor, borderWidth: 1 }, pressed && { opacity: 0.7 }]}
           >
-            <LocaleText style={[styles.pillText, { color: accentColor }]}>{t('productionCard.speedUp')} {speedUpCost}</LocaleText>
+            <MarqueeText style={[styles.pillText, { color: accentColor }]}>{t('productionCard.speedUp')}</MarqueeText>
+            <LocaleText style={[styles.pillText, { color: accentColor }]}>{speedUpCost}</LocaleText>
             <GemIcon size={12} />
           </Pressable>
         ) : effectiveStage === 'READY_TO_LIST' && subText ? (
@@ -674,16 +733,16 @@ export default function ProductionCard({
               <Circle cx={9} cy={19} r={1.2} fill={accentColor} stroke="none" />
               <Circle cx={17} cy={19} r={1.2} fill={accentColor} stroke="none" />
             </Svg>
-            <LocaleText style={[styles.pillText, { color: accentColor }]}>{subText}</LocaleText>
+            <MarqueeText style={[styles.pillText, { color: accentColor }]}>{subText}</MarqueeText>
           </View>
         ) : isTimer ? (
           <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
-            <LocaleText style={[styles.pillText, { color: accentColor }]}>{subText}</LocaleText>
+            <MarqueeText style={[styles.pillText, { color: accentColor }]}>{subText}</MarqueeText>
           </View>
         ) : subText ? (
           <View style={[styles.pill, { backgroundColor: accentColor + '20' }]}>
             <CoinIcon size={13} />
-            <LocaleText style={[styles.pillText, { color: accentColor }]}>{subText}</LocaleText>
+            <MarqueeText style={[styles.pillText, { color: accentColor }]}>{subText}</MarqueeText>
           </View>
         ) : null}
       </View>
@@ -755,7 +814,6 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.28,
       shadowRadius: 3,
-      elevation: 3,
     },
     actionButton: {
       flexDirection: 'row',
@@ -788,6 +846,7 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
     },
     subContainer: {
       height: 20,
+      width: '100%',
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -798,6 +857,8 @@ function getStyles(theme: ReturnType<typeof useAppTheme>) {
       paddingVertical: 2,
       paddingHorizontal: 8,
       borderRadius: 10,
+      maxWidth: '100%',
+      overflow: 'hidden',
     },
     pillText: {
       fontFamily: 'Fredoka_600SemiBold',

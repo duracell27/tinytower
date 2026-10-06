@@ -1,4 +1,6 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Tabs } from 'expo-router';
+import { View, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useOnboardingStore } from '../../src/stores/onboardingStore';
 
@@ -14,11 +16,34 @@ export default function TabsLayout() {
   const { t } = useTranslation('tabs');
   const isOnboarding = useOnboardingStore((s) => s.isActive);
 
+  if (Platform.OS === 'android') {
+    return (
+      <Tabs
+        tabBar={() => <View style={{ height: 0 }} />}
+        screenOptions={{
+          headerShown: false,
+          animation: 'none',
+          tabBarStyle: { height: 0 },
+        }}
+      >
+        <Tabs.Screen name="game" />
+        <Tabs.Screen name="city" />
+        <Tabs.Screen name="menu" />
+        <Tabs.Screen name="shop" />
+        <Tabs.Screen name="profile" />
+        <Tabs.Screen name="chat" options={{ href: null }} />
+        <Tabs.Screen name="forum" options={{ href: null }} />
+      </Tabs>
+    );
+  }
+
   return (
     <NativeTabs
       blurEffect="systemChromeMaterial"
       disableTransparentOnScrollEdge={true}
       hidden={isOnboarding}
+      labelVisibilityMode="labeled"
+      screenOptions={{ animation: 'none' }}
     >
       <NativeTabs.Trigger name="game">
         <NativeTabs.Trigger.Icon sf="building.fill" md="apartment" selectedColor={TAB_COLORS.game} />
