@@ -161,7 +161,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   androidPanel: {
-    backgroundColor: 'rgba(220,237,210,0.92)',
+    backgroundColor: '#FFFFFF',
+    elevation: 0,
   },
   content: {
     flexDirection: 'row',

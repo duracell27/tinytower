@@ -1115,11 +1115,11 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#fff',
     overflow: 'hidden',
+    backgroundColor: 'transparent',
     shadowColor: 'rgba(20,90,80,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 4,
   },
   profileRow: {
     flexDirection: 'row',

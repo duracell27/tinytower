@@ -385,8 +385,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     zIndex: 1,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.5)',
     borderRadius: 14,
   },
   actionButtonText: {

@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     borderRadius: 16, padding: 12, alignItems: 'stretch', gap: 8,
     borderWidth: 1,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
+    shadowOpacity: 0.07, shadowRadius: 6,
   },
   cardTopRow:    { flexDirection: 'row', alignItems: 'center', gap: 10 },
   cardIconBg:    { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },

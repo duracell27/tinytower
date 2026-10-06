@@ -266,7 +266,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.22,
     shadowRadius: 4,
-    elevation: 3,
   },
   techImageHotel: {
     width: 80,
@@ -276,7 +275,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.30,
     shadowRadius: 8,
-    elevation: 5,
   },
   techInfo: {
     flex: 1,

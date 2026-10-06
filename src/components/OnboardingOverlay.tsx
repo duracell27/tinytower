@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import {
   View, Text, StyleSheet, Pressable, Dimensions, Image, TouchableWithoutFeedback,
+  Platform, StatusBar,
 } from 'react-native';
 import LocaleText from './LocaleText';
 import { useTranslation } from 'react-i18next';
@@ -104,6 +105,12 @@ export default function OnboardingOverlay() {
   if (step === 'choose_floor_type') return null;
   if (!config) return null;
 
+  // On Android, measureInWindow returns Y coordinates relative to the React
+  // Native root view which sits below the status bar, but this overlay is
+  // rendered in the full-screen GestureHandlerRootView (Y=0 = top of screen).
+  // Adding statusBarHeight compensates for that gap.
+  const androidYOffset = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
+
   // Use measured position if available, fallback to config fractions.
   // When neither is available (collect steps waiting for measurement), arrow is hidden.
   let px: number | undefined;
@@ -111,11 +118,12 @@ export default function OnboardingOverlay() {
   let spotlightRect: { x: number; y: number; w: number; h: number } | null = null;
 
   if (targetRect) {
+    const ty = targetRect.y + androidYOffset;
     px = targetRect.x + targetRect.width / 2;
     const padTop = config.spotlightPadTop ?? SPOTLIGHT_PAD_TOP;
     spotlightRect = {
       x: targetRect.x - SPOTLIGHT_PAD_SIDE,
-      y: targetRect.y - padTop,
+      y: ty - padTop,
       w: targetRect.width  + SPOTLIGHT_PAD_SIDE * 2,
       h: targetRect.height + padTop + SPOTLIGHT_PAD_BOTTOM,
     };
@@ -124,9 +132,9 @@ export default function OnboardingOverlay() {
     } else if (config.arrowBelowSpotlight && spotlightRect) {
       arrowTop = spotlightRect.y + spotlightRect.h + 4 + (config.arrowBelowOffset ?? 0);
     } else if (config.arrowDir === 'down') {
-      arrowTop = targetRect.y + targetRect.height - ARROW_SIZE - (config.arrowBottomOffset ?? 60);
+      arrowTop = ty + targetRect.height - ARROW_SIZE - (config.arrowBottomOffset ?? 60);
     } else {
-      arrowTop = targetRect.y + targetRect.height + 4;
+      arrowTop = ty + targetRect.height + 4;
     }
   } else if (config.pointer) {
     const py = config.pointer.y * SH;
@@ -139,7 +147,7 @@ export default function OnboardingOverlay() {
   // arrow should point at a specific element inside it (e.g. a button).
   if (arrowRect) {
     px = arrowRect.x + arrowRect.width / 2 + (config.arrowOffsetX ?? 0);
-    arrowTop = arrowRect.y - ARROW_SIZE - 4;
+    arrowTop = arrowRect.y + androidYOffset - ARROW_SIZE - 4;
   } else if (config.arrowOffsetX && px !== undefined) {
     px = px + config.arrowOffsetX;
   }

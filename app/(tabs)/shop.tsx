@@ -145,8 +145,8 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
   );
 }
 const dc = StyleSheet.create({
-  card:       { backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 18,
-                padding: 12, alignItems: 'center', gap: 6, elevation: 3 },
+  card:       { backgroundColor: '#FFFFFF', borderRadius: 18,
+                padding: 12, alignItems: 'center', gap: 6 },
   buying:     { opacity: 0.7 },
   badgePos:   { position: 'absolute', top: 8, right: 8, zIndex: 2 },
   img:        { width: 80, height: 80 },
