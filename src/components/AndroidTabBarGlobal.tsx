@@ -56,7 +56,7 @@ export default function AndroidTabBarGlobal() {
         {TABS.map((tabName) => {
           const isFocused = currentTab === tabName;
           const color = TAB_COLORS[tabName] ?? '#888';
-          const activeBg = theme.isDark ? 'rgba(255,255,255,0.09)' : `${color}18`;
+          const activeBg = theme.isDark ? 'rgba(255,255,255,0.14)' : `${color}28`;
 
           return (
             <Pressable
@@ -66,7 +66,6 @@ export default function AndroidTabBarGlobal() {
                   router.navigate(`/(tabs)/${tabName}` as never);
                 }
               }}
-              android_ripple={{ color: `${color}30`, borderless: false, radius: 40 }}
               style={[styles.tab, isFocused && { backgroundColor: activeBg }]}
             >
               <Svg viewBox="0 0 24 24" width={22} height={22}>
