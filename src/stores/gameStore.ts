@@ -1627,7 +1627,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
             if (f && !base.some((b) => b.id === (cmd as Extract<Command, { type: 'open_floor' }>).floorId)) extra.push(f);
           }
         }
-        const merged = extra.length > 0 ? [...base, ...extra] : base;
+        let merged = extra.length > 0 ? [...base, ...extra] : base;
+
+        // Re-apply pending floor production commands so optimistic collect/list/buy
+        // effects survive reconcile while the server hasn't confirmed them yet.
+        const pendingProdCmds = pendingQueue.filter(
+          (cmd) => cmd.type === 'collect' || cmd.type === 'list' || cmd.type === 'buy' ||
+                   cmd.type === 'collect_all' || cmd.type === 'list_all' || cmd.type === 'buy_all',
+        );
+        if (pendingProdCmds.length > 0) {
+          let workingState = { ...serverState, floors: merged, commandQueue: [] as Command[] };
+          for (const cmd of pendingProdCmds) {
+            const result = processCommand(workingState, cmd, gameConfig, cmd.timestamp);
+            if (result.success) workingState = result.state;
+          }
+          merged = workingState.floors;
+        }
+
         // During the collect onboarding steps, preserve READY_TO_COLLECT on the
         // initial tutorial slots so the server's IDLE doesn't wipe our forced state.
         const onboardingStep = useOnboardingStore.getState().step;
