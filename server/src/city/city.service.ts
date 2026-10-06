@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CityRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { getCityLevel, getCityMaxMembers, getCityXpForNextLevel, CITY_LEVEL_THRESHOLDS } from './city-level';
+import { getCityLevel, getCityMaxMembers, getCityXpForNextLevel, CITY_LEVEL_CUMULATIVE } from './city-level';
 
 const CITY_FOUND_COST_GEMS = 1000;
 const CITY_RENAME_COST_GEMS = 500;
@@ -195,7 +195,7 @@ export class CityService {
     const level = getCityLevel(xp);
     const maxMembers = getCityMaxMembers(level);
     const xpForNextLevel = getCityXpForNextLevel(level);
-    const xpCurrentLevelBase = CITY_LEVEL_THRESHOLDS[level - 1] ?? 0;
+    const xpCurrentLevelBase = CITY_LEVEL_CUMULATIVE[level - 1] ?? 0;
     const xpRelative = xp - xpCurrentLevelBase;
 
     const myMembership = myPlayerId
@@ -685,7 +685,7 @@ export class CityService {
     entries.sort((a, b) => {
       if (b.level !== a.level) return b.level - a.level;
       // Same level: higher XP progress to next level wins
-      const currentThreshold = CITY_LEVEL_THRESHOLDS[a.level - 1] ?? 0;
+      const currentThreshold = CITY_LEVEL_CUMULATIVE[a.level - 1] ?? 0;
       const nextThreshold = getCityXpForNextLevel(a.level);
       if (nextThreshold === null) return 0; // both at max level
       const range = nextThreshold - currentThreshold;

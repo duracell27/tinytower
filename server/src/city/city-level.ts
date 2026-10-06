@@ -1,6 +1,6 @@
-// Cumulative XP required to REACH each level (index = level - 1).
-// Source: per-level thresholds provided in design spec.
-// cityXp = SUM of all members' playerXp; level derived from this array.
+// XP required to advance FROM each level (index = level - 1).
+// E.g. index 1 = XP needed to go from level 1 → level 2.
+// getCityLevel accumulates these to find the cumulative threshold.
 export const CITY_LEVEL_THRESHOLDS: number[] = [
   0,             // level 1
   1_000_000,     // level 2
@@ -85,10 +85,21 @@ export const CITY_LEVEL_THRESHOLDS: number[] = [
 
 export const MAX_CITY_LEVEL = CITY_LEVEL_THRESHOLDS.length;
 
+// Precomputed cumulative XP needed to reach each level (index = level - 1).
+// cumulative[0] = 0 (level 1 starts at 0)
+// cumulative[n] = sum of CITY_LEVEL_THRESHOLDS[0..n-1]
+export const CITY_LEVEL_CUMULATIVE: number[] = CITY_LEVEL_THRESHOLDS.reduce(
+  (acc, cost, i) => {
+    acc.push(i === 0 ? 0 : acc[i - 1] + cost);
+    return acc;
+  },
+  [] as number[],
+);
+
 export function getCityLevel(xp: number): number {
   let level = 1;
-  for (let i = 1; i < CITY_LEVEL_THRESHOLDS.length; i++) {
-    if (xp >= CITY_LEVEL_THRESHOLDS[i]) {
+  for (let i = 1; i < CITY_LEVEL_CUMULATIVE.length; i++) {
+    if (xp >= CITY_LEVEL_CUMULATIVE[i]) {
       level = i + 1;
     } else {
       break;
@@ -102,7 +113,7 @@ export function getCityMaxMembers(level: number): number {
 }
 
 export function getCityXpForNextLevel(level: number): number | null {
-  const idx = level; // threshold for level+1 is at index `level`
-  if (idx >= CITY_LEVEL_THRESHOLDS.length) return null;
-  return CITY_LEVEL_THRESHOLDS[idx];
+  const idx = level; // cumulative threshold for level+1 is at index `level`
+  if (idx >= CITY_LEVEL_CUMULATIVE.length) return null;
+  return CITY_LEVEL_CUMULATIVE[idx];
 }
