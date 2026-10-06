@@ -109,7 +109,7 @@ export default function CitySettingsScreen() {
 
   return (
     <AppBackground style={[styles.background, isDark && styles.backgroundDark]}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 16 }]} keyboardShouldPersistTaps="handled">
 
           {/* Header hero */}

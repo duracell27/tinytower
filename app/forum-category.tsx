@@ -139,7 +139,7 @@ export default function ForumCategoryScreen() {
       <Modal visible={modalVisible} animationType="slide" onRequestClose={handleCloseModal}>
         <KeyboardAvoidingView
           style={[styles.modalContainer, isDark && { backgroundColor: '#1A1E24' }]}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior="padding"
         >
           <View style={[styles.modalInner, { paddingTop: insets.top }]}>
             <LinearGradient colors={theme.isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.modalHeader}>

@@ -233,7 +233,7 @@ export default function ForumPostScreen() {
 
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
         keyboardVerticalOffset={0}
       >
         <FlatList
@@ -361,7 +361,7 @@ export default function ForumPostScreen() {
 
       {/* Edit post modal */}
       <Modal visible={editPostVisible} animationType="slide" onRequestClose={() => setEditPostVisible(false)}>
-        <KeyboardAvoidingView style={[styles.modalContainer, isDark && { backgroundColor: theme.surface }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={[styles.modalContainer, isDark && { backgroundColor: theme.surface }]} behavior="padding">
           <View style={{ flex: 1, paddingTop: insets.top }}>
             <LinearGradient colors={isDark ? ['#1E4018', '#143010'] : ['#5E8F42', '#4D7836']} style={styles.modalHeader}>
               <Pressable onPress={() => setEditPostVisible(false)} style={styles.modalClose} hitSlop={10}>

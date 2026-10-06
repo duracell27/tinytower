@@ -109,7 +109,7 @@ export default function CreateCityScreen() {
           <LocaleText style={styles.headerClose}>✕</LocaleText>
         </TouchableOpacity>
       </View>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.iconRow}>
             <Image source={IMG.cityBuildings} style={styles.heroImg} contentFit="contain" />
