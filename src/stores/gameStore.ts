@@ -981,6 +981,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       id: uuid(),
       type: 'collect_tip',
       timestamp: clock.now(),
+      visitorId: active?.id,
       newWorker,
       newWorkers,
       builderTool,
@@ -1074,6 +1075,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       timestamp: now,
       resolvedVisitors,
       builderTools,
+      deliveredVisitorIds: state.lobbyVisitors.map((v) => v.id),
       ...(preGeneratedWorkers.length > 0 && { preGeneratedWorkers }),
       ...(vipGuestWorkerBatches.length > 0 && { vipGuestWorkerBatches }),
     });
@@ -1477,23 +1479,41 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     // Compute pendingLocal here (outside the lobbyVisitors IIFE) so it can be
     // reused by the nextVisitorAt calculation below.
-    const serverLobbyIds = new Set(serverState.lobbyVisitors.map((sv) => sv.id));
+
+    // If deliver_all or collect_tip commands are still pending (server hasn't confirmed
+    // them yet), the server response will still contain the visitors that were already
+    // delivered optimistically. Filter them out to prevent the lobby from briefly
+    // refilling after delivery.
+    const deliveredVisitorIds = new Set<string>([
+      ...pendingQueue
+        .filter((cmd) => cmd.type === 'deliver_all')
+        .flatMap((cmd) => (cmd as Extract<Command, { type: 'deliver_all' }>).deliveredVisitorIds ?? []),
+      ...pendingQueue
+        .filter((cmd) => cmd.type === 'collect_tip')
+        .map((cmd) => (cmd as Extract<Command, { type: 'collect_tip' }>).visitorId)
+        .filter((id): id is string => id != null),
+    ]);
+    const serverLobbyVisitors = deliveredVisitorIds.size > 0
+      ? serverState.lobbyVisitors.filter((sv) => !deliveredVisitorIds.has(sv.id))
+      : serverState.lobbyVisitors;
+
+    const serverLobbyIds = new Set(serverLobbyVisitors.map((sv) => sv.id));
     const pendingSpawnIds = new Set(
       cur.commandQueue
         .filter((cmd) => cmd.type === 'spawn_visitor')
         .map((cmd) => (cmd as Extract<Command, { type: 'spawn_visitor' }>).visitorId),
     );
-    const serverMappedCount = serverState.lobbyVisitors.length;
+    const serverMappedCount = serverLobbyVisitors.length;
     const freeSlots = Math.max(0, cur.lobbyCapacity + computeVehicleBonuses(cur.vehicles).extraLobbyCapacity - serverMappedCount);
     const pendingLocal = cur.lobbyVisitors
-      .filter((lv) => pendingSpawnIds.has(lv.id) && !serverLobbyIds.has(lv.id))
+      .filter((lv) => pendingSpawnIds.has(lv.id) && !serverLobbyIds.has(lv.id) && !deliveredVisitorIds.has(lv.id))
       .slice(0, freeSlots);
 
     const lobbyVisitors = (() => {
       // Map all server visitors; supply defaults for legacy visitors that lack role/targetFloor
       // (created by createInitialState before eager generation was added).
       const floorTypeKeys = Object.keys(gameConfig.floorTypes);
-      const serverMapped = serverState.lobbyVisitors
+      const serverMapped = serverLobbyVisitors
         .map((sv) => {
           const local = cur.lobbyVisitors.find((lv) => lv.id === sv.id);
           const role = sv.role ?? local?.role ?? ('guest' as const);

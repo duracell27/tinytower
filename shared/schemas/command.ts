@@ -99,6 +99,7 @@ const WorkerDataSchema = z.object({
 
 export const CollectTipCommandSchema = TimestampedBaseSchema.extend({
   type: z.literal('collect_tip'),
+  visitorId: z.string().optional(),
   newWorker: WorkerDataSchema.optional(),
   newWorkers: z.array(WorkerDataSchema).optional(),
   builderTool: ToolKeySchema.optional(),
@@ -120,6 +121,7 @@ export const DeliverAllCommandSchema = TimestampedBaseSchema.extend({
   preGeneratedWorkers: z.array(WorkerDataSchema).optional(),
   vipGuestWorkerBatches: z.array(z.array(WorkerDataSchema)).optional(),
   resolvedVisitors: z.array(ResolvedVisitorSchema).optional(),
+  deliveredVisitorIds: z.array(z.string()).optional(),
 });
 
 export const UpgradeElevatorCommandSchema = TimestampedBaseSchema.extend({
