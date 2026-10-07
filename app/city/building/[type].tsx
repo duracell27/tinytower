@@ -14,10 +14,15 @@ import AppBackground from '../../../src/components/AppBackground';
 import { useAppTheme } from '../../../src/hooks/useAppTheme';
 import { api, CityBuildingDto } from '../../../src/services/api';
 import { useCityStore } from '../../../src/stores/cityStore';
+import { useGameStore } from '../../../src/stores/gameStore';
 import { useGameClock } from '../../../src/hooks/useGameClock';
 import { formatCompact, formatNumFull } from '../../../src/utils/format';
 
 // ─── Static config (mirrors server city-building.constants.ts) ───────────────
+
+type ToolKey = 'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement';
+
+const TOOL_IDX_TO_KEY: ToolKey[] = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'];
 
 interface ClientLevelConfig {
   coinsCost: number | null;
@@ -26,24 +31,26 @@ interface ClientLevelConfig {
   boostCoins: number;
   boostGems: number;
   durationH: number;
+  standardTools: { count: number; types: (1|2|3|4|5|6)[] };
+  vipTools:      { count: number; types: (1|2|3|4|5|6)[] };
 }
 
 const LEVEL_CONFIGS: ClientLevelConfig[] = [
-  { coinsCost: null,           gemsCost: 1_000,   vipGems: 10_000, boostCoins: 100_000,   boostGems: 100,  durationH: 15  },
-  { coinsCost: 10_000_000,     gemsCost: null,    vipGems: 10_000, boostCoins: 200_000,   boostGems: 200,  durationH: 30  },
-  { coinsCost: null,           gemsCost: 5_000,   vipGems: 10_000, boostCoins: 300_000,   boostGems: 300,  durationH: 45  },
-  { coinsCost: 100_000_000,    gemsCost: null,    vipGems: 10_000, boostCoins: 400_000,   boostGems: 400,  durationH: 60  },
-  { coinsCost: null,           gemsCost: 15_000,  vipGems: 10_000, boostCoins: 500_000,   boostGems: 500,  durationH: 74  },
-  { coinsCost: 500_000_000,    gemsCost: null,    vipGems: 10_000, boostCoins: 600_000,   boostGems: 600,  durationH: 89  },
-  { coinsCost: null,           gemsCost: 25_000,  vipGems: 10_000, boostCoins: 700_000,   boostGems: 700,  durationH: 104 },
-  { coinsCost: 2_500_000_000,  gemsCost: null,    vipGems: 10_000, boostCoins: 800_000,   boostGems: 800,  durationH: 119 },
-  { coinsCost: null,           gemsCost: 50_000,  vipGems: 10_000, boostCoins: 900_000,   boostGems: 900,  durationH: 134 },
-  { coinsCost: 10_000_000_000, gemsCost: null,    vipGems: 10_000, boostCoins: 1_000_000, boostGems: 1000, durationH: 149 },
-  { coinsCost: null,           gemsCost: 75_000,  vipGems: 10_000, boostCoins: 1_100_000, boostGems: 1100, durationH: 164 },
-  { coinsCost: 25_000_000_000, gemsCost: null,    vipGems: 10_000, boostCoins: 1_200_000, boostGems: 1200, durationH: 179 },
-  { coinsCost: null,           gemsCost: 100_000, vipGems: 10_000, boostCoins: 1_300_000, boostGems: 1300, durationH: 194 },
-  { coinsCost: 50_000_000_000, gemsCost: null,    vipGems: 10_000, boostCoins: 1_400_000, boostGems: 1400, durationH: 209 },
-  { coinsCost: null,           gemsCost: 150_000, vipGems: 10_000, boostCoins: 1_500_000, boostGems: 1500, durationH: 224 },
+  { coinsCost: null,           gemsCost: 1_000,   vipGems: 10_000, boostCoins: 100_000,   boostGems: 100,  durationH: 15,  standardTools: { count: 10,   types: [1,3,5] }, vipTools: { count: 100,  types: [2,4,6] } },
+  { coinsCost: 10_000_000,     gemsCost: null,    vipGems: 10_000, boostCoins: 200_000,   boostGems: 200,  durationH: 30,  standardTools: { count: 30,   types: [2,4,6] }, vipTools: { count: 200,  types: [1,3,5] } },
+  { coinsCost: null,           gemsCost: 5_000,   vipGems: 10_000, boostCoins: 300_000,   boostGems: 300,  durationH: 45,  standardTools: { count: 50,   types: [1,3,5] }, vipTools: { count: 300,  types: [2,4,6] } },
+  { coinsCost: 100_000_000,    gemsCost: null,    vipGems: 10_000, boostCoins: 400_000,   boostGems: 400,  durationH: 60,  standardTools: { count: 100,  types: [2,4,6] }, vipTools: { count: 400,  types: [1,3,5] } },
+  { coinsCost: null,           gemsCost: 15_000,  vipGems: 10_000, boostCoins: 500_000,   boostGems: 500,  durationH: 74,  standardTools: { count: 150,  types: [1,3,5] }, vipTools: { count: 500,  types: [2,4,6] } },
+  { coinsCost: 500_000_000,    gemsCost: null,    vipGems: 10_000, boostCoins: 600_000,   boostGems: 600,  durationH: 89,  standardTools: { count: 200,  types: [2,4,6] }, vipTools: { count: 600,  types: [1,3,5] } },
+  { coinsCost: null,           gemsCost: 25_000,  vipGems: 10_000, boostCoins: 700_000,   boostGems: 700,  durationH: 104, standardTools: { count: 250,  types: [1,3,5] }, vipTools: { count: 700,  types: [2,4,6] } },
+  { coinsCost: 2_500_000_000,  gemsCost: null,    vipGems: 10_000, boostCoins: 800_000,   boostGems: 800,  durationH: 119, standardTools: { count: 375,  types: [2,4,6] }, vipTools: { count: 800,  types: [1,3,5] } },
+  { coinsCost: null,           gemsCost: 50_000,  vipGems: 10_000, boostCoins: 900_000,   boostGems: 900,  durationH: 134, standardTools: { count: 500,  types: [1,3,5] }, vipTools: { count: 900,  types: [2,4,6] } },
+  { coinsCost: 10_000_000_000, gemsCost: null,    vipGems: 10_000, boostCoins: 1_000_000, boostGems: 1000, durationH: 149, standardTools: { count: 625,  types: [2,4,6] }, vipTools: { count: 1000, types: [1,3,5] } },
+  { coinsCost: null,           gemsCost: 75_000,  vipGems: 10_000, boostCoins: 1_100_000, boostGems: 1100, durationH: 164, standardTools: { count: 750,  types: [1,3,5] }, vipTools: { count: 1100, types: [2,4,6] } },
+  { coinsCost: 25_000_000_000, gemsCost: null,    vipGems: 10_000, boostCoins: 1_200_000, boostGems: 1200, durationH: 179, standardTools: { count: 875,  types: [2,4,6] }, vipTools: { count: 1200, types: [1,3,5] } },
+  { coinsCost: null,           gemsCost: 100_000, vipGems: 10_000, boostCoins: 1_300_000, boostGems: 1300, durationH: 194, standardTools: { count: 1000, types: [1,3,5] }, vipTools: { count: 1300, types: [2,4,6] } },
+  { coinsCost: 50_000_000_000, gemsCost: null,    vipGems: 10_000, boostCoins: 1_400_000, boostGems: 1400, durationH: 209, standardTools: { count: 1250, types: [2,4,6] }, vipTools: { count: 1400, types: [1,3,5] } },
+  { coinsCost: null,           gemsCost: 150_000, vipGems: 10_000, boostCoins: 1_500_000, boostGems: 1500, durationH: 224, standardTools: { count: 1500, types: [1,3,5] }, vipTools: { count: 1500, types: [2,4,6] } },
 ];
 
 const VIP_BUILDINGS = new Set(['VIP_CLUB', 'VIP_HOTEL']);
@@ -99,6 +106,15 @@ const BONUS_ICON: Record<string, any> = {
 const COIN_ICON = require('../../../assets/img/coin.png');
 const GEM_ICON  = require('../../../assets/img/diamond.png');
 
+const TOOL_ICONS: Record<ToolKey, any> = {
+  briks:  require('../../../assets/img/tools/briks.png'),
+  glass:  require('../../../assets/img/tools/glass.png'),
+  nails:  require('../../../assets/img/tools/nails.png'),
+  screw:  require('../../../assets/img/tools/screw.png'),
+  wood:   require('../../../assets/img/tools/wood.png'),
+  cement: require('../../../assets/img/tools/cement.png'),
+};
+
 const MAX_LEVEL = 15;
 
 const ROLE_RANK = ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
@@ -148,6 +164,7 @@ export default function BuildingDetailScreen() {
 
   const myRole = useCityStore((s) => s.city?.myRole);
   const canAct = isAdvisorOrHigher(myRole);
+  const playerTools = useGameStore((s) => s.tools);
 
   const [building, setBuilding] = useState<CityBuildingDto | null>(null);
   const [loading,  setLoading]  = useState(true);
@@ -463,6 +480,33 @@ export default function BuildingDetailScreen() {
                     </View>
                   </View>
 
+                  {/* Tools requirement row */}
+                  {(() => {
+                    const toolCfg = isVip ? nextCfg.vipTools : nextCfg.standardTools;
+                    const reqKeys = toolCfg.types.map((n) => TOOL_IDX_TO_KEY[n - 1]);
+                    return (
+                      <View style={[styles.toolsRequireRow, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
+                        <LocaleText style={[styles.toolsRequireLabel, { color: theme.textMuted }]}>
+                          {t('city.buildings.detail.toolsRequired')}
+                        </LocaleText>
+                        <View style={styles.toolsRequireItems}>
+                          {reqKeys.map((key) => {
+                            const have = (playerTools as any)?.[key] ?? 0;
+                            const enough = have >= toolCfg.count;
+                            return (
+                              <View key={key} style={styles.toolsRequireItem}>
+                                <Image source={TOOL_ICONS[key]} style={styles.toolsRequireIcon} contentFit="contain" />
+                                <LocaleText style={[styles.toolsRequireCount, { color: enough ? accent : '#D03030' }]}>
+                                  {`${have}/${toolCfg.count}`}
+                                </LocaleText>
+                              </View>
+                            );
+                          })}
+                        </View>
+                      </View>
+                    );
+                  })()}
+
                   <TouchableOpacity
                     style={[styles.actionBtn, { backgroundColor: accent }, busy && styles.disabled]}
                     activeOpacity={0.78}
@@ -750,5 +794,32 @@ const styles = StyleSheet.create({
   btnIcon: { width: 18, height: 18 },
 
   disabled: { opacity: 0.5 },
+
+  /* Tools requirement */
+  toolsRequireRow: {
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    gap: 8,
+  },
+  toolsRequireLabel: {
+    fontFamily: 'Fredoka_400Regular',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  toolsRequireItems: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  toolsRequireItem: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  toolsRequireIcon: { width: 28, height: 28 },
+  toolsRequireCount: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
+  },
 
 });
