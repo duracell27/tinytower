@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, ScrollView, StyleSheet, TouchableOpacity, Modal, Pressable,
-  TextInput, ActivityIndicator, useColorScheme, Alert,
+  TextInput, ActivityIndicator, useColorScheme, Alert, Keyboard,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
@@ -105,6 +105,7 @@ export default function CityBudgetScreen() {
     };
     try {
       await donate(cityId, payload);
+      Keyboard.dismiss();
       setPopup({
         message: t('city.budget.donated'),
         ok: true,
@@ -128,6 +129,7 @@ export default function CityBudgetScreen() {
       } else if (msg.includes('coins'))  errMsg = t('city.budget.errors.notEnoughCoins');
       else if (msg.includes('gems'))     errMsg = t('city.budget.errors.notEnoughGems');
       else if (msg.includes('tools'))    errMsg = t('city.budget.errors.notEnoughTools');
+      Keyboard.dismiss();
       setPopup({ message: errMsg });
     } finally {
       setDonating(false);
