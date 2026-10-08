@@ -57,7 +57,12 @@ describe('AuthService', () => {
           useValue: {
             findByEmail: jest.fn(),
             findById: jest.fn(),
+            findByPlayerName: jest.fn(),
+            findByGoogleId: jest.fn(),
+            findByAppleId: jest.fn(),
             createWithInitialState: jest.fn(),
+            linkSocialId: jest.fn(),
+            unlinkSocialId: jest.fn(),
           },
         },
         {
@@ -75,6 +80,8 @@ describe('AuthService', () => {
                 JWT_SECRET: 'test-secret',
                 JWT_ACCESS_TTL: '15m',
                 JWT_REFRESH_TTL: '30d',
+                GOOGLE_CLIENT_ID: 'test-google-client-id',
+                APPLE_CLIENT_ID: 'com.test.app',
               };
               return config[key];
             }),
@@ -219,6 +226,81 @@ describe('AuthService', () => {
       await authService.logout('player-uuid');
 
       expect(redis.del).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('loginWithGoogle', () => {
+    it('returns tokens for existing google account', async () => {
+      const googlePlayer = { ...mockPlayer, googleId: 'google-uid-123' };
+      jest.spyOn(authService as unknown as { verifyGoogleToken: () => Promise<unknown> }, 'verifyGoogleToken').mockResolvedValue({
+        sub: 'google-uid-123', email: 'g@gmail.com', name: 'Gtest',
+      });
+      playerService.findByGoogleId = jest.fn().mockResolvedValue(googlePlayer);
+      jwtService.sign.mockReturnValue('token');
+      redis.setex.mockResolvedValue('OK');
+
+      const result = await authService.loginWithGoogle('fake-id-token');
+      expect(result.player.id).toBe('player-uuid');
+      expect(playerService.findByGoogleId).toHaveBeenCalledWith('google-uid-123');
+    });
+
+    it('creates new player when google account not found', async () => {
+      jest.spyOn(authService as unknown as { verifyGoogleToken: () => Promise<unknown> }, 'verifyGoogleToken').mockResolvedValue({
+        sub: 'google-new-uid', email: 'new@gmail.com', name: 'NewUser',
+      });
+      playerService.findByGoogleId = jest.fn().mockResolvedValue(null);
+      playerService.findByPlayerName = jest.fn().mockResolvedValue(null);
+      playerService.createWithInitialState = jest.fn().mockResolvedValue(mockPlayer);
+      playerService.linkSocialId = jest.fn().mockResolvedValue(mockPlayer);
+      jwtService.sign.mockReturnValue('token');
+      redis.setex.mockResolvedValue('OK');
+
+      await authService.loginWithGoogle('fake-id-token');
+      expect(playerService.createWithInitialState).toHaveBeenCalled();
+      expect(playerService.linkSocialId).toHaveBeenCalledWith(mockPlayer.id, 'google', 'google-new-uid');
+    });
+  });
+
+  describe('convertWithGoogle', () => {
+    it('returns 409 conflict when googleId belongs to another player', async () => {
+      const otherPlayer = { ...mockPlayer, id: 'other-id', playerName: 'OtherGuy' };
+      jest.spyOn(authService as unknown as { verifyGoogleToken: () => Promise<unknown> }, 'verifyGoogleToken').mockResolvedValue({
+        sub: 'google-uid-taken', email: 'x@gmail.com', name: 'X',
+      });
+      playerService.findByGoogleId = jest.fn().mockResolvedValue(otherPlayer);
+
+      await expect(authService.convertWithGoogle('player-uuid', 'fake-token', false))
+        .rejects.toMatchObject({ status: 409, existingPlayerName: 'OtherGuy' });
+    });
+
+    it('links and returns tokens when googleId is free', async () => {
+      jest.spyOn(authService as unknown as { verifyGoogleToken: () => Promise<unknown> }, 'verifyGoogleToken').mockResolvedValue({
+        sub: 'google-free-uid', email: 'free@gmail.com', name: 'Free',
+      });
+      playerService.findByGoogleId = jest.fn().mockResolvedValue(null);
+      playerService.linkSocialId = jest.fn().mockResolvedValue(mockPlayer);
+      jwtService.sign.mockReturnValue('token');
+      redis.setex.mockResolvedValue('OK');
+
+      const result = await authService.convertWithGoogle('player-uuid', 'fake-token', false);
+      expect(result.player.id).toBe('player-uuid');
+      expect(playerService.linkSocialId).toHaveBeenCalledWith('player-uuid', 'google', 'google-free-uid');
+    });
+
+    it('unlinks from old player then links to current when overwrite=true', async () => {
+      const otherPlayer = { ...mockPlayer, id: 'other-id', playerName: 'OtherGuy' };
+      jest.spyOn(authService as unknown as { verifyGoogleToken: () => Promise<unknown> }, 'verifyGoogleToken').mockResolvedValue({
+        sub: 'google-taken', email: 'x@gmail.com', name: 'X',
+      });
+      playerService.findByGoogleId = jest.fn().mockResolvedValue(otherPlayer);
+      playerService.unlinkSocialId = jest.fn().mockResolvedValue(undefined);
+      playerService.linkSocialId = jest.fn().mockResolvedValue(mockPlayer);
+      jwtService.sign.mockReturnValue('token');
+      redis.setex.mockResolvedValue('OK');
+
+      await authService.convertWithGoogle('player-uuid', 'fake-token', true);
+      expect(playerService.unlinkSocialId).toHaveBeenCalledWith('other-id', 'google');
+      expect(playerService.linkSocialId).toHaveBeenCalledWith('player-uuid', 'google', 'google-taken');
     });
   });
 });
