@@ -3,6 +3,7 @@ import {
   View, ScrollView, StyleSheet, TouchableOpacity,
   ActivityIndicator, Alert, useColorScheme, Animated,
 } from 'react-native';
+import Svg, { Circle as SvgCircle } from 'react-native-svg';
 import CityBudgetInsufficientModal from '../../../src/components/CityBudgetInsufficientModal';
 import CityBuildingConfirmModal, { CityBuildingConfirmPayload } from '../../../src/components/CityBuildingConfirmModal';
 import { Image } from 'expo-image';
@@ -12,9 +13,8 @@ import { useTranslation } from 'react-i18next';
 import LocaleText from '../../../src/components/LocaleText';
 import AppBackground from '../../../src/components/AppBackground';
 import { useAppTheme } from '../../../src/hooks/useAppTheme';
-import { api, CityBuildingDto } from '../../../src/services/api';
+import { api, CityBuildingDto, CityBudget } from '../../../src/services/api';
 import { useCityStore } from '../../../src/stores/cityStore';
-import { useGameStore } from '../../../src/stores/gameStore';
 import { useGameClock } from '../../../src/hooks/useGameClock';
 import { formatCompact, formatNumFull } from '../../../src/utils/format';
 
@@ -117,6 +117,15 @@ const TOOL_ICONS: Record<ToolKey, any> = {
 
 const MAX_LEVEL = 15;
 
+const TOOL_KEY_TO_BUDGET: Record<ToolKey, keyof CityBudget> = {
+  briks:  'budgetBriks',
+  glass:  'budgetGlass',
+  nails:  'budgetNails',
+  screw:  'budgetScrew',
+  wood:   'budgetWood',
+  cement: 'budgetCement',
+};
+
 const ROLE_RANK = ['NEWBIE', 'CITIZEN', 'BUSINESSMAN', 'ADVISOR', 'VICE_MAYOR', 'ACTING_MAYOR', 'MAYOR'];
 function isAdvisorOrHigher(role: string | null | undefined): boolean {
   if (!role) return false;
@@ -151,6 +160,55 @@ function formatDuration(hours: number, hUnit: string, dUnit: string): string {
   return `${hours}${hUnit}`;
 }
 
+// ─── Tool progress circle ─────────────────────────────────────────────────────
+
+const TOOL_CIRCLE_SIZE = 62;
+const TOOL_STROKE = 5;
+const TOOL_R = (TOOL_CIRCLE_SIZE - TOOL_STROKE) / 2;
+const TOOL_CIRC = 2 * Math.PI * TOOL_R;
+
+function ToolProgressCircle({
+  toolKey, have, need, accent, isDark,
+}: { toolKey: ToolKey; have: number; need: number; accent: string; isDark: boolean }) {
+  const S = TOOL_CIRCLE_SIZE;
+  const progress  = need > 0 ? Math.min(1, have / need) : 0;
+  const enough    = have >= need;
+  const fillColor = enough ? '#49AA38' : '#D03030';
+  const trackColor = isDark ? '#243248' : '#E4EAF4';
+  const offset = TOOL_CIRC * (1 - progress);
+  return (
+    <View style={toolCircleStyles.wrap}>
+      <View style={{ width: S, height: S }}>
+        <Svg width={S} height={S} style={{ transform: [{ rotate: '-90deg' }] }}>
+          <SvgCircle cx={S / 2} cy={S / 2} r={TOOL_R} strokeWidth={TOOL_STROKE} stroke={trackColor} fill="none" />
+          <SvgCircle
+            cx={S / 2} cy={S / 2} r={TOOL_R}
+            strokeWidth={TOOL_STROKE}
+            stroke={fillColor}
+            fill="none"
+            strokeDasharray={`${TOOL_CIRC} ${TOOL_CIRC}`}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+          />
+        </Svg>
+        <View style={toolCircleStyles.iconLayer}>
+          <Image source={TOOL_ICONS[toolKey]} style={toolCircleStyles.icon} contentFit="contain" />
+        </View>
+      </View>
+      <LocaleText style={[toolCircleStyles.count, { color: fillColor }]}>
+        {`${have}/${need}`}
+      </LocaleText>
+    </View>
+  );
+}
+
+const toolCircleStyles = StyleSheet.create({
+  wrap:      { alignItems: 'center', gap: 4 },
+  iconLayer: { position: 'absolute', width: TOOL_CIRCLE_SIZE, height: TOOL_CIRCLE_SIZE, alignItems: 'center', justifyContent: 'center' },
+  icon:      { width: 30, height: 30 },
+  count:     { fontFamily: 'Fredoka_600SemiBold', fontSize: 12 },
+});
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function BuildingDetailScreen() {
@@ -162,9 +220,10 @@ export default function BuildingDetailScreen() {
   const insets = useSafeAreaInsets();
   const now    = useGameClock(5_000);
 
-  const myRole = useCityStore((s) => s.city?.myRole);
-  const canAct = isAdvisorOrHigher(myRole);
-  const playerTools = useGameStore((s) => s.tools);
+  const myRole      = useCityStore((s) => s.city?.myRole);
+  const canAct      = isAdvisorOrHigher(myRole);
+  const cityBudget  = useCityStore((s) => s.budget);
+  const fetchBudget = useCityStore((s) => s.fetchBudget);
 
   const [building, setBuilding] = useState<CityBuildingDto | null>(null);
   const [loading,  setLoading]  = useState(true);
@@ -186,6 +245,7 @@ export default function BuildingDetailScreen() {
   }, [cityId, type, t]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (cityId) fetchBudget(cityId); }, [cityId, fetchBudget]);
 
   async function act(fn: () => Promise<any>) {
     setBusy(true);
@@ -404,6 +464,22 @@ export default function BuildingDetailScreen() {
                       <LocaleText style={[styles.infoTileValue, { color: COIN_COLOR }]}>
                         {buildTimeLeft}
                       </LocaleText>
+                      {(() => {
+                        const totalMs    = (currentCfg?.durationH ?? 0) * 3_600_000;
+                        const leftMs     = Math.max(0, new Date(building!.buildFinishesAt!).getTime() - now);
+                        const remaining  = totalMs > 0 ? Math.min(1, leftMs / totalMs) : 0;
+                        const trackColor = isDark ? '#1A2436' : '#D8E2F0';
+                        return (
+                          <View style={[styles.costProgressTrack, { backgroundColor: trackColor, marginTop: 2 }]}>
+                            <View style={{
+                              position: 'absolute', left: 0, top: 0, bottom: 0,
+                              width: `${Math.round(remaining * 100)}%`,
+                              backgroundColor: COIN_COLOR,
+                              borderRadius: 3,
+                            }} />
+                          </View>
+                        );
+                      })()}
                     </View>
                     <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
                       <View style={styles.infoTileIconRow}>
@@ -449,25 +525,36 @@ export default function BuildingDetailScreen() {
 
                   <View style={styles.infoTiles}>
                     {/* Cost tile */}
-                    <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
-                      <View style={styles.infoTileIconRow}>
-                        <Image
-                          source={isVip || nextCfg.gemsCost != null ? GEM_ICON : COIN_ICON}
-                          style={styles.infoTileIcon}
-                          contentFit="contain"
-                        />
-                        <LocaleText style={[styles.infoTileLabel, { color: theme.textMuted }]}>
-                          {t('city.buildings.detail.fromBudget')}
-                        </LocaleText>
-                      </View>
-                      <LocaleText style={[styles.infoTileValue, {
-                        color: (isVip || nextCfg.gemsCost != null) ? GEM_COLOR : COIN_COLOR,
-                      }]}>
-                        {formatNumFull(isVip
-                          ? nextCfg.vipGems
-                          : nextCfg.gemsCost ?? nextCfg.coinsCost!)}
-                      </LocaleText>
-                    </View>
+                    {(() => {
+                      const isGemCost  = isVip || nextCfg.gemsCost != null;
+                      const cost       = isVip ? nextCfg.vipGems : (nextCfg.gemsCost ?? nextCfg.coinsCost!);
+                      const budgetHave = isGemCost ? (cityBudget?.budgetGems ?? 0) : (cityBudget?.budgetCoins ?? 0);
+                      const progress   = cost > 0 ? Math.min(1, budgetHave / cost) : 0;
+                      const enough     = budgetHave >= cost;
+                      const valColor   = isGemCost ? GEM_COLOR : COIN_COLOR;
+                      const barColor   = enough ? '#49AA38' : valColor;
+                      const trackColor = isDark ? '#1A2436' : '#D8E2F0';
+                      return (
+                        <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
+                          <View style={styles.infoTileIconRow}>
+                            <Image
+                              source={isGemCost ? GEM_ICON : COIN_ICON}
+                              style={styles.infoTileIcon}
+                              contentFit="contain"
+                            />
+                            <LocaleText style={[styles.infoTileLabel, { color: theme.textMuted }]}>
+                              {t('city.buildings.detail.fromBudget')}
+                            </LocaleText>
+                          </View>
+                          <LocaleText style={[styles.infoTileValue, { color: valColor }]}>
+                            {formatNumFull(cost)}
+                          </LocaleText>
+                          <View style={[styles.costProgressTrack, { backgroundColor: trackColor }]}>
+                            <View style={[styles.costProgressFill, { width: `${Math.round(progress * 100)}%`, backgroundColor: barColor }]} />
+                          </View>
+                        </View>
+                      );
+                    })()}
 
                     {/* Duration tile */}
                     <View style={[styles.infoTile, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
@@ -480,28 +567,26 @@ export default function BuildingDetailScreen() {
                     </View>
                   </View>
 
-                  {/* Tools requirement row */}
+                  {/* Tools requirement circles */}
                   {(() => {
                     const toolCfg = isVip ? nextCfg.vipTools : nextCfg.standardTools;
                     const reqKeys = toolCfg.types.map((n) => TOOL_IDX_TO_KEY[n - 1]);
                     return (
-                      <View style={[styles.toolsRequireRow, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
-                        <LocaleText style={[styles.toolsRequireLabel, { color: theme.textMuted }]}>
+                      <View style={[styles.toolsBlock, { backgroundColor: isDark ? '#243248' : '#F4F8FF' }]}>
+                        <LocaleText style={[styles.toolsBlockLabel, { color: theme.textMuted }]}>
                           {t('city.buildings.detail.toolsRequired')}
                         </LocaleText>
-                        <View style={styles.toolsRequireItems}>
-                          {reqKeys.map((key) => {
-                            const have = (playerTools as any)?.[key] ?? 0;
-                            const enough = have >= toolCfg.count;
-                            return (
-                              <View key={key} style={styles.toolsRequireItem}>
-                                <Image source={TOOL_ICONS[key]} style={styles.toolsRequireIcon} contentFit="contain" />
-                                <LocaleText style={[styles.toolsRequireCount, { color: enough ? accent : '#D03030' }]}>
-                                  {`${have}/${toolCfg.count}`}
-                                </LocaleText>
-                              </View>
-                            );
-                          })}
+                        <View style={styles.toolsBlockRow}>
+                          {reqKeys.map((key) => (
+                            <ToolProgressCircle
+                              key={key}
+                              toolKey={key}
+                              have={cityBudget ? Number(cityBudget[TOOL_KEY_TO_BUDGET[key]]) : 0}
+                              need={toolCfg.count}
+                              accent={accent}
+                              isDark={isDark}
+                            />
+                          ))}
                         </View>
                       </View>
                     );
@@ -512,12 +597,21 @@ export default function BuildingDetailScreen() {
                     activeOpacity={0.78}
                     disabled={busy}
                     onPress={() => {
-                      const isIdle = state === 'IDLE';
+                      const isIdle     = state === 'IDLE';
                       const costCurrency: 'gems' | 'coins' =
                         isVip || nextCfg!.gemsCost != null ? 'gems' : 'coins';
                       const costAmount = isVip
                         ? nextCfg!.vipGems
                         : nextCfg!.gemsCost ?? nextCfg!.coinsCost!;
+                      const toolCfg  = isVip ? nextCfg!.vipTools : nextCfg!.standardTools;
+                      const toolList = toolCfg.types.map((n) => {
+                        const key = TOOL_IDX_TO_KEY[n - 1];
+                        return {
+                          key,
+                          have: cityBudget ? Number(cityBudget[TOOL_KEY_TO_BUDGET[key]]) : 0,
+                          need: toolCfg.count,
+                        };
+                      });
                       setConfirm({
                         title: isIdle
                           ? t('city.buildings.detail.confirmTitle')
@@ -527,6 +621,7 @@ export default function BuildingDetailScreen() {
                           : t('city.buildings.detail.confirmUpgradeYes'),
                         currency: costCurrency,
                         amount: costAmount,
+                        tools: toolList,
                         onConfirm: () => act(() => api.startCityBuildingUpgrade(cityId!, btype)),
                       });
                     }}
@@ -648,8 +743,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  backBtn:    { width: 36 },
-  backText:   { fontSize: 28, lineHeight: 32, fontFamily: 'Fredoka_600SemiBold' },
+  backBtn:    { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
+  backText:   { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
   headerName: { flex: 1, fontFamily: 'Fredoka_700Bold', fontSize: 20, textAlign: 'center' },
 
   /* Card 2 — іконка + рівень + прогрес */
@@ -795,31 +890,35 @@ const styles = StyleSheet.create({
 
   disabled: { opacity: 0.5 },
 
-  /* Tools requirement */
-  toolsRequireRow: {
+  /* Tools requirement circles */
+  toolsBlock: {
     borderRadius: 14,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 14,
-    gap: 8,
+    gap: 10,
+    alignItems: 'center',
   },
-  toolsRequireLabel: {
+  toolsBlockLabel: {
     fontFamily: 'Fredoka_400Regular',
     fontSize: 12,
-    textAlign: 'center',
   },
-  toolsRequireItems: {
+  toolsBlockRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
+    gap: 18,
+    flexWrap: 'wrap',
   },
-  toolsRequireItem: {
-    alignItems: 'center',
-    gap: 4,
+
+  /* Cost progress bar */
+  costProgressTrack: {
+    width: '100%',
+    height: 5,
+    borderRadius: 3,
+    overflow: 'hidden',
   },
-  toolsRequireIcon: { width: 28, height: 28 },
-  toolsRequireCount: {
-    fontFamily: 'Fredoka_600SemiBold',
-    fontSize: 13,
+  costProgressFill: {
+    height: '100%',
+    borderRadius: 3,
   },
 
 });

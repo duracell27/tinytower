@@ -18,11 +18,21 @@ const { width: SCREEN_W } = Dimensions.get('window');
 const COIN_ICON = require('../../assets/img/coin.png');
 const GEM_ICON  = require('../../assets/img/diamond.png');
 
+const TOOL_ICONS: Record<string, any> = {
+  briks:  require('../../assets/img/tools/briks.png'),
+  glass:  require('../../assets/img/tools/glass.png'),
+  nails:  require('../../assets/img/tools/nails.png'),
+  screw:  require('../../assets/img/tools/screw.png'),
+  wood:   require('../../assets/img/tools/wood.png'),
+  cement: require('../../assets/img/tools/cement.png'),
+};
+
 export interface CityBuildingConfirmPayload {
   title: string;
   confirmText: string;
   currency: 'gems' | 'coins';
   amount: number;
+  tools?: { key: string; have: number; need: number }[];
   onConfirm: () => void;
 }
 
@@ -92,6 +102,28 @@ export default function CityBuildingConfirmModal({ payload, onClose, accent }: P
               </LocaleText>
             </View>
           </View>
+
+          {/* Tools */}
+          {payload.tools && payload.tools.length > 0 && (
+            <View style={[styles.toolsBox, { backgroundColor: isDark ? '#0F1A28' : '#FFFFFF' }]}>
+              <LocaleText style={[styles.toolsLabel, { color: isDark ? '#5A6880' : '#8A96A8' }]}>
+                {t('city.buildings.detail.toolsRequired')}
+              </LocaleText>
+              <View style={styles.toolsRow}>
+                {payload.tools.map(({ key, have, need }) => {
+                  const enough = have >= need;
+                  return (
+                    <View key={key} style={styles.toolItem}>
+                      <Image source={TOOL_ICONS[key]} style={styles.toolIcon} contentFit="contain" />
+                      <LocaleText style={[styles.toolCount, { color: enough ? '#49AA38' : '#D03030' }]}>
+                        {`${have}/${need}`}
+                      </LocaleText>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
 
           {/* Buttons */}
           <View style={styles.btnArea}>
@@ -175,6 +207,25 @@ const styles = StyleSheet.create({
   costRow:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
   costIcon:  { width: 30, height: 30 },
   costAmount: { fontFamily: 'Fredoka_700Bold', fontSize: 30 },
+
+  toolsBox: {
+    marginHorizontal: 20,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  toolsLabel: { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
+  toolsRow:   { flexDirection: 'row', gap: 16, flexWrap: 'wrap', justifyContent: 'center' },
+  toolItem:   { alignItems: 'center', gap: 3 },
+  toolIcon:   { width: 30, height: 30 },
+  toolCount:  { fontFamily: 'Fredoka_600SemiBold', fontSize: 12 },
 
   btnArea: { marginHorizontal: 20, gap: 10 },
 

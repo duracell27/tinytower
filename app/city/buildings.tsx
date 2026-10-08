@@ -72,6 +72,9 @@ const BUILDING_ORDER = [
 
 const MAX_LEVEL = 15;
 
+// Build duration in hours per level (mirrors city-building.constants.ts)
+const BUILD_DURATION_H = [15,30,45,60,74,89,104,119,134,149,164,179,194,209,224];
+
 function getTimeLeft(isoDate: string | null, nowMs: number, dUnit: string, hUnit: string, mUnit: string): string {
   if (!isoDate) return '';
   const diff = Math.max(0, new Date(isoDate).getTime() - nowMs);
@@ -254,6 +257,22 @@ export default function CityBuildingsScreen() {
                       <LocaleText style={[styles.chevron, { color: isDark ? '#4A6A8A' : '#AACCDD' }]}>›</LocaleText>
                     </View>
                   </View>
+
+                  {isBuild && b.buildFinishesAt && (() => {
+                    const totalMs   = (BUILD_DURATION_H[b.level - 1] ?? 15) * 3_600_000;
+                    const leftMs    = Math.max(0, new Date(b.buildFinishesAt).getTime() - now);
+                    const remaining = totalMs > 0 ? Math.min(1, leftMs / totalMs) : 0;
+                    const trackBg   = isDark ? '#0D1826' : '#E4EAF4';
+                    return (
+                      <View style={[styles.buildProgressTrack, { backgroundColor: trackBg }]}>
+                        <View style={{
+                          position: 'absolute', left: 0, top: 0, bottom: 0,
+                          width: `${Math.round(remaining * 100)}%`,
+                          backgroundColor: COIN_COLOR,
+                        }} />
+                      </View>
+                    );
+                  })()}
                 </TouchableOpacity>
               );
             })
@@ -289,6 +308,7 @@ const styles = StyleSheet.create({
 
   /* Card */
   card: { borderRadius: 18, overflow: 'hidden' },
+  buildProgressTrack: { height: 4, width: '100%', overflow: 'hidden' },
 
   /* Cap */
   cap: {
