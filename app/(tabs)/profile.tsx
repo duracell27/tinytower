@@ -489,6 +489,7 @@ const player = useAuthStore((s) => s.player);
   const [convertError, setConvertError] = useState('');
   const [convertLoading, setConvertLoading] = useState(false);
   const [conflictModal, setConflictModal] = useState<{ provider: 'google' | 'apple'; idToken: string; fullName?: string; existingName: string } | null>(null);
+  const [guestLogoutWarningVisible, setGuestLogoutWarningVisible] = useState(false);
 
   const handleConvert = async () => {
     if (!convertEmail.trim() || !convertPassword.trim() || !convertName.trim()) {
@@ -596,6 +597,16 @@ const player = useAuthStore((s) => s.player);
   }, [hasExpandContent]);
 
   const handleLogout = () => {
+    if (isTemporary) {
+      setGuestLogoutWarningVisible(true);
+      return;
+    }
+    logout();
+    router.replace('/');
+  };
+
+  const handleGuestLogoutConfirm = () => {
+    setGuestLogoutWarningVisible(false);
     logout();
     router.replace('/');
   };
@@ -934,6 +945,22 @@ const player = useAuthStore((s) => s.player);
             onCancel={() => setConflictModal(null)}
           />
         )}
+
+        <Modal visible={guestLogoutWarningVisible} transparent animationType="fade" onRequestClose={() => setGuestLogoutWarningVisible(false)}>
+          <View style={styles.convertOverlay}>
+            <Pressable style={styles.convertBackdrop} onPress={() => setGuestLogoutWarningVisible(false)} />
+            <View style={[styles.guestWarningCard, { backgroundColor: theme.surface }]}>
+              <LocaleText style={[styles.guestWarningTitle, { color: theme.text }]}>{t('profile.guestLogoutWarning.title')}</LocaleText>
+              <LocaleText style={[styles.guestWarningBody, { color: theme.isDark ? '#A0B8CC' : '#6B7C8D' }]}>{t('profile.guestLogoutWarning.body')}</LocaleText>
+              <Pressable onPress={handleGuestLogoutConfirm} style={styles.guestWarningConfirmBtn}>
+                <LocaleText style={styles.guestWarningConfirmText}>{t('profile.guestLogoutWarning.confirm')}</LocaleText>
+              </Pressable>
+              <Pressable onPress={() => setGuestLogoutWarningVisible(false)} style={styles.guestWarningCancelBtn}>
+                <LocaleText style={[styles.guestWarningCancelText, { color: theme.isDark ? '#7A9AB5' : '#8899AA' }]}>{t('profile.guestLogoutWarning.cancel')}</LocaleText>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
 
         {/* Settings bottom sheet */}
         {settingsMounted && <Modal
@@ -1707,6 +1734,49 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#fff',
+  },
+  guestWarningCard: {
+    margin: 24,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  guestWarningTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  guestWarningBody: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  guestWarningConfirmBtn: {
+    width: '100%',
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#C0392B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  guestWarningConfirmText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  guestWarningCancelBtn: {
+    paddingVertical: 8,
+  },
+  guestWarningCancelText: {
+    fontSize: 14,
   },
   friendsBadge: {
     backgroundColor: '#E05A4A',
