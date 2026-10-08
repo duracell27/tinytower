@@ -21,7 +21,7 @@ import { useAppTheme } from '../hooks/useAppTheme';
 interface LoginScreenProps {
   onSuccess: () => void;
   onGoogle: () => void;
-  onApple: () => void;
+  onApple?: () => void;
   onBack: () => void;
   initialTab?: 'login' | 'register';
 }
@@ -310,10 +310,12 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack, init
                 <GoogleIcon />
                 <LocaleText style={[styles.socialLabel, isDark && dk.socialLabel]}>Google</LocaleText>
               </Pressable>
-              <Pressable onPress={onApple} style={styles.appleButton}>
-                <LocaleText style={styles.appleIcon}>{''}</LocaleText>
-                <LocaleText style={styles.appleLabelText}>Apple</LocaleText>
-              </Pressable>
+              {onApple && (
+                <Pressable onPress={onApple} style={styles.appleButton}>
+                  <LocaleText style={styles.appleIcon}>{''}</LocaleText>
+                  <LocaleText style={styles.appleLabelText}>Apple</LocaleText>
+                </Pressable>
+              )}
             </View>
           </View>
         </ScrollView>
