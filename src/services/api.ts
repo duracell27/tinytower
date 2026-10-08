@@ -414,7 +414,7 @@ async function request<T>(
     const message = Array.isArray(raw)
       ? raw.map((m: unknown) => (typeof m === 'string' ? m : (m as Record<string, string>)?.message)).filter(Boolean).join(', ') || `HTTP ${res.status}`
       : raw || `HTTP ${res.status}`;
-    throw new Error(message);
+    throw Object.assign(new Error(message), { status: res.status, body: error });
   }
 
   const text = await res.text();
