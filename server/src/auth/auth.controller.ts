@@ -1,10 +1,12 @@
-import { Controller, Post, Delete, Body, UseGuards, Req, HttpCode, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Delete, Body, UseGuards, Req, HttpCode, BadRequestException, ConflictException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RegisterSchema } from './dto/register.dto';
 import { LoginSchema } from './dto/login.dto';
 import { RefreshSchema } from './dto/refresh.dto';
 import { ConvertSchema } from './dto/convert.dto';
+import { SocialLoginSchema } from './dto/social-login.dto';
+import { ConvertSocialSchema } from './dto/convert-social.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -46,6 +48,54 @@ export class AuthController {
     const result = ConvertSchema.safeParse(body);
     if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(", "));
     return this.authService.convertAccount(req.user.playerId, result.data);
+  }
+
+  @Post('social/google')
+  @HttpCode(200)
+  async socialGoogle(@Body() body: unknown) {
+    const result = SocialLoginSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(', '));
+    return this.authService.loginWithGoogle(result.data.idToken);
+  }
+
+  @Post('social/apple')
+  @HttpCode(200)
+  async socialApple(@Body() body: unknown) {
+    const result = SocialLoginSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(', '));
+    return this.authService.loginWithApple(result.data.idToken, result.data.fullName);
+  }
+
+  @Post('convert/google')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async convertGoogle(@Req() req: { user: { playerId: string } }, @Body() body: unknown) {
+    const result = ConvertSocialSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(', '));
+    try {
+      return await this.authService.convertWithGoogle(req.user.playerId, result.data.idToken, result.data.overwrite ?? false);
+    } catch (e: unknown) {
+      if (e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 409) {
+        throw new ConflictException({ existingPlayerName: (e as { existingPlayerName: string }).existingPlayerName });
+      }
+      throw e;
+    }
+  }
+
+  @Post('convert/apple')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async convertApple(@Req() req: { user: { playerId: string } }, @Body() body: unknown) {
+    const result = ConvertSocialSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(', '));
+    try {
+      return await this.authService.convertWithApple(req.user.playerId, result.data.idToken, result.data.fullName, result.data.overwrite ?? false);
+    } catch (e: unknown) {
+      if (e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 409) {
+        throw new ConflictException({ existingPlayerName: (e as { existingPlayerName: string }).existingPlayerName });
+      }
+      throw e;
+    }
   }
 
   @Post('logout')
