@@ -729,6 +729,12 @@
       "clear": "Clear"
     },
     "logout": "Log Out",
+    "guestLogoutWarning": {
+      "title": "Your progress will be lost",
+      "body": "You are logged in as a guest. Logging out will permanently delete your tower and all progress.",
+      "confirm": "Log Out Anyway",
+      "cancel": "Cancel"
+    },
     "convert": {
       "bannerTitle": "Save Your Progress",
       "bannerSub": "Create an account to keep your tower across devices.",
@@ -742,7 +748,17 @@
       "errorFillAll": "Please fill in all fields.",
       "errorPasswordShort": "Password must be at least 6 characters.",
       "errorGeneric": "Something went wrong. Please try again.",
-      "accountCreated": "Account created!"
+      "accountCreated": "Account created!",
+      "socialGoogle": "Continue with Google",
+      "socialApple": "Continue with Apple",
+      "socialOr": "or",
+      "socialConflict": {
+        "title": "Account already exists",
+        "body": "This {{provider}} account is linked to {{name}}. What would you like to do?",
+        "keepCurrent": "Keep my current progress",
+        "loadExisting": "Load {{name}}'s progress",
+        "cancel": "Cancel"
+      }
     },
     "settings": {
       "title": "Settings",
