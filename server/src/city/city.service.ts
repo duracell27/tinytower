@@ -724,13 +724,13 @@ export class CityService {
     ]);
   }
 
-  async getCityBonusForPlayer(playerId: string): Promise<{ level: number } | null> {
+  async getCityBonusForPlayer(playerId: string): Promise<{ level: number; cityId: string } | null> {
     const membership = await this.prisma.cityMembership.findUnique({
       where: { playerId },
       include: { city: { select: { cityXp: true } } },
     });
     if (!membership) return null;
-    return { level: getCityLevel(membership.city.cityXp) };
+    return { level: getCityLevel(membership.city.cityXp), cityId: membership.cityId };
   }
 
   async getXpStats(cityId: string, requesterId: string) {

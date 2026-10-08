@@ -35,6 +35,8 @@ export interface PlayerProfile {
   playerXp: number;
   openedFloorsCount: number;
   city: string | null;
+  cityId: string | null;
+  cityLevel: number | null;
   lastSeenAt: string;
   createdAt: string;
   avgStars: number;

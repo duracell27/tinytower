@@ -348,17 +348,43 @@ export default function UserProfileScreen() {
 
             <FloorStarsRow avg={profile.avgStars} />
 
-            {/* Avatar + Name centered */}
+            {/* Avatar + Name, optionally paired with city */}
             <View style={pStyles.profileCenter}>
-              <Image
-                source={getUserIcon(profile.playerLevel)}
-                style={[pStyles.avatar, { borderColor: theme.surface }, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]}
-                contentFit="cover"
-              />
-              <LocaleText style={[pStyles.name, { color: theme.text }]}>{profile.playerName}</LocaleText>
               {profile.city ? (
-                <LocaleText style={[pStyles.cityLabel, { color: theme.textMuted }]}>{profile.city}</LocaleText>
-              ) : null}
+                <View style={pStyles.profilePairRow}>
+                  <View style={pStyles.profilePairCol}>
+                    <Image
+                      source={getUserIcon(profile.playerLevel)}
+                      style={[pStyles.avatar, { borderColor: theme.surface }, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]}
+                      contentFit="cover"
+                    />
+                    <LocaleText style={[pStyles.name, { color: theme.text }]}>{profile.playerName}</LocaleText>
+                  </View>
+                  <View style={[pStyles.profilePairSpacer, { backgroundColor: theme.divider }]} />
+                  <Pressable
+                    style={pStyles.profilePairCol}
+                    onPress={() => profile.cityId && router.push(`/city/${profile.cityId}` as any)}
+                    disabled={!profile.cityId}
+                  >
+                    <Image source={CITY_ICON} style={pStyles.profileCityIcon} contentFit="contain" />
+                    <LocaleText style={[pStyles.profileCityName, { color: theme.text }]}>{profile.city}</LocaleText>
+                    {profile.cityLevel != null && (
+                      <LocaleText style={[pStyles.profileCityLevel, { color: theme.textMuted }]}>
+                        {t('city.levelLabel', { level: profile.cityLevel })}
+                      </LocaleText>
+                    )}
+                  </Pressable>
+                </View>
+              ) : (
+                <>
+                  <Image
+                    source={getUserIcon(profile.playerLevel)}
+                    style={[pStyles.avatar, { borderColor: theme.surface }, blocked && { borderColor: '#E05A4A', borderWidth: 2 }]}
+                    contentFit="cover"
+                  />
+                  <LocaleText style={[pStyles.name, { color: theme.text }]}>{profile.playerName}</LocaleText>
+                </>
+              )}
             </View>
 
             {/* Level + Floors — icon inline with number, label below */}
@@ -808,7 +834,7 @@ const pStyles = StyleSheet.create({
   errorText: { fontFamily: 'Fredoka_500Medium', fontSize: 16, color: '#E05A4A' },
 
   /* Stars */
-  starsRow: { flexDirection: 'row', justifyContent: 'center', gap: 4, marginBottom: 14 },
+  starsRow: { flexDirection: 'row', justifyContent: 'center', gap: 4, marginBottom: 24 },
   star: { width: 22, height: 22 },
 
   /* Cards */
@@ -832,7 +858,12 @@ const pStyles = StyleSheet.create({
     borderWidth: 3, borderColor: '#fff', overflow: 'hidden',
   },
   name: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, textAlign: 'center' },
-  cityLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 14, textAlign: 'center' },
+  profilePairRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  profilePairCol: { alignItems: 'center', gap: 6 },
+  profilePairSpacer: { width: 2, height: 80, marginHorizontal: 20, opacity: 0.7 },
+  profileCityIcon: { width: 60, height: 60 },
+  profileCityName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 17, textAlign: 'center' },
+  profileCityLevel: { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center' },
 
   /* Level + Floors */
   statsRow: {
