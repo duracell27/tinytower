@@ -52,6 +52,7 @@ export class AuthService {
     const player = await this.playerService.findByEmail(dto.email.toLowerCase().trim());
     if (!player) throw new UnauthorizedException('Invalid credentials');
 
+    if (!player.passwordHash) throw new UnauthorizedException('Invalid credentials');
     const valid = await bcrypt.compare(dto.password, player.passwordHash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 

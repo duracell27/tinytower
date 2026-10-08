@@ -19,7 +19,9 @@ describe('AuthService', () => {
   const mockPlayer = {
     id: 'player-uuid',
     email: 'test@test.com',
-    passwordHash: 'hashed-password',
+    passwordHash: 'hashed-password' as string | null,
+    googleId: null as string | null,
+    appleId: null as string | null,
     playerName: 'TestPlayer',
     balance: 100,
     stateVersion: 0,
@@ -36,7 +38,7 @@ describe('AuthService', () => {
     referralCode: null,
     city: null,
     isAdmin: false,
-      isTemporary: false,
+    isTemporary: false,
   };
 
   beforeEach(async () => {
