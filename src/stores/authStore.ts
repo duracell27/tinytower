@@ -227,9 +227,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
       setupUserPersistence(data.player.id);
-      if (data.player.isTemporary === false) {
-        useOnboardingStore.getState().reset();
-      }
+      useOnboardingStore.getState().reset();
     } catch (e) {
       set({ isLoading: false });
       throw e;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch, Dimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch, Dimensions, Alert } from 'react-native';
 import LocaleText from '../../src/components/LocaleText';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
@@ -935,7 +935,11 @@ const player = useAuthStore((s) => s.player);
             onKeepCurrent={async () => {
               const { provider, idToken, fullName } = conflictModal;
               setConflictModal(null);
-              await doSocialConvert(provider, idToken, fullName, true);
+              try {
+                await doSocialConvert(provider, idToken, fullName, true);
+              } catch {
+                Alert.alert('', t('profile.convert.errorGeneric'));
+              }
             }}
             onLoadExisting={() => {
               setConflictModal(null);
