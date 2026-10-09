@@ -76,7 +76,7 @@ export class AuthController {
       return await this.authService.convertWithGoogle(req.user.playerId, result.data.idToken, result.data.overwrite ?? false);
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 409) {
-        throw new ConflictException({ existingPlayerName: (e as { existingPlayerName: string }).existingPlayerName });
+        throw new ConflictException({ existingPlayerName: (e as unknown as { existingPlayerName: string }).existingPlayerName });
       }
       throw e;
     }
@@ -92,7 +92,7 @@ export class AuthController {
       return await this.authService.convertWithApple(req.user.playerId, result.data.idToken, result.data.fullName, result.data.overwrite ?? false);
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 409) {
-        throw new ConflictException({ existingPlayerName: (e as { existingPlayerName: string }).existingPlayerName });
+        throw new ConflictException({ existingPlayerName: (e as unknown as { existingPlayerName: string }).existingPlayerName });
       }
       throw e;
     }
