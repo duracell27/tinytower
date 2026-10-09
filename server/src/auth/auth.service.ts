@@ -227,7 +227,7 @@ export class AuthService {
     const existing = await find();
     if (existing) {
       const tokens = await this.generateTokens(existing.id, existing.email, existing.isAdmin);
-      return { ...tokens, player: { id: existing.id, email: existing.email, playerName: existing.playerName, isAdmin: existing.isAdmin } };
+      return { ...tokens, isNewUser: false, player: { id: existing.id, email: existing.email, playerName: existing.playerName, isAdmin: existing.isAdmin } };
     }
 
     const displayName = fullName
@@ -239,7 +239,7 @@ export class AuthService {
     await this.playerService.linkSocialId(player.id, provider, payload.sub);
 
     const tokens = await this.generateTokens(player.id, player.email, player.isAdmin);
-    return { ...tokens, player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin } };
+    return { ...tokens, isNewUser: true, player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin } };
   }
 
   private async convertSocial(

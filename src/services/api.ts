@@ -493,11 +493,11 @@ export const api = {
       'POST', '/auth/convert', { email, password, playerName },
     ),
   socialLoginGoogle: (idToken: string) =>
-    request<{ accessToken: string; refreshToken: string; player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: boolean } }>(
+    request<{ accessToken: string; refreshToken: string; isNewUser: boolean; player: { id: string; email: string; playerName: string; isAdmin: boolean } }>(
       'POST', '/auth/social/google', { idToken },
     ),
   socialLoginApple: (idToken: string, fullName?: string) =>
-    request<{ accessToken: string; refreshToken: string; player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: boolean } }>(
+    request<{ accessToken: string; refreshToken: string; isNewUser: boolean; player: { id: string; email: string; playerName: string; isAdmin: boolean } }>(
       'POST', '/auth/social/apple', { idToken, fullName },
     ),
   convertWithGoogle: (idToken: string, overwrite?: boolean) =>

@@ -227,7 +227,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
       setupUserPersistence(data.player.id);
-      useOnboardingStore.getState().reset();
+      if (data.isNewUser) {
+        useOnboardingStore.getState().reset();
+        useOnboardingStore.getState().start();
+        useGameStore.getState().initOnboardingProductions();
+      }
     } catch (e) {
       set({ isLoading: false });
       throw e;
