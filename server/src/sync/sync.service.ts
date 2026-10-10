@@ -33,6 +33,7 @@ export interface SyncResult {
   categoryProgress: Record<string, CategoryProgressState>;
   dailyLoginReward: { coins: number; gems: number } | null;
   acceptedCommandIds: string[];
+  failedCommandIds: string[];
   pendingReferralClaims: Array<{
     id: string;
     referredName: string;
@@ -747,6 +748,9 @@ export class SyncService {
       // prune "ghost" commands that were accepted in an earlier intermediate batch but
       // never removed from the queue due to the interim-batch acceptedCommandIds bug.
       acceptedCommandIds: [...acceptedCommands.map((c) => c.id), ...existingIds, ...failedCommandIds],
+      // Return failed command IDs separately so the client can detect silent failures
+      // (e.g. deliver_all rejected for insufficient gems) and show user feedback.
+      failedCommandIds,
     };
   }
 
