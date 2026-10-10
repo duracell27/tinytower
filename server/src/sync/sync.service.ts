@@ -95,8 +95,9 @@ export class SyncService {
           )
         : new Set<string>();
 
+    const SERVER_ONLY_COMMAND_TYPES = new Set(['dev_add_gems']);
     const newCommands = commands
-      .filter((c) => !existingIds.has(c.id) && c.timestamp > lastAckCursor)
+      .filter((c) => !existingIds.has(c.id) && c.timestamp > lastAckCursor && !SERVER_ONLY_COMMAND_TYPES.has(c.type))
       .sort((a, b) => a.timestamp - b.timestamp);
 
     this.logger.log(
