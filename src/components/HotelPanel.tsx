@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -91,15 +91,20 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const clearInsufficientResources = useGameStore((s) => s.clearInsufficientResources);
 
-  const unemployedWorkers = workers
-    .filter((w: Worker) => w.assignedFloorId === null)
-    .sort((a, b) => a.id.localeCompare(b.id));
-  const assignedWorkers = workers.filter((w: Worker) => w.assignedFloorId !== null);
+  const unemployedWorkers = useMemo(
+    () => workers.filter((w: Worker) => w.assignedFloorId === null).sort((a, b) => a.id.localeCompare(b.id)),
+    [workers],
+  );
+  const assignedWorkers = useMemo(
+    () => workers.filter((w: Worker) => w.assignedFloorId !== null),
+    [workers],
+  );
   const occupiedSeats = unemployedWorkers.length;
   const freeSeats = Math.max(0, hotelCapacity - occupiedSeats);
-  const betterCandidateCount = unemployedWorkers.filter((w) =>
-    isBetterCandidate(w, assignedWorkers, floors, openedFloorTypes ?? {}),
-  ).length;
+  const betterCandidateCount = useMemo(
+    () => unemployedWorkers.filter((w) => isBetterCandidate(w, assignedWorkers, floors, openedFloorTypes ?? {})).length,
+    [unemployedWorkers, assignedWorkers, floors, openedFloorTypes],
+  );
   const expansionCost = getHotelExpansionCost(hotelCapacity);
   const hasLowLevelWorkers = unemployedWorkers.some((w: Worker) => w.level < 9);
   const { claimedFinal: tutorialDone } = useTutorialTaskStore();
