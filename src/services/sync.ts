@@ -33,6 +33,7 @@ interface SyncResponse {
   categoryProgress: Record<string, CategoryProgressState>;
   dailyLoginReward?: { coins: number; gems: number } | null;
   acceptedCommandIds?: string[];
+  failedCommandIds?: string[];
   pendingReferralClaims?: Array<{
     id: string;
     referredName: string;
@@ -117,8 +118,9 @@ async function doSync(): Promise<void> {
 
     const onboarding = useOnboardingStore.getState();
     const duringOnboarding = onboarding.isActive && onboarding.step !== 'done';
+    const failedIds = new Set(response.failedCommandIds ?? []);
     if (needsReconcile && !duringOnboarding) {
-      store.reconcile(response.state, response.stateVersion, response.ackCursor, acceptedIds, sentIds, response.playerLevel, response.playerXp);
+      store.reconcile(response.state, response.stateVersion, response.ackCursor, acceptedIds, sentIds, response.playerLevel, response.playerXp, failedIds);
     } else {
       store.clearAckedCommands(response.ackCursor, acceptedIds, response.playerLevel, response.playerXp, response.state.lastDailyReset);
     }

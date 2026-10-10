@@ -249,7 +249,7 @@ interface GameActions {
     categoryProgress?: Record<string, CategoryProgressState>;
     dailyTipsRewardClaimed?: boolean;
   }) => void;
-  reconcile: (state: GameState, stateVersion: number, ackCursor: number, acceptedIds: Set<string>, sentIds: Set<string>, playerLevel?: number, playerXp?: number) => void;
+  reconcile: (state: GameState, stateVersion: number, ackCursor: number, acceptedIds: Set<string>, sentIds: Set<string>, playerLevel?: number, playerXp?: number, failedIds?: Set<string>) => void;
   clearAckedCommands: (ackCursor: number, acceptedIds: Set<string>, playerLevel?: number, playerXp?: number, serverLastDailyReset?: number) => void;
   exchangeGemsForCoins: (gems: number) => void;
   speedUpConstruction: (floorId: number) => void;
@@ -1388,7 +1388,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     tutorialTasks: state.tutorialTasks ?? { currentIndex: 0, snapshot: {}, claimedFinal: false },
   }),
 
-  reconcile: (serverState, newVersion, ackCursor, acceptedIds, sentIds, playerLevel, playerXp) => set((cur) => {
+  reconcile: (serverState, newVersion, ackCursor, acceptedIds, sentIds, playerLevel, playerXp, failedIds = new Set<string>()) => set((cur) => {
     // Commands that remain pending after this reconcile: already-queued commands minus
     // those the server confirmed as accepted.  Rejected offline commands stay in the queue
     // so they are automatically retried on the next sync cycle.
@@ -1403,17 +1403,29 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return true;
     });
 
+    // deliver_all commands that were just acked by the server this cycle but FAILED —
+    // the server rejected them (e.g. not enough gems / no visitors) and returned the
+    // pre-delivery state.  We re-apply their optimistic effects so the lobby stays
+    // empty and hotel workers don't vanish until the user explicitly retries.
+    const failedDeliverAlls = cur.commandQueue.filter(
+      (cmd) => cmd.type === 'deliver_all' && failedIds.has(cmd.id),
+    ) as Extract<Command, { type: 'deliver_all' }>[];
+
     const workers = (() => {
       // Re-apply pending worker commands over server state to preserve optimistic effects.
       // Without this, a stale sync response (stateVersion bumped by lobby visitors while
       // a hire was in-flight) triggers a reconcile that rolls back the optimistic hire,
       // causing the "better candidate" badge to flicker incorrectly.
-      const pendingWorkerCmds = pendingQueue.filter(
-        (cmd) => cmd.type === 'assign_worker' || cmd.type === 'fire_worker' ||
-          cmd.type === 'evict_worker' || cmd.type === 'fire_and_evict_worker' ||
-          cmd.type === 'evict_low_level_workers' || cmd.type === 'upgrade_to_specialist' ||
-          cmd.type === 'deliver_all',
-      );
+      // Also re-apply failed deliver_all commands to preserve optimistic hotel workers.
+      const pendingWorkerCmds = [
+        ...pendingQueue.filter(
+          (cmd) => cmd.type === 'assign_worker' || cmd.type === 'fire_worker' ||
+            cmd.type === 'evict_worker' || cmd.type === 'fire_and_evict_worker' ||
+            cmd.type === 'evict_low_level_workers' || cmd.type === 'upgrade_to_specialist' ||
+            cmd.type === 'deliver_all',
+        ),
+        ...failedDeliverAlls,
+      ];
       if (pendingWorkerCmds.length === 0) return serverState.workers;
       let workers = serverState.workers;
       let floors = serverState.floors;
@@ -1484,10 +1496,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // them yet), the server response will still contain the visitors that were already
     // delivered optimistically. Filter them out to prevent the lobby from briefly
     // refilling after delivery.
+    // Also include failed deliver_all commands: the server rejected them and returned
+    // the pre-delivery state (visitors still in lobby), but we preserve the optimistic
+    // empty-elevator view until the user explicitly retries or a successful sync clears it.
     const deliveredVisitorIds = new Set<string>([
       ...pendingQueue
         .filter((cmd) => cmd.type === 'deliver_all')
         .flatMap((cmd) => (cmd as Extract<Command, { type: 'deliver_all' }>).deliveredVisitorIds ?? []),
+      ...failedDeliverAlls
+        .flatMap((cmd) => cmd.deliveredVisitorIds ?? []),
       ...pendingQueue
         .filter((cmd) => cmd.type === 'collect_tip')
         .map((cmd) => (cmd as Extract<Command, { type: 'collect_tip' }>).visitorId)
@@ -1691,6 +1708,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
       tutorialProgress: serverState.tutorialProgress ?? cur.tutorialProgress,
       tutorialTasks: serverState.tutorialTasks ?? cur.tutorialTasks,
       locallyGrantedAchievements: new Set<string>(),
+      // If the server rejected any deliver_all commands, log them and show the
+      // existing InsufficientResourcesModal when the failure is clearly gem-related
+      // (server returned 0 gems while client had ≥1 optimistically).
+      failedCommandLog: failedDeliverAlls.length > 0
+        ? [
+            ...cur.failedCommandLog.slice(-19),
+            ...failedDeliverAlls.map((cmd) => ({
+              id: cmd.id,
+              type: 'deliver_all' as const,
+              error: 'server_rejected',
+              timestamp: Date.now(),
+            })),
+          ]
+        : cur.failedCommandLog,
+      insufficientResources: failedDeliverAlls.length > 0 && serverState.gems < 1
+        ? { currency: 'gems' as const, need: 1, have: serverState.gems }
+        : cur.insufficientResources,
     };
   }),
 

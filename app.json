@@ -37,7 +37,14 @@
       "expo-image",
       "expo-font",
       "expo-router",
-      "expo-localization"
+      "expo-localization",
+      "expo-apple-authentication",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.517555712792-vnvtm4lh1s095obu6tanh1qdsbg7d3gf"
+        }
+      ]
     ]
   }
 }

@@ -5,11 +5,31 @@ import * as bcrypt from 'bcrypt';
 import Redis from 'ioredis';
 import { randomUUID } from 'crypto';
 import type { StringValue } from 'ms';
+import { OAuth2Client } from 'google-auth-library';
+import appleSignin from 'apple-signin-auth';
 import { PlayerService } from '../player/player.service';
 import { REDIS_CLIENT } from './redis.provider';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
 import type { ConvertDto } from './dto/convert.dto';
+
+interface SocialTokenPayload {
+  sub: string;
+  email: string;
+  name: string;
+}
+
+export interface AppleFullName {
+  givenName?: string;
+  familyName?: string;
+}
+
+export class SocialConflictError extends Error {
+  status = 409;
+  constructor(public existingPlayerName: string) {
+    super('Social account already linked');
+  }
+}
 
 const GUEST_ADJECTIVES = ['Bold', 'Cheerful', 'Swift', 'Wise', 'Lucky', 'Brave', 'Clever', 'Happy', 'Calm', 'Eager'];
 const GUEST_NOUNS = ['Builder', 'Architect', 'Owner', 'Foreman', 'Creator', 'Planner', 'Designer', 'Investor'];
@@ -44,7 +64,7 @@ export class AuthService {
     const tokens = await this.generateTokens(player.id, player.email, player.isAdmin);
     return {
       ...tokens,
-      player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin },
+      player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin, isTemporary: false },
     };
   }
 
@@ -52,13 +72,14 @@ export class AuthService {
     const player = await this.playerService.findByEmail(dto.email.toLowerCase().trim());
     if (!player) throw new UnauthorizedException('Invalid credentials');
 
+    if (!player.passwordHash) throw new UnauthorizedException('Invalid credentials');
     const valid = await bcrypt.compare(dto.password, player.passwordHash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
     const tokens = await this.generateTokens(player.id, player.email, player.isAdmin);
     return {
       ...tokens,
-      player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin },
+      player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin, isTemporary: player.isTemporary },
     };
   }
 
@@ -135,6 +156,121 @@ export class AuthService {
       if (!existing) return name;
     }
     return `Guest${randomUUID().slice(0, 8)}`;
+  }
+
+  async loginWithGoogle(idToken: string) {
+    const payload = await this.verifyGoogleToken(idToken);
+    return this.loginOrCreateSocial('google', payload);
+  }
+
+  async loginWithApple(idToken: string, fullName?: AppleFullName) {
+    const payload = await this.verifyAppleToken(idToken);
+    return this.loginOrCreateSocial('apple', payload, fullName);
+  }
+
+  async convertWithGoogle(playerId: string, idToken: string, overwrite: boolean) {
+    const payload = await this.verifyGoogleToken(idToken);
+    return this.convertSocial(playerId, 'google', payload, overwrite);
+  }
+
+  async convertWithApple(playerId: string, idToken: string, fullName: AppleFullName | undefined, overwrite: boolean) {
+    const payload = await this.verifyAppleToken(idToken);
+    return this.convertSocial(playerId, 'apple', payload, overwrite);
+  }
+
+  private async verifyGoogleToken(idToken: string): Promise<SocialTokenPayload> {
+    const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
+    const client = new OAuth2Client(clientId);
+    const ticket = await client.verifyIdToken({ idToken, audience: clientId });
+    const payload = ticket.getPayload();
+    if (!payload?.sub) throw new UnauthorizedException('Invalid Google token');
+    return {
+      sub: payload.sub,
+      email: payload.email ?? `g-${payload.sub}@google.social`,
+      name: payload.name ?? payload.email?.split('@')[0] ?? 'Player',
+    };
+  }
+
+  private async verifyAppleToken(idToken: string): Promise<SocialTokenPayload> {
+    const clientId = this.configService.get<string>('APPLE_CLIENT_ID');
+    const payload = await appleSignin.verifyIdToken(idToken, { audience: clientId, ignoreExpiration: false });
+    if (!payload.sub) throw new UnauthorizedException('Invalid Apple token');
+    return {
+      sub: payload.sub,
+      email: payload.email ?? `a-${payload.sub}@apple.social`,
+      name: '',
+    };
+  }
+
+  private async generateUniquePlayerName(base: string): Promise<string> {
+    const clean = base.replace(/[^a-zA-Z0-9]/g, '').slice(0, 16) || 'Player';
+    const existing = await this.playerService.findByPlayerName(clean);
+    if (!existing) return clean;
+    for (let i = 0; i < 10; i++) {
+      const suffix = Math.floor(Math.random() * 9000) + 1000;
+      const candidate = `${clean}${suffix}`;
+      const taken = await this.playerService.findByPlayerName(candidate);
+      if (!taken) return candidate;
+    }
+    return `Player${randomUUID().slice(0, 8)}`;
+  }
+
+  private async loginOrCreateSocial(
+    provider: 'google' | 'apple',
+    payload: SocialTokenPayload,
+    fullName?: AppleFullName,
+  ) {
+    const find = provider === 'google'
+      ? () => this.playerService.findByGoogleId(payload.sub)
+      : () => this.playerService.findByAppleId(payload.sub);
+
+    const existing = await find();
+    if (existing) {
+      const tokens = await this.generateTokens(existing.id, existing.email, existing.isAdmin);
+      return { ...tokens, isNewUser: false, player: { id: existing.id, email: existing.email, playerName: existing.playerName, isAdmin: existing.isAdmin } };
+    }
+
+    const displayName = fullName
+      ? [fullName.givenName, fullName.familyName].filter(Boolean).join(' ')
+      : payload.name;
+    const playerName = await this.generateUniquePlayerName(displayName || 'Player');
+
+    const emailTaken = await this.playerService.findByEmail(payload.email);
+    if (emailTaken) throw new ConflictException('An account with this email already exists. Please log in with email and password.');
+
+    const player = await this.playerService.createWithInitialState(payload.email, null, playerName, false);
+    await this.playerService.linkSocialId(player.id, provider, payload.sub);
+
+    const tokens = await this.generateTokens(player.id, player.email, player.isAdmin);
+    return { ...tokens, isNewUser: true, player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin } };
+  }
+
+  private async convertSocial(
+    playerId: string,
+    provider: 'google' | 'apple',
+    payload: SocialTokenPayload,
+    overwrite: boolean,
+  ) {
+    const find = provider === 'google'
+      ? () => this.playerService.findByGoogleId(payload.sub)
+      : () => this.playerService.findByAppleId(payload.sub);
+
+    const existing = await find();
+
+    if (existing && existing.id === playerId) {
+      // Already linked to this player — return fresh tokens without awarding gems again
+      const tokens = await this.generateTokens(existing.id, existing.email, existing.isAdmin);
+      return { ...tokens, player: { id: existing.id, email: existing.email, playerName: existing.playerName, isAdmin: existing.isAdmin } };
+    }
+
+    if (existing && existing.id !== playerId) {
+      if (!overwrite) throw new SocialConflictError(existing.playerName);
+      await this.playerService.unlinkSocialId(existing.id, provider);
+    }
+
+    const player = await this.playerService.linkSocialId(playerId, provider, payload.sub);
+    const tokens = await this.generateTokens(player.id, player.email, player.isAdmin);
+    return { ...tokens, player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin } };
   }
 
   private async generateTokens(playerId: string, email: string, isAdmin: boolean) {

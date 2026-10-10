@@ -29,6 +29,8 @@ export interface PlayerProfileResult {
   playerXp: number;
   openedFloorsCount: number;
   city: string | null;
+  cityId: string | null;
+  cityLevel: number | null;
   lastSeenAt: string;
   createdAt: string;
   avgStars: number;
@@ -281,6 +283,8 @@ export class PlayersService {
       playerXp: player.playerXp,
       openedFloorsCount: player.openedFloorsCount + 1,
       city: player.city,
+      cityId: cityBonus?.cityId ?? null,
+      cityLevel: cityBonus ? cityBonus.level : null,
       lastSeenAt: player.lastSeenAt.toISOString(),
       createdAt: player.createdAt.toISOString(),
       avgStars,

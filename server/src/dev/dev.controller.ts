@@ -1,5 +1,6 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AdminGuard } from '../admin/admin.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ShopRewards, ToolKey, TokenColor } from '@shared/types';
 
@@ -11,7 +12,7 @@ interface CityBudgetGrantBody {
 }
 
 @Controller('dev')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AdminGuard)
 export class DevController {
   constructor(private prisma: PrismaService) {}
 

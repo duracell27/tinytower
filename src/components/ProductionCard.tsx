@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import LocaleText from './LocaleText';
 import Animated, { useSharedValue, useAnimatedProps, useAnimatedStyle, withTiming, withRepeat, withSequence, cancelAnimation, Easing } from 'react-native-reanimated';
@@ -277,6 +277,14 @@ interface ProductionCardProps {
   onLongPress?: () => void;
 }
 
+const PRIMARY_STAGES = new Set(['EMPTY', 'IDLE', 'READY_TO_LIST', 'READY_TO_COLLECT']);
+
+const styleCache = new Map<boolean, ReturnType<typeof getStyles>>();
+function getCachedStyles(theme: ReturnType<typeof useAppTheme>) {
+  if (!styleCache.has(theme.isDark)) styleCache.set(theme.isDark, getStyles(theme));
+  return styleCache.get(theme.isDark)!;
+}
+
 export default function ProductionCard({
   production,
   balance,
@@ -300,7 +308,7 @@ export default function ProductionCard({
   const router = useRouter();
   const theme = useAppTheme();
   const { isDark } = theme;
-  const styles = getStyles(theme);
+  const styles = getCachedStyles(theme);
 
   const typeConfig = production.typeId
     ? gameConfig.productionTypes[production.typeId] ?? null
@@ -312,7 +320,7 @@ export default function ProductionCard({
   const vehicles = useGameStore((s) => s.vehicles);
   const cityDeliveryBonus = useGameStore((s) => s.cityDeliveryBonus);
   const citySellBonus     = useGameStore((s) => s.citySellBonus);
-  const vb = computeVehicleBonuses(vehicles);
+  const vb = useMemo(() => computeVehicleBonuses(vehicles), [vehicles]);
   const effectiveDeliveryDuration = typeConfig
     ? Math.max(1_000, typeConfig.deliveryDuration * (1 - (vb.deliverySpeedPercent + cityDeliveryBonus) / 100))
     : 0;
@@ -418,7 +426,6 @@ export default function ProductionCard({
     : 0;
 
   const btnConfig = BTN_COLORS[effectiveStage] || BTN_COLORS.IDLE;
-  const PRIMARY_STAGES = new Set(['EMPTY', 'IDLE', 'READY_TO_LIST', 'READY_TO_COLLECT']);
   const isPrimaryStage = PRIMARY_STAGES.has(effectiveStage);
   const accentBtnConfig = { color: accentColor, shadowColor: shadeColor(accentColor, -28) };
   const resolvedBtnConfig = isPrimaryStage ? accentBtnConfig : btnConfig;
