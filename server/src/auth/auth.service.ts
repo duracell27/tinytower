@@ -235,6 +235,9 @@ export class AuthService {
       : payload.name;
     const playerName = await this.generateUniquePlayerName(displayName || 'Player');
 
+    const emailTaken = await this.playerService.findByEmail(payload.email);
+    if (emailTaken) throw new ConflictException('An account with this email already exists. Please log in with email and password.');
+
     const player = await this.playerService.createWithInitialState(payload.email, null, playerName, false);
     await this.playerService.linkSocialId(player.id, provider, payload.sub);
 
@@ -253,6 +256,12 @@ export class AuthService {
       : () => this.playerService.findByAppleId(payload.sub);
 
     const existing = await find();
+
+    if (existing && existing.id === playerId) {
+      // Already linked to this player — return fresh tokens without awarding gems again
+      const tokens = await this.generateTokens(existing.id, existing.email, existing.isAdmin);
+      return { ...tokens, player: { id: existing.id, email: existing.email, playerName: existing.playerName, isAdmin: existing.isAdmin } };
+    }
 
     if (existing && existing.id !== playerId) {
       if (!overwrite) throw new SocialConflictError(existing.playerName);
