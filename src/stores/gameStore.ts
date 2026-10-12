@@ -198,7 +198,7 @@ interface UIState {
   activeSheetCount: number;
   floorUpgradeModal: { floorId: number } | null;
   productionDetailModal: { floorId: number; slotIdx: number } | null;
-  cityAlert: { message: string; type?: 'error' | 'success' | 'info' } | null;
+  cityAlert: { message: string; type?: 'error' | 'success' | 'info'; icon?: any } | null;
   cityConfirm: { title: string; message: string; confirmText: string; danger?: boolean; gems?: number; onConfirm: () => void | Promise<void> } | null;
 }
 
@@ -297,7 +297,7 @@ interface GameActions {
   closeFloorUpgradeModal: () => void;
   openProductionDetailModal: (floorId: number, slotIdx: number) => void;
   closeProductionDetailModal: () => void;
-  showCityAlert: (payload: { message: string; type?: 'error' | 'success' | 'info' }) => void;
+  showCityAlert: (payload: { message: string; type?: 'error' | 'success' | 'info'; icon?: any }) => void;
   clearCityAlert: () => void;
   showCityConfirm: (payload: { title: string; message: string; confirmText: string; danger?: boolean; gems?: number; onConfirm: () => void | Promise<void> }) => void;
   clearCityConfirm: () => void;

@@ -398,6 +398,7 @@
         "donateFailed": "Donation failed. Please try again."
       }
     },
+    "tasksLockedMessage": "City Tasks become available at city level 10. Keep growing your city!",
     "sections": {
       "budget": "Budget",
       "tasks": "City Tasks",

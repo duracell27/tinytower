@@ -36,7 +36,11 @@ function AlertContent({ onDismiss }: { onDismiss: () => void }) {
   return (
     <View style={[styles.card, { backgroundColor: theme.isDark ? '#1A2E3E' : '#FFFFFF' }]}>
       <View style={[styles.iconCircle, { backgroundColor: iconBg }]}>
-        <LocaleText style={[styles.iconLabel, { color: iconColor }]}>{iconLabel}</LocaleText>
+        {alert.icon ? (
+          <Image source={alert.icon} style={styles.alertCustomIcon} contentFit="contain" />
+        ) : (
+          <LocaleText style={[styles.iconLabel, { color: iconColor }]}>{iconLabel}</LocaleText>
+        )}
       </View>
       <LocaleText style={[styles.message, { color: theme.text }]}>{alert.message}</LocaleText>
       <Pressable
@@ -286,6 +290,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   cityIcon: {
+    width: 40,
+    height: 40,
+  },
+  alertCustomIcon: {
     width: 40,
     height: 40,
   },
