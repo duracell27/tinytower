@@ -958,5 +958,31 @@
     "send": "Надіслати",
     "fillSubjectMessage": "Будь ласка, заповніть тему та повідомлення",
     "failedToSend": "Не вдалося надіслати"
+  },
+  "cityTasks": {
+    "title": "Міські завдання",
+    "styleStars": "Зірки стилю: {{count}}",
+    "noTasks": "Сьогодні завдань немає",
+    "join": "Приєднатись",
+    "collect": "Забрати",
+    "cancel": "Скасувати",
+    "available": "Доступно",
+    "inProgress": "В процесі",
+    "completed": "Завершено!",
+    "collected": "Зібрано",
+    "expired": "Прострочено",
+    "participants": "{{count}}/2 учасників",
+    "doubleBonus": "×2 бонус",
+    "taskTypes": {
+      "WHOLESALE_PURCHASES": "Оптові закупки",
+      "GOODS_ON_DISPLAY": "Товар на вітрині",
+      "CASH_COLLECTOR": "Інкасатор",
+      "CARRIER": "Перевізник",
+      "VIP_CARRIER": "ВІП-перевізник",
+      "EVICT_RESIDENTS": "Давай досвіданья",
+      "NEW_RESIDENTS": "Нові жителі",
+      "BUILD_FLOOR": "Все вище і вище",
+      "EASY_MONEY": "Легкі гроші"
+    }
   }
 }

@@ -958,5 +958,31 @@
     "send": "Send",
     "fillSubjectMessage": "Please fill in subject and message",
     "failedToSend": "Failed to send"
+  },
+  "cityTasks": {
+    "title": "City Tasks",
+    "styleStars": "Style Stars: {{count}}",
+    "noTasks": "No tasks available today",
+    "join": "Join",
+    "collect": "Collect",
+    "cancel": "Cancel",
+    "available": "Available",
+    "inProgress": "In progress",
+    "completed": "Completed!",
+    "collected": "Collected",
+    "expired": "Expired",
+    "participants": "{{count}}/2 participants",
+    "doubleBonus": "×2 bonus",
+    "taskTypes": {
+      "WHOLESALE_PURCHASES": "Wholesale Purchases",
+      "GOODS_ON_DISPLAY": "Goods on Display",
+      "CASH_COLLECTOR": "Cash Collector",
+      "CARRIER": "Carrier",
+      "VIP_CARRIER": "VIP Carrier",
+      "EVICT_RESIDENTS": "Goodbye, Residents",
+      "NEW_RESIDENTS": "New Residents",
+      "BUILD_FLOOR": "Higher and Higher",
+      "EASY_MONEY": "Easy Money"
+    }
   }
 }
