@@ -10,6 +10,7 @@ interface CityTaskState {
 }
 
 interface CityTaskActions {
+  reset: () => void;
   setFromSync: (payload: { tasks: CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number }) => void;
   fetchTasks: () => Promise<void>;
   joinTask: (taskId: string) => Promise<void>;
@@ -23,6 +24,8 @@ export const useCityTaskStore = create<CityTaskState & CityTaskActions>((set, ge
   cityStyleStars: 0,
   loading: false,
   error: null,
+
+  reset: () => set({ tasks: [], myActiveTaskId: null, cityStyleStars: 0, loading: false, error: null }),
 
   setFromSync: ({ tasks, myActiveTaskId, cityStyleStars }) => {
     set({ tasks, myActiveTaskId, cityStyleStars });

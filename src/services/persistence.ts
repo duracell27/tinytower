@@ -2,6 +2,8 @@ import { createMMKV } from 'react-native-mmkv';
 import { AppState } from 'react-native';
 import { GameStateSchema } from '../../shared/schemas/gameState';
 import { useGameStore } from '../stores/gameStore';
+import { useCityTaskStore } from '../stores/cityTaskStore';
+import { useCityStore } from '../stores/cityStore';
 import type { GameState } from '../../shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 
@@ -168,6 +170,8 @@ export function setupUserPersistence(userId: string): void {
 
   currentUserId = userId;
   storage = null;
+  useCityTaskStore.getState().reset();
+  useCityStore.getState().clearCity();
 
   const savedState = loadGameState();
   if (savedState) {
@@ -207,6 +211,8 @@ export function teardownPersistence(): void {
   currentUserId = null;
   storage = null;
   useGameStore.getState().reset();
+  useCityTaskStore.getState().reset();
+  useCityStore.getState().clearCity();
 }
 
 AppState.addEventListener('change', (nextAppState) => {
