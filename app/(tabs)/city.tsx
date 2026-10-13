@@ -389,7 +389,7 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
                     </View>
                   )}
                   {card.key === 'tasks' && taskActionCount > 0 && (
-                    <View style={styles.unreadBadge}>
+                    <View style={[styles.unreadBadge, { backgroundColor: '#2E6EC9' }]}>
                       <LocaleText style={styles.unreadBadgeText}>
                         {taskActionCount}
                       </LocaleText>
