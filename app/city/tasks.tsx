@@ -256,9 +256,11 @@ export default function CityTasksScreen() {
                   {!isDisabled && (
                     <View style={styles.actions}>
                       {isCompleted && (
-                        <LocaleText style={[styles.completedBadge, { color: '#3FA535' }]}>
-                          {t('cityTasks.completed')}
-                        </LocaleText>
+                        <View style={styles.completedPill}>
+                          <LocaleText style={styles.completedPillText}>
+                            {t('cityTasks.completed')}
+                          </LocaleText>
+                        </View>
                       )}
                       {showX2Timer && (
                         <X2TimerBadge canDoubleUntil={task.canDoubleUntil!} />
@@ -397,9 +399,10 @@ const styles = StyleSheet.create({
   },
   cardDisabled: { opacity: 0.55 },
 
-  badgesRow:      { flexDirection: 'row', gap: 6, alignItems: 'center' },
-  statusText:     { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
-  completedBadge: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, textAlign: 'center' },
+  badgesRow:         { flexDirection: 'row', gap: 6, alignItems: 'center' },
+  statusText:        { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
+  completedPill:     { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5, backgroundColor: '#3FA535', alignSelf: 'center' },
+  completedPillText: { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
 
   taskName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 17, textAlign: 'center' },
   taskDesc: { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17, textAlign: 'center' },
