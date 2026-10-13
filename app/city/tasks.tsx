@@ -226,19 +226,22 @@ export default function CityTasksScreen() {
                   {/* Participants — centered with avatar + profile tap */}
                   {task.participants.length > 0 && (
                     <View style={styles.participantsRow}>
-                      {task.participants.map((p) => {
-                        const member = getMember(p.playerId);
-                        const level = member?.playerLevel ?? 1;
-                        const name  = member?.playerName ?? p.playerId.slice(0, 8);
+                      {task.participants.map((p, idx) => {
+                        const member    = getMember(p.playerId);
+                        const level     = member?.playerLevel ?? 1;
+                        const name      = member?.playerName ?? p.playerId.slice(0, 8);
+                        const isHelper  = idx === 1;
+                        const chipBg    = isHelper ? (isDark ? '#2D1F45' : '#F0E8FF') : (isDark ? '#243547' : '#EBF3FF');
+                        const nameColor = isHelper ? (isDark ? '#C4A0F0' : '#9A6FD0') : (isDark ? '#8AAFD4' : PRIMARY);
                         return (
                           <TouchableOpacity
                             key={p.playerId}
-                            style={[styles.participantChip, { backgroundColor: isDark ? '#243547' : '#EBF3FF' }]}
+                            style={[styles.participantChip, { backgroundColor: chipBg }]}
                             onPress={() => router.push(`/user-profile/${p.playerId}` as any)}
                             activeOpacity={0.7}
                           >
                             <Image source={getUserIcon(level)} style={styles.participantAvatar} contentFit="cover" />
-                            <LocaleText style={[styles.participantName, { color: isDark ? '#8AAFD4' : PRIMARY }]}>
+                            <LocaleText style={[styles.participantName, { color: nameColor }]}>
                               {name}
                             </LocaleText>
                           </TouchableOpacity>
