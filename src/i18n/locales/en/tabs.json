@@ -961,6 +961,9 @@
   },
   "cityTasks": {
     "title": "City Tasks",
+    "headerDesc": "Daily collaborative challenges",
+    "starsCardTitle": "Style Stars",
+    "starsCardDesc": "Collected by your city",
     "styleStars": "Style Stars: {{count}}",
     "noTasks": "No tasks available today",
     "join": "Join",
@@ -984,6 +987,17 @@
       "NEW_RESIDENTS": "New Residents",
       "BUILD_FLOOR": "Higher and Higher",
       "EASY_MONEY": "Easy Money"
+    },
+    "taskDesc": {
+      "WHOLESALE_PURCHASES": "Buy {{count}} goods at wholesale",
+      "GOODS_ON_DISPLAY": "Place {{count}} goods on display",
+      "CASH_COLLECTOR": "Collect revenue from {{count}} goods",
+      "CARRIER": "Transport {{count}} visitors by elevator",
+      "VIP_CARRIER": "Bring {{count}} VIPs by elevator",
+      "EVICT_RESIDENTS": "Evict {{count}} residents",
+      "NEW_RESIDENTS": "Bring {{count}} new residents to hotel",
+      "BUILD_FLOOR": "Build a new floor",
+      "EASY_MONEY": "Get 30 diamonds from tips"
     }
   }
 }

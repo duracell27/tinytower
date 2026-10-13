@@ -961,6 +961,9 @@
   },
   "cityTasks": {
     "title": "Міські завдання",
+    "headerDesc": "Щоденні спільні завдання",
+    "starsCardTitle": "Зірки стилю",
+    "starsCardDesc": "Зібрані вашим містом",
     "styleStars": "Зірки стилю: {{count}}",
     "noTasks": "Сьогодні завдань немає",
     "join": "Приєднатись",
@@ -984,6 +987,17 @@
       "NEW_RESIDENTS": "Нові жителі",
       "BUILD_FLOOR": "Все вище і вище",
       "EASY_MONEY": "Легкі гроші"
+    },
+    "taskDesc": {
+      "WHOLESALE_PURCHASES": "Купи {{count}} товарів оптом",
+      "GOODS_ON_DISPLAY": "Виклади {{count}} товарів на вітрину",
+      "CASH_COLLECTOR": "Збери виручку з {{count}} товарів",
+      "CARRIER": "Перевези {{count}} відвідувачів ліфтом",
+      "VIP_CARRIER": "Підняти {{count}} VIP-гостей ліфтом",
+      "EVICT_RESIDENTS": "Виселити {{count}} мешканців",
+      "NEW_RESIDENTS": "Заселити {{count}} нових мешканців",
+      "BUILD_FLOOR": "Побудуй новий поверх",
+      "EASY_MONEY": "Отримай 30 діамантів від чайових"
     }
   }
 }
