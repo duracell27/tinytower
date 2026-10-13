@@ -276,7 +276,7 @@ export default function CityTasksScreen() {
                           <LocaleText style={styles.btnText}>{t('cityTasks.collect')}</LocaleText>
                         </TouchableOpacity>
                       )}
-                      {canModerate && (isInProgress || isCompleted) && (
+                      {(canModerate || amParticipant) && (isInProgress || isCompleted) && (
                         <TouchableOpacity
                           style={[styles.btn, { backgroundColor: '#E53935' }]}
                           onPress={() => handleCancel(task.id)}

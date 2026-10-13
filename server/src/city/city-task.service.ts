@@ -127,16 +127,23 @@ export class CityTaskService {
   }
 
   async cancelTask(actorId: string, taskId: string): Promise<void> {
-    const task = await this.prisma.cityDailyTask.findUnique({ where: { id: taskId } });
+    const task = await this.prisma.cityDailyTask.findUnique({
+      where: { id: taskId },
+      include: { participants: { select: { playerId: true } } },
+    });
     if (!task) throw new NotFoundException('Task not found');
     if (task.status !== CityTaskStatus.IN_PROGRESS && task.status !== CityTaskStatus.COMPLETED) {
       throw new BadRequestException('Task cannot be cancelled');
     }
     const membership = await this.prisma.cityMembership.findUnique({ where: { playerId: actorId } });
-    if (!membership || !LEADERSHIP_ROLES.includes(membership.role as CityRole)) {
-      throw new ForbiddenException('Only Vice Mayor, Acting Mayor, or Mayor can cancel');
-    }
+    if (!membership) throw new ForbiddenException('Not a member of this city');
     if (membership.cityId !== task.cityId) throw new ForbiddenException('Not a member of this city');
+
+    const isLeader = LEADERSHIP_ROLES.includes(membership.role as CityRole);
+    const isParticipant = task.participants.some((p) => p.playerId === actorId);
+    if (!isLeader && !isParticipant) {
+      throw new ForbiddenException('Only Vice Mayor, Acting Mayor, Mayor, or a task participant can cancel');
+    }
 
     await this.prisma.$transaction([
       this.prisma.cityTaskParticipant.deleteMany({ where: { taskId } }),
