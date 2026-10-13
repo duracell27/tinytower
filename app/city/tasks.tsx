@@ -256,7 +256,7 @@ export default function CityTasksScreen() {
 
                   {/* Actions */}
                   {isCollected && (
-                    <View style={[styles.completedPill, { backgroundColor: isDark ? '#2A3D4E' : '#D4E4EE' }]}>
+                    <View style={[styles.completedPill, { backgroundColor: isDark ? '#334D62' : '#E2EEF5' }]}>
                       <LocaleText style={[styles.completedPillText, { color: isDark ? '#6A8FA8' : '#5A7A8E' }]}>
                         {t('cityTasks.collected')}
                       </LocaleText>
