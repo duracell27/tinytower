@@ -316,10 +316,10 @@ const styles = StyleSheet.create({
   participantChip: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
   participantName: { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
 
-  actions:     { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginTop: 2 },
-  btn:         { borderRadius: 8, paddingVertical: 7, paddingHorizontal: 14 },
+  actions:     { gap: 6, marginTop: 2 },
+  btn:         { borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
   btnText:     { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
-  activeBadge: { borderRadius: 8, paddingVertical: 7, paddingHorizontal: 14 },
+  activeBadge: { borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
   activeBadgeText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
 
   emptyText: { fontFamily: 'Fredoka_500Medium', fontSize: 15, textAlign: 'center' },
