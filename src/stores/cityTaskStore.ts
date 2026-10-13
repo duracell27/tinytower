@@ -53,12 +53,26 @@ export const useCityTaskStore = create<CityTaskState & CityTaskActions>((set, ge
 
   collectTask: async (taskId) => {
     const result = await api.collectCityTask(taskId);
-    await get().fetchTasks();
+    set((s) => ({
+      tasks: s.tasks.map((t) =>
+        t.id === taskId ? { ...t, status: 'COLLECTED' as const, finalStars: result.finalStars } : t
+      ),
+      myActiveTaskId: s.myActiveTaskId === taskId ? null : s.myActiveTaskId,
+    }));
+    get().fetchTasks();
     return result;
   },
 
   cancelTask: async (taskId) => {
+    set((s) => ({
+      tasks: s.tasks.map((t) =>
+        t.id === taskId
+          ? { ...t, status: 'AVAILABLE' as const, participants: [], currentProgress: 0, takenAt: null, canDoubleUntil: null }
+          : t
+      ),
+      myActiveTaskId: s.myActiveTaskId === taskId ? null : s.myActiveTaskId,
+    }));
     await api.cancelCityTask(taskId);
-    await get().fetchTasks();
+    get().fetchTasks();
   },
 }));
