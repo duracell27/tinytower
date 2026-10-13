@@ -127,44 +127,42 @@ export default function CityTasksScreen() {
                     isDisabled && styles.cardDisabled,
                   ]}
                 >
-                  {/* Card header row */}
-                  <View style={styles.cardHeader}>
-                    <LocaleText style={[styles.taskName, { color: isDisabled ? theme.textMuted : theme.text }]}>
-                      {t(`cityTasks.taskTypes.${task.taskType}` as any)}
-                    </LocaleText>
-                    <View style={styles.badges}>
-                      {task.canDoubleUntil && isX2Active(task) && (
-                        <View style={[styles.x2Badge, { backgroundColor: PRIMARY }]}>
-                          <LocaleText style={styles.x2Text}>{t('cityTasks.doubleBonus')}</LocaleText>
-                        </View>
-                      )}
-                      {isCompleted && (
-                        <LocaleText style={[styles.statusText, { color: '#3FA535' }]}>
-                          {t('cityTasks.completed')}
-                        </LocaleText>
-                      )}
-                      {isCollected && (
-                        <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
-                          {t('cityTasks.collected')}
-                        </LocaleText>
-                      )}
-                      {isExpired && (
-                        <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
-                          {t('cityTasks.expired')}
-                        </LocaleText>
-                      )}
-                    </View>
+                  {/* Badges row */}
+                  <View style={styles.badgesRow}>
+                    {task.canDoubleUntil && isX2Active(task) && (
+                      <View style={[styles.x2Badge, { backgroundColor: PRIMARY }]}>
+                        <LocaleText style={styles.x2Text}>{t('cityTasks.doubleBonus')}</LocaleText>
+                      </View>
+                    )}
+                    {isCompleted && (
+                      <LocaleText style={[styles.statusText, { color: '#3FA535' }]}>
+                        {t('cityTasks.completed')}
+                      </LocaleText>
+                    )}
+                    {isCollected && (
+                      <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
+                        {t('cityTasks.collected')}
+                      </LocaleText>
+                    )}
+                    {isExpired && (
+                      <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
+                        {t('cityTasks.expired')}
+                      </LocaleText>
+                    )}
                   </View>
 
-                  {/* Task description */}
+                  {/* Centered title + description */}
+                  <LocaleText style={[styles.taskName, { color: isDisabled ? theme.textMuted : theme.text }]}>
+                    {t(`cityTasks.taskTypes.${task.taskType}` as any)}
+                  </LocaleText>
                   <LocaleText style={[styles.taskDesc, { color: theme.textMuted }]}>
                     {hasCountInDesc
                       ? t(taskDescKey, { count: task.requiredCount })
                       : t(taskDescKey)}
                   </LocaleText>
 
-                  {/* Progress */}
-                  <View style={styles.progressRow}>
+                  {/* Progress label right-aligned + bar */}
+                  <View style={styles.progressLabelRow}>
                     <LocaleText style={[styles.progressText, { color: isDisabled ? theme.textMuted : theme.text }]}>
                       {task.currentProgress} / {task.requiredCount}
                     </LocaleText>
@@ -297,17 +295,16 @@ const styles = StyleSheet.create({
   },
   cardDisabled: { opacity: 0.55 },
 
-  cardHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  taskName:    { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, flex: 1, marginRight: 8 },
-  badges:      { alignItems: 'flex-end', gap: 4 },
+  badgesRow:   { flexDirection: 'row', gap: 6, alignItems: 'center' },
   x2Badge:     { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
   x2Text:      { color: '#fff', fontFamily: 'Fredoka_700Bold', fontSize: 11 },
   statusText:  { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
 
-  taskDesc:    { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17 },
+  taskName:    { fontFamily: 'Fredoka_600SemiBold', fontSize: 17, textAlign: 'center' },
+  taskDesc:    { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17, textAlign: 'center' },
 
-  progressRow: { flexDirection: 'row', alignItems: 'center' },
-  progressText:{ fontFamily: 'Fredoka_500Medium', fontSize: 13 },
+  progressLabelRow: { alignItems: 'flex-end' },
+  progressText:     { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
 
   progressBar: { height: 6, borderRadius: 3, overflow: 'hidden' },
   progressFill:{ height: '100%', borderRadius: 3 },
