@@ -157,7 +157,7 @@ export default function CityTasksScreen() {
             </View>
           ) : (
             [...tasks].sort((a, b) => {
-              const order = { IN_PROGRESS: 0, AVAILABLE: 1, COMPLETED: 2, COLLECTED: 3, EXPIRED: 3 };
+              const order = { COMPLETED: 0, IN_PROGRESS: 1, AVAILABLE: 2, COLLECTED: 3, EXPIRED: 3 };
               return (order[a.status as keyof typeof order] ?? 3) - (order[b.status as keyof typeof order] ?? 3);
             }).map((task) => {
               const isAvailable = task.status === 'AVAILABLE';
