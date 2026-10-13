@@ -1163,7 +1163,7 @@ export default function GameScreen() {
           count={availableFloorCount}
           onPress={handleFABPress}
         />}
-        {!isOnboarding && !isTemporary && (
+        {!isOnboarding && !isTemporary && quickActionMode === null && !qaBarVisible && (
           <CityTaskFAB slot={0} aboveBar={false} onPress={() => router.push('/city/tasks')} />
         )}
         {!isOnboarding && quickActionMode === null && !qaBarVisible && (() => {
