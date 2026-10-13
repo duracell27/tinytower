@@ -107,7 +107,7 @@ export default function CityTasksScreen() {
               const isCompleted = task.status === 'COMPLETED';
               const isCollected = task.status === 'COLLECTED';
               const isExpired   = task.status === 'EXPIRED';
-              const isDisabled  = isAvailable || isCollected || isExpired;
+              const isDisabled  = isCollected || isExpired;
 
               const progressRatio = Math.min(1, task.currentProgress / Math.max(1, task.requiredCount));
               const amParticipant = task.participants.some((p) => p.playerId === playerId);
