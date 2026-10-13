@@ -255,7 +255,7 @@ export default function CityTasksScreen() {
                       )}
                       {canJoin && (
                         <TouchableOpacity
-                          style={[styles.btn, { backgroundColor: PRIMARY }]}
+                          style={[styles.btn, { backgroundColor: isInProgress ? '#9A6FD0' : PRIMARY }]}
                           onPress={() => handleJoin(task.id)}
                           activeOpacity={0.8}
                         >
