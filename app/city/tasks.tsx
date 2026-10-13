@@ -60,10 +60,10 @@ function X2TimerBadge({ canDoubleUntil }: { canDoubleUntil: string }) {
 }
 
 const timerStyles = StyleSheet.create({
-  badge:     { flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 20, paddingLeft: 3, paddingRight: 12, paddingVertical: 3, backgroundColor: PRIMARY, alignSelf: 'center' },
-  circle:    { width: 24, height: 24, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
-  x2:        { color: PRIMARY, fontFamily: 'Fredoka_700Bold', fontSize: 12 },
-  timerText: { color: '#fff', fontFamily: 'Fredoka_700Bold', fontSize: 13 },
+  badge:     { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 20, paddingLeft: 2, paddingRight: 10, paddingVertical: 2, backgroundColor: PRIMARY, alignSelf: 'center' },
+  circle:    { width: 20, height: 20, borderRadius: 10, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  x2:        { color: PRIMARY, fontFamily: 'Fredoka_700Bold', fontSize: 11 },
+  timerText: { color: '#fff', fontFamily: 'Fredoka_700Bold', fontSize: 12 },
 });
 
 export default function CityTasksScreen() {
