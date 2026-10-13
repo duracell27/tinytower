@@ -65,6 +65,7 @@ export const DailyTaskProgressSchema = z.object({
   gemsPurchased:    z.number().int().nonnegative().default(0),
   goodsCollected:   z.number().int().nonnegative().default(0),
   floorsBuilt:      z.number().int().nonnegative().default(0),
+  floorsStarted:    z.number().int().nonnegative().default(0),
   residentsEvicted: z.number().int().nonnegative().default(0),
   goodsListed:      z.number().int().nonnegative().default(0),
 });
@@ -72,7 +73,7 @@ export const DailyTaskProgressSchema = z.object({
 export const DailyTasksSchema = z.object({
   progress:           DailyTaskProgressSchema.default({
     visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
-    gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0,
+    gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, floorsStarted: 0, residentsEvicted: 0, goodsListed: 0,
   }),
   claimed:            z.array(z.string()).default([]),
   doubleRewardActive: z.boolean().default(false),
@@ -139,7 +140,7 @@ export const GameStateSchema = z.object({
   dailyTasks: DailyTasksSchema.default({
     progress: {
       visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
-      gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0,
+      gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, floorsStarted: 0, residentsEvicted: 0, goodsListed: 0,
     },
     claimed: [],
     doubleRewardActive: false,

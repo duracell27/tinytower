@@ -43,7 +43,7 @@ export function computeTaskDelta(
     [CityTaskType.VIP_CARRIER]:         d(after.vipsLifted,       before.vipsLifted),
     [CityTaskType.EVICT_RESIDENTS]:     d(after.residentsEvicted, before.residentsEvicted),
     [CityTaskType.NEW_RESIDENTS]:       d(after.residentsAdded,   before.residentsAdded),
-    [CityTaskType.BUILD_FLOOR]:         d(after.floorsBuilt,      before.floorsBuilt),
+    [CityTaskType.BUILD_FLOOR]:         d(after.floorsStarted ?? 0, before.floorsStarted ?? 0),
     [CityTaskType.EASY_MONEY]:          d(afterGems,              beforeGems),
   } as Record<CityTaskType, number>;
 }
