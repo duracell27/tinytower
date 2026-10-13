@@ -33,7 +33,7 @@ export class PlayerService {
     return this.prisma.player.delete({ where: { id: playerId } });
   }
 
-  async createWithInitialState(email: string, passwordHash: string, playerName: string, isTemporary = false) {
+  async createWithInitialState(email: string, passwordHash: string | null, playerName: string, isTemporary = false) {
     const initial = createInitialState(gameConfig);
 
     // Generate a unique referral code with up to 5 retry attempts
@@ -112,6 +112,35 @@ export class PlayerService {
       });
 
       return player;
+    });
+  }
+
+  async findByGoogleId(googleId: string) {
+    return this.prisma.player.findUnique({ where: { googleId } });
+  }
+
+  async findByAppleId(appleId: string) {
+    return this.prisma.player.findUnique({ where: { appleId } });
+  }
+
+  async linkSocialId(playerId: string, provider: 'google' | 'apple', socialId: string) {
+    const field = provider === 'google' ? 'googleId' : 'appleId';
+    const player = await this.prisma.player.update({
+      where: { id: playerId },
+      data: { [field]: socialId, isTemporary: false },
+    });
+    await this.prisma.playerState.update({
+      where: { playerId },
+      data: { gems: { increment: 5 } },
+    });
+    return player;
+  }
+
+  async unlinkSocialId(playerId: string, provider: 'google' | 'apple') {
+    const field = provider === 'google' ? 'googleId' : 'appleId';
+    await this.prisma.player.update({
+      where: { id: playerId },
+      data: { [field]: null },
     });
   }
 

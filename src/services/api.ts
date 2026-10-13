@@ -414,7 +414,7 @@ async function request<T>(
     const message = Array.isArray(raw)
       ? raw.map((m: unknown) => (typeof m === 'string' ? m : (m as Record<string, string>)?.message)).filter(Boolean).join(', ') || `HTTP ${res.status}`
       : raw || `HTTP ${res.status}`;
-    throw new Error(message);
+    throw Object.assign(new Error(message), { status: res.status, body: error });
   }
 
   const text = await res.text();
@@ -491,6 +491,22 @@ export const api = {
   convertAccount: (email: string, password: string, playerName: string) =>
     request<{ player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: false }; registrationGems: number }>(
       'POST', '/auth/convert', { email, password, playerName },
+    ),
+  socialLoginGoogle: (idToken: string) =>
+    request<{ accessToken: string; refreshToken: string; isNewUser: boolean; player: { id: string; email: string; playerName: string; isAdmin: boolean } }>(
+      'POST', '/auth/social/google', { idToken },
+    ),
+  socialLoginApple: (idToken: string, fullName?: string) =>
+    request<{ accessToken: string; refreshToken: string; isNewUser: boolean; player: { id: string; email: string; playerName: string; isAdmin: boolean } }>(
+      'POST', '/auth/social/apple', { idToken, fullName },
+    ),
+  convertWithGoogle: (idToken: string, overwrite?: boolean) =>
+    request<{ player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: false }; registrationGems: number }>(
+      'POST', '/auth/convert/google', { idToken, overwrite },
+    ),
+  convertWithApple: (idToken: string, fullName?: string, overwrite?: boolean) =>
+    request<{ player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: false }; registrationGems: number }>(
+      'POST', '/auth/convert/apple', { idToken, fullName, overwrite },
     ),
   deleteAccount: () =>
     request<void>('DELETE', '/auth/account'),
@@ -571,6 +587,8 @@ export const api = {
     request<{ ok: boolean }>('POST', '/dev/grant', rewards),
   devCityBudgetGrant: (cityId: string, payload: { coins?: number; gems?: number; tools?: Partial<Record<ToolKey, number>> }) =>
     request<{ ok: boolean }>('POST', '/dev/city-budget-grant', { cityId, ...payload }),
+  devCityXpGrant: (cityId: string, level: number) =>
+    request<{ ok: boolean; xp: number; level: number }>('POST', '/dev/city-xp-grant', { cityId, level }),
   getCityBuildings: (cityId: string) =>
     request<CityBuildingDto[]>('GET', `/city/${cityId}/buildings`),
   startCityBuildingUpgrade: (cityId: string, buildingType: string) =>

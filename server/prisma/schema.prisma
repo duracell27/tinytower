@@ -10,7 +10,9 @@ datasource db {
 model Player {
   id                 String              @id @default(uuid())
   email              String              @unique
-  passwordHash       String
+  passwordHash       String?
+  googleId           String?             @unique
+  appleId            String?             @unique
   playerName         String              @unique
   balance            Int                 @default(100)
   stateVersion       Int                 @default(0)

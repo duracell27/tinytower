@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch, Dimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch, Dimensions, Alert } from 'react-native';
 import LocaleText from '../../src/components/LocaleText';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
@@ -33,6 +33,8 @@ import { useFriendStore } from '../../src/stores/friendStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useBlockStore } from '../../src/stores/blockStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
+import SocialConflictModal from '../../src/components/SocialConflictModal';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const COIN_ICON        = require('../../assets/img/coin.png');
 const BEST_RPM_ICON    = require('../../assets/img/bestRPM.png');
@@ -292,6 +294,7 @@ const player = useAuthStore((s) => s.player);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useAuthStore((s) => s.logout);
   const convertAccount = useAuthStore((s) => s.convertAccount);
+  const convertWithSocial = useAuthStore((s) => s.convertWithSocial);
   const isTemporary = player?.isTemporary ?? false;
   const pendingRegistration = useAuthStore((s) => s.pendingRegistration);
   const playerLevel = useGameStore((s) => s.playerLevel);
@@ -485,6 +488,8 @@ const player = useAuthStore((s) => s.player);
   const [convertName, setConvertName] = useState(player?.playerName ?? '');
   const [convertError, setConvertError] = useState('');
   const [convertLoading, setConvertLoading] = useState(false);
+  const [conflictModal, setConflictModal] = useState<{ provider: 'google' | 'apple'; idToken: string; fullName?: string; existingName: string } | null>(null);
+  const [guestLogoutWarningVisible, setGuestLogoutWarningVisible] = useState(false);
 
   const handleConvert = async () => {
     if (!convertEmail.trim() || !convertPassword.trim() || !convertName.trim()) {
@@ -519,6 +524,66 @@ const player = useAuthStore((s) => s.player);
     }
   };
 
+  const doSocialConvert = async (provider: 'google' | 'apple', idToken: string, fullName?: string, overwrite?: boolean) => {
+    setConvertLoading(true);
+    setConvertError('');
+    try {
+      const result = await convertWithSocial(provider, idToken, fullName, overwrite);
+      if (result?.conflict) {
+        setConvertOpen(false);
+        setTimeout(() => {
+          setConflictModal({ provider, idToken, fullName, existingName: result.conflict });
+        }, 450);
+        return;
+      }
+      setConvertOpen(false);
+      setTimeout(() => {
+        useGameStore.getState().setTaskReward({
+          taskTitle: t('profile.convert.accountCreated'),
+          coins: 1000,
+          gems: 5,
+          tokenCount: 0,
+          tokenColor: 'green',
+        });
+      }, 450);
+    } catch (e) {
+      setConvertError(e instanceof Error ? e.message : t('profile.convert.errorGeneric'));
+    } finally {
+      setConvertLoading(false);
+    }
+  };
+
+  const handleConvertGoogle = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      void userInfo;
+      const tokens = await GoogleSignin.getTokens();
+      await doSocialConvert('google', tokens.idToken);
+    } catch {
+      setConvertError(t('auth:login.social.error'));
+    }
+  };
+
+  const handleConvertApple = async () => {
+    if (Platform.OS !== 'ios') return;
+    try {
+      const { default: AppleAuthentication } = await import('expo-apple-authentication');
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      const fullName = [credential.fullName?.givenName, credential.fullName?.familyName]
+        .filter(Boolean)
+        .join(' ') || undefined;
+      await doSocialConvert('apple', credential.identityToken!, fullName);
+    } catch {
+      setConvertError(t('auth:login.social.error'));
+    }
+  };
+
   const syncStatus = commandQueueLength > 2000
     ? 'critical'
     : commandQueueLength > 0
@@ -532,6 +597,16 @@ const player = useAuthStore((s) => s.player);
   }, [hasExpandContent]);
 
   const handleLogout = () => {
+    if (isTemporary) {
+      setGuestLogoutWarningVisible(true);
+      return;
+    }
+    logout();
+    router.replace('/');
+  };
+
+  const handleGuestLogoutConfirm = () => {
+    setGuestLogoutWarningVisible(false);
     logout();
     router.replace('/');
   };
@@ -832,9 +907,63 @@ const player = useAuthStore((s) => s.player);
                   : <LocaleText style={styles.convertSubmitText}>{t('profile.convert.submit')}</LocaleText>
                 }
               </Pressable>
+
+              <View style={styles.convertSocialDivider}>
+                <View style={[styles.convertSocialLine, { backgroundColor: theme.divider }]} />
+                <LocaleText style={[styles.convertSocialOrText, { color: theme.textMuted }]}>{t('profile.convert.socialOr')}</LocaleText>
+                <View style={[styles.convertSocialLine, { backgroundColor: theme.divider }]} />
+              </View>
+
+              <Pressable onPress={handleConvertGoogle} disabled={convertLoading} style={[styles.convertSocialBtn, { borderColor: theme.divider }]}>
+                <LocaleText style={[styles.convertSocialBtnText, { color: theme.text }]}>{t('profile.convert.socialGoogle')}</LocaleText>
+              </Pressable>
+              {Platform.OS === 'ios' && (
+                <Pressable onPress={handleConvertApple} disabled={convertLoading} style={[styles.convertSocialBtn, styles.convertSocialAppleBtn]}>
+                  <LocaleText style={styles.convertSocialAppleBtnText}>{t('profile.convert.socialApple')}</LocaleText>
+                </Pressable>
+              )}
             </ScrollView>
             </View>
           </KeyboardAvoidingView>
+        </Modal>
+
+        {conflictModal && (
+          <SocialConflictModal
+            visible
+            provider={conflictModal.provider}
+            existingName={conflictModal.existingName}
+            onKeepCurrent={async () => {
+              const { provider, idToken, fullName } = conflictModal;
+              setConflictModal(null);
+              try {
+                await doSocialConvert(provider, idToken, fullName, true);
+              } catch {
+                Alert.alert('', t('profile.convert.errorGeneric'));
+              }
+            }}
+            onLoadExisting={() => {
+              setConflictModal(null);
+              logout();
+              router.replace('/');
+            }}
+            onCancel={() => setConflictModal(null)}
+          />
+        )}
+
+        <Modal visible={guestLogoutWarningVisible} transparent animationType="fade" onRequestClose={() => setGuestLogoutWarningVisible(false)}>
+          <View style={styles.convertOverlay}>
+            <Pressable style={styles.convertBackdrop} onPress={() => setGuestLogoutWarningVisible(false)} />
+            <View style={[styles.guestWarningCard, { backgroundColor: theme.surface }]}>
+              <LocaleText style={[styles.guestWarningTitle, { color: theme.text }]}>{t('profile.guestLogoutWarning.title')}</LocaleText>
+              <LocaleText style={[styles.guestWarningBody, { color: theme.isDark ? '#A0B8CC' : '#6B7C8D' }]}>{t('profile.guestLogoutWarning.body')}</LocaleText>
+              <Pressable onPress={handleGuestLogoutConfirm} style={styles.guestWarningConfirmBtn}>
+                <LocaleText style={styles.guestWarningConfirmText}>{t('profile.guestLogoutWarning.confirm')}</LocaleText>
+              </Pressable>
+              <Pressable onPress={() => setGuestLogoutWarningVisible(false)} style={styles.guestWarningCancelBtn}>
+                <LocaleText style={[styles.guestWarningCancelText, { color: theme.isDark ? '#7A9AB5' : '#8899AA' }]}>{t('profile.guestLogoutWarning.cancel')}</LocaleText>
+              </Pressable>
+            </View>
+          </View>
         </Modal>
 
         {/* Settings bottom sheet */}
@@ -1574,6 +1703,84 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 17,
     color: '#fff',
+  },
+  convertSocialDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 12,
+  },
+  convertSocialLine: {
+    flex: 1,
+    height: 1,
+  },
+  convertSocialOrText: {
+    fontSize: 13,
+    marginHorizontal: 10,
+  },
+  convertSocialBtn: {
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  convertSocialBtnText: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  convertSocialAppleBtn: {
+    backgroundColor: '#000',
+    borderColor: '#000',
+  },
+  convertSocialAppleBtnText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#fff',
+  },
+  guestWarningCard: {
+    margin: 24,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  guestWarningTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  guestWarningBody: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  guestWarningConfirmBtn: {
+    width: '100%',
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#C0392B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  guestWarningConfirmText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  guestWarningCancelBtn: {
+    paddingVertical: 8,
+  },
+  guestWarningCancelText: {
+    fontSize: 14,
   },
   friendsBadge: {
     backgroundColor: '#E05A4A',

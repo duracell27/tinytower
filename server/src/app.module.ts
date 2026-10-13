@@ -22,6 +22,8 @@ import { CityChatModule } from './city-chat/city-chat.module';
 import { PaymentsModule } from './payments/payments.module';
 import { DevModule } from './dev/dev.module';
 
+const devModules = process.env.NODE_ENV !== 'production' ? [DevModule] : [];
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -45,7 +47,7 @@ import { DevModule } from './dev/dev.module';
     CityModule,
     CityChatModule,
     PaymentsModule,
-    DevModule,
+    ...devModules,
   ],
 })
 export class AppModule {}

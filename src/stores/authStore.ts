@@ -37,6 +37,8 @@ interface AuthActions {
   enterAsGuest: () => Promise<void>;
   retryRegistration: () => Promise<void>;
   convertAccount: (email: string, password: string, playerName: string) => Promise<number>;
+  loginWithSocial: (provider: 'google' | 'apple', idToken: string, fullName?: string) => Promise<void>;
+  convertWithSocial: (provider: 'google' | 'apple', idToken: string, fullName?: string, overwrite?: boolean) => Promise<{ conflict: string } | null>;
   requestConvertModal: () => void;
   clearConvertModal: () => void;
 }
@@ -210,6 +212,50 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       return data.registrationGems ?? 5;
     } catch (e) {
       set({ isLoading: false });
+      throw e;
+    }
+  },
+
+  loginWithSocial: async (provider, idToken, fullName) => {
+    set({ isLoading: true });
+    try {
+      const data = provider === 'google'
+        ? await api.socialLoginGoogle(idToken)
+        : await api.socialLoginApple(idToken, fullName);
+      api.setTokens(data.accessToken, data.refreshToken);
+      getStorage().set('player', JSON.stringify(data.player));
+      saveLastPlayer(data.player);
+      set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
+      setupUserPersistence(data.player.id);
+      if (data.isNewUser) {
+        useOnboardingStore.getState().reset();
+        useOnboardingStore.getState().start();
+        useGameStore.getState().initOnboardingProductions();
+      }
+    } catch (e) {
+      set({ isLoading: false });
+      throw e;
+    }
+  },
+
+  convertWithSocial: async (provider, idToken, fullName, overwrite) => {
+    set({ isLoading: true });
+    try {
+      const data = provider === 'google'
+        ? await api.convertWithGoogle(idToken, overwrite)
+        : await api.convertWithApple(idToken, fullName, overwrite);
+      const player = data.player;
+      getStorage().set('player', JSON.stringify(player));
+      saveLastPlayer(player);
+      set({ player, lastPlayer: player, isAuthenticated: true, isLoading: false });
+      setupUserPersistence(player.id);
+      return null;
+    } catch (e: unknown) {
+      set({ isLoading: false });
+      const err = e as { status?: number; body?: { message?: string; existingPlayerName?: string } };
+      if (err.status === 409 && err.body?.existingPlayerName) {
+        return { conflict: err.body.existingPlayerName };
+      }
       throw e;
     }
   },

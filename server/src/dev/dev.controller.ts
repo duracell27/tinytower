@@ -1,7 +1,9 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AdminGuard } from '../admin/admin.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ShopRewards, ToolKey, TokenColor } from '@shared/types';
+import { CITY_LEVEL_CUMULATIVE } from '../city/city-level';
 
 interface CityBudgetGrantBody {
   cityId: string;
@@ -11,7 +13,7 @@ interface CityBudgetGrantBody {
 }
 
 @Controller('dev')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AdminGuard)
 export class DevController {
   constructor(private prisma: PrismaService) {}
 
@@ -81,5 +83,17 @@ export class DevController {
     });
 
     return { ok: true };
+  }
+
+  @Post('city-xp-grant')
+  async cityXpGrant(@Body() body: { cityId: string; level?: number }) {
+    const { cityId, level = 10 } = body;
+    const idx = Math.max(0, Math.min(level - 1, CITY_LEVEL_CUMULATIVE.length - 1));
+    const xp = CITY_LEVEL_CUMULATIVE[idx];
+    await this.prisma.city.update({
+      where: { id: cityId },
+      data: { cityXp: xp },
+    });
+    return { ok: true, xp, level };
   }
 }

@@ -5,6 +5,7 @@ import { useAppTheme } from '../hooks/useAppTheme';
 import { useTranslation } from 'react-i18next';
 import ProductionCard from './ProductionCard';
 import { useFloor, useGameStore } from '../stores/gameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getWorkerForSlot, getFloorDiscount, getFloorSpecialistBonus } from '../../shared/engine/workerUtils';
@@ -142,8 +143,8 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
   const { t } = useTranslation('hotel');
   const { t: tContent } = useTranslation('gameContent');
   const floor = useFloor(floorId);
-  const workers = useGameStore((s) => s.workers);
-  const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
+  const workers = useGameStore(useShallow((s) => s.workers.filter((w) => w.assignedFloorId === floorId)));
+  const dynamicFloorType = useGameStore((s) => s.openedFloorTypes?.[String(floorId)] ?? null);
   const gems = useGameStore((s) => s.gems);
   const floorStars = useGameStore((s) => s.floorStars);
   const openFloorUpgradeModal = useGameStore((s) => s.openFloorUpgradeModal);
@@ -179,7 +180,6 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onboardingSlot0Ready]);
   const starCount = floorStars?.[String(floorId)] ?? 0;
-  const dynamicFloorType = openedFloorTypes?.[String(floorId)];
   const floorConfig = gameConfig.floors.find((f) => f.id === floorId);
   const floorType = floorConfig?.floorType ?? dynamicFloorType ?? null;
   const scheme = (floorType ? FLOOR_TYPE_SCHEMES[floorType] : undefined) ?? FLOOR_TYPE_SCHEMES.green;

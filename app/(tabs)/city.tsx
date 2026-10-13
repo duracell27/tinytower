@@ -361,6 +361,13 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
                   card.key === 'notifications' ? () => router.push(`/city/notifications?id=${city.id}`) :
                   card.key === 'chat'          ? () => router.push(`/city/chat?id=${city.id}`) :
                   card.key === 'buildings'     ? () => router.push(`/city/buildings?id=${city.id}`) :
+                  card.key === 'tasks'         ? () => {
+                    if (city.level < 10) {
+                      showCityAlert({ message: t('city.tasksLockedMessage'), type: 'info', icon: require('../../assets/img/city/cityTasks.png') });
+                    } else {
+                      router.push(`/city/tasks?id=${city.id}`);
+                    }
+                  } :
                   undefined
                 }
               >
