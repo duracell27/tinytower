@@ -15,6 +15,8 @@ import { AchievementService } from '../achievement/achievement.service';
 import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS } from '../referral/referral-constants';
 import { CityService } from '../city/city.service';
 import { CityBuildingService, CityBuildingBonuses } from '../city/city-building.service';
+import { CityTaskService, CityTaskSummaryDto } from '../city/city-task.service';
+import { computeTaskDelta } from '../city/city-task.constants';
 import { getCityLevel } from '../city/city-level';
 
 export interface SyncResult {
@@ -34,6 +36,7 @@ export interface SyncResult {
   dailyLoginReward: { coins: number; gems: number } | null;
   acceptedCommandIds: string[];
   failedCommandIds: string[];
+  cityTasks?: CityTaskSummaryDto[];
   pendingReferralClaims: Array<{
     id: string;
     referredName: string;
@@ -57,6 +60,7 @@ export class SyncService {
     private achievementService: AchievementService,
     private cityService: CityService,
     private cityBuildingService: CityBuildingService,
+    private cityTaskService: CityTaskService,
   ) {}
 
   async processSync(
@@ -113,6 +117,8 @@ export class SyncService {
 
     const gameStateBefore = this.dbToGameState(player);
     let gameState = checkDailyReset(gameStateBefore, serverNow);
+    let taskDeltaProgress = gameState.dailyTasks.progress;
+    let taskDeltaGems = gameState.dailyGemsCollected;
 
     // If a daily reset just fired and doubleRewardActive ended up false, the server may
     // have missed offline claim_daily_task commands from the previous day (server was down).
@@ -195,6 +201,11 @@ export class SyncService {
         );
       }
     }
+
+    const accumulatedTaskDelta = computeTaskDelta(
+      taskDeltaProgress, gameState.dailyTasks.progress,
+      taskDeltaGems, gameState.dailyGemsCollected,
+    );
 
     let boughtCount = 0;
     let listedCount = 0;
@@ -337,6 +348,11 @@ export class SyncService {
               xpBonusPercent:   { increment: xpBonusDelta },
             },
           });
+        }
+
+        // Update city task progress from this sync's command delta
+        if (player.cityMembership) {
+          await this.cityTaskService.updateProgressFromDelta(playerId, accumulatedTaskDelta, tx as any);
         }
 
         // Contribute XP earned this sync to the city if the player is a member
@@ -717,6 +733,14 @@ export class SyncService {
     const finalCoinBonus = gameState.coinBonusPercent + coinBonusDelta;
     const finalXpBonus   = gameState.xpBonusPercent   + xpBonusDelta;
 
+    let cityTasks: CityTaskSummaryDto[] | undefined;
+    if (player.cityMembership) {
+      const bonus = await this.cityService.getCityBonusForPlayer(playerId);
+      if (bonus) {
+        cityTasks = await this.cityTaskService.getOrCreateDailyTasks(bonus.cityId, bonus.level);
+      }
+    }
+
     // Ack all failed commands (except shop_purchase which is backed by real payment).
     // processCommand evaluates state at command.timestamp, which never changes —
     // so a command that fails now will fail on every future sync too.
@@ -752,6 +776,7 @@ export class SyncService {
       // Return failed command IDs separately so the client can detect silent failures
       // (e.g. deliver_all rejected for insufficient gems) and show user feedback.
       failedCommandIds,
+      cityTasks,
     };
   }
 
