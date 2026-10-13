@@ -1004,6 +1004,9 @@
     "cancelConfirmTitle": "Cancel Task?",
     "cancelConfirmBody": "All progress will be lost and the task will be reset.",
     "cancelConfirmOk": "Cancel Task",
-    "cancelConfirmKeep": "Keep"
+    "cancelConfirmKeep": "Keep",
+    "collectResultTitle": "Task Complete!",
+    "collectResultBody": "Your city earned {{count}} style stars",
+    "collectResultBtn": "Awesome!"
   }
 }

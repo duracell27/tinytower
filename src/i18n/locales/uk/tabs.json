@@ -1004,6 +1004,9 @@
     "cancelConfirmTitle": "Скасувати завдання?",
     "cancelConfirmBody": "Весь прогрес буде втрачено, а завдання повернеться до початкового стану.",
     "cancelConfirmOk": "Скасувати",
-    "cancelConfirmKeep": "Залишити"
+    "cancelConfirmKeep": "Залишити",
+    "collectResultTitle": "Завдання виконано!",
+    "collectResultBody": "Ваше місто отримало {{count}} зірок стилю",
+    "collectResultBtn": "Чудово!"
   }
 }

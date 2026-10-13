@@ -86,9 +86,15 @@ export default function CityTasksScreen() {
   const getMember = (pid: string) => city?.members?.find((m) => m.playerId === pid);
 
   const [cancelPendingId, setCancelPendingId] = useState<string | null>(null);
+  const [collectStars, setCollectStars]       = useState<number | null>(null);
 
   const handleJoin    = async (taskId: string) => { try { await joinTask(taskId); } catch {} };
-  const handleCollect = async (taskId: string) => { try { await collectTask(taskId); } catch {} };
+  const handleCollect = async (taskId: string) => {
+    try {
+      const res = await collectTask(taskId);
+      setCollectStars(res.finalStars);
+    } catch {}
+  };
   const handleCancelConfirm = async () => {
     if (!cancelPendingId) return;
     const id = cancelPendingId;
@@ -150,7 +156,10 @@ export default function CityTasksScreen() {
               </LocaleText>
             </View>
           ) : (
-            tasks.map((task) => {
+            [...tasks].sort((a, b) => {
+              const order = { IN_PROGRESS: 0, AVAILABLE: 1, COMPLETED: 2, COLLECTED: 3, EXPIRED: 3 };
+              return (order[a.status as keyof typeof order] ?? 3) - (order[b.status as keyof typeof order] ?? 3);
+            }).map((task) => {
               const isAvailable = task.status === 'AVAILABLE';
               const isCompleted = task.status === 'COMPLETED';
               const isCollected = task.status === 'COLLECTED';
@@ -178,19 +187,12 @@ export default function CityTasksScreen() {
                     isDisabled && styles.cardDisabled,
                   ]}
                 >
-                  {/* Status badges — only collected / expired shown at top */}
-                  {(isCollected || isExpired) && (
+                  {/* Status badge — expired only (at top) */}
+                  {isExpired && (
                     <View style={styles.badgesRow}>
-                      {isCollected && (
-                        <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
-                          {t('cityTasks.collected')}
-                        </LocaleText>
-                      )}
-                      {isExpired && (
-                        <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
-                          {t('cityTasks.expired')}
-                        </LocaleText>
-                      )}
+                      <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
+                        {t('cityTasks.expired')}
+                      </LocaleText>
                     </View>
                   )}
 
@@ -253,6 +255,14 @@ export default function CityTasksScreen() {
                   )}
 
                   {/* Actions */}
+                  {isCollected && (
+                    <View style={[styles.completedPill, { backgroundColor: isDark ? '#2A3D4E' : '#D4E4EE' }]}>
+                      <LocaleText style={[styles.completedPillText, { color: isDark ? '#6A8FA8' : '#5A7A8E' }]}>
+                        {t('cityTasks.collected')}
+                      </LocaleText>
+                    </View>
+                  )}
+
                   {!isDisabled && (
                     <View style={styles.actions}>
                       {isCompleted && (
@@ -341,6 +351,38 @@ export default function CityTasksScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* ── Collect result modal ── */}
+      <Modal
+        visible={collectStars !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCollectStars(null)}
+      >
+        <View style={modalStyles.overlay}>
+          <View style={[modalStyles.sheet, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+            <Image source={STAR_ICON} style={modalStyles.starIcon} contentFit="contain" />
+            <LocaleText style={[modalStyles.starsNumber, { color: isDark ? '#F5C842' : '#C89B00' }]}>
+              {collectStars}
+            </LocaleText>
+            <LocaleText style={[modalStyles.title, { color: theme.text }]}>
+              {t('cityTasks.collectResultTitle')}
+            </LocaleText>
+            <LocaleText style={[modalStyles.body, { color: theme.textMuted }]}>
+              {t('cityTasks.collectResultBody', { count: collectStars ?? 0 })}
+            </LocaleText>
+            <TouchableOpacity
+              style={[modalStyles.btn, { backgroundColor: '#3FA535' }]}
+              onPress={() => setCollectStars(null)}
+              activeOpacity={0.8}
+            >
+              <LocaleText style={modalStyles.btnOk}>
+                {t('cityTasks.collectResultBtn')}
+              </LocaleText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -397,7 +439,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     gap: 8,
   },
-  cardDisabled: { opacity: 0.55 },
+  cardDisabled: { opacity: 0.65 },
 
   badgesRow:         { flexDirection: 'row', gap: 6, alignItems: 'center' },
   statusText:        { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
@@ -428,12 +470,14 @@ const styles = StyleSheet.create({
 });
 
 const modalStyles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
-  sheet:   { width: '100%', borderRadius: 20, padding: 24, gap: 12 },
-  title:   { fontFamily: 'Fredoka_700Bold', fontSize: 20, textAlign: 'center' },
-  body:    { fontFamily: 'Fredoka_400Regular', fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  buttons: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  btn:     { flex: 1, borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
-  btnKeep: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
-  btnOk:   { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+  overlay:     { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
+  sheet:       { width: '100%', borderRadius: 20, padding: 24, gap: 12, alignItems: 'center' },
+  title:       { fontFamily: 'Fredoka_700Bold', fontSize: 20, textAlign: 'center' },
+  body:        { fontFamily: 'Fredoka_400Regular', fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  buttons:     { flexDirection: 'row', gap: 10, marginTop: 4, width: '100%' },
+  btn:         { flex: 1, borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
+  btnKeep:     { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+  btnOk:       { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+  starIcon:    { width: 56, height: 56 },
+  starsNumber: { fontFamily: 'Fredoka_700Bold', fontSize: 48, lineHeight: 54 },
 });
