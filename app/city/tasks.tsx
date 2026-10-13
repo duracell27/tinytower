@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View, ScrollView, StyleSheet, TouchableOpacity,
   ActivityIndicator, useColorScheme,
@@ -13,13 +13,53 @@ import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { useCityTaskStore } from '../../src/stores/cityTaskStore';
 import { useCityStore } from '../../src/stores/cityStore';
 import { useAuthStore } from '../../src/stores/authStore';
+import { getUserIcon } from '../../src/utils/userIcon';
 import type { CityTaskSummary } from '../../src/services/api';
 
-const PRIMARY     = '#2E6EC9';
-const TASKS_ICON  = require('../../assets/img/city/cityTasks.png');
-const STAR_ICON   = require('../../assets/img/starFull.png');
+const PRIMARY    = '#2E6EC9';
+const TASKS_ICON = require('../../assets/img/city/cityTasks.png');
+const STAR_ICON  = require('../../assets/img/starFull.png');
 
 const LEADERSHIP_ROLES = ['MAYOR', 'ACTING_MAYOR', 'VICE_MAYOR'] as const;
+
+function fmtCountdown(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function X2TimerBadge({ canDoubleUntil }: { canDoubleUntil: string }) {
+  const [now, setNow] = useState(Date.now());
+
+  const deadline = useMemo(() => {
+    const d = new Date();
+    const endOfDay = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1);
+    return Math.min(new Date(canDoubleUntil).getTime(), endOfDay);
+  }, [canDoubleUntil]);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const msLeft = deadline - now;
+  if (msLeft <= 0) return null;
+
+  return (
+    <View style={timerStyles.badge}>
+      <LocaleText style={timerStyles.text}>×2  {fmtCountdown(msLeft)}</LocaleText>
+    </View>
+  );
+}
+
+const timerStyles = StyleSheet.create({
+  badge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: PRIMARY, alignSelf: 'stretch', alignItems: 'center' },
+  text:  { color: '#fff', fontFamily: 'Fredoka_700Bold', fontSize: 14 },
+});
 
 export default function CityTasksScreen() {
   const { t } = useTranslation('tabs');
@@ -38,11 +78,7 @@ export default function CityTasksScreen() {
 
   useFocusEffect(useCallback(() => { fetchTasks(); }, []));
 
-  const isX2Active = (task: CityTaskSummary) =>
-    task.takenAt != null && Date.now() < new Date(task.canDoubleUntil!).getTime();
-
-  const getParticipantName = (pid: string) =>
-    city?.members?.find((m) => m.playerId === pid)?.playerName ?? pid.slice(0, 8);
+  const getMember = (pid: string) => city?.members?.find((m) => m.playerId === pid);
 
   const handleJoin    = async (taskId: string) => { try { await joinTask(taskId); } catch {} };
   const handleCollect = async (taskId: string) => { try { await collectTask(taskId); } catch {} };
@@ -107,16 +143,19 @@ export default function CityTasksScreen() {
               const isCompleted = task.status === 'COMPLETED';
               const isCollected = task.status === 'COLLECTED';
               const isExpired   = task.status === 'EXPIRED';
+              const isInProgress = task.status === 'IN_PROGRESS';
               const isDisabled  = isCollected || isExpired;
 
               const progressRatio = Math.min(1, task.currentProgress / Math.max(1, task.requiredCount));
               const amParticipant = task.participants.some((p) => p.playerId === playerId);
-              const canJoin = (isAvailable || task.status === 'IN_PROGRESS')
+              const canJoin = (isAvailable || isInProgress)
                 && !myActiveTaskId
                 && task.participants.length < 2;
 
               const taskDescKey = `cityTasks.taskDesc.${task.taskType}` as any;
               const hasCountInDesc = task.taskType !== 'BUILD_FLOOR' && task.taskType !== 'EASY_MONEY';
+
+              const showX2Timer = isInProgress && amParticipant && !!task.canDoubleUntil;
 
               return (
                 <View
@@ -127,29 +166,26 @@ export default function CityTasksScreen() {
                     isDisabled && styles.cardDisabled,
                   ]}
                 >
-                  {/* Badges row */}
-                  <View style={styles.badgesRow}>
-                    {task.canDoubleUntil && isX2Active(task) && (
-                      <View style={[styles.x2Badge, { backgroundColor: PRIMARY }]}>
-                        <LocaleText style={styles.x2Text}>{t('cityTasks.doubleBonus')}</LocaleText>
-                      </View>
-                    )}
-                    {isCompleted && (
-                      <LocaleText style={[styles.statusText, { color: '#3FA535' }]}>
-                        {t('cityTasks.completed')}
-                      </LocaleText>
-                    )}
-                    {isCollected && (
-                      <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
-                        {t('cityTasks.collected')}
-                      </LocaleText>
-                    )}
-                    {isExpired && (
-                      <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
-                        {t('cityTasks.expired')}
-                      </LocaleText>
-                    )}
-                  </View>
+                  {/* Status badges */}
+                  {(isCompleted || isCollected || isExpired) && (
+                    <View style={styles.badgesRow}>
+                      {isCompleted && (
+                        <LocaleText style={[styles.statusText, { color: '#3FA535' }]}>
+                          {t('cityTasks.completed')}
+                        </LocaleText>
+                      )}
+                      {isCollected && (
+                        <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
+                          {t('cityTasks.collected')}
+                        </LocaleText>
+                      )}
+                      {isExpired && (
+                        <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
+                          {t('cityTasks.expired')}
+                        </LocaleText>
+                      )}
+                    </View>
+                  )}
 
                   {/* Centered title + description */}
                   <LocaleText style={[styles.taskName, { color: isDisabled ? theme.textMuted : theme.text }]}>
@@ -161,6 +197,7 @@ export default function CityTasksScreen() {
                       : t(taskDescKey)}
                   </LocaleText>
 
+                  {/* Progress bar */}
                   <View style={[styles.progressBar, { backgroundColor: theme.divider }]}>
                     <View
                       style={[
@@ -181,28 +218,35 @@ export default function CityTasksScreen() {
                     </LocaleText>
                   </View>
 
-                  {/* Participants */}
+                  {/* Participants — centered with avatar + profile tap */}
                   {task.participants.length > 0 && (
                     <View style={styles.participantsRow}>
-                      {task.participants.map((p) => (
-                        <View key={p.playerId} style={[styles.participantChip, { backgroundColor: isDark ? '#243547' : '#EBF3FF' }]}>
-                          <LocaleText style={[styles.participantName, { color: isDark ? '#8AAFD4' : PRIMARY }]}>
-                            {getParticipantName(p.playerId)}
-                          </LocaleText>
-                        </View>
-                      ))}
+                      {task.participants.map((p) => {
+                        const member = getMember(p.playerId);
+                        const level = member?.playerLevel ?? 1;
+                        const name  = member?.playerName ?? p.playerId.slice(0, 8);
+                        return (
+                          <TouchableOpacity
+                            key={p.playerId}
+                            style={[styles.participantChip, { backgroundColor: isDark ? '#243547' : '#EBF3FF' }]}
+                            onPress={() => router.push(`/user-profile/${p.playerId}` as any)}
+                            activeOpacity={0.7}
+                          >
+                            <Image source={getUserIcon(level)} style={styles.participantAvatar} contentFit="cover" />
+                            <LocaleText style={[styles.participantName, { color: isDark ? '#8AAFD4' : PRIMARY }]}>
+                              {name}
+                            </LocaleText>
+                          </TouchableOpacity>
+                        );
+                      })}
                     </View>
                   )}
 
                   {/* Actions */}
                   {!isDisabled && (
                     <View style={styles.actions}>
-                      {amParticipant && task.status === 'IN_PROGRESS' && (
-                        <View style={[styles.activeBadge, { backgroundColor: isDark ? '#243547' : '#EBF3FF' }]}>
-                          <LocaleText style={[styles.activeBadgeText, { color: PRIMARY }]}>
-                            {t('cityTasks.active')}
-                          </LocaleText>
-                        </View>
+                      {showX2Timer && (
+                        <X2TimerBadge canDoubleUntil={task.canDoubleUntil!} />
                       )}
                       {canJoin && (
                         <TouchableOpacity
@@ -222,7 +266,7 @@ export default function CityTasksScreen() {
                           <LocaleText style={styles.btnText}>{t('cityTasks.collect')}</LocaleText>
                         </TouchableOpacity>
                       )}
-                      {canModerate && (task.status === 'IN_PROGRESS' || isCompleted) && (
+                      {canModerate && (isInProgress || isCompleted) && (
                         <TouchableOpacity
                           style={[styles.btn, { backgroundColor: '#E53935' }]}
                           onPress={() => handleCancel(task.id)}
@@ -260,13 +304,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginHorizontal: 14,
   },
-  backBtn:  { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
-  backText: { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
-  heroCenter:  { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-  heroIcon:    { width: 36, height: 36 },
-  heroTextWrap:{ gap: 1 },
-  heroTitle:   { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
-  heroSub:     { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
+  backBtn:      { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
+  backText:     { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
+  heroCenter:   { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  heroIcon:     { width: 36, height: 36 },
+  heroTextWrap: { gap: 1 },
+  heroTitle:    { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
+  heroSub:      { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
 
   /* Stars card */
   starsCard: {
@@ -298,29 +342,27 @@ const styles = StyleSheet.create({
   cardDisabled: { opacity: 0.55 },
 
   badgesRow:   { flexDirection: 'row', gap: 6, alignItems: 'center' },
-  x2Badge:     { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
-  x2Text:      { color: '#fff', fontFamily: 'Fredoka_700Bold', fontSize: 11 },
   statusText:  { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
 
-  taskName:    { fontFamily: 'Fredoka_600SemiBold', fontSize: 17, textAlign: 'center' },
-  taskDesc:    { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17, textAlign: 'center' },
+  taskName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 17, textAlign: 'center' },
+  taskDesc: { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17, textAlign: 'center' },
 
   progressLabelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   progressLabel:    { fontFamily: 'Fredoka_400Regular', fontSize: 13 },
   progressText:     { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
+  progressBar:      { height: 6, borderRadius: 3, overflow: 'hidden' },
+  progressFill:     { height: '100%', borderRadius: 3 },
 
-  progressBar: { height: 6, borderRadius: 3, overflow: 'hidden' },
-  progressFill:{ height: '100%', borderRadius: 3 },
+  /* Participants */
+  participantsRow: { flexDirection: 'row', gap: 8, justifyContent: 'center', flexWrap: 'wrap' },
+  participantChip: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
+  participantAvatar: { width: 22, height: 22, borderRadius: 11 },
+  participantName: { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
 
-  participantsRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
-  participantChip: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-  participantName: { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
-
-  actions:     { gap: 6, marginTop: 2 },
-  btn:         { borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-  btnText:     { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
-  activeBadge: { borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-  activeBadgeText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+  /* Actions */
+  actions: { gap: 6, marginTop: 2 },
+  btn:     { borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
+  btnText: { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
 
   emptyText: { fontFamily: 'Fredoka_500Medium', fontSize: 15, textAlign: 'center' },
 });
