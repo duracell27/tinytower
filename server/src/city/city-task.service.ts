@@ -98,15 +98,22 @@ export class CityTaskService {
   }
 
   async collectTask(actorId: string, taskId: string): Promise<{ finalStars: number }> {
-    const task = await this.prisma.cityDailyTask.findUnique({ where: { id: taskId } });
+    const task = await this.prisma.cityDailyTask.findUnique({
+      where: { id: taskId },
+      include: { participants: { select: { playerId: true } } },
+    });
     if (!task) throw new NotFoundException('Task not found');
     if (task.status !== CityTaskStatus.COMPLETED) throw new BadRequestException('Task not completed');
 
     const membership = await this.prisma.cityMembership.findUnique({ where: { playerId: actorId } });
-    if (!membership || !LEADERSHIP_ROLES.includes(membership.role as CityRole)) {
-      throw new ForbiddenException('Only Vice Mayor, Acting Mayor, or Mayor can collect');
-    }
+    if (!membership) throw new ForbiddenException('Not a member of this city');
     if (membership.cityId !== task.cityId) throw new ForbiddenException('Not a member of this city');
+
+    const isLeader = LEADERSHIP_ROLES.includes(membership.role as CityRole);
+    const isParticipant = task.participants.some((p) => p.playerId === actorId);
+    if (!isLeader && !isParticipant) {
+      throw new ForbiddenException('Only Vice Mayor, Acting Mayor, Mayor, or a task participant can collect');
+    }
 
     const now = Date.now();
     const multiplier = task.takenAt && (now - task.takenAt.getTime()) <= 36_000_000 ? 2 : 1;

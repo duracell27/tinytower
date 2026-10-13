@@ -178,14 +178,9 @@ export default function CityTasksScreen() {
                     isDisabled && styles.cardDisabled,
                   ]}
                 >
-                  {/* Status badges */}
-                  {(isCompleted || isCollected || isExpired) && (
+                  {/* Status badges — only collected / expired shown at top */}
+                  {(isCollected || isExpired) && (
                     <View style={styles.badgesRow}>
-                      {isCompleted && (
-                        <LocaleText style={[styles.statusText, { color: '#3FA535' }]}>
-                          {t('cityTasks.completed')}
-                        </LocaleText>
-                      )}
                       {isCollected && (
                         <LocaleText style={[styles.statusText, { color: theme.textMuted }]}>
                           {t('cityTasks.collected')}
@@ -260,6 +255,11 @@ export default function CityTasksScreen() {
                   {/* Actions */}
                   {!isDisabled && (
                     <View style={styles.actions}>
+                      {isCompleted && (
+                        <LocaleText style={[styles.completedBadge, { color: '#3FA535' }]}>
+                          {t('cityTasks.completed')}
+                        </LocaleText>
+                      )}
                       {showX2Timer && (
                         <X2TimerBadge canDoubleUntil={task.canDoubleUntil!} />
                       )}
@@ -274,7 +274,7 @@ export default function CityTasksScreen() {
                           </LocaleText>
                         </TouchableOpacity>
                       )}
-                      {canModerate && isCompleted && (
+                      {(canModerate || amParticipant) && isCompleted && (
                         <TouchableOpacity
                           style={[styles.btn, { backgroundColor: '#3FA535' }]}
                           onPress={() => handleCollect(task.id)}
@@ -283,7 +283,7 @@ export default function CityTasksScreen() {
                           <LocaleText style={styles.btnText}>{t('cityTasks.collect')}</LocaleText>
                         </TouchableOpacity>
                       )}
-                      {(canModerate || amParticipant) && (isInProgress || isCompleted) && (
+                      {(canModerate || amParticipant) && isInProgress && (
                         <TouchableOpacity
                           style={[styles.btn, { backgroundColor: '#E53935' }]}
                           onPress={() => setCancelPendingId(task.id)}
@@ -397,8 +397,9 @@ const styles = StyleSheet.create({
   },
   cardDisabled: { opacity: 0.55 },
 
-  badgesRow:   { flexDirection: 'row', gap: 6, alignItems: 'center' },
-  statusText:  { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
+  badgesRow:      { flexDirection: 'row', gap: 6, alignItems: 'center' },
+  statusText:     { fontFamily: 'Fredoka_500Medium', fontSize: 12 },
+  completedBadge: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, textAlign: 'center' },
 
   taskName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 17, textAlign: 'center' },
   taskDesc: { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17, textAlign: 'center' },

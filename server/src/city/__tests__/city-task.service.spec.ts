@@ -135,13 +135,28 @@ describe('joinTask', () => {
 });
 
 describe('collectTask', () => {
-  it('throws ForbiddenException for NEWBIE role', async () => {
+  it('throws ForbiddenException for NEWBIE role who is not participant', async () => {
     const { svc, prisma } = makeService();
     prisma.cityMembership.findUnique.mockResolvedValue({ role: 'NEWBIE', cityId: 'c1' });
     prisma.cityDailyTask.findUnique.mockResolvedValue({
       id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt: new Date(Date.now() - 1000),
+      participants: [{ playerId: 'other' }],
     });
     await expect(svc.collectTask('actor1', 't1')).rejects.toThrow(ForbiddenException);
+  });
+
+  it('allows participant (NEWBIE) to collect', async () => {
+    const { svc, prisma } = makeService();
+    prisma.cityMembership.findUnique.mockResolvedValue({ role: 'NEWBIE', cityId: 'c1' });
+    const takenAt = new Date(Date.now() - 5 * 3600 * 1000);
+    prisma.cityDailyTask.findUnique.mockResolvedValue({
+      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt,
+      participants: [{ playerId: 'actor1' }],
+    });
+    jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
+    const result = await svc.collectTask('actor1', 't1');
+    expect(result.finalStars).toBe(12);
+    jest.spyOn(global.Math, 'random').mockRestore();
   });
 
   it('applies x2 multiplier when within 10 hours', async () => {
@@ -149,7 +164,7 @@ describe('collectTask', () => {
     prisma.cityMembership.findUnique.mockResolvedValue({ role: 'MAYOR', cityId: 'c1' });
     const takenAt = new Date(Date.now() - 5 * 3600 * 1000);
     prisma.cityDailyTask.findUnique.mockResolvedValue({
-      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt,
+      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt, participants: [],
     });
     jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
     const result = await svc.collectTask('actor1', 't1');
@@ -162,7 +177,7 @@ describe('collectTask', () => {
     prisma.cityMembership.findUnique.mockResolvedValue({ role: 'MAYOR', cityId: 'c1' });
     const takenAt = new Date(Date.now() - 11 * 3600 * 1000);
     prisma.cityDailyTask.findUnique.mockResolvedValue({
-      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt,
+      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt, participants: [],
     });
     jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
     const result = await svc.collectTask('actor1', 't1');
@@ -175,7 +190,7 @@ describe('collectTask', () => {
     prisma.cityMembership.findUnique.mockResolvedValue({ role: 'MAYOR', cityId: 'c1' });
     const takenAt = new Date(Date.now() - 36_000_000);
     prisma.cityDailyTask.findUnique.mockResolvedValue({
-      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt,
+      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt, participants: [],
     });
     jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
     const result = await svc.collectTask('actor1', 't1');
@@ -188,7 +203,7 @@ describe('collectTask', () => {
     prisma.cityMembership.findUnique.mockResolvedValue({ role: 'MAYOR', cityId: 'c1' });
     const takenAt = new Date(Date.now() - 36_000_001);
     prisma.cityDailyTask.findUnique.mockResolvedValue({
-      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt,
+      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt, participants: [],
     });
     jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
     const result = await svc.collectTask('actor1', 't1');
