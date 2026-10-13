@@ -149,6 +149,19 @@ export default function CityBudgetScreen() {
     }
   }, [cityId, fetchBudget]);
 
+  const handleDevXpGrant = useCallback(async (level: number) => {
+    if (!cityId) return;
+    setDevGranting(true);
+    try {
+      await api.devCityXpGrant(cityId, level);
+      fetchBudget(cityId);
+    } catch (e) {
+      Alert.alert('Dev XP grant failed', e instanceof Error ? e.message : String(e));
+    } finally {
+      setDevGranting(false);
+    }
+  }, [cityId, fetchBudget]);
+
   return (
     <AppBackground style={[styles.bg, isDark && styles.bgDark]}>
       {budgetLoading && !budget ? (
@@ -427,6 +440,15 @@ export default function CityBudgetScreen() {
                     ))}
                   </View>
                   <LocaleText style={styles.devBtnText}>+100 всіх</LocaleText>
+                </Pressable>
+              </View>
+              <View style={styles.devRow}>
+                <Pressable
+                  style={[styles.devBtn, devGranting && styles.devBtnDisabled]}
+                  disabled={devGranting}
+                  onPress={() => handleDevXpGrant(10)}>
+                  <Image source={require('../../assets/img/city/cityTasks.png')} style={styles.devIcon} contentFit="contain" />
+                  <LocaleText style={styles.devBtnText}>Lv.10 місто</LocaleText>
                 </Pressable>
               </View>
               {devGranting && <ActivityIndicator style={{ marginTop: 8 }} color="#a0a0b0" />}

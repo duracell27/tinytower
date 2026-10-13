@@ -587,6 +587,8 @@ export const api = {
     request<{ ok: boolean }>('POST', '/dev/grant', rewards),
   devCityBudgetGrant: (cityId: string, payload: { coins?: number; gems?: number; tools?: Partial<Record<ToolKey, number>> }) =>
     request<{ ok: boolean }>('POST', '/dev/city-budget-grant', { cityId, ...payload }),
+  devCityXpGrant: (cityId: string, level: number) =>
+    request<{ ok: boolean; xp: number; level: number }>('POST', '/dev/city-xp-grant', { cityId, level }),
   getCityBuildings: (cityId: string) =>
     request<CityBuildingDto[]>('GET', `/city/${cityId}/buildings`),
   startCityBuildingUpgrade: (cityId: string, buildingType: string) =>
