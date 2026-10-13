@@ -50,14 +50,19 @@ function X2TimerBadge({ canDoubleUntil }: { canDoubleUntil: string }) {
   if (msLeft <= 0) return null;
 
   return (
-    <View style={timerStyles.badge}>
-      <LocaleText style={timerStyles.text}>×2  {fmtCountdown(msLeft)}</LocaleText>
+    <View style={timerStyles.wrap}>
+      <View style={timerStyles.badge}>
+        <LocaleText style={timerStyles.text}>×2  {fmtCountdown(msLeft)}</LocaleText>
+      </View>
+      <View style={timerStyles.dot} />
     </View>
   );
 }
 
 const timerStyles = StyleSheet.create({
-  badge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, backgroundColor: PRIMARY, alignSelf: 'flex-start' },
+  wrap:  { alignItems: 'center', gap: 4 },
+  badge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, backgroundColor: PRIMARY },
+  dot:   { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' },
   text:  { color: '#fff', fontFamily: 'Fredoka_700Bold', fontSize: 14 },
 });
 
