@@ -161,12 +161,6 @@ export default function CityTasksScreen() {
                       : t(taskDescKey)}
                   </LocaleText>
 
-                  {/* Progress label right-aligned + bar */}
-                  <View style={styles.progressLabelRow}>
-                    <LocaleText style={[styles.progressText, { color: isDisabled ? theme.textMuted : theme.text }]}>
-                      {task.currentProgress} / {task.requiredCount}
-                    </LocaleText>
-                  </View>
                   <View style={[styles.progressBar, { backgroundColor: theme.divider }]}>
                     <View
                       style={[
@@ -177,6 +171,14 @@ export default function CityTasksScreen() {
                         },
                       ]}
                     />
+                  </View>
+                  <View style={styles.progressLabelRow}>
+                    <LocaleText style={[styles.progressLabel, { color: theme.textMuted }]}>
+                      {t('cityTasks.progress')}
+                    </LocaleText>
+                    <LocaleText style={[styles.progressText, { color: isDisabled ? theme.textMuted : theme.text }]}>
+                      {task.currentProgress} / {task.requiredCount}
+                    </LocaleText>
                   </View>
 
                   {/* Participants */}
@@ -303,8 +305,9 @@ const styles = StyleSheet.create({
   taskName:    { fontFamily: 'Fredoka_600SemiBold', fontSize: 17, textAlign: 'center' },
   taskDesc:    { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17, textAlign: 'center' },
 
-  progressLabelRow: { alignItems: 'flex-end' },
-  progressText:     { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
+  progressLabelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  progressLabel:    { fontFamily: 'Fredoka_400Regular', fontSize: 13 },
+  progressText:     { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
 
   progressBar: { height: 6, borderRadius: 3, overflow: 'hidden' },
   progressFill:{ height: '100%', borderRadius: 3 },

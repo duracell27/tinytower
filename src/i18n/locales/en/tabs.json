@@ -976,6 +976,7 @@
     "collected": "Collected",
     "expired": "Expired",
     "participants": "{{count}}/2 participants",
+    "progress": "Progress:",
     "doubleBonus": "×2 bonus",
     "taskTypes": {
       "WHOLESALE_PURCHASES": "Wholesale Purchases",

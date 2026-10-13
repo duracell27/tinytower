@@ -976,6 +976,7 @@
     "collected": "Зібрано",
     "expired": "Прострочено",
     "participants": "{{count}}/2 учасників",
+    "progress": "Прогрес:",
     "doubleBonus": "×2 бонус",
     "taskTypes": {
       "WHOLESALE_PURCHASES": "Оптові закупки",
