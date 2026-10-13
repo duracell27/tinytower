@@ -15,6 +15,7 @@ import { useGameStore, useBalance } from '../../src/stores/gameStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useCityStore } from '../../src/stores/cityStore';
 import { useCityChatStore } from '../../src/stores/cityChatStore';
+import { useCityTaskStore } from '../../src/stores/cityTaskStore';
 import { xpForLevel } from '../../shared/engine/xp';
 import { formatNum, formatXp } from '../../src/utils/format';
 import { useGameClock } from '../../src/hooks/useGameClock';
@@ -191,6 +192,13 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
   const totalBuildingLevel = buildings.reduce((sum, b) => sum + b.level, 0);
   const starsAvg = (totalBuildingLevel / (TOTAL_BUILDING_TYPES * MAX_BUILDING_LEVEL)) * 5;
   const player = useAuthStore((s) => s.player);
+  const { tasks: cityTasks, myActiveTaskId } = useCityTaskStore();
+  const taskActionCount = city.level >= 10 ? cityTasks.filter((t) => {
+    if (t.status === 'AVAILABLE') return t.participants.length < 2;
+    if (t.status === 'IN_PROGRESS') return !myActiveTaskId && t.participants.length < 2;
+    return false;
+  }).length : 0;
+
   const { leaveCity } = useCityStore();
   const showCityAlert = useGameStore((s) => s.showCityAlert);
   const showCityConfirm = useGameStore((s) => s.showCityConfirm);
@@ -377,6 +385,13 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
                     <View style={styles.unreadBadge}>
                       <LocaleText style={styles.unreadBadgeText}>
                         {chatUnreadCount > 99 ? '99+' : String(chatUnreadCount)}
+                      </LocaleText>
+                    </View>
+                  )}
+                  {card.key === 'tasks' && taskActionCount > 0 && (
+                    <View style={styles.unreadBadge}>
+                      <LocaleText style={styles.unreadBadgeText}>
+                        {taskActionCount}
                       </LocaleText>
                     </View>
                   )}
