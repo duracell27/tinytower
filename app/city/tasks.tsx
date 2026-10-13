@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View, ScrollView, StyleSheet, TouchableOpacity,
-  ActivityIndicator, useColorScheme,
+  ActivityIndicator, useColorScheme, Modal,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -85,9 +85,16 @@ export default function CityTasksScreen() {
 
   const getMember = (pid: string) => city?.members?.find((m) => m.playerId === pid);
 
+  const [cancelPendingId, setCancelPendingId] = useState<string | null>(null);
+
   const handleJoin    = async (taskId: string) => { try { await joinTask(taskId); } catch {} };
   const handleCollect = async (taskId: string) => { try { await collectTask(taskId); } catch {} };
-  const handleCancel  = async (taskId: string) => { try { await cancelTask(taskId); } catch {} };
+  const handleCancelConfirm = async () => {
+    if (!cancelPendingId) return;
+    const id = cancelPendingId;
+    setCancelPendingId(null);
+    try { await cancelTask(id); } catch {}
+  };
 
   return (
     <View style={styles.container}>
@@ -279,7 +286,7 @@ export default function CityTasksScreen() {
                       {(canModerate || amParticipant) && (isInProgress || isCompleted) && (
                         <TouchableOpacity
                           style={[styles.btn, { backgroundColor: '#E53935' }]}
-                          onPress={() => handleCancel(task.id)}
+                          onPress={() => setCancelPendingId(task.id)}
                           activeOpacity={0.8}
                         >
                           <LocaleText style={styles.btnText}>{t('cityTasks.cancel')}</LocaleText>
@@ -293,6 +300,45 @@ export default function CityTasksScreen() {
           )}
         </ScrollView>
       </AppBackground>
+
+      {/* ── Cancel confirmation modal ── */}
+      <Modal
+        visible={cancelPendingId !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCancelPendingId(null)}
+      >
+        <View style={modalStyles.overlay}>
+          <View style={[modalStyles.sheet, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+            <LocaleText style={[modalStyles.title, { color: theme.text }]}>
+              {t('cityTasks.cancelConfirmTitle')}
+            </LocaleText>
+            <LocaleText style={[modalStyles.body, { color: theme.textMuted }]}>
+              {t('cityTasks.cancelConfirmBody')}
+            </LocaleText>
+            <View style={modalStyles.buttons}>
+              <TouchableOpacity
+                style={[modalStyles.btn, { backgroundColor: isDark ? '#243547' : '#EBF3FF' }]}
+                onPress={() => setCancelPendingId(null)}
+                activeOpacity={0.8}
+              >
+                <LocaleText style={[modalStyles.btnKeep, { color: isDark ? '#8AAFD4' : PRIMARY }]}>
+                  {t('cityTasks.cancelConfirmKeep')}
+                </LocaleText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[modalStyles.btn, { backgroundColor: '#E53935' }]}
+                onPress={handleCancelConfirm}
+                activeOpacity={0.8}
+              >
+                <LocaleText style={modalStyles.btnOk}>
+                  {t('cityTasks.cancelConfirmOk')}
+                </LocaleText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -375,4 +421,15 @@ const styles = StyleSheet.create({
   btnText: { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
 
   emptyText: { fontFamily: 'Fredoka_500Medium', fontSize: 15, textAlign: 'center' },
+});
+
+const modalStyles = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
+  sheet:   { width: '100%', borderRadius: 20, padding: 24, gap: 12 },
+  title:   { fontFamily: 'Fredoka_700Bold', fontSize: 20, textAlign: 'center' },
+  body:    { fontFamily: 'Fredoka_400Regular', fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  buttons: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  btn:     { flex: 1, borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
+  btnKeep: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
+  btnOk:   { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
 });

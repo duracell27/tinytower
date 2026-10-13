@@ -1000,6 +1000,10 @@
       "NEW_RESIDENTS": "Bring {{count}} new residents to hotel",
       "BUILD_FLOOR": "Build a new floor",
       "EASY_MONEY": "Get 30 diamonds from tips"
-    }
+    },
+    "cancelConfirmTitle": "Cancel Task?",
+    "cancelConfirmBody": "All progress will be lost and the task will be reset.",
+    "cancelConfirmOk": "Cancel Task",
+    "cancelConfirmKeep": "Keep"
   }
 }
