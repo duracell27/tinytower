@@ -368,11 +368,8 @@ export default function CityTasksScreen() {
             <LocaleText style={[modalStyles.title, { color: theme.text }]}>
               {t('cityTasks.collectResultTitle')}
             </LocaleText>
-            <LocaleText style={[modalStyles.body, { color: theme.textMuted }]}>
-              {t('cityTasks.collectResultBody', { count: collectStars ?? 0 })}
-            </LocaleText>
             <TouchableOpacity
-              style={[modalStyles.btn, { backgroundColor: '#3FA535' }]}
+              style={[modalStyles.btn, { backgroundColor: '#3FA535', alignSelf: 'stretch', flex: undefined }]}
               onPress={() => setCollectStars(null)}
               activeOpacity={0.8}
             >
