@@ -46,6 +46,7 @@ interface SyncResponse {
     bonus: number;
     purchaseAmount: number;
   }>;
+  cityTasks?: import('./api').CityTaskSummary[];
 }
 
 const SYNC_INTERVAL_MS = 30_000;
@@ -178,6 +179,10 @@ async function doSync(): Promise<void> {
     saveGameState(useGameStore.getState());
     if ((response.cityMarketingBonus ?? 0) > 0) {
       useCityStore.getState().fetchMyCityInfo().catch(() => {});
+    }
+    if (response.cityTasks) {
+      const { useCityTaskStore } = require('../stores/cityTaskStore');
+      useCityTaskStore.getState().setFromSync(response.cityTasks);
     }
   } catch {
     // Network error — retry next cycle
