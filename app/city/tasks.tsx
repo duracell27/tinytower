@@ -50,20 +50,20 @@ function X2TimerBadge({ canDoubleUntil }: { canDoubleUntil: string }) {
   if (msLeft <= 0) return null;
 
   return (
-    <View style={timerStyles.wrap}>
-      <View style={timerStyles.badge}>
-        <LocaleText style={timerStyles.text}>×2  {fmtCountdown(msLeft)}</LocaleText>
+    <View style={timerStyles.badge}>
+      <View style={timerStyles.circle}>
+        <LocaleText style={timerStyles.x2}>×2</LocaleText>
       </View>
-      <View style={timerStyles.dot} />
+      <LocaleText style={timerStyles.timerText}>{fmtCountdown(msLeft)}</LocaleText>
     </View>
   );
 }
 
 const timerStyles = StyleSheet.create({
-  wrap:  { alignItems: 'center', gap: 4 },
-  badge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, backgroundColor: PRIMARY },
-  dot:   { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' },
-  text:  { color: '#fff', fontFamily: 'Fredoka_700Bold', fontSize: 14 },
+  badge:     { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 20, paddingLeft: 4, paddingRight: 14, paddingVertical: 4, backgroundColor: PRIMARY, alignSelf: 'center' },
+  circle:    { width: 30, height: 30, borderRadius: 15, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  x2:        { color: PRIMARY, fontFamily: 'Fredoka_700Bold', fontSize: 13 },
+  timerText: { color: '#fff', fontFamily: 'Fredoka_700Bold', fontSize: 14 },
 });
 
 export default function CityTasksScreen() {
