@@ -259,7 +259,9 @@ export default function CityTasksScreen() {
                           onPress={() => handleJoin(task.id)}
                           activeOpacity={0.8}
                         >
-                          <LocaleText style={styles.btnText}>{t('cityTasks.join')}</LocaleText>
+                          <LocaleText style={styles.btnText}>
+                            {isInProgress ? t('cityTasks.help') : t('cityTasks.join')}
+                          </LocaleText>
                         </TouchableOpacity>
                       )}
                       {canModerate && isCompleted && (
