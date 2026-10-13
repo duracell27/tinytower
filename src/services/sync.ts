@@ -46,7 +46,7 @@ interface SyncResponse {
     bonus: number;
     purchaseAmount: number;
   }>;
-  cityTasks?: import('./api').CityTaskSummary[];
+  cityTasks?: { tasks: import('./api').CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number };
 }
 
 const SYNC_INTERVAL_MS = 30_000;
@@ -184,6 +184,7 @@ async function doSync(): Promise<void> {
       const { useCityTaskStore } = require('../stores/cityTaskStore');
       useCityTaskStore.getState().setFromSync(response.cityTasks);
     }
+
   } catch {
     // Network error — retry next cycle
   } finally {

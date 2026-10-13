@@ -112,6 +112,11 @@ export default function CityTasksScreen() {
                 </LocaleText>
 
                 <View style={styles.actions}>
+                  {amParticipant && task.status === 'IN_PROGRESS' && (
+                    <View style={[styles.activeBadge, { backgroundColor: '#2592AB' }]}>
+                      <LocaleText style={styles.btnText}>{t('cityTasks.active')}</LocaleText>
+                    </View>
+                  )}
                   {canJoin && (
                     <TouchableOpacity
                       style={[styles.btn, { backgroundColor: '#2592AB' }]}
@@ -198,6 +203,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 7,
     paddingHorizontal: 14,
+  },
+  activeBadge: {
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    opacity: 0.85,
   },
   btnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
 });

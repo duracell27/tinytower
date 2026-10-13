@@ -36,7 +36,7 @@ export interface SyncResult {
   dailyLoginReward: { coins: number; gems: number } | null;
   acceptedCommandIds: string[];
   failedCommandIds: string[];
-  cityTasks?: CityTaskSummaryDto[];
+  cityTasks?: { tasks: CityTaskSummaryDto[]; myActiveTaskId: string | null; cityStyleStars: number };
   pendingReferralClaims: Array<{
     id: string;
     referredName: string;
@@ -733,11 +733,18 @@ export class SyncService {
     const finalCoinBonus = gameState.coinBonusPercent + coinBonusDelta;
     const finalXpBonus   = gameState.xpBonusPercent   + xpBonusDelta;
 
-    let cityTasks: CityTaskSummaryDto[] | undefined;
+    let cityTasks: SyncResult['cityTasks'];
     if (player.cityMembership) {
       const bonus = await this.cityService.getCityBonusForPlayer(playerId);
       if (bonus) {
-        cityTasks = await this.cityTaskService.getOrCreateDailyTasks(bonus.cityId, bonus.level);
+        const tasks = await this.cityTaskService.getOrCreateDailyTasks(bonus.cityId, bonus.level);
+        const city = await this.prisma.city.findUnique({ where: { id: bonus.cityId }, select: { styleStars: true } });
+        const myActive = tasks.find(
+          (t) =>
+            t.participants.some((p) => p.playerId === playerId) &&
+            (t.status === 'IN_PROGRESS' || t.status === 'COMPLETED'),
+        );
+        cityTasks = { tasks, myActiveTaskId: myActive?.id ?? null, cityStyleStars: city?.styleStars ?? 0 };
       }
     }
 

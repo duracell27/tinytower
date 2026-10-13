@@ -25,6 +25,7 @@ export class CityTaskService {
   constructor(private prisma: PrismaService) {}
 
   async getOrCreateDailyTasks(cityId: string, cityLevel: number): Promise<CityTaskSummaryDto[]> {
+    if (cityLevel < 10) return [];
     const today = todayUtcMidnight();
 
     await this.prisma.cityDailyTask.updateMany({
@@ -63,35 +64,37 @@ export class CityTaskService {
   async joinTask(playerId: string, taskId: string): Promise<CityTaskSummaryDto> {
     const today = todayUtcMidnight();
 
-    const activeParticipation = await this.prisma.cityTaskParticipant.findFirst({
-      where: {
-        playerId,
-        task: { date: today, status: { in: [CityTaskStatus.IN_PROGRESS, CityTaskStatus.AVAILABLE] } },
-      },
-    });
-    if (activeParticipation) throw new BadRequestException('Already participating in another task today');
+    return this.prisma.$transaction(async (tx) => {
+      const activeParticipation = await tx.cityTaskParticipant.findFirst({
+        where: {
+          playerId,
+          task: { date: today, status: { in: [CityTaskStatus.IN_PROGRESS, CityTaskStatus.AVAILABLE] } },
+        },
+      });
+      if (activeParticipation) throw new BadRequestException('Already participating in another task today');
 
-    const task = await this.prisma.cityDailyTask.findUnique({
-      where: { id: taskId },
-      include: { participants: true },
-    });
-    if (!task) throw new NotFoundException('Task not found');
-    if (task.status !== CityTaskStatus.AVAILABLE && task.status !== CityTaskStatus.IN_PROGRESS) {
-      throw new BadRequestException('Task is not open for joining');
-    }
-    if (task.participants.length >= 2) throw new BadRequestException('Task already has 2 participants');
+      const task = await tx.cityDailyTask.findUnique({
+        where: { id: taskId },
+        include: { participants: true },
+      });
+      if (!task) throw new NotFoundException('Task not found');
+      if (task.status !== CityTaskStatus.AVAILABLE && task.status !== CityTaskStatus.IN_PROGRESS) {
+        throw new BadRequestException('Task is not open for joining');
+      }
+      if (task.participants.length >= 2) throw new BadRequestException('Task already has 2 participants');
 
-    const isFirst = task.participants.length === 0;
-    await this.prisma.cityTaskParticipant.create({ data: { taskId, playerId, progress: 0 } });
-    const updated = await this.prisma.cityDailyTask.update({
-      where: { id: taskId },
-      data: {
-        status: CityTaskStatus.IN_PROGRESS,
-        ...(isFirst && { takenAt: new Date() }),
-      },
-      include: { participants: { select: { playerId: true, progress: true } } },
+      const isFirst = task.participants.length === 0;
+      await tx.cityTaskParticipant.create({ data: { taskId, playerId, progress: 0 } });
+      const updated = await tx.cityDailyTask.update({
+        where: { id: taskId },
+        data: {
+          status: CityTaskStatus.IN_PROGRESS,
+          ...(isFirst && { takenAt: new Date() }),
+        },
+        include: { participants: { select: { playerId: true, progress: true } } },
+      });
+      return this.toDto(updated);
     });
-    return this.toDto(updated);
   }
 
   async collectTask(actorId: string, taskId: string): Promise<{ finalStars: number }> {
@@ -106,7 +109,7 @@ export class CityTaskService {
     if (membership.cityId !== task.cityId) throw new ForbiddenException('Not a member of this city');
 
     const now = Date.now();
-    const multiplier = task.takenAt && (now - task.takenAt.getTime()) < 36_000_000 ? 2 : 1;
+    const multiplier = task.takenAt && (now - task.takenAt.getTime()) <= 36_000_000 ? 2 : 1;
     const rewardStars = Math.floor(Math.random() * 10) + 1;
     const finalStars = rewardStars * multiplier;
 
@@ -159,12 +162,13 @@ export class CityTaskService {
     const increment = delta[participant.task.taskType] ?? 0;
     if (increment === 0) return;
 
+    const cappedIncrement = Math.min(increment, participant.task.requiredCount - participant.task.currentProgress);
     await tx.cityTaskParticipant.update({
       where: { id: participant.id },
-      data: { progress: { increment } },
+      data: { progress: { increment: cappedIncrement } },
     });
 
-    const newTotal = Math.min(participant.task.currentProgress + increment, participant.task.requiredCount);
+    const newTotal = Math.min(participant.task.currentProgress + cappedIncrement, participant.task.requiredCount);
     const isCompleted = newTotal >= participant.task.requiredCount;
 
     await tx.cityDailyTask.update({

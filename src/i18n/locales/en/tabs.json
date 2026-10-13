@@ -966,6 +966,7 @@
     "join": "Join",
     "collect": "Collect",
     "cancel": "Cancel",
+    "active": "Active",
     "available": "Available",
     "inProgress": "In progress",
     "completed": "Completed!",

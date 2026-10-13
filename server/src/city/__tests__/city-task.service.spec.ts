@@ -169,4 +169,30 @@ describe('collectTask', () => {
     expect(result.finalStars).toBe(6);
     jest.spyOn(global.Math, 'random').mockRestore();
   });
+
+  it('applies x2 at exactly 10 hours (boundary inclusive)', async () => {
+    const { svc, prisma } = makeService();
+    prisma.cityMembership.findUnique.mockResolvedValue({ role: 'MAYOR', cityId: 'c1' });
+    const takenAt = new Date(Date.now() - 36_000_000);
+    prisma.cityDailyTask.findUnique.mockResolvedValue({
+      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt,
+    });
+    jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
+    const result = await svc.collectTask('actor1', 't1');
+    expect(result.finalStars).toBe(12); // x2 applies at exactly 10h
+    jest.spyOn(global.Math, 'random').mockRestore();
+  });
+
+  it('no multiplier at 10h + 1ms', async () => {
+    const { svc, prisma } = makeService();
+    prisma.cityMembership.findUnique.mockResolvedValue({ role: 'MAYOR', cityId: 'c1' });
+    const takenAt = new Date(Date.now() - 36_000_001);
+    prisma.cityDailyTask.findUnique.mockResolvedValue({
+      id: 't1', status: 'COMPLETED', cityId: 'c1', takenAt,
+    });
+    jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
+    const result = await svc.collectTask('actor1', 't1');
+    expect(result.finalStars).toBe(6); // no x2 after 10h
+    jest.spyOn(global.Math, 'random').mockRestore();
+  });
 });

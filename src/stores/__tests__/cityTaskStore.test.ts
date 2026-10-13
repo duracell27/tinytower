@@ -33,11 +33,13 @@ beforeEach(() => {
 });
 
 describe('setFromSync', () => {
-  it('replaces tasks from sync payload', () => {
+  it('replaces tasks, myActiveTaskId and cityStyleStars from sync payload', () => {
     const tasks = [makeTask('t1'), makeTask('t2')];
-    act(() => useCityTaskStore.getState().setFromSync(tasks));
-    expect(useCityTaskStore.getState().tasks).toHaveLength(2);
-    expect(useCityTaskStore.getState().tasks[0].id).toBe('t1');
+    act(() => useCityTaskStore.getState().setFromSync({ tasks, myActiveTaskId: 't1', cityStyleStars: 5 }));
+    const s = useCityTaskStore.getState();
+    expect(s.tasks).toHaveLength(2);
+    expect(s.myActiveTaskId).toBe('t1');
+    expect(s.cityStyleStars).toBe(5);
   });
 });
 
