@@ -85,7 +85,7 @@ export default function CityTasksScreen() {
   const insets = useSafeAreaInsets();
   const isDark = useColorScheme() === 'dark';
 
-  const { tasks, myActiveTaskId, cityStyleStars, loading, fetchTasks, joinTask, collectTask, cancelTask } =
+  const { tasks, myActiveTaskId, cityStyleStars, isWeekend, weeklyResult, loading, fetchTasks, joinTask, collectTask, cancelTask } =
     useCityTaskStore();
   const city = useCityStore((s) => s.city);
   const playerId = useAuthStore((s) => s.player?.id);
@@ -156,8 +156,31 @@ export default function CityTasksScreen() {
             </View>
           </View>
 
-          {/* ── Tasks ── */}
-          {loading && tasks.length === 0 ? (
+          {/* ── Weekend or Tasks ── */}
+          {isWeekend ? (
+            <>
+              <View style={[styles.weekendCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+                <LocaleText style={[styles.weekendTitle, { color: theme.text }]}>
+                  {t('cityTasks.weekendTitle')}
+                </LocaleText>
+                <LocaleText style={[styles.weekendDesc, { color: theme.textMuted }]}>
+                  {t('cityTasks.weekendDesc')}
+                </LocaleText>
+              </View>
+              {weeklyResult && (
+                <View style={[styles.weekendResultCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+                  <LocaleText style={[styles.weekendResultTitle, { color: PRIMARY }]}>
+                    {t('cityTasks.weekendResultsTitle')}
+                  </LocaleText>
+                  {weeklyResult.message ? (
+                    <LocaleText style={[styles.weekendResultMsg, { color: theme.text }]}>
+                      {weeklyResult.message}
+                    </LocaleText>
+                  ) : null}
+                </View>
+              )}
+            </>
+          ) : loading && tasks.length === 0 ? (
             <View style={styles.center}>
               <ActivityIndicator size="large" color={isDark ? '#6BAED0' : PRIMARY} />
             </View>
@@ -329,7 +352,7 @@ export default function CityTasksScreen() {
           )}
 
           {/* ── Midnight note ── */}
-          {tasks.length > 0 && (
+          {!isWeekend && tasks.length > 0 && (
             <LocaleText style={[styles.midnightNote, { color: theme.textMuted }]}>
               {t('cityTasks.midnightNote')}
             </LocaleText>
@@ -492,6 +515,13 @@ const styles = StyleSheet.create({
 
   emptyText:    { fontFamily: 'Fredoka_500Medium', fontSize: 15, textAlign: 'center' },
   midnightNote: { fontFamily: 'Fredoka_400Regular', fontSize: 12, textAlign: 'center', paddingHorizontal: 24, paddingTop: 4 },
+
+  weekendCard:       { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 8 },
+  weekendTitle:      { fontFamily: 'Fredoka_700Bold', fontSize: 18, textAlign: 'center' },
+  weekendDesc:       { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', lineHeight: 18 },
+  weekendResultCard: { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 8 },
+  weekendResultTitle:{ fontFamily: 'Fredoka_700Bold', fontSize: 15, textAlign: 'center' },
+  weekendResultMsg:  { fontFamily: 'Fredoka_400Regular', fontSize: 14, textAlign: 'center', lineHeight: 20 },
 });
 
 const modalStyles = StyleSheet.create({

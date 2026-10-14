@@ -29,7 +29,7 @@ const makeTask = (id: string, status: CityTaskSummary['status'] = 'AVAILABLE'): 
 
 beforeEach(() => {
   jest.clearAllMocks();
-  useCityTaskStore.setState({ tasks: [], myActiveTaskId: null, cityStyleStars: 0, loading: false, error: null });
+  useCityTaskStore.setState({ tasks: [], myActiveTaskId: null, cityStyleStars: 0, isWeekend: false, weeklyResult: null, loading: false, error: null });
 });
 
 describe('setFromSync', () => {
@@ -49,6 +49,8 @@ describe('fetchTasks', () => {
       tasks: [makeTask('t1')],
       myActiveTaskId: 't1',
       cityStyleStars: 42,
+      isWeekend: false,
+      weeklyResult: null,
     });
     await act(() => useCityTaskStore.getState().fetchTasks());
     const s = useCityTaskStore.getState();
@@ -81,7 +83,7 @@ describe('joinTask', () => {
 describe('collectTask', () => {
   it('returns finalStars and refreshes tasks', async () => {
     mockApi.collectCityTask.mockResolvedValue({ finalStars: 8 });
-    mockApi.fetchCityTasks.mockResolvedValue({ tasks: [], myActiveTaskId: null, cityStyleStars: 8 });
+    mockApi.fetchCityTasks.mockResolvedValue({ tasks: [], myActiveTaskId: null, cityStyleStars: 8, isWeekend: false, weeklyResult: null });
     const result = await act(() => useCityTaskStore.getState().collectTask('t1'));
     expect(result).toEqual({ finalStars: 8 });
     expect(mockApi.fetchCityTasks).toHaveBeenCalled();

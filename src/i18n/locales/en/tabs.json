@@ -1008,6 +1008,9 @@
     "midnightNote": "Complete tasks before midnight to receive rewards, otherwise tasks will be automatically cancelled.",
     "collectResultTitle": "Task Completed!",
     "collectResultBody": "Your city earned {{count}} style stars",
-    "collectResultBtn": "Awesome!"
+    "collectResultBtn": "Awesome!",
+    "weekendTitle": "No tasks on weekends",
+    "weekendDesc": "City tasks are available Monday through Friday. Come back on Monday to start new tasks!",
+    "weekendResultsTitle": "This week's results"
   }
 }

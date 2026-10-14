@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CityTaskType, CityTaskStatus, CityRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { ALL_TASK_TYPES, calcRequiredCount, todayUtcMidnight } from './city-task.constants';
+import { ALL_TASK_TYPES, calcRequiredCount, todayUtcMidnight, isWeekendUTC, currentWeekStart } from './city-task.constants';
 
 const LEADERSHIP_ROLES: CityRole[] = [CityRole.VICE_MAYOR, CityRole.ACTING_MAYOR, CityRole.MAYOR];
 
@@ -26,6 +26,7 @@ export class CityTaskService {
 
   async getOrCreateDailyTasks(cityId: string, cityLevel: number): Promise<CityTaskSummaryDto[]> {
     if (cityLevel < 10) return [];
+    if (isWeekendUTC()) return [];
     const today = todayUtcMidnight();
 
     await this.prisma.cityDailyTask.updateMany({
@@ -191,6 +192,27 @@ export class CityTaskService {
         currentProgress: newTotal,
         ...(isCompleted && { status: CityTaskStatus.COMPLETED, completedAt: new Date() }),
       },
+    });
+  }
+
+  async getWeeklyResult(cityId: string) {
+    const weekStart = currentWeekStart();
+    return this.prisma.cityWeeklyResult.findUnique({
+      where: { cityId_weekStart: { cityId, weekStart } },
+    });
+  }
+
+  async createWeeklyResult(actorId: string, cityId: string, message?: string) {
+    const membership = await this.prisma.cityMembership.findUnique({ where: { playerId: actorId } });
+    if (!membership || membership.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
+    const isLeader = ([CityRole.MAYOR, CityRole.ACTING_MAYOR] as CityRole[]).includes(membership.role);
+    if (!isLeader) throw new ForbiddenException('Only Mayor or Acting Mayor can post weekly results');
+
+    const weekStart = currentWeekStart();
+    return this.prisma.cityWeeklyResult.upsert({
+      where: { cityId_weekStart: { cityId, weekStart } },
+      create: { cityId, weekStart, message: message ?? null, createdBy: actorId },
+      update: { message: message ?? null, createdBy: actorId },
     });
   }
 

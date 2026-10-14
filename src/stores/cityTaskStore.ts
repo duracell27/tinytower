@@ -1,17 +1,19 @@
 import { create } from 'zustand';
-import { api, type CityTaskSummary } from '../services/api';
+import { api, type CityTaskSummary, type CityWeeklyResult } from '../services/api';
 
 interface CityTaskState {
   tasks: CityTaskSummary[];
   myActiveTaskId: string | null;
   cityStyleStars: number;
+  isWeekend: boolean;
+  weeklyResult: CityWeeklyResult | null;
   loading: boolean;
   error: string | null;
 }
 
 interface CityTaskActions {
   reset: () => void;
-  setFromSync: (payload: { tasks: CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number }) => void;
+  setFromSync: (payload: { tasks: CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number; isWeekend?: boolean; weeklyResult?: CityWeeklyResult | null }) => void;
   fetchTasks: () => Promise<void>;
   joinTask: (taskId: string) => Promise<void>;
   collectTask: (taskId: string) => Promise<{ finalStars: number }>;
@@ -22,20 +24,34 @@ export const useCityTaskStore = create<CityTaskState & CityTaskActions>((set, ge
   tasks: [],
   myActiveTaskId: null,
   cityStyleStars: 0,
+  isWeekend: false,
+  weeklyResult: null,
   loading: false,
   error: null,
 
-  reset: () => set({ tasks: [], myActiveTaskId: null, cityStyleStars: 0, loading: false, error: null }),
+  reset: () => set({ tasks: [], myActiveTaskId: null, cityStyleStars: 0, isWeekend: false, weeklyResult: null, loading: false, error: null }),
 
-  setFromSync: ({ tasks, myActiveTaskId, cityStyleStars }) => {
-    set({ tasks, myActiveTaskId, cityStyleStars });
+  setFromSync: ({ tasks, myActiveTaskId, cityStyleStars, isWeekend, weeklyResult }) => {
+    set({
+      tasks,
+      myActiveTaskId,
+      cityStyleStars,
+      ...(isWeekend !== undefined && { isWeekend }),
+      ...(weeklyResult !== undefined && { weeklyResult }),
+    });
   },
 
   fetchTasks: async () => {
     set({ loading: true, error: null });
     try {
       const res = await api.fetchCityTasks();
-      set({ tasks: res.tasks, myActiveTaskId: res.myActiveTaskId, cityStyleStars: res.cityStyleStars });
+      set({
+        tasks: res.tasks,
+        myActiveTaskId: res.myActiveTaskId,
+        cityStyleStars: res.cityStyleStars,
+        isWeekend: res.isWeekend ?? false,
+        weeklyResult: res.weeklyResult ?? null,
+      });
     } catch (e: any) {
       set({ error: e?.message ?? 'Failed to fetch tasks' });
     } finally {

@@ -46,7 +46,7 @@ interface SyncResponse {
     bonus: number;
     purchaseAmount: number;
   }>;
-  cityTasks?: { tasks: import('./api').CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number };
+  cityTasks?: { tasks: import('./api').CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number; isWeekend?: boolean; weeklyResult?: import('./api').CityWeeklyResult | null };
 }
 
 const SYNC_INTERVAL_MS = 30_000;

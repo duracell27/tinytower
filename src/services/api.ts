@@ -446,10 +446,21 @@ export interface CityTaskSummary {
   finalStars: number | null;
 }
 
+export interface CityWeeklyResult {
+  id: string;
+  cityId: string;
+  weekStart: string;
+  message: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
 export interface CityTasksResponse {
   tasks: CityTaskSummary[];
   myActiveTaskId: string | null;
   cityStyleStars: number;
+  isWeekend: boolean;
+  weeklyResult: CityWeeklyResult | null;
 }
 
 export async function fetchGlobalStats(): Promise<GlobalStats> {
@@ -630,6 +641,8 @@ export const api = {
     request<{ finalStars: number }>('POST', `/city/tasks/${taskId}/collect`),
   cancelCityTask: (taskId: string) =>
     request<void>('POST', `/city/tasks/${taskId}/cancel`),
+  createCityWeeklyResult: (cityId: string, message?: string) =>
+    request<CityWeeklyResult>('POST', '/city/tasks/weekly-result', { cityId, message }),
   setTokens,
   clearTokens,
   getAccessToken,

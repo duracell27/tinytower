@@ -16,7 +16,7 @@ import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS } from '../referral/referr
 import { CityService } from '../city/city.service';
 import { CityBuildingService, CityBuildingBonuses } from '../city/city-building.service';
 import { CityTaskService, CityTaskSummaryDto } from '../city/city-task.service';
-import { computeTaskDelta } from '../city/city-task.constants';
+import { computeTaskDelta, isWeekendUTC } from '../city/city-task.constants';
 import { getCityLevel } from '../city/city-level';
 
 export interface SyncResult {
@@ -36,7 +36,7 @@ export interface SyncResult {
   dailyLoginReward: { coins: number; gems: number } | null;
   acceptedCommandIds: string[];
   failedCommandIds: string[];
-  cityTasks?: { tasks: CityTaskSummaryDto[]; myActiveTaskId: string | null; cityStyleStars: number };
+  cityTasks?: { tasks: CityTaskSummaryDto[]; myActiveTaskId: string | null; cityStyleStars: number; isWeekend: boolean; weeklyResult: any | null };
   pendingReferralClaims: Array<{
     id: string;
     referredName: string;
@@ -744,7 +744,8 @@ export class SyncService {
             t.participants.some((p) => p.playerId === playerId) &&
             (t.status === 'IN_PROGRESS' || t.status === 'COMPLETED'),
         );
-        cityTasks = { tasks, myActiveTaskId: myActive?.id ?? null, cityStyleStars: city?.styleStars ?? 0 };
+        const weeklyResult = await this.cityTaskService.getWeeklyResult(bonus.cityId);
+        cityTasks = { tasks, myActiveTaskId: myActive?.id ?? null, cityStyleStars: city?.styleStars ?? 0, isWeekend: isWeekendUTC(), weeklyResult: weeklyResult ?? null };
       }
     }
 

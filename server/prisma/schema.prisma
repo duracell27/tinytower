@@ -467,6 +467,20 @@ model City {
   chatMessages   CityChatMessage[]
   buildings      CityBuilding[]
   dailyTasks     CityDailyTask[]
+  weeklyResults  CityWeeklyResult[]
+}
+
+model CityWeeklyResult {
+  id        String   @id @default(uuid())
+  cityId    String
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  weekStart DateTime
+  message   String?  @db.VarChar(500)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cityId, weekStart])
 }
 
 model CityBuilding {

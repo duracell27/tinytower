@@ -52,3 +52,16 @@ export function todayUtcMidnight(): Date {
   const now = new Date();
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }
+
+export function isWeekendUTC(): boolean {
+  const day = new Date().getUTCDay(); // 0=Sun, 6=Sat
+  return day === 0 || day === 6;
+}
+
+// Returns Monday 00:00 UTC of current week
+export function currentWeekStart(): Date {
+  const now = new Date();
+  const day = now.getUTCDay(); // 0=Sun ... 6=Sat
+  const daysToMonday = day === 0 ? 6 : day - 1;
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysToMonday));
+}
