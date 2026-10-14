@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
 
   taskHeader:     { flexDirection: 'row', alignItems: 'center', gap: 10 },
   taskHeaderText: { flex: 1, gap: 2 },
-  taskIcon:       { width: 44, height: 44, flexShrink: 0 },
+  taskIcon:       { width: 54, height: 54, flexShrink: 0 },
   taskName:       { fontFamily: 'Fredoka_600SemiBold', fontSize: 17 },
   taskDesc:       { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17 },
 
