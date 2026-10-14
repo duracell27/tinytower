@@ -318,13 +318,13 @@ export default function CityTasksScreen() {
                   {/* Reward preview */}
                   {!isExpired && (
                     <View style={styles.rewardPreviewRow}>
-                      <View style={styles.rewardPreviewItem}>
+                      <View style={[styles.rewardPreviewItem, { backgroundColor: 'rgba(37,146,171,0.15)' }]}>
                         <Image source={GEM_ICON} style={styles.rewardPreviewIcon} contentFit="contain" />
                         <LocaleText style={[styles.rewardPreviewText, { color: '#2592AB' }]}>
                           {TASK_GEM_REWARDS[task.taskType] ?? 2}
                         </LocaleText>
                       </View>
-                      <View style={styles.rewardPreviewItem}>
+                      <View style={[styles.rewardPreviewItem, { backgroundColor: 'rgba(224,169,60,0.15)' }]}>
                         <Image source={COIN_ICON} style={styles.rewardPreviewIcon} contentFit="contain" />
                         <LocaleText style={[styles.rewardPreviewText, { color: '#E0A93C' }]}>
                           {(cityLevel * (TASK_COINS_MULTIPLIER[task.taskType] ?? 2000)).toLocaleString()}
@@ -723,8 +723,8 @@ const styles = StyleSheet.create({
   progressText:        { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
   progressBar:         { height: 6, borderRadius: 3, overflow: 'hidden' },
   progressFill:        { height: '100%', borderRadius: 3 },
-  rewardPreviewRow:    { flexDirection: 'row', gap: 8, marginTop: 8 },
-  rewardPreviewItem:   { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.06)' },
+  rewardPreviewRow:    { flexDirection: 'row', gap: 8, marginTop: 8, justifyContent: 'center' },
+  rewardPreviewItem:   { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   rewardPreviewIcon:   { width: 14, height: 14 },
   rewardPreviewText:   { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
 
