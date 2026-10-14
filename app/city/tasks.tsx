@@ -333,7 +333,7 @@ export default function CityTasksScreen() {
                     </View>
                   )}
 
-                  {/* Participants — centered with avatar + profile tap */}
+                  {/* Participants + x2 badge in same wrapping row */}
                   {task.participants.length > 0 && (
                     <View style={styles.participantsRow}>
                       {task.participants.map((p, idx) => {
@@ -357,6 +357,9 @@ export default function CityTasksScreen() {
                           </TouchableOpacity>
                         );
                       })}
+                      {showX2Timer && (
+                        <X2TimerBadge canDoubleUntil={task.canDoubleUntil!} />
+                      )}
                     </View>
                   )}
 
@@ -377,9 +380,6 @@ export default function CityTasksScreen() {
                             {t('cityTasks.completed')}
                           </LocaleText>
                         </View>
-                      )}
-                      {showX2Timer && (
-                        <X2TimerBadge canDoubleUntil={task.canDoubleUntil!} />
                       )}
                       {canJoin && (
                         <TouchableOpacity
