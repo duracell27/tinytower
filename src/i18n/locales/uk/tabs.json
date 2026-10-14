@@ -962,9 +962,9 @@
   "cityTasks": {
     "title": "Міські завдання",
     "headerDesc": "Щоденні спільні завдання",
-    "starsCardTitle": "Зірки стилю",
+    "starsCardTitle": "Міські квитки",
     "starsCardDesc": "Зібрані вашим містом",
-    "styleStars": "Зірки стилю: {{count}}",
+    "styleStars": "Міські квитки: {{count}}",
     "noTasks": "Сьогодні завдань немає",
     "join": "Приєднатись",
     "help": "Допомогти",

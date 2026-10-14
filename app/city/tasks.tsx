@@ -16,9 +16,21 @@ import { useAuthStore } from '../../src/stores/authStore';
 import { getUserIcon } from '../../src/utils/userIcon';
 import type { CityTaskSummary } from '../../src/services/api';
 
-const PRIMARY    = '#2E6EC9';
-const TASKS_ICON = require('../../assets/img/city/cityTasks.png');
-const STAR_ICON  = require('../../assets/img/starFull.png');
+const PRIMARY       = '#2E6EC9';
+const TASKS_ICON    = require('../../assets/img/city/cityTasks.png');
+const TICKET_ICON   = require('../../assets/img/city/CityTicket.png');
+
+const TASK_ICONS: Record<string, any> = {
+  WHOLESALE_PURCHASES: require('../../assets/img/city/CityTaskWholesalePurchases.png'),
+  GOODS_ON_DISPLAY:    require('../../assets/img/city/CityTaskGoodsonDisplay.png'),
+  CASH_COLLECTOR:      require('../../assets/img/city/CityTaskCashCollector.png'),
+  CARRIER:             require('../../assets/img/city/CityTaskCarrier.png'),
+  VIP_CARRIER:         require('../../assets/img/city/CityTaskVipCarrier.png'),
+  EVICT_RESIDENTS:     require('../../assets/img/city/CityTaskGoodbyeResidents.png'),
+  NEW_RESIDENTS:       require('../../assets/img/city/CityTaskNewResidents.png'),
+  BUILD_FLOOR:         require('../../assets/img/city/CityTaskHigherandHigher.png'),
+  EASY_MONEY:          require('../../assets/img/city/CityTaskEasyMoney.png'),
+};
 
 const LEADERSHIP_ROLES = ['MAYOR', 'ACTING_MAYOR', 'VICE_MAYOR'] as const;
 
@@ -128,11 +140,11 @@ export default function CityTasksScreen() {
             <View style={{ width: 36 }} />
           </View>
 
-          {/* ── Style Stars card ── */}
+          {/* ── City Tickets card ── */}
           <View style={[styles.starsCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
-            <Image source={STAR_ICON} style={styles.starsIcon} contentFit="contain" />
+            <Image source={TICKET_ICON} style={styles.starsIcon} contentFit="contain" />
             <View style={styles.starsText}>
-              <LocaleText style={[styles.starsCount, { color: isDark ? '#F5C842' : '#C89B00' }]}>
+              <LocaleText style={[styles.starsCount, { color: PRIMARY }]}>
                 {cityStyleStars}
               </LocaleText>
               <LocaleText style={[styles.starsTitle, { color: theme.text }]}>
@@ -196,7 +208,8 @@ export default function CityTasksScreen() {
                     </View>
                   )}
 
-                  {/* Centered title + description */}
+                  {/* Task icon + title + description */}
+                  <Image source={TASK_ICONS[task.taskType]} style={styles.taskIcon} contentFit="contain" />
                   <LocaleText style={[styles.taskName, { color: isDisabled ? theme.textMuted : theme.text }]}>
                     {t(`cityTasks.taskTypes.${task.taskType}` as any)}
                   </LocaleText>
@@ -361,8 +374,8 @@ export default function CityTasksScreen() {
       >
         <View style={modalStyles.overlay}>
           <View style={[modalStyles.sheet, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
-            <Image source={STAR_ICON} style={modalStyles.starIcon} contentFit="contain" />
-            <LocaleText style={[modalStyles.starsNumber, { color: isDark ? '#F5C842' : '#C89B00' }]}>
+            <Image source={TICKET_ICON} style={modalStyles.starIcon} contentFit="contain" />
+            <LocaleText style={[modalStyles.starsNumber, { color: PRIMARY }]}>
               {collectStars}
             </LocaleText>
             <LocaleText style={[modalStyles.title, { color: theme.text }]}>
@@ -443,6 +456,7 @@ const styles = StyleSheet.create({
   completedPill:     { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5, backgroundColor: '#3FA535', alignSelf: 'center' },
   completedPillText: { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
 
+  taskIcon: { width: 48, height: 48, alignSelf: 'center' },
   taskName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 17, textAlign: 'center' },
   taskDesc: { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17, textAlign: 'center' },
 

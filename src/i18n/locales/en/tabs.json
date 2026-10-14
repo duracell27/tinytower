@@ -962,9 +962,9 @@
   "cityTasks": {
     "title": "City Tasks",
     "headerDesc": "Daily collaborative challenges",
-    "starsCardTitle": "Style Stars",
+    "starsCardTitle": "City Tickets",
     "starsCardDesc": "Collected by your city",
-    "styleStars": "Style Stars: {{count}}",
+    "styleStars": "City Tickets: {{count}}",
     "noTasks": "No tasks available today",
     "join": "Join",
     "help": "Help",
