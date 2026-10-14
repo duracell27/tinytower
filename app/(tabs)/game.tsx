@@ -44,6 +44,7 @@ import QaAnimatedFloor from '../../src/components/QaAnimatedFloor';
 import DailyTasksFAB from '../../src/components/DailyTasksFAB';
 import NotificationFAB from '../../src/components/NotificationFAB';
 import TutorialTaskFAB from '../../src/components/TutorialTaskFAB';
+import CityTaskFAB from '../../src/components/CityTaskFAB';
 import TutorialTaskSheet from '../../src/components/TutorialTaskSheet';
 import { DAILY_TASKS, getTaskProgress } from '../../shared/config/dailyTasksConfig';
 import {
@@ -1162,6 +1163,9 @@ export default function GameScreen() {
           count={availableFloorCount}
           onPress={handleFABPress}
         />}
+        {!isOnboarding && !isTemporary && quickActionMode === null && !qaBarVisible && (
+          <CityTaskFAB slot={0} aboveBar={false} onPress={() => router.push('/city/tasks')} />
+        )}
         {!isOnboarding && quickActionMode === null && !qaBarVisible && (() => {
           const hasTutorial = onboardingStep === 'done' && !(tutorialComplete);
           const qaSlot = (availableMode !== null ? 1 : 0) + (hasTutorial ? 1 : 0);

@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AchievementService } from '../../achievement/achievement.service';
 import { CityService } from '../../city/city.service';
 import { CityBuildingService } from '../../city/city-building.service';
+import { CityTaskService } from '../../city/city-task.service';
 import type { Command } from '@shared/types';
 
 describe('SyncService', () => {
@@ -195,6 +196,13 @@ describe('SyncService', () => {
               personalXpBonus: 0, cityXpBonus: 0, elevatorDiamondBonus: 0, hotelBonus: 0,
             }),
           }),
+        },
+        {
+          provide: CityTaskService,
+          useValue: {
+            updateProgressFromDelta: jest.fn().mockResolvedValue(undefined),
+            getOrCreateDailyTasks: jest.fn().mockResolvedValue([]),
+          },
         },
       ],
     }).compile();

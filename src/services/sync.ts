@@ -46,6 +46,7 @@ interface SyncResponse {
     bonus: number;
     purchaseAmount: number;
   }>;
+  cityTasks?: { tasks: import('./api').CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number; isWeekend?: boolean; weeklyResult?: import('./api').CityWeeklyResult | null };
 }
 
 const SYNC_INTERVAL_MS = 30_000;
@@ -179,6 +180,11 @@ async function doSync(): Promise<void> {
     if ((response.cityMarketingBonus ?? 0) > 0) {
       useCityStore.getState().fetchMyCityInfo().catch(() => {});
     }
+    if (response.cityTasks) {
+      const { useCityTaskStore } = require('../stores/cityTaskStore');
+      useCityTaskStore.getState().setFromSync(response.cityTasks);
+    }
+
   } catch {
     // Network error — retry next cycle
   } finally {

@@ -427,6 +427,45 @@ export interface GlobalStats {
   cities: number;
 }
 
+export type CityTaskStatus = 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED' | 'COLLECTED' | 'EXPIRED';
+export type CityTaskType =
+  | 'WHOLESALE_PURCHASES' | 'GOODS_ON_DISPLAY' | 'CASH_COLLECTOR'
+  | 'CARRIER' | 'VIP_CARRIER' | 'EVICT_RESIDENTS' | 'NEW_RESIDENTS'
+  | 'BUILD_FLOOR' | 'EASY_MONEY';
+
+export interface CityTaskSummary {
+  id: string;
+  taskType: CityTaskType;
+  status: CityTaskStatus;
+  requiredCount: number;
+  currentProgress: number;
+  participants: { playerId: string; progress: number }[];
+  takenAt: string | null;
+  canDoubleUntil: string | null;
+  rewardStars: number | null;
+  finalStars: number | null;
+}
+
+export interface CityWeeklyResult {
+  id: string;
+  cityId: string;
+  weekStart: string;
+  message: string | null;
+  createdBy: string;
+  rank: number | null;
+  totalTickets: number | null;
+  totalReward: number | null;
+  createdAt: string;
+}
+
+export interface CityTasksResponse {
+  tasks: CityTaskSummary[];
+  myActiveTaskId: string | null;
+  cityStyleStars: number;
+  isWeekend: boolean;
+  weeklyResult: CityWeeklyResult | null;
+}
+
 export async function fetchGlobalStats(): Promise<GlobalStats> {
   const res = await fetch(`${API_BASE_URL}/stats`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -597,6 +636,16 @@ export const api = {
     request<CityBuildingDto>('POST', `/city/${cityId}/buildings/${buildingType}/skip`),
   activateCityBuildingBoost: (cityId: string, buildingType: string, boostType: 'coins' | 'gems') =>
     request<CityBuildingDto>('POST', `/city/${cityId}/buildings/${buildingType}/boost`, { boostType }),
+  fetchCityTasks: () =>
+    request<CityTasksResponse>('GET', '/city/tasks'),
+  joinCityTask: (taskId: string) =>
+    request<CityTaskSummary>('POST', `/city/tasks/${taskId}/join`),
+  collectCityTask: (taskId: string) =>
+    request<{ finalStars: number }>('POST', `/city/tasks/${taskId}/collect`),
+  cancelCityTask: (taskId: string) =>
+    request<void>('POST', `/city/tasks/${taskId}/cancel`),
+  createCityWeeklyResult: (cityId: string, message?: string) =>
+    request<CityWeeklyResult>('POST', '/city/tasks/weekly-result', { cityId, message }),
   setTokens,
   clearTokens,
   getAccessToken,

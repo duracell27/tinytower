@@ -421,6 +421,26 @@ enum CityBuildingState {
   ACTIVE
 }
 
+enum CityTaskType {
+  WHOLESALE_PURCHASES
+  GOODS_ON_DISPLAY
+  CASH_COLLECTOR
+  CARRIER
+  VIP_CARRIER
+  EVICT_RESIDENTS
+  NEW_RESIDENTS
+  BUILD_FLOOR
+  EASY_MONEY
+}
+
+enum CityTaskStatus {
+  AVAILABLE
+  IN_PROGRESS
+  COMPLETED
+  COLLECTED
+  EXPIRED
+}
+
 model City {
   id            String           @id @default(uuid())
   name          String           @unique @db.VarChar(30)
@@ -438,6 +458,7 @@ model City {
   budgetWood        Int       @default(0)
   budgetCement      Int       @default(0)
   budgetLastResetAt DateTime?
+  styleStars    Int       @default(0)
   members       CityMembership[]
   invites       CityInvite[]
   budgetTransactions CityBudgetTransaction[]
@@ -445,6 +466,71 @@ model City {
   notifications  CityNotification[]
   chatMessages   CityChatMessage[]
   buildings      CityBuilding[]
+  dailyTasks     CityDailyTask[]
+  weeklyResults  CityWeeklyResult[]
+  weeklyStats    CityWeeklyStats[]
+  rankingEntries CityWeeklyRankingEntry[]
+}
+
+model CityWeeklyResult {
+  id           String   @id @default(uuid())
+  cityId       String
+  city         City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  weekStart    DateTime
+  message      String?  @db.VarChar(500)
+  createdBy    String
+  rank         Int?
+  totalTickets Int?
+  totalReward  Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([cityId, weekStart])
+}
+
+model CityWeeklyStats {
+  id           String   @id @default(uuid())
+  cityId       String
+  city         City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  weekStart    DateTime
+  totalTickets Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([cityId, weekStart])
+}
+
+enum CityWeeklyRankingStatus {
+  PENDING
+  APPROVED
+}
+
+model CityWeeklyRanking {
+  id         String                  @id @default(uuid())
+  weekStart  DateTime                @unique
+  status     CityWeeklyRankingStatus @default(PENDING)
+  approvedBy String?
+  approvedAt DateTime?
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+  entries    CityWeeklyRankingEntry[]
+}
+
+model CityWeeklyRankingEntry {
+  id             String            @id @default(uuid())
+  rankingId      String
+  ranking        CityWeeklyRanking @relation(fields: [rankingId], references: [id], onDelete: Cascade)
+  cityId         String
+  city           City              @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  rank           Int
+  totalTickets   Int
+  baseReward     Int
+  placementBonus Int               @default(0)
+  superBonus     Int               @default(0)
+  totalReward    Int
+  createdAt      DateTime          @default(now())
+
+  @@unique([rankingId, cityId])
 }
 
 model CityBuilding {
@@ -459,6 +545,38 @@ model CityBuilding {
   boostMultiplier Float?
 
   @@unique([cityId, buildingType])
+}
+
+model CityDailyTask {
+  id              String               @id @default(cuid())
+  cityId          String
+  city            City                 @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  taskType        CityTaskType
+  date            DateTime
+  status          CityTaskStatus       @default(AVAILABLE)
+  requiredCount   Int
+  currentProgress Int                  @default(0)
+  takenAt         DateTime?
+  completedAt     DateTime?
+  collectedAt     DateTime?
+  rewardStars     Int?
+  finalStars      Int?
+  participants    CityTaskParticipant[]
+
+  @@unique([cityId, taskType, date])
+  @@index([cityId, date])
+}
+
+model CityTaskParticipant {
+  id        String        @id @default(cuid())
+  taskId    String
+  task      CityDailyTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  playerId  String
+  progress  Int           @default(0)
+  joinedAt  DateTime      @default(now())
+
+  @@unique([taskId, playerId])
+  @@index([playerId])
 }
 
 model CityMembership {

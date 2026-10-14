@@ -554,7 +554,7 @@ export function createInitialState(config: GameConfig): GameState {
     dailyTasks: {
       progress: {
         visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
-        gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0,
+        gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, floorsStarted: 0, residentsEvicted: 0, goodsListed: 0,
       },
       claimed: [],
       doubleRewardActive: false,

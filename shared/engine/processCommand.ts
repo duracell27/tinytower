@@ -289,6 +289,11 @@ function handleBuyFloor(
   // the command is acked and pruned from the queue without double-charging the player.
   if (state.underConstruction.some((uc) => uc.floorId === command.floorId)) return { success: true, state };
   if (state.floors.some((f) => f.id === command.floorId)) return { success: true, state };
+  const dailyTasksWithFloor = command.timestamp >= state.lastDailyReset ? {
+    ...state.dailyTasks,
+    progress: { ...state.dailyTasks.progress, floorsStarted: (state.dailyTasks.progress.floorsStarted ?? 0) + 1 },
+  } : state.dailyTasks;
+
   if (unlockConfig.currency === 'gems') {
     if (state.gems < unlockConfig.price) return { success: false, state, error: 'Insufficient gems' };
     return {
@@ -297,6 +302,7 @@ function handleBuyFloor(
         ...state,
         gems: state.gems - unlockConfig.price,
         underConstruction: [...state.underConstruction, newUc],
+        dailyTasks: dailyTasksWithFloor,
         tutorialProgress: {
           ...state.tutorialProgress,
           floorsBuilt: (state.tutorialProgress.floorsBuilt ?? 0) + 1,
@@ -311,6 +317,7 @@ function handleBuyFloor(
       ...state,
       balance: state.balance - unlockConfig.price,
       underConstruction: [...state.underConstruction, newUc],
+      dailyTasks: dailyTasksWithFloor,
       tutorialProgress: {
         ...state.tutorialProgress,
         floorsBuilt: (state.tutorialProgress.floorsBuilt ?? 0) + 1,
