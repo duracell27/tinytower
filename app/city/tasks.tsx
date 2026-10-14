@@ -621,7 +621,7 @@ export default function CityTasksScreen() {
                           <View style={infoModal.superThreshTextCol}>
                             <LocaleText style={[infoModal.superMoreThan, { color: PRIMARY }]}>more than</LocaleText>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                              <LocaleText style={infoModal.superThresh}>{tickets}</LocaleText>
+                              <LocaleText style={{ fontFamily: 'Fredoka_700Bold', fontSize: 22, color: PRIMARY }}>{tickets}</LocaleText>
                               <Image source={TICKET_ICON} style={infoModal.ticketMd} contentFit="contain" />
                             </View>
                           </View>
@@ -798,7 +798,7 @@ const infoModal = StyleSheet.create({
   superCard:     { borderRadius: 12, padding: 12, gap: 6 },
   superTop:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   superThreshRow:{ flexDirection: 'row', alignItems: 'center', gap: 6 },
-  superThresh:       { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: PRIMARY },
+  superThresh:       { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
   superThreshTextCol:{ alignItems: 'flex-start', gap: 0 },
   superMoreThan:     { fontFamily: 'Nunito_400Regular', fontSize: 11, letterSpacing: 0.3 },
   ticketMd:          { width: 22, height: 22 },
