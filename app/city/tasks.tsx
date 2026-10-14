@@ -208,16 +208,20 @@ export default function CityTasksScreen() {
                     </View>
                   )}
 
-                  {/* Task icon + title + description */}
-                  <Image source={TASK_ICONS[task.taskType]} style={styles.taskIcon} contentFit="contain" />
-                  <LocaleText style={[styles.taskName, { color: isDisabled ? theme.textMuted : theme.text }]}>
-                    {t(`cityTasks.taskTypes.${task.taskType}` as any)}
-                  </LocaleText>
-                  <LocaleText style={[styles.taskDesc, { color: theme.textMuted }]}>
-                    {hasCountInDesc
-                      ? t(taskDescKey, { count: task.requiredCount })
-                      : t(taskDescKey)}
-                  </LocaleText>
+                  {/* Task icon left + title/desc right */}
+                  <View style={styles.taskHeader}>
+                    <Image source={TASK_ICONS[task.taskType]} style={styles.taskIcon} contentFit="contain" />
+                    <View style={styles.taskHeaderText}>
+                      <LocaleText style={[styles.taskName, { color: isDisabled ? theme.textMuted : theme.text }]}>
+                        {t(`cityTasks.taskTypes.${task.taskType}` as any)}
+                      </LocaleText>
+                      <LocaleText style={[styles.taskDesc, { color: theme.textMuted }]}>
+                        {hasCountInDesc
+                          ? t(taskDescKey, { count: task.requiredCount })
+                          : t(taskDescKey)}
+                      </LocaleText>
+                    </View>
+                  </View>
 
                   {/* Progress bar */}
                   <View style={[styles.progressBar, { backgroundColor: theme.divider }]}>
@@ -434,7 +438,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
     marginBottom: 10,
   },
-  starsIcon:  { width: 44, height: 44 },
+  starsIcon:  { width: 64, height: 64 },
   starsText:  { alignItems: 'center', gap: 1 },
   starsCount: { fontFamily: 'Fredoka_700Bold', fontSize: 34, lineHeight: 38 },
   starsTitle: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15 },
@@ -456,9 +460,11 @@ const styles = StyleSheet.create({
   completedPill:     { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5, backgroundColor: '#3FA535', alignSelf: 'center' },
   completedPillText: { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
 
-  taskIcon: { width: 48, height: 48, alignSelf: 'center' },
-  taskName: { fontFamily: 'Fredoka_600SemiBold', fontSize: 17, textAlign: 'center' },
-  taskDesc: { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17, textAlign: 'center' },
+  taskHeader:     { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  taskHeaderText: { flex: 1, gap: 2 },
+  taskIcon:       { width: 44, height: 44, flexShrink: 0 },
+  taskName:       { fontFamily: 'Fredoka_600SemiBold', fontSize: 17 },
+  taskDesc:       { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17 },
 
   progressLabelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   progressLabel:    { fontFamily: 'Fredoka_400Regular', fontSize: 13 },
