@@ -1011,6 +1011,12 @@
     "collectResultBtn": "Awesome!",
     "weekendTitle": "No tasks on weekends",
     "weekendDesc": "City tasks are available Monday through Friday. Come back on Monday to start new tasks!",
-    "weekendResultsTitle": "This week's results"
+    "weekendResultsTitle": "This week's results",
+    "infoTitle": "How Rewards Work",
+    "infoBase": "Base Reward",
+    "infoBaseDesc": "Every City Ticket your city collects earns 2 diamonds for the city budget.",
+    "infoTop10": "Top 10 Cities Bonus",
+    "infoSuper": "Super Bonuses",
+    "infoClose": "Got it!"
   }
 }

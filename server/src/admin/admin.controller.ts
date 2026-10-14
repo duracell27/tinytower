@@ -8,6 +8,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
 import { AdminService } from './admin.service';
 import { ReportService } from '../report/report.service';
+import { CityWeeklyRankingService } from '../city/city-weekly-ranking.service';
 
 type AuthReq = { user: { playerId: string; isAdmin: boolean } };
 
@@ -54,7 +55,11 @@ const UpdateTokensSchema = z.object({
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class AdminController {
-  constructor(private adminService: AdminService, private reportService: ReportService) {}
+  constructor(
+    private adminService: AdminService,
+    private reportService: ReportService,
+    private cityWeeklyRankingService: CityWeeklyRankingService,
+  ) {}
 
   @Get('players')
   getPlayers(
@@ -232,5 +237,30 @@ export class AdminController {
   ) {
     if (!(REPORT_TARGET_TYPES as readonly string[]).includes(targetType)) throw new BadRequestException('Invalid target type');
     return this.reportService.dismissReports(targetType as ReportTargetType, targetId);
+  }
+
+  // ── City Task Rankings ────────────────────────────────────────────────────
+
+  @Get('city-task-rankings')
+  getCityTaskRankingWeeks() {
+    return this.cityWeeklyRankingService.listWeeks();
+  }
+
+  @Get('city-task-rankings/preview')
+  previewCityTaskRanking(@Query('weekStart') weekStart: string) {
+    if (!weekStart) throw new BadRequestException('weekStart is required');
+    return this.cityWeeklyRankingService.previewRanking(weekStart);
+  }
+
+  @Get('city-task-rankings/detail')
+  getCityTaskRankingDetail(@Query('weekStart') weekStart: string) {
+    if (!weekStart) throw new BadRequestException('weekStart is required');
+    return this.cityWeeklyRankingService.getRankingDetail(weekStart);
+  }
+
+  @Post('city-task-rankings/approve')
+  approveCityTaskRanking(@Req() req: AuthReq, @Body() body: { weekStart: string }) {
+    if (!body.weekStart) throw new BadRequestException('weekStart is required');
+    return this.cityWeeklyRankingService.approveRanking(req.user.playerId, body.weekStart);
   }
 }

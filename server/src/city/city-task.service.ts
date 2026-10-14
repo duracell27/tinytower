@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CityTaskType, CityTaskStatus, CityRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { ALL_TASK_TYPES, calcRequiredCount, todayUtcMidnight, isWeekendUTC, currentWeekStart } from './city-task.constants';
+import { ALL_TASK_TYPES, calcRequiredCount, todayUtcMidnight, isWeekendUTC, currentWeekStart, computeWeeklyReward } from './city-task.constants';
 
 const LEADERSHIP_ROLES: CityRole[] = [CityRole.VICE_MAYOR, CityRole.ACTING_MAYOR, CityRole.MAYOR];
 
@@ -121,6 +121,7 @@ export class CityTaskService {
     const rewardStars = Math.floor(Math.random() * 10) + 1;
     const finalStars = rewardStars * multiplier;
 
+    const weekStart = currentWeekStart();
     await this.prisma.$transaction([
       this.prisma.cityDailyTask.update({
         where: { id: taskId },
@@ -129,6 +130,11 @@ export class CityTaskService {
       this.prisma.city.update({
         where: { id: task.cityId },
         data: { styleStars: { increment: finalStars } },
+      }),
+      this.prisma.cityWeeklyStats.upsert({
+        where: { cityId_weekStart: { cityId: task.cityId, weekStart } },
+        create: { cityId: task.cityId, weekStart, totalTickets: finalStars },
+        update: { totalTickets: { increment: finalStars } },
       }),
     ]);
     return { finalStars };
@@ -199,6 +205,7 @@ export class CityTaskService {
     const weekStart = currentWeekStart();
     return this.prisma.cityWeeklyResult.findUnique({
       where: { cityId_weekStart: { cityId, weekStart } },
+      select: { id: true, cityId: true, weekStart: true, message: true, createdBy: true, rank: true, totalTickets: true, totalReward: true, createdAt: true },
     });
   }
 

@@ -468,19 +468,69 @@ model City {
   buildings      CityBuilding[]
   dailyTasks     CityDailyTask[]
   weeklyResults  CityWeeklyResult[]
+  weeklyStats    CityWeeklyStats[]
+  rankingEntries CityWeeklyRankingEntry[]
 }
 
 model CityWeeklyResult {
-  id        String   @id @default(uuid())
-  cityId    String
-  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  weekStart DateTime
-  message   String?  @db.VarChar(500)
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(uuid())
+  cityId       String
+  city         City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  weekStart    DateTime
+  message      String?  @db.VarChar(500)
+  createdBy    String
+  rank         Int?
+  totalTickets Int?
+  totalReward  Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@unique([cityId, weekStart])
+}
+
+model CityWeeklyStats {
+  id           String   @id @default(uuid())
+  cityId       String
+  city         City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  weekStart    DateTime
+  totalTickets Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([cityId, weekStart])
+}
+
+enum CityWeeklyRankingStatus {
+  PENDING
+  APPROVED
+}
+
+model CityWeeklyRanking {
+  id         String                  @id @default(uuid())
+  weekStart  DateTime                @unique
+  status     CityWeeklyRankingStatus @default(PENDING)
+  approvedBy String?
+  approvedAt DateTime?
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+  entries    CityWeeklyRankingEntry[]
+}
+
+model CityWeeklyRankingEntry {
+  id             String            @id @default(uuid())
+  rankingId      String
+  ranking        CityWeeklyRanking @relation(fields: [rankingId], references: [id], onDelete: Cascade)
+  cityId         String
+  city           City              @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  rank           Int
+  totalTickets   Int
+  baseReward     Int
+  placementBonus Int               @default(0)
+  superBonus     Int               @default(0)
+  totalReward    Int
+  createdAt      DateTime          @default(now())
+
+  @@unique([rankingId, cityId])
 }
 
 model CityBuilding {

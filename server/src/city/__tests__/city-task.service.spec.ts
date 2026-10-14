@@ -28,6 +28,13 @@ function makeService(overrides: Record<string, any> = {}) {
       update: jest.fn().mockResolvedValue({}),
       findUnique: jest.fn().mockResolvedValue({ styleStars: 0 }),
     },
+    cityWeeklyStats: {
+      upsert: jest.fn().mockResolvedValue({}),
+    },
+    cityWeeklyResult: {
+      findUnique: jest.fn().mockResolvedValue(null),
+      upsert: jest.fn().mockResolvedValue({}),
+    },
     $transaction: jest.fn().mockImplementation((ops) =>
       Array.isArray(ops) ? Promise.all(ops) : ops({ ...prisma }),
     ),

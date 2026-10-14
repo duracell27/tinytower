@@ -1,6 +1,26 @@
 import { CityTaskType } from '@prisma/client';
 import type { DailyTaskProgress } from '../../../shared/types';
 
+export const TICKETS_TO_GEMS_RATE = 2; // 1 ticket = 2 gems
+
+export const PLACEMENT_BONUSES: Record<number, number> = {
+  1: 2000, 2: 1900, 3: 1800,
+  4: 1600, 5: 1500, 6: 1400,
+  7: 1300, 8: 1200, 9: 1100, 10: 1000,
+};
+
+export function computeWeeklyReward(totalTickets: number, rank: number): {
+  baseReward: number;
+  placementBonus: number;
+  superBonus: number;
+  totalReward: number;
+} {
+  const baseReward = totalTickets * TICKETS_TO_GEMS_RATE;
+  const placementBonus = PLACEMENT_BONUSES[rank] ?? 0;
+  const superBonus = totalTickets >= 500 ? 5000 : totalTickets >= 250 ? 500 : 0;
+  return { baseReward, placementBonus, superBonus, totalReward: baseReward + placementBonus + superBonus };
+}
+
 export const ALL_TASK_TYPES: CityTaskType[] = [
   CityTaskType.WHOLESALE_PURCHASES,
   CityTaskType.GOODS_ON_DISPLAY,

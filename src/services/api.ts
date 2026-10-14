@@ -452,6 +452,9 @@ export interface CityWeeklyResult {
   weekStart: string;
   message: string | null;
   createdBy: string;
+  rank: number | null;
+  totalTickets: number | null;
+  totalReward: number | null;
   createdAt: string;
 }
 

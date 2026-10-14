@@ -99,6 +99,7 @@ export default function CityTasksScreen() {
 
   const [cancelPendingId, setCancelPendingId] = useState<string | null>(null);
   const [collectStars, setCollectStars]       = useState<number | null>(null);
+  const [showInfo, setShowInfo]               = useState(false);
 
   const handleJoin    = async (taskId: string) => { try { await joinTask(taskId); } catch {} };
   const handleCollect = async (taskId: string) => {
@@ -137,7 +138,9 @@ export default function CityTasksScreen() {
                 </LocaleText>
               </View>
             </View>
-            <View style={{ width: 36 }} />
+            <TouchableOpacity onPress={() => setShowInfo(true)} style={styles.infoBtn} activeOpacity={0.7}>
+              <LocaleText style={[styles.infoText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>?</LocaleText>
+            </TouchableOpacity>
           </View>
 
           {/* ── City Tickets card ── */}
@@ -172,8 +175,26 @@ export default function CityTasksScreen() {
                   <LocaleText style={[styles.weekendResultTitle, { color: PRIMARY }]}>
                     {t('cityTasks.weekendResultsTitle')}
                   </LocaleText>
+                  {weeklyResult.totalTickets != null && (
+                    <View style={styles.weekendResultRow}>
+                      <Image source={TICKET_ICON} style={{ width: 18, height: 18 }} contentFit="contain" />
+                      <LocaleText style={[styles.weekendResultStat, { color: theme.text }]}>
+                        {weeklyResult.totalTickets}
+                      </LocaleText>
+                      {weeklyResult.rank != null && (
+                        <LocaleText style={[styles.weekendResultRank, { color: PRIMARY }]}>
+                          #{weeklyResult.rank}
+                        </LocaleText>
+                      )}
+                    </View>
+                  )}
+                  {weeklyResult.totalReward != null && (
+                    <LocaleText style={[styles.weekendResultReward, { color: '#3FA535' }]}>
+                      +{weeklyResult.totalReward} 💎
+                    </LocaleText>
+                  )}
                   {weeklyResult.message ? (
-                    <LocaleText style={[styles.weekendResultMsg, { color: theme.text }]}>
+                    <LocaleText style={[styles.weekendResultMsg, { color: theme.textMuted }]}>
                       {weeklyResult.message}
                     </LocaleText>
                   ) : null}
@@ -427,6 +448,47 @@ export default function CityTasksScreen() {
           </View>
         </View>
       </Modal>
+      {/* ── Info popup ── */}
+      <Modal
+        visible={showInfo}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowInfo(false)}
+      >
+        <View style={modalStyles.overlay}>
+          <View style={[modalStyles.sheet, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+            <LocaleText style={[modalStyles.title, { color: theme.text }]}>
+              {t('cityTasks.infoTitle')}
+            </LocaleText>
+            <ScrollView style={{ maxHeight: 340, width: '100%' }} showsVerticalScrollIndicator={false}>
+              <LocaleText style={[infoStyles.section, { color: PRIMARY }]}>{t('cityTasks.infoBase')}</LocaleText>
+              <LocaleText style={[infoStyles.body, { color: theme.text }]}>{t('cityTasks.infoBaseDesc')}</LocaleText>
+
+              <LocaleText style={[infoStyles.section, { color: PRIMARY }]}>{t('cityTasks.infoTop10')}</LocaleText>
+              {([
+                [1, 2000],[2, 1900],[3, 1800],
+                [4, 1600],[5, 1500],[6, 1400],
+                [7, 1300],[8, 1200],[9, 1100],[10, 1000],
+              ] as [number,number][]).map(([rank, bonus]) => (
+                <LocaleText key={rank} style={[infoStyles.row, { color: theme.text }]}>
+                  #{rank} — +{bonus.toLocaleString()} 💎
+                </LocaleText>
+              ))}
+
+              <LocaleText style={[infoStyles.section, { color: PRIMARY }]}>{t('cityTasks.infoSuper')}</LocaleText>
+              <LocaleText style={[infoStyles.row, { color: theme.text }]}>≥250 🎫 — +500 💎</LocaleText>
+              <LocaleText style={[infoStyles.row, { color: theme.text }]}>≥500 🎫 — +5 000 💎</LocaleText>
+            </ScrollView>
+            <TouchableOpacity
+              style={[modalStyles.btn, { backgroundColor: PRIMARY, alignSelf: 'stretch', flex: undefined }]}
+              onPress={() => setShowInfo(false)}
+              activeOpacity={0.8}
+            >
+              <LocaleText style={modalStyles.btnOk}>{t('cityTasks.infoClose')}</LocaleText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -516,12 +578,25 @@ const styles = StyleSheet.create({
   emptyText:    { fontFamily: 'Fredoka_500Medium', fontSize: 15, textAlign: 'center' },
   midnightNote: { fontFamily: 'Fredoka_400Regular', fontSize: 12, textAlign: 'center', paddingHorizontal: 24, paddingTop: 4 },
 
-  weekendCard:       { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 8 },
-  weekendTitle:      { fontFamily: 'Fredoka_700Bold', fontSize: 18, textAlign: 'center' },
-  weekendDesc:       { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', lineHeight: 18 },
-  weekendResultCard: { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 8 },
-  weekendResultTitle:{ fontFamily: 'Fredoka_700Bold', fontSize: 15, textAlign: 'center' },
-  weekendResultMsg:  { fontFamily: 'Fredoka_400Regular', fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  weekendCard:        { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 8 },
+  weekendTitle:       { fontFamily: 'Fredoka_700Bold', fontSize: 18, textAlign: 'center' },
+  weekendDesc:        { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', lineHeight: 18 },
+  weekendResultCard:  { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 6 },
+  weekendResultTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 15, textAlign: 'center' },
+  weekendResultRow:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  weekendResultStat:  { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
+  weekendResultRank:  { fontFamily: 'Fredoka_600SemiBold', fontSize: 16 },
+  weekendResultReward:{ fontFamily: 'Fredoka_700Bold', fontSize: 20 },
+  weekendResultMsg:   { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', lineHeight: 18 },
+
+  infoBtn:  { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
+  infoText: { fontSize: 18, fontFamily: 'Fredoka_700Bold' },
+});
+
+const infoStyles = StyleSheet.create({
+  section: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, marginTop: 10, marginBottom: 2 },
+  body:    { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 18 },
+  row:     { fontFamily: 'Fredoka_500Medium', fontSize: 13, lineHeight: 20 },
 });
 
 const modalStyles = StyleSheet.create({

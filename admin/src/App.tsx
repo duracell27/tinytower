@@ -7,6 +7,7 @@ import { CommandLogsPage } from './pages/CommandLogsPage';
 import { ForumPage } from './pages/ForumPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { CitiesPage } from './pages/CitiesPage';
+import { CityTaskRankingsPage } from './pages/CityTaskRankingsPage';
 
 export function App() {
   return (
@@ -58,6 +59,14 @@ export function App() {
           element={
             <ProtectedRoute>
               <CitiesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/city-task-rankings"
+          element={
+            <ProtectedRoute>
+              <CityTaskRankingsPage />
             </ProtectedRoute>
           }
         />
