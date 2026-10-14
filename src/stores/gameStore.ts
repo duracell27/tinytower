@@ -1057,9 +1057,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const effectiveHotelCapDeliverAll = state.hotelCapacity + state.cityHotelBonus;
       if (resolved.isVip ?? false) {
         const spotsLeft = effectiveHotelCapDeliverAll - hotelOccupied;
+        const floorTypeKeys = Object.keys(gameConfig.floorTypes);
         const batch: ReturnType<typeof generateRandomWorkers>[0][] = [];
         for (let i = 0; i < spotsLeft; i++) {
-          batch.push(generateRandomWorkers(1, gameConfig, undefined, pendingFloorType, maxBizIdx)[0]);
+          const randomFloorType = floorTypeKeys[Math.floor(Math.random() * floorTypeKeys.length)];
+          const ftCfg = gameConfig.floorTypes[randomFloorType];
+          const builtCnt = getBuiltFloorCountForType(randomFloorType, state.floors, state.openedFloorTypes ?? {}, gameConfig);
+          const randomMaxBizIdx = Math.min(builtCnt + WORKER_LOOKAHEAD - 1, ftCfg.businesses.length - 1);
+          batch.push(generateRandomWorkers(1, gameConfig, undefined, randomFloorType, randomMaxBizIdx)[0]);
           hotelOccupied++;
         }
         vipGuestWorkerBatches.push(batch);
