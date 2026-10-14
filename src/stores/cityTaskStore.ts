@@ -74,6 +74,7 @@ export const useCityTaskStore = create<CityTaskState & CityTaskActions>((set, ge
         t.id === taskId ? { ...t, status: 'COLLECTED' as const, finalStars: result.finalStars } : t
       ),
       myActiveTaskId: s.myActiveTaskId === taskId ? null : s.myActiveTaskId,
+      cityStyleStars: s.cityStyleStars + result.finalStars,
     }));
     get().fetchTasks();
     return result;
