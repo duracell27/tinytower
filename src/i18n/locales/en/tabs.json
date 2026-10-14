@@ -1012,11 +1012,15 @@
     "weekendTitle": "No tasks on weekends",
     "weekendDesc": "City tasks are available Monday through Friday. Come back on Monday to start new tasks!",
     "weekendResultsTitle": "This week's results",
-    "infoTitle": "How Rewards Work",
+    "infoTitle": "Tournament Rewards",
+    "infoSchedule": "The tournament runs every week from Monday to Friday.",
     "infoBase": "Base Reward",
-    "infoBaseDesc": "Every City Ticket your city collects earns 2 diamonds for the city budget.",
-    "infoTop10": "Top 10 Cities Bonus",
+    "infoBaseEq": "1 ticket =",
+    "infoBaseDiamonds": "diamonds to the city budget",
+    "infoTop10": "Top 10 Cities",
     "infoSuper": "Super Bonuses",
+    "infoSuper250": "If your city collects 250 or more tickets in a week, the city budget gets an extra +500 diamonds!",
+    "infoSuper500": "If your city collects 500 or more tickets in a week, the city budget gets a massive +5,000 diamonds!",
     "infoClose": "Got it!"
   }
 }

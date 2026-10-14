@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View, ScrollView, StyleSheet, TouchableOpacity,
+  View, ScrollView, StyleSheet, TouchableOpacity, Pressable,
   ActivityIndicator, useColorScheme, Modal,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,17 +20,16 @@ import type { CityTaskSummary } from '../../src/services/api';
 const PRIMARY       = '#2E6EC9';
 const TASKS_ICON    = require('../../assets/img/city/cityTasks.png');
 const TICKET_ICON   = require('../../assets/img/city/CityTicket.png');
-const GEM_ICON      = require('../../assets/products/diamonds.png');
+const GEM_ICON      = require('../../assets/img/diamond.png');
 const INFO_ICON     = require('../../assets/img/InformationIcon.png');
+const CUP1_ICON     = require('../../assets/img/rating/1PlaceCup.png');
+const CUP2_ICON     = require('../../assets/img/rating/2PlaceCup.png');
+const CUP3_ICON     = require('../../assets/img/rating/3PlaceCup.png');
 
-function currentWeekRange(): { mon: string; fri: string } {
-  const now = new Date();
-  const day = now.getUTCDay();
-  const daysToMon = day === 0 ? 6 : day - 1;
-  const mon = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysToMon));
-  const fri = new Date(mon.getTime() + 4 * 86_400_000);
-  const fmt = (d: Date) => d.toLocaleDateString('uk-UA', { day: '2-digit', month: 'short', timeZone: 'UTC' });
-  return { mon: fmt(mon), fri: fmt(fri) };
+function cupIcon(rank: number) {
+  if (rank <= 3) return CUP1_ICON;
+  if (rank <= 6) return CUP2_ICON;
+  return CUP3_ICON;
 }
 
 const TASK_ICONS: Record<string, any> = {
@@ -150,9 +150,9 @@ export default function CityTasksScreen() {
                 </LocaleText>
               </View>
             </View>
-            <TouchableOpacity onPress={() => setShowInfo(true)} style={styles.infoBtn} activeOpacity={0.7}>
+            <Pressable onPress={() => setShowInfo(true)} hitSlop={10}>
               <Image source={INFO_ICON} style={styles.infoIcon} contentFit="contain" />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {/* ── City Tickets card ── */}
@@ -468,98 +468,118 @@ export default function CityTasksScreen() {
           animationType="fade"
           onRequestClose={() => setShowInfo(false)}
         >
-          <View style={modalStyles.overlay}>
-            <View style={[infoModal.sheet, { backgroundColor: isDark ? '#112233' : '#F4F9FD' }]}>
+          <View style={infoModal.overlay}>
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => setShowInfo(false)} />
+            <View style={[infoModal.card, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
 
               {/* Header */}
-              <View style={[infoModal.header, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
-                <Image source={INFO_ICON} style={infoModal.headerIcon} contentFit="contain" />
-                <View style={{ gap: 1 }}>
-                  <LocaleText style={[infoModal.headerTitle, { color: theme.text }]}>
-                    {t('cityTasks.infoTitle')}
-                  </LocaleText>
-                  <LocaleText style={[infoModal.headerWeek, { color: theme.textMuted }]}>
-                    {(() => { const { mon, fri } = currentWeekRange(); return `${mon} – ${fri}`; })()}
+              <LinearGradient colors={[PRIMARY, '#1A4FA0']} style={infoModal.header}>
+                <LocaleText style={infoModal.headerTitle}>{t('cityTasks.infoTitle')}</LocaleText>
+                <Pressable onPress={() => setShowInfo(false)} hitSlop={10}>
+                  <LocaleText style={infoModal.headerClose}>✕</LocaleText>
+                </Pressable>
+              </LinearGradient>
+
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={infoModal.body}
+                style={{ maxHeight: 480 }}
+              >
+                {/* Schedule */}
+                <View style={infoModal.scheduleRow}>
+                  <Image source={TASKS_ICON} style={infoModal.scheduleIcon} contentFit="contain" />
+                  <LocaleText style={[infoModal.scheduleText, { color: theme.textMuted }]}>
+                    {t('cityTasks.infoSchedule')}
                   </LocaleText>
                 </View>
-              </View>
 
-              <ScrollView style={{ maxHeight: 400 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
+                <View style={[infoModal.divider, { backgroundColor: isDark ? '#243547' : '#EEF4FA' }]} />
 
                 {/* Base reward */}
-                <View style={[infoModal.card, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
-                  <LocaleText style={[infoModal.cardTitle, { color: PRIMARY }]}>
-                    {t('cityTasks.infoBase')}
-                  </LocaleText>
-                  <View style={infoModal.baseRow}>
-                    <LocaleText style={[infoModal.baseLabel, { color: theme.textMuted }]}>
-                      {t('cityTasks.infoBaseDesc')}
+                <View style={infoModal.sectionRow}>
+                  <Image source={TICKET_ICON} style={infoModal.sectionIcon} contentFit="contain" />
+                  <View style={{ flex: 1, gap: 3 }}>
+                    <LocaleText style={[infoModal.sectionTitle, { color: theme.text }]}>
+                      {t('cityTasks.infoBase')}
                     </LocaleText>
-                    <View style={infoModal.gemRow}>
-                      <LocaleText style={[infoModal.gemNum, { color: theme.text }]}>×2</LocaleText>
-                      <Image source={GEM_ICON} style={infoModal.gemIcon} contentFit="contain" />
+                    <View style={infoModal.baseValueRow}>
+                      <LocaleText style={[infoModal.baseEq, { color: theme.textMuted }]}>
+                        {t('cityTasks.infoBaseEq')}
+                      </LocaleText>
+                      <Image source={GEM_ICON} style={infoModal.gemMd} contentFit="contain" />
+                      <LocaleText style={[infoModal.baseNum, { color: PRIMARY }]}>2</LocaleText>
+                      <LocaleText style={[infoModal.baseLabel, { color: theme.textMuted }]}>
+                        {t('cityTasks.infoBaseDiamonds')}
+                      </LocaleText>
                     </View>
                   </View>
                 </View>
 
+                <View style={[infoModal.divider, { backgroundColor: isDark ? '#243547' : '#EEF4FA' }]} />
+
                 {/* Top 10 */}
-                <View style={[infoModal.card, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
-                  <LocaleText style={[infoModal.cardTitle, { color: PRIMARY }]}>
+                <View style={{ gap: 6 }}>
+                  <LocaleText style={[infoModal.sectionTitle, { color: theme.text, paddingHorizontal: 4 }]}>
                     {t('cityTasks.infoTop10')}
                   </LocaleText>
-                  <View style={infoModal.top10Grid}>
-                    {([
-                      [1, 2000],[2, 1900],[3, 1800],
-                      [4, 1600],[5, 1500],[6, 1400],
-                      [7, 1300],[8, 1200],[9, 1100],[10, 1000],
-                    ] as [number,number][]).map(([rank, bonus]) => (
-                      <View key={rank} style={[infoModal.top10Row, rank <= 3 && { backgroundColor: isDark ? '#1F3448' : '#F0F7FF' }, { borderRadius: 8 }]}>
-                        <LocaleText style={[infoModal.top10Rank, { color: rank <= 3 ? PRIMARY : theme.textMuted }]}>
-                          #{rank}
-                        </LocaleText>
-                        <View style={infoModal.gemRow}>
-                          <LocaleText style={[infoModal.top10Bonus, { color: theme.text }]}>
-                            +{bonus.toLocaleString()}
-                          </LocaleText>
-                          <Image source={GEM_ICON} style={infoModal.gemIcon} contentFit="contain" />
-                        </View>
-                      </View>
-                    ))}
-                  </View>
+                  {([
+                    [1, 2000],[2, 1900],[3, 1800],
+                    [4, 1600],[5, 1500],[6, 1400],
+                    [7, 1300],[8, 1200],[9, 1100],[10, 1000],
+                  ] as [number,number][]).map(([rank, bonus]) => (
+                    <View
+                      key={rank}
+                      style={[
+                        infoModal.rankRow,
+                        { backgroundColor: isDark
+                          ? rank <= 3 ? '#1E3550' : rank <= 6 ? '#1C2E40' : '#192A38'
+                          : rank <= 3 ? '#EEF5FF' : rank <= 6 ? '#F4F4F4' : '#F8F8F8',
+                        },
+                      ]}
+                    >
+                      <Image source={cupIcon(rank)} style={infoModal.cupIcon} contentFit="contain" />
+                      <LocaleText style={[infoModal.rankNum, { color: rank <= 3 ? PRIMARY : theme.textMuted }]}>
+                        #{rank}
+                      </LocaleText>
+                      <View style={{ flex: 1 }} />
+                      <LocaleText style={[infoModal.rankBonus, { color: theme.text }]}>
+                        +{bonus.toLocaleString()}
+                      </LocaleText>
+                      <Image source={GEM_ICON} style={infoModal.gemSm} contentFit="contain" />
+                    </View>
+                  ))}
                 </View>
 
+                <View style={[infoModal.divider, { backgroundColor: isDark ? '#243547' : '#EEF4FA' }]} />
+
                 {/* Super bonuses */}
-                <View style={[infoModal.card, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
-                  <LocaleText style={[infoModal.cardTitle, { color: PRIMARY }]}>
+                <View style={{ gap: 8 }}>
+                  <LocaleText style={[infoModal.sectionTitle, { color: theme.text, paddingHorizontal: 4 }]}>
                     {t('cityTasks.infoSuper')}
                   </LocaleText>
                   {([
-                    [250, 500],
-                    [500, 5000],
-                  ] as [number,number][]).map(([tickets, gems]) => (
-                    <View key={tickets} style={infoModal.superRow}>
-                      <View style={infoModal.gemRow}>
-                        <LocaleText style={[infoModal.superThresh, { color: theme.textMuted }]}>≥{tickets}</LocaleText>
-                        <Image source={TICKET_ICON} style={infoModal.ticketIcon} contentFit="contain" />
+                    { tickets: 250, gems: 500,  descKey: 'cityTasks.infoSuper250' },
+                    { tickets: 500, gems: 5000, descKey: 'cityTasks.infoSuper500' },
+                  ]).map(({ tickets, gems, descKey }) => (
+                    <View key={tickets} style={[infoModal.superCard, { backgroundColor: isDark ? '#1C3048' : '#F0F7FF' }]}>
+                      <View style={infoModal.superTop}>
+                        <View style={infoModal.superThreshRow}>
+                          <LocaleText style={[infoModal.superThresh, { color: PRIMARY }]}>≥{tickets}</LocaleText>
+                          <Image source={TICKET_ICON} style={infoModal.ticketMd} contentFit="contain" />
+                        </View>
+                        <View style={infoModal.superBonusRow}>
+                          <LocaleText style={[infoModal.superBonus, { color: '#3FA535' }]}>+{gems.toLocaleString()}</LocaleText>
+                          <Image source={GEM_ICON} style={infoModal.gemMd} contentFit="contain" />
+                        </View>
                       </View>
-                      <LocaleText style={[infoModal.superArrow, { color: theme.textMuted }]}>→</LocaleText>
-                      <View style={infoModal.gemRow}>
-                        <LocaleText style={[infoModal.superBonus, { color: '#3FA535' }]}>+{gems.toLocaleString()}</LocaleText>
-                        <Image source={GEM_ICON} style={infoModal.gemIcon} contentFit="contain" />
-                      </View>
+                      <LocaleText style={[infoModal.superDesc, { color: theme.textMuted }]}>
+                        {t(descKey as any)}
+                      </LocaleText>
                     </View>
                   ))}
                 </View>
 
               </ScrollView>
-
-              <TouchableOpacity
-                style={[infoModal.closeBtn, { backgroundColor: PRIMARY }]}
-                onPress={() => setShowInfo(false)}
-                activeOpacity={0.8}
-              >
-                <LocaleText style={infoModal.closeBtnText}>{t('cityTasks.infoClose')}</LocaleText>
-              </TouchableOpacity>
             </View>
           </View>
         </Modal>
@@ -664,40 +684,48 @@ const styles = StyleSheet.create({
   weekendResultReward:{ fontFamily: 'Fredoka_700Bold', fontSize: 20 },
   weekendResultMsg:   { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', lineHeight: 18 },
 
-  infoBtn:  { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.12)', alignItems: 'center', justifyContent: 'center' },
-  infoIcon: { width: 22, height: 22 },
+  infoIcon: { width: 22, height: 22, opacity: 0.8 },
 });
 
 const infoModal = StyleSheet.create({
-  sheet:       { width: '100%', borderRadius: 22, overflow: 'hidden', gap: 8, padding: 12 },
-  header:      { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, padding: 14 },
-  headerIcon:  { width: 40, height: 40 },
-  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 18 },
-  headerWeek:  { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
+  overlay:  { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(18,26,44,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  card:     { width: '100%', borderRadius: 20, overflow: 'hidden' },
 
-  card:      { borderRadius: 14, padding: 14, gap: 8 },
-  cardTitle: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, marginBottom: 2 },
+  header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 13 },
+  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#fff' },
+  headerClose: { color: 'rgba(255,255,255,0.85)', fontSize: 16, fontFamily: 'Fredoka_600SemiBold' },
 
-  baseRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  baseLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 18, flex: 1 },
+  body:         { paddingHorizontal: 14, paddingTop: 10, paddingBottom: 14, gap: 12 },
+  divider:      { height: 1, marginVertical: 2 },
 
-  top10Grid:  { gap: 3 },
-  top10Row:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10, paddingVertical: 6 },
-  top10Rank:  { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, width: 32 },
-  top10Bonus: { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
+  scheduleRow:  { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  scheduleIcon: { width: 28, height: 28 },
+  scheduleText: { fontFamily: 'Nunito_400Regular', fontSize: 13, lineHeight: 19, flex: 1 },
 
-  superRow:   { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 4 },
-  superThresh:{ fontFamily: 'Fredoka_600SemiBold', fontSize: 15 },
-  superArrow: { fontFamily: 'Fredoka_400Regular', fontSize: 16 },
-  superBonus: { fontFamily: 'Fredoka_700Bold', fontSize: 16 },
+  sectionRow:   { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  sectionIcon:  { width: 28, height: 28, marginTop: 1 },
+  sectionTitle: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
 
-  gemRow:    { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  gemNum:    { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
-  gemIcon:   { width: 18, height: 18 },
-  ticketIcon:{ width: 16, height: 16 },
+  baseValueRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
+  baseEq:       { fontFamily: 'Nunito_400Regular', fontSize: 13 },
+  baseNum:      { fontFamily: 'Fredoka_700Bold', fontSize: 16 },
+  baseLabel:    { fontFamily: 'Nunito_400Regular', fontSize: 13 },
+  gemMd:        { width: 18, height: 18 },
 
-  closeBtn:     { borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
-  closeBtnText: { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 15 },
+  rankRow:    { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
+  cupIcon:    { width: 22, height: 22 },
+  rankNum:    { fontFamily: 'Fredoka_700Bold', fontSize: 15, width: 30 },
+  rankBonus:  { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
+  gemSm:      { width: 16, height: 16 },
+
+  superCard:     { borderRadius: 12, padding: 12, gap: 6 },
+  superTop:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  superThreshRow:{ flexDirection: 'row', alignItems: 'center', gap: 6 },
+  superThresh:   { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
+  ticketMd:      { width: 22, height: 22 },
+  superBonusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  superBonus:    { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
+  superDesc:     { fontFamily: 'Nunito_400Regular', fontSize: 13, lineHeight: 18 },
 });
 
 const modalStyles = StyleSheet.create({
