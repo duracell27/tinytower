@@ -22,6 +22,7 @@ const TASKS_ICON    = require('../../assets/img/city/cityTasks.png');
 const TICKET_ICON   = require('../../assets/img/city/CityTicket.png');
 const GEM_ICON      = require('../../assets/img/diamond.png');
 const COIN_ICON     = require('../../assets/img/coin.png');
+const TOOLS_ICON    = require('../../assets/products/tools.png');
 const INFO_ICON     = require('../../assets/img/InformationIcon.png');
 const CUP1_ICON     = require('../../assets/img/rating/1PlaceCup.png');
 const CUP2_ICON     = require('../../assets/img/rating/2PlaceCup.png');
@@ -32,6 +33,18 @@ function cupIcon(rank: number) {
   if (rank <= 6) return CUP2_ICON;
   return CUP3_ICON;
 }
+
+const TASK_GEM_REWARDS: Record<string, number> = {
+  WHOLESALE_PURCHASES: 2, GOODS_ON_DISPLAY: 2, CASH_COLLECTOR: 2,
+  CARRIER: 2, VIP_CARRIER: 2, EVICT_RESIDENTS: 2, NEW_RESIDENTS: 2,
+  BUILD_FLOOR: 5, EASY_MONEY: 5,
+};
+
+const TASK_COINS_MULTIPLIER: Record<string, number> = {
+  CASH_COLLECTOR: 3000, VIP_CARRIER: 3000, GOODS_ON_DISPLAY: 2500,
+  WHOLESALE_PURCHASES: 2000, NEW_RESIDENTS: 2000, EVICT_RESIDENTS: 2000,
+  BUILD_FLOOR: 2000, EASY_MONEY: 1500, CARRIER: 1500,
+};
 
 const TASK_ICONS: Record<string, any> = {
   WHOLESALE_PURCHASES: require('../../assets/img/city/CityTaskWholesalePurchases.png'),
@@ -101,6 +114,7 @@ export default function CityTasksScreen() {
   const { tasks, myActiveTaskId, cityStyleStars, isWeekend, weeklyResult, loading, fetchTasks, joinTask, collectTask, cancelTask } =
     useCityTaskStore();
   const city = useCityStore((s) => s.city);
+  const cityLevel = city?.level ?? 10;
   const playerId = useAuthStore((s) => s.player?.id);
 
   const myRole = city?.members?.find((m) => m.playerId === playerId)?.role;
@@ -300,6 +314,24 @@ export default function CityTasksScreen() {
                       {task.currentProgress} / {task.requiredCount}
                     </LocaleText>
                   </View>
+
+                  {/* Reward preview */}
+                  {!isExpired && (
+                    <View style={styles.rewardPreviewRow}>
+                      <View style={styles.rewardPreviewItem}>
+                        <Image source={GEM_ICON} style={styles.rewardPreviewIcon} contentFit="contain" />
+                        <LocaleText style={[styles.rewardPreviewText, { color: '#2592AB' }]}>
+                          {TASK_GEM_REWARDS[task.taskType] ?? 2}
+                        </LocaleText>
+                      </View>
+                      <View style={styles.rewardPreviewItem}>
+                        <Image source={COIN_ICON} style={styles.rewardPreviewIcon} contentFit="contain" />
+                        <LocaleText style={[styles.rewardPreviewText, { color: '#E0A93C' }]}>
+                          {(cityLevel * (TASK_COINS_MULTIPLIER[task.taskType] ?? 2000)).toLocaleString()}
+                        </LocaleText>
+                      </View>
+                    </View>
+                  )}
 
                   {/* Participants — centered with avatar + profile tap */}
                   {task.participants.length > 0 && (
@@ -543,31 +575,33 @@ export default function CityTasksScreen() {
                     {t('cityTasks.infoTop10')}
                   </LocaleText>
                   {([
-                    [1, 2000],[2, 1900],[3, 1800],
-                    [4, 1600],[5, 1500],[6, 1400],
-                    [7, 1300],[8, 1200],[9, 1100],[10, 1000],
-                  ] as [number,number][]).map(([rank, bonus]) => (
-                    <View
-                      key={rank}
-                      style={[
-                        infoModal.rankRow,
-                        { backgroundColor: isDark
-                          ? rank <= 3 ? 'rgba(218,165,32,0.15)' : rank <= 6 ? 'rgba(192,192,192,0.12)' : 'rgba(205,127,50,0.12)'
-                          : rank <= 3 ? 'rgba(255,215,0,0.15)' : rank <= 6 ? 'rgba(192,192,192,0.15)' : 'rgba(205,127,50,0.13)',
-                        },
-                      ]}
-                    >
-                      <Image source={cupIcon(rank)} style={infoModal.cupIcon} contentFit="contain" />
-                      <LocaleText style={[infoModal.rankNum, { color: rank <= 3 ? '#C8960A' : rank <= 6 ? '#888888' : '#A0643A' }]}>
-                        #{rank}
-                      </LocaleText>
-                      <View style={{ flex: 1 }} />
-                      <LocaleText style={[infoModal.rankBonus, { color: rank <= 3 ? '#C8960A' : rank <= 6 ? '#888888' : '#A0643A' }]}>
-                        +{bonus.toLocaleString()}
-                      </LocaleText>
-                      <Image source={GEM_ICON} style={infoModal.gemSm} contentFit="contain" />
-                    </View>
-                  ))}
+                    [1, 2000, 100],[2, 1900, 90],[3, 1800, 80],
+                    [4, 1600, 70], [5, 1500, 60],[6, 1400, 50],
+                    [7, 1300, 40], [8, 1200, 30],[9, 1100, 20],[10, 1000, 10],
+                  ] as [number, number, number][]).map(([rank, bonus, resources]) => {
+                    const rankColor = rank <= 3 ? '#C8960A' : rank <= 6 ? '#888888' : '#A0643A';
+                    return (
+                      <View
+                        key={rank}
+                        style={[
+                          infoModal.rankRow,
+                          { backgroundColor: isDark
+                            ? rank <= 3 ? 'rgba(218,165,32,0.15)' : rank <= 6 ? 'rgba(192,192,192,0.12)' : 'rgba(205,127,50,0.12)'
+                            : rank <= 3 ? 'rgba(255,215,0,0.15)' : rank <= 6 ? 'rgba(192,192,192,0.15)' : 'rgba(205,127,50,0.13)',
+                          },
+                        ]}
+                      >
+                        <Image source={cupIcon(rank)} style={infoModal.cupIcon} contentFit="contain" />
+                        <LocaleText style={[infoModal.rankNum, { color: rankColor }]}>#{rank}</LocaleText>
+                        <View style={{ flex: 1 }} />
+                        <LocaleText style={[infoModal.rankBonus, { color: rankColor }]}>+{bonus.toLocaleString()}</LocaleText>
+                        <Image source={GEM_ICON} style={infoModal.gemSm} contentFit="contain" />
+                        <View style={[infoModal.rankDivider, { backgroundColor: isDark ? '#2A3F52' : '#D8E8F5' }]} />
+                        <LocaleText style={[infoModal.rankBonus, { color: '#7BAF6A' }]}>+{resources}</LocaleText>
+                        <Image source={TOOLS_ICON} style={infoModal.gemSm} contentFit="contain" />
+                      </View>
+                    );
+                  })}
                 </View>
 
                 <View style={[infoModal.divider, { backgroundColor: isDark ? '#243547' : '#EEF4FA' }]} />
@@ -578,9 +612,9 @@ export default function CityTasksScreen() {
                     {t('cityTasks.infoSuper')}
                   </LocaleText>
                   {([
-                    { tickets: 250, gems: 500,  descKey: 'cityTasks.infoSuper250' },
-                    { tickets: 500, gems: 5000, descKey: 'cityTasks.infoSuper500' },
-                  ]).map(({ tickets, gems, descKey }) => (
+                    { tickets: 250, gems: 500,  resources: 50,  descKey: 'cityTasks.infoSuper250' },
+                    { tickets: 500, gems: 5000, resources: 100, descKey: 'cityTasks.infoSuper500' },
+                  ]).map(({ tickets, gems, resources, descKey }) => (
                     <View key={tickets} style={[infoModal.superCard, { backgroundColor: isDark ? '#1C3048' : '#F0F7FF' }]}>
                       <View style={infoModal.superTop}>
                         <View style={infoModal.superThreshRow}>
@@ -592,9 +626,15 @@ export default function CityTasksScreen() {
                             </View>
                           </View>
                         </View>
-                        <View style={infoModal.superBonusRow}>
-                          <LocaleText style={[infoModal.superBonus, { color: '#3FA535' }]}>+{gems.toLocaleString()}</LocaleText>
-                          <Image source={GEM_ICON} style={infoModal.gemMd} contentFit="contain" />
+                        <View style={{ gap: 4, alignItems: 'flex-end' }}>
+                          <View style={infoModal.superBonusRow}>
+                            <LocaleText style={[infoModal.superBonus, { color: '#3FA535' }]}>+{gems.toLocaleString()}</LocaleText>
+                            <Image source={GEM_ICON} style={infoModal.gemMd} contentFit="contain" />
+                          </View>
+                          <View style={infoModal.superBonusRow}>
+                            <LocaleText style={[infoModal.superBonus, { color: '#7BAF6A' }]}>+{resources}</LocaleText>
+                            <Image source={TOOLS_ICON} style={infoModal.gemMd} contentFit="contain" />
+                          </View>
                         </View>
                       </View>
                       <LocaleText style={[infoModal.superDesc, { color: theme.textMuted }]}>
@@ -678,11 +718,15 @@ const styles = StyleSheet.create({
   taskName:       { fontFamily: 'Fredoka_600SemiBold', fontSize: 17 },
   taskDesc:       { fontFamily: 'Fredoka_400Regular', fontSize: 13, lineHeight: 17 },
 
-  progressLabelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  progressLabel:    { fontFamily: 'Fredoka_400Regular', fontSize: 13 },
-  progressText:     { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
-  progressBar:      { height: 6, borderRadius: 3, overflow: 'hidden' },
-  progressFill:     { height: '100%', borderRadius: 3 },
+  progressLabelRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  progressLabel:       { fontFamily: 'Fredoka_400Regular', fontSize: 13 },
+  progressText:        { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
+  progressBar:         { height: 6, borderRadius: 3, overflow: 'hidden' },
+  progressFill:        { height: '100%', borderRadius: 3 },
+  rewardPreviewRow:    { flexDirection: 'row', gap: 8, marginTop: 8 },
+  rewardPreviewItem:   { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.06)' },
+  rewardPreviewIcon:   { width: 14, height: 14 },
+  rewardPreviewText:   { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
 
   /* Participants */
   participantsRow: { flexDirection: 'row', gap: 8, justifyContent: 'center', flexWrap: 'wrap' },
@@ -744,11 +788,12 @@ const infoModal = StyleSheet.create({
   baseConvEq:    { fontFamily: 'Fredoka_600SemiBold', fontSize: 24 },
   baseConvLabel: { fontFamily: 'Nunito_400Regular', fontSize: 12 },
 
-  rankRow:    { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
-  cupIcon:    { width: 22, height: 22 },
-  rankNum:    { fontFamily: 'Fredoka_700Bold', fontSize: 15, width: 30 },
-  rankBonus:  { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
-  gemSm:      { width: 16, height: 16 },
+  rankRow:     { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
+  rankDivider: { width: 1, height: 14, marginHorizontal: 2 },
+  cupIcon:     { width: 22, height: 22 },
+  rankNum:     { fontFamily: 'Fredoka_700Bold', fontSize: 15, width: 30 },
+  rankBonus:   { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
+  gemSm:       { width: 16, height: 16 },
 
   superCard:     { borderRadius: 12, padding: 12, gap: 6 },
   superTop:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
