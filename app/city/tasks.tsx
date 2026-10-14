@@ -327,6 +327,13 @@ export default function CityTasksScreen() {
               );
             })
           )}
+
+          {/* ── Midnight note ── */}
+          {tasks.length > 0 && (
+            <LocaleText style={[styles.midnightNote, { color: theme.textMuted }]}>
+              {t('cityTasks.midnightNote')}
+            </LocaleText>
+          )}
         </ScrollView>
       </AppBackground>
 
@@ -483,7 +490,8 @@ const styles = StyleSheet.create({
   btn:     { borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
   btnText: { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
 
-  emptyText: { fontFamily: 'Fredoka_500Medium', fontSize: 15, textAlign: 'center' },
+  emptyText:    { fontFamily: 'Fredoka_500Medium', fontSize: 15, textAlign: 'center' },
+  midnightNote: { fontFamily: 'Fredoka_400Regular', fontSize: 12, textAlign: 'center', paddingHorizontal: 24, paddingTop: 4 },
 });
 
 const modalStyles = StyleSheet.create({

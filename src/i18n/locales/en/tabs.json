@@ -1005,6 +1005,7 @@
     "cancelConfirmBody": "All progress will be lost and the task will be reset.",
     "cancelConfirmOk": "Cancel Task",
     "cancelConfirmKeep": "Keep",
+    "midnightNote": "Complete tasks before midnight to receive rewards, otherwise tasks will be automatically cancelled.",
     "collectResultTitle": "Task Completed!",
     "collectResultBody": "Your city earned {{count}} style stars",
     "collectResultBtn": "Awesome!"
