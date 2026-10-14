@@ -496,22 +496,21 @@ export default function CityTasksScreen() {
                 <View style={[infoModal.divider, { backgroundColor: isDark ? '#243547' : '#EEF4FA' }]} />
 
                 {/* Base reward */}
-                <View style={infoModal.sectionRow}>
-                  <Image source={TICKET_ICON} style={infoModal.sectionIcon} contentFit="contain" />
-                  <View style={{ flex: 1, gap: 3 }}>
-                    <LocaleText style={[infoModal.sectionTitle, { color: theme.text }]}>
-                      {t('cityTasks.infoBase')}
-                    </LocaleText>
-                    <View style={infoModal.baseValueRow}>
-                      <LocaleText style={[infoModal.baseEq, { color: theme.textMuted }]}>
-                        {t('cityTasks.infoBaseEq')}
-                      </LocaleText>
-                      <Image source={GEM_ICON} style={infoModal.gemMd} contentFit="contain" />
-                      <LocaleText style={[infoModal.baseNum, { color: PRIMARY }]}>2</LocaleText>
-                      <LocaleText style={[infoModal.baseLabel, { color: theme.textMuted }]}>
-                        {t('cityTasks.infoBaseDiamonds')}
-                      </LocaleText>
+                <View style={{ gap: 8 }}>
+                  <LocaleText style={[infoModal.sectionTitle, { color: theme.text, paddingHorizontal: 4 }]}>
+                    {t('cityTasks.infoBase')}
+                  </LocaleText>
+                  <View style={[infoModal.baseConvCard, { backgroundColor: isDark ? '#162840' : '#EEF5FF' }]}>
+                    <View style={infoModal.baseConvRow}>
+                      <LocaleText style={[infoModal.baseConvNum, { color: theme.text }]}>1</LocaleText>
+                      <Image source={TICKET_ICON} style={infoModal.baseConvIcon} contentFit="contain" />
+                      <LocaleText style={[infoModal.baseConvEq, { color: theme.textMuted }]}>=</LocaleText>
+                      <LocaleText style={[infoModal.baseConvNum, { color: PRIMARY }]}>2</LocaleText>
+                      <Image source={GEM_ICON} style={infoModal.baseConvIcon} contentFit="contain" />
                     </View>
+                    <LocaleText style={[infoModal.baseConvLabel, { color: theme.textMuted }]}>
+                      {t('cityTasks.infoBaseDiamonds')}
+                    </LocaleText>
                   </View>
                 </View>
 
@@ -532,17 +531,17 @@ export default function CityTasksScreen() {
                       style={[
                         infoModal.rankRow,
                         { backgroundColor: isDark
-                          ? rank <= 3 ? '#1E3550' : rank <= 6 ? '#1C2E40' : '#192A38'
-                          : rank <= 3 ? '#EEF5FF' : rank <= 6 ? '#F4F4F4' : '#F8F8F8',
+                          ? rank <= 3 ? 'rgba(218,165,32,0.15)' : rank <= 6 ? 'rgba(192,192,192,0.12)' : 'rgba(205,127,50,0.12)'
+                          : rank <= 3 ? 'rgba(255,215,0,0.15)' : rank <= 6 ? 'rgba(192,192,192,0.15)' : 'rgba(205,127,50,0.13)',
                         },
                       ]}
                     >
                       <Image source={cupIcon(rank)} style={infoModal.cupIcon} contentFit="contain" />
-                      <LocaleText style={[infoModal.rankNum, { color: rank <= 3 ? PRIMARY : theme.textMuted }]}>
+                      <LocaleText style={[infoModal.rankNum, { color: rank <= 3 ? '#C8960A' : rank <= 6 ? '#888888' : '#A0643A' }]}>
                         #{rank}
                       </LocaleText>
                       <View style={{ flex: 1 }} />
-                      <LocaleText style={[infoModal.rankBonus, { color: theme.text }]}>
+                      <LocaleText style={[infoModal.rankBonus, { color: rank <= 3 ? '#C8960A' : rank <= 6 ? '#888888' : '#A0643A' }]}>
                         +{bonus.toLocaleString()}
                       </LocaleText>
                       <Image source={GEM_ICON} style={infoModal.gemSm} contentFit="contain" />
@@ -564,8 +563,13 @@ export default function CityTasksScreen() {
                     <View key={tickets} style={[infoModal.superCard, { backgroundColor: isDark ? '#1C3048' : '#F0F7FF' }]}>
                       <View style={infoModal.superTop}>
                         <View style={infoModal.superThreshRow}>
-                          <LocaleText style={[infoModal.superThresh, { color: PRIMARY }]}>≥{tickets}</LocaleText>
-                          <Image source={TICKET_ICON} style={infoModal.ticketMd} contentFit="contain" />
+                          <View style={infoModal.superThreshTextCol}>
+                            <LocaleText style={[infoModal.superMoreThan, { color: PRIMARY }]}>more than</LocaleText>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                              <LocaleText style={[infoModal.superThresh, { color: PRIMARY }]}>{tickets}</LocaleText>
+                              <Image source={TICKET_ICON} style={infoModal.ticketMd} contentFit="contain" />
+                            </View>
+                          </View>
                         </View>
                         <View style={infoModal.superBonusRow}>
                           <LocaleText style={[infoModal.superBonus, { color: '#3FA535' }]}>+{gems.toLocaleString()}</LocaleText>
@@ -712,6 +716,13 @@ const infoModal = StyleSheet.create({
   baseLabel:    { fontFamily: 'Nunito_400Regular', fontSize: 13 },
   gemMd:        { width: 18, height: 18 },
 
+  baseConvCard:  { borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, alignItems: 'center', gap: 4 },
+  baseConvRow:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  baseConvNum:   { fontFamily: 'Fredoka_700Bold', fontSize: 28 },
+  baseConvIcon:  { width: 28, height: 28 },
+  baseConvEq:    { fontFamily: 'Fredoka_600SemiBold', fontSize: 24 },
+  baseConvLabel: { fontFamily: 'Nunito_400Regular', fontSize: 12 },
+
   rankRow:    { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
   cupIcon:    { width: 22, height: 22 },
   rankNum:    { fontFamily: 'Fredoka_700Bold', fontSize: 15, width: 30 },
@@ -721,8 +732,10 @@ const infoModal = StyleSheet.create({
   superCard:     { borderRadius: 12, padding: 12, gap: 6 },
   superTop:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   superThreshRow:{ flexDirection: 'row', alignItems: 'center', gap: 6 },
-  superThresh:   { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
-  ticketMd:      { width: 22, height: 22 },
+  superThresh:       { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
+  superThreshTextCol:{ alignItems: 'flex-start', gap: 0 },
+  superMoreThan:     { fontFamily: 'Nunito_400Regular', fontSize: 11, letterSpacing: 0.3 },
+  ticketMd:          { width: 22, height: 22 },
   superBonusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   superBonus:    { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
   superDesc:     { fontFamily: 'Nunito_400Regular', fontSize: 13, lineHeight: 18 },
