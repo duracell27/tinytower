@@ -40,6 +40,71 @@ function splitHighlight(body: string, term: string): { text: string; highlight: 
 
 const MENTION_RE = /^@([^,]+), /;
 
+const TICKET_ICON = require('../../assets/img/city/CityTicket.png');
+
+// ─── System Message Row ───────────────────────────────────────────────────────
+
+function SystemMessageRow({ msg, isDark, theme }: { msg: CityChatMessage; isDark: boolean; theme: any }) {
+  const router = useRouter();
+  const { t } = useTranslation('tabs');
+  const name = msg.mentionedName;
+  const playerId = msg.mentionedPlayerId;
+  const color = isDark ? '#7FBF7A' : '#2E7D32';
+
+  // Structured format: "TASK:TASK_TYPE:N"
+  const structured = msg.body.match(/^TASK:([A-Z_]+):(\d+)$/);
+
+  let textPart: string;
+  let ticketCount: string | null;
+
+  if (structured) {
+    const taskType = structured[1];
+    const taskName = t(`cityTasks.taskTypes.${taskType}` as any);
+    const completed = t('cityTasks.systemMsgCompleted' as any);
+    textPart = `${name ?? ''} ${completed} ${taskName} ·`;
+    ticketCount = `+${structured[2]}`;
+  } else {
+    // Legacy format: "Name completed Task · +N 🎟"
+    const legacy = msg.body.match(/^(.*) (\+\d+)/);
+    textPart = legacy ? legacy[1] : msg.body;
+    ticketCount = legacy ? legacy[2] : null;
+  }
+
+  return (
+    <View style={[systemStyles.row, { backgroundColor: isDark ? '#1B2E1A' : '#EFF9EE' }]}>
+      <View style={systemStyles.inner}>
+        {name && playerId ? (
+          <LocaleText style={[systemStyles.text, { color }]}>
+            <LocaleText
+              style={[systemStyles.nameLink, { color }]}
+              onPress={() => router.push(`/user-profile/${playerId}` as any)}
+            >
+              {name}
+            </LocaleText>
+            {textPart.slice(name.length)}
+          </LocaleText>
+        ) : (
+          <LocaleText style={[systemStyles.text, { color }]}>{textPart}</LocaleText>
+        )}
+        {ticketCount && (
+          <>
+            <LocaleText style={[systemStyles.text, { color }]}> {ticketCount}</LocaleText>
+            <Image source={TICKET_ICON} style={systemStyles.ticketIcon} contentFit="contain" />
+          </>
+        )}
+      </View>
+    </View>
+  );
+}
+
+const systemStyles = StyleSheet.create({
+  row:        { marginHorizontal: 12, marginVertical: 3, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7 },
+  inner:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 2 },
+  text:       { fontFamily: 'Fredoka_500Medium', fontSize: 13 },
+  nameLink:   { fontFamily: 'Fredoka_700Bold', textDecorationLine: 'underline' },
+  ticketIcon: { width: 16, height: 16 },
+});
+
 // ─── Message Row ─────────────────────────────────────────────────────────────
 
 function ChatMessageRow({
@@ -214,11 +279,15 @@ export default function CityChatScreen() {
             ) : (
               displayed.map((msg, i) => (
                 <React.Fragment key={msg.id}>
-                  {i > 0 && <View style={styles.separator} />}
-                  <ChatMessageRow
-                    msg={msg} myName={myName} onReply={handleReply}
-                    t={t} theme={theme} isDark={isDark}
-                  />
+                  {i > 0 && msg.playerRole !== 'SYSTEM' && <View style={styles.separator} />}
+                  {msg.playerRole === 'SYSTEM' ? (
+                    <SystemMessageRow msg={msg} isDark={isDark} theme={theme} />
+                  ) : (
+                    <ChatMessageRow
+                      msg={msg} myName={myName} onReply={handleReply}
+                      t={t} theme={theme} isDark={isDark}
+                    />
+                  )}
                 </React.Fragment>
               ))
             )}

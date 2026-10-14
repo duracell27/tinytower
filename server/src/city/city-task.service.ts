@@ -1,8 +1,9 @@
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CityTaskType, CityTaskStatus, CityRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { ALL_TASK_TYPES, calcRequiredCount, todayUtcMidnight, isWeekendUTC, currentWeekStart, computeWeeklyReward, TASK_GEM_REWARDS, TASK_COINS_MULTIPLIER } from './city-task.constants';
+import { ALL_TASK_TYPES, calcRequiredCount, todayUtcMidnight, isWeekendUTC, currentWeekStart, computeWeeklyReward, TASK_GEM_REWARDS, TASK_COINS_MULTIPLIER, TASK_LABELS } from './city-task.constants';
 import { getCityLevel } from './city-level';
+import { CityChatService } from '../city-chat/city-chat.service';
 
 const LEADERSHIP_ROLES: CityRole[] = [CityRole.VICE_MAYOR, CityRole.ACTING_MAYOR, CityRole.MAYOR];
 
@@ -23,7 +24,10 @@ type PrismaTx = Omit<PrismaService, '$connect' | '$disconnect' | '$on' | '$trans
 
 @Injectable()
 export class CityTaskService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cityChat: CityChatService,
+  ) {}
 
   async getOrCreateDailyTasks(cityId: string, cityLevel: number): Promise<CityTaskSummaryDto[]> {
     if (cityLevel < 10) return [];
@@ -99,7 +103,7 @@ export class CityTaskService {
     });
   }
 
-  async collectTask(actorId: string, taskId: string): Promise<{ finalStars: number; gemReward: number; coinsReward: number }> {
+  async collectTask(actorId: string, taskId: string): Promise<{ finalStars: number; gemReward: number; coinsReward: number; isDoubled: boolean }> {
     const task = await this.prisma.cityDailyTask.findUnique({
       where: { id: taskId },
       include: {
@@ -156,7 +160,11 @@ export class CityTaskService {
         });
       }
     });
-    return { finalStars, gemReward, coinsReward };
+    const actor = await this.prisma.player.findUnique({ where: { id: actorId }, select: { playerName: true } });
+    const body = `TASK:${task.taskType}:${finalStars}`;
+    this.cityChat.sendSystemMessage(task.cityId, body, actorId, actor?.playerName ?? undefined).catch(() => {});
+
+    return { finalStars, gemReward, coinsReward, isDoubled: multiplier === 2 };
   }
 
   async cancelTask(actorId: string, taskId: string): Promise<void> {

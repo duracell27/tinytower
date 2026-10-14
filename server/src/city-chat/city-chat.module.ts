@@ -7,5 +7,6 @@ import { CityChatController } from './city-chat.controller';
   imports: [PrismaModule],
   providers: [CityChatService],
   controllers: [CityChatController],
+  exports: [CityChatService],
 })
 export class CityChatModule {}

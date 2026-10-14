@@ -42,7 +42,8 @@ function makeService(overrides: Record<string, any> = {}) {
   };
 
   const merged = { ...prisma, ...overrides };
-  return { svc: new CityTaskService(merged as any), prisma: merged };
+  const mockChat = { sendSystemMessage: jest.fn().mockResolvedValue(undefined) };
+  return { svc: new CityTaskService(merged as any, mockChat as any), prisma: merged };
 }
 
 describe('getOrCreateDailyTasks', () => {

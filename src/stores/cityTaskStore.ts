@@ -16,7 +16,7 @@ interface CityTaskActions {
   setFromSync: (payload: { tasks: CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number; isWeekend?: boolean; weeklyResult?: CityWeeklyResult | null }) => void;
   fetchTasks: () => Promise<void>;
   joinTask: (taskId: string) => Promise<void>;
-  collectTask: (taskId: string) => Promise<{ finalStars: number; gemReward: number; coinsReward: number }>;
+  collectTask: (taskId: string) => Promise<{ finalStars: number; gemReward: number; coinsReward: number; isDoubled: boolean }>;
   cancelTask: (taskId: string) => Promise<void>;
 }
 

@@ -22,7 +22,7 @@ const TASKS_ICON    = require('../../assets/img/city/cityTasks.png');
 const TICKET_ICON   = require('../../assets/img/city/CityTicket.png');
 const GEM_ICON      = require('../../assets/img/diamond.png');
 const COIN_ICON     = require('../../assets/img/coin.png');
-const TOOLS_ICON    = require('../../assets/products/tools.png');
+const TOOLS_ICON    = require('../../assets/img/tools/allTools.png');
 const INFO_ICON     = require('../../assets/img/InformationIcon.png');
 const CUP1_ICON     = require('../../assets/img/rating/1PlaceCup.png');
 const CUP2_ICON     = require('../../assets/img/rating/2PlaceCup.png');
@@ -125,7 +125,7 @@ export default function CityTasksScreen() {
   const getMember = (pid: string) => city?.members?.find((m) => m.playerId === pid);
 
   const [cancelPendingId, setCancelPendingId] = useState<string | null>(null);
-  const [collectReward, setCollectReward]     = useState<{ finalStars: number; gemReward: number; coinsReward: number } | null>(null);
+  const [collectReward, setCollectReward]     = useState<{ finalStars: number; gemReward: number; coinsReward: number; isDoubled: boolean } | null>(null);
   const [showInfo, setShowInfo]               = useState(false);
 
   const handleJoin    = async (taskId: string) => { try { await joinTask(taskId); } catch {} };
@@ -364,23 +364,9 @@ export default function CityTasksScreen() {
                   )}
 
                   {/* Actions */}
-                  {isCollected && (
-                    <View style={[styles.completedPill, { backgroundColor: isDark ? '#334D62' : '#E2EEF5' }]}>
-                      <LocaleText style={[styles.completedPillText, { color: isDark ? '#6A8FA8' : '#5A7A8E' }]}>
-                        {t('cityTasks.collected')}
-                      </LocaleText>
-                    </View>
-                  )}
 
                   {!isDisabled && (
                     <View style={styles.actions}>
-                      {isCompleted && (
-                        <View style={styles.completedPill}>
-                          <LocaleText style={styles.completedPillText}>
-                            {t('cityTasks.completed')}
-                          </LocaleText>
-                        </View>
-                      )}
                       {canJoin && (
                         <TouchableOpacity
                           style={[styles.btn, { backgroundColor: isInProgress ? '#9A6FD0' : PRIMARY }]}
@@ -477,23 +463,29 @@ export default function CityTasksScreen() {
             <LocaleText style={[modalStyles.title, { color: theme.text }]}>
               {t('cityTasks.collectResultTitle')}
             </LocaleText>
+            {collectReward?.isDoubled && (
+              <View style={[modalStyles.doubledBadge, { backgroundColor: isDark ? '#3A2A0E' : '#FFF3CD' }]}>
+                <Image source={require('../../assets/img/confetti.png')} style={modalStyles.doubledIcon} contentFit="contain" />
+                <LocaleText style={modalStyles.doubledText}>{t('cityTasks.collectResultDoubled')}</LocaleText>
+              </View>
+            )}
             <View style={modalStyles.rewardRow}>
-              <View style={modalStyles.rewardItem}>
+              <View style={[modalStyles.rewardPill, { backgroundColor: isDark ? '#1B3050' : '#EBF4FF' }]}>
                 <Image source={TICKET_ICON} style={modalStyles.rewardIcon} contentFit="contain" />
                 <LocaleText style={[modalStyles.rewardValue, { color: PRIMARY }]}>
-                  {collectReward?.finalStars}
+                  +{collectReward?.finalStars}
                 </LocaleText>
               </View>
-              <View style={modalStyles.rewardItem}>
+              <View style={[modalStyles.rewardPill, { backgroundColor: isDark ? '#122A35' : '#E6F7FA' }]}>
                 <Image source={GEM_ICON} style={modalStyles.rewardIcon} contentFit="contain" />
                 <LocaleText style={[modalStyles.rewardValue, { color: '#2592AB' }]}>
-                  {collectReward?.gemReward}
+                  +{collectReward?.gemReward}
                 </LocaleText>
               </View>
-              <View style={modalStyles.rewardItem}>
+              <View style={[modalStyles.rewardPill, { backgroundColor: isDark ? '#2A2210' : '#FEF8E7' }]}>
                 <Image source={COIN_ICON} style={modalStyles.rewardIcon} contentFit="contain" />
-                <LocaleText style={[modalStyles.rewardValue, { color: '#E0A93C' }]}>
-                  {collectReward?.coinsReward != null
+                <LocaleText style={[modalStyles.rewardValue, { color: '#C8870A' }]}>
+                  +{collectReward?.coinsReward != null
                     ? collectReward.coinsReward >= 1000
                       ? `${(collectReward.coinsReward / 1000).toFixed(1)}k`
                       : String(collectReward.coinsReward)
@@ -619,7 +611,7 @@ export default function CityTasksScreen() {
                       <View style={infoModal.superTop}>
                         <View style={infoModal.superThreshRow}>
                           <View style={infoModal.superThreshTextCol}>
-                            <LocaleText style={[infoModal.superMoreThan, { color: PRIMARY }]}>more than</LocaleText>
+                            <LocaleText style={[infoModal.superMoreThan, { color: PRIMARY }]}>{t('cityTasks.infoMoreThan')}</LocaleText>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                               <LocaleText style={{ fontFamily: 'Fredoka_700Bold', fontSize: 22, color: PRIMARY }}>{tickets}</LocaleText>
                               <Image source={TICKET_ICON} style={infoModal.ticketMd} contentFit="contain" />
@@ -818,8 +810,14 @@ const modalStyles = StyleSheet.create({
   btnOk:       { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
   starIcon:    { width: 56, height: 56 },
   starsNumber: { fontFamily: 'Fredoka_700Bold', fontSize: 48, lineHeight: 54 },
-  rewardRow:   { flexDirection: 'row', justifyContent: 'center', gap: 24, marginVertical: 8 },
+
+  doubledBadge: { borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  doubledIcon:  { width: 22, height: 22 },
+  doubledText:  { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#B8760A' },
+
+  rewardRow:   { flexDirection: 'row', gap: 8, marginVertical: 4 },
   rewardItem:  { alignItems: 'center', gap: 4 },
-  rewardIcon:  { width: 40, height: 40 },
-  rewardValue: { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
+  rewardPill:  { flex: 1, alignItems: 'center', gap: 6, borderRadius: 14, paddingVertical: 10, paddingHorizontal: 8 },
+  rewardIcon:  { width: 36, height: 36 },
+  rewardValue: { fontFamily: 'Fredoka_700Bold', fontSize: 20 },
 });

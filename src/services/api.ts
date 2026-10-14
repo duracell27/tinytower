@@ -641,7 +641,7 @@ export const api = {
   joinCityTask: (taskId: string) =>
     request<CityTaskSummary>('POST', `/city/tasks/${taskId}/join`),
   collectCityTask: (taskId: string) =>
-    request<{ finalStars: number; gemReward: number; coinsReward: number }>('POST', `/city/tasks/${taskId}/collect`),
+    request<{ finalStars: number; gemReward: number; coinsReward: number; isDoubled: boolean }>('POST', `/city/tasks/${taskId}/collect`),
   cancelCityTask: (taskId: string) =>
     request<void>('POST', `/city/tasks/${taskId}/cancel`),
   createCityWeeklyResult: (cityId: string, message?: string) =>

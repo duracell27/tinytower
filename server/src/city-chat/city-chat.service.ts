@@ -120,6 +120,26 @@ export class CityChatService {
     return toDto(created);
   }
 
+  async sendSystemMessage(
+    cityId: string,
+    body: string,
+    mentionedPlayerId?: string,
+    mentionedName?: string,
+  ): Promise<void> {
+    await this.prisma.cityChatMessage.create({
+      data: {
+        cityId,
+        playerId: null,
+        playerName: 'System',
+        playerLevel: 0,
+        playerRole: 'SYSTEM',
+        body,
+        mentionedPlayerId: mentionedPlayerId ?? null,
+        mentionedName: mentionedName ?? null,
+      },
+    });
+  }
+
   async hasPendingMention(cityId: string, playerId: string): Promise<boolean> {
     const membership = await this.prisma.cityMembership.findUnique({ where: { playerId } });
     if (!membership || membership.cityId !== cityId) return false;

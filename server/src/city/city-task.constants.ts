@@ -80,6 +80,18 @@ export function computeWeeklyReward(totalTickets: number, rank: number): {
   return { baseReward, placementBonus, superBonus, totalReward: baseReward + placementBonus + superBonus };
 }
 
+export const TASK_LABELS: Record<CityTaskType, string> = {
+  [CityTaskType.WHOLESALE_PURCHASES]: 'Wholesale Purchases',
+  [CityTaskType.GOODS_ON_DISPLAY]:    'Goods on Display',
+  [CityTaskType.CASH_COLLECTOR]:      'Cash Collector',
+  [CityTaskType.CARRIER]:             'Carrier',
+  [CityTaskType.VIP_CARRIER]:         'VIP Carrier',
+  [CityTaskType.EVICT_RESIDENTS]:     'Evict Residents',
+  [CityTaskType.NEW_RESIDENTS]:       'New Residents',
+  [CityTaskType.BUILD_FLOOR]:         'Build a Floor',
+  [CityTaskType.EASY_MONEY]:          'Easy Money',
+};
+
 export const ALL_TASK_TYPES: CityTaskType[] = [
   CityTaskType.WHOLESALE_PURCHASES,
   CityTaskType.GOODS_ON_DISPLAY,

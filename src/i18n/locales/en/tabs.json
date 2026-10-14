@@ -979,6 +979,7 @@
     "participants": "{{count}}/2 participants",
     "progress": "Progress:",
     "doubleBonus": "×2 bonus",
+    "systemMsgCompleted": "completed",
     "taskTypes": {
       "WHOLESALE_PURCHASES": "Wholesale Purchases",
       "GOODS_ON_DISPLAY": "Goods on Display",
@@ -1021,6 +1022,8 @@
     "infoSuper": "Super Bonuses",
     "infoSuper250": "If your city collects 250 or more tickets in a week, the city budget gets an extra +500 diamonds and 50 random resources!",
     "infoSuper500": "If your city collects 500 or more tickets in a week, the city budget gets a massive +5,000 diamonds and 100 random resources!",
+    "infoMoreThan": "more than",
+    "collectResultDoubled": "×2 bonus!",
     "infoClose": "Got it!"
   }
 }
