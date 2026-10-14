@@ -528,6 +528,7 @@ model CityWeeklyRankingEntry {
   placementBonus Int               @default(0)
   superBonus     Int               @default(0)
   totalReward    Int
+  resourceReward Int               @default(0)
   createdAt      DateTime          @default(now())
 
   @@unique([rankingId, cityId])

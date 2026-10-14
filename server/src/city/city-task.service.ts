@@ -1,7 +1,8 @@
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CityTaskType, CityTaskStatus, CityRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { ALL_TASK_TYPES, calcRequiredCount, todayUtcMidnight, isWeekendUTC, currentWeekStart, computeWeeklyReward } from './city-task.constants';
+import { ALL_TASK_TYPES, calcRequiredCount, todayUtcMidnight, isWeekendUTC, currentWeekStart, computeWeeklyReward, TASK_GEM_REWARDS, TASK_COINS_MULTIPLIER } from './city-task.constants';
+import { getCityLevel } from './city-level';
 
 const LEADERSHIP_ROLES: CityRole[] = [CityRole.VICE_MAYOR, CityRole.ACTING_MAYOR, CityRole.MAYOR];
 
@@ -98,10 +99,13 @@ export class CityTaskService {
     });
   }
 
-  async collectTask(actorId: string, taskId: string): Promise<{ finalStars: number }> {
+  async collectTask(actorId: string, taskId: string): Promise<{ finalStars: number; gemReward: number; coinsReward: number }> {
     const task = await this.prisma.cityDailyTask.findUnique({
       where: { id: taskId },
-      include: { participants: { select: { playerId: true } } },
+      include: {
+        participants: { select: { playerId: true } },
+        city: { select: { cityXp: true } },
+      },
     });
     if (!task) throw new NotFoundException('Task not found');
     if (task.status !== CityTaskStatus.COMPLETED) throw new BadRequestException('Task not completed');
@@ -121,23 +125,38 @@ export class CityTaskService {
     const rewardStars = Math.floor(Math.random() * 10) + 1;
     const finalStars = rewardStars * multiplier;
 
+    const cityLevel = getCityLevel(task.city.cityXp);
+    const gemReward = TASK_GEM_REWARDS[task.taskType] * multiplier;
+    const coinsReward = cityLevel * TASK_COINS_MULTIPLIER[task.taskType] * multiplier;
+    const participantIds = task.participants.map((p) => p.playerId);
+
     const weekStart = currentWeekStart();
-    await this.prisma.$transaction([
-      this.prisma.cityDailyTask.update({
+    await this.prisma.$transaction(async (tx) => {
+      await tx.cityDailyTask.update({
         where: { id: taskId },
         data: { status: CityTaskStatus.COLLECTED, collectedAt: new Date(), rewardStars, finalStars },
-      }),
-      this.prisma.city.update({
+      });
+      await tx.city.update({
         where: { id: task.cityId },
         data: { styleStars: { increment: finalStars } },
-      }),
-      this.prisma.cityWeeklyStats.upsert({
+      });
+      await tx.cityWeeklyStats.upsert({
         where: { cityId_weekStart: { cityId: task.cityId, weekStart } },
         create: { cityId: task.cityId, weekStart, totalTickets: finalStars },
         update: { totalTickets: { increment: finalStars } },
-      }),
-    ]);
-    return { finalStars };
+      });
+      for (const playerId of participantIds) {
+        await tx.playerState.update({
+          where: { playerId },
+          data: { gems: { increment: gemReward } },
+        });
+        await tx.player.update({
+          where: { id: playerId },
+          data: { balance: { increment: coinsReward } },
+        });
+      }
+    });
+    return { finalStars, gemReward, coinsReward };
   }
 
   async cancelTask(actorId: string, taskId: string): Promise<void> {

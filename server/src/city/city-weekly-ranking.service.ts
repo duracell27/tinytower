@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { currentWeekStart, computeWeeklyReward } from './city-task.constants';
+import { currentWeekStart, computeWeeklyReward, computeResourceReward, generateRandomResources } from './city-task.constants';
 
 function mondayOf(date: Date): Date {
   const d = new Date(date);
@@ -75,7 +75,8 @@ export class CityWeeklyRankingService {
     return stats.map((s, idx) => {
       const rank = idx + 1;
       const rewards = computeWeeklyReward(s.totalTickets, rank);
-      return { cityId: s.cityId, cityName: s.city.name, rank, totalTickets: s.totalTickets, ...rewards };
+      const resourceReward = computeResourceReward(s.totalTickets, rank);
+      return { cityId: s.cityId, cityName: s.city.name, rank, totalTickets: s.totalTickets, resourceReward, ...rewards };
     });
   }
 
@@ -97,7 +98,8 @@ export class CityWeeklyRankingService {
 
     const entries = stats.map((s, idx) => {
       const rank = idx + 1;
-      return { cityId: s.cityId, rank, totalTickets: s.totalTickets, ...computeWeeklyReward(s.totalTickets, rank) };
+      const resourceReward = computeResourceReward(s.totalTickets, rank);
+      return { cityId: s.cityId, rank, totalTickets: s.totalTickets, resourceReward, ...computeWeeklyReward(s.totalTickets, rank) };
     });
 
     await this.prisma.$transaction(async (tx) => {
@@ -112,13 +114,22 @@ export class CityWeeklyRankingService {
         await tx.cityWeeklyRankingEntry.upsert({
           where: { rankingId_cityId: { rankingId: ranking.id, cityId: e.cityId } },
           create: { rankingId: ranking.id, ...e },
-          update: { rank: e.rank, totalTickets: e.totalTickets, baseReward: e.baseReward, placementBonus: e.placementBonus, superBonus: e.superBonus, totalReward: e.totalReward },
+          update: { rank: e.rank, totalTickets: e.totalTickets, baseReward: e.baseReward, placementBonus: e.placementBonus, superBonus: e.superBonus, totalReward: e.totalReward, resourceReward: e.resourceReward },
         });
 
-        // Add gems to city budget
+        // Add gems + resources to city budget
+        const resources = generateRandomResources(e.resourceReward);
         await tx.city.update({
           where: { id: e.cityId },
-          data: { budgetGems: { increment: e.totalReward } },
+          data: {
+            budgetGems:   { increment: e.totalReward },
+            budgetBriks:  { increment: resources.briks },
+            budgetGlass:  { increment: resources.glass },
+            budgetNails:  { increment: resources.nails },
+            budgetScrew:  { increment: resources.screw },
+            budgetWood:   { increment: resources.wood },
+            budgetCement: { increment: resources.cement },
+          },
         });
 
         // Create/update CityWeeklyResult for client display

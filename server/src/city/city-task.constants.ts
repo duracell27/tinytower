@@ -9,6 +9,65 @@ export const PLACEMENT_BONUSES: Record<number, number> = {
   7: 1300, 8: 1200, 9: 1100, 10: 1000,
 };
 
+// Gems awarded to each participant when a task is collected
+export const TASK_GEM_REWARDS: Record<CityTaskType, number> = {
+  [CityTaskType.WHOLESALE_PURCHASES]: 2,
+  [CityTaskType.GOODS_ON_DISPLAY]:    2,
+  [CityTaskType.CASH_COLLECTOR]:      2,
+  [CityTaskType.CARRIER]:             2,
+  [CityTaskType.VIP_CARRIER]:         2,
+  [CityTaskType.EVICT_RESIDENTS]:     2,
+  [CityTaskType.NEW_RESIDENTS]:       2,
+  [CityTaskType.BUILD_FLOOR]:         5,
+  [CityTaskType.EASY_MONEY]:          5,
+};
+
+// Coins = cityLevel × multiplier, awarded to each participant on collect
+export const TASK_COINS_MULTIPLIER: Record<CityTaskType, number> = {
+  [CityTaskType.CASH_COLLECTOR]:      3000,
+  [CityTaskType.VIP_CARRIER]:         3000,
+  [CityTaskType.GOODS_ON_DISPLAY]:    2500,
+  [CityTaskType.WHOLESALE_PURCHASES]: 2000,
+  [CityTaskType.NEW_RESIDENTS]:       2000,
+  [CityTaskType.EVICT_RESIDENTS]:     2000,
+  [CityTaskType.BUILD_FLOOR]:         2000,
+  [CityTaskType.EASY_MONEY]:          1500,
+  [CityTaskType.CARRIER]:             1500,
+};
+
+// Resources (tools) added to city budget based on ranking
+export const PLACEMENT_RESOURCE_REWARDS: Record<number, number> = {
+  1: 100, 2: 90, 3: 80,
+  4: 70,  5: 60, 6: 50,
+  7: 40,  8: 30, 9: 20, 10: 10,
+};
+
+export const SUPER_RESOURCE_BONUS_250 = 50;
+export const SUPER_RESOURCE_BONUS_500 = 100;
+
+const TOOL_KEYS = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'] as const;
+export type ToolKey = typeof TOOL_KEYS[number];
+
+export function generateRandomResources(total: number): Record<ToolKey, number> {
+  const result = { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 };
+  if (total <= 0) return result;
+  let remaining = total;
+  for (let i = 0; i < TOOL_KEYS.length - 1; i++) {
+    const maxShare = remaining - (TOOL_KEYS.length - 1 - i);
+    const share = Math.floor(Math.random() * (maxShare + 1));
+    result[TOOL_KEYS[i]] = share;
+    remaining -= share;
+  }
+  result[TOOL_KEYS[TOOL_KEYS.length - 1]] = remaining;
+  return result;
+}
+
+export function computeResourceReward(totalTickets: number, rank: number): number {
+  const placement = PLACEMENT_RESOURCE_REWARDS[rank] ?? 0;
+  const superBonus = totalTickets >= 500 ? SUPER_RESOURCE_BONUS_500 : totalTickets >= 250 ? SUPER_RESOURCE_BONUS_250 : 0;
+  return placement + superBonus;
+}
+
 export function computeWeeklyReward(totalTickets: number, rank: number): {
   baseReward: number;
   placementBonus: number;

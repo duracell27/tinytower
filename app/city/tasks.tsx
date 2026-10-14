@@ -21,6 +21,7 @@ const PRIMARY       = '#2E6EC9';
 const TASKS_ICON    = require('../../assets/img/city/cityTasks.png');
 const TICKET_ICON   = require('../../assets/img/city/CityTicket.png');
 const GEM_ICON      = require('../../assets/img/diamond.png');
+const COIN_ICON     = require('../../assets/img/coin.png');
 const INFO_ICON     = require('../../assets/img/InformationIcon.png');
 const CUP1_ICON     = require('../../assets/img/rating/1PlaceCup.png');
 const CUP2_ICON     = require('../../assets/img/rating/2PlaceCup.png');
@@ -110,14 +111,14 @@ export default function CityTasksScreen() {
   const getMember = (pid: string) => city?.members?.find((m) => m.playerId === pid);
 
   const [cancelPendingId, setCancelPendingId] = useState<string | null>(null);
-  const [collectStars, setCollectStars]       = useState<number | null>(null);
+  const [collectReward, setCollectReward]     = useState<{ finalStars: number; gemReward: number; coinsReward: number } | null>(null);
   const [showInfo, setShowInfo]               = useState(false);
 
   const handleJoin    = async (taskId: string) => { try { await joinTask(taskId); } catch {} };
   const handleCollect = async (taskId: string) => {
     try {
       const res = await collectTask(taskId);
-      setCollectStars(res.finalStars);
+      setCollectReward(res);
     } catch {}
   };
   const handleCancelConfirm = async () => {
@@ -434,23 +435,43 @@ export default function CityTasksScreen() {
 
       {/* ── Collect result modal ── */}
       <Modal
-        visible={collectStars !== null}
+        visible={collectReward !== null}
         transparent
         animationType="fade"
-        onRequestClose={() => setCollectStars(null)}
+        onRequestClose={() => setCollectReward(null)}
       >
         <View style={modalStyles.overlay}>
           <View style={[modalStyles.sheet, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
-            <Image source={TICKET_ICON} style={modalStyles.starIcon} contentFit="contain" />
-            <LocaleText style={[modalStyles.starsNumber, { color: PRIMARY }]}>
-              {collectStars}
-            </LocaleText>
             <LocaleText style={[modalStyles.title, { color: theme.text }]}>
               {t('cityTasks.collectResultTitle')}
             </LocaleText>
+            <View style={modalStyles.rewardRow}>
+              <View style={modalStyles.rewardItem}>
+                <Image source={TICKET_ICON} style={modalStyles.rewardIcon} contentFit="contain" />
+                <LocaleText style={[modalStyles.rewardValue, { color: PRIMARY }]}>
+                  {collectReward?.finalStars}
+                </LocaleText>
+              </View>
+              <View style={modalStyles.rewardItem}>
+                <Image source={GEM_ICON} style={modalStyles.rewardIcon} contentFit="contain" />
+                <LocaleText style={[modalStyles.rewardValue, { color: '#2592AB' }]}>
+                  {collectReward?.gemReward}
+                </LocaleText>
+              </View>
+              <View style={modalStyles.rewardItem}>
+                <Image source={COIN_ICON} style={modalStyles.rewardIcon} contentFit="contain" />
+                <LocaleText style={[modalStyles.rewardValue, { color: '#E0A93C' }]}>
+                  {collectReward?.coinsReward != null
+                    ? collectReward.coinsReward >= 1000
+                      ? `${(collectReward.coinsReward / 1000).toFixed(1)}k`
+                      : String(collectReward.coinsReward)
+                    : ''}
+                </LocaleText>
+              </View>
+            </View>
             <TouchableOpacity
               style={[modalStyles.btn, { backgroundColor: '#3FA535', alignSelf: 'stretch', flex: undefined }]}
-              onPress={() => setCollectStars(null)}
+              onPress={() => setCollectReward(null)}
               activeOpacity={0.8}
             >
               <LocaleText style={modalStyles.btnOk}>
@@ -752,4 +773,8 @@ const modalStyles = StyleSheet.create({
   btnOk:       { color: '#fff', fontFamily: 'Fredoka_600SemiBold', fontSize: 14 },
   starIcon:    { width: 56, height: 56 },
   starsNumber: { fontFamily: 'Fredoka_700Bold', fontSize: 48, lineHeight: 54 },
+  rewardRow:   { flexDirection: 'row', justifyContent: 'center', gap: 24, marginVertical: 8 },
+  rewardItem:  { alignItems: 'center', gap: 4 },
+  rewardIcon:  { width: 40, height: 40 },
+  rewardValue: { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
 });

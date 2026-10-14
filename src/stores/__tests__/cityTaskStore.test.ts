@@ -82,10 +82,10 @@ describe('joinTask', () => {
 
 describe('collectTask', () => {
   it('returns finalStars and refreshes tasks', async () => {
-    mockApi.collectCityTask.mockResolvedValue({ finalStars: 8 });
+    mockApi.collectCityTask.mockResolvedValue({ finalStars: 8, gemReward: 2, coinsReward: 20000 });
     mockApi.fetchCityTasks.mockResolvedValue({ tasks: [], myActiveTaskId: null, cityStyleStars: 8, isWeekend: false, weeklyResult: null });
     const result = await act(() => useCityTaskStore.getState().collectTask('t1'));
-    expect(result).toEqual({ finalStars: 8 });
+    expect(result).toEqual({ finalStars: 8, gemReward: 2, coinsReward: 20000 });
     expect(mockApi.fetchCityTasks).toHaveBeenCalled();
   });
 });
