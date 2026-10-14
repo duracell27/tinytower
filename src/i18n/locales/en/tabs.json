@@ -1019,8 +1019,8 @@
     "infoBaseDiamonds": "diamonds to the city budget",
     "infoTop10": "Top 10 Cities",
     "infoSuper": "Super Bonuses",
-    "infoSuper250": "If your city collects 250 or more tickets in a week, the city budget gets an extra +500 diamonds!",
-    "infoSuper500": "If your city collects 500 or more tickets in a week, the city budget gets a massive +5,000 diamonds!",
+    "infoSuper250": "If your city collects 250 or more tickets in a week, the city budget gets an extra +500 diamonds and 50 random resources!",
+    "infoSuper500": "If your city collects 500 or more tickets in a week, the city budget gets a massive +5,000 diamonds and 100 random resources!",
     "infoClose": "Got it!"
   }
 }
