@@ -134,14 +134,20 @@ export default function DailyTasksScreen() {
         </View>
 
         <View style={styles.tournamentBanner}>
-          <LocaleText style={styles.tournamentTitle}>🏆 Token Tournament</LocaleText>
+          <View style={styles.tournamentHeader}>
+            <Image source={require('../assets/img/rating/1PlaceCup.png')} style={styles.tournamentCupIcon} contentFit="contain" />
+            <LocaleText style={styles.tournamentTitle}>Token Tournament</LocaleText>
+          </View>
           {isTournamentWeekend ? (
             <LocaleText style={styles.tournamentSub}>Tournament finished — results coming soon.</LocaleText>
           ) : (
             <>
-              <LocaleText style={styles.tournamentSub}>
-                This week: <LocaleText style={styles.tournamentHighlight}>{weeklyTokenCount} 🔑</LocaleText>
-              </LocaleText>
+              <View style={styles.tournamentScoreRow}>
+                {(['green', 'blue', 'yellow', 'purple', 'red'] as const).map((color) => (
+                  <Image key={color} source={TOKEN_ICONS[color]} style={styles.tournamentTokenIcon} contentFit="contain" />
+                ))}
+                <LocaleText style={styles.tournamentScore}>{weeklyTokenCount}</LocaleText>
+              </View>
               {weeklyTokenCount > 0 && (
                 <LocaleText style={styles.tournamentSub}>
                   Est. reward: <LocaleText style={styles.tournamentHighlight}>{estimatedCoins.toLocaleString()} 🪙</LocaleText>
@@ -364,8 +370,13 @@ const styles = StyleSheet.create({
   tokenCount: { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
 
   timer: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', marginBottom: 4, textAlign: 'center' },
-  tournamentBanner: { backgroundColor: '#EEF7FF', borderRadius: 14, padding: 12, alignItems: 'center', gap: 4 },
-  tournamentTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#1A6A9A' },
+  tournamentBanner: { backgroundColor: '#EEF7FF', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12, alignItems: 'center', gap: 6 },
+  tournamentHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  tournamentCupIcon: { width: 22, height: 22 },
+  tournamentTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#1A6A9A' },
+  tournamentScoreRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  tournamentTokenIcon: { width: 20, height: 20 },
+  tournamentScore: { fontFamily: 'Fredoka_700Bold', fontSize: 28, color: '#1A6A9A', marginLeft: 6 },
   tournamentSub: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#4A7A9A', textAlign: 'center' },
   tournamentHighlight: { fontFamily: 'Fredoka_600SemiBold', color: '#1A6A9A' },
 
