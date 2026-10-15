@@ -139,6 +139,7 @@ describe('SyncService', () => {
       floorConstruction: { deleteMany: jest.fn().mockResolvedValue({}), upsert: jest.fn().mockResolvedValue({}) },
       playerFloorType: { upsert: jest.fn().mockResolvedValue({}), deleteMany: jest.fn().mockResolvedValue({}) },
       floor: { create: jest.fn().mockResolvedValue({}) },
+      playerWeeklyTokens: { upsert: jest.fn().mockResolvedValue({}) },
     };
 
     prisma = {
@@ -158,6 +159,9 @@ describe('SyncService', () => {
       referralPurchaseNotification: {
         findMany: jest.fn().mockResolvedValue([]),
         updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+      },
+      playerWeeklyTokens: {
+        findUnique: jest.fn().mockResolvedValue(null),
       },
       $transaction: jest.fn(async (fn: (tx: any) => Promise<void>) => {
         await fn(txMock);
