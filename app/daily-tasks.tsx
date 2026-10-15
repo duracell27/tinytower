@@ -122,6 +122,24 @@ export default function DailyTasksScreen() {
           </Pressable>
         </View>
 
+        <View style={styles.tournamentBanner}>
+          <LocaleText style={styles.tournamentTitle}>🏆 Token Tournament</LocaleText>
+          {isTournamentWeekend ? (
+            <LocaleText style={styles.tournamentSub}>Tournament finished — results coming soon.</LocaleText>
+          ) : (
+            <>
+              <LocaleText style={styles.tournamentSub}>
+                This week: <LocaleText style={styles.tournamentHighlight}>{weeklyTokenCount} 🔑</LocaleText>
+              </LocaleText>
+              {weeklyTokenCount > 0 && (
+                <LocaleText style={styles.tournamentSub}>
+                  Est. reward: <LocaleText style={styles.tournamentHighlight}>{estimatedCoins.toLocaleString()} 🪙</LocaleText>
+                </LocaleText>
+              )}
+            </>
+          )}
+        </View>
+
         <View style={styles.tokenRow}>
           {(['green', 'blue', 'yellow', 'purple', 'red'] as const).map((color) => (
             <View key={color} style={[styles.tokenChip, { backgroundColor: theme.surface }]}>
@@ -265,24 +283,6 @@ export default function DailyTasksScreen() {
         <LocaleText style={styles.timer}>
           {t('dailyTasks.resetsIn', { time: formatCountdown(msUntilReset) })}
         </LocaleText>
-
-        <View style={styles.tournamentBanner}>
-          <LocaleText style={styles.tournamentTitle}>🏆 Token Tournament</LocaleText>
-          {isTournamentWeekend ? (
-            <LocaleText style={styles.tournamentSub}>Tournament finished — results coming soon.</LocaleText>
-          ) : (
-            <>
-              <LocaleText style={styles.tournamentSub}>
-                This week: <LocaleText style={styles.tournamentHighlight}>{weeklyTokenCount} 🔑</LocaleText>
-              </LocaleText>
-              {weeklyTokenCount > 0 && (
-                <LocaleText style={styles.tournamentSub}>
-                  Est. reward: <LocaleText style={styles.tournamentHighlight}>{estimatedCoins.toLocaleString()} 🪙</LocaleText>
-                </LocaleText>
-              )}
-            </>
-          )}
-        </View>
       </ScrollView>
 
       <Pressable
