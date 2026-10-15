@@ -320,8 +320,10 @@
       "tokensText": "Tasks also reward colored tokens used to upgrade your business categories in My Business.",
       "bonusTitle": "×2 Bonus Day",
       "bonusText": "Complete 7 tasks to unlock double rewards for the following day. Resets at midnight.",
-      "tournamentTitle": "Token Tournament",
-      "tournamentText": "Each week (Mon–Fri) your tokens from daily tasks count toward a tournament. Results are published on Saturday via in-game mail.\n\nTop 10: 🥇 1000 💎 + 100 🔑 … 🏅 100 💎 + 10 🔑\nAll participants earn coins: tokens × level tier × 1,000."
+      "tournamentSchedule": "Weekly Mon–Fri. Results published on Saturday via in-game mail.",
+      "tournamentTop10": "Top 10 rewards",
+      "tournamentAll": "All participants",
+      "tournamentFormula": "Coins = tokens × level tier × 1,000\n(Level 1–10 = ×1,  11–20 = ×2,  21–30 = ×3, …)"
     }
   },
   "workersPanel": {

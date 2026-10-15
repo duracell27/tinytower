@@ -329,14 +329,66 @@ export default function DailyTasksScreen() {
                 title={t('dailyTasks.info.bonusTitle')}
                 text={t('dailyTasks.info.bonusText')}
                 accentColor="rgba(229,167,46,0.3)"
-              />
-              <InfoSection
-                icon={require('../assets/img/rating/1PlaceCup.png')}
-                title={t('dailyTasks.info.tournamentTitle')}
-                text={t('dailyTasks.info.tournamentText')}
-                accentColor="rgba(229,167,46,0.3)"
                 isLast
               />
+
+              {/* Tournament section */}
+              <View style={[styles.infoTournDivider, { backgroundColor: isDark ? '#2E3740' : '#F0F2F5' }]} />
+
+              <View style={styles.infoTournScheduleRow}>
+                <Image source={require('../assets/img/rating/1PlaceCup.png')} style={styles.infoTournScheduleIcon} contentFit="contain" />
+                <LocaleText style={[styles.infoTournScheduleText, { color: theme.textMuted }]}>
+                  {t('dailyTasks.info.tournamentSchedule')}
+                </LocaleText>
+              </View>
+
+              <View style={[styles.infoTournDivider, { backgroundColor: isDark ? '#2E3740' : '#F0F2F5' }]} />
+
+              <View style={{ gap: 6 }}>
+                <LocaleText style={[styles.infoTournSectionTitle, { color: theme.text }]}>
+                  {t('dailyTasks.info.tournamentTop10')}
+                </LocaleText>
+                {([
+                  [1,1000,100],[2,900,90],[3,800,80],
+                  [4,700,70],[5,600,60],[6,500,50],
+                  [7,400,40],[8,300,30],[9,200,20],[10,100,10],
+                ] as [number,number,number][]).map(([rank, gems, tokens]) => {
+                  const rankColor = rank <= 3 ? '#C8960A' : rank <= 6 ? '#888888' : '#A0643A';
+                  const rankBg = isDark
+                    ? rank <= 3 ? 'rgba(218,165,32,0.15)' : rank <= 6 ? 'rgba(192,192,192,0.12)' : 'rgba(205,127,50,0.12)'
+                    : rank <= 3 ? 'rgba(255,215,0,0.15)' : rank <= 6 ? 'rgba(192,192,192,0.15)' : 'rgba(205,127,50,0.13)';
+                  const cupSrc = rank <= 3
+                    ? require('../assets/img/rating/1PlaceCup.png')
+                    : rank <= 6
+                      ? require('../assets/img/rating/2PlaceCup.png')
+                      : require('../assets/img/rating/3PlaceCup.png');
+                  return (
+                    <View key={rank} style={[styles.infoTournRankRow, { backgroundColor: rankBg }]}>
+                      <Image source={cupSrc} style={styles.infoTournCup} contentFit="contain" />
+                      <LocaleText style={[styles.infoTournRankNum, { color: rankColor }]}>#{rank}</LocaleText>
+                      <View style={{ flex: 1 }} />
+                      <LocaleText style={[styles.infoTournBonus, { color: rankColor }]}>+{gems.toLocaleString()}</LocaleText>
+                      <Image source={require('../assets/img/diamond.png')} style={styles.infoTournGemSm} contentFit="contain" />
+                      <View style={[styles.infoTournRankDivider, { backgroundColor: isDark ? '#2A3740' : '#D8E0F5' }]} />
+                      <LocaleText style={[styles.infoTournBonus, { color: '#3FA535' }]}>+{tokens}</LocaleText>
+                      <Image source={require('../assets/img/tokens/tokenGreen.png')} style={styles.infoTournGemSm} contentFit="contain" />
+                    </View>
+                  );
+                })}
+              </View>
+
+              <View style={[styles.infoTournDivider, { backgroundColor: isDark ? '#2E3740' : '#F0F2F5' }]} />
+
+              <View style={{ gap: 6, paddingBottom: 6 }}>
+                <LocaleText style={[styles.infoTournSectionTitle, { color: theme.text }]}>
+                  {t('dailyTasks.info.tournamentAll')}
+                </LocaleText>
+                <View style={[styles.infoTournFormulaCard, { backgroundColor: isDark ? '#232A33' : '#F5F7FA' }]}>
+                  <LocaleText style={[styles.infoTournFormulaText, { color: theme.textMuted }]}>
+                    {t('dailyTasks.info.tournamentFormula')}
+                  </LocaleText>
+                </View>
+              </View>
             </ScrollView>
           </View>
         </View>
@@ -365,7 +417,21 @@ const styles = StyleSheet.create({
   },
   infoCardTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#fff' },
   infoCardClose: { color: 'rgba(255,255,255,0.85)', fontSize: 16, fontFamily: 'Fredoka_600SemiBold' },
-  infoCardBody: { paddingHorizontal: 14, paddingTop: 4, paddingBottom: 8 },
+  infoCardBody: { paddingHorizontal: 14, paddingTop: 4, maxHeight: 520 },
+
+  infoTournDivider:      { height: 1, marginVertical: 8 },
+  infoTournScheduleRow:  { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  infoTournScheduleIcon: { width: 28, height: 28 },
+  infoTournScheduleText: { fontFamily: 'Nunito_400Regular', fontSize: 13, lineHeight: 19, flex: 1 },
+  infoTournSectionTitle: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, paddingHorizontal: 4 },
+  infoTournRankRow:      { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
+  infoTournCup:          { width: 22, height: 22 },
+  infoTournRankNum:      { fontFamily: 'Fredoka_700Bold', fontSize: 15, width: 30 },
+  infoTournBonus:        { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
+  infoTournGemSm:        { width: 16, height: 16 },
+  infoTournRankDivider:  { width: 1, height: 14, marginHorizontal: 2 },
+  infoTournFormulaCard:  { borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14 },
+  infoTournFormulaText:  { fontFamily: 'Nunito_400Regular', fontSize: 13, lineHeight: 18 },
 
   tokenRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 4, justifyContent: 'center' },
   tokenChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },
