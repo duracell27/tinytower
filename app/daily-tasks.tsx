@@ -387,12 +387,11 @@ export default function DailyTasksScreen() {
                   {t('dailyTasks.info.tournamentAllDesc')}
                 </LocaleText>
                 {([
-                  [1, 10, 1], [11, 20, 2], [21, 30, 3], [31, 40, 4], [41, 50, 5],
-                  [51, 60, 6], [61, 70, 7], [71, 80, 8], [81, 90, 9], [91, null, 10],
-                ] as [number, number | null, number][]).map(([from, to, tier]) => (
+                  [1, 10, 1], [11, 20, 2], [21, 30, 3],
+                ] as [number, number, number][]).map(([from, to, tier]) => (
                   <View key={from} style={[styles.infoTournTierRow, { backgroundColor: isDark ? '#232A33' : '#F5F7FA' }]}>
                     <LocaleText style={[styles.infoTournTierLevel, { color: theme.textMuted }]}>
-                      {t('dailyTasks.info.tournamentLvl')} {from}{to ? `–${to}` : '+'}
+                      {t('dailyTasks.info.tournamentLvl')} {from}–{to}
                     </LocaleText>
                     <View style={{ flex: 1 }} />
                     <LocaleText style={[styles.infoTournTierMult, { color: theme.text }]}>×{tier}</LocaleText>
@@ -401,6 +400,9 @@ export default function DailyTasksScreen() {
                     <Image source={require('../assets/img/coin.png')} style={styles.infoTournGemSm} contentFit="contain" />
                   </View>
                 ))}
+                <LocaleText style={[styles.infoTournAllDesc, { color: theme.textMuted, textAlign: 'center', paddingBottom: 2 }]}>
+                  {t('dailyTasks.info.tournamentTierMore')}
+                </LocaleText>
               </View>
             </ScrollView>
           </View>

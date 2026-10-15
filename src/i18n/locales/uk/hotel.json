@@ -324,7 +324,8 @@
       "tournamentTop10": "Нагороди топ 10",
       "tournamentAll": "Усі учасники",
       "tournamentAllDesc": "Монети за кожен жетон, залежно від рівня:",
-      "tournamentLvl": "Рів."
+      "tournamentLvl": "Рів.",
+      "tournamentTierMore": "+1 000 🪙/🔑 за кожні 10 рівнів"
     }
   },
   "workersPanel": {
