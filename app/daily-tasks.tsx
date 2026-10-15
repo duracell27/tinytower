@@ -122,6 +122,17 @@ export default function DailyTasksScreen() {
           </Pressable>
         </View>
 
+        <View style={styles.tokenRow}>
+          {(['green', 'blue', 'yellow', 'purple', 'red'] as const).map((color) => (
+            <View key={color} style={[styles.tokenChip, { backgroundColor: theme.surface }]}>
+              <Image source={TOKEN_ICONS[color]} style={styles.tokenIcon} contentFit="contain" />
+              <LocaleText style={[styles.tokenCount, { color: TOKEN_COLORS[color] }]}>
+                {tokens[color]}
+              </LocaleText>
+            </View>
+          ))}
+        </View>
+
         <View style={styles.tournamentBanner}>
           <LocaleText style={styles.tournamentTitle}>🏆 Token Tournament</LocaleText>
           {isTournamentWeekend ? (
@@ -138,17 +149,6 @@ export default function DailyTasksScreen() {
               )}
             </>
           )}
-        </View>
-
-        <View style={styles.tokenRow}>
-          {(['green', 'blue', 'yellow', 'purple', 'red'] as const).map((color) => (
-            <View key={color} style={[styles.tokenChip, { backgroundColor: theme.surface }]}>
-              <Image source={TOKEN_ICONS[color]} style={styles.tokenIcon} contentFit="contain" />
-              <LocaleText style={[styles.tokenCount, { color: TOKEN_COLORS[color] }]}>
-                {tokens[color]}
-              </LocaleText>
-            </View>
-          ))}
         </View>
 
         {(() => {
