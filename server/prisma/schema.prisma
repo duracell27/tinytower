@@ -61,6 +61,8 @@ model Player {
   cityChatMessages          CityChatMessage[]    @relation("CityChatMessages")
   cityChatMentions          CityChatMessage[]    @relation("CityChatMentions")
   purchases              Purchase[]
+  weeklyTokens           PlayerWeeklyTokens[]
+  tokenTournamentEntries PlayerTokenTournamentEntry[]
 }
 
 model PlayerState {
@@ -729,4 +731,40 @@ model Purchase {
   player        Player   @relation(fields: [playerId], references: [id])
 
   @@index([playerId])
+}
+
+model PlayerWeeklyTokens {
+  id        String   @id @default(cuid())
+  playerId  String
+  weekStart DateTime
+  count     Int      @default(0)
+
+  player    Player   @relation(fields: [playerId], references: [id])
+
+  @@unique([playerId, weekStart])
+}
+
+model PlayerTokenTournament {
+  id        String   @id @default(cuid())
+  weekStart DateTime @unique
+  createdBy String
+  createdAt DateTime @default(now())
+
+  entries   PlayerTokenTournamentEntry[]
+}
+
+model PlayerTokenTournamentEntry {
+  id           String  @id @default(cuid())
+  tournamentId String
+  playerId     String
+  rank         Int?
+  tokenCount   Int
+  gemsReward   Int
+  bonusTokens  Int
+  coinsReward  Int
+
+  tournament   PlayerTokenTournament @relation(fields: [tournamentId], references: [id])
+  player       Player                @relation(fields: [playerId], references: [id])
+
+  @@unique([tournamentId, playerId])
 }
