@@ -31,9 +31,10 @@ function isWeekClosed(weekStart: Date): boolean {
 
 function fmtWeekTitle(weekStart: Date): string {
   const fri = new Date(weekStart.getTime() + 4 * 86_400_000);
-  const fmt = (d: Date) =>
-    `${String(d.getUTCDate()).padStart(2, '0')}.${String(d.getUTCMonth() + 1).padStart(2, '0')}.${String(d.getUTCFullYear()).slice(-2)}`;
-  return `Tournament ${fmt(weekStart)}–${fmt(fri)}`;
+  const dd = (d: Date) => String(d.getUTCDate()).padStart(2, '0');
+  const mm = String(fri.getUTCMonth() + 1).padStart(2, '0');
+  const yy = String(fri.getUTCFullYear()).slice(-2);
+  return `Tournament ${dd(weekStart)}-${dd(fri)}.${mm}.${yy}`;
 }
 
 @Injectable()
@@ -176,7 +177,7 @@ export class TournamentService {
           title: postTitle,
           body: postBody,
           isPinned: false,
-          isClosed: true,
+          isClosed: false,
         },
       });
     });
