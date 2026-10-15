@@ -323,7 +323,8 @@
       "tournamentSchedule": "Weekly Mon–Fri. Results published on Saturday via in-game mail.",
       "tournamentTop10": "Top 10 rewards",
       "tournamentAll": "All participants",
-      "tournamentFormula": "Coins = tokens × level tier × 1,000\n(Level 1–10 = ×1,  11–20 = ×2,  21–30 = ×3, …)"
+      "tournamentAllDesc": "Coins per token collected, based on your level:",
+      "tournamentLvl": "Lvl"
     }
   },
   "workersPanel": {

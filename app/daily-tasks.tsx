@@ -379,15 +379,28 @@ export default function DailyTasksScreen() {
 
               <View style={[styles.infoTournDivider, { backgroundColor: isDark ? '#2E3740' : '#F0F2F5' }]} />
 
-              <View style={{ gap: 6, paddingBottom: 6 }}>
+              <View style={{ gap: 6, paddingBottom: 8 }}>
                 <LocaleText style={[styles.infoTournSectionTitle, { color: theme.text }]}>
                   {t('dailyTasks.info.tournamentAll')}
                 </LocaleText>
-                <View style={[styles.infoTournFormulaCard, { backgroundColor: isDark ? '#232A33' : '#F5F7FA' }]}>
-                  <LocaleText style={[styles.infoTournFormulaText, { color: theme.textMuted }]}>
-                    {t('dailyTasks.info.tournamentFormula')}
-                  </LocaleText>
-                </View>
+                <LocaleText style={[styles.infoTournAllDesc, { color: theme.textMuted }]}>
+                  {t('dailyTasks.info.tournamentAllDesc')}
+                </LocaleText>
+                {([
+                  [1, 10, 1], [11, 20, 2], [21, 30, 3], [31, 40, 4], [41, 50, 5],
+                  [51, 60, 6], [61, 70, 7], [71, 80, 8], [81, 90, 9], [91, null, 10],
+                ] as [number, number | null, number][]).map(([from, to, tier]) => (
+                  <View key={from} style={[styles.infoTournTierRow, { backgroundColor: isDark ? '#232A33' : '#F5F7FA' }]}>
+                    <LocaleText style={[styles.infoTournTierLevel, { color: theme.textMuted }]}>
+                      {t('dailyTasks.info.tournamentLvl')} {from}{to ? `–${to}` : '+'}
+                    </LocaleText>
+                    <View style={{ flex: 1 }} />
+                    <LocaleText style={[styles.infoTournTierMult, { color: theme.text }]}>×{tier}</LocaleText>
+                    <View style={[styles.infoTournRankDivider, { backgroundColor: isDark ? '#2A3740' : '#D8E0F5' }]} />
+                    <LocaleText style={[styles.infoTournTierCoins, { color: '#E5A72E' }]}>{(tier * 1000).toLocaleString()}</LocaleText>
+                    <Image source={require('../assets/img/coin.png')} style={styles.infoTournGemSm} contentFit="contain" />
+                  </View>
+                ))}
               </View>
             </ScrollView>
           </View>
@@ -430,8 +443,11 @@ const styles = StyleSheet.create({
   infoTournBonus:        { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
   infoTournGemSm:        { width: 16, height: 16 },
   infoTournRankDivider:  { width: 1, height: 14, marginHorizontal: 2 },
-  infoTournFormulaCard:  { borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14 },
-  infoTournFormulaText:  { fontFamily: 'Nunito_400Regular', fontSize: 13, lineHeight: 18 },
+  infoTournAllDesc:      { fontFamily: 'Nunito_400Regular', fontSize: 12, lineHeight: 17, paddingHorizontal: 4 },
+  infoTournTierRow:      { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  infoTournTierLevel:    { fontFamily: 'Nunito_600SemiBold', fontSize: 13 },
+  infoTournTierMult:     { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
+  infoTournTierCoins:    { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
 
   tokenRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 4, justifyContent: 'center' },
   tokenChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },
