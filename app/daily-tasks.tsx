@@ -82,6 +82,7 @@ export default function DailyTasksScreen() {
   const dailyGemsCollected = useGameStore((s) => s.dailyGemsCollected);
   const claimDailyTask     = useGameStore((s) => s.claimDailyTask);
   const playerLevel        = useGameStore((s) => s.playerLevel);
+  const weeklyTokenCount   = useGameStore((s) => s.weeklyTokenCount);
 
   const theme = useAppTheme();
   const { isDark } = theme;
@@ -101,6 +102,11 @@ export default function DailyTasksScreen() {
 
   const multiplier = getCoinMultiplier(playerLevel);
   const matCount   = getMaterialCount(playerLevel);
+
+  const nowUtcDay = new Date().getUTCDay(); // 0=Sun,6=Sat
+  const isTournamentWeekend = nowUtcDay === 0 || nowUtcDay === 6;
+  const levelBracketMultiplier = Math.floor((playerLevel - 1) / 10) + 1;
+  const estimatedCoins = weeklyTokenCount * levelBracketMultiplier * 1000;
 
   return (
     <AppBackground style={styles.container}>
@@ -259,6 +265,24 @@ export default function DailyTasksScreen() {
         <LocaleText style={styles.timer}>
           {t('dailyTasks.resetsIn', { time: formatCountdown(msUntilReset) })}
         </LocaleText>
+
+        <View style={styles.tournamentBanner}>
+          <LocaleText style={styles.tournamentTitle}>🏆 Token Tournament</LocaleText>
+          {isTournamentWeekend ? (
+            <LocaleText style={styles.tournamentSub}>Tournament finished — results coming soon.</LocaleText>
+          ) : (
+            <>
+              <LocaleText style={styles.tournamentSub}>
+                This week: <LocaleText style={styles.tournamentHighlight}>{weeklyTokenCount} 🔑</LocaleText>
+              </LocaleText>
+              {weeklyTokenCount > 0 && (
+                <LocaleText style={styles.tournamentSub}>
+                  Est. reward: <LocaleText style={styles.tournamentHighlight}>{estimatedCoins.toLocaleString()} 🪙</LocaleText>
+                </LocaleText>
+              )}
+            </>
+          )}
+        </View>
       </ScrollView>
 
       <Pressable
@@ -340,6 +364,10 @@ const styles = StyleSheet.create({
   tokenCount: { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
 
   timer: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', marginBottom: 4, textAlign: 'center' },
+  tournamentBanner: { backgroundColor: '#EEF7FF', borderRadius: 14, padding: 12, alignItems: 'center', gap: 4 },
+  tournamentTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#1A6A9A' },
+  tournamentSub: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#4A7A9A', textAlign: 'center' },
+  tournamentHighlight: { fontFamily: 'Fredoka_600SemiBold', color: '#1A6A9A' },
 
   completionText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', textAlign: 'center' },
   completionBarBg: { alignSelf: 'stretch', height: 6, borderRadius: 3, backgroundColor: 'rgba(63,165,53,0.2)', overflow: 'hidden' },

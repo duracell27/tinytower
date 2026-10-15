@@ -169,6 +169,7 @@ interface UIState {
   xpBonusPercent: number;
   cityMarketingBonus: number;
   cityPrBonus: number;
+  weeklyTokenCount: number;
   cityDeliveryBonus: number;
   citySellBonus: number;
   cityRevenueBonus: number;
@@ -498,6 +499,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   xpBonusPercent: 0,
   cityMarketingBonus: 0,
   cityPrBonus: 0,
+  weeklyTokenCount: 0,
   cityDeliveryBonus: 0,
   citySellBonus: 0,
   cityRevenueBonus: 0,
@@ -706,6 +708,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     xpBonusPercent: 0,
     cityMarketingBonus: 0,
     cityPrBonus: 0,
+    weeklyTokenCount: 0,
     cityDeliveryBonus: 0,
     citySellBonus: 0,
     cityRevenueBonus: 0,
