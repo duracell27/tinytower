@@ -105,8 +105,6 @@ export default function DailyTasksScreen() {
 
   const nowUtcDay = new Date().getUTCDay(); // 0=Sun,6=Sat
   const isTournamentWeekend = nowUtcDay === 0 || nowUtcDay === 6;
-  const levelBracketMultiplier = Math.floor((playerLevel - 1) / 10) + 1;
-  const estimatedCoins = weeklyTokenCount * levelBracketMultiplier * 1000;
 
   return (
     <AppBackground style={styles.container}>
@@ -149,7 +147,7 @@ export default function DailyTasksScreen() {
                 </View>
                 <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>Token Tournament</LocaleText>
                 <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>
-                  {weeklyTokenCount > 0 ? `Est. reward: ${estimatedCoins.toLocaleString()} 🪙` : 'Collect tokens from daily tasks'}
+                  Collect tokens from daily tasks
                 </LocaleText>
               </>
             )}
