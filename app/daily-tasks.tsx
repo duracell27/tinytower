@@ -143,9 +143,7 @@ export default function DailyTasksScreen() {
           ) : (
             <>
               <View style={styles.tournamentScoreRow}>
-                {(['green', 'blue', 'yellow', 'purple', 'red'] as const).map((color) => (
-                  <Image key={color} source={TOKEN_ICONS[color]} style={styles.tournamentTokenIcon} contentFit="contain" />
-                ))}
+                <Image source={TOKEN_ICONS.green} style={styles.tournamentTokenIcon} contentFit="contain" />
                 <LocaleText style={styles.tournamentScore}>{weeklyTokenCount}</LocaleText>
               </View>
               {weeklyTokenCount > 0 && (
