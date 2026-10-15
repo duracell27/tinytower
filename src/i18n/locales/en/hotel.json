@@ -325,7 +325,7 @@
       "tournamentAll": "All participants",
       "tournamentAllDesc": "Coins per token collected, based on your level:",
       "tournamentLvl": "Lvl",
-      "tournamentTierMore": "+10,000 🪙/🔑 for every 10 levels"
+      "tournamentTierMore": "for every 10 levels"
     }
   },
   "workersPanel": {

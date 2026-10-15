@@ -400,9 +400,15 @@ export default function DailyTasksScreen() {
                     <Image source={require('../assets/img/coin.png')} style={styles.infoTournGemSm} contentFit="contain" />
                   </View>
                 ))}
-                <LocaleText style={[styles.infoTournAllDesc, { color: theme.textMuted, textAlign: 'center', paddingBottom: 2 }]}>
-                  {t('dailyTasks.info.tournamentTierMore')}
-                </LocaleText>
+                <View style={styles.infoTournTierMoreRow}>
+                  <LocaleText style={[styles.infoTournAllDesc, { color: theme.textMuted }]}>+1,000</LocaleText>
+                  <Image source={require('../assets/img/coin.png')} style={styles.infoTournGemSm} contentFit="contain" />
+                  <LocaleText style={[styles.infoTournAllDesc, { color: theme.textMuted }]}>/</LocaleText>
+                  <Image source={require('../assets/img/tokens/tokenGreen.png')} style={styles.infoTournGemSm} contentFit="contain" />
+                  <LocaleText style={[styles.infoTournAllDesc, { color: theme.textMuted }]}>
+                    {t('dailyTasks.info.tournamentTierMore')}
+                  </LocaleText>
+                </View>
               </View>
             </ScrollView>
           </View>
@@ -450,6 +456,7 @@ const styles = StyleSheet.create({
   infoTournTierLevel:    { fontFamily: 'Nunito_600SemiBold', fontSize: 13 },
   infoTournTierMult:     { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
   infoTournTierCoins:    { fontFamily: 'Fredoka_700Bold', fontSize: 14 },
+  infoTournTierMoreRow:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingBottom: 2 },
 
   tokenRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 4, justifyContent: 'center' },
   tokenChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },
