@@ -1284,7 +1284,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       timestamp: clock.now(),
     });
     if (ok) {
-      set({ pendingTaskReward: { taskTitle, coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount, materialType } });
+      set({
+        pendingTaskReward: { taskTitle, coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount, materialType },
+        weeklyTokenCount: get().weeklyTokenCount + tokenCount,
+      });
     } else if (taskConfig.rewards.hasMaterials && get().warehouseFullNotice) {
       set({ warehouseFullDailyTask: { taskKey, taskTitle } });
     }
@@ -1314,7 +1317,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       timestamp: clock.now(),
     });
     if (ok) {
-      set({ pendingTaskReward: { taskTitle, coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount: undefined, materialType: undefined } });
+      set({
+        pendingTaskReward: { taskTitle, coins, gems: taskConfig.rewards.gems, tokenCount, tokenColor, matCount: undefined, materialType: undefined },
+        weeklyTokenCount: get().weeklyTokenCount + tokenCount,
+      });
     }
   },
 
