@@ -10,6 +10,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { to: '/players', label: 'Players' },
     { to: '/cities', label: 'Cities' },
     { to: '/city-task-rankings', label: 'City Tasks' },
+    { to: '/token-tournament', label: 'Token Tournament' },
     { to: '/commands', label: 'Command Logs' },
     { to: '/forum', label: 'Forum' },
     { to: '/reports', label: 'Reports' },
