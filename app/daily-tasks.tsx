@@ -305,7 +305,7 @@ export default function DailyTasksScreen() {
                 <LocaleText style={styles.infoCardClose}>✕</LocaleText>
               </Pressable>
             </LinearGradient>
-            <View style={styles.infoCardBody}>
+            <ScrollView style={styles.infoCardBody} showsVerticalScrollIndicator={false}>
               <InfoSection
                 icon={require('../assets/img/daily/dailytransporter.png')}
                 title={t('dailyTasks.info.challengesTitle')}
@@ -329,9 +329,15 @@ export default function DailyTasksScreen() {
                 title={t('dailyTasks.info.bonusTitle')}
                 text={t('dailyTasks.info.bonusText')}
                 accentColor="rgba(229,167,46,0.3)"
+              />
+              <InfoSection
+                icon={require('../assets/img/rating/1PlaceCup.png')}
+                title={t('dailyTasks.info.tournamentTitle')}
+                text={t('dailyTasks.info.tournamentText')}
+                accentColor="rgba(229,167,46,0.3)"
                 isLast
               />
-            </View>
+            </ScrollView>
           </View>
         </View>
       )}
@@ -352,7 +358,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
   },
-  infoCard: { width: '100%', backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden' },
+  infoCard: { width: '100%', backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden', maxHeight: '85%' },
   infoCardHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 18, paddingVertical: 13,
