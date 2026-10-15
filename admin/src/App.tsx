@@ -8,6 +8,7 @@ import { ForumPage } from './pages/ForumPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { CitiesPage } from './pages/CitiesPage';
 import { CityTaskRankingsPage } from './pages/CityTaskRankingsPage';
+import { TokenTournamentPage } from './pages/TokenTournamentPage';
 
 export function App() {
   return (
@@ -67,6 +68,14 @@ export function App() {
           element={
             <ProtectedRoute>
               <CityTaskRankingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/token-tournament"
+          element={
+            <ProtectedRoute>
+              <TokenTournamentPage />
             </ProtectedRoute>
           }
         />

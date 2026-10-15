@@ -9,6 +9,14 @@ function mondayOf(date: Date): Date {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - daysToMonday));
 }
 
+function fmtWeekTitle(weekStart: Date): string {
+  const fri = new Date(weekStart.getTime() + 4 * 86_400_000);
+  const dd = (d: Date) => String(d.getUTCDate()).padStart(2, '0');
+  const mm = String(fri.getUTCMonth() + 1).padStart(2, '0');
+  const yy = String(fri.getUTCFullYear()).slice(-2);
+  return `City Tournament ${dd(weekStart)}-${dd(fri)}.${mm}.${yy}`;
+}
+
 function isWeekClosed(weekStart: Date): boolean {
   // A week (Mon–Fri) is closed when the Saturday of that week has begun (≥ weekStart + 5 days)
   const saturdayStart = new Date(weekStart.getTime() + 5 * 86_400_000);
@@ -89,17 +97,24 @@ export class CityWeeklyRankingService {
     const existing = await this.prisma.cityWeeklyRanking.findUnique({ where: { weekStart } });
     if (existing?.status === 'APPROVED') throw new BadRequestException('Ranking already approved');
 
-    const stats = await this.prisma.cityWeeklyStats.findMany({
-      where: { weekStart },
-      orderBy: { totalTickets: 'desc' },
-    });
+    const [stats, admin] = await Promise.all([
+      this.prisma.cityWeeklyStats.findMany({
+        where: { weekStart },
+        include: { city: { select: { name: true } } },
+        orderBy: { totalTickets: 'desc' },
+      }),
+      this.prisma.player.findUnique({
+        where: { id: adminPlayerId },
+        select: { playerName: true, playerLevel: true },
+      }),
+    ]);
 
     if (stats.length === 0) throw new BadRequestException('No ticket data for this week');
 
     const entries = stats.map((s, idx) => {
       const rank = idx + 1;
       const resourceReward = computeResourceReward(s.totalTickets, rank);
-      return { cityId: s.cityId, rank, totalTickets: s.totalTickets, resourceReward, ...computeWeeklyReward(s.totalTickets, rank) };
+      return { cityId: s.cityId, cityName: (s as any).city?.name ?? s.cityId, rank, totalTickets: s.totalTickets, resourceReward, ...computeWeeklyReward(s.totalTickets, rank) };
     });
 
     await this.prisma.$transaction(async (tx) => {
@@ -142,6 +157,33 @@ export class CityWeeklyRankingService {
           update: { rank: e.rank, totalTickets: e.totalTickets, totalReward: e.totalReward, createdBy: adminPlayerId },
         });
       }
+      const medals = ['🥇', '🥈', '🥉'];
+      const top10 = entries.slice(0, 10);
+      const top10Lines = top10
+        .map((e, i) => {
+          const prefix = medals[i] ?? `#${i + 1}`;
+          return `${prefix} ${e.cityName} — ${e.totalTickets} 🎫 (+${e.totalReward} 💎)`;
+        })
+        .join('\n');
+
+      const postTitle = fmtWeekTitle(weekStart);
+      const postBody =
+        `🏙️ The City Tournament has ended! Congratulations to all participating cities.\n\n` +
+        `🔝 Top ${top10.length}:\n${top10Lines}\n\n` +
+        `Rewards have been added to city budgets.`;
+
+      await tx.forumPost.create({
+        data: {
+          playerId: adminPlayerId,
+          playerName: admin?.playerName ?? 'Admin',
+          playerLevel: admin?.playerLevel ?? 1,
+          category: 'NEWS',
+          title: postTitle,
+          body: postBody,
+          isPinned: false,
+          isClosed: false,
+        },
+      });
     });
 
     return { approved: entries.length };

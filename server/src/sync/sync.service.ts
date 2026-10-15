@@ -16,8 +16,9 @@ import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS } from '../referral/referr
 import { CityService } from '../city/city.service';
 import { CityBuildingService, CityBuildingBonuses } from '../city/city-building.service';
 import { CityTaskService, CityTaskSummaryDto } from '../city/city-task.service';
-import { computeTaskDelta, isWeekendUTC } from '../city/city-task.constants';
+import { computeTaskDelta, isWeekendUTC, currentWeekStart } from '../city/city-task.constants';
 import { getCityLevel } from '../city/city-level';
+import { isWeekdayUTC } from '../tournament/tournament.constants';
 
 export interface SyncResult {
   state: GameState;
@@ -37,6 +38,7 @@ export interface SyncResult {
   acceptedCommandIds: string[];
   failedCommandIds: string[];
   cityTasks?: { tasks: CityTaskSummaryDto[]; myActiveTaskId: string | null; cityStyleStars: number; isWeekend: boolean; weeklyResult: any | null };
+  weeklyTokenCount: number;
   pendingReferralClaims: Array<{
     id: string;
     referredName: string;
@@ -207,6 +209,10 @@ export class SyncService {
       taskDeltaGems, gameState.dailyGemsCollected,
     );
 
+    const claimedTokenCount = acceptedCommands
+      .filter((c) => c.type === 'claim_daily_task')
+      .reduce((sum, c) => sum + ((c as any).tokenCount ?? 0), 0);
+
     let boughtCount = 0;
     let listedCount = 0;
     let collectCount = 0;
@@ -353,6 +359,16 @@ export class SyncService {
         // Update city task progress from this sync's command delta
         if (player.cityMembership) {
           await this.cityTaskService.updateProgressFromDelta(playerId, accumulatedTaskDelta, tx as any);
+        }
+
+        // Track weekly tournament tokens (Mon–Fri only)
+        if (claimedTokenCount > 0 && isWeekdayUTC()) {
+          const weekStart = currentWeekStart();
+          await tx.playerWeeklyTokens.upsert({
+            where: { playerId_weekStart: { playerId, weekStart } },
+            create: { playerId, weekStart, count: claimedTokenCount },
+            update: { count: { increment: claimedTokenCount } },
+          });
         }
 
         // Contribute XP earned this sync to the city if the player is a member
@@ -733,6 +749,12 @@ export class SyncService {
     const finalCoinBonus = gameState.coinBonusPercent + coinBonusDelta;
     const finalXpBonus   = gameState.xpBonusPercent   + xpBonusDelta;
 
+    const weeklyTokenRow = await this.prisma.playerWeeklyTokens.findUnique({
+      where: { playerId_weekStart: { playerId, weekStart: currentWeekStart() } },
+      select: { count: true },
+    });
+    const weeklyTokenCount = weeklyTokenRow?.count ?? 0;
+
     let cityTasks: SyncResult['cityTasks'];
     if (player.cityMembership) {
       const bonus = await this.cityService.getCityBonusForPlayer(playerId);
@@ -785,6 +807,7 @@ export class SyncService {
       // (e.g. deliver_all rejected for insufficient gems) and show user feedback.
       failedCommandIds,
       cityTasks,
+      weeklyTokenCount,
     };
   }
 

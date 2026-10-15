@@ -47,6 +47,7 @@ interface SyncResponse {
     purchaseAmount: number;
   }>;
   cityTasks?: { tasks: import('./api').CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number; isWeekend?: boolean; weeklyResult?: import('./api').CityWeeklyResult | null };
+  weeklyTokenCount?: number;
 }
 
 const SYNC_INTERVAL_MS = 30_000;
@@ -162,6 +163,7 @@ async function doSync(): Promise<void> {
       cityElevatorDiamondBonus: cb?.elevatorDiamondBonus ?? 0,
       cityHotelBonus: cb?.hotelBonus ?? 0,
       categoryProgress: mergedCP,
+      weeklyTokenCount: response.weeklyTokenCount ?? 0,
     });
     if (
       (response.pendingReferralClaims && response.pendingReferralClaims.length > 0) ||

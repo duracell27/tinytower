@@ -82,6 +82,7 @@ export default function DailyTasksScreen() {
   const dailyGemsCollected = useGameStore((s) => s.dailyGemsCollected);
   const claimDailyTask     = useGameStore((s) => s.claimDailyTask);
   const playerLevel        = useGameStore((s) => s.playerLevel);
+  const weeklyTokenCount   = useGameStore((s) => s.weeklyTokenCount);
 
   const theme = useAppTheme();
   const { isDark } = theme;
@@ -101,6 +102,9 @@ export default function DailyTasksScreen() {
 
   const multiplier = getCoinMultiplier(playerLevel);
   const matCount   = getMaterialCount(playerLevel);
+
+  const nowUtcDay = new Date().getUTCDay(); // 0=Sun,6=Sat
+  const isTournamentWeekend = nowUtcDay === 0 || nowUtcDay === 6;
 
   return (
     <AppBackground style={styles.container}>
@@ -125,6 +129,29 @@ export default function DailyTasksScreen() {
               </LocaleText>
             </View>
           ))}
+        </View>
+
+        <View style={[styles.tournamentBanner, { backgroundColor: isDark ? '#1A2E3E' : '#EEF7FF' }]}>
+          <Image source={require('../assets/img/rating/1PlaceCup.png')} style={styles.tournamentCupIcon} contentFit="contain" />
+          <View style={styles.tournamentTextCol}>
+            {isTournamentWeekend ? (
+              <>
+                <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>Token Tournament</LocaleText>
+                <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>Results coming soon</LocaleText>
+              </>
+            ) : (
+              <>
+                <View style={styles.tournamentScoreRow}>
+                  <Image source={TOKEN_ICONS.green} style={styles.tournamentTokenIcon} contentFit="contain" />
+                  <LocaleText style={[styles.tournamentScore, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>{weeklyTokenCount}</LocaleText>
+                </View>
+                <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>Token Tournament</LocaleText>
+                <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>
+                  Collect tokens from daily tasks
+                </LocaleText>
+              </>
+            )}
+          </View>
         </View>
 
         {(() => {
@@ -340,6 +367,14 @@ const styles = StyleSheet.create({
   tokenCount: { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
 
   timer: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', marginBottom: 4, textAlign: 'center' },
+  tournamentBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 20 },
+  tournamentCupIcon: { width: 64, height: 64 },
+  tournamentTextCol: { alignItems: 'center', gap: 1 },
+  tournamentScoreRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  tournamentTokenIcon: { width: 26, height: 26 },
+  tournamentScore: { fontFamily: 'Fredoka_700Bold', fontSize: 34, lineHeight: 38 },
+  tournamentTitle: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15 },
+  tournamentSub: { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
 
   completionText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', textAlign: 'center' },
   completionBarBg: { alignSelf: 'stretch', height: 6, borderRadius: 3, backgroundColor: 'rgba(63,165,53,0.2)', overflow: 'hidden' },
