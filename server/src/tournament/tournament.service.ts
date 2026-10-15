@@ -29,6 +29,13 @@ function isWeekClosed(weekStart: Date): boolean {
   return new Date() >= saturdayStart;
 }
 
+function fmtWeekTitle(weekStart: Date): string {
+  const fri = new Date(weekStart.getTime() + 4 * 86_400_000);
+  const fmt = (d: Date) =>
+    `${String(d.getUTCDate()).padStart(2, '0')}.${String(d.getUTCMonth() + 1).padStart(2, '0')}.${String(d.getUTCFullYear()).slice(-2)}`;
+  return `Tournament ${fmt(weekStart)}–${fmt(fri)}`;
+}
+
 @Injectable()
 export class TournamentService {
   constructor(private prisma: PrismaService) {}
@@ -85,6 +92,11 @@ export class TournamentService {
     const participants = rows.filter((r) => r.count > 0);
     if (participants.length === 0) throw new BadRequestException('No token data for this week');
 
+    const admin = await this.prisma.player.findUnique({
+      where: { id: adminPlayerId },
+      select: { playerName: true, playerLevel: true },
+    });
+
     await this.prisma.$transaction(async (tx: any) => {
       const tournament = await tx.playerTokenTournament.create({
         data: { weekStart, createdBy: adminPlayerId },
@@ -139,6 +151,34 @@ export class TournamentService {
           data: { fromId: adminPlayerId, toId: row.playerId, subject, body },
         });
       }
+
+      const top10 = participants.slice(0, 10);
+      const medals = ['🥇', '🥈', '🥉'];
+      const top10Lines = top10
+        .map((r, i) => {
+          const prefix = medals[i] ?? `#${i + 1}`;
+          return `${prefix} ${r.player.playerName} — ${r.count} 🔑`;
+        })
+        .join('\n');
+
+      const postTitle = fmtWeekTitle(weekStart);
+      const postBody =
+        `🏆 The Token Tournament has ended! Congratulations to all participants.\n\n` +
+        `🔝 Top ${top10.length}:\n${top10Lines}\n\n` +
+        `Rewards have been sent to all participants via in-game mail.`;
+
+      await tx.forumPost.create({
+        data: {
+          playerId: adminPlayerId,
+          playerName: admin?.playerName ?? 'Admin',
+          playerLevel: admin?.playerLevel ?? 1,
+          category: 'NEWS',
+          title: postTitle,
+          body: postBody,
+          isPinned: false,
+          isClosed: true,
+        },
+      });
     });
 
     return { published: participants.length };

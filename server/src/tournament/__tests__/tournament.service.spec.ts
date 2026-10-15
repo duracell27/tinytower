@@ -25,6 +25,9 @@ function makeService(overrides: Record<string, any> = {}) {
     mailMessage: {
       create: jest.fn().mockResolvedValue({ id: 'm1' }),
     },
+    forumPost: {
+      create: jest.fn().mockResolvedValue({ id: 'fp1' }),
+    },
     $transaction: jest.fn().mockImplementation((fn: any) => fn({ ...prisma, ...overrides })),
     ...overrides,
   };
@@ -129,7 +132,10 @@ describe('publishResults', () => {
         ]),
       },
       playerState: { update: jest.fn().mockResolvedValue({}) },
-      player: { update: jest.fn().mockResolvedValue({}) },
+      player: {
+        findUnique: jest.fn().mockResolvedValue({ playerName: 'Admin', playerLevel: 1 }),
+        update: jest.fn().mockResolvedValue({}),
+      },
       playerTokenTournamentEntry: { create: jest.fn().mockResolvedValue({}) },
       mailMessage: { create: mailCreate },
     };
