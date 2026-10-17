@@ -44,3 +44,6 @@ yarn-error.*
 docs/
 
 docker-compose.yml
+
+.agents/
+skills-lock.json
