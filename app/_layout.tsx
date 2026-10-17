@@ -32,7 +32,7 @@ import {
   Comfortaa_700Bold,
 } from '@expo-google-fonts/comfortaa';
 import { useAuthStore } from '../src/stores/authStore';
-import { setAuthFailureCallback } from '../src/services/api';
+import { setAuthFailureCallback, initAuthStorage } from '../src/services/api';
 import { purchaseService } from '../src/services/purchaseService';
 import * as Linking from 'expo-linking';
 import { createMMKV } from 'react-native-mmkv';
@@ -93,7 +93,7 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    useAuthStore.getState().loadTokens();
+    initAuthStorage().then(() => useAuthStore.getState().loadTokens());
     setAuthFailureCallback(() => {
       useAuthStore.getState().logout();
       router.replace('/');

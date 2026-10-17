@@ -11,6 +11,7 @@ import {
   warehouseCapacity,
 } from '../config/warehouseUpgradeConfig';
 import { TUTORIAL_TASKS, FINAL_REWARD, getTutorialDelta } from '../config/tutorialTasksConfig';
+import { getDailyTokenCount } from '../utils/dailyTokenReward';
 import { VEHICLE_CONFIG } from '../config/vehicleConfig';
 
 export interface ProcessResult {
@@ -551,9 +552,11 @@ function handleClaimDailyTask(
     tools = { ...tools, [command.materialType]: (tools[command.materialType] ?? 0) + matCount };
   }
 
+  const dateStr = new Date(command.timestamp).toISOString().slice(0, 10);
+  const tokenCount = getDailyTokenCount(command.taskKey, dateStr) * doubleMultiplier;
   const tokens = {
     ...state.tokens,
-    [command.tokenColor]: state.tokens[command.tokenColor] + command.tokenCount,
+    [command.tokenColor]: state.tokens[command.tokenColor] + tokenCount,
   };
 
   return {

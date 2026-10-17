@@ -1727,7 +1727,7 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
 
     const result = processCommand(
       state,
-      { id: '1', type: 'claim_daily_task', taskKey: matTask.key, materialType: 'briks', tokenColor: 'green', tokenCount: 1, timestamp: state.lastDailyReset + 1 },
+      { id: '1', type: 'claim_daily_task', taskKey: matTask.key, materialType: 'briks', tokenColor: 'green', timestamp: state.lastDailyReset + 1 },
       gameConfig, state.lastDailyReset + 1, 1, { coinPercent: 0, xpPercent: 0 },
     );
     expect(result.success).toBe(false);
@@ -1753,7 +1753,7 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
 
     const result = processCommand(
       state,
-      { id: '1', type: 'claim_daily_task', taskKey: matTask.key, materialType: 'briks', tokenColor: 'green', tokenCount: 1, timestamp: state.lastDailyReset + 1 },
+      { id: '1', type: 'claim_daily_task', taskKey: matTask.key, materialType: 'briks', tokenColor: 'green', timestamp: state.lastDailyReset + 1 },
       gameConfig, state.lastDailyReset + 1, 1, { coinPercent: 0, xpPercent: 0 },
     );
     expect(result.success).toBe(true);

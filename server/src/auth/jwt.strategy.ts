@@ -8,6 +8,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(configService: ConfigService) {
     const secret = configService.get<string>('JWT_SECRET');
     if (!secret) throw new Error('JWT_SECRET env var is required but not set');
+    if (process.env.NODE_ENV === 'production' && secret === 'dev-secret-change-in-prod') {
+      throw new Error('JWT_SECRET is still the dev default — set a strong random value in production');
+    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,

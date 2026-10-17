@@ -5,6 +5,7 @@ import {
   Req,
   UseGuards,
   HttpCode,
+  OnModuleInit,
   UnauthorizedException,
   UsePipes,
   ValidationPipe,
@@ -18,11 +19,17 @@ import { ConfigService } from '@nestjs/config';
 
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @Controller('payments')
-export class PaymentsController {
+export class PaymentsController implements OnModuleInit {
   constructor(
     private payments: PaymentsService,
     private config: ConfigService,
   ) {}
+
+  onModuleInit() {
+    if (process.env.NODE_ENV === 'production' && !this.config.get<string>('REVENUECAT_WEBHOOK_SECRET')) {
+      throw new Error('REVENUECAT_WEBHOOK_SECRET is not set — all RevenueCat webhooks will fail');
+    }
+  }
 
   @UseGuards(JwtAuthGuard)
   @Post('notify')

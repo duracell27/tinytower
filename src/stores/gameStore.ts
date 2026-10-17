@@ -13,6 +13,7 @@ import type { NewAchievementGrant, CategoryProgressState } from '../../shared/ty
 import { detectOptimisticGrants } from '../utils/detectOptimisticGrants';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
 import { DAILY_TASKS, getCoinMultiplier, getMaterialCount } from '../../shared/config/dailyTasksConfig';
+import { getDailyTokenCount } from '../../shared/utils/dailyTokenReward';
 import { TUTORIAL_TASKS, getTutorialDelta } from '../../shared/config/tutorialTasksConfig';
 import type { TutorialTaskConfig, TutorialProgressState } from '../../shared/config/tutorialTasksConfig';
 import { FLOOR_UPGRADE_COSTS, FLOOR_STAR_MULTIPLIERS } from '../../shared/config/floorUpgradeConfig';
@@ -1269,7 +1270,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       : undefined;
     const multiplier = getCoinMultiplier(state.playerLevel);
     const doubleMultiplier = state.dailyTasks.doubleRewardActive ? 2 : 1;
-    const tokenCount = (Math.floor(Math.random() * 5) + 1) * doubleMultiplier;
+    const timestamp = clock.now();
+    const dateStr = new Date(timestamp).toISOString().slice(0, 10);
+    const tokenCount = getDailyTokenCount(taskKey, dateStr) * doubleMultiplier;
     const coins = taskConfig.rewards.baseCoins * multiplier * doubleMultiplier;
     const matCount = taskConfig.rewards.hasMaterials
       ? getMaterialCount(state.playerLevel) * doubleMultiplier
@@ -1278,10 +1281,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       id: uuid(),
       type: 'claim_daily_task',
       taskKey,
-      tokenCount,
       tokenColor,
       materialType,
-      timestamp: clock.now(),
+      timestamp,
     });
     if (ok) {
       set({
@@ -1305,16 +1307,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const tokenColor = COLORS[Math.floor(Math.random() * COLORS.length)];
     const multiplier = getCoinMultiplier(state.playerLevel);
     const doubleMultiplier = state.dailyTasks.doubleRewardActive ? 2 : 1;
-    const tokenCount = (Math.floor(Math.random() * 5) + 1) * doubleMultiplier;
+    const timestamp = clock.now();
+    const dateStr = new Date(timestamp).toISOString().slice(0, 10);
+    const tokenCount = getDailyTokenCount(taskKey, dateStr) * doubleMultiplier;
     const coins = taskConfig.rewards.baseCoins * multiplier * doubleMultiplier;
     const ok = executeCommand(get, set, {
       id: uuid(),
       type: 'claim_daily_task',
       taskKey,
-      tokenCount,
       tokenColor,
       materialType: undefined,
-      timestamp: clock.now(),
+      timestamp,
     });
     if (ok) {
       set({

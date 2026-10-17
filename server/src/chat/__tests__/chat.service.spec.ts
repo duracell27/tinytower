@@ -15,7 +15,7 @@ describe('ChatService', () => {
   beforeEach(async () => {
     prisma = {
       player: {
-        findUnique: jest.fn().mockResolvedValue({ playerName: 'Alice' }),
+        findUnique: jest.fn().mockResolvedValue({ playerName: 'Alice', playerLevel: 1 }),
       },
       chatMessage: {
         findMany:  jest.fn().mockResolvedValue(mockMessages),
@@ -85,7 +85,7 @@ describe('ChatService', () => {
     it('includes country when provided', async () => {
       prisma.chatMessage.findFirst.mockResolvedValue(null);
       prisma.chatMessage.create.mockResolvedValue({});
-      await chatService.sendMessage(playerId, 'Hi', 5, 'UA');
+      await chatService.sendMessage(playerId, 'Hi', 'UA');
       expect(prisma.chatMessage.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: expect.objectContaining({ country: 'UA' }) }),
       );

@@ -1,5 +1,11 @@
-import { createMMKV } from 'react-native-mmkv';
 import type { ShopRewards, ToolKey } from '../../shared/types';
+import {
+  initAuthStorage,
+  getAccessToken,
+  getRefreshToken,
+  setTokens,
+  clearTokens,
+} from './authStorage';
 
 export interface LeaderboardEntry {
   rank: number;
@@ -319,30 +325,7 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? (
   __DEV__ ? 'http://localhost:3000' : 'https://api.tinytower.com'
 );
 
-let storage: ReturnType<typeof createMMKV> | null = null;
-function getStorage() {
-  if (!storage) storage = createMMKV({ id: 'auth' });
-  return storage;
-}
-
-function getAccessToken(): string | null {
-  return getStorage().getString('accessToken') ?? null;
-}
-
-function getRefreshToken(): string | null {
-  return getStorage().getString('refreshToken') ?? null;
-}
-
-function setTokens(access: string, refresh: string): void {
-  getStorage().set('accessToken', access);
-  getStorage().set('refreshToken', refresh);
-}
-
-function clearTokens(): void {
-  getStorage().remove('accessToken');
-  getStorage().remove('refreshToken');
-  getStorage().remove('player');
-}
+export { initAuthStorage };
 
 let onAuthFailure: (() => void) | null = null;
 export function setAuthFailureCallback(cb: () => void) {

@@ -23,16 +23,17 @@ export class ChatService {
     });
   }
 
-  async sendMessage(playerId: string, body: string, playerLevel = 1, country?: string) {
+  async sendMessage(playerId: string, body: string, country?: string) {
     if (body.length > 300) {
       throw new BadRequestException('Message exceeds 300 characters');
     }
 
     const player = await this.prisma.player.findUnique({
       where: { id: playerId },
-      select: { playerName: true },
+      select: { playerName: true, playerLevel: true },
     });
     if (!player) throw new NotFoundException('Player not found');
+    const playerLevel = player.playerLevel;
 
     const cooldownCutoff = new Date(Date.now() - 3000);
     const recent = await this.prisma.chatMessage.findFirst({
