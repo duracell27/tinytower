@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -12,6 +12,7 @@ import { REDIS_CLIENT } from './redis.provider';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
 import type { ConvertDto } from './dto/convert.dto';
+import { EmailService } from '../email/email.service';
 
 interface SocialTokenPayload {
   sub: string;
@@ -42,6 +43,7 @@ export class AuthService {
     private playerService: PlayerService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
     @Inject(REDIS_CLIENT) private redis: Redis,
   ) {
     const ttl = this.configService.get<string>('JWT_REFRESH_TTL') || '30d';
@@ -62,6 +64,7 @@ export class AuthService {
     );
 
     const tokens = await this.generateTokens(player.id, player.email, player.isAdmin);
+    void this.emailService.sendWelcomeEmail(player.email, player.playerName);
     return {
       ...tokens,
       player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin, isTemporary: false },
@@ -130,10 +133,32 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const player = await this.playerService.convertToRegistered(playerId, email, passwordHash, playerName);
+    void this.emailService.sendWelcomeEmail(player.email, player.playerName);
     return {
       player: { id: player.id, email: player.email, playerName: player.playerName, isAdmin: player.isAdmin, isTemporary: false },
       registrationGems: 5,
     };
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const player = await this.playerService.findByEmail(email.toLowerCase().trim());
+    // Always return silently to avoid revealing whether email exists
+    if (!player || !player.passwordHash) return;
+
+    const token = randomUUID();
+    await this.redis.setex(`pwreset:${token}`, 3600, player.id);
+    void this.emailService.sendPasswordResetEmail(player.email, token);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const playerId = await this.redis.get(`pwreset:${token}`);
+    if (!playerId) throw new BadRequestException('Reset link is invalid or has expired');
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.playerService.updatePasswordHash(playerId, passwordHash);
+    await this.redis.del(`pwreset:${token}`);
+    // Invalidate all active sessions
+    await this.logout(playerId);
   }
 
   async logout(playerId: string) {

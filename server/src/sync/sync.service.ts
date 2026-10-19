@@ -409,7 +409,7 @@ export class SyncService {
         await tx.player.update({
           where: { id: playerId },
           data: {
-            balance: gameState.balance,
+            balance: { increment: gameState.balance - gameStateBefore.balance },
             playerLevel: xpResult.playerLevel,
             playerXp: xpResult.playerXp,
             totalBought:           { increment: boughtCount },
@@ -479,7 +479,9 @@ export class SyncService {
             tutorialTasks:          gameState.tutorialTasks ?? { currentIndex: 0, snapshot: {}, claimedFinal: false },
           },
           update: {
-            gems: gameState.gems,
+            // gems and tokens use increment-by-delta to avoid overwriting concurrent server-side
+            // grants (e.g. tournament rewards) that ran between our DB read and this upsert.
+            gems: { increment: gameState.gems - gameStateBefore.gems },
             lobbyCapacity: gameState.lobbyCapacity,
             hotelCapacity: gameState.hotelCapacity,
             elevatorLevel: gameState.elevatorLevel,
@@ -500,11 +502,11 @@ export class SyncService {
             cement: gameState.tools.cement,
             lobbyVisitors: gameState.lobbyVisitors,
             ...(dailyLoginReward ? { lastDailyLoginClaimedAt: BigInt(serverNow) } : {}),
-            tokenGreen:             gameState.tokens.green,
-            tokenBlue:              gameState.tokens.blue,
-            tokenYellow:            gameState.tokens.yellow,
-            tokenPurple:            gameState.tokens.purple,
-            tokenRed:               gameState.tokens.red,
+            tokenGreen:             { increment: gameState.tokens.green   - gameStateBefore.tokens.green },
+            tokenBlue:              { increment: gameState.tokens.blue    - gameStateBefore.tokens.blue },
+            tokenYellow:            { increment: gameState.tokens.yellow  - gameStateBefore.tokens.yellow },
+            tokenPurple:            { increment: gameState.tokens.purple  - gameStateBefore.tokens.purple },
+            tokenRed:               { increment: gameState.tokens.red     - gameStateBefore.tokens.red },
             businessUpgradeGreen:   gameState.businessUpgrades.green,
             businessUpgradeBlue:    gameState.businessUpgrades.blue,
             businessUpgradeYellow:  gameState.businessUpgrades.yellow,

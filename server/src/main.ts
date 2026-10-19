@@ -1,3 +1,4 @@
+import './instrument';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { json, urlencoded } from 'express';
@@ -10,6 +11,7 @@ async function bootstrap() {
   }));
   app.use(urlencoded({ limit: '5mb', extended: true }));
   app.enableCors();
+  app.enableShutdownHooks();
   await app.listen(3000);
   console.log('Server running on http://localhost:3000');
 }

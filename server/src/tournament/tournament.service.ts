@@ -34,7 +34,13 @@ function fmtWeekTitle(weekStart: Date): string {
   const dd = (d: Date) => String(d.getUTCDate()).padStart(2, '0');
   const mm = String(fri.getUTCMonth() + 1).padStart(2, '0');
   const yy = String(fri.getUTCFullYear()).slice(-2);
-  return `Tournament ${dd(weekStart)}-${dd(fri)}.${mm}.${yy}`;
+  return `Token Tournament ${dd(weekStart)}-${dd(fri)}.${mm}.${yy}`;
+}
+
+function rankMedal(rank: number): string {
+  if (rank <= 3) return '🥇';
+  if (rank <= 6) return '🥈';
+  return '🥉';
 }
 
 @Injectable()
@@ -143,9 +149,9 @@ export class TournamentService {
         }
 
         const isTop10 = rank <= 10;
-        const subject = isTop10 ? '🏆 Token Tournament Results' : 'Token Tournament Results';
+        const subject = isTop10 ? 'Token Tournament Results' : 'Token Tournament Results';
         const body = isTop10
-          ? `Congratulations! You placed #${rank} in this week's tournament.\n\nTokens collected: ${row.count}\nRewards:\n  • ${gems} 💎 gems\n  • ${bonus} 🔑 random tokens\n  • ${coins.toLocaleString()} 🪙 coins\n\nRewards have been added to your account.`
+          ? `Congratulations! You placed #${rank} in this week's tournament.\n\nTokens collected: ${row.count}\nRewards:\n  • ${gems} 💎 gems\n  • ${bonus} random tokens\n  • ${coins.toLocaleString()} 🪙 coins\n\nRewards have been added to your account.`
           : `Thanks for participating in this week's tournament!\n\nTokens collected: ${row.count}\nRewards:\n  • ${coins.toLocaleString()} 🪙 coins\n\nRewards have been added to your account.`;
 
         await tx.mailMessage.create({
@@ -154,19 +160,30 @@ export class TournamentService {
       }
 
       const top10 = participants.slice(0, 10);
-      const medals = ['🥇', '🥈', '🥉'];
       const top10Lines = top10
-        .map((r, i) => {
-          const prefix = medals[i] ?? `#${i + 1}`;
-          return `${prefix} ${r.player.playerName} — ${r.count} 🔑`;
-        })
+        .map((r, i) => `${rankMedal(i + 1)} ${r.player.playerName} — ${r.count} tokens`)
         .join('\n');
 
       const postTitle = fmtWeekTitle(weekStart);
       const postBody =
-        `🏆 The Token Tournament has ended! Congratulations to all participants.\n\n` +
-        `🔝 Top ${top10.length}:\n${top10Lines}\n\n` +
+        `Token Tournament has ended! Congratulations to all participants.\n\n` +
+        `Top 10:\n${top10Lines}\n\n` +
         `Rewards have been sent to all participants via in-game mail.`;
+
+      const postMetadata = {
+        type: 'token_tournament',
+        weekStart: weekStart.toISOString(),
+        totalParticipants: participants.length,
+        entries: top10.map((r, i) => ({
+          rank: i + 1,
+          playerId: r.playerId,
+          playerName: r.player.playerName,
+          playerLevel: r.player.playerLevel,
+          tokenCount: r.count,
+          gemsReward: GEMS_BY_RANK[i + 1] ?? 0,
+          bonusTokens: BONUS_TOKENS_BY_RANK[i + 1] ?? 0,
+        })),
+      };
 
       await tx.forumPost.create({
         data: {
@@ -178,6 +195,7 @@ export class TournamentService {
           body: postBody,
           isPinned: false,
           isClosed: false,
+          metadata: postMetadata,
         },
       });
     });

@@ -8,11 +8,13 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { PlayerModule } from '../player/player.module';
 import { redisProvider } from './redis.provider';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
     PlayerModule,
     PassportModule,
+    EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({

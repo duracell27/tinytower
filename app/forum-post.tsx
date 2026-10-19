@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import ForumCommentComponent from '../src/components/ForumComment';
 import ReportSheet from '../src/components/ReportSheet';
 import { useForumStore } from '../src/stores/forumStore';
+import type { TournamentPostMetadata, TournamentPostEntry } from '../src/stores/forumStore';
 import { useAuthStore } from '../src/stores/authStore';
 import { useGameStore } from '../src/stores/gameStore';
 import { getUserIcon } from '../src/utils/userIcon';
@@ -19,8 +20,99 @@ import type { ReportTargetType } from '../src/stores/reportStore';
 import { useBlockStore } from '../src/stores/blockStore';
 import { useAppTheme } from '../src/hooks/useAppTheme';
 
-const CHAT_ICON = require('../assets/img/menu/chat.png');
-const LVL_ICON  = require('../assets/img/lvlIcon.png');
+const CHAT_ICON   = require('../assets/img/menu/chat.png');
+const LVL_ICON    = require('../assets/img/lvlIcon.png');
+const CUP_GOLD    = require('../assets/img/rating/1PlaceCup.png');
+const CUP_SILVER  = require('../assets/img/rating/2PlaceCup.png');
+const CUP_BRONZE  = require('../assets/img/rating/3PlaceCup.png');
+const DIAMOND_ICO = require('../assets/img/diamond.png');
+const TOKEN_GREEN = require('../assets/img/tokens/tokenGreen.png');
+
+function cupIcon(rank: number) {
+  if (rank <= 3) return CUP_GOLD;
+  if (rank <= 6) return CUP_SILVER;
+  return CUP_BRONZE;
+}
+
+function TournamentPostBody({
+  meta, isDark, theme, onPlayerPress,
+}: {
+  meta: TournamentPostMetadata;
+  isDark: boolean;
+  theme: ReturnType<typeof useAppTheme>;
+  onPlayerPress: (playerId: string) => void;
+}) {
+  const rankColor = (rank: number) =>
+    rank <= 3 ? '#C8960A' : rank <= 6 ? '#888888' : '#A0643A';
+  const rankBg = (rank: number) => isDark
+    ? rank <= 3 ? 'rgba(218,165,32,0.15)' : rank <= 6 ? 'rgba(192,192,192,0.12)' : 'rgba(205,127,50,0.12)'
+    : rank <= 3 ? 'rgba(255,215,0,0.12)' : rank <= 6 ? 'rgba(192,192,192,0.12)' : 'rgba(205,127,50,0.10)';
+
+  return (
+    <View style={tStyles.wrap}>
+      <View style={tStyles.header}>
+        <Image source={CUP_GOLD} style={tStyles.headerCup} contentFit="contain" />
+        <View>
+          <LocaleText style={[tStyles.headerTitle, { color: theme.text }]}>Token Tournament</LocaleText>
+          <LocaleText style={[tStyles.headerSub, { color: theme.textMuted }]}>
+            {meta.totalParticipants} participant{meta.totalParticipants !== 1 ? 's' : ''}
+          </LocaleText>
+        </View>
+      </View>
+
+      <LocaleText style={[tStyles.sectionLabel, { color: theme.textMuted }]}>Top 10</LocaleText>
+
+      {meta.entries.map((entry: TournamentPostEntry) => (
+        <View key={entry.playerId} style={[tStyles.row, { backgroundColor: rankBg(entry.rank) }]}>
+          <Image source={cupIcon(entry.rank)} style={tStyles.cup} contentFit="contain" />
+          <Pressable onPress={() => onPlayerPress(entry.playerId)} style={tStyles.playerBtn}>
+            <Image source={getUserIcon(entry.playerLevel)} style={tStyles.avatar} contentFit="cover" />
+            <LocaleText style={[tStyles.name, { color: theme.text }]} numberOfLines={1}>{entry.playerName}</LocaleText>
+          </Pressable>
+          <View style={tStyles.statsRow}>
+            <LocaleText style={[tStyles.rankNum, { color: rankColor(entry.rank) }]}>#{entry.rank}</LocaleText>
+            <View style={tStyles.tokenChip}>
+              <LocaleText style={[tStyles.tokenVal, { color: '#3FA535' }]}>{entry.tokenCount}</LocaleText>
+              <Image source={TOKEN_GREEN} style={tStyles.tokenIco} contentFit="contain" />
+            </View>
+            {entry.gemsReward > 0 && (
+              <View style={tStyles.gemChip}>
+                <LocaleText style={[tStyles.gemVal, { color: '#2592AB' }]}>+{entry.gemsReward}</LocaleText>
+                <Image source={DIAMOND_ICO} style={tStyles.tokenIco} contentFit="contain" />
+              </View>
+            )}
+          </View>
+        </View>
+      ))}
+
+      <LocaleText style={[tStyles.footer, { color: theme.textMuted }]}>
+        Rewards sent to all participants via in-game mail.
+      </LocaleText>
+    </View>
+  );
+}
+
+const tStyles = StyleSheet.create({
+  wrap:        { gap: 6 },
+  header:      { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
+  headerCup:   { width: 36, height: 36 },
+  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17 },
+  headerSub:   { fontFamily: 'Nunito_400Regular', fontSize: 12, marginTop: 1 },
+  sectionLabel:{ fontFamily: 'Fredoka_600SemiBold', fontSize: 13, marginBottom: 2 },
+  row:         { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8 },
+  cup:         { width: 22, height: 22, flexShrink: 0 },
+  playerBtn:   { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0 },
+  avatar:      { width: 28, height: 28, borderRadius: 14 },
+  name:        { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, flex: 1 },
+  statsRow:    { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 },
+  rankNum:     { fontFamily: 'Fredoka_700Bold', fontSize: 13, width: 26, textAlign: 'right' },
+  tokenChip:   { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  tokenVal:    { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
+  tokenIco:    { width: 14, height: 14 },
+  gemChip:     { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  gemVal:      { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
+  footer:      { fontFamily: 'Nunito_400Regular', fontSize: 12, marginTop: 4, textAlign: 'center' },
+});
 
 type SelectedItem = { id: string; body: string; isOwn: boolean; type: 'post' | 'comment' };
 
@@ -189,9 +281,18 @@ export default function ForumPostScreen() {
       <LocaleText style={[styles.postTitle, isDark && { color: theme.text }]}>
         {isPostBlocked ? <LocaleText style={styles.blockedText}>{t('block.blockedContent')}</LocaleText> : activePost.title}
       </LocaleText>
-      <LocaleText style={[styles.postBody, isDark && { color: '#C8D8C0' }]}>
-        {isPostBlocked ? '' : activePost.body}
-      </LocaleText>
+      {isPostBlocked ? null : activePost.metadata?.type === 'token_tournament' ? (
+        <TournamentPostBody
+          meta={activePost.metadata}
+          isDark={isDark}
+          theme={theme}
+          onPlayerPress={handleAvatarPress}
+        />
+      ) : (
+        <LocaleText style={[styles.postBody, isDark && { color: '#C8D8C0' }]}>
+          {activePost.body}
+        </LocaleText>
+      )}
       {isAdmin && (
         <View style={styles.adminActions}>
           <Pressable

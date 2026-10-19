@@ -15,6 +15,7 @@ import {
   DAILY_TASKS, getCoinMultiplier, getMaterialCount, getTaskProgress,
 } from '../shared/config/dailyTasksConfig';
 import { formatNum } from '../src/utils/format';
+import { api } from '../src/services/api';
 
 const TOKEN_COLORS: Record<string, string> = {
   green: '#3FA535', blue: '#3376E5', yellow: '#E5A72E', purple: '#9A6FD0', red: '#E05A4A',
@@ -105,6 +106,14 @@ export default function DailyTasksScreen() {
 
   const nowUtcDay = new Date().getUTCDay(); // 0=Sun,6=Sat
   const isTournamentWeekend = nowUtcDay === 0 || nowUtcDay === 6;
+  const [tournamentEntry, setTournamentEntry] = useState<{
+    rank: number | null; tokenCount: number; gemsReward: number; bonusTokens: number; coinsReward: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!isTournamentWeekend) return;
+    api.getTournamentMyEntry().then(e => setTournamentEntry(e ?? null)).catch(() => {});
+  }, [isTournamentWeekend]);
 
   return (
     <AppBackground style={styles.container}>
@@ -135,10 +144,40 @@ export default function DailyTasksScreen() {
           <Image source={require('../assets/img/rating/1PlaceCup.png')} style={styles.tournamentCupIcon} contentFit="contain" />
           <View style={styles.tournamentTextCol}>
             {isTournamentWeekend ? (
-              <>
-                <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>Token Tournament</LocaleText>
-                <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>Results coming soon</LocaleText>
-              </>
+              tournamentEntry ? (
+                <>
+                  <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>Token Tournament</LocaleText>
+                  <View style={styles.tournamentScoreRow}>
+                    {tournamentEntry.rank !== null && (
+                      <Image
+                        source={
+                          tournamentEntry.rank <= 3
+                            ? require('../assets/img/rating/1PlaceCup.png')
+                            : tournamentEntry.rank <= 6
+                              ? require('../assets/img/rating/2PlaceCup.png')
+                              : require('../assets/img/rating/3PlaceCup.png')
+                        }
+                        style={styles.tournamentTokenIcon}
+                        contentFit="contain"
+                      />
+                    )}
+                    <LocaleText style={[styles.tournamentScore, { color: isDark ? '#8AAFD4' : '#1A6A9A', fontSize: 22 }]}>
+                      {tournamentEntry.rank !== null ? `#${tournamentEntry.rank}` : '—'}
+                    </LocaleText>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>
+                      {tournamentEntry.tokenCount}
+                    </LocaleText>
+                    <Image source={TOKEN_ICONS.green} style={{ width: 14, height: 14 }} contentFit="contain" />
+                  </View>
+                </>
+              ) : (
+                <>
+                  <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>Token Tournament</LocaleText>
+                  <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>Results coming soon</LocaleText>
+                </>
+              )
             ) : (
               <>
                 <View style={styles.tournamentScoreRow}>

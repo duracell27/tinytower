@@ -1,5 +1,19 @@
 import '../src/i18n';
+import { isRunningInExpoGo } from 'expo';
+import * as Sentry from '@sentry/react-native';
 import { useEffect } from 'react';
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+  replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  enableLogs: true,
+  integrations: [Sentry.mobileReplayIntegration()],
+  enableNativeFramesTracking: !isRunningInExpoGo(),
+  environment: __DEV__ ? 'development' : 'production',
+});
 import { View, ActivityIndicator, StyleSheet, LogBox, useColorScheme, Platform } from 'react-native';
 
 LogBox.ignoreLogs(['Sending `onAnimatedValueUpdate` with no listeners registered.']);
@@ -54,13 +68,24 @@ function extractReferralCode(url: string): string | null {
   }
 }
 
+function extractResetToken(url: string): string | null {
+  try {
+    const parsed = Linking.parse(url);
+    if (parsed.hostname !== 'reset-password') return null;
+    const token = parsed.queryParams?.token;
+    return typeof token === 'string' && token.length > 0 ? token : null;
+  } catch {
+    return null;
+  }
+}
+
 function handleReferralLink(url: string | null) {
   if (!url) return;
   const code = extractReferralCode(url);
   if (code) authStorage.set('referral.pendingCode', code);
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const router = useRouter();
   const isDark = useColorScheme() === 'dark';
   const player = useAuthStore((s) => s.player);
@@ -99,9 +124,18 @@ export default function RootLayout() {
       router.replace('/');
     });
     // Handle deep link that opened the app from cold start
-    Linking.getInitialURL().then(handleReferralLink);
+    Linking.getInitialURL().then((url) => {
+      if (!url) return;
+      handleReferralLink(url);
+      const resetToken = extractResetToken(url);
+      if (resetToken) router.replace(`/reset-password?token=${resetToken}`);
+    });
     // Handle deep link while app is already open
-    const sub = Linking.addEventListener('url', ({ url }) => handleReferralLink(url));
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      handleReferralLink(url);
+      const resetToken = extractResetToken(url);
+      if (resetToken) router.push(`/reset-password?token=${resetToken}`);
+    });
     return () => sub.remove();
   }, [router]);
 
@@ -125,6 +159,8 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" options={{ animation: 'none' }} />
         <Stack.Screen name="login" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="forgot-password" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="reset-password" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
         <Stack.Screen name="achievements" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="referrals" options={{ animation: 'slide_from_right' }} />
@@ -147,6 +183,8 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(RootLayout);
 
 const styles = StyleSheet.create({
   loading: {

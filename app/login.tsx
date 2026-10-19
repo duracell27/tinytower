@@ -57,6 +57,7 @@ export default function Login() {
       onGoogle={handleGoogle}
       onApple={Platform.OS === 'ios' ? handleApple : undefined}
       onBack={() => router.back()}
+      onForgotPassword={() => router.push('/forgot-password')}
       initialTab={tab === 'register' ? 'register' : 'login'}
     />
   );

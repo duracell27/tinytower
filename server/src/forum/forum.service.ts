@@ -9,7 +9,7 @@ const POST_SELECT = {
   id: true, playerId: true, playerName: true, playerLevel: true,
   category: true, title: true, body: true,
   isPinned: true, isClosed: true, commentCount: true,
-  createdAt: true, updatedAt: true,
+  createdAt: true, updatedAt: true, metadata: true,
 };
 
 const COMMENT_SELECT = {

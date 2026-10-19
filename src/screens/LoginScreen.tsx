@@ -23,6 +23,7 @@ interface LoginScreenProps {
   onGoogle: () => void;
   onApple?: () => void;
   onBack: () => void;
+  onForgotPassword?: () => void;
   initialTab?: 'login' | 'register';
 }
 
@@ -49,7 +50,7 @@ function GoogleIcon() {
   );
 }
 
-export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack, initialTab = 'login' }: LoginScreenProps) {
+export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack, onForgotPassword, initialTab = 'login' }: LoginScreenProps) {
   const { t } = useTranslation('auth');
   const [tab, setTab] = useState<'login' | 'register'>(initialTab);
   const [email, setEmail] = useState('');
@@ -260,7 +261,7 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack, init
             {/* Forgot password / terms checkbox */}
             {isLogin ? (
               <View style={styles.forgotWrap}>
-                <Pressable>
+                <Pressable onPress={onForgotPassword}>
                   <LocaleText style={[styles.forgotText, isDark && dk.forgotText]}>{t('login.forgotPassword')}</LocaleText>
                 </Pressable>
               </View>

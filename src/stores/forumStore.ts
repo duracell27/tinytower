@@ -3,6 +3,23 @@ import { api } from '../services/api';
 
 export type ForumCategory = 'NEWS' | 'HELP' | 'GENERAL' | 'CITIES' | 'PURCHASES';
 
+export interface TournamentPostEntry {
+  rank: number;
+  playerId: string;
+  playerName: string;
+  playerLevel: number;
+  tokenCount: number;
+  gemsReward: number;
+  bonusTokens: number;
+}
+
+export interface TournamentPostMetadata {
+  type: 'token_tournament';
+  weekStart: string;
+  totalParticipants: number;
+  entries: TournamentPostEntry[];
+}
+
 export interface ForumPost {
   id: string;
   category: ForumCategory;
@@ -17,6 +34,7 @@ export interface ForumPost {
   isUnread: boolean;
   createdAt: string;
   updatedAt: string;
+  metadata?: TournamentPostMetadata | null;
 }
 
 export interface ForumComment {

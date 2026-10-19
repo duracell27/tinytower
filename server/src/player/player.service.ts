@@ -155,4 +155,11 @@ export class PlayerService {
     });
     return player;
   }
+
+  async updatePasswordHash(playerId: string, passwordHash: string) {
+    await this.prisma.player.update({
+      where: { id: playerId },
+      data: { passwordHash },
+    });
+  }
 }

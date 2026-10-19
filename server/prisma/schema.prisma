@@ -280,6 +280,7 @@ model ForumPost {
   deletedAt    DateTime?
   reportCount Int     @default(0)
   isHidden    Boolean @default(false)
+  metadata    Json?
   player       Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
   comments     ForumComment[]
   reads        ForumPostRead[]

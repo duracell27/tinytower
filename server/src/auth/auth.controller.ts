@@ -7,6 +7,8 @@ import { RefreshSchema } from './dto/refresh.dto';
 import { ConvertSchema } from './dto/convert.dto';
 import { SocialLoginSchema } from './dto/social-login.dto';
 import { ConvertSocialSchema } from './dto/convert-social.dto';
+import { ForgotPasswordSchema } from './dto/forgot-password.dto';
+import { ResetPasswordSchema } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -96,6 +98,24 @@ export class AuthController {
       }
       throw e;
     }
+  }
+
+  @Post('forgot-password')
+  @HttpCode(200)
+  async forgotPassword(@Body() body: unknown) {
+    const result = ForgotPasswordSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(', '));
+    await this.authService.forgotPassword(result.data.email);
+    return {};
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  async resetPassword(@Body() body: unknown) {
+    const result = ResetPasswordSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(', '));
+    await this.authService.resetPassword(result.data.token, result.data.newPassword);
+    return {};
   }
 
   @Post('logout')

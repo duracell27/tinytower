@@ -371,7 +371,7 @@ async function request<T>(
   body?: unknown,
   retry = true,
 ): Promise<T> {
-  const isAuthEndpoint = path === '/auth/login' || path === '/auth/register' || path === '/auth/guest';
+  const isAuthEndpoint = path === '/auth/login' || path === '/auth/register' || path === '/auth/guest' || path === '/auth/forgot-password' || path === '/auth/reset-password';
   const token = getAccessToken();
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token && !isAuthEndpoint) headers['Authorization'] = `Bearer ${token}`;
@@ -530,6 +530,10 @@ export const api = {
     request<{ player: { id: string; email: string; playerName: string; isAdmin: boolean; isTemporary: false }; registrationGems: number }>(
       'POST', '/auth/convert/apple', { idToken, fullName, overwrite },
     ),
+  forgotPassword: (email: string) =>
+    request<void>('POST', '/auth/forgot-password', { email }),
+  resetPassword: (token: string, newPassword: string) =>
+    request<void>('POST', '/auth/reset-password', { token, newPassword }),
   deleteAccount: () =>
     request<void>('DELETE', '/auth/account'),
   createCity: (name: string) =>
@@ -629,6 +633,15 @@ export const api = {
     request<void>('POST', `/city/tasks/${taskId}/cancel`),
   createCityWeeklyResult: (cityId: string, message?: string) =>
     request<CityWeeklyResult>('POST', '/city/tasks/weekly-result', { cityId, message }),
+  getTournamentMyEntry: () =>
+    request<{
+      rank: number | null;
+      tokenCount: number;
+      gemsReward: number;
+      bonusTokens: number;
+      coinsReward: number;
+      weekStart: string;
+    } | null>('GET', '/tournament/tokens/my-entry'),
   setTokens,
   clearTokens,
   getAccessToken,
