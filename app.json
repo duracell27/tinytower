@@ -2,7 +2,7 @@
   "expo": {
     "name": "Vibe Tower",
     "slug": "tinytower",
-    "scheme": "tinytower",
+    "scheme": "vibetower",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/img/LogoBlack (1).png",
@@ -45,7 +45,15 @@
           "iosUrlScheme": "com.googleusercontent.apps.517555712792-vnvtm4lh1s095obu6tanh1qdsbg7d3gf"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "tinytower-mobile",
+          "organization": "vibe-tower"
+        }
+      ]
     ]
   }
 }
