@@ -163,7 +163,14 @@ async function doSync(): Promise<void> {
       cityElevatorDiamondBonus: cb?.elevatorDiamondBonus ?? 0,
       cityHotelBonus: cb?.hotelBonus ?? 0,
       categoryProgress: mergedCP,
-      weeklyTokenCount: response.weeklyTokenCount ?? 0,
+      weeklyTokenCount: (() => {
+        const base = response.weeklyTokenCount ?? 0;
+        // Add tokens from pending claim_daily_task commands not yet accepted by the server
+        const pendingTokens = useGameStore.getState().commandQueue
+          .filter((cmd) => cmd.type === 'claim_daily_task' && !acceptedIds.has(cmd.id))
+          .reduce((sum, cmd) => sum + ((cmd as any).tokenCount ?? 0), 0);
+        return base + pendingTokens;
+      })(),
     });
     if (
       (response.pendingReferralClaims && response.pendingReferralClaims.length > 0) ||
