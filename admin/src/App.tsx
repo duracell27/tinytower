@@ -12,7 +12,7 @@ import { TokenTournamentPage } from './pages/TokenTournamentPage';
 
 export function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/admin">
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route

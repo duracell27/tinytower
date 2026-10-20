@@ -2,7 +2,8 @@ import { getToken, clearToken } from './auth';
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
-  const res = await fetch(`/api${path}`, {
+  const base = import.meta.env.DEV ? '/api' : '';
+  const res = await fetch(`${base}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -13,7 +14,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (res.status === 401) {
     clearToken();
-    window.location.href = '/login';
+    window.location.href = '/admin/login';
     throw new Error('Unauthorized');
   }
 

@@ -24,6 +24,7 @@ import { CityChatModule } from './city-chat/city-chat.module';
 import { PaymentsModule } from './payments/payments.module';
 import { TournamentModule } from './tournament/tournament.module';
 import { DevModule } from './dev/dev.module';
+import { WebModule } from './web/web.module';
 
 const devModules = process.env.NODE_ENV !== 'production' ? [DevModule] : [];
 
@@ -52,6 +53,7 @@ const devModules = process.env.NODE_ENV !== 'production' ? [DevModule] : [];
     CityChatModule,
     PaymentsModule,
     TournamentModule,
+    WebModule,
     ...devModules,
   ],
   providers: [

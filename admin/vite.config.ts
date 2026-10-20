@@ -4,6 +4,11 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  base: '/admin/',
+  build: {
+    outDir: path.resolve(__dirname, '../server/public/admin'),
+    emptyOutDir: true,
+  },
   resolve: {
     alias: {
       '@shared': path.resolve(__dirname, '../shared'),

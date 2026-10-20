@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Support — Vibe Tower</title>
+<link rel="canonical" href="https://vibetower.app/support.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--bg);
+  z-index: 200;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  margin-bottom: 2.5rem;
+}
+
+details {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+details:last-child { border-bottom: none; }
+
+summary {
+  list-style: none;
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--fg);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  user-select: none;
+}
+summary::-webkit-details-marker { display: none; }
+
+summary::after {
+  content: "+";
+  font-size: 1.25rem;
+  color: var(--accent);
+  flex-shrink: 0;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+details[open] summary::after { transform: rotate(45deg); }
+
+details[open] summary { color: var(--accent); }
+
+.faq-body {
+  padding: 0 1.25rem 1rem;
+  color: var(--fg-muted);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">Vibe Tower</a>
+    <div class="nav-right">
+      <ul class="nav-links">
+        <li><a href="support.html" aria-current="page">Support</a></li>
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="terms.html">Terms</a></li>
+      </ul>
+      <button class="theme-btn" id="themeBtn">☀︎ Light</button>
+    </div>
+  </div>
+</nav>
+
+<main class="page-content">
+  <h1>Support</h1>
+  <p class="page-date">We usually respond within 24 hours.</p>
+
+  <p>Have a question about Vibe Tower? Check the FAQ below or send us a message — we're here to help.</p>
+
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-list">
+    <details>
+      <summary>My progress disappeared after reinstalling. Can I recover it?</summary>
+      <div class="faq-body">If you were logged in to your account before reinstalling, your progress is saved on the server. Simply sign in with the same account after reinstalling and your tower will be restored. Progress is not saved if you played as a guest without creating an account.</div>
+    </details>
+    <details>
+      <summary>How do I reset my password?</summary>
+      <div class="faq-body">On the login screen, tap "Forgot password?" and enter your email address. You'll receive a reset link within a few minutes. Check your spam folder if it doesn't arrive.</div>
+    </details>
+    <details>
+      <summary>I made a purchase but didn't receive the gems.</summary>
+      <div class="faq-body">First, try closing and reopening the App. Your purchase is tied to your App Store or Google Play account — if the issue persists, contact us below with your order number and we'll resolve it promptly.</div>
+    </details>
+    <details>
+      <summary>Can I transfer my progress to a new device?</summary>
+      <div class="faq-body">Yes. Your progress is linked to your account, not your device. Sign in with the same email or Google account on your new device and everything will sync automatically.</div>
+    </details>
+    <details>
+      <summary>How do I delete my account?</summary>
+      <div class="faq-body">Send us a message below with the subject "Delete my account" and include your registered email. We'll permanently delete your account and data within 30 days.</div>
+    </details>
+    <details>
+      <summary>How do cities and city membership work?</summary>
+      <div class="faq-body">Cities are groups of players whose towers contribute to a shared city level. You can join or create a city from the Cities tab. Your tower's progress adds XP to your city, which unlocks city-wide bonuses for all members.</div>
+    </details>
+  </div>
+
+  <h2>Send Us a Message</h2>
+  <form class="support-form" id="supportForm" novalidate>
+    <div class="form-field">
+      <label for="s-email">Your email</label>
+      <input type="email" id="s-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+    </div>
+    <div class="form-field">
+      <label for="s-subject">Subject</label>
+      <select id="s-subject" name="subject">
+        <option value="">Select a topic…</option>
+        <option value="progress">Lost progress / sync issue</option>
+        <option value="purchase">Purchase not received</option>
+        <option value="account">Account &amp; password</option>
+        <option value="bug">Bug report</option>
+        <option value="delete">Account deletion request</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="s-message">Message</label>
+      <textarea id="s-message" name="message" placeholder="Describe your issue in as much detail as possible…" required></textarea>
+    </div>
+    <button type="submit" class="form-submit">Send Message</button>
+  </form>
+
+  <div class="form-success" id="formSuccess" hidden>
+    ✓ Thanks! Your message has been received. We'll reply to your email within 24 hours.
+  </div>
+
+  <div class="contact-block" style="margin-top:2rem">
+    <strong>Direct email</strong>
+    <span>support@vibetower.app</span>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span class="footer-copy">© 2026 Vibe Tower. All rights reserved.</span>
+    <nav class="footer-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="support.html">Support</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function() {
+  const btn = document.getElementById('themeBtn');
+  let theme = 'system';
+  try { theme = localStorage.getItem('vt-theme') || 'system'; } catch(e) {}
+  function apply(t) {
+    const root = document.documentElement;
+    if (t === 'dark')  { root.setAttribute('data-theme','dark');  btn.textContent='☽ Dark'; }
+    else if (t === 'light') { root.setAttribute('data-theme','light'); btn.textContent='☀︎ Light'; }
+    else { root.removeAttribute('data-theme'); btn.textContent='◑ Auto'; }
+  }
+  apply(theme);
+  btn.addEventListener('click', function() {
+    theme = theme === 'system' ? 'dark' : theme === 'dark' ? 'light' : 'system';
+    try { localStorage.setItem('vt-theme', theme); } catch(e) {}
+    apply(theme);
+  });
+
+  // Form submit: show success state (actual submission needs a backend)
+  const form = document.getElementById('supportForm');
+  const success = document.getElementById('formSuccess');
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const email = document.getElementById('s-email').value.trim();
+    const msg   = document.getElementById('s-message').value.trim();
+    if (!email || !msg) return;
+    form.hidden = true;
+    success.hidden = false;
+  });
+})();
+</script>
+</body>
+</html>
