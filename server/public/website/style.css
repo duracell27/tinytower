@@ -10,10 +10,13 @@
   --accent-hi: #30AACC;
   --border:    rgba(37,146,171,0.18);
   --radius-card: 20px;
-  --font-display: 'Fredoka', system-ui, sans-serif;
+  --font-display: 'Fredoka', 'Geologica', system-ui, sans-serif;
   --font-body:    'Nunito',  system-ui, sans-serif;
   color-scheme: light;
 }
+
+/* Geologica for Ukrainian headings (Fredoka has no Cyrillic) */
+html[lang="uk"] { --font-display: 'Geologica', system-ui, sans-serif; }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
