@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="style.css">
+<script src="i18n.js"></script>
 
 <style>
 /* ─── Transparent nav override (home page only) ─────────────────────────── */
@@ -35,8 +36,9 @@
 .site-nav.scrolled .nav-links a        { color: var(--fg-muted); text-shadow: none; }
 .site-nav.scrolled .nav-links a:hover  { color: var(--accent); }
 
-.theme-btn             { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.88); transition: background 0.3s, border-color 0.3s, color 0.3s; }
-.site-nav.scrolled .theme-btn { background: var(--surface-2); border-color: var(--border); color: var(--fg-muted); }
+.theme-btn, .lang-btn  { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.88); transition: background 0.3s, border-color 0.3s, color 0.3s; }
+.site-nav.scrolled .theme-btn,
+.site-nav.scrolled .lang-btn  { background: var(--surface-2); border-color: var(--border); color: var(--fg-muted); }
 
 /* ─── Hero ───────────────────────────────────────────────────────────────── */
 .hero {
@@ -388,11 +390,12 @@ h2 {
     <a href="/" class="nav-logo">Vibe Tower</a>
     <div class="nav-right">
       <ul class="nav-links">
-        <li><a href="support.html">Support</a></li>
-        <li><a href="contact.html">Contact</a></li>
-        <li><a href="privacy.html">Privacy</a></li>
-        <li><a href="terms.html">Terms</a></li>
+        <li><a href="support.html" data-i18n="nav.support">Support</a></li>
+        <li><a href="contact.html" data-i18n="nav.contact">Contact</a></li>
+        <li><a href="privacy.html" data-i18n="nav.privacy">Privacy</a></li>
+        <li><a href="terms.html" data-i18n="nav.terms">Terms</a></li>
       </ul>
+      <button class="lang-btn" id="langBtn" aria-label="Toggle language">EN</button>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">☀︎ Light</button>
     </div>
   </div>
@@ -403,23 +406,23 @@ h2 {
   <img src="hero.png" class="hero-bg" alt="" aria-hidden="true">
   <div class="hero-inner">
     <div class="hero-text">
-      <span class="hero-tag">Available on iOS &amp; Android</span>
-      <h1>Build Your<br><em>Dream Tower</em></h1>
-      <p class="hero-sub">Construct floors, unlock businesses, and grow your empire one level at a time in the addictive idle city-builder.</p>
+      <span class="hero-tag" data-i18n="heroTag">Available on iOS &amp; Android</span>
+      <h1 data-i18n-html="heroH1">Build Your<br><em>Dream Tower</em></h1>
+      <p class="hero-sub" data-i18n="heroSub">Construct floors, unlock businesses, and grow your empire one level at a time in the addictive idle city-builder.</p>
 
       <div class="store-btns">
         <a href="#" class="store-btn" aria-label="Download on App Store">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
           <span class="store-label">
-            <small>Download on the</small>
-            <strong>App Store</strong>
+            <small data-i18n="dlApple">Download on the</small>
+            <strong data-i18n="appStore">App Store</strong>
           </span>
         </a>
         <a href="#" class="store-btn" aria-label="Get it on Google Play">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.18 23.76c.3.17.64.22.99.14l11.34-6.55-2.4-2.4-9.93 8.81zm-1.01-20.3c-.11.28-.17.6-.17.95v19.18c0 .35.06.67.17.95l.09.09 10.74-10.74v-.24L2.26 3.38l-.09.08zm14.47 13.82l-3.57-3.57v-.24l3.57-3.57.08.05 4.23 2.4c1.21.69 1.21 1.81 0 2.5l-4.23 2.4-.08.03zM4.17.24C3.82.16 3.48.21 3.18.38L13.43 10.6l2.4-2.39L4.26.29 4.17.24z"/></svg>
           <span class="store-label">
-            <small>Get it on</small>
-            <strong>Google Play</strong>
+            <small data-i18n="dlGoogle">Get it on</small>
+            <strong data-i18n="googlePlay">Google Play</strong>
           </span>
         </a>
       </div>
@@ -431,29 +434,29 @@ h2 {
 <!-- Features -->
 <section class="features-section">
   <div class="section-inner">
-    <div class="section-eyebrow">Features</div>
-    <h2>Everything in one tower</h2>
-    <p class="section-lead">From a humble lobby to a sky-high empire — Vibe Tower grows as fast as your ambition.</p>
+    <div class="section-eyebrow" data-i18n="featEyebrow">Features</div>
+    <h2 data-i18n="featH2">Everything in one tower</h2>
+    <p class="section-lead" data-i18n="featLead">From a humble lobby to a sky-high empire — Vibe Tower grows as fast as your ambition.</p>
     <div class="features-grid">
       <div class="feat">
         <div class="feat-icon">🏢</div>
-        <h3>Build Floor by Floor</h3>
-        <p>Unlock dozens of unique floors and businesses. Each level generates its own revenue stream and personality.</p>
+        <h3 data-i18n="feat1Title">Build Floor by Floor</h3>
+        <p data-i18n="feat1Desc">Unlock dozens of unique floors and businesses. Each level generates its own revenue stream and personality.</p>
       </div>
       <div class="feat">
         <div class="feat-icon">💎</div>
-        <h3>Gems &amp; Coins</h3>
-        <p>Earn and spend currency through smart upgrades. Strategically use gems to fast-track your tower's rise.</p>
+        <h3 data-i18n="feat2Title">Gems &amp; Coins</h3>
+        <p data-i18n="feat2Desc">Earn and spend currency through smart upgrades. Strategically use gems to fast-track your tower's rise.</p>
       </div>
       <div class="feat">
         <div class="feat-icon">🏆</div>
-        <h3>Tournaments</h3>
-        <p>Compete globally in limited-time events. Climb the leaderboard and earn exclusive rewards before time runs out.</p>
+        <h3 data-i18n="feat3Title">Tournaments</h3>
+        <p data-i18n="feat3Desc">Compete globally in limited-time events. Climb the leaderboard and earn exclusive rewards before time runs out.</p>
       </div>
       <div class="feat">
         <div class="feat-icon">🏙️</div>
-        <h3>Cities &amp; Friends</h3>
-        <p>Join a city, team up with players, and contribute your tower's power to collective goals.</p>
+        <h3 data-i18n="feat4Title">Cities &amp; Friends</h3>
+        <p data-i18n="feat4Desc">Join a city, team up with players, and contribute your tower's power to collective goals.</p>
       </div>
     </div>
   </div>
@@ -462,9 +465,9 @@ h2 {
 <!-- Screenshots -->
 <section>
   <div class="section-inner">
-    <div class="section-eyebrow">Screenshots</div>
-    <h2>See it in action</h2>
-    <p class="section-lead">Screenshots coming soon — check back after launch.</p>
+    <div class="section-eyebrow" data-i18n="shotsEyebrow">Screenshots</div>
+    <h2 data-i18n="shotsH2">See it in action</h2>
+    <p class="section-lead" data-i18n="shotsLead">Screenshots coming soon — check back after launch.</p>
     <div class="shots-scroll">
       <!-- 5 placeholder screens with different themes -->
       <div class="shot">
@@ -550,24 +553,24 @@ h2 {
 <section class="contact-section">
   <div class="section-inner contact-inner">
     <div class="contact-copy">
-      <div class="section-eyebrow">Contact</div>
-      <h2>Get in Touch</h2>
-      <p class="section-lead">Questions, feedback, or just want to say hi — we reply within 24 hours.</p>
-      <a href="contact.html" class="contact-more">Full support &amp; FAQ →</a>
+      <div class="section-eyebrow" data-i18n="contactEyebrow">Contact</div>
+      <h2 data-i18n="contactH2">Get in Touch</h2>
+      <p class="section-lead" data-i18n="contactLead">Questions, feedback, or just want to say hi — we reply within 24 hours.</p>
+      <a href="contact.html" class="contact-more" data-i18n="contactMore">Full support &amp; FAQ →</a>
     </div>
     <div>
       <form class="support-form" id="contactFormHome" novalidate>
         <div class="form-field">
-          <label for="c-email">Your email</label>
-          <input type="email" id="c-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+          <label for="c-email" data-i18n="cEmailLabel">Your email</label>
+          <input type="email" id="c-email" name="email" placeholder="you@example.com" data-i18n-ph="cEmailPh" autocomplete="email" required>
         </div>
         <div class="form-field">
-          <label for="c-message">Message</label>
-          <textarea id="c-message" name="message" placeholder="Tell us what's on your mind…" required style="min-height:100px"></textarea>
+          <label for="c-message" data-i18n="cMsgLabel">Message</label>
+          <textarea id="c-message" name="message" placeholder="Tell us what's on your mind…" data-i18n-ph="cMsgPh" required style="min-height:100px"></textarea>
         </div>
-        <button type="submit" class="form-submit">Send Message</button>
+        <button type="submit" class="form-submit" data-i18n="formSubmit">Send Message</button>
       </form>
-      <div class="form-success" id="contactSuccessHome" hidden>✓ Got it! We'll reply within 24 hours.</div>
+      <div class="form-success" id="contactSuccessHome" data-i18n="formSuccessHome" hidden>✓ Got it! We'll reply within 24 hours.</div>
     </div>
   </div>
 </section>
@@ -575,12 +578,12 @@ h2 {
 <!-- Footer -->
 <footer class="site-footer">
   <div class="footer-inner">
-    <span class="footer-copy">© 2026 Vibe Tower. All rights reserved.</span>
+    <span class="footer-copy" data-i18n="footer.copy">© 2026 Vibe Tower. All rights reserved.</span>
     <nav class="footer-links" aria-label="Footer navigation">
-      <a href="contact.html">Contact</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms of Service</a>
-      <a href="support.html">Support</a>
+      <a href="contact.html" data-i18n="footer.contact">Contact</a>
+      <a href="privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <a href="terms.html" data-i18n="footer.terms">Terms of Service</a>
+      <a href="support.html" data-i18n="footer.support">Support</a>
     </nav>
   </div>
 </footer>
@@ -592,19 +595,21 @@ h2 {
   let theme = 'system';
   try { theme = localStorage.getItem('vt-theme') || 'system'; } catch(e) {}
 
-  function apply(t) {
+  function applyTheme(t) {
     const root = document.documentElement;
-    if (t === 'dark')  { root.setAttribute('data-theme', 'dark');  btn.textContent = '☽ Dark';  }
-    else if (t === 'light') { root.setAttribute('data-theme', 'light'); btn.textContent = '☀︎ Light'; }
-    else { root.removeAttribute('data-theme'); btn.textContent = '◑ Auto'; }
+    const lbl = window.vtI18n ? window.vtI18n.themeLabel : function(s){return s;};
+    if (t === 'dark')  { root.setAttribute('data-theme', 'dark');  btn.textContent = lbl('dark');  }
+    else if (t === 'light') { root.setAttribute('data-theme', 'light'); btn.textContent = lbl('light'); }
+    else { root.removeAttribute('data-theme'); btn.textContent = lbl('auto'); }
   }
 
-  apply(theme);
+  window.vtThemeApply = function() { applyTheme(theme); };
+  applyTheme(theme);
 
   btn.addEventListener('click', function() {
     theme = theme === 'system' ? 'dark' : theme === 'dark' ? 'light' : 'system';
     try { localStorage.setItem('vt-theme', theme); } catch(e) {}
-    apply(theme);
+    applyTheme(theme);
   });
 
   /* Contact form (home page compact version) */

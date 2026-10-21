@@ -118,7 +118,7 @@ body::before {
 }
 .nav-links a:hover { color: var(--accent); }
 
-.theme-btn {
+.theme-btn, .lang-btn {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -130,7 +130,7 @@ body::before {
   transition: background 0.2s;
   white-space: nowrap;
 }
-.theme-btn:hover { background: var(--border); }
+.theme-btn:hover, .lang-btn:hover { background: var(--border); }
 
 /* ─── Page wrapper for sub-pages ─────────────────────────────────────────── */
 .page-content {

@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="style.css">
+<script src="i18n.js"></script>
 <style>
 body::before {
   content: "";
@@ -77,93 +78,94 @@ details[open] summary { color: var(--accent); }
     <a href="index.html" class="nav-logo">Vibe Tower</a>
     <div class="nav-right">
       <ul class="nav-links">
-        <li><a href="support.html" aria-current="page">Support</a></li>
-        <li><a href="contact.html">Contact</a></li>
-        <li><a href="privacy.html">Privacy</a></li>
-        <li><a href="terms.html">Terms</a></li>
+        <li><a href="support.html" aria-current="page" data-i18n="nav.support">Support</a></li>
+        <li><a href="contact.html" data-i18n="nav.contact">Contact</a></li>
+        <li><a href="privacy.html" data-i18n="nav.privacy">Privacy</a></li>
+        <li><a href="terms.html" data-i18n="nav.terms">Terms</a></li>
       </ul>
+      <button class="lang-btn" id="langBtn" aria-label="Toggle language">EN</button>
       <button class="theme-btn" id="themeBtn">☀︎ Light</button>
     </div>
   </div>
 </nav>
 
 <main class="page-content">
-  <h1>Support</h1>
-  <p class="page-date">We usually respond within 24 hours.</p>
+  <h1 data-i18n="spH1">Support</h1>
+  <p class="page-date" data-i18n="spDate">We usually respond within 24 hours.</p>
 
-  <p>Have a question about Vibe Tower? Check the FAQ below or send us a message — we're here to help.</p>
+  <p data-i18n="spIntro">Have a question about Vibe Tower? Check the FAQ below or send us a message — we're here to help.</p>
 
-  <h2>Frequently Asked Questions</h2>
+  <h2 data-i18n="faqH2">Frequently Asked Questions</h2>
   <div class="faq-list">
     <details>
-      <summary>My progress disappeared after reinstalling. Can I recover it?</summary>
-      <div class="faq-body">If you were logged in to your account before reinstalling, your progress is saved on the server. Simply sign in with the same account after reinstalling and your tower will be restored. Progress is not saved if you played as a guest without creating an account.</div>
+      <summary data-i18n="faq1Q">My progress disappeared after reinstalling. Can I recover it?</summary>
+      <div class="faq-body" data-i18n="faq1A">If you were logged in to your account before reinstalling, your progress is saved on the server. Simply sign in with the same account after reinstalling and your tower will be restored. Progress is not saved if you played as a guest without creating an account.</div>
     </details>
     <details>
-      <summary>How do I reset my password?</summary>
-      <div class="faq-body">On the login screen, tap "Forgot password?" and enter your email address. You'll receive a reset link within a few minutes. Check your spam folder if it doesn't arrive.</div>
+      <summary data-i18n="faq2Q">How do I reset my password?</summary>
+      <div class="faq-body" data-i18n="faq2A">On the login screen, tap "Forgot password?" and enter your email address. You'll receive a reset link within a few minutes. Check your spam folder if it doesn't arrive.</div>
     </details>
     <details>
-      <summary>I made a purchase but didn't receive the gems.</summary>
-      <div class="faq-body">First, try closing and reopening the App. Your purchase is tied to your App Store or Google Play account — if the issue persists, contact us below with your order number and we'll resolve it promptly.</div>
+      <summary data-i18n="faq3Q">I made a purchase but didn't receive the gems.</summary>
+      <div class="faq-body" data-i18n="faq3A">First, try closing and reopening the App. Your purchase is tied to your App Store or Google Play account — if the issue persists, contact us below with your order number and we'll resolve it promptly.</div>
     </details>
     <details>
-      <summary>Can I transfer my progress to a new device?</summary>
-      <div class="faq-body">Yes. Your progress is linked to your account, not your device. Sign in with the same email or Google account on your new device and everything will sync automatically.</div>
+      <summary data-i18n="faq4Q">Can I transfer my progress to a new device?</summary>
+      <div class="faq-body" data-i18n="faq4A">Yes. Your progress is linked to your account, not your device. Sign in with the same email or Google account on your new device and everything will sync automatically.</div>
     </details>
     <details>
-      <summary>How do I delete my account?</summary>
-      <div class="faq-body">Send us a message below with the subject "Delete my account" and include your registered email. We'll permanently delete your account and data within 30 days.</div>
+      <summary data-i18n="faq5Q">How do I delete my account?</summary>
+      <div class="faq-body" data-i18n="faq5A">Send us a message below with the subject "Delete my account" and include your registered email. We'll permanently delete your account and data within 30 days.</div>
     </details>
     <details>
-      <summary>How do cities and city membership work?</summary>
-      <div class="faq-body">Cities are groups of players whose towers contribute to a shared city level. You can join or create a city from the Cities tab. Your tower's progress adds XP to your city, which unlocks city-wide bonuses for all members.</div>
+      <summary data-i18n="faq6Q">How do cities and city membership work?</summary>
+      <div class="faq-body" data-i18n="faq6A">Cities are groups of players whose towers contribute to a shared city level. You can join or create a city from the Cities tab. Your tower's progress adds XP to your city, which unlocks city-wide bonuses for all members.</div>
     </details>
   </div>
 
-  <h2>Send Us a Message</h2>
+  <h2 data-i18n="spMsgH2">Send Us a Message</h2>
   <form class="support-form" id="supportForm" novalidate>
     <div class="form-field">
-      <label for="s-email">Your email</label>
-      <input type="email" id="s-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+      <label for="s-email" data-i18n="fEmail">Your email</label>
+      <input type="email" id="s-email" name="email" placeholder="you@example.com" data-i18n-ph="cEmailPh" autocomplete="email" required>
     </div>
     <div class="form-field">
-      <label for="s-subject">Subject</label>
+      <label for="s-subject" data-i18n="fSubject">Subject</label>
       <select id="s-subject" name="subject">
-        <option value="">Select a topic…</option>
-        <option value="progress">Lost progress / sync issue</option>
-        <option value="purchase">Purchase not received</option>
-        <option value="account">Account &amp; password</option>
-        <option value="bug">Bug report</option>
-        <option value="delete">Account deletion request</option>
-        <option value="other">Other</option>
+        <option value="" data-i18n="spSelectTopic">Select a topic…</option>
+        <option value="progress" data-i18n="topicProgress">Lost progress / sync issue</option>
+        <option value="purchase" data-i18n="topicPurchase">Purchase not received</option>
+        <option value="account" data-i18n="topicAccount">Account &amp; password</option>
+        <option value="bug" data-i18n="topicBug">Bug report</option>
+        <option value="delete" data-i18n="topicDelete">Account deletion request</option>
+        <option value="other" data-i18n="topicOther">Other</option>
       </select>
     </div>
     <div class="form-field">
-      <label for="s-message">Message</label>
-      <textarea id="s-message" name="message" placeholder="Describe your issue in as much detail as possible…" required></textarea>
+      <label for="s-message" data-i18n="fMsg">Message</label>
+      <textarea id="s-message" name="message" placeholder="Describe your issue in as much detail as possible…" data-i18n-ph="spMsgPh" required></textarea>
     </div>
-    <button type="submit" class="form-submit">Send Message</button>
+    <button type="submit" class="form-submit" data-i18n="formSubmit">Send Message</button>
   </form>
 
-  <div class="form-success" id="formSuccess" hidden>
+  <div class="form-success" id="formSuccess" data-i18n="spSuccess" hidden>
     ✓ Thanks! Your message has been received. We'll reply to your email within 24 hours.
   </div>
 
   <div class="contact-block" style="margin-top:2rem">
-    <strong>Direct email</strong>
+    <strong data-i18n="directEmail">Direct email</strong>
     <span>support@vibetower.app</span>
   </div>
 </main>
 
 <footer class="site-footer">
   <div class="footer-inner">
-    <span class="footer-copy">© 2026 Vibe Tower. All rights reserved.</span>
+    <span class="footer-copy" data-i18n="footer.copy">© 2026 Vibe Tower. All rights reserved.</span>
     <nav class="footer-links">
-      <a href="contact.html">Contact</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms of Service</a>
-      <a href="support.html">Support</a>
+      <a href="contact.html" data-i18n="footer.contact">Contact</a>
+      <a href="privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <a href="terms.html" data-i18n="footer.terms">Terms of Service</a>
+      <a href="support.html" data-i18n="footer.support">Support</a>
     </nav>
   </div>
 </footer>
@@ -173,29 +175,50 @@ details[open] summary { color: var(--accent); }
   const btn = document.getElementById('themeBtn');
   let theme = 'system';
   try { theme = localStorage.getItem('vt-theme') || 'system'; } catch(e) {}
-  function apply(t) {
+  function applyTheme(t) {
     const root = document.documentElement;
-    if (t === 'dark')  { root.setAttribute('data-theme','dark');  btn.textContent='☽ Dark'; }
-    else if (t === 'light') { root.setAttribute('data-theme','light'); btn.textContent='☀︎ Light'; }
-    else { root.removeAttribute('data-theme'); btn.textContent='◑ Auto'; }
+    const lbl = window.vtI18n ? window.vtI18n.themeLabel : function(s){return s;};
+    if (t === 'dark')  { root.setAttribute('data-theme','dark');  btn.textContent=lbl('dark'); }
+    else if (t === 'light') { root.setAttribute('data-theme','light'); btn.textContent=lbl('light'); }
+    else { root.removeAttribute('data-theme'); btn.textContent=lbl('auto'); }
   }
-  apply(theme);
+  window.vtThemeApply = function() { applyTheme(theme); };
+  applyTheme(theme);
   btn.addEventListener('click', function() {
     theme = theme === 'system' ? 'dark' : theme === 'dark' ? 'light' : 'system';
     try { localStorage.setItem('vt-theme', theme); } catch(e) {}
-    apply(theme);
+    applyTheme(theme);
   });
 
-  // Form submit: show success state (actual submission needs a backend)
   const form = document.getElementById('supportForm');
   const success = document.getElementById('formSuccess');
-  form.addEventListener('submit', function(e) {
+  const submitBtn = form.querySelector('button[type="submit"]');
+  form.addEventListener('submit', async function(e) {
     e.preventDefault();
     const email = document.getElementById('s-email').value.trim();
     const msg   = document.getElementById('s-message').value.trim();
     if (!email || !msg) return;
-    form.hidden = true;
-    success.hidden = false;
+    const sending = window.vtI18n ? window.vtI18n.themeLabel : null;
+    submitBtn.disabled = true;
+    submitBtn.textContent = (window.vtI18n && window.vtI18n.currentLang() === 'uk') ? 'Надсилання…' : 'Sending…';
+    try {
+      const res = await fetch('/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          subject: document.getElementById('s-subject').value,
+          message: msg,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      form.hidden = true;
+      success.hidden = false;
+    } catch {
+      submitBtn.disabled = false;
+      submitBtn.textContent = (window.vtI18n && window.vtI18n.currentLang() === 'uk') ? 'Надіслати' : 'Send Message';
+      alert('Something went wrong. Please try again or email us at support@vibetower.app');
+    }
   });
 })();
 </script>
