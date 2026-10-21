@@ -324,4 +324,22 @@ body::before {
   .contact-inner { grid-template-columns: 1fr; gap: 1.5rem; }
 }
 
+/* ─── Mobile layout ──────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Nav: hide text links, keep logo + buttons */
+  .nav-links { display: none; }
+  .nav-right { gap: 0.5rem; }
+  .nav-logo { font-size: 1.2rem; }
+
+  /* Sections: tighter vertical rhythm */
+  section { padding-top: 3rem; padding-bottom: 3rem; }
+
+  /* Sub-pages */
+  .page-content { padding-top: 2rem; padding-bottom: 3rem; }
+  .page-content h1 { font-size: clamp(1.6rem, 7vw, 2.2rem); }
+
+  /* Support / contact forms: full-width submit button */
+  .form-submit { width: 100%; text-align: center; }
+}
+
 /* ─── Phone mockup placeholders ─────────────────────────────────────────── */
