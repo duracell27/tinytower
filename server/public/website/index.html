@@ -1,5 +1,9 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vibe Tower</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Build your dream tower floor by floor. Unlock businesses, compete in tournaments, and grow your empire in Vibe Tower — the addictive idle tower-building game.">
 <meta property="og:title" content="Vibe Tower">
 <meta property="og:description" content="Build your dream tower floor by floor. Available on iOS and Android.">
@@ -47,7 +51,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .hero-bg {
@@ -56,7 +60,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: 65% center;
   display: block;
   z-index: 0;
 }
@@ -155,25 +159,22 @@
 .store-label strong { display: block; font-size: 0.95rem; font-weight: 700; font-family: var(--font-display); white-space: nowrap; }
 
 @media (max-width: 600px) {
-  .hero { min-height: 100svh; }
+  .hero { min-height: 100svh; justify-content: flex-end; }
+  .hero-bg { object-position: right top; }
   .hero::after {
     background: linear-gradient(to bottom,
-      rgba(9,21,32,0.3) 0%,
-      rgba(9,21,32,0.65) 55%,
-      rgba(9,21,32,0.82) 100%
+      rgba(9,21,32,0.05) 0%,
+      rgba(9,21,32,0.55) 50%,
+      rgba(9,21,32,0.90) 100%
     );
   }
-  .hero-inner {
-    padding-top: 3.5rem;
-    padding-bottom: 3rem;
-    justify-content: flex-end;
-  }
+  .hero-inner { padding-top: 2rem; padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 1rem)); }
   .hero-text { max-width: 100%; }
-  .hero h1 { font-size: clamp(2.2rem, 10vw, 3rem); }
-  .hero-tag { font-size: 0.7rem; padding: 0.25rem 0.75rem; margin-bottom: 1rem; }
-  .hero-sub { font-size: 0.95rem; }
-  .store-btns { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
-  .store-btn { width: 185px; }
+  .hero h1 { font-size: clamp(2.2rem, 10vw, 3rem); margin-bottom: 0.75rem; }
+  .hero-tag { font-size: 0.7rem; padding: 0.25rem 0.75rem; margin-bottom: 0.9rem; }
+  .hero-sub { font-size: 0.92rem; margin-bottom: 1.5rem; max-width: 100%; }
+  .store-btns { flex-direction: row; flex-wrap: wrap; gap: 0.65rem; }
+  .store-btn { width: auto; flex: 1 1 140px; max-width: 185px; }
 }
 
 /* ─── Sections ───────────────────────────────────────────────────────────── */
@@ -396,6 +397,8 @@ h2 {
   cursor: text;
 }
 </style>
+</head>
+<body>
 
 <!-- Nav -->
 <nav class="site-nav">
@@ -663,3 +666,5 @@ h2 {
   onScroll();
 })();
 </script>
+</body>
+</html>
