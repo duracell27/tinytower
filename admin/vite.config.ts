@@ -15,6 +15,7 @@ export default defineConfig({
     },
   },
   server: {
+    allowedHosts: ['vibetower.app', '.vibetower.app'],
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
@@ -22,5 +23,8 @@ export default defineConfig({
         rewrite: (p) => p.replace(/^\/api/, ''),
       },
     },
+  },
+  preview: {
+    allowedHosts: ['vibetower.app', '.vibetower.app'],
   },
 });
