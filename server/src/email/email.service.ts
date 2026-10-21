@@ -32,6 +32,41 @@ export class EmailService {
     }
   }
 
+  async sendContactEmail(opts: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }): Promise<void> {
+    const adminEmail = this.config.get<string>('ADMIN_EMAIL') ?? 'support@vibetower.app';
+    const subjectLine = opts.subject
+      ? `[Contact] ${opts.subject} — from ${opts.name}`
+      : `[Contact] New message from ${opts.name}`;
+    try {
+      await this.resend.emails.send({
+        from: this.from,
+        to: adminEmail,
+        replyTo: opts.email,
+        subject: subjectLine,
+        html: `
+          <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px">
+            <h2 style="color:#2592AB;margin:0 0 16px">New contact form submission</h2>
+            <table style="border-collapse:collapse;width:100%;font-size:14px">
+              <tr><td style="padding:6px 12px 6px 0;color:#888;white-space:nowrap">Name</td><td style="padding:6px 0">${opts.name}</td></tr>
+              <tr><td style="padding:6px 12px 6px 0;color:#888;white-space:nowrap">Email</td><td style="padding:6px 0"><a href="mailto:${opts.email}">${opts.email}</a></td></tr>
+              <tr><td style="padding:6px 12px 6px 0;color:#888;white-space:nowrap">Subject</td><td style="padding:6px 0">${opts.subject || '—'}</td></tr>
+            </table>
+            <hr style="margin:16px 0;border:none;border-top:1px solid #eee">
+            <p style="white-space:pre-wrap;line-height:1.6">${opts.message}</p>
+            <p style="color:#aaa;font-size:12px;margin-top:24px">Sent from vibetower.app contact form</p>
+          </div>
+        `,
+      });
+    } catch (err) {
+      this.logger.error('Failed to send contact email', err);
+    }
+  }
+
   async sendPasswordResetEmail(email: string, token: string): Promise<void> {
     const deepLink = `vibetower://reset-password?token=${token}`;
     try {

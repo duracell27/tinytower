@@ -296,4 +296,29 @@ body::before {
   text-align: center;
 }
 
-/* ─── Theme toggle script (shared) ──────────────────────────────────────── */
+/* ─── Contact section (home page) ───────────────────────────────────────── */
+.contact-section { background: var(--surface); }
+
+.contact-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.contact-copy .section-lead { margin-bottom: 1rem; }
+
+.contact-more {
+  display: inline-block;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.contact-more:hover { text-decoration: underline; }
+
+@media (max-width: 700px) {
+  .contact-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+}
+
+/* ─── Phone mockup placeholders ─────────────────────────────────────────── */

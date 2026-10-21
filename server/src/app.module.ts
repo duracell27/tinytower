@@ -25,6 +25,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { TournamentModule } from './tournament/tournament.module';
 import { DevModule } from './dev/dev.module';
 import { WebModule } from './web/web.module';
+import { ContactModule } from './contact/contact.module';
 
 const devModules = process.env.NODE_ENV !== 'production' ? [DevModule] : [];
 
@@ -54,6 +55,7 @@ const devModules = process.env.NODE_ENV !== 'production' ? [DevModule] : [];
     PaymentsModule,
     TournamentModule,
     WebModule,
+    ContactModule,
     ...devModules,
   ],
   providers: [
