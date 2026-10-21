@@ -15,8 +15,8 @@
   color-scheme: light;
 }
 
-/* Geologica for Ukrainian headings (Fredoka has no Cyrillic) */
-html[lang="uk"] { --font-display: 'Geologica', system-ui, sans-serif; }
+/* Fredoka has no Cyrillic — use Nunito for all text in Ukrainian */
+html[lang="uk"] { --font-display: 'Nunito', system-ui, sans-serif; }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {

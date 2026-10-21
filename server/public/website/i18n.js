@@ -77,7 +77,7 @@
       },
       theme: { light: '☀︎ Світла', dark: '☽ Темна', auto: '◑ Авто' },
       heroTag: 'Доступно на iOS та Android',
-      heroH1: 'Будуй свою<br><em>мрійну вежу</em>',
+      heroH1: 'Будуй свою <em>омріяну вежу</em>',
       heroSub: 'Зводь поверхи, відкривай бізнеси та розбудовуй свою імперію крок за кроком у захопливому idle city-builder.',
       dlApple: 'Завантажити в', appStore: 'App Store',
       dlGoogle: 'Доступно в',   googlePlay: 'Google Play',
