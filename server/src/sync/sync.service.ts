@@ -280,7 +280,7 @@ export class SyncService {
     let coinBonusDelta = 0;
     let xpBonusDelta = 0;
 
-    if (acceptedCommands.length > 0 || newCommands.length === 0 || shouldCheckLoginReward) {
+    if (acceptedCommands.length > 0 || newCommands.length === 0 || shouldCheckLoginReward || failedCommandIds.length > 0) {
       await this.prisma.$transaction(async (tx) => {
         // Re-read playerLevel/playerXp under a row lock to prevent concurrent-sync races.
         // If another request committed a level change between our initial read and now,

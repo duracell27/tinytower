@@ -189,6 +189,7 @@ interface UIState {
   tokenInsufficient: { floorType: 'green' | 'blue' | 'yellow' | 'purple' | 'red'; have: number; need: number } | null;
   pendingTaskReward: PendingTaskReward | null;
   pendingDeliverAll: DeliverAllSummary | null;
+  pendingDeliveredVisitorIds: string[];
   hotelFullNotice: boolean;
   warehouseFullNotice: boolean;
   warehouseFullDailyTask: { taskKey: string; taskTitle: string } | null;
@@ -517,6 +518,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   tokenInsufficient: null,
   pendingTaskReward: null,
   pendingDeliverAll: null,
+  pendingDeliveredVisitorIds: [],
   hotelFullNotice: false,
   warehouseFullNotice: false,
   warehouseFullDailyTask: null,
@@ -1078,16 +1080,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
+    const visitorIdsToTrack = state.lobbyVisitors.map((v) => v.id);
     executeCommand(get, set, {
       id: uuid(),
       type: 'deliver_all',
       timestamp: now,
       resolvedVisitors,
       builderTools,
-      deliveredVisitorIds: state.lobbyVisitors.map((v) => v.id),
+      deliveredVisitorIds: visitorIdsToTrack,
       ...(preGeneratedWorkers.length > 0 && { preGeneratedWorkers }),
       ...(vipGuestWorkerBatches.length > 0 && { vipGuestWorkerBatches }),
     });
+    if (visitorIdsToTrack.length > 0) {
+      set((cur) => ({
+        pendingDeliveredVisitorIds: [...new Set([...cur.pendingDeliveredVisitorIds, ...visitorIdsToTrack])],
+      }));
+    }
 
     const summary = computeDeliverAllSummary(
       resolvedVisitors.map((r, i) => ({ ...state.lobbyVisitors[i], ...r })),
@@ -1526,7 +1534,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
         .filter((cmd) => cmd.type === 'collect_tip')
         .map((cmd) => (cmd as Extract<Command, { type: 'collect_tip' }>).visitorId)
         .filter((id): id is string => id != null),
+      // Persistent IDs that survived a clearAckedCommands cycle (deliver_all was
+      // pruned from the queue before the server bumped stateVersion).
+      ...cur.pendingDeliveredVisitorIds,
     ]);
+    // Keep pendingDeliveredVisitorIds only for visitors still present on the server.
+    // Once the server no longer returns a visitor in the lobby, the delivery was
+    // confirmed (or the visitor expired) — no need to keep filtering it.
+    const nextPendingDeliveredVisitorIds = cur.pendingDeliveredVisitorIds.filter(
+      (id) => serverState.lobbyVisitors.some((sv) => sv.id === id),
+    );
     const serverLobbyVisitors = deliveredVisitorIds.size > 0
       ? serverState.lobbyVisitors.filter((sv) => !deliveredVisitorIds.has(sv.id))
       : serverState.lobbyVisitors;
@@ -1742,6 +1759,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       insufficientResources: failedDeliverAlls.length > 0 && serverState.gems < 1
         ? { currency: 'gems' as const, need: 1, have: serverState.gems }
         : cur.insufficientResources,
+      pendingDeliveredVisitorIds: nextPendingDeliveredVisitorIds,
     };
   }),
 
