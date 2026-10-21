@@ -44,6 +44,9 @@
 .site-nav.scrolled .theme-btn,
 .site-nav.scrolled .lang-btn  { background: var(--surface-2); border-color: var(--border); color: var(--fg-muted); }
 
+.burger { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.88); transition: background 0.3s, border-color 0.3s, color 0.3s; }
+.site-nav.scrolled .burger { background: transparent; border-color: var(--border); color: var(--fg-muted); }
+
 /* ─── Hero ───────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
@@ -163,9 +166,10 @@
   .hero-bg { object-position: right top; }
   .hero::after {
     background: linear-gradient(to bottom,
-      rgba(9,21,32,0.05) 0%,
-      rgba(9,21,32,0.55) 50%,
-      rgba(9,21,32,0.90) 100%
+      rgba(9,21,32,0.0)  0%,
+      rgba(9,21,32,0.35) 38%,
+      rgba(9,21,32,0.82) 62%,
+      rgba(9,21,32,0.97) 100%
     );
   }
   .hero-inner { padding-top: 2rem; padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 1rem)); }
@@ -413,9 +417,23 @@ h2 {
       </ul>
       <button class="lang-btn" id="langBtn" aria-label="Toggle language">EN</button>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">☀︎ Light</button>
+      <button class="burger" id="burgerBtn" aria-label="Menu" aria-expanded="false">☰</button>
     </div>
   </div>
 </nav>
+
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <ul class="mobile-nav-links">
+    <li><a href="support.html" data-i18n="nav.support">Support</a></li>
+    <li><a href="contact.html" data-i18n="nav.contact">Contact</a></li>
+    <li><a href="privacy.html" data-i18n="nav.privacy">Privacy</a></li>
+    <li><a href="terms.html" data-i18n="nav.terms">Terms</a></li>
+  </ul>
+  <div class="mobile-menu-actions">
+    <button class="lang-btn" id="mobileLangBtn" aria-label="Toggle language">EN</button>
+    <button class="theme-btn" id="mobileThemeBtn">☀︎ Light</button>
+  </div>
+</div>
 
 <!-- Hero -->
 <section class="hero">

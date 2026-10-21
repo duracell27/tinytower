@@ -236,8 +236,8 @@
       if (v !== undefined) el.placeholder = v;
     });
     document.documentElement.lang = lang === 'uk' ? 'uk' : 'en';
-    var langBtn = document.getElementById('langBtn');
-    if (langBtn) langBtn.textContent = lang === 'uk' ? 'УК' : 'EN';
+    var label = lang === 'uk' ? 'УК' : 'EN';
+    document.querySelectorAll('#langBtn, #mobileLangBtn').forEach(function (b) { b.textContent = label; });
   }
 
   window.vtI18n = {
@@ -254,14 +254,64 @@
     try { saved = localStorage.getItem('vt-lang') || 'en'; } catch (e) {}
     applyLang(saved);
 
-    var langBtn = document.getElementById('langBtn');
-    if (!langBtn) return;
-    langBtn.addEventListener('click', function () {
-      var next = _lang === 'en' ? 'uk' : 'en';
-      try { localStorage.setItem('vt-lang', next); } catch (e) {}
-      applyLang(next);
-      // re-apply current theme label
-      if (window.vtThemeApply) window.vtThemeApply();
+    // Lang toggle (desktop + mobile)
+    document.querySelectorAll('#langBtn, #mobileLangBtn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var next = _lang === 'en' ? 'uk' : 'en';
+        try { localStorage.setItem('vt-lang', next); } catch (e) {}
+        applyLang(next);
+        if (window.vtThemeApply) window.vtThemeApply();
+      });
     });
+
+    // Hamburger menu
+    var burgerBtn  = document.getElementById('burgerBtn');
+    var mobileMenu = document.getElementById('mobileMenu');
+    if (burgerBtn && mobileMenu) {
+      function closeMobileMenu() {
+        mobileMenu.classList.remove('open');
+        mobileMenu.setAttribute('aria-hidden', 'true');
+        burgerBtn.setAttribute('aria-expanded', 'false');
+        burgerBtn.textContent = '☰';
+      }
+      burgerBtn.addEventListener('click', function () {
+        var isOpen = mobileMenu.classList.contains('open');
+        if (isOpen) {
+          closeMobileMenu();
+        } else {
+          mobileMenu.classList.add('open');
+          mobileMenu.setAttribute('aria-hidden', 'false');
+          burgerBtn.setAttribute('aria-expanded', 'true');
+          burgerBtn.textContent = '✕';
+        }
+      });
+      // Close when a nav link is tapped
+      mobileMenu.querySelectorAll('a').forEach(function (a) {
+        a.addEventListener('click', closeMobileMenu);
+      });
+      // Close on outside tap
+      document.addEventListener('click', function (e) {
+        if (!mobileMenu.contains(e.target) && e.target !== burgerBtn) {
+          closeMobileMenu();
+        }
+      });
+    }
+
+    // Mobile theme button mirrors desktop theme button
+    var mobileThemeBtn = document.getElementById('mobileThemeBtn');
+    var desktopThemeBtn = document.getElementById('themeBtn');
+    if (mobileThemeBtn && desktopThemeBtn) {
+      mobileThemeBtn.addEventListener('click', function () {
+        desktopThemeBtn.click();
+        // sync label
+        mobileThemeBtn.textContent = desktopThemeBtn.textContent;
+      });
+      // keep in sync when desktop applies theme
+      var origApply = window.vtThemeApply;
+      window.vtThemeApply = function () {
+        if (origApply) origApply();
+        mobileThemeBtn.textContent = desktopThemeBtn.textContent;
+      };
+    }
   });
 })();

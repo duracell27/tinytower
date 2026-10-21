@@ -35,9 +35,23 @@ body::before {
       </ul>
       <button class="lang-btn" id="langBtn" aria-label="Toggle language">EN</button>
       <button class="theme-btn" id="themeBtn">☀︎ Light</button>
+      <button class="burger" id="burgerBtn" aria-label="Menu" aria-expanded="false">☰</button>
     </div>
   </div>
 </nav>
+
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <ul class="mobile-nav-links">
+    <li><a href="support.html" data-i18n="nav.support">Support</a></li>
+    <li><a href="contact.html" data-i18n="nav.contact">Contact</a></li>
+    <li><a href="privacy.html" aria-current="page" data-i18n="nav.privacy">Privacy</a></li>
+    <li><a href="terms.html" data-i18n="nav.terms">Terms</a></li>
+  </ul>
+  <div class="mobile-menu-actions">
+    <button class="lang-btn" id="mobileLangBtn" aria-label="Toggle language">EN</button>
+    <button class="theme-btn" id="mobileThemeBtn">☀︎ Light</button>
+  </div>
+</div>
 
 <main class="page-content">
   <h1 data-i18n="privH1">Privacy Policy</h1>
