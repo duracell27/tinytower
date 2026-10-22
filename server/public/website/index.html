@@ -16,9 +16,8 @@
 <script src="i18n.js"></script>
 
 <style>
-/* pull hero up into the safe area so it covers Dynamic Island */
-body { background: #091520; }
-body::before { content: none; }
+/* match body::before to dark hero gradient at top so no visible strip */
+body::before { background: rgba(9,21,32,0.85); }
 
 /* ─── Transparent nav override (home page only) ─────────────────────────── */
 .site-nav {
@@ -36,8 +35,8 @@ body::before { content: none; }
 }
 
 /* nav text: white when transparent, normal when scrolled */
-.nav-logo              { color: #fff; transition: color 0.3s; }
-.site-nav.scrolled .nav-logo  { color: var(--accent); }
+.nav-logo              { color: var(--accent); text-shadow: 0 1px 6px rgba(9,21,32,0.6); transition: color 0.3s, text-shadow 0.3s; }
+.site-nav.scrolled .nav-logo  { text-shadow: none; }
 
 .nav-links a           { color: rgba(255,255,255,0.88); text-shadow: 0 1px 4px rgba(0,0,0,0.45); transition: color 0.3s, text-shadow 0.3s; }
 .nav-links a:hover     { color: #fff; }
@@ -54,6 +53,7 @@ body::before { content: none; }
 /* ─── Hero ───────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
+  overflow: hidden;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -61,7 +61,7 @@ body::before { content: none; }
 }
 
 .hero-bg {
-  position: fixed;
+  position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -74,7 +74,7 @@ body::before { content: none; }
 /* gradient so text is legible over the image */
 .hero::after {
   content: "";
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: linear-gradient(
     to right,
@@ -83,7 +83,6 @@ body::before { content: none; }
     rgba(9,21,32,0.08) 100%
   );
   z-index: 1;
-  pointer-events: none;
 }
 
 .hero-inner {
@@ -183,7 +182,6 @@ body::before { content: none; }
       rgba(9,21,32,0.82) 62%,
       rgba(9,21,32,0.97) 100%
     );
-    pointer-events: none;
   }
   .hero-inner { padding-top: 2rem; padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 1rem)); text-align: center; }
   .store-btns { align-items: center; }

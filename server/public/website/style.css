@@ -386,7 +386,7 @@ body::before {
 @media (max-width: 640px) {
   /* Nav: hide text links, show burger */
   .nav-links { display: none; }
-  .lang-btn, .theme-btn { display: none; }
+  .site-nav .lang-btn, .site-nav .theme-btn { display: none; }
   .burger { display: inline-flex; align-items: center; justify-content: center; }
   .nav-right { gap: 0.5rem; }
   .nav-logo { font-size: 1.45rem; }
