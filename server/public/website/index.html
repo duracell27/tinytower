@@ -35,8 +35,8 @@ body::before { background: rgba(9,21,32,0.85); }
 }
 
 /* nav text: white when transparent, normal when scrolled */
-.nav-logo              { color: var(--accent); text-shadow: 0 1px 6px rgba(9,21,32,0.6); transition: color 0.3s, text-shadow 0.3s; }
-.site-nav.scrolled .nav-logo  { text-shadow: none; }
+.nav-logo              { color: #fff; font-size: 1.85rem; }
+.site-nav.scrolled .nav-logo  { color: var(--accent); }
 
 .nav-links a           { color: rgba(255,255,255,0.88); text-shadow: 0 1px 4px rgba(0,0,0,0.45); transition: color 0.3s, text-shadow 0.3s; }
 .nav-links a:hover     { color: #fff; }
@@ -435,6 +435,7 @@ h2 {
 </nav>
 
 <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <a href="/" class="nav-logo mobile-menu-logo">Vibe Tower</a>
   <ul class="mobile-nav-links">
     <li><a href="support.html" data-i18n="nav.support">Support</a></li>
     <li><a href="contact.html" data-i18n="nav.contact">Contact</a></li>

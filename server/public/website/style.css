@@ -376,6 +376,14 @@ body::before {
 }
 .mobile-menu .mobile-nav-links a:hover { color: var(--accent); }
 
+.mobile-menu-logo {
+  display: block;
+  color: var(--accent);
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+}
+
 .mobile-menu-actions {
   display: flex;
   gap: 0.5rem;
