@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#5AAFD4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Vibe Tower</title>
 <meta name="description" content="Build your dream tower floor by floor. Unlock businesses, compete in tournaments, and grow your empire in Vibe Tower — the addictive idle tower-building game.">
 <meta property="og:title" content="Vibe Tower">
@@ -174,8 +177,8 @@ body::before { background: #5AAFD4 !important; }
 .store-label strong { display: block; font-size: 0.95rem; font-weight: 700; font-family: var(--font-display); white-space: nowrap; color: rgba(255,255,255,0.9); }
 
 @media (max-width: 600px) {
-  .hero { min-height: 100svh; justify-content: flex-end; }
-  .hero-bg { object-position: -480px 0px; }
+  .hero { min-height: calc(100lvh + 100px); justify-content: flex-end; padding-bottom: calc(100lvh - 100svh + 100px); }
+  .hero-bg { object-position: -570px 0px; }
   .hero::after {
     background: linear-gradient(to bottom,
       rgba(9,21,32,0.0)  0%,
@@ -416,6 +419,9 @@ h2 {
 </style>
 </head>
 <body>
+
+<!-- Safe-area fill: paints sky blue behind Dynamic Island on iOS -->
+<div aria-hidden="true" style="position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:#5AAFD4;z-index:9999;pointer-events:none"></div>
 
 <!-- Nav -->
 <nav class="site-nav">

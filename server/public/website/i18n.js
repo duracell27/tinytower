@@ -6,7 +6,7 @@
         copy: '© 2026 Vibe Tower. All rights reserved.',
         contact: 'Contact', privacy: 'Privacy Policy', terms: 'Terms of Service', support: 'Support',
       },
-      theme: { light: '☀︎ Light', dark: '☽ Dark', auto: '◑ Auto' },
+      theme: { light: 'Light', dark: 'Dark', auto: '◐ Auto' },
       heroTag: 'Coming soon — iOS & Android',
       heroH1: 'Build Your<br><em>Dream Tower</em>',
       heroSub: 'Construct floors, unlock businesses, and grow your empire one level at a time in the addictive idle city-builder.',
@@ -75,7 +75,7 @@
         copy: '© 2026 Vibe Tower. Всі права захищені.',
         contact: 'Контакти', privacy: 'Політика конфіденційності', terms: 'Умови використання', support: 'Підтримка',
       },
-      theme: { light: '☀︎ Світла', dark: '☽ Темна', auto: '◑ Авто' },
+      theme: { light: 'Світла', dark: 'Темна', auto: '◐ Авто' },
       heroTag: 'Незабаром — iOS та Android',
       heroH1: 'Будуй свою <em>омріяну вежу</em>',
       heroSub: 'Зводь поверхи, відкривай бізнеси та розбудовуй свою імперію крок за кроком у захопливому idle city-builder.',
@@ -316,6 +316,8 @@
         if (origApply) origApply();
         mobileThemeBtn.textContent = desktopThemeBtn.textContent;
       };
+      // sync on load (desktop btn already has correct label from applyTheme)
+      mobileThemeBtn.textContent = desktopThemeBtn.textContent;
     }
   });
 })();
