@@ -16,8 +16,9 @@
 <script src="i18n.js"></script>
 
 <style>
-/* match body::before to the blue sky at top of hero image */
-body::before { background: #5AAFD4; }
+/* match safe-area strip to the blue sky at top of hero image */
+html { background: #5AAFD4; }
+body::before { background: #5AAFD4 !important; }
 
 /* ─── Transparent nav override (home page only) ─────────────────────────── */
 .site-nav {
