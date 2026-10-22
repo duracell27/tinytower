@@ -16,8 +16,15 @@
 <script src="i18n.js"></script>
 
 <style>
-/* hero extends behind Dynamic Island / notch */
-body::before { content: none; }
+/* safe area strip shows the same hero image → seamless under Dynamic Island */
+body::before {
+  background: url('hero.png') -480px 0 / auto 100vh no-repeat #091520;
+}
+@media (min-width: 601px) {
+  body::before {
+    background: url('hero.png') 65% center / cover no-repeat #091520;
+  }
+}
 body { background: #091520; }
 
 /* ─── Transparent nav override (home page only) ─────────────────────────── */
