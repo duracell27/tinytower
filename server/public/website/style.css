@@ -389,6 +389,13 @@ body::before {
   gap: 0.5rem;
   padding-top: 0.9rem;
 }
+.mobile-menu-actions .lang-btn,
+.mobile-menu-actions .theme-btn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
 
 /* ─── Mobile layout ──────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
