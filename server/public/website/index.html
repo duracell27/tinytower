@@ -54,18 +54,14 @@ body::before { content: none; }
 /* ─── Hero ───────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
-  overflow: hidden;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* pull hero up into the Dynamic Island / notch safe area */
-  margin-top: calc(-1 * env(safe-area-inset-top, 0px));
-  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .hero-bg {
-  position: absolute;
+  position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -78,7 +74,7 @@ body::before { content: none; }
 /* gradient so text is legible over the image */
 .hero::after {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: linear-gradient(
     to right,
@@ -87,6 +83,7 @@ body::before { content: none; }
     rgba(9,21,32,0.08) 100%
   );
   z-index: 1;
+  pointer-events: none;
 }
 
 .hero-inner {
@@ -186,6 +183,7 @@ body::before { content: none; }
       rgba(9,21,32,0.82) 62%,
       rgba(9,21,32,0.97) 100%
     );
+    pointer-events: none;
   }
   .hero-inner { padding-top: 2rem; padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 1rem)); text-align: center; }
   .store-btns { align-items: center; }
