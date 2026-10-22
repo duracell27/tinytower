@@ -344,18 +344,30 @@ body::before {
   display: none;
   position: fixed;
   inset: 0 0 auto;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 54px);
+  padding-top: max(env(safe-area-inset-top, 0px), 16px);
   padding-bottom: 1.25rem;
   padding-left:  max(20px, env(safe-area-inset-left,  0px));
   padding-right: max(20px, env(safe-area-inset-right, 0px));
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   box-shadow: 0 8px 32px rgba(0,0,0,0.14);
-  z-index: 99;
+  z-index: 101;
   flex-direction: column;
   gap: 0;
 }
 .mobile-menu.open { display: flex; }
+
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+}
+.mobile-menu-header .nav-logo {
+  color: var(--accent) !important;
+  font-size: 1.5rem;
+  text-shadow: none !important;
+}
 
 .mobile-menu .mobile-nav-links {
   list-style: none;
@@ -376,13 +388,6 @@ body::before {
 }
 .mobile-menu .mobile-nav-links a:hover { color: var(--accent); }
 
-.mobile-menu-logo {
-  display: block;
-  color: var(--accent);
-  font-size: 1.6rem;
-  margin-bottom: 0.5rem;
-  text-decoration: none;
-}
 
 .mobile-menu-actions {
   display: flex;

@@ -285,6 +285,10 @@
           burgerBtn.textContent = '✕';
         }
       });
+      // Close button inside the menu
+      var burgerClose = document.getElementById('burgerClose');
+      if (burgerClose) burgerClose.addEventListener('click', closeMobileMenu);
+
       // Close when a nav link is tapped
       mobileMenu.querySelectorAll('a').forEach(function (a) {
         a.addEventListener('click', closeMobileMenu);
