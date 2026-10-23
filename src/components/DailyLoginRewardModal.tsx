@@ -14,6 +14,7 @@ import { useOnboardingStore } from '../stores/onboardingStore';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -25,6 +26,7 @@ export default function DailyLoginRewardModal() {
   const dismiss = useGameStore((s) => s.dismissDailyLoginReward);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
   const isOnboarding = useOnboardingStore((s) => s.isActive);
+  useModalBreadcrumb('DailyLoginReward', !!reward && activeSheetCount === 0 && !isOnboarding);
 
   const scale = useSharedValue(0.5);
 

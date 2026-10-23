@@ -1,4 +1,5 @@
 import { AppState } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import { api } from './api';
 import { clock } from './clock';
 import { useGameStore } from '../stores/gameStore';
@@ -73,6 +74,7 @@ async function doSync(): Promise<void> {
 
   isSyncing = true;
   pendingSync = false;
+  const prevFloorsCount = useGameStore.getState().floors.length;
   try {
     let currentLastAckCursor = lastAckCursor;
     // Collect accepted IDs from every interim batch so those commands are properly
@@ -124,6 +126,19 @@ async function doSync(): Promise<void> {
     const failedIds = new Set(response.failedCommandIds ?? []);
     if (needsReconcile && !duringOnboarding) {
       store.reconcile(response.state, response.stateVersion, response.ackCursor, acceptedIds, sentIds, response.playerLevel, response.playerXp, failedIds);
+      const newFloorsCount = useGameStore.getState().floors.length;
+      if (prevFloorsCount > 0 && newFloorsCount === 0) {
+        Sentry.captureMessage('Floors empty after reconcile', {
+          level: 'error',
+          extra: {
+            prevFloorsCount,
+            serverFloorsCount: response.state.floors?.length ?? 0,
+            stateVersion: response.stateVersion,
+            commandQueueLength: commandQueue.length,
+            duringOnboarding,
+          },
+        });
+      }
     } else {
       store.clearAckedCommands(response.ackCursor, acceptedIds, response.playerLevel, response.playerXp, response.state.lastDailyReset);
     }
@@ -200,8 +215,13 @@ async function doSync(): Promise<void> {
       useCityTaskStore.getState().setFromSync(response.cityTasks);
     }
 
-  } catch {
-    // Network error — retry next cycle
+  } catch (e) {
+    Sentry.captureException(e, {
+      extra: {
+        commandQueueLength: commandQueue.length,
+        floorsCount: useGameStore.getState().floors.length,
+      },
+    });
   } finally {
     isSyncing = false;
     if (pendingSync) doSync();

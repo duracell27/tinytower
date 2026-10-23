@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import * as Sentry from '@sentry/react-native';
 import { api, type CityDetail, type CitySummary, type CityRole, type CityRankingsResponse, type CityXpStats, type CityBudget, type CityBudgetContribsData, type DonateBudgetPayload } from '../services/api';
 import { useGameStore } from './gameStore';
 
@@ -194,7 +195,8 @@ export const useCityStore = create<CityState & CityActions>((set) => ({
     try {
       const budgetContribsData = await api.getCityBudgetContribs(cityId);
       set({ budgetContribsData, budgetContribsLoading: false });
-    } catch {
+    } catch (e) {
+      Sentry.captureException(e, { extra: { context: 'fetchBudgetContribs', cityId } });
       set({ budgetContribsLoading: false });
     }
   },

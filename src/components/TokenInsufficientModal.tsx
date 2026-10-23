@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { formatNum } from '../utils/format';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -54,6 +55,7 @@ export default function TokenInsufficientModal({ asOverlay = false }: { asOverla
     opacity: opacity.value,
   }));
 
+  useModalBreadcrumb('TokenInsufficient', !!payload);
   if (!payload || (activeSheetCount > 0 && !asOverlay)) return null;
 
   const ft    = payload.floorType;

@@ -35,6 +35,7 @@ import { shadeColor } from '../utils/color';
 import { formatNum } from '../utils/format';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
 import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.85;
@@ -115,6 +116,7 @@ export default function ProductionDetailModal() {
       }
     });
 
+  useModalBreadcrumb('ProductionDetail', !!modal);
   if (!modal) return null;
 
   const { floorId, slotIdx } = modal;

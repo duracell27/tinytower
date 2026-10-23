@@ -1,4 +1,5 @@
 import { createMMKV } from 'react-native-mmkv';
+import * as Sentry from '@sentry/react-native';
 import { AppState } from 'react-native';
 import { GameStateSchema } from '../../shared/schemas/gameState';
 import { useGameStore } from '../stores/gameStore';
@@ -97,8 +98,9 @@ export function loadGameState(): PersistedGameState | null {
     }
     console.warn('Invalid game state in MMKV, starting fresh');
     return null;
-  } catch {
+  } catch (e) {
     console.warn('Failed to parse game state from MMKV, starting fresh');
+    Sentry.captureException(e, { extra: { context: 'loadGameState' } });
     return null;
   }
 }

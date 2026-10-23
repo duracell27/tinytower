@@ -1,4 +1,5 @@
 import type { ShopRewards, ToolKey } from '../../shared/types';
+import * as Sentry from '@sentry/react-native';
 import {
   initAuthStorage,
   getAccessToken,
@@ -353,7 +354,8 @@ async function refreshTokens(): Promise<boolean> {
       const data = await res.json();
       setTokens(data.accessToken, data.refreshToken);
       return true;
-    } catch {
+    } catch (e) {
+      Sentry.captureException(e, { extra: { context: 'refreshTokens' } });
       return false;
     }
   })();

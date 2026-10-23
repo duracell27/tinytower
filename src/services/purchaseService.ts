@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import Purchases, {
   LOG_LEVEL,
   type PurchasesStoreProduct,
@@ -36,7 +37,8 @@ export const purchaseService = {
     if (!rcInitialized) return [];
     try {
       return await Purchases.getProducts(rcProductIds);
-    } catch {
+    } catch (e) {
+      Sentry.captureException(e, { extra: { context: 'getProducts', rcProductIds } });
       return [];
     }
   },

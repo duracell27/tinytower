@@ -10,6 +10,7 @@ import { FLOOR_UPGRADE_COSTS } from '../../shared/config/floorUpgradeConfig';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { FLOOR_TYPE_SCHEMES } from './FloorCard';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const STAR_FULL  = require('../../assets/img/starFull.png');
 const STAR_EMPTY = require('../../assets/img/starEmpty.png');
@@ -37,6 +38,7 @@ export default function FloorUpgradeModal() {
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
   const floors           = useGameStore((s) => s.floors);
 
+  useModalBreadcrumb('FloorUpgrade', !!modal);
   if (!modal) return null;
 
   const { floorId } = modal;

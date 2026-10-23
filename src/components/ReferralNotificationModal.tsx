@@ -10,6 +10,7 @@ import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { api } from '../services/api';
 import { syncService } from '../services/sync';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -21,6 +22,7 @@ export default function ReferralNotificationModal() {
   const dismiss = useGameStore((s) => s.dismissReferralNotification);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
   const isOnboarding = useOnboardingStore((s) => s.isActive);
+  useModalBreadcrumb('ReferralNotification', !!notification && activeSheetCount === 0 && !isOnboarding);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 

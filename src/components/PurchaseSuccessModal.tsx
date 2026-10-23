@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -48,6 +49,7 @@ export default function PurchaseSuccessModal() {
     scale.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
   }, [scale]);
 
+  useModalBreadcrumb('PurchaseSuccess', !!payload && activeSheetCount === 0 && !isOnboarding);
   if (!payload || activeSheetCount > 0 || isOnboarding) return null;
 
   const { packName, price, rewards } = payload;

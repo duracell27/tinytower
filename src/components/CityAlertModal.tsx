@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import LocaleText from './LocaleText';
 import { useGameStore } from '../stores/gameStore';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const CITY_ICON = require('../../assets/img/city/cityBuildings.png');
 const GEM_ICON = require('../../assets/img/diamond.png');
@@ -135,6 +136,7 @@ export default function CityAlertModal({ asOverlay = false }: { asOverlay?: bool
   const clearCityConfirm = useGameStore((s) => s.clearCityConfirm);
 
   const visible = alert !== null || confirm !== null;
+  useModalBreadcrumb('CityAlert', visible);
   const scale = useSharedValue(0.5);
   const opacity = useSharedValue(0);
 

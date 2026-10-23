@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import * as Sentry from '@sentry/react-native';
 import { createMMKV } from 'react-native-mmkv';
 import i18n from '../i18n';
 import { api } from '../services/api';
@@ -170,7 +171,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       useOnboardingStore.getState().reset();
       useOnboardingStore.getState().start();
       useGameStore.getState().initOnboardingProductions();
-    } catch {
+    } catch (e) {
+      Sentry.captureMessage('enterAsGuest failed, falling back to offline guest', {
+        level: 'warning',
+        extra: { error: e instanceof Error ? e.message : String(e) },
+      });
       const offlinePlayer: PlayerInfo = { id: OFFLINE_GUEST_ID, email: '', playerName: 'Guest', isTemporary: true };
       getStorage().set('player', JSON.stringify(offlinePlayer));
       getStorage().set('pendingRegistration', 'true');
@@ -195,8 +200,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, pendingRegistration: false });
       setupUserPersistence(data.player.id);
-    } catch {
-      // Still offline, retry next sync cycle
+    } catch (e) {
+      Sentry.captureMessage('retryRegistration failed, still offline', {
+        level: 'info',
+        extra: { error: e instanceof Error ? e.message : String(e) },
+      });
     }
   },
 

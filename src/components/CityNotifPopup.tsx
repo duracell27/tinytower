@@ -11,6 +11,7 @@ import LocaleText from './LocaleText';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useCityNotifStore } from '../stores/cityNotifStore';
 import { getUserIcon } from '../utils/userIcon';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const NOTIF_ICON = require('../../assets/img/city/cityNotice.png');
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -35,6 +36,7 @@ export default function CityNotifPopup() {
   const acknowledge = useCityNotifStore((s) => s.acknowledge);
 
   const visible = !!pending && !dismissed;
+  useModalBreadcrumb('CityNotif', visible);
 
   const scale = useSharedValue(0.85);
   const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));

@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../stores/gameStore';
 import { formatNum } from '../utils/format';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const COINS_PER_GEM = 1000;
 
@@ -52,6 +53,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
 
   const visible = payload !== null;
+  useModalBreadcrumb('InsufficientResources', visible);
   const scale = useSharedValue(0.5);
   const opacity = useSharedValue(0);
 

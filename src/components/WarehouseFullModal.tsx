@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -27,6 +28,7 @@ export default function WarehouseFullModal() {
   };
 
   const showModal = visible && !isOnboarding;
+  useModalBreadcrumb('WarehouseFull', showModal);
   if (!showModal) return null;
 
   return (

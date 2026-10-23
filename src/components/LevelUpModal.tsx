@@ -15,6 +15,7 @@ import { type LevelUpEvent } from '../../shared/engine/xp';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -38,6 +39,7 @@ export default function LevelUpModal() {
   }));
 
   const showModal = !!event && activeSheetCount === 0 && !isOnboarding;
+  useModalBreadcrumb('LevelUp', showModal);
 
   useEffect(() => {
     if (showModal) triggerAnimations();

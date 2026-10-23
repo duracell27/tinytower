@@ -14,6 +14,7 @@ import { useOnboardingStore } from '../stores/onboardingStore';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { GemIcon } from './CurrencyIcons';
 import { ACHIEVEMENT_CATEGORIES } from '../../shared/config/achievementCategories';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const TIER_IMAGES: Record<number, ReturnType<typeof require>> = {
   1: require('../../assets/img/achivment/1TierAchive.png'),
@@ -50,6 +51,7 @@ export default function AchievementModal() {
   const dismiss = useGameStore((s) => s.dismissAchievement);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
   const isOnboarding = useOnboardingStore((s) => s.isActive);
+  useModalBreadcrumb('Achievement', !!grant && activeSheetCount === 0 && !isOnboarding);
 
   const scale = useSharedValue(0.5);
 

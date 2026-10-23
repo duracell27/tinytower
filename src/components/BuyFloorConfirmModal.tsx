@@ -9,6 +9,8 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 import { formatNum } from '../utils/format';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useGameStore } from '../stores/gameStore';
+import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -32,6 +34,15 @@ export default function BuyFloorConfirmModal({ visible, floorId, price, currency
   const s = getStyles(theme);
   const scale   = useSharedValue(0.5);
   const opacity = useSharedValue(0);
+
+  useModalBreadcrumb('BuyFloorConfirm', visible);
+
+  useEffect(() => {
+    if (!visible) return;
+    const { openSheet, closeSheet } = useGameStore.getState();
+    openSheet();
+    return () => { setTimeout(closeSheet, 500); };
+  }, [visible]);
 
   useEffect(() => {
     if (visible) {

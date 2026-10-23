@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
+import * as Sentry from '@sentry/react-native';
 import { processCommand } from '../../shared/engine/processCommand';
 import { gameConfig, createInitialState } from '../../shared/config/gameConfig';
 import { generateRandomVisitorRole, generateVisitorAppearance, getFillLobbyCost, checkDailyReset, calculateTip } from '../../shared/engine/lobbyUtils';
@@ -369,6 +370,13 @@ function executeCommand(
       set({ warehouseFullNotice: true });
       return false;
     }
+    const TRACKED_COMMANDS = new Set(['buy_floor', 'open_floor', 'deliver_all', 'assign_worker', 'shop_purchase']);
+    if (TRACKED_COMMANDS.has(command.type)) {
+      Sentry.captureMessage(`Command rejected: ${command.type}`, {
+        level: 'warning',
+        extra: { error: result.error, commandType: command.type },
+      });
+    }
     const curLog = get().failedCommandLog;
     set({
       failedCommandLog: [
@@ -472,6 +480,7 @@ function executeCommand(
       ]),
     } : {}),
   });
+  Sentry.addBreadcrumb({ category: 'game.command', message: command.type, level: 'info' });
   return true;
 }
 
