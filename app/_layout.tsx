@@ -48,6 +48,7 @@ import {
 import { useAuthStore } from '../src/stores/authStore';
 import { setAuthFailureCallback, initAuthStorage } from '../src/services/api';
 import { purchaseService } from '../src/services/purchaseService';
+import { registerPushNotifications } from '../src/services/notifications';
 import * as Linking from 'expo-linking';
 import { createMMKV } from 'react-native-mmkv';
 import GlobalOverlay from '../src/components/GlobalOverlay';
@@ -89,6 +90,8 @@ function RootLayout() {
   const router = useRouter();
   const isDark = useColorScheme() === 'dark';
   const player = useAuthStore((s) => s.player);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isGuest = useAuthStore((s) => s.isGuest);
   const cityHeaderOptions = {
     headerShown: true,
     title: '',
@@ -144,6 +147,12 @@ function RootLayout() {
       purchaseService.initialize(player.id);
     }
   }, [player?.id]);
+
+  useEffect(() => {
+    if (isAuthenticated && !isGuest && player?.id) {
+      registerPushNotifications().catch(() => {});
+    }
+  }, [isAuthenticated, isGuest, player?.id]);
 
   if (!fontsLoaded) {
     return (
