@@ -102,7 +102,7 @@ export default function CityXpStatsScreen() {
 
   return (
     <AppBackground style={[styles.bg, isDark && styles.bgDark]}>
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top - 8 }]} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8 }]} showsVerticalScrollIndicator={false}>
 
         {/* ── HEADER ── */}
         <View style={[styles.headerRow, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
