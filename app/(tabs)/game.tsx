@@ -63,6 +63,7 @@ import { useCityNotifStore } from '../../src/stores/cityNotifStore';
 import CityNotifFAB from '../../src/components/CityNotifFAB';
 import CityChatFAB from '../../src/components/CityChatFAB';
 import { useCityChatStore } from '../../src/stores/cityChatStore';
+import { useForumStore } from '../../src/stores/forumStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type FloorItem =
@@ -84,6 +85,7 @@ const BG_LIGHT       = require('../../assets/img/backgroung/bgWhite.png');
 const BG_DARK        = require('../../assets/img/backgroung/bgBlack.png');
 const MAIL_FAB_ICON  = require('../../assets/img/mail.png');
 const FRIEND_FAB_ICON = require('../../assets/img/users.png');
+const NEWS_FAB_ICON = require('../../assets/img/forum/forumCatNews.png');
 
 export default function GameScreen() {
   const scheme = useColorScheme();
@@ -149,6 +151,8 @@ export default function GameScreen() {
   const reopenCityNotif = useCityNotifStore((s) => s.reopen);
   const cityChatHasMention  = useCityChatStore((s) => s.hasPendingMention);
   const checkCityChatMention = useCityChatStore((s) => s.checkMention);
+  const newsUnreadCount = useForumStore((s) => s.unreadCounts.NEWS);
+  const fetchForumUnread = useForumStore((s) => s.fetchUnreadCounts);
   const tutorialComplete = useGameStore((s) =>
     s.tutorialTasks.currentIndex >= TUTORIAL_TASKS.length && s.tutorialTasks.claimedFinal
   );
@@ -661,6 +665,13 @@ export default function GameScreen() {
     const id = setInterval(() => void checkCityChatMention(cityId), 60_000);
     return () => clearInterval(id);
   }, [isAuthenticated, cityId, checkCityChatMention]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    void fetchForumUnread();
+    const id = setInterval(() => void fetchForumUnread(), 60_000);
+    return () => clearInterval(id);
+  }, [isAuthenticated, fetchForumUnread]);
 
   // When starting in collapsed mode, FlashList never fires onContentSizeChange,
   // so we reveal the tower here instead.
@@ -1179,6 +1190,7 @@ export default function GameScreen() {
           const hasFriend   = incomingFriendCount > 0;
           const hasCityNotif = !!cityNotifPending && cityNotifDismissed;
           const hasCityChat = !!cityId && cityChatHasMention;
+          const hasNews = newsUnreadCount > 0;
           return (
             <>
               {hasTutorial && (
@@ -1209,6 +1221,15 @@ export default function GameScreen() {
                 <CityChatFAB
                   slot={qaSlot + (hasDaily ? 1 : 0) + (hasMail ? 1 : 0) + (hasFriend ? 1 : 0) + (hasCityNotif ? 1 : 0)}
                   onPress={() => router.push(`/city/chat?id=${cityId}`)}
+                />
+              )}
+              {hasNews && (
+                <NotificationFAB
+                  icon={NEWS_FAB_ICON}
+                  count={newsUnreadCount}
+                  slot={qaSlot + (hasDaily ? 1 : 0) + (hasMail ? 1 : 0) + (hasFriend ? 1 : 0) + (hasCityNotif ? 1 : 0) + (hasCityChat ? 1 : 0)}
+                  badgeColor="#E05A00"
+                  onPress={() => router.push({ pathname: '/forum-category', params: { category: 'NEWS' } })}
                 />
               )}
             </>
