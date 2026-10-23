@@ -146,7 +146,7 @@ export default function DailyTasksScreen() {
             {isTournamentWeekend ? (
               tournamentEntry ? (
                 <>
-                  <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>Token Tournament</LocaleText>
+                  <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>{t('dailyTasks.tournamentTitle')}</LocaleText>
                   <View style={styles.tournamentScoreRow}>
                     {tournamentEntry.rank !== null && (
                       <Image
@@ -174,8 +174,8 @@ export default function DailyTasksScreen() {
                 </>
               ) : (
                 <>
-                  <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>Token Tournament</LocaleText>
-                  <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>Results coming soon</LocaleText>
+                  <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>{t('dailyTasks.tournamentTitle')}</LocaleText>
+                  <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>{t('dailyTasks.tournamentResultsSoon')}</LocaleText>
                 </>
               )
             ) : (
@@ -184,9 +184,9 @@ export default function DailyTasksScreen() {
                   <Image source={TOKEN_ICONS.green} style={styles.tournamentTokenIcon} contentFit="contain" />
                   <LocaleText style={[styles.tournamentScore, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>{weeklyTokenCount}</LocaleText>
                 </View>
-                <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>Token Tournament</LocaleText>
+                <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>{t('dailyTasks.tournamentTitle')}</LocaleText>
                 <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>
-                  Collect tokens from daily tasks
+                  {t('dailyTasks.tournamentCollectHint')}
                 </LocaleText>
               </>
             )}
