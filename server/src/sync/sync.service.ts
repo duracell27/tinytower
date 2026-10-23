@@ -12,6 +12,7 @@ import { calcRevenuePerMin } from '@shared/engine/ratingUtils';
 import type { GameState, Command, Floor, Production, Worker } from '@shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '@shared/types/achievements';
 import { AchievementService } from '../achievement/achievement.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { REGISTERED_COINS, LEVEL10_GEMS, LEVEL30_GEMS } from '../referral/referral-constants';
 import { CityService } from '../city/city.service';
 import { CityBuildingService, CityBuildingBonuses } from '../city/city-building.service';
@@ -63,6 +64,7 @@ export class SyncService {
     private cityService: CityService,
     private cityBuildingService: CityBuildingService,
     private cityTaskService: CityTaskService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async processSync(

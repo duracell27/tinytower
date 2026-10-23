@@ -39,6 +39,14 @@ describe('AuthService', () => {
     city: null,
     isAdmin: false,
     isTemporary: false,
+    pushToken: null,
+    pushPlatform: null,
+    pushTokenUpdatedAt: null,
+    notifiedAllResidents: null,
+    notifiedCollect: null,
+    notifiedStock: null,
+    notifiedPurchase: null,
+    inactivityNotifiedAt: null,
   };
 
   beforeEach(async () => {
