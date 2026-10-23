@@ -142,6 +142,7 @@ export class SyncService {
     }
     const acceptedCommands: Command[] = [];
     let totalXpGained = 0;
+    let claimedTokenCount = 0;
 
     const _cityMembershipId = player.cityMembership?.cityId ?? null;
     const _playerFloorCount = player.floors.length;
@@ -195,6 +196,11 @@ export class SyncService {
           ? result.xpGained
           : xpForCommand(command.type, prevBalance, result.state.balance);
         totalXpGained += xp;
+        if (command.type === 'claim_daily_task') {
+          const tBefore = gameState.tokens.green + gameState.tokens.blue + gameState.tokens.yellow + gameState.tokens.purple + gameState.tokens.red;
+          const tAfter  = result.state.tokens.green + result.state.tokens.blue + result.state.tokens.yellow + result.state.tokens.purple + result.state.tokens.red;
+          claimedTokenCount += tAfter - tBefore;
+        }
         gameState = result.state;
         acceptedCommands.push(command);
       } else {
@@ -208,10 +214,6 @@ export class SyncService {
       taskDeltaProgress, gameState.dailyTasks.progress,
       taskDeltaGems, gameState.dailyGemsCollected,
     );
-
-    const claimedTokenCount = acceptedCommands
-      .filter((c) => c.type === 'claim_daily_task')
-      .reduce((sum, c) => sum + ((c as any).tokenCount ?? 0), 0);
 
     let boughtCount = 0;
     let listedCount = 0;

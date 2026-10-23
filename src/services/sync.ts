@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useCityStore } from '../stores/cityStore';
 import { saveGameState } from './persistence';
+import { getDailyTokenCount } from '../../shared/utils/dailyTokenReward';
 import type { GameState } from '../../shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 
@@ -165,10 +166,15 @@ async function doSync(): Promise<void> {
       categoryProgress: mergedCP,
       weeklyTokenCount: (() => {
         const base = response.weeklyTokenCount ?? 0;
-        // Add tokens from pending claim_daily_task commands not yet accepted by the server
+        // Add tokens from pending claim_daily_task commands not yet accepted by the server.
+        // tokenCount is not stored in the command, so re-derive it from taskKey + timestamp.
         const pendingTokens = useGameStore.getState().commandQueue
           .filter((cmd) => cmd.type === 'claim_daily_task' && !acceptedIds.has(cmd.id))
-          .reduce((sum, cmd) => sum + ((cmd as any).tokenCount ?? 0), 0);
+          .reduce((sum, cmd) => {
+            const c = cmd as Extract<typeof cmd, { type: 'claim_daily_task' }>;
+            const dateStr = new Date(c.timestamp).toISOString().slice(0, 10);
+            return sum + getDailyTokenCount(c.taskKey, dateStr);
+          }, 0);
         return base + pendingTokens;
       })(),
     });
