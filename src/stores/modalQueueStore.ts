@@ -28,6 +28,7 @@ export const useModalQueueStore = create<ModalQueueState>((set, get) => ({
   release: (name) => {
     const { active, queue } = get();
     if (active !== name) {
+      if (!queue.includes(name)) return;
       set({ queue: queue.filter((n) => n !== name) });
       return;
     }
