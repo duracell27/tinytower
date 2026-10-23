@@ -68,4 +68,75 @@ describe('NotificationsService', () => {
       data: { pushToken: null },
     });
   });
+
+  // Helper: build minimal GameState
+  function makeState(floors: Array<{ id: number; stage: string }>, workerFloorIds: number[]): any {
+    return {
+      floors: floors.map((f) => ({
+        id: f.id,
+        productions: [{ typeId: 'x', stage: f.stage as any, stageStartedAt: 0 }],
+      })),
+      workers: workerFloorIds.map((fid, i) => ({
+        id: `w${i}`, assignedFloorId: fid, assignedSlotIdx: 0,
+        name: '', female: false, floorType: '', dreamJob: '', level: 1, hairColor: '', isSpecialist: false,
+      })),
+    };
+  }
+
+  it('checkAndSendGameTriggers: sends collect_ready push when ≥75% floors READY_TO_COLLECT and not notified', async () => {
+    const player = { pushToken: 'ExponentPushToken[t]', lastSeenAt: new Date(Date.now() - 10 * 60_000), notifiedCollect: null, notifiedStock: null, notifiedPurchase: null, notifiedAllResidents: null };
+    const state = makeState(
+      [{ id: 1, stage: 'READY_TO_COLLECT' }, { id: 2, stage: 'READY_TO_COLLECT' }, { id: 3, stage: 'READY_TO_COLLECT' }, { id: 4, stage: 'SELLING' }],
+      [],
+    );
+    prisma.player.update = jest.fn().mockResolvedValue({});
+    jest.spyOn(service, 'sendPush').mockResolvedValue();
+    await service.checkAndSendGameTriggers('p1', player as any, state, []);
+    expect(service.sendPush).toHaveBeenCalledWith('ExponentPushToken[t]', 'Vibe Tower', expect.stringContaining('collect'));
+    expect(prisma.player.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ notifiedCollect: expect.any(Date) }) }));
+  });
+
+  it('checkAndSendGameTriggers: does NOT send when notifiedCollect already set', async () => {
+    const player = { pushToken: 'ExponentPushToken[t]', lastSeenAt: new Date(Date.now() - 10 * 60_000), notifiedCollect: new Date(), notifiedStock: null, notifiedPurchase: null, notifiedAllResidents: null };
+    const state = makeState([{ id: 1, stage: 'READY_TO_COLLECT' }, { id: 2, stage: 'READY_TO_COLLECT' }], []);
+    jest.spyOn(service, 'sendPush').mockResolvedValue();
+    await service.checkAndSendGameTriggers('p1', player as any, state, []);
+    expect(service.sendPush).not.toHaveBeenCalled();
+  });
+
+  it('checkAndSendGameTriggers: resets notifiedCollect and re-checks when collect command present', async () => {
+    const player = { pushToken: 'ExponentPushToken[t]', lastSeenAt: new Date(Date.now() - 10 * 60_000), notifiedCollect: new Date(Date.now() - 3600_000), notifiedStock: null, notifiedPurchase: null, notifiedAllResidents: null };
+    const state = makeState([{ id: 1, stage: 'READY_TO_COLLECT' }, { id: 2, stage: 'READY_TO_COLLECT' }], []);
+    const cmds = [{ type: 'collect', id: 'c1', floorId: 1, slotIdx: 0, timestamp: 0 }] as any;
+    prisma.player.update = jest.fn().mockResolvedValue({});
+    jest.spyOn(service, 'sendPush').mockResolvedValue();
+    await service.checkAndSendGameTriggers('p1', player as any, state, cmds);
+    // After reset, 2/2 floors = 100% → still ≥75% → push fires
+    expect(service.sendPush).toHaveBeenCalled();
+  });
+
+  it('checkAndSendGameTriggers: does NOT send when lastSeenAt < 5 minutes ago', async () => {
+    const player = { pushToken: 'ExponentPushToken[t]', lastSeenAt: new Date(Date.now() - 2 * 60_000), notifiedCollect: null, notifiedStock: null, notifiedPurchase: null, notifiedAllResidents: null };
+    const state = makeState([{ id: 1, stage: 'READY_TO_COLLECT' }, { id: 2, stage: 'READY_TO_COLLECT' }], []);
+    jest.spyOn(service, 'sendPush').mockResolvedValue();
+    await service.checkAndSendGameTriggers('p1', player as any, state, []);
+    expect(service.sendPush).not.toHaveBeenCalled();
+  });
+
+  it('checkAndSendGameTriggers: does NOT send when 0 opened floors (division by zero guard)', async () => {
+    const player = { pushToken: 'ExponentPushToken[t]', lastSeenAt: new Date(Date.now() - 10 * 60_000), notifiedCollect: null, notifiedStock: null, notifiedPurchase: null, notifiedAllResidents: null };
+    const state = makeState([], []);
+    jest.spyOn(service, 'sendPush').mockResolvedValue();
+    await service.checkAndSendGameTriggers('p1', player as any, state, []);
+    expect(service.sendPush).not.toHaveBeenCalled();
+  });
+
+  it('checkAndSendGameTriggers: sends all_residents push when all floors have a worker', async () => {
+    const player = { pushToken: 'ExponentPushToken[t]', lastSeenAt: new Date(Date.now() - 10 * 60_000), notifiedCollect: null, notifiedStock: null, notifiedPurchase: null, notifiedAllResidents: null };
+    const state = makeState([{ id: 1, stage: 'SELLING' }, { id: 2, stage: 'SELLING' }], [1, 2]);
+    prisma.player.update = jest.fn().mockResolvedValue({});
+    jest.spyOn(service, 'sendPush').mockResolvedValue();
+    await service.checkAndSendGameTriggers('p1', player as any, state, []);
+    expect(service.sendPush).toHaveBeenCalledWith('ExponentPushToken[t]', 'Vibe Tower', expect.stringContaining('resident'));
+  });
 });

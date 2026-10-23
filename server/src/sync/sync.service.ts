@@ -423,6 +423,7 @@ export class SyncService {
             },
             lastSeenAt: new Date(serverNow),
             openedFloorsCount: currentOpenedFloors,
+            inactivityNotifiedAt: null,
             ...(currentRevenue > (locked?.maxRevenuePerMin ?? player.maxRevenuePerMin ?? 0)
               ? { maxRevenuePerMin: currentRevenue }
               : {}),
@@ -785,6 +786,10 @@ export class SyncService {
       `[sync] result: accepted=${acceptedCommands.length} existingAcked=${existingIds.size} ` +
       `failedAcked=${failedCommandIds.length} totalAcked=${acceptedCommands.length + existingIds.size + failedCommandIds.length}`,
     );
+
+    this.notificationsService
+      .checkAndSendGameTriggers(playerId, player, gameState, acceptedCommands)
+      .catch((err) => this.logger.error('[notifications] trigger check failed', err));
 
     return {
       state: gameState,
