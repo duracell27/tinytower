@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   View, Modal, Pressable, StyleSheet, Dimensions, ScrollView,
 } from 'react-native';
@@ -13,6 +13,7 @@ import { useCityNotifStore } from '../stores/cityNotifStore';
 import { useGameStore } from '../stores/gameStore';
 import { getUserIcon } from '../utils/userIcon';
 import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
+import { useModalQueue } from '../hooks/useModalQueue';
 
 const NOTIF_ICON = require('../../assets/img/city/cityNotice.png');
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -36,24 +37,9 @@ export default function CityNotifPopup() {
   const dismiss   = useCityNotifStore((s) => s.dismiss);
   const acknowledge = useCityNotifStore((s) => s.acknowledge);
 
-  // Defer if another overlay modal (e.g. DailyLoginReward) is open — two simultaneous
-  // <Modal visible> on iOS/Fabric freezes the UI. Wait 450ms after it closes.
-  const dailyReward = useGameStore((s) => s.pendingDailyLoginReward);
-  const wasBlocked = useRef(!!dailyReward);
-  const [blockedByOtherModal, setBlockedByOtherModal] = useState(() => !!dailyReward);
-
-  useEffect(() => {
-    if (dailyReward) {
-      wasBlocked.current = true;
-      setBlockedByOtherModal(true);
-      return;
-    }
-    if (!wasBlocked.current) return;
-    const t = setTimeout(() => setBlockedByOtherModal(false), 450);
-    return () => clearTimeout(t);
-  }, [dailyReward]);
-
-  const visible = !!pending && !dismissed && !blockedByOtherModal;
+  const activeSheetCount = useGameStore((s) => s.activeSheetCount);
+  const isQueued = useModalQueue('CityNotif', !!pending && !dismissed);
+  const visible = isQueued && activeSheetCount === 0;
   useModalBreadcrumb('CityNotif', visible);
 
   const scale = useSharedValue(0.85);

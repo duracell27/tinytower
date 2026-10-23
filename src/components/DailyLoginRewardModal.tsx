@@ -15,6 +15,7 @@ import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
+import { useModalQueue } from '../hooks/useModalQueue';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -26,7 +27,10 @@ export default function DailyLoginRewardModal() {
   const dismiss = useGameStore((s) => s.dismissDailyLoginReward);
   const activeSheetCount = useGameStore((s) => s.activeSheetCount);
   const isOnboarding = useOnboardingStore((s) => s.isActive);
-  useModalBreadcrumb('DailyLoginReward', !!reward && activeSheetCount === 0 && !isOnboarding);
+
+  const isQueued = useModalQueue('DailyLoginReward', !!reward && !isOnboarding);
+  const visible = isQueued && activeSheetCount === 0;
+  useModalBreadcrumb('DailyLoginReward', visible);
 
   const scale = useSharedValue(0.5);
 
@@ -39,7 +43,7 @@ export default function DailyLoginRewardModal() {
 
   return (
     <Modal
-      visible={!!reward && activeSheetCount === 0 && !isOnboarding}
+      visible={visible}
       transparent
       animationType="none"
       onRequestClose={dismiss}

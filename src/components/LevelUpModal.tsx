@@ -16,6 +16,7 @@ import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
+import { useModalQueue } from '../hooks/useModalQueue';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -38,7 +39,8 @@ export default function LevelUpModal() {
     transform: [{ scale: scale.value }],
   }));
 
-  const showModal = !!event && activeSheetCount === 0 && !isOnboarding;
+  const isQueued = useModalQueue('LevelUp', !!event && !isOnboarding);
+  const showModal = isQueued && activeSheetCount === 0;
   useModalBreadcrumb('LevelUp', showModal);
 
   useEffect(() => {
