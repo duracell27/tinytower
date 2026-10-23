@@ -12,6 +12,7 @@ import LocaleText from './LocaleText';
 import { useGameStore } from '../stores/gameStore';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
+import { useModalQueue } from '../hooks/useModalQueue';
 
 const CITY_ICON = require('../../assets/img/city/cityBuildings.png');
 const GEM_ICON = require('../../assets/img/diamond.png');
@@ -136,19 +137,21 @@ export default function CityAlertModal({ asOverlay = false }: { asOverlay?: bool
   const clearCityConfirm = useGameStore((s) => s.clearCityConfirm);
 
   const visible = alert !== null || confirm !== null;
-  useModalBreadcrumb('CityAlert', visible);
+  const isQueued = useModalQueue('CityAlert', visible && !asOverlay);
+  const showModal = asOverlay ? visible : isQueued;
+  useModalBreadcrumb('CityAlert', showModal);
   const scale = useSharedValue(0.5);
   const opacity = useSharedValue(0);
 
   useEffect(() => {
-    if (visible) {
+    if (showModal) {
       opacity.value = withTiming(1, { duration: 180 });
       scale.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
     } else {
       opacity.value = 0;
       scale.value = 0.5;
     }
-  }, [visible]);
+  }, [showModal]);
 
   const scrimStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
   const cardStyle = useAnimatedStyle(() => ({
@@ -156,7 +159,7 @@ export default function CityAlertModal({ asOverlay = false }: { asOverlay?: bool
     opacity: opacity.value,
   }));
 
-  if (!visible) return null;
+  if (!showModal) return null;
 
   const dismiss = alert ? clearCityAlert : clearCityConfirm;
 

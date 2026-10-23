@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { useGameStore } from '../stores/gameStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
+import { useModalQueue } from '../hooks/useModalQueue';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -27,7 +28,8 @@ export default function WarehouseFullModal() {
     router.navigate('/(tabs)/menu');
   };
 
-  const showModal = visible && !isOnboarding;
+  const isQueued = useModalQueue('WarehouseFull', visible && !isOnboarding);
+  const showModal = isQueued;
   useModalBreadcrumb('WarehouseFull', showModal);
   if (!showModal) return null;
 

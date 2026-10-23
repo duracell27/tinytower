@@ -12,6 +12,7 @@ import { useOnboardingStore } from '../stores/onboardingStore';
 import { formatNum } from '../utils/format';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useModalBreadcrumb } from '../hooks/useModalBreadcrumb';
+import { useModalQueue } from '../hooks/useModalQueue';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -58,8 +59,10 @@ export default function TaskRewardModal() {
     scale.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) });
   }, [scale]);
 
-  useModalBreadcrumb('TaskReward', !!reward && activeSheetCount === 0 && !isOnboarding);
-  if (!reward || activeSheetCount > 0 || isOnboarding) return null;
+  const isQueued = useModalQueue('TaskReward', !!reward && !isOnboarding);
+  const visible = isQueued && activeSheetCount === 0;
+  useModalBreadcrumb('TaskReward', visible);
+  if (!visible) return null;
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={clearReward} onShow={runIn}>
