@@ -814,8 +814,11 @@ export default function GameScreen() {
     if (!quickActionMode || leavingFloorId !== null) return;
 
     // Read live state to avoid stale-closure issues during rapid clicking.
-    // The 1-second game clock can lag real time by up to 999ms, causing floors
-    // that are actually ready to be missed. Date.now() + fresh store data fix both.
+    // Use Date.now() for per-slot readiness checks (the 1-second ClockContext can lag
+    // by up to 999ms, causing ready slots to be missed). However, floor SELECTION must
+    // use filteredFloors (the rendered list) — computing liveFilteredFloors with Date.now()
+    // can include floors not yet visible in the QA list, causing leavingFloorId to point
+    // at an un-rendered item and permanently locking the button (onAnimationDone never fires).
     const liveNow = Date.now();
     const { floors: liveFloors, workers: liveWorkers, balance: liveBalance,
       coinBonusPercent: liveCoinBonus, openedFloorTypes: liveOpenedTypes,
@@ -823,10 +826,12 @@ export default function GameScreen() {
 
     const liveVehicles = useGameStore.getState().vehicles;
     const liveSpeedBonuses = computeVehicleBonuses(liveVehicles);
-    const liveFilteredFloors = getFloorsForMode(quickActionMode, liveFloors, liveWorkers, liveNow, liveFloorStars ?? {}, liveSpeedBonuses);
-    const liveBottomFloor = liveFilteredFloors.length > 0
-      ? liveFilteredFloors[liveFilteredFloors.length - 1]
-      : null;
+
+    // Target floor comes from the rendered filteredFloors to guarantee leavingFloorId
+    // matches an item in qaItems. Then get its latest production data from the live store.
+    if (filteredFloors.length === 0) return;
+    const targetFloorId = filteredFloors[filteredFloors.length - 1].id;
+    const liveBottomFloor = liveFloors.find((f) => f.id === targetFloorId) ?? null;
 
     if (!liveBottomFloor) return;
 
@@ -890,7 +895,7 @@ export default function GameScreen() {
       pendingActionRef.current = pendingAction;
       setLeavingFloorId(liveBottomFloor.id);
     }
-  }, [quickActionMode, leavingFloorId, storeCollect, storeList, storeBuy, showInsufficientResources]);
+  }, [quickActionMode, leavingFloorId, filteredFloors, storeCollect, storeList, storeBuy, showInsufficientResources]);
 
   const renderItem = useCallback(({ item }: { item: FloorItem }) => {
     if (item.type === 'collapseDivider') {
