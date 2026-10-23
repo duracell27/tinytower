@@ -47,6 +47,15 @@
       ],
       "expo-secure-store",
       [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#2592AB",
+          "defaultChannel": "default",
+          "androidCollapsedTitle": "Vibe Tower"
+        }
+      ],
+      [
         "@sentry/react-native/expo",
         {
           "url": "https://sentry.io/",
