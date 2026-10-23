@@ -788,8 +788,8 @@ export class SyncService {
     );
 
     this.notificationsService
-      .checkAndSendGameTriggers(playerId, player, gameState, acceptedCommands)
-      .catch((err) => this.logger.error('[notifications] trigger check failed', err));
+      .resetNotificationStateForCommands(playerId, acceptedCommands)
+      .catch((err) => this.logger.error('[notifications] reset notification state failed', err));
 
     return {
       state: gameState,

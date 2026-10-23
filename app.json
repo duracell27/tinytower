@@ -33,6 +33,11 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    },
     "plugins": [
       "expo-image",
       "expo-font",
@@ -49,7 +54,6 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
           "color": "#2592AB",
           "defaultChannel": "default",
           "androidCollapsedTitle": "Vibe Tower"

@@ -1,6 +1,12 @@
-import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, BadRequestException } from '@nestjs/common';
+import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { NotificationsService } from './notifications.service';
+
+const RegisterTokenSchema = z.object({
+  token: z.string().min(1),
+  platform: z.enum(['ios', 'android']),
+});
 
 @Controller('notifications')
 export class NotificationsController {
@@ -10,8 +16,10 @@ export class NotificationsController {
   @UseGuards(JwtAuthGuard)
   async registerToken(
     @Req() req: { user: { playerId: string } },
-    @Body() body: { token: string; platform: string },
+    @Body() body: unknown,
   ): Promise<void> {
-    await this.notificationsService.saveToken(req.user.playerId, body.token, body.platform);
+    const result = RegisterTokenSchema.safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(', '));
+    await this.notificationsService.saveToken(req.user.playerId, result.data.token, result.data.platform);
   }
 }

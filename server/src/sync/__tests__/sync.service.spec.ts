@@ -6,6 +6,7 @@ import { AchievementService } from '../../achievement/achievement.service';
 import { CityService } from '../../city/city.service';
 import { CityBuildingService } from '../../city/city-building.service';
 import { CityTaskService } from '../../city/city-task.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import type { Command } from '@shared/types';
 
 describe('SyncService', () => {
@@ -206,6 +207,12 @@ describe('SyncService', () => {
           useValue: {
             updateProgressFromDelta: jest.fn().mockResolvedValue(undefined),
             getOrCreateDailyTasks: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: NotificationsService,
+          useValue: {
+            resetNotificationStateForCommands: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
