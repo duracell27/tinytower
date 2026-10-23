@@ -25,6 +25,14 @@ model Player {
   maxRevenuePerMin   Int                 @default(0)
   openedFloorsCount  Int                 @default(0)
   lastSeenAt         DateTime            @default(now())
+  pushToken            String?
+  pushPlatform         String?
+  pushTokenUpdatedAt   DateTime?
+  notifiedAllResidents DateTime?
+  notifiedCollect      DateTime?
+  notifiedStock        DateTime?
+  notifiedPurchase     DateTime?
+  inactivityNotifiedAt DateTime?
   createdAt          DateTime            @default(now())
   referralCode       String?             @unique
   city               String?
