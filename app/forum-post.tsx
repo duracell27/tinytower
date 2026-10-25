@@ -64,13 +64,13 @@ function TournamentPostBody({
 
       {meta.entries.map((entry: TournamentPostEntry) => (
         <View key={entry.playerId} style={[tStyles.row, { backgroundColor: rankBg(entry.rank) }]}>
+          <LocaleText style={[tStyles.rankNum, { color: rankColor(entry.rank) }]}>#{entry.rank}</LocaleText>
           <Image source={cupIcon(entry.rank)} style={tStyles.cup} contentFit="contain" />
           <Pressable onPress={() => onPlayerPress(entry.playerId)} style={tStyles.playerBtn}>
             <Image source={getUserIcon(entry.playerLevel)} style={tStyles.avatar} contentFit="cover" />
             <LocaleText style={[tStyles.name, { color: theme.text }]} numberOfLines={1}>{entry.playerName}</LocaleText>
           </Pressable>
           <View style={tStyles.statsRow}>
-            <LocaleText style={[tStyles.rankNum, { color: rankColor(entry.rank) }]}>#{entry.rank}</LocaleText>
             <View style={tStyles.tokenChip}>
               <LocaleText style={[tStyles.tokenVal, { color: '#3FA535' }]}>{entry.tokenCount}</LocaleText>
               <Image source={TOKEN_GREEN} style={tStyles.tokenIco} contentFit="contain" />
