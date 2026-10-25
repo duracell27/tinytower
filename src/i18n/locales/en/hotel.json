@@ -314,6 +314,7 @@
     "tournamentTitle": "Token Tournament",
     "tournamentResultsSoon": "Results coming soon",
     "tournamentCollectHint": "Collect tokens from daily tasks",
+    "tournamentRanked": "You ranked #{{rank}} in the tournament",
     "info": {
       "challengesTitle": "Daily Challenges",
       "challengesText": "Complete 11 tasks each day: buy, list, and collect goods, lift visitors and VIPs, add residents, spend gems, purchase diamonds, and more.",

@@ -147,30 +147,11 @@ export default function DailyTasksScreen() {
               tournamentEntry ? (
                 <>
                   <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>{t('dailyTasks.tournamentTitle')}</LocaleText>
-                  <View style={styles.tournamentScoreRow}>
-                    {tournamentEntry.rank !== null && (
-                      <Image
-                        source={
-                          tournamentEntry.rank <= 3
-                            ? require('../assets/img/rating/1PlaceCup.png')
-                            : tournamentEntry.rank <= 6
-                              ? require('../assets/img/rating/2PlaceCup.png')
-                              : require('../assets/img/rating/3PlaceCup.png')
-                        }
-                        style={styles.tournamentTokenIcon}
-                        contentFit="contain"
-                      />
-                    )}
-                    <LocaleText style={[styles.tournamentScore, { color: isDark ? '#8AAFD4' : '#1A6A9A', fontSize: 22 }]}>
-                      {tournamentEntry.rank !== null ? `#${tournamentEntry.rank}` : '—'}
-                    </LocaleText>
-                  </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>
-                      {tournamentEntry.tokenCount}
-                    </LocaleText>
-                    <Image source={TOKEN_ICONS.green} style={{ width: 14, height: 14 }} contentFit="contain" />
-                  </View>
+                  <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>
+                    {tournamentEntry.rank !== null
+                      ? t('dailyTasks.tournamentRanked', { rank: tournamentEntry.rank })
+                      : t('dailyTasks.tournamentResultsSoon')}
+                  </LocaleText>
                 </>
               ) : (
                 <>
