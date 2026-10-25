@@ -38,9 +38,9 @@ function fmtWeekTitle(weekStart: Date): string {
 }
 
 function rankMedal(rank: number): string {
-  if (rank <= 3) return '🥇';
-  if (rank <= 6) return '🥈';
-  return '🥉';
+  if (rank <= 3) return '[cup_gold]';
+  if (rank <= 6) return '[cup_silver]';
+  return '[cup_bronze]';
 }
 
 @Injectable()
@@ -151,8 +151,8 @@ export class TournamentService {
         const isTop10 = rank <= 10;
         const subject = isTop10 ? 'Token Tournament Results' : 'Token Tournament Results';
         const body = isTop10
-          ? `Congratulations! You placed #${rank} in this week's tournament.\n\nTokens collected: ${row.count}\nRewards:\n  • ${gems} 💎 gems\n  • ${bonus} random tokens\n  • ${coins.toLocaleString()} 🪙 coins\n\nRewards have been added to your account.`
-          : `Thanks for participating in this week's tournament!\n\nTokens collected: ${row.count}\nRewards:\n  • ${coins.toLocaleString()} 🪙 coins\n\nRewards have been added to your account.`;
+          ? `Congratulations! You placed #${rank} in this week's tournament.\n\nTokens collected: ${row.count} [token]\nRewards:\n  • ${gems} [gem] gems\n  • ${bonus} random tokens\n  • ${coins.toLocaleString()} [coin] coins\n\nRewards have been added to your account.`
+          : `Thanks for participating in this week's tournament!\n\nTokens collected: ${row.count} [token]\nRewards:\n  • ${coins.toLocaleString()} [coin] coins\n\nRewards have been added to your account.`;
 
         await tx.mailMessage.create({
           data: { fromId: adminPlayerId, toId: row.playerId, subject, body },

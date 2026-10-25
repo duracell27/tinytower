@@ -10,6 +10,7 @@ import { useAppTheme } from '../src/hooks/useAppTheme';
 import { useTranslation } from 'react-i18next';
 import { InfoSection } from '../src/components/InfoSection';
 import { useMailStore } from '../src/stores/mailStore';
+import RichMailBody from '../src/components/RichMailBody';
 import { useCityStore } from '../src/stores/cityStore';
 import { getUserIcon } from '../src/utils/userIcon';
 import { api } from '../src/services/api';
@@ -199,7 +200,7 @@ function MailRow({
                 {inviteStatus === 'declined' && <LocaleText style={[styles.inviteResult, { color: theme.textMuted }]}>{t('mail.inviteDeclined')}</LocaleText>}
               </View>
             ) : (
-              <LocaleText style={[styles.body, { color: theme.text }]}>{mail.body}</LocaleText>
+              <RichMailBody body={mail.body} color={theme.text as string} />
             )}
             <View style={styles.bodyActions}>
               <Pressable
