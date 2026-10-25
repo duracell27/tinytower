@@ -62,7 +62,7 @@ export default function TaskRewardModal() {
   const isQueued = useModalQueue('TaskReward', !!reward && !isOnboarding);
   const visible = isQueued && activeSheetCount === 0;
   useModalBreadcrumb('TaskReward', visible);
-  if (!visible) return null;
+  if (!visible || !reward) return null;
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={clearReward} onShow={runIn}>
