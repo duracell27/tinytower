@@ -352,7 +352,7 @@ async function refreshTokens(): Promise<boolean> {
       });
       if (!res.ok) return false;
       const data = await res.json();
-      setTokens(data.accessToken, data.refreshToken);
+      await setTokens(data.accessToken, data.refreshToken);
       return true;
     } catch (e) {
       Sentry.captureException(e, { extra: { context: 'refreshTokens' } });

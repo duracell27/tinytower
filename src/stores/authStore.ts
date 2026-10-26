@@ -85,7 +85,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         player: PlayerInfo;
       }>('/auth/register', { email, password, playerName });
 
-      api.setTokens(data.accessToken, data.refreshToken);
+      await api.setTokens(data.accessToken, data.refreshToken);
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
@@ -108,7 +108,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         player: PlayerInfo;
       }>('/auth/login', { email, password });
 
-      api.setTokens(data.accessToken, data.refreshToken);
+      await api.setTokens(data.accessToken, data.refreshToken);
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
@@ -163,7 +163,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ isLoading: true });
     try {
       const data = await api.registerAsGuest();
-      api.setTokens(data.accessToken, data.refreshToken);
+      await api.setTokens(data.accessToken, data.refreshToken);
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
@@ -194,7 +194,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       const data = await api.registerAsGuest();
       migrateToNewUser(data.player.id);
-      api.setTokens(data.accessToken, data.refreshToken);
+      await api.setTokens(data.accessToken, data.refreshToken);
       getStorage().set('player', JSON.stringify(data.player));
       getStorage().remove('pendingRegistration');
       saveLastPlayer(data.player);
@@ -230,7 +230,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       const data = provider === 'google'
         ? await api.socialLoginGoogle(idToken)
         : await api.socialLoginApple(idToken, fullName);
-      api.setTokens(data.accessToken, data.refreshToken);
+      await api.setTokens(data.accessToken, data.refreshToken);
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });

@@ -18,11 +18,13 @@ export function getRefreshToken(): string | null {
   return cache.refresh;
 }
 
-export function setTokens(access: string, refresh: string): void {
+export async function setTokens(access: string, refresh: string): Promise<void> {
   cache.access = access;
   cache.refresh = refresh;
-  void SecureStore.setItemAsync(KEY_ACCESS, access).catch(() => {});
-  void SecureStore.setItemAsync(KEY_REFRESH, refresh).catch(() => {});
+  await Promise.all([
+    SecureStore.setItemAsync(KEY_ACCESS, access).catch(() => {}),
+    SecureStore.setItemAsync(KEY_REFRESH, refresh).catch(() => {}),
+  ]);
 }
 
 export function clearTokens(): void {
