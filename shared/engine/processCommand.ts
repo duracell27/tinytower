@@ -72,7 +72,7 @@ export function processCommand(
     case 'exchange_gems':
       return handleExchangeGems(state, command);
     case 'speed_up_construction':
-      return handleSpeedUpConstruction(state, command);
+      return handleSpeedUpConstruction(state, command, config);
     case 'speed_up_delivery':
       return handleSpeedUpDelivery(state, command, config, now);
     case 'spawn_visitor':
@@ -198,15 +198,26 @@ function handleExchangeGems(
 
 const MS_PER_HOUR = 3_600_000;
 
+// Returns true only when the player has no opened dynamic floors yet (onboarding first floor).
+function isInitialOnboarding(state: GameState, config: GameConfig): boolean {
+  const staticFloorIds = new Set(config.floors.map((f) => f.id));
+  return !state.floors.some((f) => !staticFloorIds.has(f.id));
+}
+
 function handleSpeedUpConstruction(
   state: GameState,
   command: Extract<Command, { type: 'speed_up_construction' }>,
+  config: GameConfig,
 ): ProcessResult {
   const uc = state.underConstruction.find((u) => u.floorId === command.floorId);
   if (!uc) return { success: false, state, error: 'Floor not under construction' };
 
   const timeLeft = uc.startedAt + uc.durationMs - command.timestamp;
   if (timeLeft <= 0) return { success: false, state, error: 'Construction already complete' };
+
+  if (command.freeSpeedup && !isInitialOnboarding(state, config)) {
+    return { success: false, state, error: 'Free speedup not allowed outside onboarding' };
+  }
 
   const cost = command.freeSpeedup ? 0 : Math.max(1, Math.ceil(timeLeft / MS_PER_HOUR));
   if (cost > 0 && state.gems < cost) return { success: false, state, error: 'Insufficient gems' };
@@ -277,6 +288,9 @@ function handleBuyFloor(
   };
 
   if (command.freeFloor) {
+    if (!isInitialOnboarding(state, config) || state.underConstruction.length > 0) {
+      return { success: false, state, error: 'Free floor not allowed outside onboarding' };
+    }
     // During onboarding the floor may already exist or be under construction — skip adding it again.
     const alreadyPresent =
       state.underConstruction.some((uc) => uc.floorId === command.floorId) ||
@@ -346,6 +360,9 @@ function handleOpenFloor(
 ): ProcessResult {
   const uc = state.underConstruction.find((u) => u.floorId === command.floorId);
   if (!uc) return { success: false, state, error: 'Floor not under construction' };
+  if (command.freeOpen && !isInitialOnboarding(state, config)) {
+    return { success: false, state, error: 'Free open not allowed outside onboarding' };
+  }
   if (!command.freeOpen && command.timestamp - uc.startedAt < uc.durationMs) return { success: false, state, error: 'Construction not complete' };
 
   const currentTools = state.tools ?? { briks: 0, glass: 0, nails: 0, screw: 0, wood: 0, cement: 0 };
