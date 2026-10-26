@@ -457,6 +457,23 @@ export async function fetchGlobalStats(): Promise<GlobalStats> {
   return res.json();
 }
 
+export async function submitContactForm(opts: {
+  email: string;
+  message: string;
+  name?: string;
+  subject?: string;
+}): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/contact`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(opts),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { message?: string }).message ?? `HTTP ${res.status}`);
+  }
+}
+
 export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),

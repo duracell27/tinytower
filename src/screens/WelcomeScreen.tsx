@@ -21,7 +21,7 @@ import { useGameStore } from '../stores/gameStore';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { getUserIcon } from '../utils/userIcon';
 import { formatNum } from '../utils/format';
-import { fetchGlobalStats, type GlobalStats } from '../services/api';
+import { fetchGlobalStats, submitContactForm, type GlobalStats } from '../services/api';
 
 interface WelcomeScreenProps {
   onPlay: () => void;
@@ -78,6 +78,44 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  const [showSupport, setShowSupport] = useState(false);
+  const [supportEmail, setSupportEmail] = useState('');
+  const [supportMessage, setSupportMessage] = useState('');
+  const [supportError, setSupportError] = useState('');
+  const [supportSuccess, setSupportSuccess] = useState(false);
+  const [supportLoading, setSupportLoading] = useState(false);
+
+  const openSupport = () => {
+    setSupportEmail(player?.email ?? lastPlayer?.email ?? '');
+    setSupportMessage('');
+    setSupportError('');
+    setSupportSuccess(false);
+    setShowSupport(true);
+  };
+
+  const handleSupportSubmit = async () => {
+    const email = supportEmail.trim();
+    const message = supportMessage.trim();
+    if (!email) { setSupportError(t('welcome.support.errors.enterEmail')); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setSupportError(t('welcome.support.errors.invalidEmail')); return; }
+    if (!message) { setSupportError(t('welcome.support.errors.enterMessage')); return; }
+    setSupportLoading(true);
+    setSupportError('');
+    try {
+      await submitContactForm({ email, message, subject: 'Support Request' });
+      setSupportSuccess(true);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      if (msg.includes('Too many')) {
+        setSupportError(t('welcome.support.errors.tooManyRequests'));
+      } else {
+        setSupportError(t('welcome.support.errors.failed'));
+      }
+    } finally {
+      setSupportLoading(false);
+    }
+  };
 
   const handleMainAction = () => {
     if (isAuthenticated) {
@@ -228,6 +266,20 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         </View>
       )}
 
+      {/* Support button — top right (rendered after logo/chips so it's on top) */}
+      <Pressable
+        onPress={openSupport}
+        style={({ pressed }) => [styles.supportIconButton, pressed && { opacity: 0.75 }]}
+      >
+        <Svg viewBox="0 0 24 24" width={26} height={26} fill="none" stroke="rgba(255,255,255,0.92)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+          <Path d="M4 13A8 8 0 0 1 20 13" />
+          <Rect x={2} y={12} width={4} height={6} rx={1.5} />
+          <Rect x={18} y={12} width={4} height={6} rx={1.5} />
+          <Path d="M4 17q0 5 7 5" />
+          <Circle cx={11} cy={22} r={1.8} fill="rgba(255,255,255,0.92)" stroke="rgba(255,255,255,0.92)" strokeWidth={1} />
+        </Svg>
+      </Pressable>
+
       {/* Password popup */}
       <Modal
         visible={showPasswordPrompt}
@@ -270,6 +322,73 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
             <Pressable onPress={() => setShowPasswordPrompt(false)} style={styles.promptCancel}>
               <LocaleText style={[styles.promptCancelText, isDark && { color: '#7A8EA8' }]}>{t('common:actions.cancel')}</LocaleText>
             </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Support Modal */}
+      <Modal
+        visible={showSupport}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSupport(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.promptOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <Pressable style={styles.promptBackdrop} onPress={() => setShowSupport(false)} />
+          <View style={[styles.promptCard, isDark && { backgroundColor: '#1E2840' }]}>
+            <LocaleText style={[styles.promptTitle, isDark && { color: '#D8E4F0' }]}>{t('welcome.support.title')}</LocaleText>
+
+            {supportSuccess ? (
+              <>
+                <LocaleText style={[styles.supportSuccessText, isDark && { color: '#7EC86E' }]}>{t('welcome.support.success')}</LocaleText>
+                <Pressable onPress={() => setShowSupport(false)} style={styles.promptSubmitWrap}>
+                  <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.promptSubmit}>
+                    <LocaleText style={styles.promptSubmitText}>{t('welcome.support.close')}</LocaleText>
+                  </LinearGradient>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <LocaleText style={[styles.promptEmail, isDark && { color: '#7A8EA8' }]}>{t('welcome.support.emailLabel')}</LocaleText>
+                <TextInput
+                  style={[styles.promptInput, isDark && { backgroundColor: '#252D42', borderColor: '#3A4560', color: '#D8E4F0' }]}
+                  placeholder="you@example.com"
+                  placeholderTextColor={isDark ? '#5A6A80' : '#B7B3A2'}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={supportEmail}
+                  onChangeText={(v) => { setSupportEmail(v); setSupportError(''); }}
+                  editable={!supportLoading}
+                />
+                <TextInput
+                  style={[styles.promptInput, styles.supportMessageInput, isDark && { backgroundColor: '#252D42', borderColor: '#3A4560', color: '#D8E4F0' }]}
+                  placeholder={t('welcome.support.messagePlaceholder')}
+                  placeholderTextColor={isDark ? '#5A6A80' : '#B7B3A2'}
+                  multiline
+                  value={supportMessage}
+                  onChangeText={(v) => { setSupportMessage(v); setSupportError(''); }}
+                  editable={!supportLoading}
+                />
+
+                {supportError ? <LocaleText style={styles.promptError}>{supportError}</LocaleText> : null}
+
+                <Pressable onPress={handleSupportSubmit} disabled={supportLoading} style={styles.promptSubmitWrap}>
+                  <LinearGradient colors={['#62C84F', '#3FA535']} style={styles.promptSubmit}>
+                    {supportLoading
+                      ? <ActivityIndicator color="#fff" size="small" />
+                      : <LocaleText style={styles.promptSubmitText}>{t('welcome.support.submit')}</LocaleText>
+                    }
+                  </LinearGradient>
+                </Pressable>
+
+                <Pressable onPress={() => setShowSupport(false)} style={styles.promptCancel}>
+                  <LocaleText style={[styles.promptCancelText, isDark && { color: '#7A8EA8' }]}>{t('common:actions.cancel')}</LocaleText>
+                </Pressable>
+              </>
+            )}
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -745,6 +864,31 @@ const styles = StyleSheet.create({
   },
   termsUnderline: {
     textDecorationLine: 'underline',
+  },
+  supportIconButton: {
+    position: 'absolute',
+    top: 54,
+    right: 16,
+    zIndex: 2,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  supportMessageInput: {
+    height: 110,
+    paddingTop: 12,
+    textAlignVertical: 'top',
+  },
+  supportSuccessText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 15,
+    color: '#4A8A3A',
+    textAlign: 'center',
+    marginVertical: 20,
+    lineHeight: 22,
   },
   discordWrapper: {
     position: 'absolute',
