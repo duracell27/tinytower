@@ -162,7 +162,7 @@ export default function DailyTasksScreen() {
             ) : (
               <>
                 <View style={styles.tournamentScoreRow}>
-                  <Image source={TOKEN_ICONS.green} style={styles.tournamentTokenIcon} contentFit="contain" />
+                  <Image source={require('../assets/img/tokens/tokens.png')} style={styles.tournamentTokenIcon} contentFit="contain" />
                   <LocaleText style={[styles.tournamentScore, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>{weeklyTokenCount}</LocaleText>
                 </View>
                 <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>{t('dailyTasks.tournamentTitle')}</LocaleText>
@@ -339,7 +339,7 @@ export default function DailyTasksScreen() {
                 accentColor="rgba(229,167,46,0.3)"
               />
               <InfoSection
-                icon={require('../assets/img/tokens/tokenGreen.png')}
+                icon={require('../assets/img/tokens/tokens.png')}
                 title={t('dailyTasks.info.tokensTitle')}
                 text={t('dailyTasks.info.tokensText')}
                 accentColor="rgba(229,167,46,0.3)"
@@ -391,7 +391,7 @@ export default function DailyTasksScreen() {
                       <Image source={require('../assets/img/diamond.png')} style={styles.infoTournGemSm} contentFit="contain" />
                       <View style={[styles.infoTournRankDivider, { backgroundColor: isDark ? '#2A3740' : '#D8E0F5' }]} />
                       <LocaleText style={[styles.infoTournBonus, { color: '#3FA535' }]}>+{tokens}</LocaleText>
-                      <Image source={require('../assets/img/tokens/tokenGreen.png')} style={styles.infoTournGemSm} contentFit="contain" />
+                      <Image source={require('../assets/img/tokens/tokens.png')} style={styles.infoTournGemSm} contentFit="contain" />
                     </View>
                   );
                 })}
@@ -424,7 +424,7 @@ export default function DailyTasksScreen() {
                   <LocaleText style={[styles.infoTournAllDesc, { color: theme.textMuted }]}>+1,000</LocaleText>
                   <Image source={require('../assets/img/coin.png')} style={styles.infoTournGemSm} contentFit="contain" />
                   <LocaleText style={[styles.infoTournAllDesc, { color: theme.textMuted }]}>/</LocaleText>
-                  <Image source={require('../assets/img/tokens/tokenGreen.png')} style={styles.infoTournGemSm} contentFit="contain" />
+                  <Image source={require('../assets/img/tokens/tokens.png')} style={styles.infoTournGemSm} contentFit="contain" />
                   <LocaleText style={[styles.infoTournAllDesc, { color: theme.textMuted }]}>
                     {t('dailyTasks.info.tournamentTierMore')}
                   </LocaleText>

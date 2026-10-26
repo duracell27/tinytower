@@ -157,7 +157,7 @@ const color         = TYPE_COLORS[ft];
                 accentColor="rgba(63,165,53,0.25)"
               />
               <InfoSection
-                icon={require('../assets/img/tokens/tokenGreen.png')}
+                icon={require('../assets/img/tokens/tokens.png')}
                 title={tHotel('myBusiness.info.tokensTitle')}
                 text={tHotel('myBusiness.info.tokensText')}
                 accentColor="rgba(63,165,53,0.25)"

@@ -8,7 +8,7 @@ const ICON_MAP: Record<string, ReturnType<typeof require>> = {
   cup_gold:   require('../../assets/img/rating/1PlaceCup.png'),
   cup_silver: require('../../assets/img/rating/2PlaceCup.png'),
   cup_bronze: require('../../assets/img/rating/3PlaceCup.png'),
-  token:      require('../../assets/img/tokens/tokenGreen.png'),
+  token:      require('../../assets/img/tokens/tokens.png'),
 };
 
 const TAG_RE = /\[(gem|coin|cup_gold|cup_silver|cup_bronze|token)\]/g;
