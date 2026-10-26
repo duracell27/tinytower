@@ -21,8 +21,8 @@ export function getRefreshToken(): string | null {
 export function setTokens(access: string, refresh: string): void {
   cache.access = access;
   cache.refresh = refresh;
-  void SecureStore.setItemAsync(KEY_ACCESS, access);
-  void SecureStore.setItemAsync(KEY_REFRESH, refresh);
+  void SecureStore.setItemAsync(KEY_ACCESS, access).catch(() => {});
+  void SecureStore.setItemAsync(KEY_REFRESH, refresh).catch(() => {});
 }
 
 export function clearTokens(): void {

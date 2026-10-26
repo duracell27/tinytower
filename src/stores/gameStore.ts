@@ -370,7 +370,10 @@ function executeCommand(
       set({ warehouseFullNotice: true });
       return false;
     }
-    const TRACKED_COMMANDS = new Set(['buy_floor', 'open_floor', 'deliver_all', 'assign_worker', 'shop_purchase']);
+    if (command.type === 'collect_tip' && result.error === 'Elevator not at target floor') {
+      set({ elevatorFloor: 0 });
+    }
+    const TRACKED_COMMANDS = new Set(['buy_floor', 'open_floor', 'deliver_all', 'assign_worker', 'shop_purchase', 'collect_tip', 'lift_visitor']);
     if (TRACKED_COMMANDS.has(command.type)) {
       Sentry.captureMessage(`Command rejected: ${command.type}`, {
         level: 'warning',
