@@ -157,20 +157,21 @@ export class CityWeeklyRankingService {
           update: { rank: e.rank, totalTickets: e.totalTickets, totalReward: e.totalReward, createdBy: adminPlayerId },
         });
       }
-      const medals = ['🥇', '🥈', '🥉'];
       const top10 = entries.slice(0, 10);
-      const top10Lines = top10
-        .map((e, i) => {
-          const prefix = medals[i] ?? `#${i + 1}`;
-          return `${prefix} ${e.cityName} — ${e.totalTickets} 🎫 (+${e.totalReward} 💎)`;
-        })
-        .join('\n');
-
       const postTitle = fmtWeekTitle(weekStart);
-      const postBody =
-        `🏙️ The City Tournament has ended! Congratulations to all participating cities.\n\n` +
-        `🔝 Top ${top10.length}:\n${top10Lines}\n\n` +
-        `Rewards have been added to city budgets.`;
+      const postBody = `City Tournament has ended! Congratulations to all participating cities. Rewards have been added to city budgets.`;
+      const postMetadata = {
+        type: 'city_tournament',
+        weekStart: weekStart.toISOString(),
+        totalCities: entries.length,
+        entries: top10.map((e) => ({
+          rank: e.rank,
+          cityId: e.cityId,
+          cityName: e.cityName,
+          totalTickets: e.totalTickets,
+          totalReward: e.totalReward,
+        })),
+      };
 
       await tx.forumPost.create({
         data: {
@@ -182,6 +183,7 @@ export class CityWeeklyRankingService {
           body: postBody,
           isPinned: false,
           isClosed: false,
+          metadata: postMetadata,
         },
       });
     });

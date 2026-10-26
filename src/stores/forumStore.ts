@@ -20,6 +20,21 @@ export interface TournamentPostMetadata {
   entries: TournamentPostEntry[];
 }
 
+export interface CityTournamentPostEntry {
+  rank: number;
+  cityId: string;
+  cityName: string;
+  totalTickets: number;
+  totalReward: number;
+}
+
+export interface CityTournamentPostMetadata {
+  type: 'city_tournament';
+  weekStart: string;
+  totalCities: number;
+  entries: CityTournamentPostEntry[];
+}
+
 export interface ForumPost {
   id: string;
   category: ForumCategory;
@@ -34,7 +49,7 @@ export interface ForumPost {
   isUnread: boolean;
   createdAt: string;
   updatedAt: string;
-  metadata?: TournamentPostMetadata | null;
+  metadata?: TournamentPostMetadata | CityTournamentPostMetadata | null;
 }
 
 export interface ForumComment {

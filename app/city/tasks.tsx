@@ -197,36 +197,43 @@ export default function CityTasksScreen() {
                   {t('cityTasks.weekendDesc')}
                 </LocaleText>
               </View>
-              {weeklyResult && (
-                <View style={[styles.weekendResultCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
-                  <LocaleText style={[styles.weekendResultTitle, { color: PRIMARY }]}>
-                    {t('cityTasks.weekendResultsTitle')}
+              <View style={[styles.tournamentBanner, { backgroundColor: isDark ? '#1A2E3E' : '#EEF7FF' }]}>
+                <Image
+                  source={weeklyResult?.rank != null ? cupIcon(weeklyResult.rank) : CUP1_ICON}
+                  style={styles.tournamentCupIcon}
+                  contentFit="contain"
+                />
+                <View style={styles.tournamentTextCol}>
+                  <LocaleText style={[styles.tournamentTitle, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>
+                    {t('cityTasks.weekendTournamentTitle')}
                   </LocaleText>
-                  {weeklyResult.totalTickets != null && (
-                    <View style={styles.weekendResultRow}>
-                      <Image source={TICKET_ICON} style={{ width: 18, height: 18 }} contentFit="contain" />
-                      <LocaleText style={[styles.weekendResultStat, { color: theme.text }]}>
-                        {weeklyResult.totalTickets}
-                      </LocaleText>
-                      {weeklyResult.rank != null && (
-                        <LocaleText style={[styles.weekendResultRank, { color: PRIMARY }]}>
-                          #{weeklyResult.rank}
-                        </LocaleText>
+                  <LocaleText style={[styles.tournamentSub, { color: isDark ? '#6A8A9A' : '#4A7A9A' }]}>
+                    {weeklyResult?.rank != null
+                      ? t('cityTasks.weekendRanked', { rank: weeklyResult.rank })
+                      : t('cityTasks.weekendResultsSoon')}
+                  </LocaleText>
+                  {weeklyResult && (weeklyResult.totalTickets != null || weeklyResult.totalReward != null) && (
+                    <View style={styles.tournamentStatsRow}>
+                      {weeklyResult.totalTickets != null && (
+                        <View style={styles.tournamentStatChip}>
+                          <LocaleText style={[styles.tournamentStatVal, { color: isDark ? '#8AAFD4' : '#1A6A9A' }]}>
+                            {weeklyResult.totalTickets}
+                          </LocaleText>
+                          <Image source={TICKET_ICON} style={styles.tournamentStatIcon} contentFit="contain" />
+                        </View>
+                      )}
+                      {weeklyResult.totalReward != null && weeklyResult.totalReward > 0 && (
+                        <View style={styles.tournamentStatChip}>
+                          <LocaleText style={[styles.tournamentStatVal, { color: '#2592AB' }]}>
+                            +{weeklyResult.totalReward}
+                          </LocaleText>
+                          <Image source={GEM_ICON} style={styles.tournamentStatIcon} contentFit="contain" />
+                        </View>
                       )}
                     </View>
                   )}
-                  {weeklyResult.totalReward != null && (
-                    <LocaleText style={[styles.weekendResultReward, { color: '#3FA535' }]}>
-                      +{weeklyResult.totalReward} 💎
-                    </LocaleText>
-                  )}
-                  {weeklyResult.message ? (
-                    <LocaleText style={[styles.weekendResultMsg, { color: theme.textMuted }]}>
-                      {weeklyResult.message}
-                    </LocaleText>
-                  ) : null}
                 </View>
-              )}
+              </View>
             </>
           ) : loading && tasks.length === 0 ? (
             <View style={styles.center}>
@@ -734,16 +741,18 @@ const styles = StyleSheet.create({
   emptyText:    { fontFamily: 'Fredoka_500Medium', fontSize: 15, textAlign: 'center' },
   midnightNote: { fontFamily: 'Fredoka_400Regular', fontSize: 12, textAlign: 'center', paddingHorizontal: 24, paddingTop: 4 },
 
-  weekendCard:        { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 8 },
-  weekendTitle:       { fontFamily: 'Fredoka_700Bold', fontSize: 18, textAlign: 'center' },
-  weekendDesc:        { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', lineHeight: 18 },
-  weekendResultCard:  { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 6 },
-  weekendResultTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 15, textAlign: 'center' },
-  weekendResultRow:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  weekendResultStat:  { fontFamily: 'Fredoka_700Bold', fontSize: 22 },
-  weekendResultRank:  { fontFamily: 'Fredoka_600SemiBold', fontSize: 16 },
-  weekendResultReward:{ fontFamily: 'Fredoka_700Bold', fontSize: 20 },
-  weekendResultMsg:   { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', lineHeight: 18 },
+  weekendCard:         { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 8 },
+  weekendTitle:        { fontFamily: 'Fredoka_700Bold', fontSize: 18, textAlign: 'center' },
+  weekendDesc:         { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', lineHeight: 18 },
+  tournamentBanner:    { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, marginHorizontal: 14, marginBottom: 10 },
+  tournamentCupIcon:   { width: 44, height: 44, flexShrink: 0 },
+  tournamentTextCol:   { flex: 1, gap: 2 },
+  tournamentTitle:     { fontFamily: 'Fredoka_700Bold', fontSize: 16 },
+  tournamentSub:       { fontFamily: 'Fredoka_400Regular', fontSize: 13 },
+  tournamentStatsRow:  { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 },
+  tournamentStatChip:  { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  tournamentStatVal:   { fontFamily: 'Fredoka_700Bold', fontSize: 17 },
+  tournamentStatIcon:  { width: 18, height: 18 },
 
   infoIcon: { width: 22, height: 22, opacity: 0.8 },
 });

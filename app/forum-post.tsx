@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import ForumCommentComponent from '../src/components/ForumComment';
 import ReportSheet from '../src/components/ReportSheet';
 import { useForumStore } from '../src/stores/forumStore';
-import type { TournamentPostMetadata, TournamentPostEntry } from '../src/stores/forumStore';
+import type { TournamentPostMetadata, TournamentPostEntry, CityTournamentPostMetadata, CityTournamentPostEntry } from '../src/stores/forumStore';
 import { useAuthStore } from '../src/stores/authStore';
 import { useGameStore } from '../src/stores/gameStore';
 import { getUserIcon } from '../src/utils/userIcon';
@@ -26,7 +26,9 @@ const CUP_GOLD    = require('../assets/img/rating/1PlaceCup.png');
 const CUP_SILVER  = require('../assets/img/rating/2PlaceCup.png');
 const CUP_BRONZE  = require('../assets/img/rating/3PlaceCup.png');
 const DIAMOND_ICO = require('../assets/img/diamond.png');
-const TOKEN_GREEN = require('../assets/img/tokens/tokenGreen.png');
+const TOKEN_GREEN = require('../assets/img/tokens/tokens.png');
+const TICKET_ICO  = require('../assets/products/tickets.png');
+const CITY_TASKS  = require('../assets/img/city/cityTasks.png');
 
 function cupIcon(rank: number) {
   if (rank <= 3) return CUP_GOLD;
@@ -113,6 +115,60 @@ const tStyles = StyleSheet.create({
   gemVal:      { fontFamily: 'Fredoka_600SemiBold', fontSize: 13 },
   footer:      { fontFamily: 'Nunito_400Regular', fontSize: 12, marginTop: 4, textAlign: 'center' },
 });
+
+function CityTournamentPostBody({
+  meta, isDark, theme,
+}: {
+  meta: CityTournamentPostMetadata;
+  isDark: boolean;
+  theme: ReturnType<typeof useAppTheme>;
+}) {
+  const rankColor = (rank: number) =>
+    rank <= 3 ? '#C8960A' : rank <= 6 ? '#888888' : '#A0643A';
+  const rankBg = (rank: number) => isDark
+    ? rank <= 3 ? 'rgba(218,165,32,0.15)' : rank <= 6 ? 'rgba(192,192,192,0.12)' : 'rgba(205,127,50,0.12)'
+    : rank <= 3 ? 'rgba(255,215,0,0.12)' : rank <= 6 ? 'rgba(192,192,192,0.12)' : 'rgba(205,127,50,0.10)';
+
+  return (
+    <View style={tStyles.wrap}>
+      <View style={tStyles.header}>
+        <Image source={CITY_TASKS} style={tStyles.headerCup} contentFit="contain" />
+        <View>
+          <LocaleText style={[tStyles.headerTitle, { color: theme.text }]}>City Tournament</LocaleText>
+          <LocaleText style={[tStyles.headerSub, { color: theme.textMuted }]}>
+            {meta.totalCities} cit{meta.totalCities !== 1 ? 'ies' : 'y'} participated
+          </LocaleText>
+        </View>
+      </View>
+
+      <LocaleText style={[tStyles.sectionLabel, { color: theme.textMuted }]}>Top {meta.entries.length}</LocaleText>
+
+      {meta.entries.map((entry: CityTournamentPostEntry) => (
+        <View key={entry.cityId} style={[tStyles.row, { backgroundColor: rankBg(entry.rank) }]}>
+          <LocaleText style={[tStyles.rankNum, { color: rankColor(entry.rank) }]}>#{entry.rank}</LocaleText>
+          <Image source={entry.rank <= 3 ? CUP_GOLD : entry.rank <= 6 ? CUP_SILVER : CUP_BRONZE} style={tStyles.cup} contentFit="contain" />
+          <LocaleText style={[tStyles.name, { color: theme.text }]} numberOfLines={1}>{entry.cityName}</LocaleText>
+          <View style={tStyles.statsRow}>
+            <View style={tStyles.tokenChip}>
+              <LocaleText style={[tStyles.tokenVal, { color: '#3FA535' }]}>{entry.totalTickets}</LocaleText>
+              <Image source={TICKET_ICO} style={tStyles.tokenIco} contentFit="contain" />
+            </View>
+            {entry.totalReward > 0 && (
+              <View style={tStyles.gemChip}>
+                <LocaleText style={[tStyles.gemVal, { color: '#2592AB' }]}>+{entry.totalReward}</LocaleText>
+                <Image source={DIAMOND_ICO} style={tStyles.tokenIco} contentFit="contain" />
+              </View>
+            )}
+          </View>
+        </View>
+      ))}
+
+      <LocaleText style={[tStyles.footer, { color: theme.textMuted }]}>
+        Rewards have been added to city budgets.
+      </LocaleText>
+    </View>
+  );
+}
 
 type SelectedItem = { id: string; body: string; isOwn: boolean; type: 'post' | 'comment' };
 
@@ -287,6 +343,12 @@ export default function ForumPostScreen() {
           isDark={isDark}
           theme={theme}
           onPlayerPress={handleAvatarPress}
+        />
+      ) : activePost.metadata?.type === 'city_tournament' ? (
+        <CityTournamentPostBody
+          meta={activePost.metadata}
+          isDark={isDark}
+          theme={theme}
         />
       ) : (
         <LocaleText style={[styles.postBody, isDark && { color: '#C8D8C0' }]}>

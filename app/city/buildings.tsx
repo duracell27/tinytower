@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View, ScrollView, StyleSheet, TouchableOpacity, Alert,
   ActivityIndicator, useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import LocaleText from '../../src/components/LocaleText';
@@ -119,7 +119,7 @@ export default function CityBuildingsScreen() {
     }
   }, [cityId, t]);
 
-  useEffect(() => { load(); }, [load]);
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const activeCount = buildings.filter(b => b.state === 'ACTIVE').length;
 
