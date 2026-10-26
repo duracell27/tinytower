@@ -3,7 +3,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CityTaskService } from './city-task.service';
 import { CityService } from './city.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { isWeekendUTC } from './city-task.constants';
+import { isWeekendUTC, currentWeekStart } from './city-task.constants';
 
 type AuthReq = { user: { playerId: string } };
 
@@ -19,11 +19,13 @@ export class CityTaskController {
   @UseGuards(JwtAuthGuard)
   async getTasks(@Req() req: AuthReq) {
     const bonus = await this.cityService.getCityBonusForPlayer(req.user.playerId);
-    if (!bonus) return { tasks: [], myActiveTaskId: null, cityStyleStars: 0, isWeekend: isWeekendUTC(), weeklyResult: null };
-    const [tasks, city, weeklyResult] = await Promise.all([
+    if (!bonus) return { tasks: [], myActiveTaskId: null, cityStyleStars: 0, weeklyTickets: 0, isWeekend: isWeekendUTC(), weeklyResult: null };
+    const weekStart = currentWeekStart();
+    const [tasks, city, weeklyResult, weeklyStats] = await Promise.all([
       this.cityTaskService.getOrCreateDailyTasks(bonus.cityId, bonus.level),
       this.prisma.city.findUnique({ where: { id: bonus.cityId }, select: { styleStars: true } }),
       this.cityTaskService.getWeeklyResult(bonus.cityId),
+      this.prisma.cityWeeklyStats.findUnique({ where: { cityId_weekStart: { cityId: bonus.cityId, weekStart } }, select: { totalTickets: true } }),
     ]);
     const myActive = tasks.find(
       (t) =>
@@ -34,6 +36,7 @@ export class CityTaskController {
       tasks,
       myActiveTaskId: myActive?.id ?? null,
       cityStyleStars: city?.styleStars ?? 0,
+      weeklyTickets: weeklyStats?.totalTickets ?? 0,
       isWeekend: isWeekendUTC(),
       weeklyResult: weeklyResult ?? null,
     };

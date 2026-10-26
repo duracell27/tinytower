@@ -5,6 +5,7 @@ interface CityTaskState {
   tasks: CityTaskSummary[];
   myActiveTaskId: string | null;
   cityStyleStars: number;
+  weeklyTickets: number;
   isWeekend: boolean;
   weeklyResult: CityWeeklyResult | null;
   loading: boolean;
@@ -13,7 +14,7 @@ interface CityTaskState {
 
 interface CityTaskActions {
   reset: () => void;
-  setFromSync: (payload: { tasks: CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number; isWeekend?: boolean; weeklyResult?: CityWeeklyResult | null }) => void;
+  setFromSync: (payload: { tasks: CityTaskSummary[]; myActiveTaskId: string | null; cityStyleStars: number; weeklyTickets?: number; isWeekend?: boolean; weeklyResult?: CityWeeklyResult | null }) => void;
   fetchTasks: () => Promise<void>;
   joinTask: (taskId: string) => Promise<void>;
   collectTask: (taskId: string) => Promise<{ finalStars: number; gemReward: number; coinsReward: number; isDoubled: boolean }>;
@@ -24,18 +25,20 @@ export const useCityTaskStore = create<CityTaskState & CityTaskActions>((set, ge
   tasks: [],
   myActiveTaskId: null,
   cityStyleStars: 0,
+  weeklyTickets: 0,
   isWeekend: false,
   weeklyResult: null,
   loading: false,
   error: null,
 
-  reset: () => set({ tasks: [], myActiveTaskId: null, cityStyleStars: 0, isWeekend: false, weeklyResult: null, loading: false, error: null }),
+  reset: () => set({ tasks: [], myActiveTaskId: null, cityStyleStars: 0, weeklyTickets: 0, isWeekend: false, weeklyResult: null, loading: false, error: null }),
 
-  setFromSync: ({ tasks, myActiveTaskId, cityStyleStars, isWeekend, weeklyResult }) => {
+  setFromSync: ({ tasks, myActiveTaskId, cityStyleStars, weeklyTickets, isWeekend, weeklyResult }) => {
     set({
       tasks,
       myActiveTaskId,
       cityStyleStars,
+      ...(weeklyTickets !== undefined && { weeklyTickets }),
       ...(isWeekend !== undefined && { isWeekend }),
       ...(weeklyResult !== undefined && { weeklyResult }),
     });
@@ -49,6 +52,7 @@ export const useCityTaskStore = create<CityTaskState & CityTaskActions>((set, ge
         tasks: res.tasks,
         myActiveTaskId: res.myActiveTaskId,
         cityStyleStars: res.cityStyleStars,
+        weeklyTickets: res.weeklyTickets ?? 0,
         isWeekend: res.isWeekend ?? false,
         weeklyResult: res.weeklyResult ?? null,
       });
@@ -75,6 +79,7 @@ export const useCityTaskStore = create<CityTaskState & CityTaskActions>((set, ge
       ),
       myActiveTaskId: s.myActiveTaskId === taskId ? null : s.myActiveTaskId,
       cityStyleStars: s.cityStyleStars + result.finalStars,
+      weeklyTickets: s.weeklyTickets + result.finalStars,
     }));
     get().fetchTasks();
     return result;

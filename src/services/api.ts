@@ -447,6 +447,7 @@ export interface CityTasksResponse {
   tasks: CityTaskSummary[];
   myActiveTaskId: string | null;
   cityStyleStars: number;
+  weeklyTickets: number;
   isWeekend: boolean;
   weeklyResult: CityWeeklyResult | null;
 }

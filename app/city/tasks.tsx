@@ -111,7 +111,7 @@ export default function CityTasksScreen() {
   const insets = useSafeAreaInsets();
   const isDark = useColorScheme() === 'dark';
 
-  const { tasks, myActiveTaskId, cityStyleStars, isWeekend, weeklyResult, loading, fetchTasks, joinTask, collectTask, cancelTask } =
+  const { tasks, myActiveTaskId, weeklyTickets, isWeekend, weeklyResult, loading, fetchTasks, joinTask, collectTask, cancelTask } =
     useCityTaskStore();
   const city = useCityStore((s) => s.city);
   const cityLevel = city?.level ?? 10;
@@ -175,7 +175,7 @@ export default function CityTasksScreen() {
             <Image source={TICKET_ICON} style={styles.starsIcon} contentFit="contain" />
             <View style={styles.starsText}>
               <LocaleText style={[styles.starsCount, { color: PRIMARY }]}>
-                {cityStyleStars}
+                {weeklyTickets}
               </LocaleText>
               <LocaleText style={[styles.starsTitle, { color: theme.text }]}>
                 {t('cityTasks.starsCardTitle')}

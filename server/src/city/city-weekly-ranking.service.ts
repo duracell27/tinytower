@@ -128,7 +128,7 @@ export class CityWeeklyRankingService {
       for (const e of entries) {
         await tx.cityWeeklyRankingEntry.upsert({
           where: { rankingId_cityId: { rankingId: ranking.id, cityId: e.cityId } },
-          create: { rankingId: ranking.id, ...e },
+          create: { rankingId: ranking.id, cityId: e.cityId, rank: e.rank, totalTickets: e.totalTickets, baseReward: e.baseReward, placementBonus: e.placementBonus, superBonus: e.superBonus, totalReward: e.totalReward, resourceReward: e.resourceReward },
           update: { rank: e.rank, totalTickets: e.totalTickets, baseReward: e.baseReward, placementBonus: e.placementBonus, superBonus: e.superBonus, totalReward: e.totalReward, resourceReward: e.resourceReward },
         });
 
