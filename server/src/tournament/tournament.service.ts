@@ -24,6 +24,12 @@ export interface LeaderboardDto {
   entries: LeaderboardEntry[];
 }
 
+export interface TournamentWeekSummary {
+  weekStart: string;
+  status: 'CURRENT' | 'PENDING' | 'PUBLISHED';
+  participants: number;
+}
+
 function isWeekClosed(weekStart: Date): boolean {
   const saturdayStart = new Date(weekStart.getTime() + 5 * 86_400_000);
   return new Date() >= saturdayStart;
@@ -46,6 +52,46 @@ function rankMedal(rank: number): string {
 @Injectable()
 export class TournamentService {
   constructor(private prisma: PrismaService) {}
+
+  async listWeeks(): Promise<TournamentWeekSummary[]> {
+    const thisWeek = new Date();
+    const day = thisWeek.getUTCDay();
+    const monday = new Date(Date.UTC(thisWeek.getUTCFullYear(), thisWeek.getUTCMonth(), thisWeek.getUTCDate() - ((day + 6) % 7)));
+
+    const weeks: Date[] = [];
+    for (let i = 7; i >= 0; i--) {
+      weeks.push(new Date(monday.getTime() - i * 7 * 86_400_000));
+    }
+
+    const [published, tokenCounts] = await Promise.all([
+      this.prisma.playerTokenTournament.findMany({
+        where: { weekStart: { in: weeks } },
+        select: { weekStart: true },
+      }),
+      this.prisma.playerWeeklyTokens.groupBy({
+        by: ['weekStart'],
+        where: { weekStart: { in: weeks } },
+        _count: { playerId: true },
+      }),
+    ]);
+
+    const publishedSet = new Set(published.map((p) => p.weekStart.toISOString()));
+    const countMap = new Map(tokenCounts.map((c) => [c.weekStart.toISOString(), c._count.playerId]));
+
+    return weeks.map((w) => {
+      const key = w.toISOString();
+      const isCurrent = w.getTime() === monday.getTime();
+      let status: TournamentWeekSummary['status'];
+      if (publishedSet.has(key)) {
+        status = 'PUBLISHED';
+      } else if (isCurrent) {
+        status = 'CURRENT';
+      } else {
+        status = 'PENDING';
+      }
+      return { weekStart: key, status, participants: countMap.get(key) ?? 0 };
+    });
+  }
 
   async getLeaderboard(weekStartIso: string): Promise<LeaderboardDto> {
     const weekStart = new Date(weekStartIso);

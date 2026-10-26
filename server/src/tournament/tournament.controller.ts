@@ -8,6 +8,11 @@ import { TournamentService } from './tournament.service';
 export class TournamentController {
   constructor(private tournamentService: TournamentService) {}
 
+  @Get('weeks')
+  listWeeks() {
+    return this.tournamentService.listWeeks();
+  }
+
   @Get('leaderboard')
   getLeaderboard(@Query('weekStart') weekStart: string) {
     if (!weekStart) throw new BadRequestException('weekStart is required');
