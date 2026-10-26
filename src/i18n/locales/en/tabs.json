@@ -471,6 +471,7 @@
         "idleDesc": "Build this building to unlock bonuses for all city members.",
         "buildBtn": "Build Level 1",
         "upgradeBtn": "Upgrade to Lv. {{next}}",
+        "anotherBuildingInProgress": "Another building is already under construction. Wait for it to finish first.",
         "skipBtn": "Skip",
         "tileTimeLeft": "⏱ Time Left",
         "tileSkip": "Skip",

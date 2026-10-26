@@ -124,6 +124,13 @@ export class CityBuildingService {
     if (currentState === CityBuildingState.BUILDING) {
       throw new BadRequestException('Already building');
     }
+
+    const anyUnderConstruction = await this.prisma.cityBuilding.findFirst({
+      where: { cityId, state: CityBuildingState.BUILDING },
+    });
+    if (anyUnderConstruction) {
+      throw new BadRequestException('ANOTHER_BUILDING_IN_PROGRESS');
+    }
     if (currentLevel >= 15) {
       throw new BadRequestException('Max level reached');
     }

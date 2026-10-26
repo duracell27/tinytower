@@ -225,9 +225,10 @@ export default function BuildingDetailScreen() {
   const cityBudget  = useCityStore((s) => s.budget);
   const fetchBudget = useCityStore((s) => s.fetchBudget);
 
-  const [building, setBuilding] = useState<CityBuildingDto | null>(null);
-  const [loading,  setLoading]  = useState(true);
-  const [busy,     setBusy]     = useState(false);
+  const [building,      setBuilding]      = useState<CityBuildingDto | null>(null);
+  const [allBuildings,  setAllBuildings]  = useState<CityBuildingDto[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [busy,          setBusy]          = useState(false);
   const [confirm,  setConfirm]  = useState<CityBuildingConfirmPayload | null>(null);
   const [insuffErr, setInsuffErr] = useState<{ currency: 'gems' | 'coins'; need: number; have: number } | null>(null);
 
@@ -237,6 +238,7 @@ export default function BuildingDetailScreen() {
       const data = await api.getCityBuildings(cityId);
       const found = data.find(b => b.buildingType === type);
       setBuilding(found ?? null);
+      setAllBuildings(data);
     } catch {
       Alert.alert('', t('city.buildings.loadError'));
     } finally {
@@ -259,6 +261,8 @@ export default function BuildingDetailScreen() {
           need: Number(need),
           have: Number(have),
         });
+      } else if (msg === 'ANOTHER_BUILDING_IN_PROGRESS') {
+        Alert.alert('', t('city.buildings.detail.anotherBuildingInProgress'));
       } else {
         Alert.alert('', msg || 'Error');
       }
@@ -276,6 +280,7 @@ export default function BuildingDetailScreen() {
   const level   = building?.level ?? 0;
   const state   = building?.state ?? 'IDLE';
   const maxed   = level >= MAX_LEVEL;
+  const anotherBuilding = allBuildings.find(b => b.buildingType !== btype && b.state === 'BUILDING') ?? null;
 
   const nextCfg       = level < MAX_LEVEL ? LEVEL_CONFIGS[level] : null;
   const currentCfg    = level > 0 ? LEVEL_CONFIGS[level - 1] : null;
@@ -592,10 +597,15 @@ export default function BuildingDetailScreen() {
                     );
                   })()}
 
+                  {anotherBuilding && (
+                    <LocaleText style={[styles.anotherBuildingNote, { color: theme.textMuted }]}>
+                      {t('city.buildings.detail.anotherBuildingInProgress')}
+                    </LocaleText>
+                  )}
                   <TouchableOpacity
-                    style={[styles.actionBtn, { backgroundColor: accent }, busy && styles.disabled]}
+                    style={[styles.actionBtn, { backgroundColor: accent }, (busy || !!anotherBuilding) && styles.disabled]}
                     activeOpacity={0.78}
-                    disabled={busy}
+                    disabled={busy || !!anotherBuilding}
                     onPress={() => {
                       const isIdle     = state === 'IDLE';
                       const costCurrency: 'gems' | 'coins' =
@@ -889,6 +899,7 @@ const styles = StyleSheet.create({
   btnIcon: { width: 18, height: 18 },
 
   disabled: { opacity: 0.5 },
+  anotherBuildingNote: { fontFamily: 'Fredoka_400Regular', fontSize: 12, textAlign: 'center', marginBottom: 6 },
 
   /* Tools requirement circles */
   toolsBlock: {
