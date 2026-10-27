@@ -2,9 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from './notifications.service';
+import { gameConfig } from '@shared/config/gameConfig';
 
-const SELL_THRESHOLD_MS = 30 * 60 * 1000; // 30 min — conservative threshold for READY_TO_COLLECT
-const DELIVERY_THRESHOLD_MS = 10 * 60 * 1000; // 10 min — conservative threshold for READY_TO_LIST
 const INACTIVE_THRESHOLD_MS = 10 * 60 * 1000; // only check players inactive for at least 10 min
 
 @Injectable()
@@ -46,12 +45,16 @@ export class GameTriggersScheduler {
         const updates: Record<string, Date | null> = {};
         const nowDate = new Date();
 
-        // collect_ready: SELLING stage + elapsed > 30 min → effectively READY_TO_COLLECT
+        // collect_ready: SELLING stage with elapsed >= actual sell duration → READY_TO_COLLECT
         if (player.notifiedCollect === null) {
           const readyCount = player.floors.filter((f) =>
-            f.productions.some(
-              (p) => p.stage === 'SELLING' && now - Number(p.stageStartedAt) > SELL_THRESHOLD_MS,
-            ),
+            f.productions.some((p) => {
+              if (p.stage === 'READY_TO_COLLECT') return true;
+              if (p.stage !== 'SELLING') return false;
+              const typeConfig = p.typeId ? (gameConfig.productionTypes as Record<string, { sellDuration: number } | undefined>)[p.typeId] : null;
+              const sellDuration = typeConfig?.sellDuration ?? 0;
+              return now - Number(p.stageStartedAt) >= sellDuration;
+            }),
           ).length;
           if (readyCount / totalFloors >= 0.75) {
             await this.notificationsService.sendPush(
@@ -63,12 +66,16 @@ export class GameTriggersScheduler {
           }
         }
 
-        // stock_ready: DELIVERING stage + elapsed > 10 min → effectively READY_TO_LIST
+        // stock_ready: DELIVERING stage with elapsed >= actual delivery duration → READY_TO_LIST
         if (player.notifiedStock === null) {
           const readyCount = player.floors.filter((f) =>
-            f.productions.some(
-              (p) => p.stage === 'DELIVERING' && now - Number(p.stageStartedAt) > DELIVERY_THRESHOLD_MS,
-            ),
+            f.productions.some((p) => {
+              if (p.stage === 'READY_TO_LIST') return true;
+              if (p.stage !== 'DELIVERING') return false;
+              const typeConfig = p.typeId ? (gameConfig.productionTypes as Record<string, { deliveryDuration: number } | undefined>)[p.typeId] : null;
+              const deliveryDuration = typeConfig?.deliveryDuration ?? 0;
+              return now - Number(p.stageStartedAt) >= deliveryDuration;
+            }),
           ).length;
           if (readyCount / totalFloors >= 0.75) {
             await this.notificationsService.sendPush(
