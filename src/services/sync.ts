@@ -33,7 +33,15 @@ interface SyncResponse {
     hotelBonus: number;
   };
   categoryProgress: Record<string, CategoryProgressState>;
-  dailyLoginReward?: { coins: number; gems: number } | null;
+  dailyLoginReward?: {
+    day: number;
+    coins: number;
+    gems: number;
+    tools?: Array<'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement'>;
+    tokens?: Array<'green' | 'blue' | 'yellow' | 'purple' | 'red'>;
+    boost?: { type: 'coin' | 'xp'; percent: 50 | 100; extended: boolean };
+    tomorrowReward: { coins: number; gems: number; extra: import('@shared/config/dailyLoginRewardConfig').DailyLoginExtra };
+  } | null;
   acceptedCommandIds?: string[];
   failedCommandIds?: string[];
   pendingReferralClaims?: Array<{

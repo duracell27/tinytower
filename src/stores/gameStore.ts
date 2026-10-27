@@ -186,7 +186,15 @@ interface UIState {
   failedCommandLog: FailedCommandEntry[];
   pendingReferralNotifications: ReferralNotification[];
   pendingWorkerFocus: string | null;
-  pendingDailyLoginReward: { coins: number; gems: number } | null;
+  pendingDailyLoginReward: {
+    day: number;
+    coins: number;
+    gems: number;
+    tools?: Array<'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement'>;
+    tokens?: Array<'green' | 'blue' | 'yellow' | 'purple' | 'red'>;
+    boost?: { type: 'coin' | 'xp'; percent: 50 | 100; extended: boolean };
+    tomorrowReward: { coins: number; gems: number; extra: import('@shared/config/dailyLoginRewardConfig').DailyLoginExtra };
+  } | null;
   tokenInsufficient: { floorType: 'green' | 'blue' | 'yellow' | 'purple' | 'red'; have: number; need: number } | null;
   pendingTaskReward: PendingTaskReward | null;
   pendingDeliverAll: DeliverAllSummary | null;
@@ -272,7 +280,7 @@ interface GameActions {
   dismissReferralNotification: () => void;
   setPendingWorkerFocus: (workerId: string) => void;
   clearPendingWorkerFocus: () => void;
-  setDailyLoginReward: (reward: { coins: number; gems: number }) => void;
+  setDailyLoginReward: (reward: NonNullable<GameStore['pendingDailyLoginReward']>) => void;
   dismissDailyLoginReward: () => void;
   clearFailedCommandLog: () => void;
   showTokenInsufficient: (payload: { floorType: 'green' | 'blue' | 'yellow' | 'purple' | 'red'; have: number; need: number }) => void;
