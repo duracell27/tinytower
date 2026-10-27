@@ -222,11 +222,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
             <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{gems}</LocaleText>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
-            <View style={styles.floorsIconWrap}>
-              {(['#6FBF46', '#8FD86A', '#6FBF46'] as const).map((c, i) => (
-                <View key={i} style={[styles.floorBar, { backgroundColor: c }]} />
-              ))}
-            </View>
+            <Image source={require('../../assets/img/floor.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <View>
               <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{floorCount}</LocaleText>
               <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</LocaleText>
@@ -239,25 +235,21 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       {!isAuthenticated && (
         <View style={styles.chipsContainer}>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
-            <LocaleText style={styles.chipStatEmoji}>👥</LocaleText>
+            <Image source={require('../../assets/img/users.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <View>
               <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.players) : '—'}</LocaleText>
               <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.playersLabel')}</LocaleText>
             </View>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
-            <View style={styles.floorsIconWrap}>
-              {(['#6FBF46', '#8FD86A', '#6FBF46'] as const).map((c, i) => (
-                <View key={i} style={[styles.floorBar, { backgroundColor: c }]} />
-              ))}
-            </View>
+            <Image source={require('../../assets/img/floor.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <View>
               <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.floors) : '—'}</LocaleText>
               <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</LocaleText>
             </View>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
-            <LocaleText style={styles.chipStatEmoji}>🏙️</LocaleText>
+            <Image source={require('../../assets/img/city/cityBuildings.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <View>
               <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.cities) : '—'}</LocaleText>
               <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.citiesLabel')}</LocaleText>
@@ -612,31 +604,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  floorsIconWrap: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
-  },
-  floorBar: {
-    width: 24,
-    height: 6,
-    borderRadius: 3,
-  },
   floorsLabel: {
     fontFamily: 'Nunito_700Bold',
     fontSize: 12,
     color: '#9A9684',
     marginTop: 3,
   },
-  chipStatEmoji: {
-    fontSize: 28,
-    lineHeight: 40,
-    width: 40,
-    textAlign: 'center',
-  },
-
   /* Continue button (case 1 & 2) */
   continueButton: {
     borderRadius: 22,
