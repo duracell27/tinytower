@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, StyleSheet, TextInput, TouchableOpacity, ScrollView,
   KeyboardAvoidingView, Platform, Modal, useColorScheme, Animated, Easing,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
@@ -12,15 +13,18 @@ import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
 import { useCityStore } from '../../src/stores/cityStore';
 import { useGameStore } from '../../src/stores/gameStore';
+import { api, type CityXpMonthlyEntry } from '../../src/services/api';
+import { formatXp } from '../../src/utils/format';
 
 const CITY_ICON    = require('../../assets/img/city/cityBuildings.png');
 const EDIT_ICON    = require('../../assets/img/edit.png');
 const DELETE_ICON  = require('../../assets/img/delete.png');
 const GEM_ICON     = require('../../assets/img/diamond.png');
 const INFO_ICON    = require('../../assets/img/InformationIcon.png');
+const XP_ICON      = require('../../assets/img/xpIcon.png');
 
 export default function CitySettingsScreen() {
-  const { t } = useTranslation('tabs');
+  const { t, i18n } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -37,6 +41,9 @@ export default function CitySettingsScreen() {
   const showCityAlert = useGameStore((s) => s.showCityAlert);
   const scaleAnim = useRef(new Animated.Value(0.7)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  const [cityXpHistory, setCityXpHistory] = useState<CityXpMonthlyEntry[]>([]);
+  const [cityXpLoading, setCityXpLoading] = useState(false);
 
   useEffect(() => {
     if (deleteModalVisible) {
@@ -56,6 +63,15 @@ export default function CitySettingsScreen() {
       setDescription(city.description ?? '');
     }
   }, [city]);
+
+  useEffect(() => {
+    if (!cityId) return;
+    setCityXpLoading(true);
+    api.getCityXpMonthlyHistory(cityId)
+      .then(setCityXpHistory)
+      .catch(() => {})
+      .finally(() => setCityXpLoading(false));
+  }, [cityId]);
 
   const handleSave = async () => {
     if (!cityId) return;
@@ -110,19 +126,25 @@ export default function CitySettingsScreen() {
   return (
     <AppBackground style={[styles.background, isDark && styles.backgroundDark]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 16 }]} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8 }]} keyboardShouldPersistTaps="handled">
 
-          {/* Header hero */}
-          <View style={[styles.heroCard, isDark && styles.heroCardDark]}>
-            <View style={[styles.heroIconCircle, { backgroundColor: isDark ? '#1A3A5C' : '#E8F4FF' }]}>
+          {/* Header */}
+          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+              <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : '#2E6EC9' }]}>‹</LocaleText>
+            </TouchableOpacity>
+            <View style={styles.heroCenter}>
               <Image source={CITY_ICON} style={styles.heroIcon} contentFit="contain" />
+              <View style={styles.heroTextWrap}>
+                <LocaleText style={[styles.heroTitle, isDark && { color: '#DDE8D8' }]}>
+                  {city?.name ?? ''}
+                </LocaleText>
+                <LocaleText style={[styles.heroSub, isDark && { color: '#8A9A80' }]}>
+                  {t('city.settings.title')}
+                </LocaleText>
+              </View>
             </View>
-            <LocaleText style={[styles.heroTitle, isDark && { color: '#DDE8D8' }]}>
-              {city?.name ?? ''}
-            </LocaleText>
-            <LocaleText style={[styles.heroSub, isDark && { color: '#8A9A80' }]}>
-              {t('city.settings.title')}
-            </LocaleText>
+            <View style={{ width: 36 }} />
           </View>
 
           {/* Name section */}
@@ -190,6 +212,41 @@ export default function CitySettingsScreen() {
               </LocaleText>
             </LinearGradient>
           </TouchableOpacity>
+
+          {/* City XP Monthly History */}
+          {(cityXpLoading || cityXpHistory.length > 0) && (
+            <View style={[styles.section, isDark && styles.sectionDark, { marginTop: 8 }]}>
+              <View style={styles.sectionHeader}>
+                <View style={[styles.sectionIconBox, { backgroundColor: isDark ? '#0A2830' : '#D8F0F5' }]}>
+                  <Image source={XP_ICON} style={styles.sectionIcon} contentFit="contain" />
+                </View>
+                <LocaleText style={[styles.sectionTitle, isDark && { color: '#DDE8D8' }]}>
+                  {t('city.settings.cityXpTitle')}
+                </LocaleText>
+              </View>
+
+              {cityXpLoading ? (
+                <ActivityIndicator size="small" color={isDark ? '#6BAED0' : '#2E6EC9'} style={{ marginVertical: 12 }} />
+              ) : (
+                cityXpHistory.map((entry) => (
+                  <View key={`${entry.year}-${entry.month}`} style={styles.xpRow}>
+                    <LocaleText style={[styles.xpMonth, isDark && { color: '#8A9A80' }]}>
+                      {new Date(entry.year, entry.month - 1).toLocaleDateString(
+                        i18n.language === 'uk' ? 'uk-UA' : 'en-US',
+                        { month: 'long', year: 'numeric' },
+                      )}
+                    </LocaleText>
+                    <View style={styles.xpValueRow}>
+                      <LocaleText style={[styles.xpValue, isDark && { color: '#6BAED0' }]}>
+                        {formatXp(entry.xp)}
+                      </LocaleText>
+                      <Image source={XP_ICON} style={styles.xpIcon} contentFit="contain" />
+                    </View>
+                  </View>
+                ))
+              )}
+            </View>
+          )}
 
           {/* Danger Zone */}
           <View style={styles.dangerDivider} />
@@ -303,12 +360,13 @@ const styles = StyleSheet.create({
   backgroundDark: { backgroundColor: '#0D1F2D' },
   scroll: { paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48 },
 
-  // Hero card
-  heroCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
+  // Header
+  hero: {
+    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
     marginBottom: 16,
     shadowColor: 'rgba(30,60,100,1)',
     shadowOffset: { width: 0, height: 4 },
@@ -316,18 +374,13 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 3,
   },
-  heroCardDark: { backgroundColor: '#1A2E3E' },
-  heroIconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  heroIcon: { width: 44, height: 44 },
-  heroTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#0A1C30', marginBottom: 4, textAlign: 'center' },
-  heroSub: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#5A7090' },
+  backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
+  backText: { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
+  heroCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  heroIcon: { width: 36, height: 36 },
+  heroTextWrap: { gap: 1 },
+  heroTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 20, color: '#0A1C30' },
+  heroSub: { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#5A7090' },
 
   // Section card
   section: {
@@ -382,6 +435,13 @@ const styles = StyleSheet.create({
   costHintDark: { backgroundColor: 'rgba(46,110,201,0.1)' },
   costHintIcon: { width: 16, height: 16 },
   costHintText: { fontFamily: 'Fredoka_400Regular', fontSize: 13, color: '#5A7090', flex: 1 },
+
+  // City XP history
+  xpRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)' },
+  xpMonth: { fontFamily: 'Fredoka_400Regular', fontSize: 13, color: '#5A7090', flex: 1 },
+  xpValueRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  xpValue: { fontFamily: 'Fredoka_600SemiBold', fontSize: 14, color: '#2E6EC9' },
+  xpIcon: { width: 14, height: 14 },
 
   // Save button
   saveBtn: { borderRadius: 14, overflow: 'hidden', marginTop: 4, marginBottom: 4 },

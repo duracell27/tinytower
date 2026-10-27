@@ -148,6 +148,12 @@ export class CityController {
     return this.cityService.getXpStats(cityId, req.user.playerId);
   }
 
+  @Get(':id/xp-monthly-history')
+  @UseGuards(JwtAuthGuard)
+  getCityXpMonthlyHistory(@Req() req: AuthReq, @Param('id') cityId: string) {
+    return this.cityService.getCityXpMonthlyHistory(cityId, req.user.playerId);
+  }
+
   @Post(':id/reset-xp-period')
   @UseGuards(JwtAuthGuard)
   resetXpPeriod(@Req() req: AuthReq, @Param('id') cityId: string) {

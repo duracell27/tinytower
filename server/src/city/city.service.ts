@@ -5,6 +5,7 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { CityRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { getCityLevel, getCityMaxMembers, getCityXpForNextLevel, CITY_LEVEL_CUMULATIVE } from './city-level';
@@ -762,6 +763,51 @@ export class CityService {
         percent: totalXpPeriod > 0 ? Math.round((m.xpPeriod / totalXpPeriod) * 100) : 0,
       })),
     };
+  }
+
+  async getCityXpMonthlyHistory(cityId: string, requesterId: string) {
+    const membership = await this.prisma.cityMembership.findUnique({
+      where: { playerId: requesterId },
+      select: { cityId: true },
+    });
+    if (!membership || membership.cityId !== cityId) throw new ForbiddenException('Not a member of this city');
+
+    return this.prisma.cityXpMonthly.findMany({
+      where: { cityId },
+      orderBy: [{ year: 'desc' }, { month: 'desc' }],
+      take: 12,
+      select: { year: true, month: true, xp: true },
+    });
+  }
+
+  // Runs at 00:05 on the 1st of every month (UTC)
+  @Cron('5 0 1 * *')
+  async snapshotMonthlyXp(): Promise<void> {
+    const now = new Date();
+    const prevMonth = now.getUTCMonth(); // 0-indexed, so getUTCMonth() is prev month (Jan=0 means Dec of prev year)
+    const year = prevMonth === 0 ? now.getUTCFullYear() - 1 : now.getUTCFullYear();
+    const month = prevMonth === 0 ? 12 : prevMonth;
+
+    const cities = await this.prisma.city.findMany({
+      select: { id: true, cityXp: true, cityXpLastSnapshot: true },
+    });
+
+    for (const city of cities) {
+      const gained = city.cityXp - city.cityXpLastSnapshot;
+      if (gained <= 0) continue;
+
+      await this.prisma.$transaction([
+        this.prisma.cityXpMonthly.upsert({
+          where: { cityId_year_month: { cityId: city.id, year, month } },
+          update: { xp: gained },
+          create: { cityId: city.id, year, month, xp: gained },
+        }),
+        this.prisma.city.update({
+          where: { id: city.id },
+          data: { cityXpLastSnapshot: city.cityXp },
+        }),
+      ]);
+    }
   }
 
   async resetXpPeriod(cityId: string, actorId: string): Promise<void> {

@@ -468,10 +468,12 @@ model City {
   budgetScrew       Int       @default(0)
   budgetWood        Int       @default(0)
   budgetCement      Int       @default(0)
-  budgetLastResetAt DateTime?
+  budgetLastResetAt     DateTime?
+  cityXpLastSnapshot    Int       @default(0)
   styleStars    Int       @default(0)
   members       CityMembership[]
   invites       CityInvite[]
+  monthlyXp     CityXpMonthly[]
   budgetTransactions CityBudgetTransaction[]
   historyEvents  CityHistoryEvent[]
   notifications  CityNotification[]
@@ -776,4 +778,17 @@ model PlayerTokenTournamentEntry {
   player       Player                @relation(fields: [playerId], references: [id])
 
   @@unique([tournamentId, playerId])
+}
+
+model CityXpMonthly {
+  id     String @id @default(uuid())
+  cityId String
+  year   Int
+  month  Int
+  xp     Int    @default(0)
+
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([cityId, year, month])
+  @@index([cityId])
 }

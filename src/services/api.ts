@@ -133,6 +133,12 @@ export interface CityXpStats {
   members: CityXpStatMember[];
 }
 
+export interface CityXpMonthlyEntry {
+  year: number;
+  month: number;
+  xp: number;
+}
+
 export interface CityBudget {
   budgetCoins: number;
   budgetGems: number;
@@ -590,6 +596,8 @@ export const api = {
     request<CityXpStats>('GET', `/city/${cityId}/xp-stats`),
   resetCityXpPeriod: (cityId: string) =>
     request<void>('POST', `/city/${cityId}/reset-xp-period`),
+  getCityXpMonthlyHistory: (cityId: string) =>
+    request<CityXpMonthlyEntry[]>('GET', `/city/${cityId}/xp-monthly-history`),
   getCityBudget: (cityId: string) =>
     request<CityBudget>('GET', `/city/${cityId}/budget`),
   donateToCityBudget: (cityId: string, payload: DonateBudgetPayload) =>

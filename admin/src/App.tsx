@@ -9,6 +9,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { CitiesPage } from './pages/CitiesPage';
 import { CityTaskRankingsPage } from './pages/CityTaskRankingsPage';
 import { TokenTournamentPage } from './pages/TokenTournamentPage';
+import { CronMonitorPage } from './pages/CronMonitorPage';
 
 export function App() {
   return (
@@ -76,6 +77,14 @@ export function App() {
           element={
             <ProtectedRoute>
               <TokenTournamentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cron-monitor"
+          element={
+            <ProtectedRoute>
+              <CronMonitorPage />
             </ProtectedRoute>
           }
         />

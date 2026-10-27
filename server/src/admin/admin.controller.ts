@@ -9,6 +9,7 @@ import { AdminGuard } from './admin.guard';
 import { AdminService } from './admin.service';
 import { ReportService } from '../report/report.service';
 import { CityWeeklyRankingService } from '../city/city-weekly-ranking.service';
+import { CityService } from '../city/city.service';
 
 type AuthReq = { user: { playerId: string; isAdmin: boolean } };
 
@@ -59,6 +60,7 @@ export class AdminController {
     private adminService: AdminService,
     private reportService: ReportService,
     private cityWeeklyRankingService: CityWeeklyRankingService,
+    private cityService: CityService,
   ) {}
 
   @Get('players')
@@ -262,5 +264,16 @@ export class AdminController {
   approveCityTaskRanking(@Req() req: AuthReq, @Body() body: { weekStart: string }) {
     if (!body.weekStart) throw new BadRequestException('weekStart is required');
     return this.cityWeeklyRankingService.approveRanking(req.user.playerId, body.weekStart);
+  }
+
+  @Get('cron/city-xp-monthly')
+  getCityXpCronStatus() {
+    return this.adminService.getCityXpCronStatus();
+  }
+
+  @Post('cron/city-xp-monthly/run')
+  async runCityXpCronNow() {
+    await this.cityService.snapshotMonthlyXp();
+    return { ok: true };
   }
 }

@@ -395,6 +395,7 @@ export class SyncService {
             },
           });
 
+
           const newLevel = getCityLevel(updatedCity.cityXp);
           if (newLevel > oldLevel) {
             await tx.cityHistoryEvent.create({

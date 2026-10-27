@@ -300,7 +300,8 @@
       "deleteConfirmBtn": "Видалити назавжди",
       "deleteSuccess": "Місто видалено",
       "deleteError": "Не вдалося видалити місто",
-      "cancel": "Скасувати"
+      "cancel": "Скасувати",
+      "cityXpTitle": "XP міста по місяцях"
     },
     "invite": {
       "success": "Гравця запрошено до міста",

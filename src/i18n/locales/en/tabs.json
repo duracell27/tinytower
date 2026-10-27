@@ -300,7 +300,8 @@
       "deleteConfirmBtn": "Delete permanently",
       "deleteSuccess": "City deleted",
       "deleteError": "Failed to delete city",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "cityXpTitle": "City XP by Month"
     },
     "invite": {
       "success": "Player invited to the city",

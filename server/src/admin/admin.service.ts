@@ -459,4 +459,53 @@ export class AdminService {
       totalPages: Math.ceil(total / limit),
     };
   }
+
+  async getCityXpCronStatus() {
+    const oldest = await this.prisma.city.findFirst({
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true },
+    });
+    if (!oldest) return { months: [] };
+
+    const rows = await this.prisma.cityXpMonthly.groupBy({
+      by: ['year', 'month'],
+      _sum: { xp: true },
+      _count: { cityId: true },
+    });
+    const ran = new Set(rows.map((r) => `${r.year}-${String(r.month).padStart(2, '0')}`));
+    const ranMap = Object.fromEntries(rows.map((r) => [`${r.year}-${String(r.month).padStart(2, '0')}`, r]));
+
+    const now = new Date();
+    const start = new Date(oldest.createdAt);
+    // First snapshot happens after the first full month, so start from month after founding
+    const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1));
+
+    const months: Array<{
+      key: string; year: number; month: number;
+      status: 'ok' | 'missing' | 'upcoming';
+      citiesCount: number; totalXp: number;
+    }> = [];
+
+    while (cursor < now) {
+      const y = cursor.getUTCFullYear();
+      const m = cursor.getUTCMonth() + 1;
+      // Cron runs on 1st of the NEXT month for the PREVIOUS month
+      const cronRunDate = new Date(Date.UTC(y, m, 1)); // 1st of next month
+      const key = `${y}-${String(m).padStart(2, '0')}`;
+      const upcoming = cronRunDate > now;
+      const entry = ranMap[key];
+      months.push({
+        key,
+        year: y,
+        month: m,
+        status: upcoming ? 'upcoming' : ran.has(key) ? 'ok' : 'missing',
+        citiesCount: entry?._count?.cityId ?? 0,
+        totalXp: entry?._sum?.xp ?? 0,
+      });
+      cursor.setUTCMonth(cursor.getUTCMonth() + 1);
+    }
+
+    months.reverse(); // newest first
+    return { months };
+  }
 }
