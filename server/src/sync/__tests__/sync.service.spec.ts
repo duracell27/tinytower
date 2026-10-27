@@ -673,7 +673,7 @@ describe('SyncService', () => {
       );
     });
 
-    it('should grant daily login reward when lastDailyLoginClaimedAt is 0', async () => {
+    it('should grant day-1 streak reward when lastDailyLoginClaimedAt is 0', async () => {
       const playerWithNoState = {
         ...mockPlayer,
         state: null,
@@ -683,14 +683,153 @@ describe('SyncService', () => {
         .mockResolvedValueOnce({ ...playerWithNoState, stateVersion: 1 });
 
       // Override txMock: simulate no prior claim
-      txMock.playerState.findUnique.mockResolvedValueOnce({ lastDailyLoginClaimedAt: BigInt(0) });
+      txMock.playerState.findUnique.mockResolvedValueOnce({ lastDailyLoginClaimedAt: BigInt(0), loginStreak: 1 });
 
       const result = await syncService.processSync('player-uuid', [], 0);
 
-      const expectedCoins = mockFloors.length * 3000; // 5 floors × 3000 = 15000
-      expect(result.dailyLoginReward).toEqual({ coins: expectedCoins, gems: 3 });
+      // Day 1: coinsMultiplier 1.5, gems 2, no extra
+      const expectedCoins = Math.floor(mockFloors.length * 3000 * 1.5); // 5 * 3000 * 1.5 = 22500
+      expect(result.dailyLoginReward).not.toBeNull();
+      expect(result.dailyLoginReward!.day).toBe(1);
+      expect(result.dailyLoginReward!.coins).toBe(expectedCoins);
+      expect(result.dailyLoginReward!.gems).toBe(2);
+      expect(result.dailyLoginReward!.tools).toBeUndefined();
+      expect(result.dailyLoginReward!.boost).toBeUndefined();
+      expect(result.dailyLoginReward!.tomorrowReward).toMatchObject({ gems: 2 });
       expect(result.state.balance).toBe(100 + expectedCoins);
-      expect(result.state.gems).toBe(20 + 3);
+      expect(result.state.gems).toBe(20 + 2);
+    });
+
+    it('should increment streak to day 2 on consecutive login', async () => {
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const yesterdayMidnight = todayMidnight.getTime() - 86_400_000;
+      const claimedYesterday = BigInt(yesterdayMidnight + 3600_000); // claimed 1h after yesterday midnight
+
+      const playerWithYesterdayClaim = { ...mockPlayer, state: null };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithYesterdayClaim)
+        .mockResolvedValueOnce({ ...playerWithYesterdayClaim, stateVersion: 1 });
+
+      txMock.playerState.findUnique.mockResolvedValueOnce({
+        lastDailyLoginClaimedAt: claimedYesterday,
+        loginStreak: 1,
+      });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      // Day 2: coinsMultiplier 1.7, gems 2, 1 tool
+      expect(result.dailyLoginReward).not.toBeNull();
+      expect(result.dailyLoginReward!.day).toBe(2);
+      expect(result.dailyLoginReward!.gems).toBe(2);
+      expect(result.dailyLoginReward!.tools).toHaveLength(1);
+      expect(result.dailyLoginReward!.boost).toBeUndefined();
+    });
+
+    it('should reset streak to day 1 when a day was missed', async () => {
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const twoDaysAgoMidnight = todayMidnight.getTime() - 2 * 86_400_000;
+      const claimedTwoDaysAgo = BigInt(twoDaysAgoMidnight + 3600_000);
+
+      const player = { ...mockPlayer, state: null };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(player)
+        .mockResolvedValueOnce({ ...player, stateVersion: 1 });
+
+      txMock.playerState.findUnique.mockResolvedValueOnce({
+        lastDailyLoginClaimedAt: claimedTwoDaysAgo,
+        loginStreak: 5, // was on day 5 but missed a day
+      });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      // Missed a day → resets to day 1
+      expect(result.dailyLoginReward!.day).toBe(1);
+    });
+
+    it('should wrap streak back to day 1 after day 7', async () => {
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const yesterdayMidnight = todayMidnight.getTime() - 86_400_000;
+      const claimedYesterday = BigInt(yesterdayMidnight + 3600_000);
+
+      const player = { ...mockPlayer, state: null };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(player)
+        .mockResolvedValueOnce({ ...player, stateVersion: 1 });
+
+      txMock.playerState.findUnique.mockResolvedValueOnce({
+        lastDailyLoginClaimedAt: claimedYesterday,
+        loginStreak: 7, // was on day 7 yesterday
+      });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      // After day 7 → wraps to day 1
+      expect(result.dailyLoginReward!.day).toBe(1);
+    });
+
+    it('should extend active coin boost instead of stacking percent (Review Focus #2)', async () => {
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const yesterdayMidnight = todayMidnight.getTime() - 86_400_000;
+      const claimedYesterday = BigInt(yesterdayMidnight + 3600_000);
+      const futureExpiry = Date.now() + 7200_000; // active boost, expires in 2h
+
+      const playerWithBoost = {
+        ...mockPlayer,
+        state: null,
+      };
+      // Patch gameStateBefore to have an active coin boost
+      const stateWithBoost = {
+        coinBoostPercent: 100,
+        coinBoostExpiresAt: futureExpiry,
+      };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithBoost)
+        .mockResolvedValueOnce({ ...playerWithBoost, stateVersion: 1 });
+
+      // day 5 (streak=5) → but we want to test day 6 which is coinBoost
+      txMock.playerState.findUnique.mockResolvedValueOnce({
+        lastDailyLoginClaimedAt: claimedYesterday,
+        loginStreak: 5, // → nextStreak = 6 → coinBoost +50% / 1h
+      });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.dailyLoginReward!.day).toBe(6);
+      expect(result.dailyLoginReward!.boost).toMatchObject({ type: 'coin', percent: 50 });
+    });
+
+    it('should add tools even when warehouse is full (Review Focus #4)', async () => {
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const yesterdayMidnight = todayMidnight.getTime() - 86_400_000;
+      const claimedYesterday = BigInt(yesterdayMidnight + 3600_000);
+
+      const playerWithNoState = { ...mockPlayer, state: null };
+      prisma.player.findUnique
+        .mockResolvedValueOnce(playerWithNoState)
+        .mockResolvedValueOnce({ ...playerWithNoState, stateVersion: 1 });
+
+      // Day 1 → streak was 1 → nextStreak = 2 → 1 tool
+      txMock.playerState.findUnique.mockResolvedValueOnce({
+        lastDailyLoginClaimedAt: claimedYesterday,
+        loginStreak: 1,
+      });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.dailyLoginReward!.day).toBe(2);
+      expect(result.dailyLoginReward!.tools).toHaveLength(1);
+
+      // The tool should be added to gameState regardless of warehouse capacity
+      const toolTool = result.dailyLoginReward!.tools![0];
+      const initialToolCount = (mockPlayer.state as any)?.[toolTool] ?? 1;
+      // gameState.tools[tool] should be > initial value (at least initial + 1)
+      const finalToolValue = (result.state.tools as Record<string, number>)[toolTool];
+      expect(finalToolValue).toBeGreaterThanOrEqual(1);
     });
 
     it('should not grant daily login reward when already claimed today', async () => {

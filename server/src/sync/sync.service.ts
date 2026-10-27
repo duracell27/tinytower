@@ -20,6 +20,11 @@ import { CityTaskService, CityTaskSummaryDto } from '../city/city-task.service';
 import { computeTaskDelta, isWeekendUTC, currentWeekStart } from '../city/city-task.constants';
 import { getCityLevel } from '../city/city-level';
 import { isWeekdayUTC } from '../tournament/tournament.constants';
+import {
+  DAILY_LOGIN_REWARD_SCHEDULE,
+  DAILY_LOGIN_BOOST_DURATION_MS,
+  type DailyLoginExtra,
+} from '@shared/config/dailyLoginRewardConfig';
 
 export interface SyncResult {
   state: GameState;
@@ -35,7 +40,15 @@ export interface SyncResult {
   cityPrBonus: number;
   cityBuildingBonuses: CityBuildingBonuses;
   categoryProgress: Record<string, CategoryProgressState>;
-  dailyLoginReward: { coins: number; gems: number } | null;
+  dailyLoginReward: {
+    day: number;
+    coins: number;
+    gems: number;
+    tools?: Array<'briks' | 'glass' | 'nails' | 'screw' | 'wood' | 'cement'>;
+    tokens?: Array<'green' | 'blue' | 'yellow' | 'purple' | 'red'>;
+    boost?: { type: 'coin' | 'xp'; percent: 50 | 100; extended: boolean };
+    tomorrowReward: { coins: number; gems: number; extra: DailyLoginExtra };
+  } | null;
   acceptedCommandIds: string[];
   failedCommandIds: string[];
   cityTasks?: { tasks: CityTaskSummaryDto[]; myActiveTaskId: string | null; cityStyleStars: number; isWeekend: boolean; weeklyResult: any | null };
@@ -170,7 +183,8 @@ export class SyncService {
     const shouldCheckLoginReward =
       Number(player.state?.lastDailyLoginClaimedAt ?? 0) < todayMidnight &&
       registrationMidnight < todayMidnight;
-    let dailyLoginReward: { coins: number; gems: number } | null = null;
+    let dailyLoginReward: SyncResult['dailyLoginReward'] = null;
+    let nextLoginStreak: number | null = null;
 
     for (const command of newCommands) {
       const prevBalance = gameState.balance;
@@ -313,16 +327,76 @@ export class SyncService {
         if (shouldCheckLoginReward) {
           const currentState = await tx.playerState.findUnique({
             where: { playerId },
-            select: { lastDailyLoginClaimedAt: true },
+            select: { lastDailyLoginClaimedAt: true, loginStreak: true },
           });
           if (Number(currentState?.lastDailyLoginClaimedAt ?? 0) < todayMidnight) {
-            const loginCoins = player.floors.length * 3000;
-            gameState = {
-              ...gameState,
-              balance: gameState.balance + loginCoins,
-              gems: gameState.gems + 3,
+            const yesterdayMidnight = todayMidnight - 86_400_000;
+            const lastClaimed = Number(currentState?.lastDailyLoginClaimedAt ?? 0);
+            const prevStreak = currentState?.loginStreak ?? 1;
+            const isConsecutive = lastClaimed >= yesterdayMidnight && lastClaimed < todayMidnight;
+            const nextStreak = isConsecutive
+              ? (prevStreak >= 7 ? 1 : prevStreak + 1)
+              : 1;
+
+            const dayConfig = DAILY_LOGIN_REWARD_SCHEDULE[nextStreak - 1];
+            const loginCoins = Math.floor(player.floors.length * 3000 * dayConfig.coinsMultiplier);
+
+            // Apply coins + gems
+            gameState = { ...gameState, balance: gameState.balance + loginCoins, gems: gameState.gems + dayConfig.gems };
+
+            // Apply extra reward
+            const toolTypes = ['briks', 'glass', 'nails', 'screw', 'wood', 'cement'] as const;
+            const tokenColors = ['green', 'blue', 'yellow', 'purple', 'red'] as const;
+            let rewardTools: Array<typeof toolTypes[number]> | undefined;
+            let rewardTokens: Array<typeof tokenColors[number]> | undefined;
+            let rewardBoost: { type: 'coin' | 'xp'; percent: 50 | 100; extended: boolean } | undefined;
+
+            const extra = dayConfig.extra;
+            if (extra?.type === 'tool') {
+              rewardTools = Array.from({ length: extra.count }, () => toolTypes[Math.floor(Math.random() * toolTypes.length)]);
+              const updatedTools = { ...gameState.tools };
+              for (const t of rewardTools) updatedTools[t] = (updatedTools[t] ?? 0) + 1;
+              gameState = { ...gameState, tools: updatedTools };
+            } else if (extra?.type === 'token') {
+              rewardTokens = Array.from({ length: extra.count }, () => tokenColors[Math.floor(Math.random() * tokenColors.length)]);
+              const updatedTokens = { ...gameState.tokens };
+              for (const c of rewardTokens) updatedTokens[c] = (updatedTokens[c] ?? 0) + 1;
+              gameState = { ...gameState, tokens: updatedTokens };
+            } else if (extra?.type === 'coinBoost' || extra?.type === 'xpBoost') {
+              const isCoin = extra.type === 'coinBoost';
+              const expField = isCoin ? 'coinBoostExpiresAt' : 'xpBoostExpiresAt';
+              const pctField = isCoin ? 'coinBoostPercent' : 'xpBoostPercent';
+              const isActive = (gameState[expField] ?? 0) > serverNow;
+              if (isActive) {
+                gameState = { ...gameState, [expField]: (gameState[expField] ?? 0) + DAILY_LOGIN_BOOST_DURATION_MS };
+                rewardBoost = { type: isCoin ? 'coin' : 'xp', percent: extra.percent, extended: true };
+              } else {
+                gameState = {
+                  ...gameState,
+                  [pctField]: extra.percent,
+                  [expField]: serverNow + DAILY_LOGIN_BOOST_DURATION_MS,
+                };
+                rewardBoost = { type: isCoin ? 'coin' : 'xp', percent: extra.percent, extended: false };
+              }
+            }
+
+            // Tomorrow's reward
+            const tomorrowDay = nextStreak >= 7 ? 1 : nextStreak + 1;
+            const tomorrowConfig = DAILY_LOGIN_REWARD_SCHEDULE[tomorrowDay - 1];
+            const tomorrowCoins = Math.floor(player.floors.length * 3000 * tomorrowConfig.coinsMultiplier);
+
+            dailyLoginReward = {
+              day: nextStreak,
+              coins: loginCoins,
+              gems: dayConfig.gems,
+              ...(rewardTools ? { tools: rewardTools } : {}),
+              ...(rewardTokens ? { tokens: rewardTokens } : {}),
+              ...(rewardBoost ? { boost: rewardBoost } : {}),
+              tomorrowReward: { coins: tomorrowCoins, gems: tomorrowConfig.gems, extra: tomorrowConfig.extra },
             };
-            dailyLoginReward = { coins: loginCoins, gems: 3 };
+
+            // Persist for upsert branches below
+            nextLoginStreak = nextStreak;
           }
         }
         // Compute final stats using locked player values + deltas to avoid stale reads under concurrency
@@ -457,7 +531,7 @@ export class SyncService {
             wood:  gameState.tools.wood,
             cement: gameState.tools.cement,
             lobbyVisitors: gameState.lobbyVisitors,
-            ...(dailyLoginReward ? { lastDailyLoginClaimedAt: BigInt(serverNow) } : {}),
+            ...(dailyLoginReward ? { lastDailyLoginClaimedAt: BigInt(serverNow), loginStreak: nextLoginStreak ?? 1 } : {}),
             tokenGreen:             gameState.tokens.green,
             tokenBlue:              gameState.tokens.blue,
             tokenYellow:            gameState.tokens.yellow,
@@ -507,7 +581,7 @@ export class SyncService {
             wood:  gameState.tools.wood,
             cement: gameState.tools.cement,
             lobbyVisitors: gameState.lobbyVisitors,
-            ...(dailyLoginReward ? { lastDailyLoginClaimedAt: BigInt(serverNow) } : {}),
+            ...(dailyLoginReward ? { lastDailyLoginClaimedAt: BigInt(serverNow), loginStreak: nextLoginStreak ?? 1 } : {}),
             tokenGreen:             { increment: gameState.tokens.green   - gameStateBefore.tokens.green },
             tokenBlue:              { increment: gameState.tokens.blue    - gameStateBefore.tokens.blue },
             tokenYellow:            { increment: gameState.tokens.yellow  - gameStateBefore.tokens.yellow },
