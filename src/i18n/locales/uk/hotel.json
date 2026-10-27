@@ -228,8 +228,16 @@
   },
   "dailyLoginReward": {
     "title": "Щоденна нагорода",
+    "dayLabel": "День {{day}} з 7",
     "subtitle": "Ось ваша нагорода за сьогодні!",
-    "claim": "Забрати"
+    "claim": "Забрати",
+    "tomorrow": "Завтра",
+    "toolReward": "{{count}}× Інструмент",
+    "tokenReward": "{{count}}× Токен",
+    "boostExtended": "+1г {{type}} буст",
+    "boostNew": "+{{percent}}% {{type}} на 1г",
+    "boostTypeCoin": "маркетинг",
+    "boostTypeXp": "піар"
   },
   "levelUp": {
     "title": "Новий рівень!",

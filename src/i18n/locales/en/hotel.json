@@ -228,8 +228,16 @@
   },
   "dailyLoginReward": {
     "title": "Daily Reward",
+    "dayLabel": "Day {{day}} of 7",
     "subtitle": "Here's your reward for today!",
-    "claim": "Collect"
+    "claim": "Collect",
+    "tomorrow": "Tomorrow",
+    "toolReward": "{{count}}× Tool",
+    "tokenReward": "{{count}}× Token",
+    "boostExtended": "+1h {{type}} boost",
+    "boostNew": "+{{percent}}% {{type}} for 1h",
+    "boostTypeCoin": "marketing",
+    "boostTypeXp": "PR"
   },
   "levelUp": {
     "title": "New Level!",
