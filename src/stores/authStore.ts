@@ -46,6 +46,18 @@ interface AuthActions {
 
 type AuthStore = AuthState & AuthActions;
 
+function setSentryUser(player: PlayerInfo | null) {
+  if (!player) {
+    Sentry.setUser(null);
+    return;
+  }
+  Sentry.setUser({
+    id: player.id,
+    username: player.playerName,
+    ...(player.email ? { email: player.email } : {}),
+  });
+}
+
 let storage: ReturnType<typeof createMMKV> | null = null;
 function getStorage() {
   if (!storage) storage = createMMKV({ id: 'auth' });
@@ -89,6 +101,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
+      setSentryUser(data.player);
       setupUserPersistence(data.player.id);
       useOnboardingStore.getState().reset();
       useOnboardingStore.getState().start();
@@ -112,6 +125,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
+      setSentryUser(data.player);
       setupUserPersistence(data.player.id);
       useOnboardingStore.getState().reset();
     } catch (e) {
@@ -146,6 +160,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     api.clearTokens();
     getStorage().remove('player');
     getStorage().remove('pendingRegistration');
+    setSentryUser(null);
     set({ player: null, isAuthenticated: false, isGuest: false, pendingRegistration: false });
   },
 
@@ -156,6 +171,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     getStorage().remove('player');
     getStorage().remove('pendingRegistration');
     getStorage().remove('lastPlayer');
+    setSentryUser(null);
     set({ player: null, lastPlayer: null, isAuthenticated: false, isGuest: false, pendingRegistration: false });
   },
 
@@ -167,6 +183,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
+      setSentryUser(data.player);
       setupUserPersistence(data.player.id);
       useOnboardingStore.getState().reset();
       useOnboardingStore.getState().start();
@@ -199,6 +216,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().remove('pendingRegistration');
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, pendingRegistration: false });
+      setSentryUser(data.player);
       setupUserPersistence(data.player.id);
     } catch (e) {
       Sentry.captureMessage('retryRegistration failed, still offline', {
@@ -216,6 +234,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('player', JSON.stringify(player));
       saveLastPlayer(player);
       set({ player, lastPlayer: player, isAuthenticated: true, isLoading: false });
+      setSentryUser(player);
       setupUserPersistence(player.id);
       return data.registrationGems ?? 5;
     } catch (e) {
@@ -234,6 +253,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('player', JSON.stringify(data.player));
       saveLastPlayer(data.player);
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
+      setSentryUser(data.player);
       setupUserPersistence(data.player.id);
       if (data.isNewUser) {
         useOnboardingStore.getState().reset();
@@ -256,6 +276,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('player', JSON.stringify(player));
       saveLastPlayer(player);
       set({ player, lastPlayer: player, isAuthenticated: true, isLoading: false });
+      setSentryUser(player);
       setupUserPersistence(player.id);
       return null;
     } catch (e: unknown) {
@@ -278,6 +299,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       try {
         const player = JSON.parse(playerStr) as PlayerInfo;
         set({ player, lastPlayer: lastPlayer ?? player, isAuthenticated: true });
+        setSentryUser(player);
         setupUserPersistence(player.id);
       } catch {
         set({ player: null, lastPlayer, isAuthenticated: false });
@@ -286,6 +308,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       try {
         const player = JSON.parse(playerStr) as PlayerInfo;
         setupUserPersistence(player.id);
+        setSentryUser(player);
         useGameStore.setState({ isHydrated: true });
         set({ player, lastPlayer: lastPlayer ?? player, isAuthenticated: true, isGuest: true, pendingRegistration: true });
       } catch {
