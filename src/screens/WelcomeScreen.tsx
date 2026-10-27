@@ -476,14 +476,14 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
           {t('welcome.terms.continuingText')}
           <LocaleText
             style={styles.termsUnderline}
-            onPress={() => Linking.openURL('https://TODO/terms')}
+            onPress={() => Linking.openURL('https://vibetower.app/terms.html')}
           >
             {t('welcome.terms.terms')}
           </LocaleText>
           {t('welcome.terms.and')}
           <LocaleText
             style={styles.termsUnderline}
-            onPress={() => Linking.openURL('https://TODO/privacy')}
+            onPress={() => Linking.openURL('https://vibetower.app/privacy.html')}
           >
             {t('welcome.terms.policy')}
           </LocaleText>
