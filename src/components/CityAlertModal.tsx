@@ -138,7 +138,7 @@ export default function CityAlertModal({ asOverlay = false }: { asOverlay?: bool
 
   const visible = alert !== null || confirm !== null;
   const isQueued = useModalQueue('CityAlert', visible && !asOverlay);
-  const showModal = asOverlay ? visible : isQueued;
+  const showModal = asOverlay ? visible : (isQueued && visible);
   useModalBreadcrumb('CityAlert', showModal);
   const scale = useSharedValue(0.5);
   const opacity = useSharedValue(0);
