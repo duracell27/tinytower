@@ -62,6 +62,7 @@ export default function DailyLoginRewardModal() {
               </View>
 
               <LocaleText style={[styles.title, isDark && { color: theme.text }]}>{t('dailyLoginReward.title')}</LocaleText>
+              <LocaleText style={[styles.dayLabel, isDark && { color: theme.textMuted }]}>{t('dailyLoginReward.dayLabel', { day: reward.day })}</LocaleText>
               <LocaleText style={[styles.subtitle, isDark && { color: theme.textMuted }]}>{t('dailyLoginReward.subtitle')}</LocaleText>
 
               <View style={styles.rewardsContainer}>
@@ -73,6 +74,33 @@ export default function DailyLoginRewardModal() {
                   <GemIcon size={16} />
                   <LocaleText style={[styles.rewardTextGem, isDark && { color: '#4DC8E0' }]}>+{reward.gems}</LocaleText>
                 </View>
+                {reward.tools && reward.tools.length > 0 && (
+                  <View style={[styles.rewardRow, { backgroundColor: isDark ? theme.surfaceCard : '#fff' }]}>
+                    <LocaleText style={styles.rewardEmoji}>🔧</LocaleText>
+                    <LocaleText style={[styles.rewardText, isDark && { color: theme.text }]}>{t('dailyLoginReward.toolReward', { count: reward.tools.length })}</LocaleText>
+                  </View>
+                )}
+                {reward.tokens && reward.tokens.length > 0 && (
+                  <View style={[styles.rewardRow, { backgroundColor: isDark ? theme.surfaceCard : '#fff' }]}>
+                    <LocaleText style={styles.rewardEmoji}>🎫</LocaleText>
+                    <LocaleText style={[styles.rewardText, isDark && { color: theme.text }]}>{t('dailyLoginReward.tokenReward', { count: reward.tokens.length })}</LocaleText>
+                  </View>
+                )}
+                {reward.boost && (
+                  <View style={[styles.rewardRow, { backgroundColor: isDark ? theme.surfaceCard : '#fff' }]}>
+                    <LocaleText style={styles.rewardEmoji}>{reward.boost.type === 'coin' ? '💰' : '📣'}</LocaleText>
+                    <LocaleText style={[styles.rewardText, isDark && { color: theme.text }]}>
+                      {(() => {
+                        const boostTypeName = reward.boost!.type === 'coin'
+                          ? t('dailyLoginReward.boostTypeCoin')
+                          : t('dailyLoginReward.boostTypeXp');
+                        return reward.boost!.extended
+                          ? t('dailyLoginReward.boostExtended', { type: boostTypeName })
+                          : t('dailyLoginReward.boostNew', { percent: reward.boost!.percent, type: boostTypeName });
+                      })()}
+                    </LocaleText>
+                  </View>
+                )}
               </View>
 
               <Pressable
@@ -84,6 +112,25 @@ export default function DailyLoginRewardModal() {
                 </LinearGradient>
                 <View style={styles.buttonShadow} />
               </Pressable>
+
+              <View style={[styles.tomorrow, { backgroundColor: isDark ? theme.surfaceCard : '#F0F7E8' }]}>
+                <LocaleText style={[styles.tomorrowLabel, isDark && { color: theme.textMuted }]}>{t('dailyLoginReward.tomorrow')}: </LocaleText>
+                <View style={styles.tomorrowRow}>
+                  <CoinIcon size={14} />
+                  <LocaleText style={[styles.tomorrowText, isDark && { color: theme.textMuted }]}>{formatNum(reward.tomorrowReward.coins)}</LocaleText>
+                  <GemIcon size={12} />
+                  <LocaleText style={[styles.tomorrowText, isDark && { color: theme.textMuted }]}>  {reward.tomorrowReward.gems}</LocaleText>
+                  {reward.tomorrowReward.extra?.type === 'tool' && (
+                    <LocaleText style={styles.tomorrowExtra}>  🔧×{reward.tomorrowReward.extra.count}</LocaleText>
+                  )}
+                  {reward.tomorrowReward.extra?.type === 'token' && (
+                    <LocaleText style={styles.tomorrowExtra}>  🎫×{reward.tomorrowReward.extra.count}</LocaleText>
+                  )}
+                  {(reward.tomorrowReward.extra?.type === 'coinBoost' || reward.tomorrowReward.extra?.type === 'xpBoost') && (
+                    <LocaleText style={styles.tomorrowExtra}>  {reward.tomorrowReward.extra.type === 'coinBoost' ? '💰' : '📣'}+{reward.tomorrowReward.extra.percent}%</LocaleText>
+                  )}
+                </View>
+              </View>
             </LinearGradient>
           </Animated.View>
         )}
@@ -135,6 +182,12 @@ const styles = StyleSheet.create({
     color: '#3D6B1E',
     marginBottom: 4,
   },
+  dayLabel: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 13,
+    color: '#7C9A5E',
+    marginBottom: 4,
+  },
   subtitle: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 14,
@@ -170,6 +223,39 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_700Bold',
     fontSize: 16,
     color: '#2592AB',
+  },
+  rewardEmoji: {
+    fontSize: 18,
+  },
+  tomorrow: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginTop: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    width: '100%',
+  },
+  tomorrowLabel: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 12,
+    color: '#7C9A5E',
+    marginBottom: 4,
+  },
+  tomorrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  tomorrowText: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 13,
+    color: '#7C9A5E',
+  },
+  tomorrowExtra: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 13,
+    color: '#7C9A5E',
   },
   button: {
     width: '100%',
