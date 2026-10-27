@@ -86,6 +86,7 @@ model PlayerState {
   dailyTipsStage2Claimed Boolean @default(false)
   dailyFillLobbyUses     Int     @default(0)
   lastDailyLoginClaimedAt BigInt  @default(0)
+  loginStreak            Int     @default(1)
   lastDailyReset         BigInt  @default(0)
   coinBonusPercent       Int     @default(0)
   xpBonusPercent         Int     @default(0)
