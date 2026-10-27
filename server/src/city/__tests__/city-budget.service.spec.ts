@@ -68,10 +68,14 @@ describe('CityService — budget', () => {
     service = module.get(CityService);
 
     // Default: player is in the city
-    jest.spyOn(Date, 'now').mockReturnValue(new Date('2026-09-15T12:00:00.000Z').getTime());
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-15T12:00:00.000Z'));
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
 
   // ── getBudget ────────────────────────────────────────
 

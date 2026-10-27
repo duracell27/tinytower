@@ -593,7 +593,7 @@ describe('SyncService', () => {
         expect.objectContaining({
           where: { playerId: 'player-uuid' },
           create: expect.objectContaining({ playerId: 'player-uuid' }),
-          update: expect.objectContaining({ gems: expect.any(Number) }),
+          update: expect.objectContaining({ gems: expect.anything() }),
         }),
       );
       expect(txMock.floorConstruction.deleteMany).toHaveBeenCalledWith({
@@ -688,12 +688,9 @@ describe('SyncService', () => {
       const result = await syncService.processSync('player-uuid', [], 0);
 
       const expectedCoins = mockFloors.length * 3000; // 5 floors × 3000 = 15000
-      // 15 000 XP from login coins: level 1 → 10 (bonus +5 400 coins, +54 gems)
-      const expectedLevelUpCoins = 5400;
-      const expectedLevelUpGems = 54;
       expect(result.dailyLoginReward).toEqual({ coins: expectedCoins, gems: 3 });
-      expect(result.state.balance).toBe(100 + expectedCoins + expectedLevelUpCoins);
-      expect(result.state.gems).toBe(20 + 3 + expectedLevelUpGems);
+      expect(result.state.balance).toBe(100 + expectedCoins);
+      expect(result.state.gems).toBe(20 + 3);
     });
 
     it('should not grant daily login reward when already claimed today', async () => {

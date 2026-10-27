@@ -32,6 +32,9 @@ describe('MailService', () => {
         findUnique: jest.fn().mockResolvedValue({ id: 'p2' }),
         update: jest.fn().mockResolvedValue({}),
       },
+      block: {
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
       $transaction: jest.fn().mockImplementation(async (fn: any) => fn(prisma)),
     };
 

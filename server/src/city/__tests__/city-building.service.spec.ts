@@ -229,6 +229,7 @@ describe('startUpgrade', () => {
           level: 15,
           state: CityBuildingState.ACTIVE,
         }),
+        findFirst: jest.fn().mockResolvedValue(null),
         upsert: jest.fn(),
       },
       city: { update: jest.fn().mockResolvedValue({}) },
@@ -247,9 +248,13 @@ describe('startUpgrade', () => {
       },
       cityBuilding: {
         findUnique: jest.fn().mockResolvedValue({ level: 2, state: CityBuildingState.ACTIVE }),
+        findFirst: jest.fn().mockResolvedValue(null),
         upsert,
       },
-      city: { update: jest.fn().mockResolvedValue({}) },
+      city: {
+        update: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn().mockResolvedValue({ budgetGems: 100_000, budgetCoins: 1_000_000 }),
+      },
     };
     const svc = makeService(prisma);
     await svc.startUpgrade('city1', CityBuildingType.MOTOR_POOL, 'player1');
@@ -316,7 +321,10 @@ describe('activateBoost', () => {
         }),
         update,
       },
-      city: { update: jest.fn().mockResolvedValue({}) },
+      city: {
+        update: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn().mockResolvedValue({ budgetGems: 100_000, budgetCoins: 1_000_000 }),
+      },
     };
     const svc = makeService(prisma);
     await svc.activateBoost('city1', CityBuildingType.MOTOR_POOL, 'gems', 'player1');
@@ -340,7 +348,10 @@ describe('activateBoost', () => {
         }),
         update,
       },
-      city: { update: jest.fn().mockResolvedValue({}) },
+      city: {
+        update: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn().mockResolvedValue({ budgetGems: 100_000, budgetCoins: 1_000_000 }),
+      },
     };
     const svc = makeService(prisma);
     await svc.activateBoost('city1', CityBuildingType.MOTOR_POOL, 'coins', 'player1');
@@ -361,6 +372,7 @@ describe('activateBoost', () => {
           level: 3,
           state: CityBuildingState.ACTIVE,
           boostFinishesAt: future,
+          boostMultiplier: 2.0,
         }),
         update: jest.fn(),
       },

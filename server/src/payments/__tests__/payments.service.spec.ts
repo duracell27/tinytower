@@ -7,6 +7,9 @@ const mockPrisma: any = {
     findUnique: jest.fn(),
     create: jest.fn(),
   },
+  player: {
+    update: jest.fn().mockResolvedValue({}),
+  },
   playerState: {
     update: jest.fn(),
   },

@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from '../auth.service';
 import { PlayerService } from '../../player/player.service';
+import { EmailService } from '../../email/email.service';
 import { REDIS_CLIENT } from '../redis.provider';
 import * as bcrypt from 'bcrypt';
 
@@ -94,6 +95,10 @@ describe('AuthService', () => {
               return config[key];
             }),
           },
+        },
+        {
+          provide: EmailService,
+          useValue: { sendWelcomeEmail: jest.fn(), sendPasswordResetEmail: jest.fn() },
         },
         {
           provide: REDIS_CLIENT,

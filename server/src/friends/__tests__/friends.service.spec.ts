@@ -28,6 +28,9 @@ describe('FriendsService', () => {
         findUnique: jest.fn().mockResolvedValue(player2),
         findMany: jest.fn().mockResolvedValue([player1, player2]),
       },
+      block: {
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
     };
 
     const module: TestingModule = await Test.createTestingModule({
