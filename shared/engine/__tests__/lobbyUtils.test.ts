@@ -241,10 +241,10 @@ describe('checkDailyReset resets dailyFillLobbyUses', () => {
 });
 
 describe('getDailyTipsTargets', () => {
-  it('returns 10000/20000 at elevator level 1', () => {
+  it('returns 10000/30000 at elevator level 1', () => {
     const { stage1, stage2 } = getDailyTipsTargets(1, testConfig);
     expect(stage1).toBe(10_000);
-    expect(stage2).toBe(20_000);
+    expect(stage2).toBe(30_000);
   });
 
   it('scales stage1 by sqrt of elevatorLevel', () => {
@@ -252,9 +252,9 @@ describe('getDailyTipsTargets', () => {
     expect(stage1).toBe(20_000); // round(10000 * sqrt(4)) = round(10000 * 2) = 20000
   });
 
-  it('stage2 is always 2 × stage1', () => {
+  it('stage2 is always 3 × stage1', () => {
     const { stage1, stage2 } = getDailyTipsTargets(9, testConfig);
-    expect(stage2).toBe(stage1 * 2);
+    expect(stage2).toBe(stage1 * 3);
   });
 });
 

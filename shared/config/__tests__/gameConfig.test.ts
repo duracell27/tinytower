@@ -104,7 +104,7 @@ describe('gameConfig', () => {
 
   it('floor 4 costs 300 coins, 1 tool slot', () => {
     const f4 = gameConfig.floorUnlocks.find((f) => f.floorId === 4);
-    expect(f4).toEqual({ floorId: 4, price: 300, currency: 'coins', constructionDurationMs: 15 * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 1 });
+    expect(f4).toEqual({ floorId: 4, price: 300, currency: 'coins', constructionDurationMs: 2 * 60 * 1000, requiredToolSlots: 1, requiredToolCount: 1 });
   });
 
   it('floors 11-15 require 2 tool slots', () => {
@@ -165,11 +165,13 @@ describe('createInitialState', () => {
     expect(state.floors[1].productions[2].typeId).toBe('accounts');
   });
 
-  it('all production slots start IDLE', () => {
+  it('floors 2 and 3 slot 0 start SELLING, others start IDLE', () => {
     const state = createInitialState(gameConfig);
     for (const floor of state.floors) {
-      for (const prod of floor.productions) {
-        expect(prod.stage).toBe('IDLE');
+      for (let i = 0; i < floor.productions.length; i++) {
+        const prod = floor.productions[i];
+        const expectedStage = (floor.id === 2 || floor.id === 3) && i === 0 ? 'SELLING' : 'IDLE';
+        expect(prod.stage).toBe(expectedStage);
         expect(prod.stageStartedAt).toBe(0);
       }
     }
@@ -180,11 +182,11 @@ describe('createInitialState', () => {
     expect(state.commandQueue).toHaveLength(0);
   });
 
-  it('workers array starts with 3 placed + 5 hotel workers', () => {
+  it('workers array starts with 2 placed workers (green floor 2, blue floor 3)', () => {
     const state = createInitialState(gameConfig);
-    expect(state.workers).toHaveLength(8);
-    expect(state.workers.filter((w) => w.assignedFloorId !== null)).toHaveLength(3);
-    expect(state.workers.filter((w) => w.assignedFloorId === null)).toHaveLength(5);
+    expect(state.workers).toHaveLength(2);
+    expect(state.workers.filter((w) => w.assignedFloorId !== null)).toHaveLength(2);
+    expect(state.workers.filter((w) => w.assignedFloorId === null)).toHaveLength(0);
   });
 
   it('starting placed workers are at their dream jobs', () => {

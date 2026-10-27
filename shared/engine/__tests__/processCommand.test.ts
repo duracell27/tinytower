@@ -552,7 +552,7 @@ describe('buy_floor command', () => {
     expect(result.error).toBe('Insufficient gems');
   });
 
-  it('fails when already under construction', () => {
+  it('is idempotent when floor is already under construction', () => {
     const state = makeState({
       gems: 20,
       underConstruction: [{
@@ -561,8 +561,8 @@ describe('buy_floor command', () => {
       }],
     });
     const result = processCommand(state, buyFloorCmd(), testConfig, 1000);
-    expect(result.success).toBe(false);
-    expect(result.error).toBe('Floor already under construction');
+    expect(result.success).toBe(true);
+    expect(result.state.underConstruction).toHaveLength(1); // not doubled
   });
 
   it('fails for unknown floor id', () => {
@@ -1716,7 +1716,7 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
         ...createInitialState(gameConfig).dailyTasks,
         progress: {
           ...createInitialState(gameConfig).dailyTasks.progress,
-          floorsBuilt: 1, // satisfy build_floor task threshold (progressSource: floorsBuilt, threshold: 1)
+          floorsStarted: 1, // satisfy build_floor task threshold (progressSource: floorsStarted, threshold: 1)
         },
         claimed: [],
       },
@@ -1743,7 +1743,7 @@ describe('warehouse capacity enforcement in claim_daily_task', () => {
         ...createInitialState(gameConfig).dailyTasks,
         progress: {
           ...createInitialState(gameConfig).dailyTasks.progress,
-          floorsBuilt: 1,
+          floorsStarted: 1,
         },
         claimed: [],
       },
@@ -1919,12 +1919,14 @@ describe('buy_boost command', () => {
     xpBoostExpiresAt: 0,
   });
 
+  // DURATION_MS = 30 * 60 * 60 * 1000 = 108_000_000 (matches boostConfig)
+  const BOOST_DURATION = 108_000_000;
   const coinCmd = (overrides = {}): Command => ({
     type: 'buy_boost',
     boostType: 'coin',
     percent: 50,
-    durationMs: 108_000_000,
-    gemCost: 0,
+    durationMs: BOOST_DURATION,
+    gemCost: 5, // coin_50 package
     timestamp: 1_000_000,
     id: 'test-boost-1',
     ...overrides,
@@ -1934,16 +1936,17 @@ describe('buy_boost command', () => {
     const now = 1_000_000;
     const result = processCommand(baseState(), coinCmd(), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
     expect(result.success).toBe(true);
-    expect(result.state.gems).toBe(100);                          // gemCost: 0
+    expect(result.state.gems).toBe(95);                           // 100 - gemCost 5
     expect(result.state.coinBoostPercent).toBe(50);
-    expect(result.state.coinBoostExpiresAt).toBe(now + 108_000_000);
+    expect(result.state.coinBoostExpiresAt).toBe(now + BOOST_DURATION);
     expect(result.state.xpBoostPercent).toBe(0);                  // unaffected
   });
 
   it('caps coinBoostPercent at 300 when stacking', () => {
     const now = 2_000_000;
     const state = { ...baseState(), coinBoostPercent: 200, coinBoostExpiresAt: now + 1_000 };
-    const result = processCommand(state, coinCmd({ percent: 200 }), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
+    // coin_200 package: gemCost 50
+    const result = processCommand(state, coinCmd({ percent: 200, gemCost: 50 }), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
     expect(result.state.coinBoostPercent).toBe(300);
   });
 
@@ -1951,23 +1954,24 @@ describe('buy_boost command', () => {
     const now = 5_000_000;
     const existing = now + 10_000_000;
     const state = { ...baseState(), coinBoostPercent: 50, coinBoostExpiresAt: existing };
-    const result = processCommand(state, coinCmd({ percent: 50, durationMs: 108_000_000 }), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
-    expect(result.state.coinBoostExpiresAt).toBe(existing + 108_000_000);
+    const result = processCommand(state, coinCmd({ percent: 50, durationMs: BOOST_DURATION, gemCost: 5 }), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
+    expect(result.state.coinBoostExpiresAt).toBe(existing + BOOST_DURATION);
   });
 
   it('resets timer base to now when existing boost is already expired', () => {
     const now = 5_000_000;
     const state = { ...baseState(), coinBoostPercent: 50, coinBoostExpiresAt: now - 1_000 };
-    const result = processCommand(state, coinCmd({ percent: 50, durationMs: 108_000_000 }), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
-    expect(result.state.coinBoostExpiresAt).toBe(now + 108_000_000);
+    const result = processCommand(state, coinCmd({ percent: 50, durationMs: BOOST_DURATION, gemCost: 5 }), gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
+    expect(result.state.coinBoostExpiresAt).toBe(now + BOOST_DURATION);
     expect(result.state.coinBoostPercent).toBe(50); // reset, not accumulated
   });
 
   it('handles xp boost independently from coin boost', () => {
     const now = 1_000_000;
-    const result = processCommand(baseState(), { ...coinCmd(), boostType: 'xp' } as Command, gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
+    // xp_50 package: gemCost 2
+    const result = processCommand(baseState(), { ...coinCmd(), boostType: 'xp', gemCost: 2 } as Command, gameConfig, now, 1, { coinPercent: 0, xpPercent: 0 });
     expect(result.state.xpBoostPercent).toBe(50);
-    expect(result.state.xpBoostExpiresAt).toBe(now + 108_000_000);
+    expect(result.state.xpBoostExpiresAt).toBe(now + BOOST_DURATION);
     expect(result.state.coinBoostPercent).toBe(0);
   });
 

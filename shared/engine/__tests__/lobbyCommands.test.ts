@@ -52,7 +52,7 @@ describe('spawn_visitor', () => {
     expect(result.success).toBe(true);
     expect(result.state.lobbyVisitors).toHaveLength(1);
     expect(result.state.lobbyVisitors[0].id).toBe('v1');
-    expect(result.state.lobbyVisitors[0].role).toBeUndefined();
+    expect(result.state.lobbyVisitors[0].role).toBe('guest');
     expect(result.state.lobbyVisitors[0].hairColor).toBeUndefined();
     expect(result.state.nextVisitorAt).toBe(1000 + 120_000);
   });
@@ -282,9 +282,9 @@ describe('upgrade_elevator', () => {
     expect(result.state.gems).toBe(8);
   });
 
-  it('fails at max level (equals floors count)', () => {
-    // testConfig has 2 floors → max = 2
-    const state = makeState({ gems: 100, elevatorLevel: 2 });
+  it('fails at max level (floors count + 1)', () => {
+    // testConfig has 2 floors → max = getMaxElevatorLevel(3) = 3
+    const state = makeState({ gems: 100, elevatorLevel: 3 });
     const result = processCommand(state, { id: 'c1', type: 'upgrade_elevator', timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(false);
   });
@@ -334,7 +334,8 @@ describe('claim_daily_reward', () => {
   });
 
   it('stage 2: grants stage2Reward when tips >= stage2 target and not yet claimed', () => {
-    const state = makeState({ dailyTips: 20_000, dailyTipsStage1Claimed: false, dailyTipsStage2Claimed: false, gems: 20, elevatorLevel: 1 });
+    // stage2 = stage1 * 3 = 10000 * 3 = 30000 at elevatorLevel 1
+    const state = makeState({ dailyTips: 30_000, dailyTipsStage1Claimed: false, dailyTipsStage2Claimed: false, gems: 20, elevatorLevel: 1 });
     const result = processCommand(state, { id: 'c1', type: 'claim_daily_reward', stage: 2, timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(true);
     expect(result.state.gems).toBe(23); // +3
@@ -342,7 +343,7 @@ describe('claim_daily_reward', () => {
   });
 
   it('stage 2: fails when already claimed', () => {
-    const state = makeState({ dailyTips: 20_000, dailyTipsStage2Claimed: true, gems: 20, elevatorLevel: 1 });
+    const state = makeState({ dailyTips: 30_000, dailyTipsStage2Claimed: true, gems: 20, elevatorLevel: 1 });
     const result = processCommand(state, { id: 'c1', type: 'claim_daily_reward', stage: 2, timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(false);
   });
@@ -354,7 +355,7 @@ describe('claim_daily_reward', () => {
   });
 
   it('stages are independent: stage 2 can be claimed without stage 1 being claimed', () => {
-    const state = makeState({ dailyTips: 20_000, dailyTipsStage1Claimed: false, dailyTipsStage2Claimed: false, gems: 20, elevatorLevel: 1 });
+    const state = makeState({ dailyTips: 30_000, dailyTipsStage1Claimed: false, dailyTipsStage2Claimed: false, gems: 20, elevatorLevel: 1 });
     const result = processCommand(state, { id: 'c1', type: 'claim_daily_reward', stage: 2, timestamp: 1000 } as Command, testConfig, 1000);
     expect(result.success).toBe(true);
     expect(result.state.dailyTipsStage1Claimed).toBe(false); // unchanged

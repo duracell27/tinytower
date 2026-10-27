@@ -162,7 +162,7 @@ export default function ForumCategoryScreen() {
               style={[styles.titleInput, { backgroundColor: theme.surface, borderColor: theme.divider, color: theme.text }]}
               value={newTitle}
               onChangeText={v => setNewTitle(v.slice(0, 200))}
-              placeholder={t('forum.categories.' + cat)}
+              placeholder={t(`forum.categories.${cat}`)}
               placeholderTextColor={theme.isDark ? '#4A5468' : '#bbb'}
               maxLength={200}
             />

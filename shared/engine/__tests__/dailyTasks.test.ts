@@ -1,6 +1,7 @@
 import { checkDailyReset } from '../lobbyUtils';
 import { processCommand } from '../processCommand';
 import { gameConfig, createInitialState } from '../../config/gameConfig';
+import { getDailyTokenCount } from '../../utils/dailyTokenReward';
 import type { GameState } from '../../types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -56,13 +57,13 @@ describe('checkDailyReset — dailyTasks', () => {
     expect(next.dailyTasks.doubleRewardActive).toBe(false);
   });
 
-  it('does not count hidden IAP tasks towards double reward', () => {
+  it('does not set doubleRewardActive when fewer than 7 tasks are claimed', () => {
     const state = makeState({
       dailyTasks: {
         progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
           gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, residentsEvicted: 0, goodsListed: 0 },
         claimed: ['transporter', 'vip_transporter', 'wholesale', 'new_residents',
-          'easy_money', 'money_collector', 'investor'],
+          'easy_money', 'money_collector'],
         doubleRewardActive: false,
       },
     });
@@ -87,23 +88,24 @@ describe('progress tracking', () => {
   it('increments goodsBought on buy command', () => {
     const baseState = createInitialState(gameConfig);
     const floor = baseState.floors[0];
-    // Assign a worker to slot 0 so the buy command can proceed
+    // slot 0 starts SELLING; use slot 1 (pastries) which starts IDLE
+    const slotIdx = 1;
     const state: GameState = {
       ...baseState,
       balance: 999999,
       workers: [
         {
           id: 'w-test', name: 'Test Worker', female: false,
-          floorType: 'green', dreamJob: 'buns', level: 5, hairColor: '#5C3A22',
-          assignedFloorId: floor.id, assignedSlotIdx: 0, isSpecialist: false,
+          floorType: 'green', dreamJob: 'pastries', level: 5, hairColor: '#5C3A22',
+          assignedFloorId: floor.id, assignedSlotIdx: slotIdx, isSpecialist: false,
         },
         ...baseState.workers,
       ],
     };
     const cmd = {
       id: '1', type: 'buy' as const,
-      floorId: floor.id, slotIdx: 0,
-      typeId: floor.productions[0].typeId!,
+      floorId: floor.id, slotIdx,
+      typeId: floor.productions[slotIdx].typeId!,
       timestamp: Date.now(),
     };
     const result = processCommand(state, cmd, gameConfig, Date.now());
@@ -112,9 +114,13 @@ describe('progress tracking', () => {
   });
 
   it('increments residentsEvicted on evict_worker', () => {
-    const state = makeState();
-    const hotelWorker = state.workers.find(w => w.assignedFloorId === null);
-    if (!hotelWorker) throw new Error('No hotel worker in initial state');
+    const base = makeState();
+    const hotelWorker = {
+      id: 'hotel-w', name: 'Hotel Worker', female: false,
+      floorType: 'green', dreamJob: 'buns', level: 1, hairColor: '#000',
+      assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false,
+    };
+    const state = { ...base, workers: [...base.workers, hotelWorker] };
     const cmd = { id: '2', type: 'evict_worker' as const, workerId: hotelWorker.id, timestamp: Date.now() };
     const result = processCommand(state, cmd, gameConfig, Date.now());
     expect(result.success).toBe(true);
@@ -178,8 +184,11 @@ describe('claim_daily_task', () => {
   });
 
   it('adds tokens of specified color and count', () => {
-    const result = processCommand(stateWithProgress(100), baseCmd, gameConfig, Date.now(), 1);
-    expect(result.state.tokens.green).toBe(3);
+    const now = Date.now();
+    const dateStr = new Date(now).toISOString().slice(0, 10);
+    const expectedTokens = getDailyTokenCount('transporter', dateStr);
+    const result = processCommand(stateWithProgress(100), { ...baseCmd, timestamp: now }, gameConfig, now, 1);
+    expect(result.state.tokens.green).toBe(expectedTokens);
   });
 
   it('marks task as claimed', () => {
@@ -193,7 +202,7 @@ describe('claim_daily_task', () => {
       tools: { briks: 0, glass: 0, nails: 0, screw: 0 },
       dailyTasks: {
         progress: { visitorsLifted: 0, vipsLifted: 0, goodsBought: 0, residentsAdded: 0,
-          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 1, residentsEvicted: 0, goodsListed: 0 },
+          gemsPurchased: 0, goodsCollected: 0, floorsBuilt: 0, floorsStarted: 1, residentsEvicted: 0, goodsListed: 0 },
         claimed: [],
         doubleRewardActive: false,
       },

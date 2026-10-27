@@ -21,8 +21,8 @@ describe('pickLanguage', () => {
     expect(pickLanguage(null, ['de', 'fr'], ['en'], 'en')).toBe('en');
   });
 
-  it('exports en as the only supported language for now', () => {
-    expect(SUPPORTED_LANGUAGES).toEqual(['en']);
+  it('exports supported languages', () => {
+    expect(SUPPORTED_LANGUAGES).toEqual(['en', 'uk']);
     expect(DEFAULT_LANGUAGE).toBe('en');
   });
 });

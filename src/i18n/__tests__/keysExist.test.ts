@@ -79,7 +79,20 @@ const DYNAMIC_T_CALL = /\b(\w+)\(\s*`([^$`]*)\$\{/g;
 
 // Dynamic key lookups deliberately allowed in a chrome namespace, because the key space
 // is a small, fixed enum defined by a TS union/schema elsewhere, not an open-ended string.
-const ALLOWED_DYNAMIC_CHROME_PREFIXES = ['roles.', 'jobPicker.matchBadges.', 'tools.', 'workersPanel.tabs.', 'myBusiness.categories.', 'myBusiness.tokenLabels.', 'deliverAll.rows.vip_', 'city.roles.', 'cityTasks.taskTypes.', 'cityTasks.taskDesc.'];
+const ALLOWED_DYNAMIC_CHROME_PREFIXES = [
+  'roles.', 'jobPicker.matchBadges.', 'tools.', 'workersPanel.tabs.',
+  'myBusiness.categories.', 'myBusiness.tokenLabels.', 'deliverAll.rows.vip_',
+  'city.roles.', 'city.sections.', 'city.buildings.names.', 'city.buildings.descriptions.',
+  'city.citizenRanking.label_', 'city.create.', 'city.history.types.',
+  'cityTasks.taskTypes.', 'cityTasks.taskDesc.',
+  'achievement.categories.', 'achievement.categoryDesc.',
+  'autopark.vehicles.',
+  'dailyTaskItems.',
+  'forum.categories.', 'forum.categoryDescriptions.',
+  'profile.settings.language',
+  'shop.packs.mat_',
+  'report.category.',
+];
 
 describe('translation key coverage', () => {
   const files = SOURCE_ROOTS.flatMap((root) => collectSourceFiles(path.join(__dirname, '../../..', root)));

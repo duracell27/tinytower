@@ -202,7 +202,8 @@ describe('getFloorActionInfo', () => {
       { typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 },
       { typeId: REAL_TYPE, stage: 'SELLING', stageStartedAt: now - 100 }, // not ready
     ]);
-    const info = getFloorActionInfo('collect', floor, now, []);
+    const workers = [makeWorker('w0', 1, 0), makeWorker('w1', 1, 1)];
+    const info = getFloorActionInfo('collect', floor, now, workers);
     expect(info).toEqual({ mode: 'collect', totalCoins: tc.batchValue * 2 });
   });
 
@@ -210,7 +211,8 @@ describe('getFloorActionInfo', () => {
     const floor = makeFloor(1, [
       { typeId: REAL_TYPE, stage: 'READY_TO_COLLECT', stageStartedAt: 0 },
     ]);
-    const info = getFloorActionInfo('collect', floor, now, [], 50);
+    const workers = [makeWorker('w0', 1, 0)];
+    const info = getFloorActionInfo('collect', floor, now, workers, 50);
     expect(info).toEqual({ mode: 'collect', totalCoins: Math.floor(tc.batchValue * 1.5) });
   });
 
