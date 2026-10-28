@@ -299,6 +299,7 @@ export class SyncService {
     let xpBonusDelta = 0;
 
     if (acceptedCommands.length > 0 || newCommands.length === 0 || shouldCheckLoginReward || failedCommandIds.length > 0) {
+      try {
       await this.prisma.$transaction(async (tx) => {
         // Re-read playerLevel/playerXp under a row lock to prevent concurrent-sync races.
         // If another request committed a level change between our initial read and now,
@@ -757,6 +758,14 @@ export class SyncService {
           },
         });
       });
+      } catch (err) {
+        this.logger.error(
+          `[sync] transaction failed player=${playerId} accepted=${acceptedCommands.length} ` +
+          `newCmds=${newCommands.length} loginReward=${shouldCheckLoginReward}: ${err}`,
+          err instanceof Error ? err.stack : undefined,
+        );
+        throw err;
+      }
     }
 
     const updatedPlayer = await this.prisma.player.findUnique({
