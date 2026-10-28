@@ -9,7 +9,9 @@ import type { GameState } from '../../shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 import { scheduleLobbyFullNotification, cancelLobbyFullNotification } from './notifications';
 import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
-import { gameConfig } from '../../shared/config/gameConfig';
+
+// Keep in sync with gameConfig.lobbyConfig.visitorSpawnInterval
+const VISITOR_SPAWN_INTERVAL_MS = 120_000;
 
 let currentUserId: string | null = null;
 let storage: ReturnType<typeof createMMKV> | null = null;
@@ -237,7 +239,7 @@ function schedulelobbyFullIfNeeded() {
 
   if (emptySlots <= 0) return;
 
-  const spawnInterval = gameConfig.lobbyConfig.visitorSpawnInterval;
+  const spawnInterval = VISITOR_SPAWN_INTERVAL_MS;
   const nextAt = state.nextVisitorAt > 0 ? state.nextVisitorAt : Date.now();
   const fillAt = nextAt + (emptySlots - 1) * spawnInterval;
 
