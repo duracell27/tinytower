@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
 import { createMMKV } from 'react-native-mmkv';
+import { api } from '../services/api';
 import {
   pickLanguage,
   DEFAULT_LANGUAGE,
@@ -57,6 +58,7 @@ i18next.use(initReactI18next).init({
 export function setAppLanguage(lang: SupportedLanguage): void {
   getLanguageStorage().set(LANGUAGE_STORAGE_KEY, lang);
   i18next.changeLanguage(lang);
+  api.patch('/notifications/language', { language: lang }).catch(() => {});
 }
 
 export default i18next;

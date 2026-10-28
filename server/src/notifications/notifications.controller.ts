@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Req, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Patch, Body, UseGuards, Req, BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { NotificationsService } from './notifications.service';
@@ -22,5 +22,16 @@ export class NotificationsController {
     const result = RegisterTokenSchema.safeParse(body);
     if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(', '));
     await this.notificationsService.saveToken(req.user.playerId, result.data.token, result.data.platform, result.data.language);
+  }
+
+  @Patch('language')
+  @UseGuards(JwtAuthGuard)
+  async updateLanguage(
+    @Req() req: { user: { playerId: string } },
+    @Body() body: unknown,
+  ): Promise<void> {
+    const result = z.object({ language: z.enum(['en', 'uk']) }).safeParse(body);
+    if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(', '));
+    await this.notificationsService.updateLanguage(req.user.playerId, result.data.language);
   }
 }

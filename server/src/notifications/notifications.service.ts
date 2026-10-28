@@ -29,6 +29,13 @@ export class NotificationsService {
     });
   }
 
+  async updateLanguage(playerId: string, language: string): Promise<void> {
+    await this.prisma.player.update({
+      where: { id: playerId },
+      data: { pushLanguage: language },
+    });
+  }
+
   async resetNotificationStateForCommands(playerId: string, acceptedCommands: Command[]): Promise<void> {
     if (acceptedCommands.length === 0) return;
 
