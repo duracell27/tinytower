@@ -7,6 +7,9 @@ import { useCityTaskStore } from '../stores/cityTaskStore';
 import { useCityStore } from '../stores/cityStore';
 import type { GameState } from '../../shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
+import { scheduleLobbyFullNotification, cancelLobbyFullNotification } from './notifications';
+import { computeVehicleBonuses } from '../../shared/engine/vehicleUtils';
+import { gameConfig } from '../../shared/config/gameConfig';
 
 let currentUserId: string | null = null;
 let storage: ReturnType<typeof createMMKV> | null = null;
@@ -220,5 +223,23 @@ export function teardownPersistence(): void {
 AppState.addEventListener('change', (nextAppState) => {
   if (nextAppState === 'background' || nextAppState === 'inactive') {
     flushSave();
+    schedulelobbyFullIfNeeded();
+  } else if (nextAppState === 'active') {
+    cancelLobbyFullNotification().catch(() => {});
   }
 });
+
+function schedulelobbyFullIfNeeded() {
+  const state = useGameStore.getState();
+  const extraCapacity = computeVehicleBonuses(state.vehicles).extraLobbyCapacity ?? 0;
+  const effectiveCapacity = state.lobbyCapacity + extraCapacity;
+  const emptySlots = effectiveCapacity - state.lobbyVisitors.length;
+
+  if (emptySlots <= 0) return;
+
+  const spawnInterval = gameConfig.lobbyConfig.visitorSpawnInterval;
+  const nextAt = state.nextVisitorAt > 0 ? state.nextVisitorAt : Date.now();
+  const fillAt = nextAt + (emptySlots - 1) * spawnInterval;
+
+  scheduleLobbyFullNotification(fillAt).catch(() => {});
+}
