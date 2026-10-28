@@ -27,6 +27,7 @@ model Player {
   lastSeenAt         DateTime            @default(now())
   pushToken            String?
   pushPlatform         String?
+  pushLanguage         String    @default("en")
   pushTokenUpdatedAt   DateTime?
   notifiedAllResidents DateTime?
   notifiedCollect      DateTime?

@@ -48,7 +48,7 @@ import {
 import { useAuthStore } from '../src/stores/authStore';
 import { setAuthFailureCallback, initAuthStorage } from '../src/services/api';
 import { purchaseService } from '../src/services/purchaseService';
-import { registerPushNotifications } from '../src/services/notifications';
+import { registerPushNotifications, requestLocalNotificationPermissions } from '../src/services/notifications';
 import * as Linking from 'expo-linking';
 import { createMMKV } from 'react-native-mmkv';
 import GlobalOverlay from '../src/components/GlobalOverlay';
@@ -121,6 +121,7 @@ function RootLayout() {
   });
 
   useEffect(() => {
+    requestLocalNotificationPermissions().catch(() => {});
     initAuthStorage().then(() => useAuthStore.getState().loadTokens());
     setAuthFailureCallback(() => {
       useAuthStore.getState().logout();

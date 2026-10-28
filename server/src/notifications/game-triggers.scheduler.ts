@@ -45,6 +45,8 @@ export class GameTriggersScheduler {
         const updates: Record<string, Date | null> = {};
         const nowDate = new Date();
 
+        const isUk = player.pushLanguage === 'uk';
+
         // collect_ready: SELLING stage with elapsed >= actual sell duration → READY_TO_COLLECT
         if (player.notifiedCollect === null) {
           const readyCount = player.floors.filter((f) =>
@@ -60,7 +62,9 @@ export class GameTriggersScheduler {
             await this.notificationsService.sendPush(
               player.pushToken!,
               'Vibe Tower',
-              'Time to collect! Most floors are ready 💰',
+              isUk
+                ? 'Час збирати! Більшість поверхів готові.'
+                : 'Time to collect! Most floors are ready.',
             );
             updates.notifiedCollect = nowDate;
           }
@@ -81,7 +85,9 @@ export class GameTriggersScheduler {
             await this.notificationsService.sendPush(
               player.pushToken!,
               'Vibe Tower',
-              'Time to restock! Your shelves are waiting 📦',
+              isUk
+                ? 'Час поповнювати! Полиці чекають на товар.'
+                : 'Time to restock! Your shelves are waiting.',
             );
             updates.notifiedStock = nowDate;
           }
@@ -96,7 +102,9 @@ export class GameTriggersScheduler {
             await this.notificationsService.sendPush(
               player.pushToken!,
               'Vibe Tower',
-              'Ready to reorder! Stock up your floors 🛒',
+              isUk
+                ? 'Готово до замовлення! Поповни свої поверхи.'
+                : 'Ready to reorder! Stock up your floors.',
             );
             updates.notifiedPurchase = nowDate;
           }
@@ -111,7 +119,9 @@ export class GameTriggersScheduler {
             await this.notificationsService.sendPush(
               player.pushToken!,
               'Vibe Tower',
-              'All residents are ready! 🏢',
+              isUk
+                ? 'Всі мешканці на місці!'
+                : 'All residents are ready!',
             );
             updates.notifiedAllResidents = nowDate;
           }

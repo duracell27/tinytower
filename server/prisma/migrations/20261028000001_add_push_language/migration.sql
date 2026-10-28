@@ -1,0 +1,1 @@
+ALTER TABLE "Player" ADD COLUMN "pushLanguage" TEXT NOT NULL DEFAULT 'en';

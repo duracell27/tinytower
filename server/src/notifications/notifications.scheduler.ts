@@ -22,15 +22,18 @@ export class NotificationsScheduler {
         lastSeenAt: { lt: cutoff },
         inactivityNotifiedAt: null,
       },
-      select: { id: true, pushToken: true },
+      select: { id: true, pushToken: true, pushLanguage: true },
     });
 
     for (const player of players) {
       try {
+        const isUk = player.pushLanguage === 'uk';
         await this.notificationsService.sendPush(
           player.pushToken!,
           'Vibe Tower',
-          'Your tower misses you! Come back and check in 👋',
+          isUk
+            ? 'Твоя вежа сумує! Повернись і завітай.'
+            : 'Your tower misses you! Come back and check in.',
         );
         await this.prisma.player.update({
           where: { id: player.id },

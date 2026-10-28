@@ -18,7 +18,7 @@ export async function scheduleLobbyFullNotification(fillAt: number): Promise<voi
   await Notifications.scheduleNotificationAsync({
     identifier: LOBBY_FULL_NOTIF_ID,
     content: {
-      title: isUk ? '🏢 Лоббі повне!' : '🏢 Lobby is full!',
+      title: isUk ? 'Лоббі повне!' : 'Lobby is full!',
       body: isUk
         ? 'Всі пасажири готові — час розвезти їх по поверхах!'
         : 'All passengers are waiting — time to give some rides!',
@@ -35,11 +35,7 @@ export async function cancelLobbyFullNotification(): Promise<void> {
   await Notifications.cancelScheduledNotificationAsync(LOBBY_FULL_NOTIF_ID).catch(() => {});
 }
 
-export async function registerPushNotifications(): Promise<void> {
-  if (!Device.isDevice) {
-    return;
-  }
-
+export async function requestLocalNotificationPermissions(): Promise<boolean> {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
@@ -48,16 +44,18 @@ export async function registerPushNotifications(): Promise<void> {
   }
 
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
+  if (existingStatus === 'granted') return true;
 
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
+  const { status } = await Notifications.requestPermissionsAsync();
+  return status === 'granted';
+}
 
-  if (finalStatus !== 'granted') {
-    return;
-  }
+export async function registerPushNotifications(): Promise<void> {
+  const granted = await requestLocalNotificationPermissions();
+  if (!granted) return;
+
+  // Push token registration only works on physical devices
+  if (!Device.isDevice) return;
 
   // projectId must be set in app.json extra.eas.projectId for production builds
   const projectId = Constants.expoConfig?.extra?.eas?.projectId;
@@ -65,9 +63,10 @@ export async function registerPushNotifications(): Promise<void> {
     projectId ? { projectId } : undefined,
   )).data;
   const platform = Platform.OS;
+  const language = i18next.language === 'uk' ? 'uk' : 'en';
 
   try {
-    await api.post('/notifications/token', { token, platform });
+    await api.post('/notifications/token', { token, platform, language });
   } catch (error) {
     console.error('[notifications] Failed to register push token:', error);
   }

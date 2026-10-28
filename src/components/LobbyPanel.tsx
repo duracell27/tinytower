@@ -636,6 +636,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const handleCollectTip = useCallback(() => {
     const state = useGameStore.getState();
     const active = state.lobbyVisitors[0];
+    if (!active || state.elevatorFloor !== active.targetFloor) return;
     const isHotelGuest = (active?.role ?? 'guest') === 'guest' && (active?.targetFloor ?? 1) === 1;
     const hotelOccupied = state.workers.filter((w) => w.assignedFloorId === null).length;
     const isHotelFull = isHotelGuest && hotelOccupied >= state.hotelCapacity;

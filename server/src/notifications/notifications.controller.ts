@@ -6,6 +6,7 @@ import { NotificationsService } from './notifications.service';
 const RegisterTokenSchema = z.object({
   token: z.string().min(1),
   platform: z.enum(['ios', 'android']),
+  language: z.enum(['en', 'uk']).optional().default('en'),
 });
 
 @Controller('notifications')
@@ -20,6 +21,6 @@ export class NotificationsController {
   ): Promise<void> {
     const result = RegisterTokenSchema.safeParse(body);
     if (!result.success) throw new BadRequestException(result.error.issues.map((i) => i.message).join(', '));
-    await this.notificationsService.saveToken(req.user.playerId, result.data.token, result.data.platform);
+    await this.notificationsService.saveToken(req.user.playerId, result.data.token, result.data.platform, result.data.language);
   }
 }

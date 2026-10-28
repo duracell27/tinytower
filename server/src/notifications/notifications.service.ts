@@ -12,7 +12,7 @@ export class NotificationsService {
     this.expo = new Expo();
   }
 
-  async saveToken(playerId: string, token: string, platform: string): Promise<void> {
+  async saveToken(playerId: string, token: string, platform: string, language = 'en'): Promise<void> {
     // Remove the token from any other player who previously held it
     await this.prisma.player.updateMany({
       where: { pushToken: token, id: { not: playerId } },
@@ -23,6 +23,7 @@ export class NotificationsService {
       data: {
         pushToken: token,
         pushPlatform: platform,
+        pushLanguage: language,
         pushTokenUpdatedAt: new Date(),
       },
     });
