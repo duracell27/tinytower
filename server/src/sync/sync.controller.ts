@@ -14,6 +14,7 @@ import { CommandSchema } from '@shared/schemas/command';
 const SyncRequestSchema = z.object({
   commands: z.array(CommandSchema),
   lastAckCursor: z.number().int().nonnegative(),
+  pushLanguage: z.enum(['en', 'uk']).optional(),
 });
 
 @Controller('sync')
@@ -33,6 +34,7 @@ export class SyncController {
       req.user.playerId,
       result.data.commands,
       result.data.lastAckCursor,
+      result.data.pushLanguage,
     );
   }
 }

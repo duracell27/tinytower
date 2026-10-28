@@ -8,6 +8,7 @@ import { useOnboardingStore } from '../stores/onboardingStore';
 import { useCityStore } from '../stores/cityStore';
 import { saveGameState } from './persistence';
 import { getDailyTokenCount } from '../../shared/utils/dailyTokenReward';
+import i18n from '../i18n';
 import type { GameState } from '../../shared/types';
 import type { NewAchievementGrant, CategoryProgressState } from '../../shared/types/achievements';
 
@@ -94,10 +95,12 @@ async function doSync(): Promise<void> {
     // When the queue is large, drain it in chunks so each request stays under the server body limit.
     // The server deduplicates by commandLog, so re-sending is safe on retry.
     if (commandQueue.length > SYNC_CHUNK_SIZE) {
+      const pushLanguage = i18n.language === 'uk' ? 'uk' : 'en';
       for (let i = 0; i + SYNC_CHUNK_SIZE < commandQueue.length; i += SYNC_CHUNK_SIZE) {
         const interim = await api.post<SyncResponse>('/sync', {
           commands: commandQueue.slice(i, i + SYNC_CHUNK_SIZE),
           lastAckCursor: currentLastAckCursor,
+          pushLanguage,
         });
         currentLastAckCursor = interim.ackCursor;
         if (interim.acceptedCommandIds) {
@@ -112,6 +115,7 @@ async function doSync(): Promise<void> {
     const response = await api.post<SyncResponse>('/sync', {
       commands: commandQueue.slice(finalStart),
       lastAckCursor: currentLastAckCursor,
+      pushLanguage: i18n.language === 'uk' ? 'uk' : 'en',
     });
 
     clock.updateOffset(response.serverTime);

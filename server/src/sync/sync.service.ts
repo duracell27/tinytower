@@ -84,6 +84,7 @@ export class SyncService {
     playerId: string,
     commands: Command[],
     lastAckCursor: number,
+    pushLanguage?: string,
   ): Promise<SyncResult> {
     const serverNow = Date.now();
 
@@ -502,6 +503,7 @@ export class SyncService {
             lastSeenAt: new Date(serverNow),
             openedFloorsCount: currentOpenedFloors,
             inactivityNotifiedAt: null,
+            ...(pushLanguage ? { pushLanguage } : {}),
             ...(currentRevenue > (locked?.maxRevenuePerMin ?? player.maxRevenuePerMin ?? 0)
               ? { maxRevenuePerMin: currentRevenue }
               : {}),
