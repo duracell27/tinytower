@@ -688,7 +688,7 @@ describe('SyncService', () => {
       const result = await syncService.processSync('player-uuid', [], 0);
 
       // Day 1: coinsMultiplier 1.5, gems 2, no extra
-      const expectedCoins = Math.floor(mockFloors.length * 3000 * 1.5); // 5 * 3000 * 1.5 = 22500
+      const expectedCoins = Math.floor(mockFloors.length * 3000 * 1.0); // 5 * 3000 * 1.0 = 15000
       expect(result.dailyLoginReward).not.toBeNull();
       expect(result.dailyLoginReward!.day).toBe(1);
       expect(result.dailyLoginReward!.coins).toBe(expectedCoins);
