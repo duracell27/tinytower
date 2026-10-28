@@ -698,6 +698,10 @@ describe('SyncService', () => {
       expect(result.dailyLoginReward!.tomorrowReward).toMatchObject({ gems: 2 });
       expect(result.state.balance).toBe(100 + expectedCoins);
       expect(result.state.gems).toBe(20 + 2);
+      // loginStreak written in upsert
+      expect(txMock.playerState.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ update: expect.objectContaining({ loginStreak: 1 }) }),
+      );
     });
 
     it('should increment streak to day 2 on consecutive login', async () => {
@@ -777,29 +781,56 @@ describe('SyncService', () => {
       const claimedYesterday = BigInt(yesterdayMidnight + 3600_000);
       const futureExpiry = Date.now() + 7200_000; // active boost, expires in 2h
 
+      // Player already has an active 300% coin boost
       const playerWithBoost = {
         ...mockPlayer,
-        state: null,
-      };
-      // Patch gameStateBefore to have an active coin boost
-      const stateWithBoost = {
-        coinBoostPercent: 100,
-        coinBoostExpiresAt: futureExpiry,
+        state: {
+          playerId: 'player-uuid',
+          gems: 20,
+          lobbyCapacity: 10,
+          hotelCapacity: 10,
+          elevatorLevel: 1,
+          elevatorFloor: 0,
+          dailyTips: 0,
+          dailyGemsCollected: 0,
+          dailyTipsRewardClaimed: false,
+          dailyTipsStage2Claimed: false,
+          dailyFillLobbyUses: 0,
+          lastDailyLoginClaimedAt: BigInt(0),
+          lastDailyReset: BigInt(0),
+          coinBonusPercent: 0,
+          xpBonusPercent: 0,
+          coinBoostPercent: 300,
+          coinBoostExpiresAt: BigInt(Math.round(futureExpiry)),
+          xpBoostPercent: 0,
+          xpBoostExpiresAt: BigInt(0),
+          nextVisitorAt: BigInt(0),
+          briks: 1,
+          glass: 1,
+          nails: 1,
+          screw: 1,
+          wood: 1,
+          cement: 1,
+          lobbyVisitors: [],
+        },
       };
       prisma.player.findUnique
         .mockResolvedValueOnce(playerWithBoost)
         .mockResolvedValueOnce({ ...playerWithBoost, stateVersion: 1 });
 
-      // day 5 (streak=5) → but we want to test day 6 which is coinBoost
+      // day 5 (streak=5) → nextStreak = 6 → coinBoost +50% / 1h
       txMock.playerState.findUnique.mockResolvedValueOnce({
         lastDailyLoginClaimedAt: claimedYesterday,
-        loginStreak: 5, // → nextStreak = 6 → coinBoost +50% / 1h
+        loginStreak: 5,
       });
 
       const result = await syncService.processSync('player-uuid', [], 0);
 
       expect(result.dailyLoginReward!.day).toBe(6);
-      expect(result.dailyLoginReward!.boost).toMatchObject({ type: 'coin', percent: 50 });
+      // Boost extended: original percent (300) kept, expiry extended by exactly 1h
+      expect(result.dailyLoginReward!.boost).toMatchObject({ type: 'coin', extended: true });
+      expect(result.state.coinBoostPercent).toBe(300);
+      expect(result.state.coinBoostExpiresAt).toBeCloseTo(futureExpiry + 3_600_000, -2);
     });
 
     it('should add tools even when warehouse is full (Review Focus #4)', async () => {
@@ -808,12 +839,44 @@ describe('SyncService', () => {
       const yesterdayMidnight = todayMidnight.getTime() - 86_400_000;
       const claimedYesterday = BigInt(yesterdayMidnight + 3600_000);
 
-      const playerWithNoState = { ...mockPlayer, state: null };
+      // Fill warehouse to capacity: base=30, level=0. briks=25 + 5 others = 30
+      const playerWithFullWarehouse = {
+        ...mockPlayer,
+        state: {
+          playerId: 'player-uuid',
+          gems: 20,
+          lobbyCapacity: 10,
+          hotelCapacity: 10,
+          elevatorLevel: 1,
+          elevatorFloor: 0,
+          dailyTips: 0,
+          dailyGemsCollected: 0,
+          dailyTipsRewardClaimed: false,
+          dailyTipsStage2Claimed: false,
+          dailyFillLobbyUses: 0,
+          lastDailyLoginClaimedAt: BigInt(0),
+          lastDailyReset: BigInt(0),
+          coinBonusPercent: 0,
+          xpBonusPercent: 0,
+          coinBoostPercent: 0,
+          coinBoostExpiresAt: BigInt(0),
+          xpBoostPercent: 0,
+          xpBoostExpiresAt: BigInt(0),
+          nextVisitorAt: BigInt(0),
+          briks: 25, // 25 + 1+1+1+1+1 = 30 = WAREHOUSE_BASE_CAPACITY
+          glass: 1,
+          nails: 1,
+          screw: 1,
+          wood: 1,
+          cement: 1,
+          lobbyVisitors: [],
+        },
+      };
       prisma.player.findUnique
-        .mockResolvedValueOnce(playerWithNoState)
-        .mockResolvedValueOnce({ ...playerWithNoState, stateVersion: 1 });
+        .mockResolvedValueOnce(playerWithFullWarehouse)
+        .mockResolvedValueOnce({ ...playerWithFullWarehouse, stateVersion: 1 });
 
-      // Day 1 → streak was 1 → nextStreak = 2 → 1 tool
+      // loginStreak: 1 → nextStreak = 2 → day 2 = 1 tool
       txMock.playerState.findUnique.mockResolvedValueOnce({
         lastDailyLoginClaimedAt: claimedYesterday,
         loginStreak: 1,
@@ -824,12 +887,11 @@ describe('SyncService', () => {
       expect(result.dailyLoginReward!.day).toBe(2);
       expect(result.dailyLoginReward!.tools).toHaveLength(1);
 
-      // The tool should be added to gameState regardless of warehouse capacity
-      const toolTool = result.dailyLoginReward!.tools![0];
-      const initialToolCount = (mockPlayer.state as any)?.[toolTool] ?? 1;
-      // gameState.tools[tool] should be > initial value (at least initial + 1)
-      const finalToolValue = (result.state.tools as Record<string, number>)[toolTool];
-      expect(finalToolValue).toBeGreaterThanOrEqual(1);
+      // Tool was credited even though warehouse was full — total should be 31
+      const tools = result.state.tools as Record<string, number>;
+      const totalTools = (tools.briks ?? 0) + (tools.glass ?? 0) + (tools.nails ?? 0) +
+                         (tools.screw ?? 0) + (tools.wood ?? 0) + (tools.cement ?? 0);
+      expect(totalTools).toBe(31);
     });
 
     it('should not grant daily login reward when already claimed today', async () => {

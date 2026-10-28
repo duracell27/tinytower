@@ -574,12 +574,12 @@ export class SyncService {
             dailyFillLobbyUses: gameState.dailyFillLobbyUses,
             lastDailyReset: BigInt(gameState.lastDailyReset),
             nextVisitorAt: BigInt(gameState.nextVisitorAt),
-            briks: gameState.tools.briks,
-            glass: gameState.tools.glass,
-            nails: gameState.tools.nails,
-            screw: gameState.tools.screw,
-            wood:  gameState.tools.wood,
-            cement: gameState.tools.cement,
+            briks:  { increment: gameState.tools.briks  - gameStateBefore.tools.briks  },
+            glass:  { increment: gameState.tools.glass  - gameStateBefore.tools.glass  },
+            nails:  { increment: gameState.tools.nails  - gameStateBefore.tools.nails  },
+            screw:  { increment: gameState.tools.screw  - gameStateBefore.tools.screw  },
+            wood:   { increment: gameState.tools.wood   - gameStateBefore.tools.wood   },
+            cement: { increment: gameState.tools.cement - gameStateBefore.tools.cement },
             lobbyVisitors: gameState.lobbyVisitors,
             ...(dailyLoginReward ? { lastDailyLoginClaimedAt: BigInt(serverNow), loginStreak: nextLoginStreak ?? 1 } : {}),
             tokenGreen:             { increment: gameState.tokens.green   - gameStateBefore.tokens.green },
@@ -597,10 +597,14 @@ export class SyncService {
             vehicleArmoredTruck:  gameState.vehicles.armored_truck,
             vehicleDeliveryTruck: gameState.vehicles.delivery_truck,
             vehicleBus:           gameState.vehicles.bus,
-            coinBoostPercent:   gameState.coinBoostPercent   ?? 0,
-            xpBoostPercent:     gameState.xpBoostPercent     ?? 0,
-            coinBoostExpiresAt: BigInt(Math.round(gameState.coinBoostExpiresAt ?? 0)),
-            xpBoostExpiresAt:   BigInt(Math.round(gameState.xpBoostExpiresAt   ?? 0)),
+            // Only write boost fields when this sync actually changed them (command or login reward),
+            // to avoid overwriting a concurrent sync's boost grant with our pre-lock snapshot.
+            ...(gameState.coinBoostPercent !== gameStateBefore.coinBoostPercent || gameState.coinBoostExpiresAt !== gameStateBefore.coinBoostExpiresAt
+              ? { coinBoostPercent: gameState.coinBoostPercent ?? 0, coinBoostExpiresAt: BigInt(Math.round(gameState.coinBoostExpiresAt ?? 0)) }
+              : {}),
+            ...(gameState.xpBoostPercent !== gameStateBefore.xpBoostPercent || gameState.xpBoostExpiresAt !== gameStateBefore.xpBoostExpiresAt
+              ? { xpBoostPercent: gameState.xpBoostPercent ?? 0, xpBoostExpiresAt: BigInt(Math.round(gameState.xpBoostExpiresAt ?? 0)) }
+              : {}),
             dailyTasksProgress:     gameState.dailyTasks.progress,
             dailyTasksClaimed:      gameState.dailyTasks.claimed,
             dailyTasksDoubleReward: gameState.dailyTasks.doubleRewardActive,
