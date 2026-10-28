@@ -42,6 +42,7 @@ describe('AuthService', () => {
     isTemporary: false,
     pushToken: null,
     pushPlatform: null,
+    pushLanguage: 'en',
     pushTokenUpdatedAt: null,
     notifiedAllResidents: null,
     notifiedCollect: null,
