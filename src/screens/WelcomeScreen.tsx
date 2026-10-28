@@ -73,6 +73,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
     }
   }, [isAuthenticated]);
 
+
   const { isDark } = useAppTheme();
 
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
@@ -164,7 +165,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       {/* Social buttons */}
       <View style={styles.discordWrapper} pointerEvents="box-none">
         <Pressable
-          onPress={() => Linking.openURL('https://discord.com/channels/1521796294270517260/1521882117208932483')}
+          onPress={() => Linking.openURL('https://discord.gg/7qJjQ5rZ5j')}
           style={({ pressed }) => [styles.discordButton, pressed && { opacity: 0.75 }]}
         >
           <Image
@@ -174,7 +175,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
           />
         </Pressable>
         <Pressable
-          onPress={() => Linking.openURL('https://www.reddit.com/r/TinyTowerGame/')}
+          onPress={() => Linking.openURL('https://www.reddit.com/r/VibeTower/')}
           style={({ pressed }) => [styles.discordButton, pressed && { opacity: 0.75 }]}
         >
           <Image
