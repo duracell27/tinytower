@@ -503,6 +503,9 @@ export class SyncService {
             lastSeenAt: new Date(serverNow),
             openedFloorsCount: currentOpenedFloors,
             inactivityNotifiedAt: null,
+            notifiedCollect: null,
+            notifiedStock: null,
+            notifiedPurchase: null,
             ...(pushLanguage ? { pushLanguage } : {}),
             ...(currentRevenue > (locked?.maxRevenuePerMin ?? player.maxRevenuePerMin ?? 0)
               ? { maxRevenuePerMin: currentRevenue }
