@@ -592,12 +592,6 @@ export default function GameScreen() {
     [quickActionMode, isOnboarding, isTemporary, floors, workers, now, floorStars, vehicleSpeedBonuses],
   );
 
-  // Count of floors for the FAB badge (only when not yet in a mode)
-  const availableFloorCount = React.useMemo(
-    () => (availableMode !== null ? getFloorsForMode(availableMode, floors, workers, now, floorStars ?? {}, vehicleSpeedBonuses).length : 0),
-    [availableMode, floors, workers, now, floorStars, vehicleSpeedBonuses],
-  );
-
   // Always compute QA floors — even before the mode is activated — so the overlay
   // is pre-rendered and pre-scrolled in the background before the user opens it.
   const precomputedMode = quickActionMode ?? availableMode;
@@ -606,9 +600,21 @@ export default function GameScreen() {
     [precomputedMode, floors, workers, now, floorStars, vehicleSpeedBonuses],
   );
 
+  // Count of floors for the FAB badge — derived from filteredFloors to avoid a
+  // second full getFloorsForMode scan every second. Zero when already in a mode.
+  const availableFloorCount = quickActionMode === null ? filteredFloors.length : 0;
+
+  // Stable key: only changes when the set of floor IDs changes, not on every `now` tick.
+  // Used to prevent the hidden QA FlashList from reconciling on every 1-second clock update.
+  const qaItemIdsKey = React.useMemo(
+    () => filteredFloors.map((f) => f.id).join(','),
+    [filteredFloors],
+  );
+
   const qaItems = React.useMemo(
     (): FloorItem[] => filteredFloors.map((f) => ({ type: 'production' as const, id: f.id })),
-    [filteredFloors],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [qaItemIdsKey], // rebuild only when floor IDs actually change, not on every clock tick
   );
 
   const listExtraData = React.useMemo(
@@ -728,9 +734,6 @@ export default function GameScreen() {
     }
   }, [quickActionMode, filteredFloors.length, qaBarVisible]);
 
-  // Stable key: only changes when the set of floor IDs changes, not on every `now` tick.
-  const qaItemKey = qaItems.map((i) => (i.type === 'production' ? i.id : i.type)).join(',');
-
   // Keep the QA overlay pre-scrolled to the bottom at all times — even while hidden —
   // so it is already in the correct position when it becomes visible.
   useEffect(() => {
@@ -740,7 +743,7 @@ export default function GameScreen() {
     });
     return () => cancelAnimationFrame(handle);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [qaItemKey]);
+  }, [qaItemIdsKey]);
 
   // Fade the QA overlay in/out in sync with the bar animation.
   useEffect(() => {
@@ -1089,7 +1092,8 @@ export default function GameScreen() {
                 renderItem={renderItem}
                 keyExtractor={keyExtractor}
                 getItemType={(item) => item.type}
-                drawDistance={1500}
+                estimatedItemSize={213}
+                drawDistance={600}
                 extraData={listExtraData}
                 ListHeaderComponent={buyFloorListHeader}
                 contentContainerStyle={[
@@ -1149,6 +1153,7 @@ export default function GameScreen() {
                   renderItem={renderQaItem}
                   keyExtractor={keyExtractor}
                   getItemType={(item) => item.type}
+                  estimatedItemSize={213}
                   contentContainerStyle={[styles.listContentQA, Platform.OS === 'android' && { paddingBottom: 140 + bottomInset }]}
                   showsVerticalScrollIndicator={false}
                   extraData={leavingFloorId}
