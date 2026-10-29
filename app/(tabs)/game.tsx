@@ -87,6 +87,22 @@ const MAIL_FAB_ICON  = require('../../assets/img/mail.png');
 const FRIEND_FAB_ICON = require('../../assets/img/users.png');
 const NEWS_FAB_ICON = require('../../assets/img/forum/forumCatNews.png');
 
+// Fades in (and slides up slightly) when mounted or when `cellId` changes —
+// covers the moment FlashList renders a new cell into the draw-distance window.
+function FadeInCell({ cellId, children }: { cellId: string | number; children: React.ReactNode }) {
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(8);
+  useEffect(() => {
+    opacity.value = 0;
+    translateY.value = 8;
+    opacity.value = withTiming(1, { duration: 180, easing: ReanimatedEasing.out(ReanimatedEasing.quad) });
+    translateY.value = withTiming(0, { duration: 180, easing: ReanimatedEasing.out(ReanimatedEasing.quad) });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cellId]);
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value, transform: [{ translateY: translateY.value }] }));
+  return <Animated.View style={style}>{children}</Animated.View>;
+}
+
 export default function GameScreen() {
   const scheme = useColorScheme();
   const bgSource = scheme === 'dark' ? BG_DARK : BG_LIGHT;
@@ -925,19 +941,21 @@ export default function GameScreen() {
       const { uc } = item;
       const selType = uc.selectedFloorType ?? null;
       return (
-        <View style={styles.floorWrapper}>
-          <UnderConstructionBanner
-            floorId={uc.floorId}
-            endsAt={uc.startedAt + uc.durationMs}
-            requiredTools={uc.requiredTools}
-            selectedFloorType={selType}
-            onOpenPicker={() => setPickerOpenFor(uc.floorId)}
-            onStartBusiness={() => {
-              if (selType) openFloor(uc.floorId, selType);
-            }}
-            onOpenLobby={() => setLobbyOpen(true)}
-          />
-        </View>
+        <FadeInCell cellId={`uc-${uc.floorId}`}>
+          <View style={styles.floorWrapper}>
+            <UnderConstructionBanner
+              floorId={uc.floorId}
+              endsAt={uc.startedAt + uc.durationMs}
+              requiredTools={uc.requiredTools}
+              selectedFloorType={selType}
+              onOpenPicker={() => setPickerOpenFor(uc.floorId)}
+              onStartBusiness={() => {
+                if (selType) openFloor(uc.floorId, selType);
+              }}
+              onOpenLobby={() => setLobbyOpen(true)}
+            />
+          </View>
+        </FadeInCell>
       );
     }
     if (item.type === 'buyFloor' && nextFloorUnlock) {
@@ -1029,9 +1047,11 @@ export default function GameScreen() {
     }
     if (item.type === 'production') {
       return (
-        <View style={styles.floorWrapper}>
-          <FloorCard floorId={item.id} balance={balance} onHireSlot={() => setHotelOpen(true)} />
-        </View>
+        <FadeInCell cellId={item.id}>
+          <View style={styles.floorWrapper}>
+            <FloorCard floorId={item.id} balance={balance} onHireSlot={() => setHotelOpen(true)} />
+          </View>
+        </FadeInCell>
       );
     }
     if (item.type === 'bottomAnchor') {
