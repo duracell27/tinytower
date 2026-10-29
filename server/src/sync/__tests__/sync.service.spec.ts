@@ -977,6 +977,39 @@ describe('SyncService', () => {
       expect(result.state.gems).toBe(20);
     });
 
+    it('should NOT count daily login tokens toward PlayerWeeklyTokens (tournament)', async () => {
+      // Day 3 gives a token as extra reward. It must land on the token balance
+      // but must never increment PlayerWeeklyTokens (tournament ranking).
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const yesterdayMidnight = todayMidnight.getTime() - 86_400_000;
+      const claimedYesterday = BigInt(yesterdayMidnight + 3600_000);
+
+      prisma.player.findUnique
+        .mockResolvedValueOnce(mockPlayer)
+        .mockResolvedValueOnce({ ...mockPlayer, stateVersion: 1 });
+
+      // streak 2 → nextStreak = 3 → day 3 = 1 token
+      txMock.playerState.findUnique.mockResolvedValueOnce({
+        lastDailyLoginClaimedAt: claimedYesterday,
+        loginStreak: 2,
+      });
+
+      const result = await syncService.processSync('player-uuid', [], 0);
+
+      expect(result.dailyLoginReward!.day).toBe(3);
+      expect(result.dailyLoginReward!.tokens).toHaveLength(1);
+
+      // Token landed on the balance
+      const tokens = result.state.tokens as Record<string, number>;
+      const totalTokens = (tokens.green ?? 0) + (tokens.blue ?? 0) + (tokens.yellow ?? 0) +
+                          (tokens.purple ?? 0) + (tokens.red ?? 0);
+      expect(totalTokens).toBe(1);
+
+      // Tournament weekly counter was NOT touched
+      expect(txMock.playerWeeklyTokens.upsert).not.toHaveBeenCalled();
+    });
+
     it('city CITY_BANK revenueBonus is applied to collect payout', async () => {
       // Player is a city member → cityBuildingBonuses should be fetched and applied
       const playerInCity = {
