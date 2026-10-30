@@ -1740,6 +1740,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       tokens:     serverState.tokens     ?? cur.tokens,
       businessUpgrades: serverState.businessUpgrades ?? cur.businessUpgrades ?? { green: 0, blue: 0, yellow: 0, purple: 0, red: 0 },
       vehicles: serverState.vehicles ?? cur.vehicles ?? { taxi: 0, forklift: 0, armored_truck: 0, delivery_truck: 0, bus: 0 },
+      coinBoostPercent:   serverState.coinBoostPercent   ?? 0,
+      xpBoostPercent:     serverState.xpBoostPercent     ?? 0,
+      coinBoostExpiresAt: serverState.coinBoostExpiresAt ?? 0,
+      xpBoostExpiresAt:   serverState.xpBoostExpiresAt   ?? 0,
       floorStars: (() => {
         const base = serverState.floorStars ?? cur.floorStars ?? {};
         const pending: Record<string, number> = {};
