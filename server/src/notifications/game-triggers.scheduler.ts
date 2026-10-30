@@ -47,11 +47,10 @@ export class GameTriggersScheduler {
 
         const isUk = player.pushLanguage === 'uk';
 
-        // collect_ready: SELLING stage with elapsed >= actual sell duration → READY_TO_COLLECT
+        // collect_ready: SELLING stage with elapsed >= sell duration (READY_TO_COLLECT is client-derived, never in DB)
         if (player.notifiedCollect === null) {
           const readyCount = player.floors.filter((f) =>
             f.productions.some((p) => {
-              if (p.stage === 'READY_TO_COLLECT') return true;
               if (p.stage !== 'SELLING') return false;
               const typeConfig = p.typeId ? (gameConfig.productionTypes as Record<string, { sellDuration: number } | undefined>)[p.typeId] : null;
               const sellDuration = typeConfig?.sellDuration ?? 0;
@@ -70,11 +69,10 @@ export class GameTriggersScheduler {
           }
         }
 
-        // stock_ready: DELIVERING stage with elapsed >= actual delivery duration → READY_TO_LIST
+        // stock_ready: DELIVERING stage with elapsed >= delivery duration (READY_TO_LIST is client-derived, never in DB)
         if (player.notifiedStock === null) {
           const readyCount = player.floors.filter((f) =>
             f.productions.some((p) => {
-              if (p.stage === 'READY_TO_LIST') return true;
               if (p.stage !== 'DELIVERING') return false;
               const typeConfig = p.typeId ? (gameConfig.productionTypes as Record<string, { deliveryDuration: number } | undefined>)[p.typeId] : null;
               const deliveryDuration = typeConfig?.deliveryDuration ?? 0;
@@ -93,10 +91,10 @@ export class GameTriggersScheduler {
           }
         }
 
-        // purchase_ready: IDLE with no product selected (typeId === null only)
+        // purchase_ready: IDLE and ready to reorder (typeId set after collect, or null for new floors)
         if (player.notifiedPurchase === null) {
           const readyCount = player.floors.filter((f) =>
-            f.productions.some((p) => p.stage === 'IDLE' && p.typeId === null),
+            f.productions.some((p) => p.stage === 'IDLE'),
           ).length;
           if (readyCount / totalFloors >= 0.75) {
             await this.notificationsService.sendPush(
