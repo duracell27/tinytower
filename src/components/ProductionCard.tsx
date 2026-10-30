@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import LocaleText from './LocaleText';
-import Animated, { useSharedValue, useAnimatedProps, useAnimatedStyle, withTiming, withRepeat, withSequence, cancelAnimation, Easing } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedProps, useAnimatedStyle, withTiming, withRepeat, withSequence, withSpring, cancelAnimation, Easing } from 'react-native-reanimated';
 import { useClockNow } from '../context/ClockContext';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -16,6 +16,7 @@ import { gameConfig } from '../../shared/config/gameConfig';
 import WorkerAvatar from './WorkerAvatar';
 import { shadeColor } from '../utils/color';
 import { formatNum } from '../utils/format';
+import { playCollectSound, playListSound, playBuySound } from '../utils/soundEffects';
 import type { Production, EffectiveStage, Worker } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
@@ -458,6 +459,7 @@ export default function ProductionCard({
   const dashOffset = useSharedValue(99999);
 
   const btnScale = useSharedValue(1);
+  const pressScale = useSharedValue(1);
   const shouldPulse = canAct && !isTimer && !isDeliveryLocked;
 
   useEffect(() => {
@@ -478,7 +480,7 @@ export default function ProductionCard({
   }, [shouldPulse]);
 
   const btnPulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: btnScale.value }],
+    transform: [{ scale: btnScale.value * pressScale.value }],
   }));
 
   useEffect(() => {
@@ -512,6 +514,7 @@ export default function ProductionCard({
             store.showInsufficientResources({ currency: 'coins', need: firstCost, have: store.balance });
             return;
           }
+          playBuySound();
           store.buy(floorId, slotIdx, typeId);
         }
         break;
@@ -522,13 +525,16 @@ export default function ProductionCard({
             store.showInsufficientResources({ currency: 'coins', need: effectiveCost, have: store.balance });
             return;
           }
+          playBuySound();
           store.buy(floorId, slotIdx, production.typeId);
         }
         break;
       case 'READY_TO_LIST':
+        playListSound();
         store.list(floorId, slotIdx);
         break;
       case 'READY_TO_COLLECT':
+        playCollectSound();
         store.collect(floorId, slotIdx);
         break;
     }
@@ -675,6 +681,8 @@ export default function ProductionCard({
           onPress={isDeliveryLocked ? undefined : (canAct ? handleAction : undefined)}
           onLongPress={onLongPress}
           delayLongPress={800}
+          onPressIn={() => { if (canAct && !isDeliveryLocked) pressScale.value = withTiming(0.9, { duration: 80 }); }}
+          onPressOut={() => { pressScale.value = withSpring(1, { damping: 9, stiffness: 350 }); }}
           style={({ pressed }) => [
             styles.actionButton,
             { backgroundColor: resolvedBtnConfig.color, shadowColor: resolvedBtnConfig.shadowColor },

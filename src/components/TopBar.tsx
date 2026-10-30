@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import LocaleText from './LocaleText';
 import { Image } from 'expo-image';
 import { GlassView } from 'expo-glass-effect';
 import Svg, { Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+  withSpring,
+  interpolateColor,
+} from 'react-native-reanimated';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { getUserIcon } from '../utils/userIcon';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -70,6 +78,31 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
   const { t } = useTranslation('tabs');
   const cityLevel = useCityStore((s) => s.city?.level ?? 0);
 
+  const coinScale = useSharedValue(1);
+  const coinFlash = useSharedValue(0);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    coinScale.value = withSequence(
+      withTiming(1.18, { duration: 110 }),
+      withSpring(1, { damping: 16, stiffness: 300 }),
+    );
+    coinFlash.value = withSequence(
+      withTiming(1, { duration: 80 }),
+      withTiming(0, { duration: 350 }),
+    );
+  }, [coins]);
+
+  const coinBadgeAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: coinScale.value }],
+    backgroundColor: interpolateColor(
+      coinFlash.value,
+      [0, 1],
+      [theme.isDark ? theme.surfaceElevated : '#ffffff', '#FFF5C2'],
+    ),
+  }));
+
   const panelContent = (
     <>
       <View style={styles.content}>
@@ -113,10 +146,10 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
         </View>
 
         <View style={styles.currencySection}>
-          <View style={[styles.coinBadge, theme.isDark && { backgroundColor: theme.surfaceElevated }]}>
+          <Animated.View style={[styles.coinBadge, coinBadgeAnimStyle]}>
             <CoinIcon size={18} />
             <LocaleText style={styles.coinText}>{coins}</LocaleText>
-          </View>
+          </Animated.View>
           <Pressable style={[styles.gemBadge, theme.isDark && { backgroundColor: theme.surfaceElevated }]}>
             <GemIcon size={14} />
             <LocaleText style={styles.gemText}>{gems}</LocaleText>

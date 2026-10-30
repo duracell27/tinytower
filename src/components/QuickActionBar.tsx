@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { formatNum } from '../utils/format';
+import { playCollectSound, playListSound, playBuySound } from '../utils/soundEffects';
 import type { QuickActionMode, FloorActionInfo } from '../utils/quickAction';
 import { GemIcon, CoinIcon } from './CurrencyIcons';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -80,6 +81,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
 
   const slideY = useSharedValue(120);
   const firstRunRef = useRef(true);
+  const actionPressScale = useSharedValue(1);
 
   useEffect(() => {
     if (firstRunRef.current) {
@@ -109,6 +111,10 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: slideY.value }],
+  }));
+
+  const actionBtnAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: actionPressScale.value }],
   }));
 
   const collectAmount = info?.mode === 'collect' ? formatNum(info.totalCoins) : null;
@@ -148,7 +154,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
 
       {onBulkAll && bulkLabel && (
         <Pressable
-          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onBulkAll(); }}
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); if (mode === 'collect') playCollectSound(); else if (mode === 'list') playListSound(); else if (mode === 'buy') playBuySound(); onBulkAll(); }}
           style={({ pressed }) => [styles.bulkBtn, pressed && { opacity: 0.7 }]}
         >
           <View style={styles.bulkContent}>
@@ -159,48 +165,52 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
         </Pressable>
       )}
 
-      <Pressable
-        onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onPress(); }}
-        style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}
-      >
-        <LinearGradient colors={colors} style={styles.btnGradient}>
-          <View style={styles.btnContent}>
-            {mode === 'collect' ? (
-              <>
-                <LocaleText style={styles.btnLabel}>{label}</LocaleText>
-                <CoinIcon size={18} />
-                <LocaleText style={styles.btnLabel}>{collectAmount ?? '…'}</LocaleText>
-              </>
-            ) : mode === 'buy' && buyInfo ? (
-              <>
-                <LocaleText
-                  style={[styles.btnLabel, styles.btnLabelWrap]}
-                  numberOfLines={2}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.82}
-                >{label}</LocaleText>
-                <CoinIcon size={18} />
-                <LocaleText
-                  style={styles.btnLabel}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.75}
-                >{buyInfo.amount}</LocaleText>
-              </>
-            ) : (
-              <>
-                <ModeIcon mode={mode} />
-                <LocaleText
-                  style={[styles.btnLabel, styles.btnLabelWrap]}
-                  numberOfLines={2}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.82}
-                >{label}</LocaleText>
-              </>
-            )}
-          </View>
-        </LinearGradient>
-      </Pressable>
+      <Animated.View style={[actionBtnAnimStyle, { flex: 1 }]}>
+        <Pressable
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); if (mode === 'collect') playCollectSound(); else if (mode === 'list') playListSound(); else if (mode === 'buy') playBuySound(); onPress(); }}
+          onPressIn={() => { actionPressScale.value = withTiming(0.92, { duration: 80 }); }}
+          onPressOut={() => { actionPressScale.value = withSpring(1, { damping: 16, stiffness: 350 }); }}
+          style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.9 }]}
+        >
+          <LinearGradient colors={colors} style={styles.btnGradient}>
+            <View style={styles.btnContent}>
+              {mode === 'collect' ? (
+                <>
+                  <LocaleText style={styles.btnLabel}>{label}</LocaleText>
+                  <CoinIcon size={18} />
+                  <LocaleText style={styles.btnLabel}>{collectAmount ?? '…'}</LocaleText>
+                </>
+              ) : mode === 'buy' && buyInfo ? (
+                <>
+                  <LocaleText
+                    style={[styles.btnLabel, styles.btnLabelWrap]}
+                    numberOfLines={2}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.82}
+                  >{label}</LocaleText>
+                  <CoinIcon size={18} />
+                  <LocaleText
+                    style={styles.btnLabel}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.75}
+                  >{buyInfo.amount}</LocaleText>
+                </>
+              ) : (
+                <>
+                  <ModeIcon mode={mode} />
+                  <LocaleText
+                    style={[styles.btnLabel, styles.btnLabelWrap]}
+                    numberOfLines={2}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.82}
+                  >{label}</LocaleText>
+                </>
+              )}
+            </View>
+          </LinearGradient>
+        </Pressable>
+      </Animated.View>
     </Animated.View>
   );
 }
