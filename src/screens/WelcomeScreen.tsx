@@ -144,7 +144,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
   return (
     <View style={styles.container}>
       <Image
-        source={require('../../assets/img/bgFirstpage.png')}
+        source={isDark ? require('../../assets/img/bgFirstpageBlack.png') : require('../../assets/img/bgFirstpage.png')}
         style={StyleSheet.absoluteFill}
         contentFit="cover"
       />
