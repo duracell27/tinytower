@@ -196,8 +196,8 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
         />
       </View>
 
-      {/* Speech bubble */}
-      <View style={styles.bubbleWrapper}>
+      {/* Speech bubble — temporarily hidden */}
+      {/* <View style={styles.bubbleWrapper}>
         <View style={[styles.bubble, isDark && { backgroundColor: 'rgba(20,30,52,0.93)' }]}>
           <View style={styles.bubbleContent}>
             <LocaleText style={[styles.bubbleText, isDark && { color: '#D8E4F0' }]}>{t('welcome.bubble')}</LocaleText>
@@ -209,7 +209,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
           </View>
           <View style={[styles.bubbleTail, isDark && { backgroundColor: 'rgba(20,30,52,0.93)' }]} />
         </View>
-      </View>
+      </View> */}
 
       {/* Personal stat chips — only for authenticated player */}
       {showChips && (
@@ -226,7 +226,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
             <Image source={require('../../assets/img/floor.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <View>
               <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{floorCount}</LocaleText>
-              <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</LocaleText>
+              <LocaleText style={[styles.floorsLabel, isDark && { color: '#D8E4F0' }]}>{t('welcome.chips.floorsLabel')}</LocaleText>
             </View>
           </View>
         </View>
@@ -239,21 +239,21 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
             <Image source={require('../../assets/img/users.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <View>
               <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.players) : '—'}</LocaleText>
-              <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.playersLabel')}</LocaleText>
+              <LocaleText style={[styles.floorsLabel, isDark && { color: '#D8E4F0' }]}>{t('welcome.chips.playersLabel')}</LocaleText>
             </View>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Image source={require('../../assets/img/floor.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <View>
               <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.floors) : '—'}</LocaleText>
-              <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.floorsLabel')}</LocaleText>
+              <LocaleText style={[styles.floorsLabel, isDark && { color: '#D8E4F0' }]}>{t('welcome.chips.floorsLabel')}</LocaleText>
             </View>
           </View>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Image source={require('../../assets/img/city/cityBuildings.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <View>
               <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{globalStats ? formatNum(globalStats.cities) : '—'}</LocaleText>
-              <LocaleText style={[styles.floorsLabel, isDark && { color: '#7A8EA8' }]}>{t('welcome.chips.citiesLabel')}</LocaleText>
+              <LocaleText style={[styles.floorsLabel, isDark && { color: '#D8E4F0' }]}>{t('welcome.chips.citiesLabel')}</LocaleText>
             </View>
           </View>
         </View>
@@ -547,16 +547,16 @@ const styles = StyleSheet.create({
   chipsContainer: {
     position: 'absolute',
     left: 16,
-    right: '55%',
-    top: 330,
+    top: 390,
     zIndex: 2,
     gap: 9,
+    alignItems: 'flex-start',
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: 'rgba(255,255,255,0.95)',
+    backgroundColor: 'rgba(255,255,255,0.70)',
     paddingVertical: 8,
     paddingLeft: 10,
     paddingRight: 14,
@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
   floorsLabel: {
     fontFamily: 'Nunito_700Bold',
     fontSize: 12,
-    color: '#9A9684',
+    color: '#27331F',
     marginTop: 3,
   },
   /* Continue button (case 1 & 2) */
@@ -868,7 +868,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: '55%',
-    top: 530,
+    top: 590,
     zIndex: 2,
     flexDirection: 'row',
     justifyContent: 'center',
