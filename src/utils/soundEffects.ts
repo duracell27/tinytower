@@ -10,8 +10,8 @@ async function loadSounds() {
     const { createAudioPlayer, setAudioModeAsync } = await import('expo-audio');
     await setAudioModeAsync({ playsInSilentMode: true });
     collectPlayer = createAudioPlayer(require('../../assets/sounds/collect.wav'));
-    listPlayer    = createAudioPlayer(require('../../assets/sounds/list.wav'));
-    buyPlayer     = createAudioPlayer(require('../../assets/sounds/buy.wav'));
+    listPlayer    = createAudioPlayer(require('../../assets/sounds/restock.wav'));
+    buyPlayer     = createAudioPlayer(require('../../assets/sounds/purchase.wav'));
   } catch {
     // native module not available — silent fallback
   }
