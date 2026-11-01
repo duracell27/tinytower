@@ -141,23 +141,23 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack, onFo
 
   return (
     <View style={styles.container}>
-      {/* Background image */}
       <Image
-        source={require('../../assets/welcome-bg.png')}
+        source={isDark ? require('../../assets/img/bgFirstpageBlack.png') : require('../../assets/img/bgFirstpage.png')}
         style={StyleSheet.absoluteFill}
         contentFit="cover"
-        contentPosition={{ bottom: 0, left: '50%' }}
       />
 
-      {/* Scrim overlay */}
       <LinearGradient
         colors={[
-          'rgba(20,50,80,0.12)',
-          'rgba(20,40,60,0.02)',
-          'rgba(20,40,30,0.16)',
+          'rgba(30,60,90,0.08)',
+          'rgba(30,60,90,0)',
+          'rgba(15,35,25,0)',
+          'rgba(15,35,25,0.22)',
+          'rgba(12,30,20,0.45)',
         ]}
-        locations={[0, 0.4, 1]}
+        locations={[0, 0.2, 0.56, 0.8, 1]}
         style={StyleSheet.absoluteFill}
+        pointerEvents="none"
       />
 
       {/* Back button */}

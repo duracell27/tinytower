@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import LocaleText from '../src/components/LocaleText';
 import { useAppTheme } from '../src/hooks/useAppTheme';
 import { api } from '../src/services/api';
@@ -44,10 +45,24 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={isDark ? ['#0D1117', '#131A2E', '#0D1F2D'] : ['#F0F7EE', '#E8F5E3', '#FBFAF5']}
-      style={styles.container}
-    >
+    <View style={styles.container}>
+      <Image
+        source={isDark ? require('../assets/img/bgFirstpageBlack.png') : require('../assets/img/bgFirstpage.png')}
+        style={StyleSheet.absoluteFill}
+        contentFit="cover"
+      />
+      <LinearGradient
+        colors={[
+          'rgba(30,60,90,0.08)',
+          'rgba(30,60,90,0)',
+          'rgba(15,35,25,0)',
+          'rgba(15,35,25,0.22)',
+          'rgba(12,30,20,0.45)',
+        ]}
+        locations={[0, 0.2, 0.56, 0.8, 1]}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
       <Pressable onPress={() => router.back()} style={[styles.backButton, isDark && { backgroundColor: 'rgba(18,28,50,0.90)', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1 }]}>
         <LocaleText style={[styles.backArrow, isDark && { color: '#D8E4F0' }]}>{'‹'}</LocaleText>
       </Pressable>
@@ -102,12 +117,12 @@ export default function ForgotPasswordScreen() {
           )}
         </View>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, position: 'relative' },
   backButton: {
     position: 'absolute',
     top: 56,
