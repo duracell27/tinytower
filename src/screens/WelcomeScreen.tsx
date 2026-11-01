@@ -137,7 +137,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       setShowPasswordPrompt(false);
       onPlay();
     } catch (e) {
-      setError(e instanceof TypeError ? t('welcome.errors.noInternet') : t('welcome.errors.wrongPassword'));
+      setError((e as { status?: number })?.status ? t('welcome.errors.wrongPassword') : t('welcome.errors.noInternet'));
     }
   };
 
