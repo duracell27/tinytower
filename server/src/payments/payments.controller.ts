@@ -52,18 +52,24 @@ export class PaymentsController implements OnModuleInit {
     @Body() body: any,
   ) {
     const webhookSecret = this.config.get<string>('REVENUECAT_WEBHOOK_SECRET');
-    const signature = req.headers['x-revenuecat-signature'] as string | undefined;
+    const sigHeader = req.headers['x-revenuecat-webhook-signature'] as string | undefined;
     const rawBody = (req as any).rawBody as Buffer | undefined;
 
-    console.log('[RC webhook] all headers:', JSON.stringify(req.headers));
-    console.log('[RC webhook] rawBody length:', rawBody?.length);
-
-    if (!webhookSecret || !signature || !rawBody) {
+    if (!webhookSecret || !sigHeader || !rawBody) {
       throw new UnauthorizedException('Invalid webhook signature');
     }
 
-    const expected = crypto.createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
-    const sigBuffer = Buffer.from(signature, 'hex');
+    const parts = Object.fromEntries(sigHeader.split(',').map(p => p.split('=')));
+    const timestamp = parts['t'];
+    const v1 = parts['v1'];
+
+    if (!timestamp || !v1) {
+      throw new UnauthorizedException('Invalid webhook signature');
+    }
+
+    const payload = `${timestamp}.${rawBody.toString()}`;
+    const expected = crypto.createHmac('sha256', webhookSecret).update(payload).digest('hex');
+    const sigBuffer = Buffer.from(v1, 'hex');
     const expectedBuffer = Buffer.from(expected, 'hex');
     if (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
       throw new UnauthorizedException('Invalid webhook signature');
