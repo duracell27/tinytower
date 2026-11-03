@@ -55,7 +55,7 @@ export class PaymentsController implements OnModuleInit {
     const signature = req.headers['x-revenuecat-signature'] as string | undefined;
     const rawBody = (req as any).rawBody as Buffer | undefined;
 
-    console.log('[RC webhook] sig header:', signature);
+    console.log('[RC webhook] all headers:', JSON.stringify(req.headers));
     console.log('[RC webhook] rawBody length:', rawBody?.length);
 
     if (!webhookSecret || !signature || !rawBody) {
