@@ -66,6 +66,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
     : (lastPlayer?.playerName ?? '');
 
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
+  const [actionsHeight, setActionsHeight] = useState(0);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -163,7 +164,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       />
 
       {/* Social buttons */}
-      <View style={styles.discordWrapper} pointerEvents="box-none">
+      <View style={[styles.discordWrapper, { bottom: actionsHeight + 20 + 32 }]} pointerEvents="box-none">
         <Pressable
           onPress={() => Linking.openURL('https://discord.gg/7qJjQ5rZ5j')}
           style={({ pressed }) => [styles.discordButton, pressed && { opacity: 0.75 }]}
@@ -213,7 +214,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
 
       {/* Personal stat chips — only for authenticated player */}
       {showChips && (
-        <View style={styles.chipsContainer}>
+        <View style={[styles.chipsContainer, { bottom: actionsHeight + 20 + 52 + 12 + 32 }]}>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Image source={require('../../assets/img/coin.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <LocaleText style={[styles.chipValue, isDark && { color: '#D8E4F0' }]}>{formatNum(balance)}</LocaleText>
@@ -234,7 +235,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
 
       {/* Global stat chips — shown when not authenticated */}
       {!isAuthenticated && (
-        <View style={styles.chipsContainer}>
+        <View style={[styles.chipsContainer, { bottom: actionsHeight + 20 + 52 + 12 + 32 }]}>
           <View style={[styles.chip, isDark && { backgroundColor: 'rgba(18,28,50,0.92)' }]}>
             <Image source={require('../../assets/img/users.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
             <View>
@@ -387,7 +388,7 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
       </Modal>
 
       {/* Actions */}
-      <View style={styles.actionsContainer}>
+      <View style={styles.actionsContainer} onLayout={(e) => setActionsHeight(e.nativeEvent.layout.height)}>
 
         {/* ── Case 1 & 2: known player ── */}
         {(isAuthenticated || hasLastAccount) && (
@@ -547,7 +548,6 @@ const styles = StyleSheet.create({
   chipsContainer: {
     position: 'absolute',
     left: 16,
-    top: 390,
     zIndex: 2,
     gap: 9,
     alignItems: 'flex-start',
@@ -868,7 +868,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: '55%',
-    top: 590,
     zIndex: 2,
     flexDirection: 'row',
     justifyContent: 'center',
