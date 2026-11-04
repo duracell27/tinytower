@@ -52,28 +52,21 @@ export async function requestLocalNotificationPermissions(): Promise<boolean> {
 }
 
 export async function registerPushNotifications(): Promise<void> {
-  Sentry.addBreadcrumb({ message: 'registerPushNotifications: start' });
-
   const granted = await requestLocalNotificationPermissions();
-  Sentry.addBreadcrumb({ message: `registerPushNotifications: granted=${granted}` });
   if (!granted) return;
 
   // Push token registration only works on physical devices
-  Sentry.addBreadcrumb({ message: `registerPushNotifications: isDevice=${Device.isDevice}` });
   if (!Device.isDevice) return;
 
   try {
     // projectId must be set in app.json extra.eas.projectId for production builds
     const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-    Sentry.addBreadcrumb({ message: `registerPushNotifications: projectId=${projectId}` });
     const token = (await Notifications.getExpoPushTokenAsync(
       projectId ? { projectId } : undefined,
     )).data;
-    Sentry.addBreadcrumb({ message: `registerPushNotifications: token=${token}` });
     const platform = Platform.OS;
     const language = i18next.language === 'uk' ? 'uk' : 'en';
     await api.post('/notifications/token', { token, platform, language });
-    Sentry.addBreadcrumb({ message: 'registerPushNotifications: token saved' });
   } catch (error) {
     Sentry.captureException(error, { extra: { context: 'registerPushNotifications' } });
   }
