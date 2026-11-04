@@ -173,7 +173,7 @@ export default function DailyLoginRewardModal() {
               </Pressable>
 
               {/* Tomorrow preview — hidden on day 7 */}
-              {reward.day < 7 && <View style={[styles.tomorrow, { backgroundColor: isDark ? '#141E2E' : '#EDE0B0' }]}>
+              {reward.day < 7 && <View style={[styles.tomorrow, { backgroundColor: isDark ? '#1F2E42' : '#EDE0B0' }]}>
                 <LocaleText style={[styles.tomorrowLabel, isDark && { color: theme.textMuted }]}>
                   {t('dailyLoginReward.tomorrow')}
                 </LocaleText>
