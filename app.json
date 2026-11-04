@@ -19,7 +19,8 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -71,7 +72,8 @@
         {
           "url": "https://sentry.io/",
           "project": "tinytower-mobile",
-          "organization": "vibe-tower"
+          "organization": "vibe-tower",
+          "uploadSourceMaps": false
         }
       ],
       "expo-audio"
