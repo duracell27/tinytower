@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.shmidt.vibetower",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "icon": {
         "light": "./assets/img/LogoWhite (1).png",
         "dark": "./assets/img/LogoBlack (1).png",
