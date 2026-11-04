@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import * as Sentry from '@sentry/react-native';
 import { api } from './api';
 import i18next from 'i18next';
 
@@ -57,17 +58,16 @@ export async function registerPushNotifications(): Promise<void> {
   // Push token registration only works on physical devices
   if (!Device.isDevice) return;
 
-  // projectId must be set in app.json extra.eas.projectId for production builds
-  const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-  const token = (await Notifications.getExpoPushTokenAsync(
-    projectId ? { projectId } : undefined,
-  )).data;
-  const platform = Platform.OS;
-  const language = i18next.language === 'uk' ? 'uk' : 'en';
-
   try {
+    // projectId must be set in app.json extra.eas.projectId for production builds
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const token = (await Notifications.getExpoPushTokenAsync(
+      projectId ? { projectId } : undefined,
+    )).data;
+    const platform = Platform.OS;
+    const language = i18next.language === 'uk' ? 'uk' : 'en';
     await api.post('/notifications/token', { token, platform, language });
   } catch (error) {
-    console.error('[notifications] Failed to register push token:', error);
+    Sentry.captureException(error, { extra: { context: 'registerPushNotifications' } });
   }
 }
