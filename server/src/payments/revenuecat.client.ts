@@ -34,12 +34,12 @@ export class RevenueCatClient {
 
       const data = await res.json() as {
         subscriber: {
-          non_subscriptions: Record<string, Array<{ id: string }>>;
+          non_subscriptions: Record<string, Array<{ id: string; store_transaction_id?: string }>>;
         };
       };
 
       const transactions = data.subscriber?.non_subscriptions?.[rcProductId] ?? [];
-      return transactions.some(t => t.id === transactionId);
+      return transactions.some(t => t.store_transaction_id === transactionId || t.id === transactionId);
     } catch {
       return false;
     }
