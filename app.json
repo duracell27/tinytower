@@ -3,7 +3,7 @@
     "name": "Vibe Tower",
     "slug": "tinytower",
     "scheme": "vibetower",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/img/LogoBlack (1).png",
     "userInterfaceStyle": "automatic",
