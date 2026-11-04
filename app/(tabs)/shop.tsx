@@ -16,6 +16,7 @@ import { useGameClock } from '../../src/hooks/useGameClock';
 import { usePurchase } from '../../src/hooks/usePurchase';
 import { api } from '../../src/services/api';
 import { syncService } from '../../src/services/sync';
+import { registerPushNotifications } from '../../src/services/notifications';
 import type { ShopRewards } from '../../shared/types';
 import { calcRevenuePerMin } from '../../shared/engine/ratingUtils';
 import { gameConfig } from '../../shared/config/gameConfig';
@@ -538,6 +539,13 @@ export default function ShopScreen() {
                 </Pressable>
               </View>
               {devGranting && <ActivityIndicator style={{ marginTop: 8 }} color="#a0a0b0" />}
+              <View style={styles.devRow}>
+                <Pressable style={styles.devBtn} onPress={() => {
+                  registerPushNotifications().then(() => Alert.alert('Push', 'Done — check server logs')).catch((e: unknown) => Alert.alert('Push error', String(e)));
+                }}>
+                  <Text style={styles.devBtnText}>Test Push</Text>
+                </Pressable>
+              </View>
             </View>
           )}
 
