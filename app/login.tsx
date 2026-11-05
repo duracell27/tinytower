@@ -10,6 +10,7 @@ export default function Login() {
   const router = useRouter();
   const { tab } = useLocalSearchParams<{ tab?: string }>();
   const loginWithSocial = useAuthStore((s) => s.loginWithSocial);
+  const lastPlayer = useAuthStore((s) => s.lastPlayer);
   const { t } = useTranslation('auth');
 
   useEffect(() => {
@@ -51,6 +52,11 @@ export default function Login() {
     }
   };
 
+  const returnPlayer =
+    lastPlayer?.authProvider === 'google' || lastPlayer?.authProvider === 'apple'
+      ? { playerName: lastPlayer.playerName, authProvider: lastPlayer.authProvider }
+      : undefined;
+
   return (
     <LoginScreen
       onSuccess={() => router.replace('/game')}
@@ -59,6 +65,7 @@ export default function Login() {
       onBack={() => router.back()}
       onForgotPassword={() => router.push('/forgot-password')}
       initialTab={tab === 'register' ? 'register' : 'login'}
+      returnPlayer={returnPlayer}
     />
   );
 }

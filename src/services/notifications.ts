@@ -68,6 +68,8 @@ export async function registerPushNotifications(): Promise<void> {
     const language = i18next.language === 'uk' ? 'uk' : 'en';
     await api.post('/notifications/token', { token, platform, language });
   } catch (error) {
+    // Auth errors are expected (stale tokens on app launch); user will be redirected to login
+    if (error instanceof Error && (error.message === 'Authentication failed' || error.message === 'Unauthorized')) return;
     Sentry.captureException(error, { extra: { context: 'registerPushNotifications' } });
   }
 }

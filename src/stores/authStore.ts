@@ -15,6 +15,7 @@ interface PlayerInfo {
   playerName: string;
   isAdmin?: boolean;
   isTemporary?: boolean;
+  authProvider?: 'google' | 'apple' | 'email';
 }
 
 interface AuthState {
@@ -97,12 +98,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         player: PlayerInfo;
       }>('/auth/register', { email, password, playerName });
 
+      const playerWithProvider = { ...data.player, authProvider: 'email' as const };
       await api.setTokens(data.accessToken, data.refreshToken);
-      getStorage().set('player', JSON.stringify(data.player));
-      saveLastPlayer(data.player);
-      set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
-      setSentryUser(data.player);
-      setupUserPersistence(data.player.id);
+      getStorage().set('player', JSON.stringify(playerWithProvider));
+      saveLastPlayer(playerWithProvider);
+      set({ player: playerWithProvider, lastPlayer: playerWithProvider, isAuthenticated: true, isLoading: false });
+      setSentryUser(playerWithProvider);
+      setupUserPersistence(playerWithProvider.id);
       useOnboardingStore.getState().reset();
       useOnboardingStore.getState().start();
       useGameStore.getState().initOnboardingProductions();
@@ -121,12 +123,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         player: PlayerInfo;
       }>('/auth/login', { email, password });
 
+      const playerWithProvider = { ...data.player, authProvider: 'email' as const };
       await api.setTokens(data.accessToken, data.refreshToken);
-      getStorage().set('player', JSON.stringify(data.player));
-      saveLastPlayer(data.player);
-      set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isLoading: false });
-      setSentryUser(data.player);
-      setupUserPersistence(data.player.id);
+      getStorage().set('player', JSON.stringify(playerWithProvider));
+      saveLastPlayer(playerWithProvider);
+      set({ player: playerWithProvider, lastPlayer: playerWithProvider, isAuthenticated: true, isLoading: false });
+      setSentryUser(playerWithProvider);
+      setupUserPersistence(playerWithProvider.id);
       useOnboardingStore.getState().reset();
     } catch (e) {
       set({ isLoading: false });
@@ -249,12 +252,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       const data = provider === 'google'
         ? await api.socialLoginGoogle(idToken)
         : await api.socialLoginApple(idToken, fullName);
+      const playerWithProvider = { ...data.player, authProvider: provider };
       await api.setTokens(data.accessToken, data.refreshToken);
-      getStorage().set('player', JSON.stringify(data.player));
-      saveLastPlayer(data.player);
-      set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
-      setSentryUser(data.player);
-      setupUserPersistence(data.player.id);
+      getStorage().set('player', JSON.stringify(playerWithProvider));
+      saveLastPlayer(playerWithProvider);
+      set({ player: playerWithProvider, lastPlayer: playerWithProvider, isAuthenticated: true, isGuest: false, isLoading: false });
+      setSentryUser(playerWithProvider);
+      setupUserPersistence(playerWithProvider.id);
       if (data.isNewUser) {
         useOnboardingStore.getState().reset();
         useOnboardingStore.getState().start();

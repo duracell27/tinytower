@@ -18,6 +18,11 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { useAppTheme } from '../hooks/useAppTheme';
 
+interface ReturnPlayer {
+  playerName: string;
+  authProvider: 'google' | 'apple';
+}
+
 interface LoginScreenProps {
   onSuccess: () => void;
   onGoogle: () => void;
@@ -25,6 +30,7 @@ interface LoginScreenProps {
   onBack: () => void;
   onForgotPassword?: () => void;
   initialTab?: 'login' | 'register';
+  returnPlayer?: ReturnPlayer;
 }
 
 function AppleIcon({ color = '#27331F' }: { color?: string }) {
@@ -61,7 +67,7 @@ function GoogleIcon() {
   );
 }
 
-export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack, onForgotPassword, initialTab = 'login' }: LoginScreenProps) {
+export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack, onForgotPassword, initialTab = 'login', returnPlayer }: LoginScreenProps) {
   const { t } = useTranslation('auth');
   const [tab, setTab] = useState<'login' | 'register'>(initialTab);
   const [email, setEmail] = useState('');
@@ -176,6 +182,28 @@ export default function LoginScreen({ onSuccess, onGoogle, onApple, onBack, onFo
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {returnPlayer && (
+            <View style={[styles.returnBanner, isDark && { backgroundColor: '#1A2338', borderColor: '#2E3B58' }]}>
+              <LocaleText style={[styles.returnGreeting, isDark && { color: '#D8E4F0' }]}>
+                {t('login.social.returnBanner.greeting', { name: returnPlayer.playerName })}
+              </LocaleText>
+              <Pressable
+                onPress={returnPlayer.authProvider === 'google' ? onGoogle : onApple}
+                style={[styles.returnButton, isDark && { backgroundColor: '#252D42', borderColor: '#3A4560' }]}
+              >
+                {returnPlayer.authProvider === 'google' ? <GoogleIcon /> : <AppleIcon color={isDark ? '#D8E4F0' : '#27331F'} />}
+                <LocaleText style={[styles.returnButtonText, isDark && { color: '#D8E4F0' }]}>
+                  {returnPlayer.authProvider === 'google'
+                    ? t('login.social.returnBanner.continueGoogle')
+                    : t('login.social.returnBanner.continueApple')}
+                </LocaleText>
+              </Pressable>
+              <LocaleText style={[styles.returnOr, isDark && { color: '#4A5A70' }]}>
+                {t('login.social.returnBanner.orUseForm')}
+              </LocaleText>
+            </View>
+          )}
+
           <View style={[styles.card, isDark && dk.card]}>
             {/* Title */}
             <LocaleText style={[styles.cardTitle, isDark && dk.title]}>
@@ -365,6 +393,53 @@ const styles = StyleSheet.create({
     color: '#2C4A2A',
     fontWeight: '600',
     marginTop: -2,
+  },
+
+  /* Return player banner */
+  returnBanner: {
+    backgroundColor: '#F0F7EE',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: '#C8E0C2',
+    padding: 18,
+    paddingBottom: 14,
+    marginBottom: 14,
+    alignItems: 'center',
+  },
+  returnGreeting: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: '#27331F',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  returnButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#E4E1D3',
+    height: 52,
+    width: '100%',
+    shadowColor: 'rgba(30,80,20,0.6)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  returnButtonText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 16,
+    color: '#27331F',
+  },
+  returnOr: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 12,
+    color: '#8A9A7A',
+    marginTop: 12,
   },
 
   /* Card wrapper */
