@@ -1,3 +1,5 @@
+import { useSettingsStore } from '../stores/settingsStore';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Player = any;
 
@@ -24,6 +26,7 @@ const allPlayers = () => [collectPlayer, listPlayer, buyPlayer];
 async function play(p: Player | null) {
   try {
     if (!p) return;
+    if (!useSettingsStore.getState().soundEffectsEnabled) return;
     for (const other of allPlayers()) {
       if (other && other !== p) {
         try { other.pause(); } catch { /* ignore */ }

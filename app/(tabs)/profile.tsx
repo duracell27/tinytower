@@ -401,6 +401,8 @@ const player = useAuthStore((s) => s.player);
 
   const liftSimplifiedRewards = useSettingsStore((s) => s.liftSimplifiedRewards);
   const setLiftSimplifiedRewards = useSettingsStore((s) => s.setLiftSimplifiedRewards);
+  const soundEffectsEnabled = useSettingsStore((s) => s.soundEffectsEnabled);
+  const setSoundEffectsEnabled = useSettingsStore((s) => s.setSoundEffectsEnabled);
   const totalWorkers = workers.length;
   const happyCount = workers.filter((w) => {
     if (w.assignedFloorId === null) return false;
@@ -1001,6 +1003,27 @@ const player = useAuthStore((s) => s.player);
                   <Switch
                     value={liftSimplifiedRewards}
                     onValueChange={setLiftSimplifiedRewards}
+                    trackColor={{ true: '#72C24F', false: undefined }}
+                    thumbColor="#fff"
+                  />
+                </View>
+
+                <LocaleText style={[settingsStyles.sectionHeader, { color: theme.textMuted, marginTop: 20 }]}>
+                  {t('profile.settings.soundSection')}
+                </LocaleText>
+
+                <View style={[settingsStyles.row, { borderBottomColor: theme.divider }]}>
+                  <View style={settingsStyles.rowLeft}>
+                    <LocaleText style={[settingsStyles.rowTitle, { color: theme.text }]}>
+                      {t('profile.settings.soundEffects')}
+                    </LocaleText>
+                    <LocaleText style={[settingsStyles.rowDesc, { color: theme.textMuted }]}>
+                      {t('profile.settings.soundEffectsDesc')}
+                    </LocaleText>
+                  </View>
+                  <Switch
+                    value={soundEffectsEnabled}
+                    onValueChange={setSoundEffectsEnabled}
                     trackColor={{ true: '#72C24F', false: undefined }}
                     thumbColor="#fff"
                   />
