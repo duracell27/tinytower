@@ -19,10 +19,17 @@ async function loadSounds() {
 
 loadSounds();
 
-function play(p: Player | null) {
+const allPlayers = () => [collectPlayer, listPlayer, buyPlayer];
+
+async function play(p: Player | null) {
   try {
     if (!p) return;
-    p.seekTo(0);
+    for (const other of allPlayers()) {
+      if (other && other !== p) {
+        try { other.pause(); } catch { /* ignore */ }
+      }
+    }
+    await p.seekTo(0);
     p.play();
   } catch { /* ignore */ }
 }
