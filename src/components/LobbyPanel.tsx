@@ -38,7 +38,7 @@ import * as Haptics from 'expo-haptics';
 import WorkerAvatar from './WorkerAvatar';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { formatNum } from '../utils/format';
-import { playElevatorRunSound, playElevatorArrivedSound } from '../utils/soundEffects';
+import { playCollectSound, playElevatorRunSound, playElevatorArrivedSound } from '../utils/soundEffects';
 import InsufficientResourcesModal from './InsufficientResourcesModal';
 import DeliverAllModal from './DeliverAllModal';
 
@@ -944,6 +944,8 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                                 const isFinal = elevatorFloor + elevatorLevel >= activeVisitor.targetFloor;
                                 if (isFinal) playElevatorArrivedSound();
                                 else playElevatorRunSound();
+                              } else if (arrived && actionButton.icon === 'coin') {
+                                playCollectSound();
                               }
 
                               actionButton.onPress();
