@@ -1,9 +1,8 @@
 import React from 'react';
 import { StyleSheet, useColorScheme, ImageBackground } from 'react-native';
-import { BlurView } from 'expo-blur';
 
-const BG_LIGHT = require('../../assets/img/backgroung/bgWhite.png');
-const BG_DARK  = require('../../assets/img/backgroung/bgBlack.png');
+const BG_LIGHT = require('../../assets/img/backgroung/fallWhite.png');
+const BG_DARK  = require('../../assets/img/backgroung/fallBlack.png');
 
 export default function AppBackground({ children, style }: {
   children: React.ReactNode;
@@ -18,11 +17,6 @@ export default function AppBackground({ children, style }: {
       style={[styles.fill, style]}
       resizeMode="cover"
     >
-      <BlurView
-        intensity={isDark ? 20 : 40}
-        tint={isDark ? 'dark' : 'light'}
-        style={StyleSheet.absoluteFill}
-      />
       {children}
     </ImageBackground>
   );

@@ -81,8 +81,8 @@ function keyExtractor(item: FloorItem): string {
   return item.type; // 'hotel' | 'lobby' | 'buyFloor' | 'collapseDivider' | 'bottomAnchor' — all unique
 }
 
-const BG_LIGHT       = require('../../assets/img/backgroung/bgWhite.png');
-const BG_DARK        = require('../../assets/img/backgroung/bgBlack.png');
+const BG_LIGHT       = require('../../assets/img/backgroung/fallWhite.png');
+const BG_DARK        = require('../../assets/img/backgroung/fallBlack.png');
 const MAIL_FAB_ICON  = require('../../assets/img/mail.png');
 const FRIEND_FAB_ICON = require('../../assets/img/users.png');
 const NEWS_FAB_ICON = require('../../assets/img/forum/forumCatNews.png');
