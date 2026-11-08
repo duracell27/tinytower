@@ -9,4 +9,9 @@ config.transformer = {
   unstable_transformProfile: 'hermes-stable',
 };
 
+config.resolver = {
+  ...config.resolver,
+  assetExts: [...(config.resolver?.assetExts ?? []), 'caf'],
+};
+
 module.exports = config;

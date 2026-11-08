@@ -1,8 +1,11 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { Tabs } from 'expo-router';
-import { View, Platform } from 'react-native';
+import { View, Platform, AppState } from 'react-native';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useOnboardingStore } from '../../src/stores/onboardingStore';
+import { useSettingsStore } from '../../src/stores/settingsStore';
+import { startBackgroundMusic, pauseBackgroundMusic } from '../../src/utils/soundEffects';
 
 const TAB_COLORS = {
   game:    '#5E8F42',
@@ -15,6 +18,24 @@ const TAB_COLORS = {
 export default function TabsLayout() {
   const { t } = useTranslation('tabs');
   const isOnboarding = useOnboardingStore((s) => s.isActive);
+  const musicEnabled = useSettingsStore((s) => s.musicEnabled);
+
+  useEffect(() => {
+    startBackgroundMusic();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') startBackgroundMusic();
+      else pauseBackgroundMusic();
+    });
+    return () => {
+      pauseBackgroundMusic();
+      sub.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (musicEnabled) startBackgroundMusic();
+    else pauseBackgroundMusic();
+  }, [musicEnabled]);
 
   if (Platform.OS === 'android') {
     return (

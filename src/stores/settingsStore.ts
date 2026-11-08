@@ -3,6 +3,7 @@ import { createMMKV } from 'react-native-mmkv';
 
 const MMKV_KEY = 'liftSimplifiedRewards';
 const SOUND_KEY = 'soundEffectsEnabled';
+const MUSIC_KEY = 'musicEnabled';
 
 let storage: ReturnType<typeof createMMKV> | null = null;
 function getStorage() {
@@ -15,6 +16,8 @@ interface SettingsState {
   setLiftSimplifiedRewards: (v: boolean) => void;
   soundEffectsEnabled: boolean;
   setSoundEffectsEnabled: (v: boolean) => void;
+  musicEnabled: boolean;
+  setMusicEnabled: (v: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
@@ -27,5 +30,10 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setSoundEffectsEnabled: (v) => {
     getStorage().set(SOUND_KEY, v);
     set({ soundEffectsEnabled: v });
+  },
+  musicEnabled: getStorage().getBoolean(MUSIC_KEY) ?? true,
+  setMusicEnabled: (v) => {
+    getStorage().set(MUSIC_KEY, v);
+    set({ musicEnabled: v });
   },
 }));

@@ -771,6 +771,8 @@
       "soundSection": "Sound",
       "soundEffects": "Game sounds",
       "soundEffectsDesc": "Play sound effects during gameplay",
+      "music": "Background music",
+      "musicDesc": "Play music during gameplay",
       "languageSection": "Language",
       "languageEn": "🇺🇸 English",
       "languageUk": "🇺🇦 Ukrainian",

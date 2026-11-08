@@ -8,6 +8,7 @@ let listPlayer: Player | null = null;
 let buyPlayer: Player | null = null;
 let elevatorRunPlayer: Player | null = null;
 let elevatorArrivedPlayer: Player | null = null;
+let musicPlayer: Player | null = null;
 
 async function loadSounds() {
   try {
@@ -18,14 +19,38 @@ async function loadSounds() {
     buyPlayer             = createAudioPlayer(require('../../assets/sounds/purchase.wav'));
     elevatorRunPlayer     = createAudioPlayer(require('../../assets/sounds/elevatorrun.wav'));
     elevatorArrivedPlayer = createAudioPlayer(require('../../assets/sounds/elevatorarrived.wav'));
-  } catch {
-    // native module not available — silent fallback
+    musicPlayer           = createAudioPlayer(require('../../assets/sounds/Relaxed Loop.caf'));
+    musicPlayer.loop      = true;
+    console.log('[music] loaded OK');
+  } catch (e) {
+    console.log('[music] loadSounds error:', e);
   }
 }
 
-loadSounds();
+const soundsLoaded = loadSounds();
 
+// music player is excluded so effects don't pause the background track
 const allPlayers = () => [collectPlayer, listPlayer, buyPlayer, elevatorRunPlayer, elevatorArrivedPlayer];
+
+export function startBackgroundMusic() {
+  soundsLoaded.then(() => {
+    console.log('[music] startBackgroundMusic, player:', !!musicPlayer, 'enabled:', useSettingsStore.getState().musicEnabled);
+    if (!musicPlayer) return;
+    if (!useSettingsStore.getState().musicEnabled) return;
+    try {
+      musicPlayer.volume = 1.0;
+      musicPlayer.play();
+      console.log('[music] play() called, playing:', musicPlayer.playing, 'volume:', musicPlayer.volume);
+    } catch (e) { console.log('[music] play error:', e); }
+  });
+}
+
+export function pauseBackgroundMusic() {
+  soundsLoaded.then(() => {
+    if (!musicPlayer) return;
+    try { musicPlayer.pause(); } catch { /* ignore */ }
+  });
+}
 
 async function play(p: Player | null) {
   try {

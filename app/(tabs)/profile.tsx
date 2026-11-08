@@ -403,6 +403,8 @@ const player = useAuthStore((s) => s.player);
   const setLiftSimplifiedRewards = useSettingsStore((s) => s.setLiftSimplifiedRewards);
   const soundEffectsEnabled = useSettingsStore((s) => s.soundEffectsEnabled);
   const setSoundEffectsEnabled = useSettingsStore((s) => s.setSoundEffectsEnabled);
+  const musicEnabled = useSettingsStore((s) => s.musicEnabled);
+  const setMusicEnabled = useSettingsStore((s) => s.setMusicEnabled);
   const totalWorkers = workers.length;
   const happyCount = workers.filter((w) => {
     if (w.assignedFloorId === null) return false;
@@ -1024,6 +1026,23 @@ const player = useAuthStore((s) => s.player);
                   <Switch
                     value={soundEffectsEnabled}
                     onValueChange={setSoundEffectsEnabled}
+                    trackColor={{ true: '#72C24F', false: undefined }}
+                    thumbColor="#fff"
+                  />
+                </View>
+
+                <View style={[settingsStyles.row, { borderBottomColor: theme.divider }]}>
+                  <View style={settingsStyles.rowLeft}>
+                    <LocaleText style={[settingsStyles.rowTitle, { color: theme.text }]}>
+                      {t('profile.settings.music')}
+                    </LocaleText>
+                    <LocaleText style={[settingsStyles.rowDesc, { color: theme.textMuted }]}>
+                      {t('profile.settings.musicDesc')}
+                    </LocaleText>
+                  </View>
+                  <Switch
+                    value={musicEnabled}
+                    onValueChange={setMusicEnabled}
                     trackColor={{ true: '#72C24F', false: undefined }}
                     thumbColor="#fff"
                   />

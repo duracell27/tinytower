@@ -771,6 +771,8 @@
       "soundSection": "Звук",
       "soundEffects": "Ігрові звуки",
       "soundEffectsDesc": "Відтворювати звукові ефекти під час гри",
+      "music": "Фонова музика",
+      "musicDesc": "Відтворювати музику під час гри",
       "languageSection": "Мова",
       "languageEn": "🇺🇸 Англійська",
       "languageUk": "🇺🇦 Українська",
