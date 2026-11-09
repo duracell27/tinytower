@@ -149,9 +149,10 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontFamily: 'Fredoka_700Bold',
-    fontSize: 26,
-    color: '#2A3344',
+    fontSize: 32,
+    color: '#C4824A',
     marginBottom: 12,
+    textAlign: 'center',
   },
   menuItem: {
     flexDirection: 'row',
@@ -159,6 +160,8 @@ const styles = StyleSheet.create({
     gap: 14,
     backgroundColor: '#fff',
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E8AD82',
     paddingVertical: 10,
     paddingLeft: 10,
     paddingRight: 16,
