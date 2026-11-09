@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { seasonColors } from '../src/config/seasonTheme';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import LocaleText from '../src/components/LocaleText';
 import { Image } from 'expo-image';
@@ -163,6 +164,7 @@ const styles = StyleSheet.create({
   infoIcon: { width: 22, height: 22, opacity: 0.7 },
   summaryCard: {
     marginHorizontal: 20, marginBottom: 14, borderRadius: 16,
+    borderWidth: 1, borderColor: seasonColors.border,
     paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 6,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
@@ -177,6 +179,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 12,
     borderRadius: 18,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     overflow: 'hidden',
     flexDirection: 'row',
     alignItems: 'center',

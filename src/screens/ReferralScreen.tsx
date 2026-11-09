@@ -3,6 +3,7 @@ import {
   View, Text, Pressable, StyleSheet, ScrollView,
   Share, ActivityIndicator, TextInput, useColorScheme,
 } from 'react-native';
+import { seasonColors } from '../config/seasonTheme';
 import LocaleText from '../components/LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { InfoSection } from '../components/InfoSection';
@@ -188,7 +189,7 @@ export default function ReferralScreen() {
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3FA535" />
+          <ActivityIndicator size="large" color={seasonColors.accent} />
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -404,6 +405,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     gap: 12,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     shadowColor: 'rgba(60,80,45,1)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -428,6 +431,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     gap: 8,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     shadowColor: 'rgba(60,80,45,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -442,13 +447,15 @@ const styles = StyleSheet.create({
   milestoneLabel: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#3E4A35' },
   milestoneValueRow: { flexDirection: 'row', alignItems: 'center' },
   diamondIcon: { width: 13, height: 13 },
-  milestoneEarned: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: '#3FA535' },
+  milestoneEarned: { fontFamily: 'Nunito_600SemiBold', fontSize: 13, color: seasonColors.accent },
   milestonePending: { fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#9BA3B0' },
   emptyCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     shadowColor: 'rgba(60,80,45,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -461,6 +468,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     gap: 10,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     shadowColor: 'rgba(60,80,45,1)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -487,7 +496,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#E4E1D3',
+    borderColor: seasonColors.border,
     backgroundColor: '#FBFAF5',
     paddingHorizontal: 14,
     fontFamily: 'Fredoka_600SemiBold',
@@ -499,7 +508,7 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 16,
     borderRadius: 14,
-    backgroundColor: '#3FA535',
+    backgroundColor: seasonColors.accent,
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: 110,
@@ -523,6 +532,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 18,
     gap: 8,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     shadowColor: 'rgba(60,80,45,1)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,

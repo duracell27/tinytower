@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { seasonColors } from '../src/config/seasonTheme';
 import {
   View, Text, ScrollView, StyleSheet, Pressable,
 } from 'react-native';
@@ -479,12 +480,12 @@ const styles = StyleSheet.create({
   infoTournTierMoreRow:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingBottom: 2 },
 
   tokenRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 4, justifyContent: 'center' },
-  tokenChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },
+  tokenChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: seasonColors.border, paddingHorizontal: 10, paddingVertical: 6 },
   tokenIcon: { width: 18, height: 18 },
   tokenCount: { fontFamily: 'Fredoka_700Bold', fontSize: 15 },
 
   timer: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#9BA3B0', marginBottom: 4, textAlign: 'center' },
-  tournamentBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 20 },
+  tournamentBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, borderRadius: 14, borderWidth: 1, borderColor: '#5A9AC0', paddingVertical: 16, paddingHorizontal: 20 },
   tournamentCupIcon: { width: 64, height: 64 },
   tournamentTextCol: { alignItems: 'center', gap: 1 },
   tournamentScoreRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -497,7 +498,7 @@ const styles = StyleSheet.create({
   completionBarBg: { alignSelf: 'stretch', height: 6, borderRadius: 3, backgroundColor: 'rgba(63,165,53,0.2)', overflow: 'hidden' },
   completionBarFill: { height: '100%', borderRadius: 3, backgroundColor: '#3FA535' },
 
-  doubleBanner: { backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 14, padding: 12, alignItems: 'center', gap: 8, marginBottom: 4, shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 2 },
+  doubleBanner: { backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 14, borderWidth: 1, borderColor: seasonColors.border, padding: 12, alignItems: 'center', gap: 8, marginBottom: 4, shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 2 },
   doubleBannerActive: { backgroundColor: '#FFF4D6' },
   doubleBannerGoal:   { backgroundColor: '#E8F7E4', gap: 4 },
   doubleBannerText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#6A7A8A', textAlign: 'center' },
@@ -507,7 +508,7 @@ const styles = StyleSheet.create({
   doubleBannerGoalTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 16, color: '#277A20', textAlign: 'center' },
   doubleBannerGoalSub:   { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#4A8A43', textAlign: 'center' },
 
-  card: { backgroundColor: '#fff', borderRadius: 20, padding: 16, gap: 10, shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
+  card: { backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: seasonColors.border, padding: 16, gap: 10, shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
   cardClaimed: { opacity: 0.72 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   taskIcon: { width: 36, height: 36, borderRadius: 8 },

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
   heading: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 32,
-    color: '#C4824A',
+    color: seasonColors.accent,
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E8AD82',
+    borderColor: seasonColors.border,
     paddingVertical: 10,
     paddingLeft: 10,
     paddingRight: 16,

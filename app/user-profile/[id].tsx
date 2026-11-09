@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator, Modal, KeyboardAvoidingView, TextInput, Platform } from 'react-native';
 import LocaleText from '../../src/components/LocaleText';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -841,12 +842,14 @@ const pStyles = StyleSheet.create({
   card: {
     marginHorizontal: 20, marginTop: 12,
     borderRadius: 24, paddingHorizontal: 15, paddingTop: 20, paddingBottom: 14,
+    borderWidth: 1, borderColor: seasonColors.border,
     shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1, shadowRadius: 12, elevation: 4,
   },
   compactCard: {
     marginHorizontal: 20, marginTop: 12,
     borderRadius: 24, paddingHorizontal: 15, paddingTop: 10, paddingBottom: 8,
+    borderWidth: 1, borderColor: seasonColors.border,
     shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1, shadowRadius: 12, elevation: 4,
   },
@@ -892,6 +895,7 @@ const pStyles = StyleSheet.create({
     marginHorizontal: 20, marginTop: 10, borderRadius: 18,
     paddingVertical: 14, paddingLeft: 15, paddingRight: 14,
     flexDirection: 'row', alignItems: 'center', gap: 10,
+    borderWidth: 1, borderColor: seasonColors.border,
     shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
   },
@@ -902,6 +906,7 @@ const pStyles = StyleSheet.create({
   dropdownCard: {
     marginHorizontal: 20, marginTop: 10, borderRadius: 18,
     paddingVertical: 4, paddingHorizontal: 15,
+    borderWidth: 1, borderColor: seasonColors.border,
     shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08, shadowRadius: 8, elevation: 2,
   },

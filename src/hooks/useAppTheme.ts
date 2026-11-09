@@ -1,4 +1,5 @@
 import { useColorScheme } from 'react-native';
+import { seasonColors } from '../config/seasonTheme';
 
 export interface AppTheme {
   isDark: boolean;
@@ -23,7 +24,7 @@ const LIGHT: AppTheme = {
   surfaceDanger: '#FEF1EE',
   text: '#27331F',
   textMuted: '#7C8A6E',
-  divider: '#E4E1D3',
+  divider: seasonColors.divider,
   topBarBg: 'rgba(238,248,230,0.80)',
   topBarBorder: 'rgba(255,255,255,0.70)',
 };

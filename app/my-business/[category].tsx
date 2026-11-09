@@ -1,4 +1,5 @@
 import React from 'react';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import LocaleText from '../../src/components/LocaleText';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
@@ -282,6 +283,7 @@ const styles = StyleSheet.create({
   /* Hero card */
   heroCard: {
     marginHorizontal: 20, marginTop: 8, borderRadius: 20,
+    borderWidth: 1, borderColor: seasonColors.border,
     paddingHorizontal: 18, paddingVertical: 16,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3,
   },
@@ -314,6 +316,7 @@ const styles = StyleSheet.create({
   /* Progress */
   progressCard: {
     marginHorizontal: 20, marginTop: 12, borderRadius: 16,
+    borderWidth: 1, borderColor: seasonColors.border,
     paddingHorizontal: 18, paddingTop: 14, paddingBottom: 14, gap: 0,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
   },
@@ -326,6 +329,7 @@ const styles = StyleSheet.create({
   /* Balance */
   balanceCard: {
     marginHorizontal: 20, marginTop: 12, borderRadius: 16, padding: 14,
+    borderWidth: 1, borderColor: seasonColors.border,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
   },
@@ -339,6 +343,7 @@ const styles = StyleSheet.create({
   /* Businesses */
   businessesCard: {
     marginHorizontal: 20, marginTop: 12, borderRadius: 16,
+    borderWidth: 1, borderColor: seasonColors.border,
     padding: 16, gap: 12,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
   },

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { seasonColors } from '../../src/config/seasonTheme';
 import {
   View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, useWindowDimensions, useColorScheme, Alert,
 } from 'react-native';
@@ -145,8 +146,8 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
   );
 }
 const dc = StyleSheet.create({
-  card:       { backgroundColor: '#FFFFFF', borderRadius: 18,
-                padding: 12, alignItems: 'center', gap: 6 },
+  card:       { backgroundColor: '#FFFFFF', borderRadius: 18, borderWidth: 1,
+                borderColor: seasonColors.border, padding: 12, alignItems: 'center', gap: 6 },
   buying:     { opacity: 0.7 },
   badgePos:   { position: 'absolute', top: 8, right: 8, zIndex: 2 },
   img:        { width: 80, height: 80 },

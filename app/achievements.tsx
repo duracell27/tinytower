@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { seasonColors } from '../src/config/seasonTheme';
 import { View, Text, ScrollView, StyleSheet, Image, Pressable } from 'react-native';
 import LocaleText from '../src/components/LocaleText';
 import AppBackground from '../src/components/AppBackground';
@@ -284,6 +285,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
     borderRadius: 24,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     padding: 20,
     shadowColor: 'rgba(60,80,45,1)',
     shadowOffset: { width: 0, height: 3 },
@@ -346,7 +349,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   segmentFilled: {
-    backgroundColor: '#3FA535',
+    backgroundColor: seasonColors.accent,
   },
   segmentEmpty: {
     backgroundColor: 'rgba(63,165,53,0.15)',
@@ -395,7 +398,7 @@ const styles = StyleSheet.create({
   barFill: {
     height: '100%',
     borderRadius: 4,
-    backgroundColor: '#3FA535',
+    backgroundColor: seasonColors.accent,
   },
 
   // Reward chips
@@ -443,7 +446,7 @@ const styles = StyleSheet.create({
   maxedText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
-    color: '#3FA535',
+    color: seasonColors.accent,
   },
 
   // Close button

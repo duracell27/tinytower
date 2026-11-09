@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { seasonColors } from '../src/config/seasonTheme';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import LocaleText from '../src/components/LocaleText';
 import { useAppTheme } from '../src/hooks/useAppTheme';
@@ -143,7 +144,7 @@ const color         = TYPE_COLORS[ft];
         <View style={styles.infoOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[styles.infoCard, { backgroundColor: theme.surface }]}>
-            <LinearGradient colors={['#3FA535', '#2C7A25']} style={styles.infoCardHeader}>
+            <LinearGradient colors={[seasonColors.accent, seasonColors.accentDark]} style={styles.infoCardHeader}>
               <LocaleText style={styles.infoCardTitle}>{tHotel('myBusiness.title')}</LocaleText>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
                 <LocaleText style={styles.infoCardClose}>✕</LocaleText>
@@ -210,6 +211,7 @@ const styles = StyleSheet.create({
 
   balanceCard: {
     marginHorizontal: 20, marginTop: 14, backgroundColor: '#fff', borderRadius: 18,
+    borderWidth: 1, borderColor: seasonColors.border,
     paddingVertical: 14, paddingHorizontal: 16, gap: 10, alignItems: 'center',
     shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
   },
@@ -225,6 +227,7 @@ const styles = StyleSheet.create({
 
   card: {
     marginHorizontal: 20, marginTop: 12, backgroundColor: '#fff', borderRadius: 18,
+    borderWidth: 1, borderColor: seasonColors.border,
     flexDirection: 'row', overflow: 'hidden',
     shadowColor: 'rgba(60,80,45,1)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
   },

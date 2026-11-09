@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { seasonColors } from '../src/config/seasonTheme';
 import { View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import LocaleText from '../src/components/LocaleText';
 import { Image } from 'expo-image';
@@ -470,15 +471,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 12,
     alignItems: 'center',
-    backgroundColor: 'rgba(63,165,53,0.08)',
+    backgroundColor: seasonColors.tabInactiveBg,
   },
   tabActive: {
-    backgroundColor: '#3FA535',
+    backgroundColor: seasonColors.accent,
   },
   tabText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 14,
-    color: '#3FA535',
+    color: seasonColors.accent,
   },
   tabTextActive: {
     color: '#fff',

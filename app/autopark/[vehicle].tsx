@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { View, Text, Pressable, ScrollView, StyleSheet, Animated } from 'react-native';
 import LocaleText from '../../src/components/LocaleText';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -265,6 +266,7 @@ const styles = StyleSheet.create({
   heroCard: {
     marginHorizontal: 20, marginTop: 60,
     borderRadius: 24, paddingVertical: 28, paddingHorizontal: 20,
+    borderWidth: 1, borderColor: seasonColors.border,
     alignItems: 'center', gap: 10, overflow: 'hidden',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08, shadowRadius: 10, elevation: 3,
@@ -282,6 +284,7 @@ const styles = StyleSheet.create({
   bonusGrid: { flexDirection: 'row', gap: 10, marginHorizontal: 20, marginTop: 12 },
   bonusCard: {
     flex: 1, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 12,
+    borderWidth: 1, borderColor: seasonColors.border,
     alignItems: 'center', gap: 5,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
@@ -292,6 +295,7 @@ const styles = StyleSheet.create({
   descCard: {
     marginHorizontal: 20, marginTop: 10,
     borderRadius: 16, padding: 14, gap: 8,
+    borderWidth: 1, borderColor: seasonColors.border,
     borderLeftWidth: 2,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,

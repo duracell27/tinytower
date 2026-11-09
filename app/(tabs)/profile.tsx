@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Switch, Dimensions, Alert } from 'react-native';
 import LocaleText from '../../src/components/LocaleText';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
@@ -1269,6 +1270,8 @@ const styles = StyleSheet.create({
     marginTop: 60,
     backgroundColor: '#fff',
     borderRadius: 24,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     paddingHorizontal: 15,
     paddingTop: 28,
     paddingBottom: 18,
@@ -1451,6 +1454,8 @@ const styles = StyleSheet.create({
     marginTop: 14,
     backgroundColor: '#fff',
     borderRadius: 18,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     paddingHorizontal: 14,
     paddingTop: 13,
     paddingBottom: 13,
@@ -1588,6 +1593,8 @@ const styles = StyleSheet.create({
     marginTop: 14,
     backgroundColor: '#fff',
     borderRadius: 18,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     paddingVertical: 10,
     paddingLeft: 15,
     paddingRight: 12,

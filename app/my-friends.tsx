@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { seasonColors } from '../src/config/seasonTheme';
 import {
   View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator,
 } from 'react-native';
@@ -215,7 +216,7 @@ export default function MyFriendsScreen() {
           style={[tabStyles.tab, activeTab === 'friends' && tabStyles.tabActive]}
           onPress={() => setActiveTab('friends')}
         >
-          <LocaleText style={[tabStyles.tabText, { color: activeTab === 'friends' ? '#3FA535' : theme.textMuted }]}>
+          <LocaleText style={[tabStyles.tabText, { color: activeTab === 'friends' ? seasonColors.accent : theme.textMuted }]}>
             {t('friends.tabFriends')}{friends.length > 0 ? ` (${friends.length})` : ''}
           </LocaleText>
           {activeTab === 'friends' && <View style={tabStyles.indicator} />}
@@ -227,7 +228,7 @@ export default function MyFriendsScreen() {
             onPress={() => setActiveTab('requests')}
           >
             <View style={tabStyles.tabWithBadge}>
-              <LocaleText style={[tabStyles.tabText, { color: activeTab === 'requests' ? '#3FA535' : theme.textMuted }]}>
+              <LocaleText style={[tabStyles.tabText, { color: activeTab === 'requests' ? seasonColors.accent : theme.textMuted }]}>
                 {t('friends.tabRequests')}
               </LocaleText>
               <View style={tabStyles.badge}>
@@ -243,7 +244,7 @@ export default function MyFriendsScreen() {
             style={[tabStyles.tab, activeTab === 'sent' && tabStyles.tabActive]}
             onPress={() => setActiveTab('sent')}
           >
-            <LocaleText style={[tabStyles.tabText, { color: activeTab === 'sent' ? '#3FA535' : theme.textMuted }]}>
+            <LocaleText style={[tabStyles.tabText, { color: activeTab === 'sent' ? seasonColors.accent : theme.textMuted }]}>
               {t('friends.tabSent')} ({outgoingRequests.length})
             </LocaleText>
             {activeTab === 'sent' && <View style={tabStyles.indicator} />}
@@ -253,7 +254,7 @@ export default function MyFriendsScreen() {
 
       {loading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color="#3FA535" />
+          <ActivityIndicator size="large" color={seasonColors.accent} />
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
@@ -329,7 +330,7 @@ export default function MyFriendsScreen() {
         <View style={headerStyles.overlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setInfoVisible(false)} />
           <View style={[headerStyles.infoCard, { backgroundColor: theme.surface }]}>
-            <LinearGradient colors={['#3FA535', '#2C7A25']} style={headerStyles.infoCardHeader}>
+            <LinearGradient colors={[seasonColors.accent, seasonColors.accentDark]} style={headerStyles.infoCardHeader}>
               <LocaleText style={headerStyles.infoCardTitle}>{t('friends.title')}</LocaleText>
               <Pressable onPress={() => setInfoVisible(false)} hitSlop={10}>
                 <LocaleText style={headerStyles.infoCardClose}>✕</LocaleText>
@@ -441,7 +442,7 @@ const tabStyles = StyleSheet.create({
     left: 16,
     right: 16,
     height: 2.5,
-    backgroundColor: '#3FA535',
+    backgroundColor: seasonColors.accent,
     borderRadius: 2,
   },
 });
