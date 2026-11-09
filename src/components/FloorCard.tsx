@@ -1,5 +1,6 @@
 import React, { memo, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import LocaleText from './LocaleText';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { useTranslation } from 'react-i18next';
@@ -17,12 +18,14 @@ export interface FloorColorScheme {
   color: string;
   headerShadowColor: string;
   bodyColor: string;
+  bodyGradient?: [string, string];
   cardBg: string;
   nameColor: string;
   stars: number;
   dark: {
     color: string;
     bodyColor: string;
+    bodyGradient?: [string, string];
     cardBg: string;
     nameColor: string;
   };
@@ -34,6 +37,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     color: '#5E8F42',
     headerShadowColor: 'rgba(0,83,0,0.4)',
     bodyColor: '#D0EBCB',
+    bodyGradient: ['#D0EBCB', '#96CC8A'],
     cardBg: '#E8F5E5',
     nameColor: '#117200',
     stars: 0,
@@ -48,6 +52,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     color: '#2E6EC9',
     headerShadowColor: 'rgba(0,31,142,0.4)',
     bodyColor: '#CADDFC',
+    bodyGradient: ['#CADDFC', '#90BBFA'],
     cardBg: '#E5EEFD',
     nameColor: '#003EAD',
     stars: 0,
@@ -62,6 +67,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     color: '#E7A52B',
     headerShadowColor: 'rgba(142,80,0,0.4)',
     bodyColor: '#FCEBC9',
+    bodyGradient: ['#FCEBC9', '#F9CC82'],
     cardBg: '#FDF5E4',
     nameColor: '#AD6F00',
     stars: 0,
@@ -76,6 +82,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     color: '#9A6FD0',
     headerShadowColor: 'rgba(85,40,170,0.4)',
     bodyColor: '#E8DEFE',
+    bodyGradient: ['#E8DEFE', '#C9B0F8'],
     cardBg: '#F2ECFF',
     nameColor: '#6A40A0',
     stars: 0,
@@ -90,6 +97,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     color: '#E05050',
     headerShadowColor: 'rgba(170,30,30,0.4)',
     bodyColor: '#F8DEDE',
+    bodyGradient: ['#F8DEDE', '#F0A0A0'],
     cardBg: '#FFF0F0',
     nameColor: '#B02020',
     stars: 0,
@@ -208,11 +216,13 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
   const { isDark } = theme;
   const effectiveColor = isDark ? scheme.dark.color : scheme.color;
   const effectiveBodyColor = isDark ? scheme.dark.bodyColor : scheme.bodyColor;
+  const effectiveBodyGradient = isDark ? scheme.dark.bodyGradient : scheme.bodyGradient;
   const effectiveCardBg = isDark ? scheme.dark.cardBg : scheme.cardBg;
   const effectiveNameColor = isDark ? scheme.dark.nameColor : scheme.nameColor;
 
   return (
-    <View style={[styles.floorContainer, { backgroundColor: theme.surfaceCard }, isDark && styles.floorContainerDark]}>
+    <View style={[styles.floorShadow, isDark && styles.floorContainerDark]}>
+    <View style={[styles.floorContainer, { backgroundColor: theme.surfaceCard }]}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: effectiveColor }]}>
         <View style={[styles.headerEdge, { backgroundColor: shadeColor(effectiveColor, -22) }]} />
@@ -244,14 +254,14 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
       </View>
 
       {/* Production cards */}
-      <View style={[styles.cardsContainer, { backgroundColor: effectiveBodyColor }]}>
-        {floor.productions.map((production, idx) => {
+      {(() => {
+        const onboardingTargetIdx = onboardingStep === 'assign_worker' ? 1 : 0;
+        const cards = floor.productions.map((production, idx) => {
           const slotWorker = getWorkerForSlot(workers, floorId, idx);
           const effectiveProduction =
             idx === 0 && onboardingForceSellingSlot0 && (production.stage === 'IDLE' || production.stage === 'SELLING')
               ? { ...production, stage: 'SELLING' as const, stageStartedAt: 0 }
               : production;
-          const onboardingTargetIdx = onboardingStep === 'assign_worker' ? 1 : 0;
           return (
             <View
               key={idx}
@@ -259,37 +269,43 @@ function FloorCardInner({ floorId, balance, onHireSlot }: FloorCardProps) {
               ref={idx === onboardingTargetIdx && onboardingSlot0Ready ? slot0Ref : undefined}
               collapsable={false}
             >
-            <ProductionCard
-              production={effectiveProduction}
-              balance={balance}
-              floorId={floorId}
-              floorType={floorType}
-              slotIdx={idx}
-              floorAvailableTypes={availableTypes}
-              cardBg={effectiveCardBg}
-              nameColor={effectiveNameColor}
-              productTitle={tContent(`productionTypes.${availableTypes[idx]}.displayName`, {
-                defaultValue: availableTypes[idx] ?? t('floorCard.productFallback', { index: idx + 1 }),
-              })}
-              productImage={PRODUCT_IMAGES[availableTypes[idx]] ?? PRODUCT_IMAGES[availableTypes[0]]}
-              worker={slotWorker}
-              floorDiscount={discount}
-              specialistBonus={specialistBonus}
-              accentColor={effectiveColor}
-              onHire={onHireSlot}
-              deliveryLockUntil={deliveryLockUntil}
-              gems={gems}
-              onLongPress={
-                slotWorker
-                  ? () => openProductionDetailModal(floorId, idx)
-                  : undefined
-              }
-            />
+              <ProductionCard
+                production={effectiveProduction}
+                balance={balance}
+                floorId={floorId}
+                floorType={floorType}
+                slotIdx={idx}
+                floorAvailableTypes={availableTypes}
+                cardBg={effectiveCardBg}
+                nameColor={effectiveNameColor}
+                productTitle={tContent(`productionTypes.${availableTypes[idx]}.displayName`, {
+                  defaultValue: availableTypes[idx] ?? t('floorCard.productFallback', { index: idx + 1 }),
+                })}
+                productImage={PRODUCT_IMAGES[availableTypes[idx]] ?? PRODUCT_IMAGES[availableTypes[0]]}
+                worker={slotWorker}
+                floorDiscount={discount}
+                specialistBonus={specialistBonus}
+                accentColor={effectiveColor}
+                onHire={onHireSlot}
+                deliveryLockUntil={deliveryLockUntil}
+                gems={gems}
+                onLongPress={
+                  slotWorker
+                    ? () => openProductionDetailModal(floorId, idx)
+                    : undefined
+                }
+              />
             </View>
           );
-        })}
-      </View>
+        });
+        return effectiveBodyGradient ? (
+          <LinearGradient colors={effectiveBodyGradient} style={styles.cardsContainer}>{cards}</LinearGradient>
+        ) : (
+          <View style={[styles.cardsContainer, { backgroundColor: effectiveBodyColor }]}>{cards}</View>
+        );
+      })()}
 
+    </View>
     </View>
   );
 }
@@ -298,18 +314,20 @@ const FloorCard = memo(FloorCardInner);
 export default FloorCard;
 
 const styles = StyleSheet.create({
+  floorShadow: {
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 12,
+  },
+  floorContainerDark: {
+    shadowOpacity: 0.45,
+  },
   floorContainer: {
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: 'rgba(60,80,45,1)',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.22,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  floorContainerDark: {
-    shadowColor: 'rgba(0,0,0,0.8)',
-    shadowOpacity: 0.45,
   },
   header: {
     flexDirection: 'row',

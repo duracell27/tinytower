@@ -11,7 +11,7 @@ import { shadeColor } from '../utils/color';
 
 const HEADER_COLORS: [string, string] = ['#C9637E', '#A8475F'];
 const HEADER_EDGE_COLOR = shadeColor(HEADER_COLORS[1], -22);
-const BODY_BG = '#FBEAEF';
+const BODY_BG = '#fab9d1';
 
 function StarIcon() {
   return (
@@ -47,6 +47,7 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
   const hasVacancy = hotelOccupied < hotelTotal;
 
   return (
+    <View style={styles.shadow}>
     <Pressable onPress={onPress} style={[styles.container, { backgroundColor: theme.surface }]}>
       <View style={[styles.header, { backgroundColor: HEADER_COLORS[0] }]}>
         <View style={styles.headerEdge} />
@@ -61,7 +62,7 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
       </View>
 
       <LinearGradient
-        colors={isDark ? ['#3A2A2E', '#2E1E24'] : ['#FBEAEF', '#F5D6E0']}
+        colors={isDark ? ['#3A2A2E', '#2E1E24'] : ['#fce1eb', '#fac0d6']}
         style={styles.body}
       >
         <View style={styles.techContent}>
@@ -106,6 +107,7 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
         </View>
       </LinearGradient>
     </Pressable>
+    </View>
   );
 }
 
@@ -128,6 +130,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
   const timerText = isFull ? t('technicalFloor.lobby.full') : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
   return (
+    <View style={styles.shadow}>
     <Pressable onPress={onPress} style={[styles.container, { backgroundColor: theme.surface }]}>
       <View style={[styles.header, { backgroundColor: HEADER_COLORS[0] }]}>
         <View style={styles.headerEdge} />
@@ -142,7 +145,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
       </View>
 
       <LinearGradient
-        colors={isDark ? ['#3A2A2E', '#2E1E24'] : ['#FBEAEF', '#F5D6E0']}
+        colors={isDark ? ['#3A2A2E', '#2E1E24'] : ['#fce1eb', '#fac0d6']}
         style={styles.body}
       >
         <View style={styles.techContent}>
@@ -172,18 +175,22 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
         </View>
       </LinearGradient>
     </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  shadow: {
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 12,
+  },
   container: {
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: 'rgba(140,50,75,1)',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.22,
-    shadowRadius: 16,
-    elevation: 6,
   },
   header: {
     flexDirection: 'row',
