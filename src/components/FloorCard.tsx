@@ -44,6 +44,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     dark: {
       color: '#6BA34A',
       bodyColor: '#1C241A',
+      bodyGradient: ['#2A3D22', '#1C241A'],
       cardBg: '#384434',
       nameColor: '#8FCC70',
     },
@@ -59,6 +60,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     dark: {
       color: '#3A7ED8',
       bodyColor: '#18202E',
+      bodyGradient: ['#243348', '#18202E'],
       cardBg: '#323E52',
       nameColor: '#7AADEE',
     },
@@ -74,6 +76,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     dark: {
       color: '#F0B030',
       bodyColor: '#26201A',
+      bodyGradient: ['#3A2E1E', '#26201A'],
       cardBg: '#483E34',
       nameColor: '#F0C060',
     },
@@ -89,6 +92,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     dark: {
       color: '#A87EDE',
       bodyColor: '#201A2E',
+      bodyGradient: ['#312545', '#201A2E'],
       cardBg: '#3E3454',
       nameColor: '#C4A0F0',
     },
@@ -104,6 +108,7 @@ export const FLOOR_TYPE_SCHEMES: Record<string, FloorColorScheme> = {
     dark: {
       color: '#E86060',
       bodyColor: '#2A1A1A',
+      bodyGradient: ['#3D2222', '#2A1A1A'],
       cardBg: '#4C3434',
       nameColor: '#F08080',
     },
