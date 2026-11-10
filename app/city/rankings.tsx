@@ -95,19 +95,21 @@ export default function CityRankingsScreen() {
         contentContainerStyle={[styles.list, { paddingTop: insets.top }]}
         renderItem={renderItem}
         ListHeaderComponent={
-          <View style={styles.header}>
+          <View style={[styles.hero, { backgroundColor: isDark ? '#252D42' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
               <LocaleText style={[styles.backIcon, isDark && { color: '#6BAED0' }]}>‹</LocaleText>
             </TouchableOpacity>
 
-            <View style={styles.headerCenter}>
-              <Image source={CUP_1} style={styles.cupIcon} contentFit="contain" />
-              <LocaleText style={[styles.headerTitle, isDark && { color: '#DDE8D8' }]}>
-                {t('city.rankings.title')}
-              </LocaleText>
-              <LocaleText style={[styles.headerSubtitle, isDark && { color: '#8A9A80' }]}>
-                {t('city.rankings.subtitle')}
-              </LocaleText>
+            <View style={styles.heroCenter}>
+              <Image source={CUP_1} style={styles.heroIcon} contentFit="contain" />
+              <View style={styles.heroTextWrap}>
+                <LocaleText style={[styles.heroTitle, isDark && { color: '#DDE8D8' }]}>
+                  {t('city.rankings.title')}
+                </LocaleText>
+                <LocaleText style={[styles.heroSub, isDark && { color: '#8A9A80' }]}>
+                  {t('city.rankings.subtitle')}
+                </LocaleText>
+              </View>
             </View>
 
             <TouchableOpacity
@@ -155,26 +157,37 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 },
   list: { paddingBottom: 40 },
 
-  header: { paddingBottom: 16, paddingHorizontal: 16 },
   backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
   backIcon: { fontFamily: 'Fredoka_700Bold', fontSize: 26, color: '#2E6EC9', lineHeight: 26, includeFontPadding: false },
 
-  headerCenter: { alignItems: 'center', paddingBottom: 14 },
-  cupIcon: { width: 56, height: 56, marginBottom: 8 },
-  headerTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 22, color: '#0A1C30', marginBottom: 4 },
-  headerSubtitle: { fontFamily: 'Fredoka_500Medium', fontSize: 14, color: '#5A7090', marginBottom: 0 },
+  hero: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
+  },
+  heroCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  heroIcon: { width: 36, height: 36 },
+  heroTextWrap: { gap: 1 },
+  heroTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 20, color: '#0A1C30' },
+  heroSub: { fontFamily: 'Fredoka_400Regular', fontSize: 12, color: '#5A7090' },
 
   findCityBtn: {
     backgroundColor: '#E8F2FA',
     borderRadius: 12,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#2E6EC9',
   },
-  findCityBtnDark: { backgroundColor: 'rgba(46,110,201,0.15)' },
-  findCityBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2E6EC9' },
+  findCityBtnDark: { backgroundColor: '#1A2E4A' },
+  findCityBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#2E6EC9' },
 
   row: {
     flexDirection: 'row',
@@ -188,7 +201,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  rowDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
+  rowDark: { backgroundColor: '#252D42', borderColor: seasonColors.borderDark },
   rowTop3: {},
 
   rankBox: { width: 44, alignItems: 'center', borderRadius: 8, paddingVertical: 4 },
