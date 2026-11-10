@@ -983,12 +983,12 @@ const styles = StyleSheet.create({
 
   // ── Settings ───────────────────────────────────────
   settingsBtn: { backgroundColor: '#E8F2FA', borderRadius: 14, paddingVertical: 15, alignItems: 'center', borderWidth: 1, borderColor: '#2E6EC9' },
-  settingsBtnDark: { backgroundColor: 'rgba(46,110,201,0.22)' },
+  settingsBtnDark: { backgroundColor: '#1A2E4A' },
   settingsBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2E6EC9' },
 
   // ── Leave ──────────────────────────────────────────
   leaveBtn: { backgroundColor: '#FCE8E8', borderRadius: 14, paddingVertical: 15, alignItems: 'center', borderWidth: 1, borderColor: '#C03030' },
-  leaveBtnDark: { backgroundColor: 'rgba(200,50,50,0.22)' },
+  leaveBtnDark: { backgroundColor: '#2A1818' },
   leaveBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#C03030' },
 
   // ── Offline ────────────────────────────────────────
