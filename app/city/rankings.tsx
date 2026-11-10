@@ -170,6 +170,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 10,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#2E6EC9',
   },
   findCityBtnDark: { backgroundColor: 'rgba(46,110,201,0.15)' },
   findCityBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 15, color: '#2E6EC9' },
