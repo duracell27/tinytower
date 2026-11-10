@@ -857,7 +857,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  sectionCardDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
+  sectionCardDark: { backgroundColor: '#252D42', borderColor: seasonColors.borderDark },
   sectionCardImgWrap: { position: 'relative', width: 32, height: 32 },
   sectionCardImg: { width: 32, height: 32 },
   unreadBadge: {
@@ -923,7 +923,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     gap: 0,
   },
-  memberRowDark: { backgroundColor: '#1A2E3E' },
+  memberRowDark: { backgroundColor: '#252D42' },
   memberRankDivider: { width: 1, height: 32, backgroundColor: 'rgba(0,0,0,0.08)', marginHorizontal: 10 },
   memberRank: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#8A9A80', minWidth: 22, textAlign: 'center' },
   memberInfo: { flex: 1 },
@@ -955,7 +955,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center', justifyContent: 'center',
   },
-  pageBtnDark: { backgroundColor: '#1A2E3E' },
+  pageBtnDark: { backgroundColor: '#252D42' },
   pageBtnOff: { opacity: 0.35 },
   pageBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2E6EC9' },
   pageBtnTextOff: { color: '#8A9A80' },
@@ -969,12 +969,12 @@ const styles = StyleSheet.create({
 
   // ── Description ────────────────────────────────────
   descBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: seasonColors.border },
-  descBlockDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
+  descBlockDark: { backgroundColor: '#252D42', borderColor: seasonColors.borderDark },
   descText: { fontFamily: 'Fredoka_400Regular', fontSize: 14, color: '#3A5060', lineHeight: 20 },
 
   // ── Nav block ──────────────────────────────────────
   navBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', paddingVertical: 4, borderWidth: 1, borderColor: seasonColors.border },
-  navBlockDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
+  navBlockDark: { backgroundColor: '#252D42', borderColor: seasonColors.borderDark },
   navRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   navImg: { width: 26, height: 26 },
   navLabel: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#0A1C30' },
@@ -1002,7 +1002,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  offlineCardDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
+  offlineCardDark: { backgroundColor: '#252D42', borderColor: seasonColors.borderDark },
   offlineImg: { width: 90, height: 72, marginBottom: 16 },
   offlineTitle: {
     fontFamily: 'Fredoka_700Bold',
