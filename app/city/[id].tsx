@@ -3,6 +3,7 @@ import {
   View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
   useColorScheme, Dimensions,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -378,6 +379,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
 
   starsRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
@@ -471,7 +474,7 @@ const styles = StyleSheet.create({
   block: { marginHorizontal: 16, marginBottom: 16 },
 
   // ── Members ────────────────────────────────────────
-  membersBlock: { borderRadius: 16, overflow: 'hidden' },
+  membersBlock: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#2E6EC9' },
   membersBlockDark: {},
   membersHeader: {
     flexDirection: 'row',
@@ -532,16 +535,16 @@ const styles = StyleSheet.create({
   },
 
   // ── Description ────────────────────────────────────
-  descBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 16 },
+  descBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: seasonColors.border },
   descBlockDark: { backgroundColor: '#1A2E3E' },
   descText: { fontFamily: 'Fredoka_400Regular', fontSize: 14, color: '#3A5060', lineHeight: 20 },
 
   // ── Nav block ──────────────────────────────────────
-  navBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', paddingVertical: 4 },
+  navBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', paddingVertical: 4, borderWidth: 1, borderColor: seasonColors.border },
   navBlockDark: { backgroundColor: '#1A2E3E' },
   navRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   navImg: { width: 26, height: 26 },
   navLabel: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#0A1C30' },
-  navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: '#6BAED0', lineHeight: 24 },
-  navDivider: { height: 1, backgroundColor: '#2E6EC9', opacity: 0.5 },
+  navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: seasonColors.accent, lineHeight: 24 },
+  navDivider: { height: 1, backgroundColor: seasonColors.border },
 });

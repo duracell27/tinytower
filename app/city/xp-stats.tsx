@@ -3,6 +3,7 @@ import {
   View, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, useColorScheme,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -249,6 +250,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginHorizontal: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
   backIcon: { fontFamily: 'Fredoka_700Bold', fontSize: 26, color: '#2E6EC9', lineHeight: 26, includeFontPadding: false },
@@ -266,6 +269,8 @@ const styles = StyleSheet.create({
     padding: 18,
     alignItems: 'center',
     gap: 6,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   totalCardDark: { backgroundColor: '#1A2E3E' },
   totalLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 13, color: '#5A7090' },
@@ -283,6 +288,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     gap: 10,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   memberRowDark: { backgroundColor: '#1A2E3E' },
   rank: {
@@ -313,6 +320,8 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     gap: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   footerDark: { backgroundColor: '#1A2E3E' },
   periodLabel: {

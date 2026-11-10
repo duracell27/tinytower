@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, useColorScheme,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -182,9 +183,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     gap: 12,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   rowDark: { backgroundColor: '#1A2E3E' },
-  rowTop3: { borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)' },
+  rowTop3: { borderColor: 'rgba(255,215,0,0.25)' },
 
   rankBox: { width: 44, alignItems: 'center', borderRadius: 8, paddingVertical: 4 },
   rankText: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#7A8A80' },

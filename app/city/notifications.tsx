@@ -3,6 +3,7 @@ import {
   View, ScrollView, StyleSheet, TouchableOpacity,
   ActivityIndicator, TextInput, useColorScheme,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -199,6 +200,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 10,
     marginHorizontal: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
   backText: { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
@@ -219,6 +222,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
     marginBottom: 10,
     padding: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   input: {
     borderWidth: 1.5,
@@ -264,6 +269,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginHorizontal: 14,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   notifRow: {
     paddingHorizontal: 14,

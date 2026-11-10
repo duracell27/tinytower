@@ -3,6 +3,7 @@ import {
   View, ScrollView, TextInput, TouchableOpacity, StyleSheet,
   ActivityIndicator, useColorScheme, KeyboardAvoidingView, Platform,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -344,6 +345,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 10,
     marginHorizontal: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   backBtn:      { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
   backText:     { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
@@ -359,6 +362,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 12,
     gap: 8,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   input: {
     height: 42, borderRadius: 12, paddingHorizontal: 14,
@@ -387,6 +392,8 @@ const styles = StyleSheet.create({
   msgCard: {
     borderRadius: 14,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   msgRow: { paddingVertical: 10, paddingHorizontal: 14 },
   msgMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
@@ -397,7 +404,7 @@ const styles = StyleSheet.create({
   replyBtn: { fontFamily: 'Fredoka_500Medium', fontSize: 13, color: '#2E6EC9' },
   msgBody: { fontFamily: 'Fredoka_400Regular', fontSize: 14, lineHeight: 20, paddingLeft: 28 },
   mention: { color: '#2E6EC9', fontFamily: 'Fredoka_600SemiBold' },
-  separator: { height: 1, backgroundColor: '#2E6EC9', marginHorizontal: 14 },
+  separator: { height: 1, backgroundColor: seasonColors.border, marginHorizontal: 14 },
   emptyWrap: { minHeight: 120, alignItems: 'center', justifyContent: 'center' },
   empty: { textAlign: 'center', fontFamily: 'Fredoka_500Medium', fontSize: 15 },
 

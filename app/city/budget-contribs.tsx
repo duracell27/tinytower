@@ -3,6 +3,7 @@ import {
   View, ScrollView, StyleSheet, TouchableOpacity, Modal, Pressable,
   ActivityIndicator, useColorScheme,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -387,6 +388,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 10,
     marginHorizontal: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   backBtn:    { width: 36 },
   backText:   { fontSize: 28, lineHeight: 32, fontFamily: 'Fredoka_600SemiBold' },
@@ -400,6 +403,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   lastResetText: { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
 
@@ -411,6 +416,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 14,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderColor: PRIMARY,
   },
   sectionHeader: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#FFFFFF' },
 
@@ -420,7 +428,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginHorizontal: 14,
   },
-  cardNoTopRadius: { borderTopLeftRadius: 0, borderTopRightRadius: 0 },
+  cardNoTopRadius: { borderTopLeftRadius: 0, borderTopRightRadius: 0, borderWidth: 1, borderTopWidth: 0, borderColor: PRIMARY },
 
   emptyWrap:  { alignItems: 'center', paddingVertical: 24, gap: 8 },
   emptyEmoji: { fontSize: 36 },

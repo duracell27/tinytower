@@ -3,6 +3,7 @@ import {
   View, ScrollView, StyleSheet, TouchableOpacity, Pressable,
   ActivityIndicator, useColorScheme, Modal,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -668,6 +669,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 10,
     marginHorizontal: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   backBtn:      { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
   backText:     { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
@@ -688,6 +691,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginHorizontal: 14,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   starsIcon:  { width: 64, height: 64 },
   starsText:  { alignItems: 'center', gap: 1 },
@@ -703,6 +708,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
     marginBottom: 10,
     gap: 8,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   cardDisabled: { opacity: 0.65 },
 
@@ -741,7 +748,7 @@ const styles = StyleSheet.create({
   emptyText:    { fontFamily: 'Fredoka_500Medium', fontSize: 15, textAlign: 'center' },
   midnightNote: { fontFamily: 'Fredoka_400Regular', fontSize: 12, textAlign: 'center', paddingHorizontal: 24, paddingTop: 4 },
 
-  weekendCard:         { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 8 },
+  weekendCard:         { borderRadius: 14, padding: 20, marginHorizontal: 14, marginBottom: 10, alignItems: 'center', gap: 8, borderWidth: 1, borderColor: seasonColors.border },
   weekendTitle:        { fontFamily: 'Fredoka_700Bold', fontSize: 18, textAlign: 'center' },
   weekendDesc:         { fontFamily: 'Fredoka_400Regular', fontSize: 13, textAlign: 'center', lineHeight: 18 },
   tournamentBanner:    { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, marginHorizontal: 14, marginBottom: 10 },

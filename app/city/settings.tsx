@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView, Platform, Modal, useColorScheme, Animated, Easing,
   ActivityIndicator,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -373,6 +374,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
   backText: { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
@@ -393,6 +396,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   sectionDark: { backgroundColor: '#1A2E3E' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },

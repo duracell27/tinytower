@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import LocaleText from '../../../src/components/LocaleText';
 import AppBackground from '../../../src/components/AppBackground';
 import { useAppTheme } from '../../../src/hooks/useAppTheme';
+import { seasonColors } from '../../../src/config/seasonTheme';
 import { api, CityBuildingDto, CityBudget } from '../../../src/services/api';
 import { useCityStore } from '../../../src/stores/cityStore';
 import { useGameClock } from '../../../src/hooks/useGameClock';
@@ -752,6 +753,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   backBtn:    { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
   backText:   { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
@@ -764,6 +767,8 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     paddingHorizontal: 16,
     gap: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   iconCardTop: {
     flexDirection: 'row',
@@ -807,6 +812,8 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 16,
     gap: 10,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   sectionTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 16 },
   sectionDivider: { height: StyleSheet.hairlineWidth },

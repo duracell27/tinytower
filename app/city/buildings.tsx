@@ -3,6 +3,7 @@ import {
   View, ScrollView, StyleSheet, TouchableOpacity, Alert,
   ActivityIndicator, useColorScheme,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -297,6 +298,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingVertical: 16,
     paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   backBtn:      { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
   backText:     { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
@@ -307,7 +310,7 @@ const styles = StyleSheet.create({
   heroSub:      { fontFamily: 'Fredoka_400Regular', fontSize: 12 },
 
   /* Card */
-  card: { borderRadius: 18, overflow: 'hidden' },
+  card: { borderRadius: 18, overflow: 'hidden', borderWidth: 1, borderColor: seasonColors.border },
   buildProgressTrack: { height: 4, width: '100%', overflow: 'hidden' },
 
   /* Cap */
