@@ -19,7 +19,7 @@ async function loadSounds() {
     buyPlayer             = createAudioPlayer(require('../../assets/sounds/purchase.wav'));
     elevatorRunPlayer     = createAudioPlayer(require('../../assets/sounds/elevatorrun.wav'));
     elevatorArrivedPlayer = createAudioPlayer(require('../../assets/sounds/elevatorarrived.wav'));
-    musicPlayer           = createAudioPlayer(require('../../assets/sounds/Relaxed Loop.caf'));
+    musicPlayer           = createAudioPlayer(require('../../assets/sounds/backgroundmusicmaster-gamer-menu-431351.mp3'));
     musicPlayer.loop      = true;
     console.log('[music] loaded OK');
   } catch (e) {
