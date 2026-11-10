@@ -1,5 +1,9 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+# Sentry (contains auth token — keep local only)
+sentry.properties
+ios/sentry.properties
+
 # dependencies
 node_modules/
 

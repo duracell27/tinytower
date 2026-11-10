@@ -3,14 +3,14 @@
     "name": "Vibe Tower",
     "slug": "tinytower",
     "scheme": "vibetower",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/img/LogoBlack (1).png",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.shmidt.vibetower",
-      "buildNumber": "2",
+      "buildNumber": "4",
       "icon": {
         "light": "./assets/img/LogoWhite (1).png",
         "dark": "./assets/img/LogoBlack (1).png",

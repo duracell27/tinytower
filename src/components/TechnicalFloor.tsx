@@ -62,7 +62,7 @@ export function HotelFloor({ hotelOccupied, hotelTotal, hasBetterWorker = false,
       </View>
 
       <LinearGradient
-        colors={isDark ? ['#3A2A2E', '#2E1E24'] : ['#fce1eb', '#fac0d6']}
+        colors={isDark ? ['#3A2A2E', '#2E1E24'] : ['#fce1eb', '#facadc']}
         style={styles.body}
       >
         <View style={styles.techContent}>
@@ -145,7 +145,7 @@ export function LobbyFloor({ visitorCount, lobbyCapacity, nextVisitorAt, onPress
       </View>
 
       <LinearGradient
-        colors={isDark ? ['#3A2A2E', '#2E1E24'] : ['#fce1eb', '#fac0d6']}
+        colors={isDark ? ['#3A2A2E', '#2E1E24'] : ['#fce1eb', '#facadc']}
         style={styles.body}
       >
         <View style={styles.techContent}>
