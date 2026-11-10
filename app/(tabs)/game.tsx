@@ -1374,7 +1374,7 @@ const divStyles = StyleSheet.create({
   line: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(80,110,160,0.15)',
+    backgroundColor: seasonColors.border + '55',
   },
   pill: {
     flexDirection: 'row',
@@ -1392,7 +1392,7 @@ const divStyles = StyleSheet.create({
   label: {
     fontFamily: 'Fredoka_500Medium',
     fontSize: 12,
-    color: '#7A8EAA',
+    color: seasonColors.accent,
   },
 });
 
