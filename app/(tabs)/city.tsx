@@ -497,19 +497,19 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
         >
           <Image source={require('../../assets/img/xpIcon.png')} style={styles.navImg} contentFit="contain" />
           <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>{t('city.xpStats.title')}</LocaleText>
-          <LocaleText style={styles.navChevron}>›</LocaleText>
+          <LocaleText style={[styles.navChevron, isDark && { color: seasonColors.borderDark }]}>›</LocaleText>
         </TouchableOpacity>
-        <View style={styles.navDivider} />
+        <View style={[styles.navDivider, isDark && { backgroundColor: seasonColors.borderDark }]} />
         <TouchableOpacity style={styles.navRow} onPress={() => router.push('/city/citizen-rankings')} activeOpacity={0.7}>
           <Image source={require('../../assets/img/menu/rating.png')} style={styles.navImg} contentFit="contain" />
           <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>{t('city.citizenRankings')}</LocaleText>
-          <LocaleText style={styles.navChevron}>›</LocaleText>
+          <LocaleText style={[styles.navChevron, isDark && { color: seasonColors.borderDark }]}>›</LocaleText>
         </TouchableOpacity>
-        <View style={styles.navDivider} />
+        <View style={[styles.navDivider, isDark && { backgroundColor: seasonColors.borderDark }]} />
         <TouchableOpacity style={styles.navRow} onPress={() => router.push('/city/rankings')} activeOpacity={0.7}>
           <Image source={require('../../assets/img/rating/1PlaceCup.png')} style={styles.navImg} contentFit="contain" />
           <LocaleText style={[styles.navLabel, isDark && { color: '#DDE8D8' }]}>{t('city.rankings.button')}</LocaleText>
-          <LocaleText style={styles.navChevron}>›</LocaleText>
+          <LocaleText style={[styles.navChevron, isDark && { color: seasonColors.borderDark }]}>›</LocaleText>
         </TouchableOpacity>
       </View>
 
@@ -896,15 +896,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#2E6EC9',
     paddingHorizontal: 14,
     paddingVertical: 12,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
   },
   membersListBg: {
     backgroundColor: '#E8F2FA',
     padding: 10,
     gap: 6,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
   membersListBgDark: { backgroundColor: 'rgba(30,60,100,0.35)' },
   sectionTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#0A1C30' },
-  membersBlock: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#2E6EC9' },
+  membersBlock: { borderRadius: 16, borderWidth: 1, borderColor: '#2E6EC9' },
   membersBlockDark: {},
   memberCountBadge: { backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
   memberCountBadgeDark: { backgroundColor: 'rgba(255,255,255,0.15)' },
@@ -979,12 +983,12 @@ const styles = StyleSheet.create({
 
   // ── Settings ───────────────────────────────────────
   settingsBtn: { backgroundColor: '#E8F2FA', borderRadius: 14, paddingVertical: 15, alignItems: 'center', borderWidth: 1, borderColor: '#2E6EC9' },
-  settingsBtnDark: { backgroundColor: 'rgba(46,110,201,0.15)' },
+  settingsBtnDark: { backgroundColor: 'rgba(46,110,201,0.22)' },
   settingsBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#2E6EC9' },
 
   // ── Leave ──────────────────────────────────────────
   leaveBtn: { backgroundColor: '#FCE8E8', borderRadius: 14, paddingVertical: 15, alignItems: 'center', borderWidth: 1, borderColor: '#C03030' },
-  leaveBtnDark: { backgroundColor: 'rgba(200,50,50,0.15)' },
+  leaveBtnDark: { backgroundColor: 'rgba(200,50,50,0.22)' },
   leaveBtnText: { fontFamily: 'Fredoka_600SemiBold', fontSize: 16, color: '#C03030' },
 
   // ── Offline ────────────────────────────────────────
