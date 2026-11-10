@@ -3,6 +3,7 @@ import {
   View, ScrollView, StyleSheet, TouchableOpacity, Modal, Pressable,
   TextInput, ActivityIndicator, useColorScheme, Alert, Keyboard,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -555,6 +556,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 10,
     marginHorizontal: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   backBtn:  { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
   backText: { fontSize: 26, lineHeight: 26, fontFamily: 'Fredoka_700Bold', includeFontPadding: false },
@@ -579,6 +582,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 14,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderColor: PRIMARY,
   },
   sectionHeader: {
     fontFamily: 'Fredoka_700Bold',
@@ -596,6 +602,9 @@ const styles = StyleSheet.create({
   cardNoTopRadius: {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderColor: PRIMARY,
   },
 
   /* Stat rows (current budget) */
@@ -783,6 +792,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginTop: 12,
     marginHorizontal: 14,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   navIconWrap: {
     width: 40,
@@ -814,6 +825,8 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     gap: 10,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
