@@ -906,7 +906,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
   },
-  membersListBgDark: { backgroundColor: 'rgba(30,60,100,0.35)' },
+  membersListBgDark: { backgroundColor: '#152030' },
   sectionTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#0A1C30' },
   membersBlock: { borderRadius: 16, borderWidth: 1, borderColor: '#2E6EC9' },
   membersBlockDark: {},
