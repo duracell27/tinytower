@@ -54,7 +54,7 @@ export default function MenuScreen() {
       <View style={styles.content}>
         <LocaleText style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('menu.heading')}</LocaleText>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setBoostsOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]} onPress={() => setBoostsOpen(true)}>
           <Image
             source={require('../../assets/img/MarketingIcon.png')}
             style={{ width: 56, height: 56 }}
@@ -63,7 +63,7 @@ export default function MenuScreen() {
           <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('boost.title')}</LocaleText>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setInventoryOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]} onPress={() => setInventoryOpen(true)}>
           <Image
             source={require('../../assets/img/menu/werehouse.png')}
             style={{ width: 56, height: 56 }}
@@ -72,7 +72,7 @@ export default function MenuScreen() {
           <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.inventory')}</LocaleText>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setWorkersOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]} onPress={() => setWorkersOpen(true)}>
           <Image
             source={require('../../assets/img/menu/myWorkers.png')}
             style={{ width: 56, height: 56 }}
@@ -81,7 +81,7 @@ export default function MenuScreen() {
           <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.workers')}</LocaleText>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setLeaderboardOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]} onPress={() => setLeaderboardOpen(true)}>
           <Image
             source={require('../../assets/img/menu/rating.png')}
             style={{ width: 56, height: 56 }}
@@ -90,7 +90,7 @@ export default function MenuScreen() {
           <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.leaderboard')}</LocaleText>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => router.push('/chat-screen')}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]} onPress={() => router.push('/chat-screen')}>
           <Image
             source={require('../../assets/img/menu/chat.png')}
             style={{ width: 56, height: 56 }}
@@ -99,7 +99,7 @@ export default function MenuScreen() {
           <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.chat')}</LocaleText>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => router.push('/forum-screen')}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]} onPress={() => router.push('/forum-screen')}>
           <Image
             source={require('../../assets/img/menu/forum.png')}
             style={{ width: 56, height: 56 }}
@@ -108,7 +108,7 @@ export default function MenuScreen() {
           <LocaleText style={[styles.menuLabel, isDark && { color: '#DDE8D8' }]}>{t('menu.forum')}</LocaleText>
         </Pressable>
 
-        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42' }]} onPress={() => setUsersOpen(true)}>
+        <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]} onPress={() => setUsersOpen(true)}>
           <Image
             source={require('../../assets/img/users.png')}
             style={{ width: 56, height: 56 }}
