@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Image, ImageBackground, ScrollView, LayoutChangeEvent, useColorScheme, LayoutAnimation, Platform, UIManager, Modal } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import LocaleText from '../../src/components/LocaleText';
 
 if (Platform.OS === 'android') {
@@ -1382,11 +1383,11 @@ const divStyles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 5,
     borderRadius: 12,
-    backgroundColor: 'rgba(80,110,160,0.09)',
+    backgroundColor: seasonColors.border + '33',
     marginHorizontal: 8,
   },
   pillPressed: {
-    backgroundColor: 'rgba(80,110,160,0.18)',
+    backgroundColor: seasonColors.border + '66',
   },
   label: {
     fontFamily: 'Fredoka_500Medium',
