@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   View, StyleSheet, ScrollView, TouchableOpacity, useColorScheme,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -209,6 +210,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginHorizontal: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   backBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(46,110,201,0.15)', alignItems: 'center', justifyContent: 'center' },
   backPlaceholder: { width: 36 },

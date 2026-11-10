@@ -3,6 +3,7 @@ import {
   View, ScrollView, StyleSheet, TouchableOpacity,
   ActivityIndicator, useColorScheme,
 } from 'react-native';
+import { seasonColors } from '../../src/config/seasonTheme';
 import { Image } from 'expo-image';
 import { useRouter, useFocusEffect } from 'expo-router';
 import CreateCitySheet from '../../src/components/CreateCitySheet';
@@ -711,6 +712,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
 
   starsRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
@@ -851,6 +854,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     alignItems: 'center',
     gap: 6,
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   sectionCardDark: { backgroundColor: '#1A2E3E' },
   sectionCardImgWrap: { position: 'relative', width: 32, height: 32 },
@@ -959,12 +964,12 @@ const styles = StyleSheet.create({
   },
 
   // ── Description ────────────────────────────────────
-  descBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 16 },
+  descBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: seasonColors.border },
   descBlockDark: { backgroundColor: '#1A2E3E' },
   descText: { fontFamily: 'Fredoka_400Regular', fontSize: 14, color: '#3A5060', lineHeight: 20 },
 
   // ── Nav block ──────────────────────────────────────
-  navBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', paddingVertical: 4 },
+  navBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', paddingVertical: 4, borderWidth: 1, borderColor: seasonColors.border },
   navBlockDark: { backgroundColor: '#1A2E3E' },
   navRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   navImg: { width: 26, height: 26 },
@@ -990,6 +995,8 @@ const styles = StyleSheet.create({
     padding: 28,
     alignItems: 'center',
     width: '100%',
+    borderWidth: 1,
+    borderColor: seasonColors.border,
   },
   offlineCardDark: { backgroundColor: '#1A2E3E' },
   offlineImg: { width: 90, height: 72, marginBottom: 16 },
