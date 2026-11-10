@@ -91,7 +91,7 @@ export default function CitizenRankingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Back + title */}
-        <View style={[styles.topRow, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+        <View style={[styles.topRow, { backgroundColor: isDark ? '#252D42' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
             <LocaleText style={[styles.backIcon, isDark && { color: '#6BAED0' }]}>‹</LocaleText>
           </TouchableOpacity>
