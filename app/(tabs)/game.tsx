@@ -1325,7 +1325,7 @@ function Chevron({ collapsed }: { collapsed: boolean }) {
     <Svg width={11} height={11} viewBox="0 0 24 24" fill="none">
       <Path
         d={collapsed ? 'M6 9l6 6 6-6' : 'M18 15l-6-6-6 6'}
-        stroke="#7A8EAA"
+        stroke={seasonColors.accent}
         strokeWidth={2.8}
         strokeLinecap="round"
         strokeLinejoin="round"
