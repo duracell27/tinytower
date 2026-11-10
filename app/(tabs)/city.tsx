@@ -265,7 +265,7 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
         {/* Active buildings strip */}
         {activeBuildings.length > 0 && (
           <>
-            <View style={[styles.buildingsDivider, { backgroundColor: seasonColors.border, opacity: 1 }]} />
+            <View style={[styles.buildingsDivider, { backgroundColor: isDark ? seasonColors.borderDark : seasonColors.border }]} />
             {(() => {
               const n = activeBuildings.length;
               const rows = n > 5
@@ -298,7 +298,7 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
                 </View>
               ));
             })()}
-            <View style={[styles.buildingsDivider, { backgroundColor: seasonColors.border, opacity: 1 }]} />
+            <View style={[styles.buildingsDivider, { backgroundColor: isDark ? seasonColors.borderDark : seasonColors.border }]} />
           </>
         )}
 
@@ -333,7 +333,7 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
         </View>
 
         {/* Workers / Happy divider */}
-        <View style={[styles.workersDividerLine, { backgroundColor: seasonColors.border, opacity: 1 }]} />
+        <View style={[styles.workersDividerLine, { backgroundColor: isDark ? seasonColors.borderDark : seasonColors.border }]} />
 
         {/* Workers row — profile-style */}
         <View style={styles.workerStatsRow}>
@@ -344,7 +344,7 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
               <LocaleText style={[styles.workerStatValue, { color: theme.text }]}>{totalWorkers}</LocaleText>
             </View>
           </View>
-          <View style={[styles.workerStatDivider, { backgroundColor: seasonColors.border, opacity: 1 }]} />
+          <View style={[styles.workerStatDivider, { backgroundColor: isDark ? seasonColors.borderDark : seasonColors.border }]} />
           <View style={styles.workerStatItem}>
             <Image source={HAPPY_ICON} style={styles.workerStatIcon} contentFit="contain" />
             <View style={styles.workerStatText}>
