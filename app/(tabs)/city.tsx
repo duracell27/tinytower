@@ -974,8 +974,8 @@ const styles = StyleSheet.create({
   navRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   navImg: { width: 26, height: 26 },
   navLabel: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#0A1C30' },
-  navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: '#6BAED0', lineHeight: 24 },
-  navDivider: { height: 1, backgroundColor: '#2E6EC9', opacity: 0.5 },
+  navChevron: { fontFamily: 'Fredoka_600SemiBold', fontSize: 22, color: seasonColors.accent, lineHeight: 24 },
+  navDivider: { height: 1, backgroundColor: seasonColors.border },
 
   // ── Settings ───────────────────────────────────────
   settingsBtn: { backgroundColor: '#E8F2FA', borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
