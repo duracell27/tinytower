@@ -331,7 +331,7 @@ export default function BuildingDetailScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* ── Card 1: назва + кнопка назад ── */}
-          <View style={[styles.nameCard, { backgroundColor: cardBg }]}>
+          <View style={[styles.nameCard, { backgroundColor: cardBg, borderColor: isDark ? seasonColors.borderDark : seasonColors.border }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
               <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
             </TouchableOpacity>
@@ -342,7 +342,7 @@ export default function BuildingDetailScreen() {
           </View>
 
           {/* ── Card 2: іконка зліва, рівень справа, прогрес знизу ── */}
-          <View style={[styles.iconCard, { backgroundColor: cardBg }]}>
+          <View style={[styles.iconCard, { backgroundColor: cardBg, borderColor: isDark ? seasonColors.borderDark : seasonColors.border }]}>
             <View style={styles.iconCardTop}>
               <View style={[styles.headerIconWrap, { backgroundColor: accent + '28' }]}>
                 <Image
@@ -398,7 +398,7 @@ export default function BuildingDetailScreen() {
             <>
 
               {/* ── About ── */}
-              <View style={[styles.section, { backgroundColor: cardBg }]}>
+              <View style={[styles.section, { backgroundColor: cardBg, borderColor: isDark ? seasonColors.borderDark : seasonColors.border }]}>
                 <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                   {t('city.buildings.detail.aboutTitle')}
                 </LocaleText>
@@ -409,7 +409,7 @@ export default function BuildingDetailScreen() {
 
               {/* ── Active boost status ── */}
               {state === 'ACTIVE' && building?.isBoosted && boostHoursLeft > 0 && (
-                <View style={[styles.section, { backgroundColor: cardBg }]}>
+                <View style={[styles.section, { backgroundColor: cardBg, borderColor: isDark ? seasonColors.borderDark : seasonColors.border }]}>
                   <View style={styles.boostActiveHeader}>
                     <Image
                       source={isGemBoost ? GEM_ICON : COIN_ICON}
@@ -457,7 +457,7 @@ export default function BuildingDetailScreen() {
 
               {/* ── Building in progress ── */}
               {canAct && state === 'BUILDING' && building?.buildFinishesAt && (
-                <View style={[styles.section, { backgroundColor: cardBg }]}>
+                <View style={[styles.section, { backgroundColor: cardBg, borderColor: isDark ? seasonColors.borderDark : seasonColors.border }]}>
                   <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                     {t('city.buildings.detail.buildingTitle')}
                   </LocaleText>
@@ -522,7 +522,7 @@ export default function BuildingDetailScreen() {
 
               {/* ── Upgrade / Build ── */}
               {canAct && (state === 'IDLE' || (state === 'ACTIVE' && !maxed)) && nextCfg && (
-                <View style={[styles.section, { backgroundColor: cardBg }]}>
+                <View style={[styles.section, { backgroundColor: cardBg, borderColor: isDark ? seasonColors.borderDark : seasonColors.border }]}>
                   <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                     {state === 'IDLE'
                       ? t('city.buildings.detail.buildTitle')
@@ -648,7 +648,7 @@ export default function BuildingDetailScreen() {
 
               {/* ── Max level ── */}
               {maxed && (
-                <View style={[styles.section, { backgroundColor: cardBg }]}>
+                <View style={[styles.section, { backgroundColor: cardBg, borderColor: isDark ? seasonColors.borderDark : seasonColors.border }]}>
                   <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                     {t('city.buildings.detail.maxLevelTitle')}
                   </LocaleText>
@@ -660,7 +660,7 @@ export default function BuildingDetailScreen() {
 
               {/* ── Boost ── не для VIP будівель; показуємо якщо нема бусту АБО активний тільки монетний */}
               {canAct && !isVip && state === 'ACTIVE' && (!building?.isBoosted || !isGemBoost) && currentCfg && (
-                <View style={[styles.section, { backgroundColor: cardBg }]}>
+                <View style={[styles.section, { backgroundColor: cardBg, borderColor: isDark ? seasonColors.borderDark : seasonColors.border }]}>
                   <LocaleText style={[styles.sectionTitle, { color: accent }]}>
                     {t('city.buildings.detail.boostTitle')}
                   </LocaleText>

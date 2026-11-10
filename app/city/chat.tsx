@@ -203,7 +203,7 @@ export default function CityChatScreen() {
 
         {/* ── Hero header ────────────────────────────────── */}
         <View style={{ paddingTop: insets.top + 8 }}>
-          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
               <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
             </TouchableOpacity>
@@ -224,7 +224,7 @@ export default function CityChatScreen() {
           keyboardVerticalOffset={0}
         >
           {/* ── Input bar ──────────────────────────────────── */}
-          <View style={[styles.inputBar, { backgroundColor: theme.surface }]}>
+          <View style={[styles.inputBar, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
             <TextInput
               ref={inputRef}
               style={[styles.input, isDark && styles.inputDark]}
@@ -266,7 +266,7 @@ export default function CityChatScreen() {
           contentContainerStyle={styles.msgList}
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.msgCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <View style={[styles.msgCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             {isLoading && displayed.length === 0 ? (
               <View style={styles.emptyWrap}>
                 <ActivityIndicator color={isDark ? '#6BAED0' : '#2E6EC9'} />

@@ -72,7 +72,7 @@ export default function CityNotificationsScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Header */}
-          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
               <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
             </TouchableOpacity>
@@ -92,7 +92,7 @@ export default function CityNotificationsScreen() {
 
           {/* Send form — leaders only */}
           {isLeader && (
-            <View style={[styles.sendCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+            <View style={[styles.sendCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
               <TextInput
                 style={[styles.input, isDark && styles.inputDark]}
                 placeholder={t('city.notifications.sendPlaceholder')}
@@ -139,7 +139,7 @@ export default function CityNotificationsScreen() {
               </LocaleText>
             </View>
           ) : (
-            <View style={[styles.listCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+            <View style={[styles.listCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
               {notifications.map((notif, idx) => {
                 const isLast = idx === notifications.length - 1;
                 const accentColor = isDark ? '#4A8EE8' : PRIMARY;

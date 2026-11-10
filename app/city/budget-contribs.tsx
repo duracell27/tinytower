@@ -103,7 +103,7 @@ export default function BudgetContribsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+        <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
             <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
           </TouchableOpacity>
@@ -116,7 +116,7 @@ export default function BudgetContribsScreen() {
         </View>
 
         {/* Last reset info */}
-        <View style={[styles.lastResetRow, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+        <View style={[styles.lastResetRow, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
           <LocaleText style={[styles.lastResetText, { color: theme.textMuted }]}>
             {lastResetAt
               ? `${t('city.budget.lastReset')}: ${fmtDate(lastResetAt)}`
@@ -317,7 +317,7 @@ export default function BudgetContribsScreen() {
       {/* Confirm reset modal */}
       <Modal visible={confirmReset} transparent animationType="fade" onRequestClose={() => setConfirmReset(false)}>
         <Pressable style={styles.overlay} onPress={() => setConfirmReset(false)}>
-          <Pressable style={[styles.popupCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <Pressable style={[styles.popupCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <Image source={require('../../assets/img/warningIcon.png')} style={styles.popupWarnImg} contentFit="contain" />
             <LocaleText style={[styles.popupTitle, { color: theme.text }]}>
               {t('city.budget.resetBudget')}
@@ -352,7 +352,7 @@ export default function BudgetContribsScreen() {
       {/* Result popup */}
       <Modal visible={!!resultPopup} transparent animationType="fade" onRequestClose={() => setResultPopup(null)}>
         <Pressable style={styles.overlay} onPress={() => setResultPopup(null)}>
-          <Pressable style={[styles.popupCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <Pressable style={[styles.popupCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <Image
               source={resultPopup?.ok ? OK_ICON : CANCEL_ICON}
               style={styles.popupIcon}

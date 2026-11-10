@@ -130,7 +130,7 @@ export default function CitySettingsScreen() {
         <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8 }]} keyboardShouldPersistTaps="handled">
 
           {/* Header */}
-          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
               <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : '#2E6EC9' }]}>‹</LocaleText>
             </TouchableOpacity>
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  sectionDark: { backgroundColor: '#1A2E3E' },
+  sectionDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   sectionIconBox: {
     width: 36,

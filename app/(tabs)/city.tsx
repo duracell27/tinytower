@@ -242,7 +242,7 @@ function MyCityView({ city, isDark, t, router, chatUnreadCount }: { city: CityDe
       style={styles.scrollView}
     >
       {/* ── HERO CARD ─────────────────────────────────── */}
-      <View style={[styles.heroCard, { backgroundColor: theme.surface }]}>
+      <View style={[styles.heroCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
 
         {/* Stars */}
         <View style={styles.starsRow}>
@@ -857,7 +857,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  sectionCardDark: { backgroundColor: '#1A2E3E' },
+  sectionCardDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
   sectionCardImgWrap: { position: 'relative', width: 32, height: 32 },
   sectionCardImg: { width: 32, height: 32 },
   unreadBadge: {
@@ -965,12 +965,12 @@ const styles = StyleSheet.create({
 
   // ── Description ────────────────────────────────────
   descBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: seasonColors.border },
-  descBlockDark: { backgroundColor: '#1A2E3E' },
+  descBlockDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
   descText: { fontFamily: 'Fredoka_400Regular', fontSize: 14, color: '#3A5060', lineHeight: 20 },
 
   // ── Nav block ──────────────────────────────────────
   navBlock: { backgroundColor: '#FFFFFF', borderRadius: 14, overflow: 'hidden', paddingVertical: 4, borderWidth: 1, borderColor: seasonColors.border },
-  navBlockDark: { backgroundColor: '#1A2E3E' },
+  navBlockDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
   navRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   navImg: { width: 26, height: 26 },
   navLabel: { flex: 1, fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#0A1C30' },
@@ -998,7 +998,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  offlineCardDark: { backgroundColor: '#1A2E3E' },
+  offlineCardDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
   offlineImg: { width: 90, height: 72, marginBottom: 16 },
   offlineTitle: {
     fontFamily: 'Fredoka_700Bold',

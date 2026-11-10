@@ -106,7 +106,7 @@ export default function CityXpStatsScreen() {
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8 }]} showsVerticalScrollIndicator={false}>
 
         {/* ── HEADER ── */}
-        <View style={[styles.headerRow, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+        <View style={[styles.headerRow, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
             <LocaleText style={[styles.backIcon, isDark && { color: '#6BAED0' }]}>‹</LocaleText>
           </TouchableOpacity>
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  totalCardDark: { backgroundColor: '#1A2E3E' },
+  totalCardDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
   totalLabel: { fontFamily: 'Fredoka_400Regular', fontSize: 13, color: '#5A7090' },
   totalXpRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   totalXpIcon: { width: 24, height: 24 },
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  memberRowDark: { backgroundColor: '#1A2E3E' },
+  memberRowDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
   rank: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 16,
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  footerDark: { backgroundColor: '#1A2E3E' },
+  footerDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
   periodLabel: {
     fontFamily: 'Fredoka_400Regular',
     fontSize: 13,

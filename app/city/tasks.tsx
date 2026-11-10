@@ -151,7 +151,7 @@ export default function CityTasksScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* ── Hero header ── */}
-          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
               <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
             </TouchableOpacity>
@@ -172,7 +172,7 @@ export default function CityTasksScreen() {
           </View>
 
           {/* ── City Tickets card ── */}
-          <View style={[styles.starsCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <View style={[styles.starsCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <Image source={TICKET_ICON} style={styles.starsIcon} contentFit="contain" />
             <View style={styles.starsText}>
               <LocaleText style={[styles.starsCount, { color: PRIMARY }]}>
@@ -190,7 +190,7 @@ export default function CityTasksScreen() {
           {/* ── Weekend or Tasks ── */}
           {isWeekend ? (
             <>
-              <View style={[styles.weekendCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+              <View style={[styles.weekendCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
                 <LocaleText style={[styles.weekendTitle, { color: theme.text }]}>
                   {t('cityTasks.weekendTitle')}
                 </LocaleText>
@@ -275,6 +275,7 @@ export default function CityTasksScreen() {
                   style={[
                     styles.card,
                     { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' },
+                    isDark && { borderColor: seasonColors.borderDark },
                     isDisabled && styles.cardDisabled,
                   ]}
                 >

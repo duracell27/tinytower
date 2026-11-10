@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  rowDark: { backgroundColor: '#1A2E3E' },
+  rowDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
   rowTop3: {},
 
   rankBox: { width: 44, alignItems: 'center', borderRadius: 8, paddingVertical: 4 },

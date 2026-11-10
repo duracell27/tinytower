@@ -1320,12 +1320,12 @@ export default function GameScreen() {
   );
 }
 
-function Chevron({ collapsed }: { collapsed: boolean }) {
+function Chevron({ collapsed, isDark }: { collapsed: boolean; isDark?: boolean }) {
   return (
     <Svg width={11} height={11} viewBox="0 0 24 24" fill="none">
       <Path
         d={collapsed ? 'M6 9l6 6 6-6' : 'M18 15l-6-6-6 6'}
-        stroke={seasonColors.accent}
+        stroke={isDark ? '#7A7A7A' : seasonColors.accent}
         strokeWidth={2.8}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -1344,21 +1344,26 @@ function TowerCollapseDiv({
   onToggle: () => void;
 }) {
   const { t } = useTranslation('tabs');
+  const isDark = useColorScheme() === 'dark';
   return (
     <View style={divStyles.container}>
-      <View style={divStyles.line} />
+      <View style={[divStyles.line, isDark && { backgroundColor: 'rgba(80,80,80,0.35)' }]} />
       <Pressable
         onPress={onToggle}
-        style={({ pressed }) => [divStyles.pill, pressed && divStyles.pillPressed]}
+        style={({ pressed }) => [
+          divStyles.pill,
+          isDark && { backgroundColor: 'rgba(80,80,80,0.18)' },
+          pressed && (isDark ? { backgroundColor: 'rgba(80,80,80,0.35)' } : divStyles.pillPressed),
+        ]}
         hitSlop={10}
       >
-        <Chevron collapsed={collapsed} />
-        <LocaleText style={divStyles.label}>
+        <Chevron collapsed={collapsed} isDark={isDark} />
+        <LocaleText style={[divStyles.label, isDark && { color: '#7A7A7A' }]}>
           {collapsed ? t('game.showAll', { count: hiddenCount }) : t('game.showLess')}
         </LocaleText>
-        <Chevron collapsed={collapsed} />
+        <Chevron collapsed={collapsed} isDark={isDark} />
       </Pressable>
-      <View style={divStyles.line} />
+      <View style={[divStyles.line, isDark && { backgroundColor: 'rgba(80,80,80,0.35)' }]} />
     </View>
   );
 }

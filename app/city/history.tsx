@@ -249,7 +249,7 @@ export default function CityHistoryScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* ── Header ── */}
-          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
               <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
             </TouchableOpacity>
@@ -283,7 +283,7 @@ export default function CityHistoryScreen() {
             </View>
           ) : (
             <>
-              <View style={[styles.card, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+              <View style={[styles.card, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
                 {events.map((ev, idx) => {
                   const eventColors = isDark ? EVENT_COLORS_DARK : EVENT_COLORS;
                   const accentColor = eventColors[ev.eventType] ?? theme.text;

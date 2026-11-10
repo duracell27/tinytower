@@ -135,7 +135,7 @@ export default function CityBuildingsScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* ── Hero ── */}
-          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
               <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
             </TouchableOpacity>
@@ -175,7 +175,7 @@ export default function CityBuildingsScreen() {
                     pathname: '/city/building/[type]',
                     params: { type: b.buildingType, id: cityId },
                   })}
-                  style={[styles.card, { backgroundColor: cardBg, borderLeftColor: accent, borderLeftWidth: 4 }]}
+                  style={[styles.card, { backgroundColor: cardBg, borderLeftColor: accent, borderLeftWidth: 4 }, isDark && { borderColor: seasonColors.borderDark }]}
                 >
                   <View style={styles.cap}>
                     {/* Icon */}

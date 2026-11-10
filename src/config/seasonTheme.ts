@@ -1,8 +1,10 @@
 export type Season = 'autumn' | 'winter' | 'spring' | 'summer';
 
 export interface SeasonColors {
-  // Card/element borders
+  // Card/element borders (light theme)
   border: string;
+  // Card/element borders (dark theme)
+  borderDark: string;
   // Active tab text, heading, spinner
   accent: string;
   // Gradient button/header end color (darker accent)
@@ -16,6 +18,7 @@ export interface SeasonColors {
 const SEASONS: Record<Season, SeasonColors> = {
   autumn: {
     border:       '#E8AD82',
+    borderDark:   '#3D3D3D',
     accent:       '#C4824A',
     accentDark:   '#A0622E',
     tabInactiveBg:'rgba(232,173,130,0.12)',
@@ -23,6 +26,7 @@ const SEASONS: Record<Season, SeasonColors> = {
   },
   winter: {
     border:       '#A8C8E8',
+    borderDark:   '#3D3D3D',
     accent:       '#5A8EB8',
     accentDark:   '#3A6E98',
     tabInactiveBg:'rgba(90,142,184,0.12)',
@@ -30,6 +34,7 @@ const SEASONS: Record<Season, SeasonColors> = {
   },
   spring: {
     border:       '#A8D8A0',
+    borderDark:   '#3D3D3D',
     accent:       '#5A9A50',
     accentDark:   '#3A7A30',
     tabInactiveBg:'rgba(90,154,80,0.12)',
@@ -37,6 +42,7 @@ const SEASONS: Record<Season, SeasonColors> = {
   },
   summer: {
     border:       '#F0D080',
+    borderDark:   '#3D3D3D',
     accent:       '#C8A030',
     accentDark:   '#A08020',
     tabInactiveBg:'rgba(200,160,48,0.12)',

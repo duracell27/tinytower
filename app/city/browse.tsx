@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: seasonColors.border,
   },
-  rowDark: { backgroundColor: '#1A2E3E' },
+  rowDark: { backgroundColor: '#1A2E3E', borderColor: seasonColors.borderDark },
 
   rowCityIcon: { width: 32, height: 32 },
   cityInfo: { flex: 1 },

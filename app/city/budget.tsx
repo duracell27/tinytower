@@ -174,7 +174,7 @@ export default function CityBudgetScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* ── Header ── */}
-          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <View style={[styles.hero, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
               <LocaleText style={[styles.backText, { color: isDark ? '#8AAFD4' : PRIMARY }]}>‹</LocaleText>
             </TouchableOpacity>
@@ -458,7 +458,7 @@ export default function CityBudgetScreen() {
 
           {/* ── Top Contributors nav row ── */}
           <TouchableOpacity
-            style={[styles.navRow, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}
+            style={[styles.navRow, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}
             onPress={() => router.push({ pathname: '/city/budget-contribs', params: { id: cityId } })}
             activeOpacity={0.75}
           >
@@ -488,7 +488,7 @@ export default function CityBudgetScreen() {
       {/* ── Popup ── */}
       <Modal visible={!!popup} transparent animationType="fade" onRequestClose={() => setPopup(null)}>
         <Pressable style={styles.popupOverlay} onPress={() => setPopup(null)}>
-          <Pressable style={[styles.popupCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }]}>
+          <Pressable style={[styles.popupCard, { backgroundColor: isDark ? '#1A2E3E' : '#FFFFFF' }, isDark && { borderColor: seasonColors.borderDark }]}>
             <Image
               source={popup?.ok ? OK_ICON : CANCEL_ICON}
               style={styles.popupIcon}
