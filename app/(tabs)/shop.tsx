@@ -109,7 +109,7 @@ function DiamondCard({ pack, onBuy, buying, disabled, cardWidth, btnColor }: {
   const btnTxtColor = pack.btnTextColor ?? (bgBrightness(activeBtnColor) < 148 ? '#FFF' : '#2D1A4E');
 
   return (
-    <View style={[dc.card, { width: cardWidth }, isDark && { backgroundColor: '#252D42' }, buying && dc.buying]}>
+    <View style={[dc.card, { width: cardWidth }, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }, buying && dc.buying]}>
       <Image source={pack.image} style={dc.img} contentFit="contain" />
 
       {pack.badge && <View style={dc.badgePos}><Badge kind={pack.badge} /></View>}
