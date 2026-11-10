@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
   heroDescription: { fontFamily: 'Fredoka_500Medium', fontSize: 15, color: '#5A6650', textAlign: 'center' },
 
   dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 14, gap: 10 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(0,0,0,0.1)' },
+  dividerLine: { flex: 1, height: 1, backgroundColor: seasonColors.border },
   dividerLabel: { fontFamily: 'Fredoka_600SemiBold', fontSize: 13, color: '#7A9080', letterSpacing: 0.3 },
 
   card: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, padding: 14, marginBottom: 10, gap: 12 },
@@ -904,7 +904,7 @@ const styles = StyleSheet.create({
   },
   membersListBgDark: { backgroundColor: 'rgba(30,60,100,0.35)' },
   sectionTitle: { fontFamily: 'Fredoka_700Bold', fontSize: 17, color: '#0A1C30' },
-  membersBlock: { borderRadius: 16, overflow: 'hidden' },
+  membersBlock: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#2E6EC9' },
   membersBlockDark: {},
   memberCountBadge: { backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
   memberCountBadgeDark: { backgroundColor: 'rgba(255,255,255,0.15)' },
