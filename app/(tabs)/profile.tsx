@@ -629,7 +629,7 @@ const player = useAuthStore((s) => s.player);
   return (
     <AppBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={[styles.card, { backgroundColor: theme.surface }]}>
+        <View style={[styles.card, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }]}>
           <FloorStarsRow avg={isHydrated ? avgStars : 0} />
           <View style={styles.profileRow}>
             <Image
@@ -734,7 +734,7 @@ const player = useAuthStore((s) => s.player);
 
         <Pressable
           onPress={() => router.push('/daily-tasks')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/dayliQuests.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -750,7 +750,7 @@ const player = useAuthStore((s) => s.player);
 
         <Pressable
           onPress={() => router.push('/my-mail')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/mail.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -766,7 +766,7 @@ const player = useAuthStore((s) => s.player);
 
         <Pressable
           onPress={() => router.push('/my-friends')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/users.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -782,7 +782,7 @@ const player = useAuthStore((s) => s.player);
 
         <Pressable
           onPress={() => router.push('/my-business')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/myBusiness.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -800,7 +800,7 @@ const player = useAuthStore((s) => s.player);
 
         <Pressable
           onPress={() => router.push('/autopark')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/TrucksProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -813,7 +813,7 @@ const player = useAuthStore((s) => s.player);
 
         <Pressable
           onPress={() => router.push('/achievements')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/achivProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -826,7 +826,7 @@ const player = useAuthStore((s) => s.player);
 
         <Pressable
           onPress={() => router.push('/referrals')}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/profile/ReferralProfileIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -837,7 +837,7 @@ const player = useAuthStore((s) => s.player);
 
         <Pressable
           onPress={() => { setSettingsMounted(true); setSettingsVisible(true); }}
-          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, pressed && styles.achievementsButtonPressed]}
+          style={({ pressed }) => [styles.achievementsButton, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }, pressed && styles.achievementsButtonPressed]}
         >
           <Image source={require('../../assets/img/settingsIcon.png')} style={styles.achievementsIcon} />
           <View style={styles.menuTextCol}>
@@ -1099,7 +1099,7 @@ const player = useAuthStore((s) => s.player);
         {/* Sync status card */}
         <Pressable
           onPress={() => { syncService.triggerSync(); if (hasExpandContent) setSyncExpanded((v) => !v); }}
-          style={({ pressed }) => [styles.syncCard, { backgroundColor: theme.surface }, pressed && styles.syncCardPressed]}
+          style={({ pressed }) => [styles.syncCard, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }, pressed && styles.syncCardPressed]}
         >
           <View style={styles.syncRow}>
             <View style={[

@@ -132,7 +132,7 @@ export default function DailyTasksScreen() {
 
         <View style={styles.tokenRow}>
           {(['green', 'blue', 'yellow', 'purple', 'red'] as const).map((color) => (
-            <View key={color} style={[styles.tokenChip, { backgroundColor: theme.surface }]}>
+            <View key={color} style={[styles.tokenChip, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
               <Image source={TOKEN_ICONS[color]} style={styles.tokenIcon} contentFit="contain" />
               <LocaleText style={[styles.tokenCount, { color: TOKEN_COLORS[color] }]}>
                 {tokens[color]}
@@ -182,7 +182,7 @@ export default function DailyTasksScreen() {
 
           if (dailyTasks.doubleRewardActive) {
             return (
-              <View style={[styles.doubleBanner, styles.doubleBannerActive, { backgroundColor: isDark ? 'rgba(80,60,0,0.45)' : '#FFF4D6' }]}>
+              <View style={[styles.doubleBanner, styles.doubleBannerActive, { backgroundColor: isDark ? 'rgba(80,60,0,0.45)' : '#FFF4D6' }, isDark && { borderColor: seasonColors.borderDark }]}>
                 <LocaleText style={[styles.doubleBannerText, styles.doubleBannerTextActive]}>
                   {t('dailyTasks.doubleReward')}
                 </LocaleText>
@@ -203,7 +203,7 @@ export default function DailyTasksScreen() {
 
           if (goalReached) {
             return (
-              <View style={[styles.doubleBanner, styles.doubleBannerGoal, { backgroundColor: isDark ? 'rgba(20,60,15,0.45)' : '#E8F7E4' }]}>
+              <View style={[styles.doubleBanner, styles.doubleBannerGoal, { backgroundColor: isDark ? 'rgba(20,60,15,0.45)' : '#E8F7E4' }, isDark && { borderColor: seasonColors.borderDark }]}>
                 <LocaleText style={styles.doubleBannerGoalEmoji}>🎉</LocaleText>
                 <LocaleText style={styles.doubleBannerGoalTitle}>{t('dailyTasks.goalReachedTitle')}</LocaleText>
                 <LocaleText style={styles.doubleBannerGoalSub}>{t('dailyTasks.goalReachedSub')}</LocaleText>
@@ -212,7 +212,7 @@ export default function DailyTasksScreen() {
           }
 
           return (
-            <View style={[styles.doubleBanner, { backgroundColor: isDark ? '#252D42' : 'rgba(255,255,255,0.92)' }]}>
+            <View style={[styles.doubleBanner, { backgroundColor: isDark ? '#252D42' : 'rgba(255,255,255,0.92)' }, isDark && { borderColor: seasonColors.borderDark }]}>
               <LocaleText style={styles.doubleBannerText}>{t('dailyTasks.doubleRewardHint')}</LocaleText>
               <View style={styles.completionBarBg}>
                 <View style={[styles.completionBarFill, { width: `${(claimedCount / 7) * 100}%` }]} />
@@ -238,7 +238,7 @@ export default function DailyTasksScreen() {
           const coins     = task.rewards.baseCoins * multiplier * (dailyTasks.doubleRewardActive ? 2 : 1);
 
           return (
-            <View key={task.key} style={[styles.card, { backgroundColor: theme.surface }, claimed && styles.cardClaimed]}>
+            <View key={task.key} style={[styles.card, { backgroundColor: theme.surface }, claimed && styles.cardClaimed, isDark && { borderColor: seasonColors.borderDark }]}>
               <View style={styles.cardHeader}>
                 {TASK_ICONS[task.key] && (
                   <Image source={TASK_ICONS[task.key]!} style={styles.taskIcon} contentFit="contain" />

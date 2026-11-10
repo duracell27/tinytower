@@ -171,7 +171,7 @@ export default function VehicleDetailScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* Hero */}
-        <View style={[styles.heroCard, { backgroundColor: theme.surface }]}>
+        <View style={[styles.heroCard, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }]}>
           <LinearGradient
             colors={theme.isDark ? ['rgba(255,255,255,0.04)', 'rgba(255,255,255,0)'] : [`${def.accentColor}14`, `${def.accentColor}04`]}
             style={StyleSheet.absoluteFill}
@@ -199,7 +199,7 @@ export default function VehicleDetailScreen() {
         {/* Bonus cards */}
         <View style={styles.bonusGrid}>
           {([0, 1] as const).map((idx) => (
-            <View key={idx} style={[styles.bonusCard, { backgroundColor: theme.surface }]}>
+            <View key={idx} style={[styles.bonusCard, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }]}>
               <Image source={idx === 0 ? icon1 : icon2} style={styles.bonusIcon} contentFit="contain" />
               <LocaleText style={[styles.bonusValue, { color: def.accentColor }]}>
                 {t(`autopark.vehicles.${key}.${idx === 0 ? 'b1' : 'b2'}`, getBonusParams(key, idx, count))}
@@ -209,7 +209,7 @@ export default function VehicleDetailScreen() {
         </View>
 
         {/* Description */}
-        <View style={[styles.descCard, { backgroundColor: theme.surface, borderLeftColor: def.accentColor }]}>
+        <View style={[styles.descCard, { backgroundColor: theme.surface, borderLeftColor: def.accentColor }, theme.isDark && { borderColor: seasonColors.borderDark }]}>
           <LocaleText style={[styles.descLabel, { color: def.accentColor }]}>{t('autopark.about')}</LocaleText>
           <LocaleText style={[styles.descText, { color: theme.text }]}>
             {renderDesc(t(`autopark.vehicles.${key}.desc`))}

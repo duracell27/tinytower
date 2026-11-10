@@ -42,7 +42,7 @@ export default function AutoparkScreen() {
           </Pressable>
         </View>
 
-        <View style={[styles.summaryCard, { backgroundColor: theme.surface }]}>
+        <View style={[styles.summaryCard, { backgroundColor: theme.surface }, theme.isDark && { borderColor: seasonColors.borderDark }]}>
           <View style={styles.summaryTop}>
             <LocaleText style={[styles.summaryLabel, { color: theme.text }]}>{t('autopark.vehiclesOwned')}</LocaleText>
             <View style={styles.summaryCountRow}>
@@ -65,6 +65,7 @@ export default function AutoparkScreen() {
               style={({ pressed }) => [
                 styles.card,
                 { backgroundColor: theme.surface },
+                theme.isDark && { borderColor: seasonColors.borderDark },
                 pressed && styles.cardPressed,
               ]}
             >
@@ -180,6 +181,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 18,
     borderWidth: 1,
+    borderBottomWidth: 0,
     borderColor: seasonColors.border,
     overflow: 'hidden',
     flexDirection: 'row',

@@ -109,7 +109,7 @@ export default function AchievementsScreen() {
           const relativeMax = nextLevelConfig ? nextLevelConfig.threshold - currentThreshold : 1;
 
           return (
-            <View key={category.key} style={[styles.card, { backgroundColor: theme.surface }]}>
+            <View key={category.key} style={[styles.card, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
               <View style={styles.cardTop}>
                 <Image source={CATEGORY_IMAGES[category.key]} style={styles.categoryIcon} />
                 <View style={styles.cardTopText}>

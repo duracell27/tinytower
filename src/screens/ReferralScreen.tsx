@@ -82,7 +82,7 @@ function ReferralCard({ entry }: { entry: ReferralEntry }) {
   const { t } = useTranslation('tabs');
   const isDark = useColorScheme() === 'dark';
   return (
-    <View style={[styles.referralCard, isDark && { backgroundColor: '#252D42' }]}>
+    <View style={[styles.referralCard, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]}>
       <View style={styles.referralNameRow}>
         <Image source={getUserIcon(entry.referredLevel)} style={styles.referralAvatar} contentFit="cover" />
         <LocaleText style={[styles.referralName, isDark && { color: '#DDE8D8' }]}>{entry.referredName}</LocaleText>
@@ -205,7 +205,7 @@ export default function ReferralScreen() {
           </View>
 
           {hasUsedCode === false && (
-            <View style={[styles.applyCard, isDark && { backgroundColor: '#252D42' }]}>
+            <View style={[styles.applyCard, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]}>
               <Pressable
                 onPress={handleToggle}
                 style={styles.applyHeader}
@@ -259,7 +259,7 @@ export default function ReferralScreen() {
           )}
 
           {hasUsedCode && referrerName && (
-            <View style={[styles.referredByCard, isDark && { backgroundColor: '#252D42' }]}>
+            <View style={[styles.referredByCard, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]}>
               <LocaleText style={styles.referredByLabel}>{t('referrals.invitedBy')}</LocaleText>
               <View style={styles.referredByRow}>
                 <Image
@@ -272,7 +272,7 @@ export default function ReferralScreen() {
             </View>
           )}
 
-          <View style={[styles.codeCard, isDark && { backgroundColor: '#252D42' }]}>
+          <View style={[styles.codeCard, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]}>
             <LocaleText style={[styles.codeLabel, isDark && { color: '#8A9A80' }]}>{t('referrals.yourCode')}</LocaleText>
             <View style={styles.codeRow}>
               <LocaleText style={[styles.codeText, isDark && { color: '#DDE8D8' }]}>{code ?? '------'}</LocaleText>
@@ -286,7 +286,7 @@ export default function ReferralScreen() {
           </View>
 
           {referrals.length === 0 ? (
-            <View style={[styles.emptyCard, isDark && { backgroundColor: '#252D42' }]}>
+            <View style={[styles.emptyCard, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]}>
               <LocaleText style={styles.emptyText}>{t('referrals.empty')}</LocaleText>
             </View>
           ) : (
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 16,
     borderRadius: 14,
-    backgroundColor: seasonColors.accent,
+    backgroundColor: '#2592AB',
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: 110,

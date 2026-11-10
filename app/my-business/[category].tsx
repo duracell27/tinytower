@@ -125,7 +125,7 @@ export default function BusinessCategoryScreen() {
         </LocaleText>
 
         {/* ── Hero card ── */}
-        <View style={[styles.heroCard, { backgroundColor: theme.surface }]}>
+        <View style={[styles.heroCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
           <View style={styles.heroRow}>
             <View style={[styles.iconRing, { backgroundColor: `${color}20`, borderColor: `${color}40` }]}>
               <Image source={TYPE_ICONS[ft]} style={styles.icon} contentFit="fill" />
@@ -144,7 +144,7 @@ export default function BusinessCategoryScreen() {
         </View>
 
         {/* ── Progress with milestone markers ── */}
-        <View style={[styles.progressCard, { backgroundColor: theme.surface }]}>
+        <View style={[styles.progressCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
           {/* Track */}
           <View style={[styles.progressBg, { backgroundColor: `${color}22` }]}>
             {/* Fill */}
@@ -186,7 +186,7 @@ export default function BusinessCategoryScreen() {
         </View>
 
         {/* ── Balance ── */}
-        <View style={[styles.balanceCard, { backgroundColor: theme.surface }]}>
+        <View style={[styles.balanceCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
           <View style={styles.balanceChip}>
             <CoinIcon size={16} />
             <LocaleText style={styles.balanceCoin}>{formatNum(balance)}</LocaleText>
@@ -204,7 +204,7 @@ export default function BusinessCategoryScreen() {
         </View>
 
         {/* ── Businesses list ── */}
-        <View style={[styles.businessesCard, { backgroundColor: theme.surface }]}>
+        <View style={[styles.businessesCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
           <LocaleText style={[styles.sectionTitle, { color: theme.textMuted }]}>
             {tHotel('myBusiness.businesses')}
           </LocaleText>

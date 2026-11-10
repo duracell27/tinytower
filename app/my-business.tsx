@@ -74,7 +74,7 @@ export default function MyBusinessScreen() {
         <LocaleText style={[styles.subtitle, { color: theme.textMuted }]}>{tHotel('myBusiness.subtitle')}</LocaleText>
 
         {/* Currency + token balances */}
-        <View style={[styles.balanceCard, { backgroundColor: theme.surface }]}>
+        <View style={[styles.balanceCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
           <View style={styles.currencyRow}>
             <View style={styles.currencyChip}>
               <CoinIcon size={16} />
@@ -105,7 +105,7 @@ const color         = TYPE_COLORS[ft];
             <Pressable
               key={ft}
               onPress={() => router.push(`/my-business/${ft}`)}
-              style={({ pressed }) => [styles.card, { backgroundColor: theme.surface }, pressed && styles.cardPressed]}
+              style={({ pressed }) => [styles.card, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }, pressed && styles.cardPressed]}
             >
               <Image source={TYPE_ICONS[ft]} style={styles.categoryIcon} contentFit="contain" />
               <View style={styles.cardContent}>

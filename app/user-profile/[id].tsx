@@ -345,7 +345,7 @@ export default function UserProfileScreen() {
           <SectionHeader label={t('userProfile.sectionProfile')} />
 
           {/* Block 1: Header card */}
-          <View style={[pStyles.card, { backgroundColor: theme.surface }]}>
+          <View style={[pStyles.card, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
 
             <FloorStarsRow avg={profile.avgStars} />
 
@@ -429,7 +429,7 @@ export default function UserProfileScreen() {
           {/* Block 2: Actions */}
           {currentPlayerId && id !== currentPlayerId && !blocked && (
             <Pressable
-              style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+              style={[pStyles.actionBtn, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}
               onPress={() => setComposeOpen(true)}
             >
               <Image source={MAIL_ICON} style={pStyles.actionIcon} contentFit="contain" />
@@ -441,7 +441,7 @@ export default function UserProfileScreen() {
             <>
               {(!friendStatus || friendStatus.status === 'none') && (
                 <Pressable
-                  style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+                  style={[pStyles.actionBtn, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}
                   onPress={async () => {
                     setFriendActionLoading(true);
                     try { await sendRequest(id); recordInviteSent(); } catch { /* silent */ }
@@ -455,7 +455,7 @@ export default function UserProfileScreen() {
               )}
 
               {friendStatus?.status === 'pending_sent' && (
-                <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
+                <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
                   <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
                   <LocaleText style={[pStyles.actionBtnText, { flex: 1, color: theme.textMuted }]}>{t('userProfile.requestSent')}</LocaleText>
                   <Pressable
@@ -474,7 +474,7 @@ export default function UserProfileScreen() {
               )}
 
               {friendStatus?.status === 'pending_received' && (
-                <View style={[pStyles.actionBtn, { backgroundColor: theme.surface, gap: 8 }]}>
+                <View style={[pStyles.actionBtn, { backgroundColor: theme.surface, gap: 8 }, isDark && { borderColor: seasonColors.borderDark }]}>
                   <Image source={FRIEND_ICON} style={pStyles.actionIcon} contentFit="contain" />
                   <Pressable
                     style={pStyles.acceptBtn}
@@ -505,7 +505,7 @@ export default function UserProfileScreen() {
 
               {friendStatus?.status === 'friends' && (
                 <Pressable
-                  style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+                  style={[pStyles.actionBtn, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}
                   onPress={async () => {
                     if (!friendStatus.requestId) return;
                     setFriendActionLoading(true);
@@ -524,7 +524,7 @@ export default function UserProfileScreen() {
           {/* City Invite button */}
           {currentPlayerId && id !== currentPlayerId && !blocked && canSendInvite && !inviteSent && !inviteCancelled && (
             <Pressable
-              style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+              style={[pStyles.actionBtn, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}
               onPress={handleCityInvite}
               disabled={inviteLoading}
             >
@@ -535,7 +535,7 @@ export default function UserProfileScreen() {
             </Pressable>
           )}
           {currentPlayerId && id !== currentPlayerId && !blocked && canSendInvite && inviteSent && (
-            <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
+            <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
               <Image source={CITY_ICON} style={pStyles.actionIcon} contentFit="contain" />
               <LocaleText style={[pStyles.actionBtnText, { flex: 1, color: theme.textMuted }]}>
                 {t('userProfile.cityInviteSent')}
@@ -552,7 +552,7 @@ export default function UserProfileScreen() {
 
           {/* City management — role stepper + kick */}
           {currentPlayerId && id !== currentPlayerId && cityMember && canPromote && (
-            <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}>
+            <View style={[pStyles.actionBtn, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
               <Image source={MANAGER_ICON} style={pStyles.actionIcon} contentFit="contain" />
               <View style={{ flex: 1 }}>
                 <LocaleText style={[pStyles.roleStepLabel, { color: theme.textMuted }]}>
@@ -594,7 +594,7 @@ export default function UserProfileScreen() {
 
           {/* Block 3: Achievements */}
           <Pressable
-            style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+            style={[pStyles.actionBtn, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}
             onPress={() => setAchievementsOpen((v) => !v)}
           >
             <Image source={ACHIV_ICON} style={pStyles.actionIcon} contentFit="contain" />
@@ -614,7 +614,7 @@ export default function UserProfileScreen() {
           </Pressable>
 
           {achievementsOpen && (
-            <View style={[pStyles.dropdownCard, { backgroundColor: theme.surface }]}>
+            <View style={[pStyles.dropdownCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
               {ACHIEVEMENT_CATEGORIES.map((cat, idx) => {
                 const level = profile.categoryProgress[cat.key] ?? 0;
                 const rankTitle = level > 0
@@ -639,7 +639,7 @@ export default function UserProfileScreen() {
 
           {/* Block 4: Business */}
           <SectionHeader label={t('userProfile.sectionBusiness')} />
-          <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
+          <View style={[pStyles.compactCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
             {FLOOR_TYPES.map((ft, idx) => {
               const level = profile.businessUpgrades[ft] ?? 0;
               const pct = level * 5;
@@ -658,7 +658,7 @@ export default function UserProfileScreen() {
           {profile.vehicles && VEHICLE_TYPES.some(k => (profile.vehicles[k] ?? 0) > 0) && (
             <>
               <SectionHeader label={t('userProfile.sectionVehicles')} />
-              <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
+              <View style={[pStyles.compactCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
                 <View style={pStyles.vehRow}>
                   {VEHICLE_TYPES.filter(k => (profile.vehicles[k] ?? 0) > 0).map((key) => {
                     const def = VEHICLE_CONFIG[key];
@@ -679,7 +679,7 @@ export default function UserProfileScreen() {
 
           {/* Block 7: Revenue */}
           <SectionHeader label={t('userProfile.sectionRevenue')} />
-          <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
+          <View style={[pStyles.compactCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
             {/* Coin bonus + XP bonus on one row */}
             <View style={[pStyles.bonusRow, { borderBottomColor: theme.divider }]}>
               <View style={pStyles.bonusHalf}>
@@ -705,7 +705,7 @@ export default function UserProfileScreen() {
 
           {/* Block 6: Status */}
           <SectionHeader label={t('userProfile.sectionStatus')} />
-          <View style={[pStyles.compactCard, { backgroundColor: theme.surface }]}>
+          <View style={[pStyles.compactCard, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}>
             <View style={[pStyles.statusRow, { borderBottomColor: theme.divider }]}>
               <View style={[pStyles.statusDot, { backgroundColor: isOnline ? '#52B847' : '#A6ACB8' }]} />
               <LocaleText style={[pStyles.statusText, { color: theme.text }]}>{formatLastSeen(profile.lastSeenAt, t)}</LocaleText>
@@ -715,7 +715,7 @@ export default function UserProfileScreen() {
 
           {currentPlayerId && id !== currentPlayerId && (
             <Pressable
-              style={[pStyles.actionBtn, { backgroundColor: theme.surface }]}
+              style={[pStyles.actionBtn, { backgroundColor: theme.surface }, isDark && { borderColor: seasonColors.borderDark }]}
               onPress={async () => {
                 try {
                   if (blocked) {
