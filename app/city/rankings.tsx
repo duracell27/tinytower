@@ -51,7 +51,7 @@ export default function CityRankingsScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.row, isDark && styles.rowDark, isTop3 && styles.rowTop3]}
+        style={[styles.row, isDark && styles.rowDark, isTop3 && { borderWidth: 2, borderColor: rankColor }]}
         onPress={() => router.push(`/city/${item.id}`)}
         activeOpacity={0.7}
       >
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     borderColor: seasonColors.border,
   },
   rowDark: { backgroundColor: '#1A2E3E' },
-  rowTop3: { borderColor: 'rgba(255,215,0,0.25)' },
+  rowTop3: {},
 
   rankBox: { width: 44, alignItems: 'center', borderRadius: 8, paddingVertical: 4 },
   rankText: { fontFamily: 'Fredoka_700Bold', fontSize: 15, color: '#7A8A80' },
