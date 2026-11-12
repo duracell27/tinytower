@@ -16,6 +16,7 @@ interface PlayerInfo {
   isAdmin?: boolean;
   isTemporary?: boolean;
   authProvider?: 'google' | 'apple' | 'email';
+  nameChanges?: number;
 }
 
 interface AuthState {
@@ -43,6 +44,7 @@ interface AuthActions {
   convertWithSocial: (provider: 'google' | 'apple', idToken: string, fullName?: string, overwrite?: boolean) => Promise<{ conflict: string } | null>;
   requestConvertModal: () => void;
   clearConvertModal: () => void;
+  changePlayerName: (newName: string) => Promise<void>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -176,6 +178,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     getStorage().remove('lastPlayer');
     setSentryUser(null);
     set({ player: null, lastPlayer: null, isAuthenticated: false, isGuest: false, pendingRegistration: false });
+  },
+
+  changePlayerName: async (newName: string) => {
+    const result = await api.changePlayerName(newName);
+    const current = get().player;
+    if (!current) return;
+    const updated = { ...current, playerName: result.playerName, nameChanges: result.nameChanges };
+    getStorage().set('player', JSON.stringify(updated));
+    setSentryUser(updated);
+    set({ player: updated });
   },
 
   enterAsGuest: async () => {

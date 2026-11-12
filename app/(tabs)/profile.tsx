@@ -372,7 +372,12 @@ const player = useAuthStore((s) => s.player);
   const settingsScrimStyle = useAnimatedStyle(() => ({ opacity: settingsScrimOpacity.value }));
   const settingsSheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: settingsTranslateY.value }] }));
   const deleteAccount = useAuthStore((s) => s.deleteAccount);
+  const changePlayerName = useAuthStore((s) => s.changePlayerName);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [nicknameModalVisible, setNicknameModalVisible] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState('');
+  const [nicknameError, setNicknameError] = useState('');
+  const [nicknameLoading, setNicknameLoading] = useState(false);
   const [deleteNickInput, setDeleteNickInput] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -383,6 +388,38 @@ const player = useAuthStore((s) => s.player);
     setSettingsVisible(false);
     setTimeout(() => setDeleteModalVisible(true), 450);
   }, []);
+
+  const handleOpenNicknameModal = useCallback(() => {
+    setNicknameInput('');
+    setNicknameError('');
+    setNicknameModalVisible(true);
+  }, []);
+
+  const handleChangeNickname = async () => {
+    const trimmed = nicknameInput.trim();
+    if (!trimmed) return;
+    setNicknameLoading(true);
+    setNicknameError('');
+    try {
+      await changePlayerName(trimmed);
+      setNicknameModalVisible(false);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      if (msg.includes('already taken')) {
+        setNicknameError(t('profile.changeNicknameModal.errorTaken'));
+      } else if (msg.includes('Insufficient gems')) {
+        setNicknameError(t('profile.changeNicknameModal.errorInsufficientGems'));
+      } else if (msg.includes('too short')) {
+        setNicknameError(t('profile.changeNicknameModal.errorTooShort'));
+      } else if (msg.includes('too long')) {
+        setNicknameError(t('profile.changeNicknameModal.errorTooLong'));
+      } else {
+        setNicknameError(t('profile.changeNicknameModal.errorGeneric'));
+      }
+    } finally {
+      setNicknameLoading(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     if (deleteNickInput.trim() !== (player?.playerName ?? '')) {
@@ -638,7 +675,29 @@ const player = useAuthStore((s) => s.player);
               contentFit="cover"
             />
             <View style={styles.profileInfo}>
-              <LocaleText style={[styles.name, { color: theme.text }]}>{player?.playerName ?? t('profile.guestFallbackName')}</LocaleText>
+              <View style={styles.nameRow}>
+                <LocaleText style={[styles.name, { color: theme.text }]}>{player?.playerName ?? t('profile.guestFallbackName')}</LocaleText>
+                {isAuthenticated && !isTemporary && (
+                  <Pressable onPress={handleOpenNicknameModal} hitSlop={8} style={styles.editNameBtn}>
+                    <Svg width={15} height={15} viewBox="0 0 24 24" fill="none">
+                      <Path
+                        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                        stroke={theme.textMuted}
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <Path
+                        d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                        stroke={theme.textMuted}
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </Svg>
+                  </Pressable>
+                )}
+              </View>
               <LocaleText style={[styles.email, { color: theme.textMuted }]}>{isTemporary ? t('profile.guestAccount') : (player?.email ?? '')}</LocaleText>
             </View>
           </View>
@@ -1205,6 +1264,75 @@ const player = useAuthStore((s) => s.player);
         </Pressable>
       </ScrollView>
 
+      {/* Change nickname modal */}
+      <Modal visible={nicknameModalVisible} transparent animationType="fade" onRequestClose={() => !nicknameLoading && setNicknameModalVisible(false)}>
+        <KeyboardAvoidingView style={styles.convertOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={16}>
+          <Pressable style={styles.convertBackdrop} onPress={() => !nicknameLoading && setNicknameModalVisible(false)} />
+          <View style={[nicknameStyles.card, { backgroundColor: theme.surface }]}>
+            <LocaleText style={[nicknameStyles.title, { color: theme.text }]}>
+              {t('profile.changeNicknameModal.title')}
+            </LocaleText>
+
+            <View style={[nicknameStyles.infoBox, { backgroundColor: theme.surfaceSub, borderColor: theme.divider }]}>
+              <LocaleText style={[nicknameStyles.infoText, { color: theme.textMuted }]}>
+                {t('profile.changeNicknameModal.infoUnique')}{' '}
+                {t('profile.changeNicknameModal.infoFree')}{' '}
+                {t('profile.changeNicknameModal.infoPaid')}
+              </LocaleText>
+            </View>
+
+            <View style={nicknameStyles.costRow}>
+              <LocaleText style={[nicknameStyles.costLabel, { color: theme.textMuted }]}>
+                {t('profile.changeNicknameModal.label')}
+              </LocaleText>
+              <View style={[nicknameStyles.costBadge, { backgroundColor: (player?.nameChanges ?? 0) === 0 ? 'rgba(63,165,53,0.12)' : 'rgba(37,146,171,0.12)' }]}>
+                <LocaleText style={[nicknameStyles.costBadgeText, { color: (player?.nameChanges ?? 0) === 0 ? '#3FA535' : '#2592AB' }]}>
+                  {(player?.nameChanges ?? 0) === 0
+                    ? t('profile.changeNicknameModal.costFree')
+                    : t('profile.changeNicknameModal.costGems')}
+                </LocaleText>
+              </View>
+            </View>
+
+            <TextInput
+              style={[styles.convertInput, { borderColor: nicknameError ? '#C62828' : theme.divider, color: theme.text, backgroundColor: theme.surfaceSub, marginTop: 6 }]}
+              value={nicknameInput}
+              onChangeText={(v) => { setNicknameInput(v); setNicknameError(''); }}
+              placeholder={t('profile.changeNicknameModal.placeholder')}
+              placeholderTextColor={theme.textMuted}
+              autoCapitalize="none"
+              maxLength={20}
+              editable={!nicknameLoading}
+            />
+
+            {nicknameError ? (
+              <LocaleText style={styles.convertErrorText}>{nicknameError}</LocaleText>
+            ) : null}
+
+            <Pressable
+              onPress={handleChangeNickname}
+              disabled={nicknameLoading || !nicknameInput.trim()}
+              style={[nicknameStyles.submitBtn, (nicknameLoading || !nicknameInput.trim()) && nicknameStyles.submitBtnDisabled]}
+            >
+              {nicknameLoading
+                ? <ActivityIndicator color="#fff" size="small" />
+                : <LocaleText style={nicknameStyles.submitBtnText}>{t('profile.changeNicknameModal.submit')}</LocaleText>
+              }
+            </Pressable>
+
+            <Pressable
+              onPress={() => setNicknameModalVisible(false)}
+              disabled={nicknameLoading}
+              style={({ pressed }) => [deleteStyles.cancelBtn, { borderColor: theme.divider }, pressed && { opacity: 0.7 }]}
+            >
+              <LocaleText style={[deleteStyles.cancelBtnText, { color: theme.textMuted }]}>
+                {t('profile.changeNicknameModal.cancel')}
+              </LocaleText>
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
       {/* Delete account confirmation modal — must be outside ScrollView */}
       <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => !deleteLoading && setDeleteModalVisible(false)}>
         <KeyboardAvoidingView style={styles.convertOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={16}>
@@ -1303,6 +1431,15 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     flex: 1,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  editNameBtn: {
+    padding: 2,
+    marginTop: 2,
   },
   name: {
     fontFamily: 'Fredoka_600SemiBold',
@@ -1914,6 +2051,72 @@ const deleteStyles = StyleSheet.create({
   cancelBtnText: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
+  },
+});
+
+const nicknameStyles = StyleSheet.create({
+  card: {
+    width: '100%',
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  title: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 20,
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  infoBox: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 10,
+    marginBottom: 14,
+  },
+  infoText: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  costRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  costLabel: {
+    fontFamily: 'Fredoka_500Medium',
+    fontSize: 13,
+  },
+  costBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  costBadgeText: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 13,
+  },
+  submitBtn: {
+    marginTop: 16,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: '#3FA535',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitBtnDisabled: {
+    opacity: 0.45,
+  },
+  submitBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 17,
+    color: '#fff',
   },
 });
 

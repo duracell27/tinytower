@@ -562,6 +562,8 @@ export const api = {
     request<void>('POST', '/auth/reset-password', { token, newPassword }),
   deleteAccount: () =>
     request<void>('DELETE', '/auth/account'),
+  changePlayerName: (name: string) =>
+    request<{ playerName: string; nameChanges: number }>('PATCH', '/auth/name', { name }),
   createCity: (name: string) =>
     request<CityDetail>('POST', '/city', { name }),
   getMyCityInfo: () =>

@@ -789,6 +789,23 @@
       "cancelButton": "Cancel",
       "errorMismatch": "Nickname does not match",
       "errorGeneric": "Failed to delete account. Please try again."
+    },
+    "changeNicknameModal": {
+      "title": "Change Nickname",
+      "infoUnique": "Your nickname must be unique.",
+      "infoFree": "First change is free.",
+      "infoPaid": "Each subsequent change costs 500 💎",
+      "costFree": "Free",
+      "costGems": "500 💎",
+      "label": "New nickname",
+      "placeholder": "Enter new nickname",
+      "submit": "Change",
+      "cancel": "Cancel",
+      "errorTooShort": "Nickname must be at least 2 characters",
+      "errorTooLong": "Nickname must be at most 20 characters",
+      "errorTaken": "This nickname is already taken",
+      "errorInsufficientGems": "Not enough gems (500 needed)",
+      "errorGeneric": "Failed to change nickname. Please try again."
     }
   },
   "menu": {

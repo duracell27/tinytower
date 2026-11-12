@@ -1,4 +1,4 @@
-import { Controller, Post, Delete, Body, UseGuards, Req, HttpCode, BadRequestException, ConflictException } from '@nestjs/common';
+import { Controller, Post, Patch, Delete, Body, UseGuards, Req, HttpCode, BadRequestException, ConflictException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RegisterSchema } from './dto/register.dto';
@@ -124,6 +124,22 @@ export class AuthController {
   async logout(@Req() req: { user: { playerId: string } }) {
     await this.authService.logout(req.user.playerId);
     return {};
+  }
+
+  @Patch('name')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async changePlayerName(@Req() req: { user: { playerId: string } }, @Body() body: unknown) {
+    const parsed = (body as { name?: unknown });
+    if (typeof parsed.name !== 'string' || !parsed.name.trim()) {
+      throw new BadRequestException('Name is required');
+    }
+    try {
+      return await this.authService.changePlayerName(req.user.playerId, parsed.name);
+    } catch (e) {
+      if (e instanceof ConflictException || e instanceof BadRequestException) throw e;
+      throw new BadRequestException('Failed to change name');
+    }
   }
 
   @Delete('account')

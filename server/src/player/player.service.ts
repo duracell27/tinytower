@@ -162,4 +162,33 @@ export class PlayerService {
       data: { passwordHash },
     });
   }
+
+  async changePlayerName(playerId: string, newName: string): Promise<{ playerName: string; nameChanges: number }> {
+    return this.prisma.$transaction(async (tx) => {
+      const player = await tx.player.findUnique({
+        where: { id: playerId },
+        select: { nameChanges: true },
+      });
+      if (!player) throw new Error('Player not found');
+
+      if (player.nameChanges > 0) {
+        const state = await tx.playerState.findUnique({
+          where: { playerId },
+          select: { gems: true },
+        });
+        if (!state || state.gems < 500) throw new Error('Insufficient gems');
+        await tx.playerState.update({
+          where: { playerId },
+          data: { gems: { decrement: 500 } },
+        });
+      }
+
+      const updated = await tx.player.update({
+        where: { id: playerId },
+        data: { playerName: newName, nameChanges: { increment: 1 } },
+        select: { playerName: true, nameChanges: true },
+      });
+      return updated;
+    });
+  }
 }

@@ -40,6 +40,7 @@ describe('AuthService', () => {
     city: null,
     isAdmin: false,
     isTemporary: false,
+    nameChanges: 0,
     pushToken: null,
     pushPlatform: null,
     pushLanguage: 'en',

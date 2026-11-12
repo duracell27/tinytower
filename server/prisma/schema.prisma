@@ -49,6 +49,7 @@ model Player {
   categoryProgress   PlayerCategoryProgress[]
   isAdmin      Boolean     @default(false)
   isTemporary  Boolean     @default(false)
+  nameChanges  Int         @default(0)
   chatMessages ChatMessage[]
   forumPosts      ForumPost[]
   forumComments   ForumComment[]

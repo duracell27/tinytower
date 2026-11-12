@@ -171,6 +171,24 @@ export class AuthService {
     await this.playerService.deleteById(playerId);
   }
 
+  async changePlayerName(playerId: string, newName: string) {
+    const trimmed = newName.trim();
+    if (trimmed.length < 2) throw new BadRequestException('Name too short');
+    if (trimmed.length > 20) throw new BadRequestException('Name too long');
+    if (!/^[a-zA-Z0-9_а-яА-ЯёЁіІїЇєЄ'ʼ ]+$/u.test(trimmed)) throw new BadRequestException('Invalid characters');
+
+    const existing = await this.playerService.findByPlayerName(trimmed);
+    if (existing && existing.id !== playerId) throw new ConflictException('Player name already taken');
+
+    try {
+      return await this.playerService.changePlayerName(playerId, trimmed);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      if (msg === 'Insufficient gems') throw new BadRequestException('Insufficient gems');
+      throw e;
+    }
+  }
+
   private async generateUniqueGuestName(): Promise<string> {
     for (let i = 0; i < 10; i++) {
       const adj = GUEST_ADJECTIVES[Math.floor(Math.random() * GUEST_ADJECTIVES.length)];
