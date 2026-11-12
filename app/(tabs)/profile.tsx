@@ -319,6 +319,7 @@ const player = useAuthStore((s) => s.player);
   const floorStars = useGameStore((s) => s.floorStars);
   const openedFloorTypes = useGameStore((s) => s.openedFloorTypes);
   const tokens = useGameStore((s) => s.tokens);
+  const showInsufficientResources = useGameStore((s) => s.showInsufficientResources);
   const businessUpgrades = useGameStore((s) => s.businessUpgrades);
   const xpNeeded = xpForLevel(playerLevel);
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -409,7 +410,8 @@ const player = useAuthStore((s) => s.player);
       if (msg.includes('already taken')) {
         setNicknameError(t('profile.changeNicknameModal.errorTaken'));
       } else if (msg.includes('Insufficient gems')) {
-        setNicknameError(t('profile.changeNicknameModal.errorInsufficientGems'));
+        setNicknameModalVisible(false);
+        setTimeout(() => showInsufficientResources({ currency: 'gems', need: 500, have: gems }), 450);
       } else if (msg.includes('too short')) {
         setNicknameError(t('profile.changeNicknameModal.errorTooShort'));
       } else if (msg.includes('too long')) {
@@ -1309,7 +1311,7 @@ const player = useAuthStore((s) => s.player);
             </View>
 
             <TextInput
-              style={[styles.convertInput, { borderColor: nicknameError ? '#C62828' : theme.divider, color: theme.text, backgroundColor: theme.surfaceSub, marginTop: 6 }]}
+              style={[styles.convertInput, { borderWidth: 1, borderColor: nicknameError ? '#C62828' : theme.divider, color: theme.text, backgroundColor: theme.surfaceSub, marginTop: 6 }]}
               value={nicknameInput}
               onChangeText={(v) => { setNicknameInput(v); setNicknameError(''); }}
               placeholder={t('profile.changeNicknameModal.placeholder')}
@@ -1320,7 +1322,7 @@ const player = useAuthStore((s) => s.player);
             />
 
             {nicknameError ? (
-              <LocaleText style={styles.convertErrorText}>{nicknameError}</LocaleText>
+              <LocaleText style={[styles.convertErrorText, { fontFamily: 'Geologica_500Medium', fontSize: 14 }]}>{nicknameError}</LocaleText>
             ) : null}
 
             <Pressable
@@ -1337,9 +1339,9 @@ const player = useAuthStore((s) => s.player);
             <Pressable
               onPress={() => setNicknameModalVisible(false)}
               disabled={nicknameLoading}
-              style={({ pressed }) => [deleteStyles.cancelBtn, { borderColor: theme.divider }, pressed && { opacity: 0.7 }]}
+              style={({ pressed }) => [deleteStyles.cancelBtn, { borderWidth: 1, borderColor: '#C62828' }, pressed && { opacity: 0.7 }]}
             >
-              <LocaleText style={[deleteStyles.cancelBtnText, { color: theme.textMuted }]}>
+              <LocaleText style={[deleteStyles.cancelBtnText, { color: '#C62828' }]}>
                 {t('profile.changeNicknameModal.cancel')}
               </LocaleText>
             </Pressable>

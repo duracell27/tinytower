@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { gameConfig, createInitialState } from '@shared/config/gameConfig';
@@ -167,16 +167,19 @@ export class PlayerService {
     return this.prisma.$transaction(async (tx) => {
       const player = await tx.player.findUnique({
         where: { id: playerId },
-        select: { nameChanges: true },
+        select: { nameChanges: true, playerName: true },
       });
       if (!player) throw new Error('Player not found');
+
+      const existing = await tx.player.findUnique({ where: { playerName: newName }, select: { id: true } });
+      if (existing) throw new BadRequestException('Name already taken');
 
       if (player.nameChanges > 0) {
         const state = await tx.playerState.findUnique({
           where: { playerId },
           select: { gems: true },
         });
-        if (!state || state.gems < 500) throw new Error('Insufficient gems');
+        if (!state || state.gems < 500) throw new BadRequestException('Insufficient gems');
         await tx.playerState.update({
           where: { playerId },
           data: { gems: { decrement: 500 } },

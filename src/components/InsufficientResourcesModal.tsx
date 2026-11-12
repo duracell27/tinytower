@@ -110,7 +110,7 @@ export default function InsufficientResourcesModal({ asOverlay = false }: { asOv
             {/* Icon */}
             <View style={styles.iconWrap}>
               {isCoins && <Image source={require('../../assets/img/coin.png')} style={styles.coinLarge} contentFit="contain" />}
-              {isGems && <View style={styles.gemLarge} />}
+              {isGems && <Image source={require('../../assets/img/diamond.png')} style={styles.coinLarge} contentFit="contain" />}
               {isTools && (
                 <View style={styles.toolIconRow}>
                   {payload.missingTools!.slice(0, 3).map((tool) => (
