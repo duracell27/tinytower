@@ -21,6 +21,8 @@ const CATEGORY_IMAGES: Record<string, ReturnType<typeof require>> = {
   list:     require('../assets/img/achivment/achivDeliverCategory.png'),
   collect:  require('../assets/img/achivment/achivCollectcoinsCategory.png'),
   elevator: require('../assets/img/achivment/achivLiftCategory.png'),
+  floors:   require('../assets/img/achivment/achivFloorsCategory.png'),
+  tokens:   require('../assets/img/achivment/achivTokenCategory.png'),
 };
 
 
