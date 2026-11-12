@@ -201,6 +201,30 @@
           "6": "Lift Master",
           "7": "Elevator King"
         }
+      },
+      "floors": {
+        "title": "Tower Construction",
+        "levels": {
+          "1": "Groundbreaker",
+          "2": "Foundation Layer",
+          "3": "Site Manager",
+          "4": "Architect",
+          "5": "High-Riser",
+          "6": "Tower Baron",
+          "7": "Skyscraper King"
+        }
+      },
+      "tokens": {
+        "title": "Token Collection",
+        "levels": {
+          "1": "First Chip",
+          "2": "Token Collector",
+          "3": "Hoarder",
+          "4": "Token Hunter",
+          "5": "Vault Keeper",
+          "6": "Grand Harvester",
+          "7": "Token Legend"
+        }
       }
     },
     "screenTitle": "Achievements",
@@ -215,7 +239,9 @@
       "buy": "Buy goods for your floors to restock production",
       "list": "Put delivered goods on shelves to start selling",
       "collect": "Collect earned coins from completed sales",
-      "elevator": "Transport visitors between floors in the elevator"
+      "elevator": "Transport visitors between floors in the elevator",
+      "floors": "Open new floors to grow your tower higher",
+      "tokens": "Collect tokens by completing daily tasks"
     },
     "info": {
       "ranksTitle": "Achievement Ranks",
