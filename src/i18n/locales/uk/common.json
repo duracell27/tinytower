@@ -29,7 +29,8 @@
     "sellItems": "Продати ({{count}} шт)",
     "buy": "Купити {{name}}",
     "findWorker": "Знайти робітника",
-    "all": "Всі"
+    "all": "Всі",
+    "allDone": "Все готово!"
   },
   "insufficientResources": {
     "notEnoughCoins": "Недостатньо монет",

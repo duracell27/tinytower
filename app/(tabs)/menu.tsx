@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { seasonColors } from '../../src/config/seasonTheme';
-import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme, ScrollView } from 'react-native';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
 import { Image } from 'expo-image';
@@ -51,7 +51,12 @@ export default function MenuScreen() {
 
   return (
     <AppBackground style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <LocaleText style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('menu.heading')}</LocaleText>
 
         <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]} onPress={() => setBoostsOpen(true)}>
@@ -121,7 +126,7 @@ export default function MenuScreen() {
             </View>
           )}
         </Pressable>
-      </View>
+      </ScrollView>
 
       <BoostSheet visible={boostsOpen} onClose={() => setBoostsOpen(false)} />
       <WarehouseSheet visible={inventoryOpen} onClose={() => setInventoryOpen(false)} />
@@ -142,10 +147,11 @@ export default function MenuScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  scroll: { flex: 1 },
   content: {
-    flex: 1,
     paddingTop: 72,
     paddingHorizontal: 20,
+    paddingBottom: 32,
     gap: 12,
   },
   heading: {

@@ -125,7 +125,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   } : null;
 
   const label = (() => {
-    if (!info) return '…';
+    if (!info) return t('quickAction.allDone');
     switch (info.mode) {
       case 'collect':
         return t('quickAction.collect');
@@ -178,7 +178,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
                 <>
                   <LocaleText style={styles.btnLabel}>{label}</LocaleText>
                   <CoinIcon size={18} />
-                  <LocaleText style={styles.btnLabel}>{collectAmount ?? '…'}</LocaleText>
+                  <LocaleText style={styles.btnLabel}>{collectAmount ?? ''}</LocaleText>
                 </>
               ) : mode === 'buy' && buyInfo ? (
                 <>
