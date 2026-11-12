@@ -16,6 +16,25 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
+
+function GoogleIcon({ size = 18 }: { size?: number }) {
+  return (
+    <Svg viewBox="0 0 48 48" width={size} height={size}>
+      <Path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <Path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <Path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <Path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </Svg>
+  );
+}
+
+function AppleIcon({ size = 18, color = '#fff' }: { size?: number; color?: string }) {
+  return (
+    <Svg viewBox="0 0 24 24" width={size} height={size}>
+      <Path fill={color} d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+    </Svg>
+  );
+}
 import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -28,6 +47,8 @@ interface WelcomeScreenProps {
   onGuest: () => void;
   onLogin: () => void;
   onRegister: () => void;
+  onGoogle?: () => void;
+  onApple?: () => void;
 }
 
 function PlayerAvatar({ level, size = 36 }: { level: number; size?: number }) {
@@ -40,7 +61,7 @@ function PlayerAvatar({ level, size = 36 }: { level: number; size?: number }) {
   );
 }
 
-export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: WelcomeScreenProps) {
+export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister, onGoogle, onApple }: WelcomeScreenProps) {
   const { t } = useTranslation('auth');
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const lastPlayer = useAuthStore((s) => s.lastPlayer);
@@ -123,9 +144,17 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
     if (isAuthenticated) {
       onPlay();
     } else if (hasLastAccount) {
-      setShowPasswordPrompt(true);
-      setPassword('');
-      setError('');
+      if (lastPlayer?.authProvider === 'google' && onGoogle) {
+        onGoogle();
+      } else if (lastPlayer?.authProvider === 'apple' && onApple) {
+        onApple();
+      } else if (lastPlayer?.authProvider === 'google' || lastPlayer?.authProvider === 'apple') {
+        onLogin();
+      } else {
+        setShowPasswordPrompt(true);
+        setPassword('');
+        setError('');
+      }
     } else {
       onGuest();
     }
@@ -416,10 +445,20 @@ export default function WelcomeScreen({ onPlay, onGuest, onLogin, onRegister }: 
                   </LocaleText>
                 </View>
                 {hasLastAccount && (
-                  <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-                    <Rect x={5} y={11} width={14} height={10} rx={2} />
-                    <Path d="M8 11V7a4 4 0 0 1 8 0v4" />
-                  </Svg>
+                  lastPlayer?.authProvider === 'google' ? (
+                    <View style={[styles.providerBadge, isDark && styles.providerBadgeDark]}>
+                      <GoogleIcon size={16} />
+                    </View>
+                  ) : lastPlayer?.authProvider === 'apple' ? (
+                    <View style={[styles.providerBadge, isDark && styles.providerBadgeDark]}>
+                      <AppleIcon size={16} color={isDark ? 'rgba(255,255,255,0.9)' : '#27331F'} />
+                    </View>
+                  ) : (
+                    <Svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                      <Rect x={5} y={11} width={14} height={10} rx={2} />
+                      <Path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                    </Svg>
+                  )
                 )}
                 {isAuthenticated && (
                   <Svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
@@ -885,6 +924,17 @@ const styles = StyleSheet.create({
   continueRow: {
     position: 'relative',
     paddingTop: 18,
+  },
+  providerBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  providerBadgeDark: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   trashButton: {
     position: 'absolute',
