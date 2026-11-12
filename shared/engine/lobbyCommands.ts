@@ -124,7 +124,7 @@ function handleLiftVisitor(
   // targetFloor is guaranteed non-null: base.targetFloor ?? command.targetFloor, and LiftVisitorCommandSchema requires targetFloor
   const move = Math.min(state.elevatorLevel, active.targetFloor! - state.elevatorFloor);
   if (move <= 0) {
-    return { success: false, state, error: 'Already at target floor' };
+    return { success: true, state };
   }
   return {
     success: true,
