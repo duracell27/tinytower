@@ -238,10 +238,16 @@ function ElevatorShaft({
   const cabinBottom = useSharedValue(cabinBottomTarget);
 
   useEffect(() => {
-    cabinBottom.value = withTiming(cabinBottomTarget, {
-      duration: 500,
-      easing: Easing.bezier(0.45, 0.05, 0.3, 1),
-    });
+    if (cabinBottomTarget <= 6) {
+      // Elevator reset to ground (after collect_tip) — snap instantly so there's
+      // no 500ms "sliding down" animation between visitors.
+      cabinBottom.value = 6;
+    } else {
+      cabinBottom.value = withTiming(cabinBottomTarget, {
+        duration: 500,
+        easing: Easing.bezier(0.45, 0.05, 0.3, 1),
+      });
+    }
   }, [cabinBottomTarget]);
 
   const cabinStyle = useAnimatedStyle(() => ({

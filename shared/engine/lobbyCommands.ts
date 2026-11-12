@@ -331,8 +331,9 @@ function handleCollectTip(
   if (now < state.lastDailyReset) {
     newState = { ...newState, dailyGemsCollected: state.dailyGemsCollected };
   }
-  // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
-  const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
+  // If lobby was full (nextVisitorAt=0), restart timer from now so player waits a full interval.
+  // If timer was running (or expired), keep it — game.tsx catch-up loop handles expired timers.
+  const nextVisitorAt = state.nextVisitorAt === 0
     ? now + config.lobbyConfig.visitorSpawnInterval
     : state.nextVisitorAt;
   newState = {
@@ -419,8 +420,9 @@ function handleDeliverAll(
   if (now < state.lastDailyReset) {
     newState = { ...newState, dailyGemsCollected: state.dailyGemsCollected };
   }
-  // Restart timer if lobby was full (nextVisitorAt=0) or timer expired while full
-  const nextVisitorAt = (state.nextVisitorAt === 0 || state.nextVisitorAt <= now)
+  // If lobby was full (nextVisitorAt=0), restart timer from now so player waits a full interval.
+  // If timer was running (or expired), keep it — game.tsx catch-up loop handles expired timers.
+  const nextVisitorAt = state.nextVisitorAt === 0
     ? now + config.lobbyConfig.visitorSpawnInterval
     : state.nextVisitorAt;
   newState = {

@@ -1186,9 +1186,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const now = clock.now();
     const floorTypeKeys = Object.keys(gameConfig.floorTypes);
     // Fill each empty slot with an individual spawn_visitor command.
-    // spawn_visitor is already preserved by reconciliation (pendingSpawnIds),
-    // so these visitors survive server syncs that arrive before the server
-    // acknowledges the commands.
     let cur = get();
     while (cur.lobbyVisitors.length < cur.lobbyCapacity + computeVehicleBonuses(cur.vehicles).extraLobbyCapacity) {
       const { role, targetFloor, isVip } = generateRandomVisitorRole({ ...cur }, gameConfig, now, cur.playerLevel, computeVehicleBonuses(cur.vehicles).extraGemExchangeLimit + cur.cityElevatorDiamondBonus);
@@ -1534,16 +1531,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return t;
     })();
 
-    // Compute pendingLocal here (outside the lobbyVisitors IIFE) so it can be
-    // reused by the nextVisitorAt calculation below.
-
-    // If deliver_all or collect_tip commands are still pending (server hasn't confirmed
-    // them yet), the server response will still contain the visitors that were already
-    // delivered optimistically. Filter them out to prevent the lobby from briefly
-    // refilling after delivery.
-    // Also include failed deliver_all commands: the server rejected them and returned
-    // the pre-delivery state (visitors still in lobby), but we preserve the optimistic
-    // empty-elevator view until the user explicitly retries or a successful sync clears it.
+    // Build the set of visitor IDs that were explicitly delivered so they can be
+    // stripped from the client's current lobby during this reconcile.
     const deliveredVisitorIds = new Set<string>([
       ...pendingQueue
         .filter((cmd) => cmd.type === 'deliver_all')
@@ -1558,47 +1547,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
       // pruned from the queue before the server bumped stateVersion).
       ...cur.pendingDeliveredVisitorIds,
     ]);
-    // Keep pendingDeliveredVisitorIds only for visitors still present on the server.
-    // Once the server no longer returns a visitor in the lobby, the delivery was
-    // confirmed (or the visitor expired) — no need to keep filtering it.
+    // Lobby visitors are entirely client-managed: the client generates spawn_visitor
+    // commands and tracks visitors locally. The server processes those commands for
+    // collect_tip/deliver_all validation, but its lobbyVisitors snapshot is always
+    // behind the client's optimistic state. Using it as the reconcile baseline causes
+    // "ghost" visitors to reappear after delivery. Instead, keep the client's current
+    // lobby and only strip out visitors that were explicitly delivered.
     const nextPendingDeliveredVisitorIds = cur.pendingDeliveredVisitorIds.filter(
       (id) => serverState.lobbyVisitors.some((sv) => sv.id === id),
     );
-    const serverLobbyVisitors = deliveredVisitorIds.size > 0
-      ? serverState.lobbyVisitors.filter((sv) => !deliveredVisitorIds.has(sv.id))
-      : serverState.lobbyVisitors;
-
-    const serverLobbyIds = new Set(serverLobbyVisitors.map((sv) => sv.id));
-    const pendingSpawnIds = new Set(
-      cur.commandQueue
-        .filter((cmd) => cmd.type === 'spawn_visitor')
-        .map((cmd) => (cmd as Extract<Command, { type: 'spawn_visitor' }>).visitorId),
+    const lobbyVisitors = cur.lobbyVisitors.filter(
+      (lv) => !deliveredVisitorIds.has(lv.id),
     );
-    const serverMappedCount = serverLobbyVisitors.length;
-    const freeSlots = Math.max(0, cur.lobbyCapacity + computeVehicleBonuses(cur.vehicles).extraLobbyCapacity - serverMappedCount);
-    const pendingLocal = cur.lobbyVisitors
-      .filter((lv) => pendingSpawnIds.has(lv.id) && !serverLobbyIds.has(lv.id) && !deliveredVisitorIds.has(lv.id))
-      .slice(0, freeSlots);
-
-    const lobbyVisitors = (() => {
-      // Map all server visitors; supply defaults for legacy visitors that lack role/targetFloor
-      // (created by createInitialState before eager generation was added).
-      const floorTypeKeys = Object.keys(gameConfig.floorTypes);
-      const serverMapped = serverLobbyVisitors
-        .map((sv) => {
-          const local = cur.lobbyVisitors.find((lv) => lv.id === sv.id);
-          const role = sv.role ?? local?.role ?? ('guest' as const);
-          const targetFloor = sv.targetFloor ?? local?.targetFloor ?? 1;
-          // Legacy hotel guests have no pendingFloorType — assign one deterministically
-          // from the visitor id so each legacy visitor gets a stable, distinct color.
-          const pendingFloorType = sv.pendingFloorType ?? local?.pendingFloorType ??
-            (role === 'guest' && targetFloor === 1
-              ? floorTypeKeys[sv.id.charCodeAt(0) % floorTypeKeys.length]
-              : undefined);
-          return { ...sv, role, targetFloor, pendingFloorType };
-        });
-      return [...serverMapped, ...pendingLocal];
-    })();
 
     return {
       isHydrated: true,
@@ -1618,22 +1578,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       dailyTipsStage1Claimed: serverState.dailyTipsStage1Claimed ?? (serverState as any).dailyTipsRewardClaimed ?? false,
       dailyTipsStage2Claimed: serverState.dailyTipsStage2Claimed ?? false,
       lastDailyReset: serverState.lastDailyReset,
-      nextVisitorAt: (() => {
-        // If pending spawn_visitor commands were re-injected into the lobby
-        // (pendingLocal), the server's nextVisitorAt may already be in the past
-        // (the timer expired before the response arrived).  Using it as-is makes
-        // the spawn effect immediately fire and add a second visitor on top of the
-        // one we just restored, producing a double-spawn.  Advance to a fresh
-        // interval so the effect sees a future timestamp and holds off.
-        if (pendingLocal.length > 0) {
-          const serverNext = serverState.nextVisitorAt;
-          const now = clock.now();
-          if (serverNext === 0 || serverNext <= now) {
-            return now + gameConfig.lobbyConfig.visitorSpawnInterval;
-          }
-        }
-        return serverState.nextVisitorAt;
-      })(),
+      // Keep the client's nextVisitorAt: it reflects spawn_visitor commands that
+      // were already applied optimistically and is always ahead of the server's
+      // snapshot. Using the server value would reset the timer to a past timestamp
+      // and cause an immediate double-spawn on the next render cycle.
+      nextVisitorAt: cur.nextVisitorAt,
       dailyFillLobbyUses: serverState.dailyFillLobbyUses ?? 0,
       stateVersion: newVersion,
       lastAckCursor: ackCursor,
