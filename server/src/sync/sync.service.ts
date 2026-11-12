@@ -414,17 +414,17 @@ export class SyncService {
         gameState = { ...gameState, stats: finalStats };
 
         // Achievement progress
-        const categoryDeltas: [string, number][] = [
+        const categoryDeltas: [string, number, number?][] = [
           ['buy',      boughtCount],
           ['list',     listedCount],
           ['collect',  collectCount],
           ['elevator', passengersCount],
-          ['floors',   floorsOpenedCount],
+          ['floors',   floorsOpenedCount, currentOpenedFloors],
           ['tokens',   claimedTokenCount],
         ];
-        for (const [key, amount] of categoryDeltas) {
-          if (amount === 0) continue;
-          const r = await this.achievementService.incrementProgress(tx, playerId, key, amount);
+        for (const [key, amount, initialAmount] of categoryDeltas) {
+          if (amount === 0 && initialAmount === undefined) continue;
+          const r = await this.achievementService.incrementProgress(tx, playerId, key, amount, initialAmount);
           gameState = { ...gameState, gems: gameState.gems + r.gemsToAdd };
           coinBonusDelta += r.coinBonusDelta;
           xpBonusDelta   += r.xpBonusDelta;

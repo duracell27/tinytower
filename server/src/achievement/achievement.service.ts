@@ -15,6 +15,7 @@ export class AchievementService {
     playerId: string,
     categoryKey: string,
     amount: number,
+    initialAmount?: number,
   ): Promise<{
     newGrants: NewAchievementGrant[];
     gemsToAdd: number;
@@ -26,10 +27,11 @@ export class AchievementService {
       return { newGrants: [], gemsToAdd: 0, coinBonusDelta: 0, xpBonusDelta: 0 };
     }
 
-    // Upsert: increment progress and read the resulting row
+    // Upsert: increment progress and read the resulting row.
+    // initialAmount is used on create to backfill pre-existing progress (e.g. floors built before this category existed).
     const current = await tx.playerCategoryProgress.upsert({
       where: { playerId_categoryKey: { playerId, categoryKey } },
-      create: { playerId, categoryKey, progress: amount, currentLevel: 0, claimedLevels: [] },
+      create: { playerId, categoryKey, progress: initialAmount ?? amount, currentLevel: 0, claimedLevels: [] },
       update: { progress: { increment: amount } },
     });
 
