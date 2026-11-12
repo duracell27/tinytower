@@ -1,7 +1,7 @@
 import type { AchievementCategoryConfig } from '../types/achievements';
 
 // Index = level (index 0 is unused, levels are 1–7)
-export const ACHIEVEMENT_GEM_REWARDS  = [0,   5,  10,  20,  35,   60,  100, 200];
+export const ACHIEVEMENT_GEM_REWARDS  = [0,   5,  20,  50, 100,  150,  200, 300];
 export const ACHIEVEMENT_INCOME_BONUS = [0,   0,   0,   0,   1,    1,    1,   2];
 export const ACHIEVEMENT_XP_BONUS     = [0,   0,   0,   0,   1,    1,    1,   2];
 
