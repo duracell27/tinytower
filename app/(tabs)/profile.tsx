@@ -184,9 +184,13 @@ function buildCopyText(
   queue: Command[],
   failLog: FailedCommandEntry[],
   now: number,
+  playerName?: string,
+  email?: string,
 ): string {
   const lines: string[] = ['=== TinyTower Sync Report ==='];
   lines.push(`Date: ${new Date(now).toISOString()}`);
+  if (playerName) lines.push(`Player: ${playerName}`);
+  if (email) lines.push(`Email: ${email}`);
 
   if (queue.length > 0) {
     lines.push('', `[Pending commands: ${queue.length}]`);
@@ -657,7 +661,7 @@ const player = useAuthStore((s) => s.player);
   };
 
   const handleCopy = async () => {
-    const text = buildCopyText(commandQueue, failedCommandLog, now);
+    const text = buildCopyText(commandQueue, failedCommandLog, now, player?.playerName, player?.email);
     await Clipboard.setStringAsync(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
