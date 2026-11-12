@@ -588,6 +588,8 @@ export default function GameScreen() {
   quickActionModeRef.current = quickActionMode;
   const qaBarVisibleRef = useRef(false);
   qaBarVisibleRef.current = qaBarVisible;
+  const qaFilteredFloorsLengthRef = useRef(0);
+  qaFilteredFloorsLengthRef.current = filteredFloors.length;
   // Tracks intentional ✕ exits so the defensive restore effect doesn't override them.
   const qaExitRequestedRef = useRef(false);
 
@@ -725,11 +727,13 @@ export default function GameScreen() {
     }
   }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor, onboardingStep]);
 
-  // Auto-exit when the filtered list empties after the last action
+  // Auto-exit when the filtered list empties after the last action.
+  // Debounced by one tick (1.1s) so a momentary clock-driven recompute that
+  // briefly drops length to 0 doesn't trigger a spurious slide-out.
   useEffect(() => {
-    if (quickActionMode !== null && filteredFloors.length === 0) {
-      setQaBarVisible(false);
-    }
+    if (quickActionMode === null || filteredFloors.length > 0) return;
+    const t = setTimeout(() => setQaBarVisible(false), 1100);
+    return () => clearTimeout(t);
   }, [quickActionMode, filteredFloors.length]);
 
   // Show bar when QA mode activates
@@ -810,10 +814,9 @@ export default function GameScreen() {
   }, []);
 
   const handleQaHidden = useCallback(() => {
-    // Guard against stale animation callbacks firing during a new QA session.
-    // If qaBarVisible is true, the user re-entered QA mode before the old
-    // slide-out animation finished — don't reset the active mode.
-    if (!qaBarVisibleRef.current) {
+    // Guard against stale animation callbacks: don't reset if the bar is already
+    // visible again (user re-entered) or if floors still remain (clock-tick spurious exit).
+    if (!qaBarVisibleRef.current && qaFilteredFloorsLengthRef.current === 0) {
       setQuickActionMode(null);
     }
   }, []);
