@@ -1113,8 +1113,8 @@ export default function GameScreen() {
                 renderItem={renderItem}
                 keyExtractor={keyExtractor}
                 getItemType={(item) => item.type}
-                estimatedItemSize={213}
-                drawDistance={600}
+                estimatedItemSize={216}
+                drawDistance={864}
                 extraData={listExtraData}
                 ListHeaderComponent={buyFloorListHeader}
                 contentContainerStyle={[
