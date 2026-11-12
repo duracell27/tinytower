@@ -948,17 +948,19 @@ export default function GameScreen() {
       return (
         <FadeInCell cellId={`uc-${uc.floorId}`}>
           <View style={styles.floorWrapper}>
-            <UnderConstructionBanner
-              floorId={uc.floorId}
-              endsAt={uc.startedAt + uc.durationMs}
-              requiredTools={uc.requiredTools}
-              selectedFloorType={selType}
-              onOpenPicker={() => setPickerOpenFor(uc.floorId)}
-              onStartBusiness={() => {
-                if (selType) openFloor(uc.floorId, selType);
-              }}
-              onOpenLobby={() => setLobbyOpen(true)}
-            />
+            <View style={[styles.floorCardShadow, { borderRadius: 14 }]}>
+              <UnderConstructionBanner
+                floorId={uc.floorId}
+                endsAt={uc.startedAt + uc.durationMs}
+                requiredTools={uc.requiredTools}
+                selectedFloorType={selType}
+                onOpenPicker={() => setPickerOpenFor(uc.floorId)}
+                onStartBusiness={() => {
+                  if (selType) openFloor(uc.floorId, selType);
+                }}
+                onOpenLobby={() => setLobbyOpen(true)}
+              />
+            </View>
           </View>
         </FadeInCell>
       );
@@ -970,6 +972,7 @@ export default function GameScreen() {
           ref={(node) => { (buyFloorRef as React.MutableRefObject<View | null>).current = node; }}
           collapsable={false}
         >
+          <View style={styles.floorCardShadow}>
           <BuyFloorBanner
             nextFloorNumber={nextFloorId}
             price={nextFloorUnlock.price}
@@ -994,6 +997,7 @@ export default function GameScreen() {
               setBuyFloorConfirm(true);
             }}
           />
+          </View>
         </View>
       );
     }
@@ -1459,6 +1463,14 @@ const styles = StyleSheet.create({
   },
   floorWrapper: {
     marginBottom: 13,
+  },
+  floorCardShadow: {
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 12,
   },
   registerBanner: {
     marginTop: 8,
