@@ -32,6 +32,7 @@ describe('AuthService', () => {
     totalListed: 0,
     totalCollected: 0,
     totalPassengersLifted: 0,
+    totalTokensClaimed: 0,
     maxRevenuePerMin: 0,
     openedFloorsCount: 0,
     lastSeenAt: new Date(),

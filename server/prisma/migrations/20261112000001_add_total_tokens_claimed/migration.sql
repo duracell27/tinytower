@@ -1,0 +1,1 @@
+ALTER TABLE "Player" ADD COLUMN "totalTokensClaimed" INTEGER NOT NULL DEFAULT 0;

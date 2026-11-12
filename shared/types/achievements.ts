@@ -1,7 +1,7 @@
 export type AchievementCategoryConfig = {
   key: string;
   title: string;
-  stat: 'totalBought' | 'totalListed' | 'totalCollected' | 'totalPassengersLifted';
+  stat: 'totalBought' | 'totalListed' | 'totalCollected' | 'totalPassengersLifted' | 'totalTokensClaimed' | 'totalFloorsOpened';
   levels: { level: number; title: string; threshold: number }[];
 };
 

@@ -65,4 +65,32 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategoryConfig[] = [
       { level: 7, title: 'Elevator King',  threshold: ELEVATOR_THRESHOLDS[7] },
     ],
   },
+  {
+    key: 'floors',
+    title: 'Tower Construction',
+    stat: 'totalFloorsOpened',
+    levels: [
+      { level: 1, title: 'Groundbreaker',    threshold: 5   },
+      { level: 2, title: 'Foundation Layer', threshold: 10  },
+      { level: 3, title: 'Site Manager',     threshold: 20  },
+      { level: 4, title: 'Architect',        threshold: 30  },
+      { level: 5, title: 'High-Riser',       threshold: 50  },
+      { level: 6, title: 'Tower Baron',      threshold: 75  },
+      { level: 7, title: 'Skyscraper King',  threshold: 100 },
+    ],
+  },
+  {
+    key: 'tokens',
+    title: 'Token Collection',
+    stat: 'totalTokensClaimed',
+    levels: [
+      { level: 1, title: 'First Chip',       threshold: 10 },
+      { level: 2, title: 'Token Collector',  threshold: 50 },
+      { level: 3, title: 'Hoarder',          threshold: 200 },
+      { level: 4, title: 'Token Hunter',     threshold: 500 },
+      { level: 5, title: 'Vault Keeper',     threshold: 1_500 },
+      { level: 6, title: 'Grand Harvester',  threshold: 5_000 },
+      { level: 7, title: 'Token Legend',     threshold: 15_000 },
+    ],
+  },
 ];

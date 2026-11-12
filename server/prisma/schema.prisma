@@ -22,6 +22,7 @@ model Player {
   totalListed        Int                 @default(0)
   totalCollected        Int                 @default(0)
   totalPassengersLifted Int                 @default(0)
+  totalTokensClaimed    Int                 @default(0)
   maxRevenuePerMin   Int                 @default(0)
   openedFloorsCount  Int                 @default(0)
   lastSeenAt         DateTime            @default(now())

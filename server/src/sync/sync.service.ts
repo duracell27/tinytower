@@ -293,6 +293,7 @@ export class SyncService {
       gameState.coinBoostExpiresAt,
     );
     const currentOpenedFloors = gameConfig.floors.length + Object.keys(gameState.openedFloorTypes ?? {}).length;
+    const floorsOpenedCount = currentOpenedFloors - (gameConfig.floors.length + Object.keys(gameStateBefore.openedFloorTypes ?? {}).length);
 
     let ackCursor = lastAckCursor;
     let allNewGrants: NewAchievementGrant[] = [];
@@ -312,9 +313,10 @@ export class SyncService {
           totalListed: number;
           totalCollected: number;
           totalPassengersLifted: number;
+          totalTokensClaimed: number;
           maxRevenuePerMin: number;
         }[]>`
-          SELECT "playerLevel", "playerXp", "totalBought", "totalListed", "totalCollected", "totalPassengersLifted", "maxRevenuePerMin"
+          SELECT "playerLevel", "playerXp", "totalBought", "totalListed", "totalCollected", "totalPassengersLifted", "totalTokensClaimed", "maxRevenuePerMin"
           FROM "Player" WHERE id = ${playerId} FOR UPDATE
         `;
         if (locked && (locked.playerLevel !== player.playerLevel || locked.playerXp !== player.playerXp)) {
@@ -407,6 +409,7 @@ export class SyncService {
           totalListed:           (locked?.totalListed            ?? player.totalListed)            + listedCount,
           totalCollected:        (locked?.totalCollected         ?? player.totalCollected)         + collectCount,
           totalPassengersLifted: (locked?.totalPassengersLifted  ?? player.totalPassengersLifted)  + passengersCount,
+          totalTokensClaimed:    (locked?.totalTokensClaimed     ?? player.totalTokensClaimed)     + claimedTokenCount,
         };
         gameState = { ...gameState, stats: finalStats };
 
@@ -416,6 +419,8 @@ export class SyncService {
           ['list',     listedCount],
           ['collect',  collectCount],
           ['elevator', passengersCount],
+          ['floors',   floorsOpenedCount],
+          ['tokens',   claimedTokenCount],
         ];
         for (const [key, amount] of categoryDeltas) {
           if (amount === 0) continue;
@@ -497,6 +502,7 @@ export class SyncService {
             totalListed:           { increment: listedCount },
             totalCollected:        { increment: collectCount },
             totalPassengersLifted: { increment: passengersCount },
+            totalTokensClaimed:    { increment: claimedTokenCount },
             stateVersion: {
               increment: (acceptedCommands.length > 0 || allNewGrants.length > 0 || !!dailyLoginReward || failedCommandIds.length > 0) ? 1 : 0,
             },
