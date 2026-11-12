@@ -26,7 +26,9 @@ const CATEGORY_IMAGES: Record<string, ReturnType<typeof require>> = {
 };
 
 
-const DIAMOND_ICON = require('../assets/img/diamond.png');
+const DIAMOND_ICON    = require('../assets/img/diamond.png');
+const MARKETING_ICON  = require('../assets/img/MarketingIcon.png');
+const PR_ICON         = require('../assets/img/PRIcon.png');
 
 const TIER_IMAGES: ReturnType<typeof require>[] = [
   require('../assets/img/achivment/0TierAchive.png'),
@@ -162,11 +164,13 @@ export default function AchievementsScreen() {
                     </View>
                     {nextIncomeBonus > 0 && (
                       <View style={[styles.rewardChipBonus, { backgroundColor: isDark ? 'rgba(160,107,0,0.2)' : '#FFF4E0' }]}>
+                        <Image source={MARKETING_ICON} style={styles.bonusChipIcon} />
                         <LocaleText style={styles.rewardChipBonusText}>{t('achievement.coinsBonus', { percent: nextIncomeBonus })}</LocaleText>
                       </View>
                     )}
                     {nextXpBonus > 0 && (
                       <View style={[styles.rewardChipBonus, { backgroundColor: isDark ? 'rgba(160,107,0,0.2)' : '#FFF4E0' }]}>
+                        <Image source={PR_ICON} style={styles.bonusChipIcon} />
                         <LocaleText style={styles.rewardChipBonusText}>{t('achievement.xpBonus', { percent: nextXpBonus })}</LocaleText>
                       </View>
                     )}
@@ -433,6 +437,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  bonusChipIcon: {
+    width: 14,
+    height: 14,
+    resizeMode: 'contain',
   },
   rewardChipBonusText: {
     fontFamily: 'Fredoka_600SemiBold',
