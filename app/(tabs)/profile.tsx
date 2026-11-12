@@ -1152,18 +1152,23 @@ const player = useAuthStore((s) => s.player);
                 )}
 
                 <View style={[settingsStyles.dangerDivider, { backgroundColor: theme.divider }]} />
-                <View style={settingsStyles.dangerBlock}>
-                  <LocaleText style={[settingsStyles.dangerLabel, { color: theme.textMuted }]}>
-                    {t('profile.settings.devInfo')}
-                  </LocaleText>
-                  <Pressable
-                    onPress={handleCopy}
-                    style={({ pressed }) => [settingsStyles.dangerBtn, { backgroundColor: theme.surfaceSub }, pressed && settingsStyles.dangerBtnPressed]}
-                  >
-                    <LocaleText style={[settingsStyles.dangerBtnText, { color: theme.text }]}>
-                      {copied ? t('profile.sync.copied') : t('profile.sync.copy')}
+                <View style={settingsStyles.devInfoBlock}>
+                  <View style={settingsStyles.devInfoTop}>
+                    <LocaleText style={[settingsStyles.sectionHeader, { color: theme.textMuted, marginTop: 0 }]}>
+                      {t('profile.settings.devInfo')}
                     </LocaleText>
-                  </Pressable>
+                    <Pressable
+                      onPress={handleCopy}
+                      style={({ pressed }) => [settingsStyles.devCopyBtn, { backgroundColor: theme.surfaceSub }, pressed && { opacity: 0.7 }]}
+                    >
+                      <LocaleText style={[settingsStyles.devCopyBtnText, { color: theme.text }]}>
+                        {copied ? t('profile.sync.copied') : t('profile.sync.copy')}
+                      </LocaleText>
+                    </Pressable>
+                  </View>
+                  <LocaleText style={[settingsStyles.dangerLabel, { color: theme.textMuted }]}>
+                    {t('profile.settings.devInfoDesc')}
+                  </LocaleText>
                 </View>
                 </ScrollView>
               </Animated.View>
@@ -2239,5 +2244,23 @@ const settingsStyles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 15,
     color: '#C0372A',
+  },
+  devInfoBlock: {
+    gap: 8,
+    paddingBottom: 8,
+  },
+  devInfoTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  devCopyBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  devCopyBtnText: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 13,
   },
 });
