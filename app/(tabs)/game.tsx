@@ -815,8 +815,9 @@ export default function GameScreen() {
 
   const handleQaHidden = useCallback(() => {
     // Guard against stale animation callbacks: don't reset if the bar is already
-    // visible again (user re-entered) or if floors still remain (clock-tick spurious exit).
-    if (!qaBarVisibleRef.current && qaFilteredFloorsLengthRef.current === 0) {
+    // visible again (user re-entered) or if floors still remain due to a clock-tick
+    // spurious exit (but DO reset on intentional ✕ exit or genuinely empty list).
+    if (!qaBarVisibleRef.current && (qaExitRequestedRef.current || qaFilteredFloorsLengthRef.current === 0)) {
       setQuickActionMode(null);
     }
   }, []);
