@@ -778,7 +778,8 @@
       "languageUk": "🇺🇦 Українська",
       "dangerZoneSection": "Небезпечна зона",
       "deleteAccount": "Видалити акаунт",
-      "deleteAccountDesc": "Назавжди видаляє акаунт і всі дані"
+      "deleteAccountDesc": "Назавжди видаляє акаунт і всі дані",
+      "devInfo": "Інформація для розробника"
     },
     "deleteAccountModal": {
       "title": "Видалення акаунту",

@@ -778,7 +778,8 @@
       "languageUk": "🇺🇦 Ukrainian",
       "dangerZoneSection": "Danger zone",
       "deleteAccount": "Delete account",
-      "deleteAccountDesc": "Permanently removes your account and all data"
+      "deleteAccountDesc": "Permanently removes your account and all data",
+      "devInfo": "Developer info"
     },
     "deleteAccountModal": {
       "title": "Delete account",

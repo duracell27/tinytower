@@ -305,6 +305,8 @@ const player = useAuthStore((s) => s.player);
   const isHydrated = useGameStore((s) => s.isHydrated);
   const commandQueue = useGameStore((s) => s.commandQueue);
   const commandQueueLength = commandQueue.length;
+  const failedCommandLog = useGameStore((s) => s.failedCommandLog);
+  const clearFailedCommandLog = useGameStore((s) => s.clearFailedCommandLog);
   const lastSyncAt = useGameStore((s) => s.lastSyncAt);
   const categoryProgress = useGameStore((s) => s.categoryProgress);
   const workers = useGameStore((s) => s.workers);
@@ -655,7 +657,7 @@ const player = useAuthStore((s) => s.player);
   };
 
   const handleCopy = async () => {
-    const text = buildCopyText(commandQueue, [], now);
+    const text = buildCopyText(commandQueue, failedCommandLog, now);
     await Clipboard.setStringAsync(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -1148,6 +1150,21 @@ const player = useAuthStore((s) => s.player);
                     </View>
                   </>
                 )}
+
+                <View style={[settingsStyles.dangerDivider, { backgroundColor: theme.divider }]} />
+                <View style={settingsStyles.dangerBlock}>
+                  <LocaleText style={[settingsStyles.dangerLabel, { color: theme.textMuted }]}>
+                    {t('profile.settings.devInfo')}
+                  </LocaleText>
+                  <Pressable
+                    onPress={handleCopy}
+                    style={({ pressed }) => [settingsStyles.dangerBtn, { backgroundColor: theme.surfaceSub }, pressed && settingsStyles.dangerBtnPressed]}
+                  >
+                    <LocaleText style={[settingsStyles.dangerBtnText, { color: theme.text }]}>
+                      {copied ? t('profile.sync.copied') : t('profile.sync.copy')}
+                    </LocaleText>
+                  </Pressable>
+                </View>
                 </ScrollView>
               </Animated.View>
             </GestureDetector>
