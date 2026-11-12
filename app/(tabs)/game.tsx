@@ -728,11 +728,11 @@ export default function GameScreen() {
   }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor, onboardingStep]);
 
   // Auto-exit when the filtered list empties after the last action.
-  // Debounced by one tick (1.1s) so a momentary clock-driven recompute that
-  // briefly drops length to 0 doesn't trigger a spurious slide-out.
+  // Small debounce so a momentary clock-driven recompute that briefly drops
+  // length to 0 doesn't trigger a spurious slide-out.
   useEffect(() => {
     if (quickActionMode === null || filteredFloors.length > 0) return;
-    const t = setTimeout(() => setQaBarVisible(false), 1100);
+    const t = setTimeout(() => setQaBarVisible(false), 150);
     return () => clearTimeout(t);
   }, [quickActionMode, filteredFloors.length]);
 
