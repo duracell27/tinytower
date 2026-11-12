@@ -1174,7 +1174,7 @@ export default function GameScreen() {
                   renderItem={renderQaItem}
                   keyExtractor={keyExtractor}
                   getItemType={(item) => item.type}
-                  estimatedItemSize={213}
+                  estimatedItemSize={216}
                   contentContainerStyle={[styles.listContentQA, Platform.OS === 'android' && { paddingBottom: 140 + bottomInset }]}
                   showsVerticalScrollIndicator={false}
                   extraData={leavingFloorId}
