@@ -589,7 +589,6 @@ export default function GameScreen() {
   const qaBarVisibleRef = useRef(false);
   qaBarVisibleRef.current = qaBarVisible;
   const qaFilteredFloorsLengthRef = useRef(0);
-  qaFilteredFloorsLengthRef.current = filteredFloors.length;
   // Tracks intentional ✕ exits so the defensive restore effect doesn't override them.
   const qaExitRequestedRef = useRef(false);
 
@@ -618,6 +617,7 @@ export default function GameScreen() {
     () => (precomputedMode !== null ? getFloorsForMode(precomputedMode, floors, workers, now, floorStars ?? {}, vehicleSpeedBonuses) : []),
     [precomputedMode, floors, workers, now, floorStars, vehicleSpeedBonuses],
   );
+  qaFilteredFloorsLengthRef.current = filteredFloors.length;
 
   // Count of floors for the FAB badge — derived from filteredFloors to avoid a
   // second full getFloorsForMode scan every second. Zero when already in a mode.
