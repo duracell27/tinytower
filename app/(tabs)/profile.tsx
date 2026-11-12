@@ -307,8 +307,6 @@ const player = useAuthStore((s) => s.player);
   const commandQueueLength = commandQueue.length;
   const lastSyncAt = useGameStore((s) => s.lastSyncAt);
   const categoryProgress = useGameStore((s) => s.categoryProgress);
-  const failedCommandLog = useGameStore((s) => s.failedCommandLog);
-  const clearFailedCommandLog = useGameStore((s) => s.clearFailedCommandLog);
   const workers = useGameStore((s) => s.workers);
   const dailyTasks = useGameStore((s) => s.dailyTasks);
   const floors = useGameStore((s) => s.floors);
@@ -635,7 +633,7 @@ const player = useAuthStore((s) => s.player);
     ? 'pending'
     : 'online';
 
-  const hasExpandContent = commandQueueLength > 0 || failedCommandLog.length > 0;
+  const hasExpandContent = commandQueueLength > 0;
 
   useEffect(() => {
     if (!hasExpandContent) setSyncExpanded(false);
@@ -657,15 +655,13 @@ const player = useAuthStore((s) => s.player);
   };
 
   const handleCopy = async () => {
-    const text = buildCopyText(commandQueue, failedCommandLog, now);
+    const text = buildCopyText(commandQueue, [], now);
     await Clipboard.setStringAsync(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const pendingGroups = groupByType(commandQueue);
-  const reversedFailLog = [...failedCommandLog].reverse();
-
   return (
     <AppBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -1226,41 +1222,6 @@ const player = useAuthStore((s) => s.player);
               )}
 
               {/* Failed command history */}
-              {failedCommandLog.length > 0 && (
-                <View style={styles.dropSection}>
-                  <View style={styles.dropSectionHeader}>
-                    <LocaleText style={[styles.dropSectionTitle, { color: theme.textMuted }]}>
-                      {t('profile.sync.failedCount', { count: failedCommandLog.length })}
-                    </LocaleText>
-                    <View style={styles.dropActions}>
-                      <Pressable
-                        onPress={handleCopy}
-                        style={({ pressed }) => [styles.dropActionBtn, { backgroundColor: theme.surfaceSub }, pressed && styles.dropActionBtnPressed]}
-                      >
-                        <LocaleText style={[styles.dropActionText, { color: theme.textMuted }]}>{copied ? t('profile.sync.copied') : t('profile.sync.copy')}</LocaleText>
-                      </Pressable>
-                      <Pressable
-                        onPress={clearFailedCommandLog}
-                        style={({ pressed }) => [styles.dropActionBtn, styles.dropActionBtnDanger, { backgroundColor: theme.surfaceDanger }, pressed && styles.dropActionBtnPressed]}
-                      >
-                        <LocaleText style={[styles.dropActionText, styles.dropActionTextDanger]}>{t('profile.sync.clear')}</LocaleText>
-                      </Pressable>
-                    </View>
-                  </View>
-                  {reversedFailLog.map((entry) => (
-                    <View key={entry.id} style={styles.dropRow}>
-                      <LocaleText style={[styles.dropRowBullet, { color: theme.textMuted }]}>•</LocaleText>
-                      <View style={styles.dropRowContent}>
-                        <LocaleText style={[styles.dropRowText, { color: theme.text }]} numberOfLines={1}>
-                          {commandLabel(entry.type)}
-                          <LocaleText style={styles.dropRowError}> — {friendlyError(entry.error)}</LocaleText>
-                        </LocaleText>
-                        <LocaleText style={[styles.dropRowTime, { color: theme.textMuted }]}>{formatSyncTime(entry.timestamp, now)}</LocaleText>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              )}
 
             </View>
           )}
