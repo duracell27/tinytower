@@ -403,6 +403,7 @@ const player = useAuthStore((s) => s.player);
     try {
       await changePlayerName(trimmed);
       setNicknameModalVisible(false);
+      syncService.triggerSync();
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
       if (msg.includes('already taken')) {
@@ -1276,9 +1277,15 @@ const player = useAuthStore((s) => s.player);
             <View style={[nicknameStyles.infoBox, { backgroundColor: theme.surfaceSub, borderColor: theme.divider }]}>
               <LocaleText style={[nicknameStyles.infoText, { color: theme.textMuted }]}>
                 {t('profile.changeNicknameModal.infoUnique')}{' '}
-                {t('profile.changeNicknameModal.infoFree')}{' '}
-                {t('profile.changeNicknameModal.infoPaid')}
+                {t('profile.changeNicknameModal.infoFree')}
               </LocaleText>
+              <View style={nicknameStyles.infoPaidRow}>
+                <LocaleText style={[nicknameStyles.infoText, { color: theme.textMuted }]}>
+                  {t('profile.changeNicknameModal.infoPaidPrefix')}
+                </LocaleText>
+                <LocaleText style={[nicknameStyles.infoPaidCount, { color: '#2592AB' }]}>500</LocaleText>
+                <GemIcon size={12} />
+              </View>
             </View>
 
             <View style={nicknameStyles.costRow}>
@@ -1286,11 +1293,18 @@ const player = useAuthStore((s) => s.player);
                 {t('profile.changeNicknameModal.label')}
               </LocaleText>
               <View style={[nicknameStyles.costBadge, { backgroundColor: (player?.nameChanges ?? 0) === 0 ? 'rgba(63,165,53,0.12)' : 'rgba(37,146,171,0.12)' }]}>
-                <LocaleText style={[nicknameStyles.costBadgeText, { color: (player?.nameChanges ?? 0) === 0 ? '#3FA535' : '#2592AB' }]}>
-                  {(player?.nameChanges ?? 0) === 0
-                    ? t('profile.changeNicknameModal.costFree')
-                    : t('profile.changeNicknameModal.costGems')}
-                </LocaleText>
+                {(player?.nameChanges ?? 0) === 0 ? (
+                  <LocaleText style={[nicknameStyles.costBadgeText, { color: '#3FA535' }]}>
+                    {t('profile.changeNicknameModal.costFree')}
+                  </LocaleText>
+                ) : (
+                  <>
+                    <LocaleText style={[nicknameStyles.costBadgeText, { color: '#2592AB' }]}>
+                      {t('profile.changeNicknameModal.costGems')}
+                    </LocaleText>
+                    <GemIcon size={13} />
+                  </>
+                )}
               </View>
             </View>
 
@@ -2083,6 +2097,18 @@ const nicknameStyles = StyleSheet.create({
     lineHeight: 18,
     textAlign: 'center',
   },
+  infoPaidRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 4,
+    marginTop: 2,
+  },
+  infoPaidCount: {
+    fontFamily: 'Fredoka_700Bold',
+    fontSize: 13,
+  },
   costRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2094,6 +2120,9 @@ const nicknameStyles = StyleSheet.create({
     fontSize: 13,
   },
   costBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 10,

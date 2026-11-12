@@ -6,7 +6,7 @@ import * as path from 'path';
 export class WebController {
   // SPA catch-all: serves admin/index.html for any /admin/* that doesn't match an API route.
   // NestJS registers specific routes first, so /admin/players etc. still hit AdminController.
-  @Get('admin/*')
+  @Get('admin/*path')
   serveAdmin(@Res() res: Response) {
     res.sendFile(path.join(process.cwd(), 'public', 'admin', 'index.html'));
   }
