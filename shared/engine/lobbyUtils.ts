@@ -94,7 +94,7 @@ export function generateRandomVisitorRole(
   playerLevel = 1,
   extraGemExchangeLimit = 0,
 ): { role: VisitorRole; targetFloor: number; isVip: boolean } {
-  const totalFloors = config.floors.length + 1;
+  const totalFloors = state.floors.length + 1;
   const isVip = Math.random() < 0.02;
 
   // Check if stage is still actively running (not yet expired by wall clock)
