@@ -467,11 +467,17 @@ export default function JobPickerSheet({
                 contentFit="contain"
               />
             </Animated.View>
-            <View style={[pickerHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop }]}>
-              <Image source={require('../../assets/img/happySmile.png')} style={pickerHintStyles.icon} />
-              <LocaleText style={pickerHintStyles.text}>
-                {'Tap «Assign» to place a worker on a floor'}
-              </LocaleText>
+            <Image
+              source={require('../../assets/img/onbording/onbording9.png')}
+              style={{ position: 'absolute', width: 190, height: 190, left: SW / 2 - 95, top: hintTop + 20 }}
+              contentFit="contain"
+            />
+            <View style={[pickerHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop + 180 }]}>
+              <Text style={pickerHintStyles.text}>
+                {'Tap '}
+                <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>Assign</Text>
+                {' to place a worker on a floor'}
+              </Text>
             </View>
           </View>
         );
