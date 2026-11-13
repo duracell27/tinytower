@@ -127,6 +127,8 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   deliver_visitor: {
     text: 'onboarding.deliver_visitor',
     iconSource: require('../../assets/img/lift/visitor.png'),
+    managerImage: require('../../assets/img/onbording/onbording6.png'),
+    managerImageAlign: 'center',
     pointer: { x: 0.5, y: 0.78 },
     arrowDir: 'down',
     dismissable: false,

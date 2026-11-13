@@ -441,7 +441,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
   const onboardingStep = useOnboardingStore((s) => s.step);
   const onboardingHint =
-    onboardingStep === 'deliver_visitor' ? 'Take the guest to their floor — tap Lift' :
+    onboardingStep === 'deliver_visitor' ? 'Take the guest to their floor — tap Ride' :
     null;
 
   const fillLobby = useGameStore((s) => s.fillLobby);
@@ -1666,16 +1666,24 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   contentFit="contain"
                 />
               </Animated.View>
+              <Image
+                source={require('../../assets/img/onbording/onbording6.png')}
+                style={{ position: 'absolute', width: 160, height: 160, left: SCREEN_WIDTH / 2 - 80, top: hintTop + 20 }}
+                contentFit="contain"
+              />
               <View style={[
                 onboardingHintStyles.card,
-                { position: 'absolute', left: 20, right: 20, top: hintTop, backgroundColor: theme.surfaceCard},
+                { position: 'absolute', left: 20, right: 20, top: hintTop + 180, backgroundColor: theme.surfaceCard},
               ]}>
                 <Image
                   source={require('../../assets/img/coin.png')}
                   style={onboardingHintStyles.icon}
                   contentFit="contain"
                 />
-                <LocaleText style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>{onboardingHint}</LocaleText>
+                <Text style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
+                  {'Take the guest to their floor — '}
+                  <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>tap Ride</Text>
+                </Text>
               </View>
             </View>
           );
