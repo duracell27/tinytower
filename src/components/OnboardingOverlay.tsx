@@ -335,8 +335,12 @@ export default function OnboardingOverlay() {
         <View
           pointerEvents="none"
           style={[
-            styles.cardManagerImgWrap,
-            { top: Math.max(60, Math.min(SH - 200, cardTop + 25)) - MANAGER_IMG_SIZE + 20 },
+            config.managerImageAlign === 'left'
+              ? styles.cardManagerImgWrapLeft
+              : config.managerImageAlign === 'center'
+                ? styles.cardManagerImgWrapCenter
+                : styles.cardManagerImgWrapRight,
+            { top: Math.max(60, Math.min(SH - 200, cardTop - 25)) - MANAGER_IMG_SIZE + 20 },
           ]}
         >
           <Image source={config.managerImage} style={styles.cardManagerImg} resizeMode="contain" />
@@ -351,7 +355,7 @@ export default function OnboardingOverlay() {
           { backgroundColor: cardBg },
           config.centered
             ? styles.cardCentered
-            : { top: Math.max(60, Math.min(SH - 200, cardTop + (config.managerImage ? 25 : 0))), left: (SW - CARD_WIDTH) / 2 },
+            : { top: Math.max(60, Math.min(SH - 200, cardTop + (config.managerImage ? -25 : 0))), left: (SW - CARD_WIDTH) / 2 },
         ]}
       >
         {config.centered ? (
@@ -368,6 +372,9 @@ export default function OnboardingOverlay() {
             )}
             <LocaleText style={[styles.cardText, { color: textMain }]}>{t(config.text)}</LocaleText>
           </View>
+        )}
+        {config.callToAction && (
+          <LocaleText style={[styles.cardCta, { color: textMain }]}>{t(config.callToAction)}</LocaleText>
         )}
         {config.bullets && config.bullets.map((b: BulletItem, i: number) => (
           <React.Fragment key={i}>
@@ -587,12 +594,30 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#fff',
   },
-  cardManagerImgWrap: {
+  cardCta: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 17,
+    marginTop: 8,
+  },
+  cardManagerImgWrapLeft: {
     position: 'absolute',
     left: (SW - CARD_WIDTH) / 2,
-    width: CARD_WIDTH + 24,
+    width: CARD_WIDTH,
+    alignItems: 'flex-start',
+    paddingLeft: 16,
+  },
+  cardManagerImgWrapCenter: {
+    position: 'absolute',
+    left: (SW - CARD_WIDTH) / 2,
+    width: CARD_WIDTH,
+    alignItems: 'center',
+  },
+  cardManagerImgWrapRight: {
+    position: 'absolute',
+    left: (SW - CARD_WIDTH) / 2,
+    width: CARD_WIDTH,
     alignItems: 'flex-end',
-    paddingRight: 0,
+    paddingRight: 16,
   },
   cardManagerImg: {
     width: MANAGER_IMG_SIZE,

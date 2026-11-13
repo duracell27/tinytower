@@ -10,8 +10,12 @@ export interface StepConfig {
   iconSource?: ReturnType<typeof require>;
   /** Special full-screen layout (e.g. 'manager-intro' shows a large character image + speech card) */
   layout?: 'manager-intro';
-  /** Optional manager character image shown at the top of the hint card */
+  /** Optional manager character image shown above the hint card */
   managerImage?: ReturnType<typeof require>;
+  /** Horizontal alignment of the manager image (default: 'right') */
+  managerImageAlign?: 'left' | 'center' | 'right';
+  /** Optional bold call-to-action line rendered below the main text */
+  callToAction?: string;
   /** Omit for steps that wait for a measured targetRect — arrow hides until measurement arrives */
   pointer?: { x: number; y: number };
   arrowDir: 'up' | 'down' | 'left' | 'right';
@@ -57,6 +61,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     text: 'onboarding.collect_slot_1',
     iconSource: require('../../assets/img/coin.png'),
     managerImage: require('../../assets/img/onbording/onbording1.png'),
+    managerImageAlign: 'right',
     arrowDir: 'down',
     dismissable: false,
   },
@@ -64,6 +69,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     text: 'onboarding.collect_slot_2',
     iconSource: require('../../assets/img/coin.png'),
     managerImage: require('../../assets/img/onbording/onbording2.png'),
+    managerImageAlign: 'right',
     arrowDir: 'down',
     dismissable: false,
     hintBelowSpotlight: true,
@@ -72,6 +78,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     text: 'onboarding.buy_goods_1',
     iconSource: require('../../assets/img/ForkliftIcon.png'),
     managerImage: require('../../assets/img/onbording/onbording3.png'),
+    managerImageAlign: 'right',
     arrowDir: 'down',
     dismissable: false,
     hintBelowSpotlight: true,
@@ -80,13 +87,16 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     text: 'onboarding.buy_goods_2',
     iconSource: require('../../assets/img/ForkliftIcon.png'),
     managerImage: require('../../assets/img/onbording/onbording4.png'),
+    managerImageAlign: 'right',
     arrowDir: 'down',
     dismissable: false,
     hintBelowSpotlight: true,
   },
   open_elevator_1: {
     text: 'onboarding.open_elevator_1',
-    iconSource: require('../../assets/img/lift/visitor.png'),
+    callToAction: 'onboarding.open_elevator_1_cta',
+    managerImage: require('../../assets/img/onbording/onbording5.png'),
+    managerImageAlign: 'center',
     pointer: { x: 0.5, y: 0.78 },
     arrowDir: 'down',
     dismissable: false,
