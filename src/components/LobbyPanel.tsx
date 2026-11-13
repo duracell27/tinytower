@@ -440,9 +440,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   }, [lobbyVisitors]);
 
   const onboardingStep = useOnboardingStore((s) => s.step);
-  const onboardingHint =
-    onboardingStep === 'deliver_visitor' ? 'Take the guest to their floor — tap Ride' :
-    null;
+  const onboardingHint = onboardingStep === 'deliver_visitor';
 
   const fillLobby = useGameStore((s) => s.fillLobby);
   const liftVisitor = useGameStore((s) => s.liftVisitor);
@@ -1666,25 +1664,37 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                   contentFit="contain"
                 />
               </Animated.View>
-              <Image
-                source={require('../../assets/img/onbording/onbording6.png')}
-                style={{ position: 'absolute', width: 160, height: 160, left: SCREEN_WIDTH / 2 - 80, top: hintTop + 20 }}
-                contentFit="contain"
-              />
-              <View style={[
-                onboardingHintStyles.card,
-                { position: 'absolute', left: 20, right: 20, top: hintTop + 180, backgroundColor: theme.surfaceCard},
-              ]}>
-                <Image
-                  source={require('../../assets/img/coin.png')}
-                  style={onboardingHintStyles.icon}
-                  contentFit="contain"
-                />
-                <Text style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
-                  {'Take the guest to their floor — '}
-                  <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>tap Ride</Text>
-                </Text>
-              </View>
+              {(() => {
+                const isCheckIn = arrived && activeVisitor?.role === 'guest' && activeVisitor?.targetFloor === 1;
+                return (
+                  <>
+                    <Image
+                      source={isCheckIn
+                        ? require('../../assets/img/onbording/onbording7.png')
+                        : require('../../assets/img/onbording/onbording6.png')}
+                      style={{ position: 'absolute', width: 160, height: 160, left: SCREEN_WIDTH / 2 - 80, top: hintTop + 20 }}
+                      contentFit="contain"
+                    />
+                    <View style={[
+                      onboardingHintStyles.card,
+                      { position: 'absolute', left: 20, right: 20, top: hintTop + 180, backgroundColor: theme.surfaceCard },
+                    ]}>
+
+                      {isCheckIn ? (
+                        <Text style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
+                          {'Let\'s see who joined your hotel — '}
+                          <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>Check into hotel</Text>
+                        </Text>
+                      ) : (
+                        <Text style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
+                          {'Take the guest to their floor — '}
+                          <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>tap Ride</Text>
+                        </Text>
+                      )}
+                    </View>
+                  </>
+                );
+              })()}
             </View>
           );
         })()}

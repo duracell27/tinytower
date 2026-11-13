@@ -553,11 +553,17 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                   contentFit="contain"
                 />
               </Animated.View>
-              <View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop, backgroundColor: theme.surfaceCard}]}>
-                <Image source={require('../../assets/img/happySmile.png')} style={hotelHintStyles.icon} />
-                <LocaleText style={[hotelHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
-                  {'Tap «Find Job» to assign a worker to a floor'}
-                </LocaleText>
+              <Image
+                source={require('../../assets/img/onbording/onbording8.png')}
+                style={{ position: 'absolute', width: 190, height: 190, left: SCREEN_WIDTH / 2 - 95, top: hintTop + 5 }}
+                contentFit="contain"
+              />
+              <View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop + 180, backgroundColor: theme.surfaceCard}]}>
+                <Text style={[hotelHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
+                  {'Tap '}
+                  <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>Find Job</Text>
+                  {' to assign a worker to a floor'}
+                </Text>
               </View>
             </View>
           );
