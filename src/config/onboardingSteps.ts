@@ -8,6 +8,8 @@ export interface BulletItem {
 export interface StepConfig {
   text: string;
   iconSource?: ReturnType<typeof require>;
+  /** Special full-screen layout (e.g. 'manager-intro' shows a large character image + speech card) */
+  layout?: 'manager-intro';
   /** Omit for steps that wait for a measured targetRect — arrow hides until measurement arrives */
   pointer?: { x: number; y: number };
   arrowDir: 'up' | 'down' | 'left' | 'right';
@@ -40,6 +42,15 @@ export interface StepConfig {
 // y: 0 = top edge, 1 = bottom edge
 // Tune these values after visual testing.
 export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfig> = {
+  intro: {
+    text: 'onboarding.intro_greeting',
+    iconSource: require('../../assets/img/onbording/onbording0.png'),
+    layout: 'manager-intro',
+    arrowDir: 'up',
+    dismissable: true,
+    dismissLabel: 'onboarding.intro_dismiss',
+    centered: true,
+  },
   collect_slot_1: {
     text: 'onboarding.collect_slot_1',
     iconSource: require('../../assets/img/coin.png'),

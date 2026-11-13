@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createMMKV } from 'react-native-mmkv';
 
 export type OnboardingStep =
+  | 'intro'
   | 'collect_slot_1' | 'collect_slot_2'
   | 'buy_goods_1'    | 'buy_goods_2'
   | 'open_elevator_1'
@@ -16,6 +17,7 @@ export type OnboardingStep =
   | 'done';
 
 export const SEQUENCE: OnboardingStep[] = [
+  'intro',
   'collect_slot_1', 'collect_slot_2',
   'buy_goods_1',    'buy_goods_2',
   'open_elevator_1',
@@ -80,8 +82,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   start: () => {
     const { step } = get();
     if (step !== null) return; // already started or completed
-    saveStep('collect_slot_1');
-    set({ step: 'collect_slot_1', isActive: true });
+    saveStep('intro');
+    set({ step: 'intro', isActive: true });
   },
 
   advance: () => {

@@ -105,6 +105,55 @@ export default function OnboardingOverlay() {
   if (step === 'choose_floor_type') return null;
   if (!config) return null;
 
+  // ── Manager-intro layout ──────────────────────────────────────────────────
+  if (config.layout === 'manager-intro') {
+    return (
+      /* Outer view catches ALL touches — only the button re-enables interaction */
+      <View style={[StyleSheet.absoluteFill, styles.introBackdrop]} pointerEvents="box-none">
+        {/* Full-screen touch blocker underneath everything */}
+        <TouchableWithoutFeedback onPress={() => {}}>
+          <View style={StyleSheet.absoluteFill} />
+        </TouchableWithoutFeedback>
+        {/* Content — box-none so the touch blocker above still works for gaps */}
+        <View style={styles.introContainer} pointerEvents="box-none">
+          {config.iconSource && (
+            <Image
+              source={config.iconSource}
+              style={styles.introManagerImg}
+              resizeMode="contain"
+              pointerEvents="none"
+            />
+          )}
+          {/* Speech bubble — box-none so only the Pressable inside is interactive */}
+          <View style={[styles.introBubble, { backgroundColor: cardBg }]} pointerEvents="box-none">
+            <View style={[styles.introBubbleTip, { borderBottomColor: cardBg }]} pointerEvents="none" />
+            <LocaleText style={[styles.introBubbleGreeting, { color: textMain }]} pointerEvents="none">
+              {t('onboarding.intro_greeting')}
+            </LocaleText>
+            <LocaleText style={[styles.introBubbleManager, { color: textMain }]} pointerEvents="none">
+              {t('onboarding.intro_manager')}
+            </LocaleText>
+            <LocaleText style={[styles.introBubbleBody, { color: textSub }]} pointerEvents="none">
+              {t('onboarding.intro_body')}
+            </LocaleText>
+            <Pressable
+              style={styles.introDismissBtn}
+              onPress={() => {
+                const action = getOnboardingDismissAction();
+                if (action) { action(); } else { advance(); }
+              }}
+            >
+              <LocaleText style={styles.introDismissLabel}>
+                {config.dismissLabel ? t(config.dismissLabel) : 'OK'}
+              </LocaleText>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    );
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   // On Android, measureInWindow returns Y coordinates relative to the React
   // Native root view which sits below the status bar, but this overlay is
   // rendered in the full-screen GestureHandlerRootView (Y=0 = top of screen).
@@ -428,6 +477,75 @@ const styles = StyleSheet.create({
   dismissLabel: {
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
+    color: '#fff',
+  },
+  // Manager-intro layout
+  introBackdrop: {
+    backgroundColor: 'rgba(0,0,0,0.97)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  introContainer: {
+    width: SW * 0.82,
+    alignItems: 'center',
+  },
+  introManagerImg: {
+    width: SW * 0.68,
+    height: SW * 0.68,
+    marginBottom: -12,
+    zIndex: 1,
+  },
+  introBubble: {
+    width: '100%',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    elevation: 10,
+  },
+  introBubbleTip: {
+    position: 'absolute',
+    top: -12,
+    alignSelf: 'center',
+    width: 0,
+    height: 0,
+    borderLeftWidth: 12,
+    borderRightWidth: 12,
+    borderBottomWidth: 13,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+  },
+  introBubbleGreeting: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 22,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  introBubbleManager: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 17,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  introBubbleBody: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 16,
+    lineHeight: 23,
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 16,
+  },
+  introDismissBtn: {
+    backgroundColor: '#3FA535',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  introDismissLabel: {
+    fontFamily: 'Fredoka_600SemiBold',
+    fontSize: 17,
     color: '#fff',
   },
   nextTasksBlock: {
