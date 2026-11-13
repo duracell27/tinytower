@@ -71,12 +71,15 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   buy_goods_1: {
     text: 'onboarding.buy_goods_1',
     iconSource: require('../../assets/img/ForkliftIcon.png'),
+    managerImage: require('../../assets/img/onbording/onbording3.png'),
     arrowDir: 'down',
     dismissable: false,
+    hintBelowSpotlight: true,
   },
   buy_goods_2: {
     text: 'onboarding.buy_goods_2',
     iconSource: require('../../assets/img/ForkliftIcon.png'),
+    managerImage: require('../../assets/img/onbording/onbording4.png'),
     arrowDir: 'down',
     dismissable: false,
   },

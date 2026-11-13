@@ -20,7 +20,7 @@ const CHECKLIST_ICON = require('../../assets/img/quicActions/checklist.png');
 
 const { width: SW, height: SH } = Dimensions.get('window');
 const CARD_WIDTH = SW * 0.82;
-const MANAGER_IMG_SIZE = 185;
+const MANAGER_IMG_SIZE = 215;
 const ARROW_SIZE = 48;
 const CARD_RADIUS = 24;   // matches FloorCard borderRadius
 const SPOTLIGHT_PAD_SIDE = 9;
@@ -336,7 +336,7 @@ export default function OnboardingOverlay() {
           pointerEvents="none"
           style={[
             styles.cardManagerImgWrap,
-            { top: Math.max(60, Math.min(SH - 200, cardTop + 55)) - MANAGER_IMG_SIZE + 20 },
+            { top: Math.max(60, Math.min(SH - 200, cardTop + 25)) - MANAGER_IMG_SIZE + 20 },
           ]}
         >
           <Image source={config.managerImage} style={styles.cardManagerImg} resizeMode="contain" />
@@ -351,7 +351,7 @@ export default function OnboardingOverlay() {
           { backgroundColor: cardBg },
           config.centered
             ? styles.cardCentered
-            : { top: Math.max(60, Math.min(SH - 200, cardTop + (config.managerImage ? 55 : 0))), left: (SW - CARD_WIDTH) / 2 },
+            : { top: Math.max(60, Math.min(SH - 200, cardTop + (config.managerImage ? 25 : 0))), left: (SW - CARD_WIDTH) / 2 },
         ]}
       >
         {config.centered ? (
@@ -590,9 +590,9 @@ const styles = StyleSheet.create({
   cardManagerImgWrap: {
     position: 'absolute',
     left: (SW - CARD_WIDTH) / 2,
-    width: CARD_WIDTH,
+    width: CARD_WIDTH + 24,
     alignItems: 'flex-end',
-    paddingRight: 16,
+    paddingRight: 0,
   },
   cardManagerImg: {
     width: MANAGER_IMG_SIZE,
