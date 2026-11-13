@@ -20,6 +20,7 @@ const CHECKLIST_ICON = require('../../assets/img/quicActions/checklist.png');
 
 const { width: SW, height: SH } = Dimensions.get('window');
 const CARD_WIDTH = SW * 0.82;
+const MANAGER_IMG_SIZE = 160;
 const ARROW_SIZE = 48;
 const CARD_RADIUS = 24;   // matches FloorCard borderRadius
 const SPOTLIGHT_PAD_SIDE = 9;
@@ -329,6 +330,19 @@ export default function OnboardingOverlay() {
       )}
 
 
+      {/* Manager image — floats above the hint card */}
+      {config.managerImage && !config.centered && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.cardManagerImgWrap,
+            { top: Math.max(60, Math.min(SH - 200, cardTop + 28)) - MANAGER_IMG_SIZE + 20 },
+          ]}
+        >
+          <Image source={config.managerImage} style={styles.cardManagerImg} resizeMode="contain" />
+        </View>
+      )}
+
       {/* Hint card */}
       <View
         pointerEvents={config.dismissable ? 'auto' : 'none'}
@@ -337,7 +351,7 @@ export default function OnboardingOverlay() {
           { backgroundColor: cardBg },
           config.centered
             ? styles.cardCentered
-            : { top: Math.max(60, Math.min(SH - 200, cardTop)), left: (SW - CARD_WIDTH) / 2 },
+            : { top: Math.max(60, Math.min(SH - 200, cardTop + (config.managerImage ? 28 : 0))), left: (SW - CARD_WIDTH) / 2 },
         ]}
       >
         {config.centered ? (
@@ -572,6 +586,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 17,
     color: '#fff',
+  },
+  cardManagerImgWrap: {
+    position: 'absolute',
+    left: (SW - CARD_WIDTH) / 2,
+    width: CARD_WIDTH,
+    alignItems: 'flex-end',
+    paddingRight: 16,
+  },
+  cardManagerImg: {
+    width: MANAGER_IMG_SIZE,
+    height: MANAGER_IMG_SIZE,
   },
   nextTasksBlock: {
     marginTop: 14,

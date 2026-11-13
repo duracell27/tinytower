@@ -10,6 +10,8 @@ export interface StepConfig {
   iconSource?: ReturnType<typeof require>;
   /** Special full-screen layout (e.g. 'manager-intro' shows a large character image + speech card) */
   layout?: 'manager-intro';
+  /** Optional manager character image shown at the top of the hint card */
+  managerImage?: ReturnType<typeof require>;
   /** Omit for steps that wait for a measured targetRect — arrow hides until measurement arrives */
   pointer?: { x: number; y: number };
   arrowDir: 'up' | 'down' | 'left' | 'right';
@@ -54,6 +56,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   collect_slot_1: {
     text: 'onboarding.collect_slot_1',
     iconSource: require('../../assets/img/coin.png'),
+    managerImage: require('../../assets/img/onbording/onbording1.png'),
     arrowDir: 'down',
     dismissable: false,
   },
