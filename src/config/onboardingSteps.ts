@@ -82,6 +82,7 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     managerImage: require('../../assets/img/onbording/onbording4.png'),
     arrowDir: 'down',
     dismissable: false,
+    hintBelowSpotlight: true,
   },
   open_elevator_1: {
     text: 'onboarding.open_elevator_1',
