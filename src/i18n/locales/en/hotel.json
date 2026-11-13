@@ -557,6 +557,7 @@
     "waiting": "{{count}} waiting in the hotel"
   },
   "onboarding": {
+    "skip": "Skip",
     "intro_greeting": "Hey, boss!",
     "intro_manager": "I'm Tom — your personal manager.",
     "intro_body": "Together we'll build the best tower in the city. Well, technically you will — I'll just give tips 😏",

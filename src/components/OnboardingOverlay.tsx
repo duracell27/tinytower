@@ -55,12 +55,13 @@ export default function OnboardingOverlay() {
   const textSub     = isDark ? '#B0BEC5' : '#333';
   const dividerCol  = theme.divider;
 
-  const step      = useOnboardingStore((s) => s.step);
-  const isActive  = useOnboardingStore((s) => s.isActive);
-  const advance   = useOnboardingStore((s) => s.advance);
+  const step       = useOnboardingStore((s) => s.step);
+  const isActive   = useOnboardingStore((s) => s.isActive);
+  const advance    = useOnboardingStore((s) => s.advance);
+  const complete   = useOnboardingStore((s) => s.complete);
   const targetRect = useOnboardingStore((s) => s.targetRect);
   const arrowRect  = useOnboardingStore((s) => s.arrowRect);
-  const pathname  = usePathname();
+  const pathname   = usePathname();
 
   const bounceY = useSharedValue(0);
   const spotlightOpacity = useSharedValue(0);
@@ -110,6 +111,9 @@ export default function OnboardingOverlay() {
     return (
       /* Outer view catches ALL touches — only the button re-enables interaction */
       <View style={[StyleSheet.absoluteFill, styles.introBackdrop]} pointerEvents="box-none">
+        <Pressable style={styles.skipBtn} onPress={complete}>
+          <LocaleText style={styles.skipLabel}>{t('onboarding.skip')}</LocaleText>
+        </Pressable>
         {/* Full-screen touch blocker underneath everything */}
         <TouchableWithoutFeedback onPress={() => {}}>
           <View style={StyleSheet.absoluteFill} />
@@ -117,12 +121,13 @@ export default function OnboardingOverlay() {
         {/* Content — box-none so the touch blocker above still works for gaps */}
         <View style={styles.introContainer} pointerEvents="box-none">
           {config.iconSource && (
-            <Image
-              source={config.iconSource}
-              style={styles.introManagerImg}
-              resizeMode="contain"
-              pointerEvents="none"
-            />
+            <View pointerEvents="none">
+              <Image
+                source={config.iconSource}
+                style={styles.introManagerImg}
+                resizeMode="contain"
+              />
+            </View>
           )}
           {/* Speech bubble — box-none so only the Pressable inside is interactive */}
           <View style={[styles.introBubble, { backgroundColor: cardBg }]} pointerEvents="box-none">
@@ -383,6 +388,13 @@ export default function OnboardingOverlay() {
           </View>
         )}
       </View>
+
+      {/* Skip button — always visible, subtle, top-right */}
+      {step !== 'final_message' && (
+        <Pressable style={styles.skipBtn} onPress={complete}>
+          <LocaleText style={styles.skipLabel}>{t('onboarding.skip')}</LocaleText>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -478,6 +490,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Fredoka_600SemiBold',
     fontSize: 16,
     color: '#fff',
+  },
+  skipBtn: {
+    position: 'absolute',
+    top: 54,
+    right: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    zIndex: 10,
+  },
+  skipLabel: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.45)',
   },
   // Manager-intro layout
   introBackdrop: {
