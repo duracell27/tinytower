@@ -331,21 +331,30 @@ export default function OnboardingOverlay() {
 
 
       {/* Manager image — floats above the hint card */}
-      {config.managerImage && !config.centered && (
-        <View
-          pointerEvents="none"
-          style={[
-            config.managerImageAlign === 'left'
-              ? styles.cardManagerImgWrapLeft
-              : config.managerImageAlign === 'center'
-                ? styles.cardManagerImgWrapCenter
-                : styles.cardManagerImgWrapRight,
-            { top: Math.max(60, Math.min(SH - 200, cardTop - 25)) - MANAGER_IMG_SIZE + 20 },
-          ]}
-        >
-          <Image source={config.managerImage} style={styles.cardManagerImg} resizeMode="contain" />
-        </View>
-      )}
+      {config.managerImage && !config.centered && (() => {
+        const imgSize = config.managerImageSize ?? MANAGER_IMG_SIZE;
+        const offset = config.managerCardOffset ?? -25;
+        const wrapStyle = config.managerImageAlign === 'left'
+          ? styles.cardManagerImgWrapLeft
+          : config.managerImageAlign === 'center'
+            ? styles.cardManagerImgWrapCenter
+            : styles.cardManagerImgWrapRight;
+        const paddingOverride = config.managerImageAlign === 'right' && config.managerImagePaddingRight !== undefined
+          ? { paddingRight: config.managerImagePaddingRight }
+          : undefined;
+        return (
+          <View
+            pointerEvents="none"
+            style={[
+              wrapStyle,
+              paddingOverride,
+              { top: Math.max(60, Math.min(SH - 200, cardTop + offset)) - imgSize + 20 },
+            ]}
+          >
+            <Image source={config.managerImage} style={{ width: imgSize, height: imgSize }} resizeMode="contain" />
+          </View>
+        );
+      })()}
 
       {/* Hint card */}
       <View
@@ -355,7 +364,7 @@ export default function OnboardingOverlay() {
           { backgroundColor: cardBg },
           config.centered
             ? styles.cardCentered
-            : { top: Math.max(60, Math.min(SH - 200, cardTop + (config.managerImage ? -25 : 0))), left: (SW - CARD_WIDTH) / 2 },
+            : { top: Math.max(60, Math.min(SH - 200, cardTop + (config.managerImage ? (config.managerCardOffset ?? -25) : 0))), left: (SW - CARD_WIDTH) / 2 },
         ]}
       >
         {config.centered ? (
@@ -370,11 +379,13 @@ export default function OnboardingOverlay() {
             {config.iconSource && (
               <Image source={config.iconSource} style={styles.icon} resizeMode="contain" />
             )}
-            <LocaleText style={[styles.cardText, { color: textMain }]}>{t(config.text)}</LocaleText>
+            <Text style={[styles.cardText, { color: textMain }]}>
+              {t(config.text)}
+              {config.callToAction && (
+                <Text style={[styles.cardCta, { color: textMain }]}>{' '}{t(config.callToAction)}</Text>
+              )}
+            </Text>
           </View>
-        )}
-        {config.callToAction && (
-          <LocaleText style={[styles.cardCta, { color: textMain }]}>{t(config.callToAction)}</LocaleText>
         )}
         {config.bullets && config.bullets.map((b: BulletItem, i: number) => (
           <React.Fragment key={i}>
