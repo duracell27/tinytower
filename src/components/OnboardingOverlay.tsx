@@ -20,7 +20,7 @@ const CHECKLIST_ICON = require('../../assets/img/quicActions/checklist.png');
 
 const { width: SW, height: SH } = Dimensions.get('window');
 const CARD_WIDTH = SW * 0.82;
-const MANAGER_IMG_SIZE = 160;
+const MANAGER_IMG_SIZE = 185;
 const ARROW_SIZE = 48;
 const CARD_RADIUS = 24;   // matches FloorCard borderRadius
 const SPOTLIGHT_PAD_SIDE = 9;
@@ -336,7 +336,7 @@ export default function OnboardingOverlay() {
           pointerEvents="none"
           style={[
             styles.cardManagerImgWrap,
-            { top: Math.max(60, Math.min(SH - 200, cardTop + 28)) - MANAGER_IMG_SIZE + 20 },
+            { top: Math.max(60, Math.min(SH - 200, cardTop + 55)) - MANAGER_IMG_SIZE + 20 },
           ]}
         >
           <Image source={config.managerImage} style={styles.cardManagerImg} resizeMode="contain" />
@@ -351,7 +351,7 @@ export default function OnboardingOverlay() {
           { backgroundColor: cardBg },
           config.centered
             ? styles.cardCentered
-            : { top: Math.max(60, Math.min(SH - 200, cardTop + (config.managerImage ? 28 : 0))), left: (SW - CARD_WIDTH) / 2 },
+            : { top: Math.max(60, Math.min(SH - 200, cardTop + (config.managerImage ? 55 : 0))), left: (SW - CARD_WIDTH) / 2 },
         ]}
       >
         {config.centered ? (

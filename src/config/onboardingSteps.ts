@@ -63,8 +63,10 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   collect_slot_2: {
     text: 'onboarding.collect_slot_2',
     iconSource: require('../../assets/img/coin.png'),
+    managerImage: require('../../assets/img/onbording/onbording2.png'),
     arrowDir: 'down',
     dismissable: false,
+    hintBelowSpotlight: true,
   },
   buy_goods_1: {
     text: 'onboarding.buy_goods_1',
