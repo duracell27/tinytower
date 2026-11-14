@@ -188,7 +188,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   }, [onClose]);
 
   const panGesture = Gesture.Pan()
-    .enabled(visible)
+    .enabled(visible && onboardingStep !== 'assign_worker')
     .onUpdate((e) => {
       if (e.translationY > 0) {
         translateY.value = e.translationY;

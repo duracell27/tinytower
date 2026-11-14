@@ -561,7 +561,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
     !!pendingDeliverAll || infoVisible || !!insufficientResources || showBuyGemsConfirm;
 
   const panGesture = Gesture.Pan()
-    .enabled(visible && !hasActivePopup)
+    .enabled(visible && !hasActivePopup && !onboardingHint)
     .onUpdate((e) => {
       if (e.translationY > 0) {
         translateY.value = e.translationY;
