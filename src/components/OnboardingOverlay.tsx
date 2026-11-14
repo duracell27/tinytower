@@ -134,14 +134,27 @@ export default function OnboardingOverlay() {
           <View style={[styles.introBubble, { backgroundColor: cardBg }]} pointerEvents="box-none">
             <View style={[styles.introBubbleTip, { borderBottomColor: cardBg }]} pointerEvents="none" />
             <LocaleText style={[styles.introBubbleGreeting, { color: textMain }]} pointerEvents="none">
-              {t('onboarding.intro_greeting')}
+              {t(config.text)}
             </LocaleText>
-            <LocaleText style={[styles.introBubbleManager, { color: textMain }]} pointerEvents="none">
-              {t('onboarding.intro_manager')}
-            </LocaleText>
+            {(config.layoutSubtitleKey ?? 'onboarding.intro_manager') !== '' && (
+              <LocaleText style={[styles.introBubbleManager, { color: textMain }]} pointerEvents="none">
+                {t(config.layoutSubtitleKey ?? 'onboarding.intro_manager')}
+              </LocaleText>
+            )}
             <LocaleText style={[styles.introBubbleBody, { color: textSub }]} pointerEvents="none">
-              {t('onboarding.intro_body')}
+              {t(config.layoutBodyKey ?? 'onboarding.intro_body')}
             </LocaleText>
+            {config.layoutCtaKey && (
+              <LocaleText style={[styles.introBubbleBody, { color: textMain, fontFamily: 'Fredoka_600SemiBold', marginTop: 8 }]} pointerEvents="none">
+                {t(config.layoutCtaKey)}
+              </LocaleText>
+            )}
+            {config.bullets && config.bullets.map((b, i) => (
+              <View key={i} style={styles.introBulletRow} pointerEvents="none">
+                <Image source={b.icon} style={styles.introBulletIcon} resizeMode="contain" />
+                <LocaleText style={[styles.introBulletText, { color: textSub }]}>{t(b.text)}</LocaleText>
+              </View>
+            ))}
             <Pressable
               style={styles.introDismissBtn}
               onPress={() => {
@@ -593,6 +606,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     marginBottom: 16,
+  },
+  introBulletRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 8,
+  },
+  introBulletIcon: {
+    width: 22,
+    height: 22,
+  },
+  introBulletText: {
+    flex: 1,
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 14,
   },
   introDismissBtn: {
     backgroundColor: '#3FA535',

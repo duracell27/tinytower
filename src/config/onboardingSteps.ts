@@ -10,6 +10,12 @@ export interface StepConfig {
   iconSource?: ReturnType<typeof require>;
   /** Special full-screen layout (e.g. 'manager-intro' shows a large character image + speech card) */
   layout?: 'manager-intro';
+  /** Override subtitle i18n key in manager-intro layout (default: 'onboarding.intro_manager') */
+  layoutSubtitleKey?: string;
+  /** Override body i18n key in manager-intro layout (default: 'onboarding.intro_body') */
+  layoutBodyKey?: string;
+  /** Bold closing line rendered below body in manager-intro layout */
+  layoutCtaKey?: string;
   /** Optional manager character image shown above the hint card */
   managerImage?: ReturnType<typeof require>;
   /** Horizontal alignment of the manager image (default: 'right') */
@@ -200,17 +206,15 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
     arrowOffsetX: 70,
   },
   final_message: {
-    text: 'onboarding.final_message',
-    iconSource: require('../../assets/img/managerIcon.png'),
+    text: 'onboarding.final_greeting',
+    iconSource: require('../../assets/img/onbording/onbording0.png'),
+    layout: 'manager-intro',
+    layoutSubtitleKey: '',
+    layoutBodyKey: 'onboarding.final_body',
+    layoutCtaKey: 'onboarding.final_cta',
     arrowDir: 'up',
     dismissable: true,
     dismissLabel: 'onboarding.final_message_dismiss',
     centered: true,
-    bullets: [
-      { icon: require('../../assets/img/coin.png'),      text: 'onboarding.final_message_bullet_1' },
-      { icon: require('../../assets/img/worker.png'),    text: 'onboarding.final_message_bullet_2' },
-      { icon: require('../../assets/img/hotel.png'),     text: 'onboarding.final_message_bullet_3' },
-      { icon: require('../../assets/img/starFull.png'),  text: 'onboarding.final_message_bullet_4' },
-    ],
   },
 };
