@@ -296,11 +296,12 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           expanded={expandedWorkerId === item.worker.id}
           dreamFloorName={dreamFloorName}
           isBetterCandidate={isBetterCandidate(item.worker, assignedWorkers, floors, openedFloorTypes ?? {})}
-          onToggle={() =>
-            setExpandedWorkerId((prev) => (prev === item.worker.id ? null : item.worker.id))
-          }
+          onToggle={() => {
+            if (onboardingStep === 'assign_worker') return;
+            setExpandedWorkerId((prev) => (prev === item.worker.id ? null : item.worker.id));
+          }}
           onFindJob={() => handleFindJob(item.worker)}
-          onEvict={() => handleEvict(item.worker.id, item.worker.name)}
+          onEvict={onboardingStep === 'assign_worker' ? undefined : () => handleEvict(item.worker.id, item.worker.name)}
           findJobRef={index === 0 && item.kind === 'worker' ? findJobBtnRef as React.RefObject<View> : undefined}
         />
       ) : (
@@ -335,7 +336,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
       {visible && <GestureHandlerRootView style={styles.overlay}>
         {/* Scrim */}
         <Animated.View style={[styles.scrim, scrimStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={handleAnimatedClose} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={onboardingStep === 'assign_worker' ? undefined : handleAnimatedClose} />
         </Animated.View>
 
         {/* Sheet */}
@@ -366,7 +367,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                       <Rect x={13} y={15} width={4} height={4} rx={0.5} stroke="#fff" strokeWidth={1.5} />
                     </Svg>
                     <View>
-                      <Pressable onPress={() => setInfoVisible(true)} style={styles.titleNameRow}>
+                      <Pressable onPress={onboardingStep === 'assign_worker' ? undefined : () => setInfoVisible(true)} style={styles.titleNameRow}>
                         <LocaleText style={styles.titleText}>{t('hotelPanel.title')}</LocaleText>
                         <Image
                           source={require('../../assets/img/InformationIcon.png')}
@@ -379,7 +380,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                   </View>
 
                   {/* Close button */}
-                  <Pressable onPress={handleAnimatedClose} style={styles.closeButton}>
+                  <Pressable onPress={onboardingStep === 'assign_worker' ? undefined : handleAnimatedClose} style={[styles.closeButton, onboardingStep === 'assign_worker' && { opacity: 0 }]}>
                     <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                       <Path
                         d="M18 6L6 18M6 6l12 12"
@@ -523,7 +524,11 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           const sx = workerCardPos.x - PAD;
           const sy = workerCardPos.y - PAD;
           const sw = workerCardPos.width + PAD * 2;
-          const sh = workerCardPos.height + PAD * 2;
+          // Bottom of spotlight: end at Find Job button bottom (not whole card incl. evict)
+          const spotBottom = findJobBtnPos
+            ? findJobBtnPos.y + findJobBtnPos.height + PAD
+            : workerCardPos.y + workerCardPos.height + PAD;
+          const sh = spotBottom - sy;
           const cx = workerCardPos.x + workerCardPos.width / 2;
 
           // Arrow just below the Find Job button (pointing UP at it), fallback to below the card.

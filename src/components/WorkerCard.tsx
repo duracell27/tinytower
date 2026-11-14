@@ -26,7 +26,7 @@ interface WorkerCardProps {
   isBetterCandidate?: boolean;
   onToggle: () => void;
   onFindJob: () => void;
-  onEvict: () => void;
+  onEvict?: () => void;
   findJobRef?: React.RefObject<View>;
 }
 
@@ -232,7 +232,7 @@ export default function WorkerCard({
           </Pressable>
 
           {/* Evict button */}
-          <Pressable
+          {onEvict && <Pressable
             onPress={onEvict}
             style={({ pressed }) => [
               styles.actionButton,
@@ -251,7 +251,7 @@ export default function WorkerCard({
                 { backgroundColor: '#A8392C' },
               ]}
             />
-          </Pressable>
+          </Pressable>}
 
           {/* Hint */}
           <LocaleText style={[styles.hintText, isDark && { color: '#5A6470' }]}>
