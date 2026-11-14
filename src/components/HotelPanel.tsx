@@ -78,10 +78,16 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const hotelBounceY = useSharedValue(0);
   const hotelCardSlideY = useSharedValue(60);
   const hotelCardSlideOpacity = useSharedValue(0);
+  const hotelImgSlideX = useSharedValue(-160);
+  const hotelImgSlideOpacity = useSharedValue(0);
   const hotelArrowStyle = useAnimatedStyle(() => ({ transform: [{ translateY: hotelBounceY.value }] }));
   const hotelAnimatedCard = useAnimatedStyle(() => ({
     transform: [{ translateY: hotelCardSlideY.value }],
     opacity: hotelCardSlideOpacity.value,
+  }));
+  const hotelAnimatedImg = useAnimatedStyle(() => ({
+    transform: [{ translateX: hotelImgSlideX.value }],
+    opacity: hotelImgSlideOpacity.value,
   }));
 
   const scrimOpacity = useSharedValue(0);
@@ -165,8 +171,12 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
 
   useEffect(() => {
     if (!workerCardPos) return;
+    hotelImgSlideX.value = -160;
+    hotelImgSlideOpacity.value = 0;
     hotelCardSlideY.value = 60;
     hotelCardSlideOpacity.value = 0;
+    hotelImgSlideX.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) });
+    hotelImgSlideOpacity.value = withTiming(1, { duration: 480 });
     hotelCardSlideY.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) });
     hotelCardSlideOpacity.value = withTiming(1, { duration: 480 });
   }, [workerCardPos]);
@@ -569,7 +579,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                   contentFit="contain"
                 />
               </Animated.View>
-              <Animated.View style={[hotelAnimatedCard, { position: 'absolute', left: 0, right: 0, top: hintTop + 5, alignItems: 'center' }]} pointerEvents="none">
+              <Animated.View style={[hotelAnimatedImg, { position: 'absolute', left: 0, right: 0, top: hintTop + 5, alignItems: 'center' }]} pointerEvents="none">
                 <Image
                   source={require('../../assets/img/onbording/onbording8.png')}
                   style={{ width: 190, height: 190 }}

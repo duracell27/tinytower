@@ -94,7 +94,19 @@ export default function JobPickerSheet({
   const [firstAssignRowPos, setFirstAssignRowPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [firstSectionHeaderPos, setFirstSectionHeaderPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const assignBounceY = useSharedValue(0);
+  const assignImgSlideX = useSharedValue(-160);
+  const assignImgSlideOpacity = useSharedValue(0);
+  const assignCardSlideY = useSharedValue(60);
+  const assignCardSlideOpacity = useSharedValue(0);
   const assignArrowStyle = useAnimatedStyle(() => ({ transform: [{ translateY: assignBounceY.value }] }));
+  const assignAnimatedImg = useAnimatedStyle(() => ({
+    transform: [{ translateX: assignImgSlideX.value }],
+    opacity: assignImgSlideOpacity.value,
+  }));
+  const assignAnimatedCard = useAnimatedStyle(() => ({
+    transform: [{ translateY: assignCardSlideY.value }],
+    opacity: assignCardSlideOpacity.value,
+  }));
 
   const workers = useGameStore((s) => s.workers);
   const storeFloors = useGameStore((s) => s.floors);
@@ -320,6 +332,14 @@ export default function JobPickerSheet({
       withSequence(withTiming(-8, { duration: 400 }), withTiming(0, { duration: 400 })),
       -1, true,
     );
+    assignImgSlideX.value = -160;
+    assignImgSlideOpacity.value = 0;
+    assignCardSlideY.value = 60;
+    assignCardSlideOpacity.value = 0;
+    assignImgSlideX.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) });
+    assignImgSlideOpacity.value = withTiming(1, { duration: 480 });
+    assignCardSlideY.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) });
+    assignCardSlideOpacity.value = withTiming(1, { duration: 480 });
   }, [firstAssignBtnPos]);
 
   const styles = getStyles(theme);
@@ -470,18 +490,20 @@ export default function JobPickerSheet({
                 contentFit="contain"
               />
             </Animated.View>
-            <Image
-              source={require('../../assets/img/onbording/onbording9.png')}
-              style={{ position: 'absolute', width: 190, height: 190, left: SW / 2 - 95, top: hintTop + 20 }}
-              contentFit="contain"
-            />
-            <View style={[pickerHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop + 180 }]}>
+            <Animated.View style={[assignAnimatedImg, { position: 'absolute', left: 0, right: 0, top: hintTop + 20, alignItems: 'center' }]} pointerEvents="none">
+              <Image
+                source={require('../../assets/img/onbording/onbording9.png')}
+                style={{ width: 190, height: 190 }}
+                contentFit="contain"
+              />
+            </Animated.View>
+            <Animated.View style={[pickerHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop + 180 }, assignAnimatedCard]}>
               <Text style={pickerHintStyles.text}>
                 {'Tap '}
                 <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>Assign</Text>
                 {' to place a worker on a floor'}
               </Text>
-            </View>
+            </Animated.View>
           </View>
         );
       })()}
