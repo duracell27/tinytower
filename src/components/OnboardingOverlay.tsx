@@ -1,5 +1,5 @@
 // src/components/OnboardingOverlay.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, Pressable, Dimensions, Image, TouchableWithoutFeedback,
   Platform, StatusBar,
@@ -9,8 +9,10 @@ import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks/useAppTheme';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
-  useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, Easing,
+  useSharedValue, useAnimatedStyle, useAnimatedProps, withRepeat, withSequence, withTiming, Easing,
 } from 'react-native-reanimated';
+
+const AnimatedPath = Animated.createAnimatedComponent(Path);
 import { usePathname } from 'expo-router';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useGameStore } from '../stores/gameStore';
@@ -67,6 +69,17 @@ export default function OnboardingOverlay() {
   const bounceY = useSharedValue(0);
   const spotlightOpacity = useSharedValue(0);
 
+  // Animated spotlight rect (morph between steps)
+  const spotX = useSharedValue(SW / 2);
+  const spotY = useSharedValue(SH / 2);
+  const spotW = useSharedValue(0);
+  const spotH = useSharedValue(0);
+  const hasShownSpotlight = useRef(false);
+
+  // Hint card + manager image slide-in
+  const cardSlideY = useSharedValue(60);
+  const cardSlideOpacity = useSharedValue(0);
+
   useEffect(() => {
     bounceY.value = withRepeat(
       withSequence(
@@ -78,13 +91,43 @@ export default function OnboardingOverlay() {
     );
   }, [bounceY]);
 
+  // Spotlight morph: animate rect to new position when targetRect changes
   useEffect(() => {
     if (targetRect) {
-      spotlightOpacity.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.quad) });
+      const padTop = step && step !== 'done' ? (ONBOARDING_STEPS[step]?.spotlightPadTop ?? SPOTLIGHT_PAD_TOP) : SPOTLIGHT_PAD_TOP;
+      const androidOff = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
+      const ty = targetRect.y + androidOff;
+      const newX = targetRect.x - SPOTLIGHT_PAD_SIDE;
+      const newY = ty - padTop;
+      const newW = targetRect.width  + SPOTLIGHT_PAD_SIDE * 2;
+      const newH = targetRect.height + padTop + SPOTLIGHT_PAD_BOTTOM;
+      const morph = { duration: 320, easing: Easing.out(Easing.cubic) };
+      spotX.value = withTiming(newX, morph);
+      spotY.value = withTiming(newY, morph);
+      spotW.value = withTiming(newW, morph);
+      spotH.value = withTiming(newH, morph);
+      if (!hasShownSpotlight.current) {
+        hasShownSpotlight.current = true;
+        spotlightOpacity.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.quad) });
+      }
     } else {
-      spotlightOpacity.value = 0;
+      const cfg = step && step !== 'done' ? ONBOARDING_STEPS[step] : undefined;
+      if (cfg?.pointer) {
+        spotlightOpacity.value = withTiming(0, { duration: 200 });
+        hasShownSpotlight.current = false;
+      }
+      // else: null during measurement — keep last rect visible while new one arrives
     }
-  }, [targetRect, spotlightOpacity]);
+  }, [targetRect]);
+
+  // Card + manager image slide-in on each step change
+  useEffect(() => {
+    if (!step || step === 'done') return;
+    cardSlideY.value = 60;
+    cardSlideOpacity.value = 0;
+    cardSlideY.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) });
+    cardSlideOpacity.value = withTiming(1, { duration: 220 });
+  }, [step]);
 
 
   // Advance past any step that was removed from ONBOARDING_STEPS after a redesign.
@@ -99,6 +142,20 @@ export default function OnboardingOverlay() {
 
   const animatedSpotlight = useAnimatedStyle(() => ({
     opacity: spotlightOpacity.value,
+  }));
+
+  const animatedSpotPath = useAnimatedProps(() => {
+    'worklet';
+    const r = CARD_RADIUS;
+    const x = spotX.value, y = spotY.value, w = spotW.value, h = spotH.value;
+    return {
+      d: `M0 0 H${SW} V${SH} H0 Z M${x+r} ${y} H${x+w-r} Q${x+w} ${y} ${x+w} ${y+r} V${y+h-r} Q${x+w} ${y+h} ${x+w-r} ${y+h} H${x+r} Q${x} ${y+h} ${x} ${y+h-r} V${y+r} Q${x} ${y} ${x+r} ${y} Z`,
+    };
+  });
+
+  const animatedCard = useAnimatedStyle(() => ({
+    transform: [{ translateY: cardSlideY.value }],
+    opacity: cardSlideOpacity.value,
   }));
 
   if (!isActive || !step || step === 'done') return null;
@@ -242,33 +299,12 @@ export default function OnboardingOverlay() {
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
 
-      {/* Spotlight backdrop — SVG evenodd fill punches a rounded-rect hole */}
+      {/* Spotlight backdrop — SVG evenodd fill punches a rounded-rect hole, morphs between steps */}
       {spotlightRect ? (
         <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, animatedSpotlight]}>
-        <Svg
-          pointerEvents="none"
-          width={SW}
-          height={SH}
-          style={StyleSheet.absoluteFill}
-        >
-          <Path
-            fillRule="evenodd"
-            d={[
-              `M0 0 H${SW} V${SH} H0 Z`,
-              `M${spotlightRect.x + CARD_RADIUS} ${spotlightRect.y}`,
-              `H${spotlightRect.x + spotlightRect.w - CARD_RADIUS}`,
-              `Q${spotlightRect.x + spotlightRect.w} ${spotlightRect.y} ${spotlightRect.x + spotlightRect.w} ${spotlightRect.y + CARD_RADIUS}`,
-              `V${spotlightRect.y + spotlightRect.h - CARD_RADIUS}`,
-              `Q${spotlightRect.x + spotlightRect.w} ${spotlightRect.y + spotlightRect.h} ${spotlightRect.x + spotlightRect.w - CARD_RADIUS} ${spotlightRect.y + spotlightRect.h}`,
-              `H${spotlightRect.x + CARD_RADIUS}`,
-              `Q${spotlightRect.x} ${spotlightRect.y + spotlightRect.h} ${spotlightRect.x} ${spotlightRect.y + spotlightRect.h - CARD_RADIUS}`,
-              `V${spotlightRect.y + CARD_RADIUS}`,
-              `Q${spotlightRect.x} ${spotlightRect.y} ${spotlightRect.x + CARD_RADIUS} ${spotlightRect.y}`,
-              'Z',
-            ].join(' ')}
-            fill={DIM_COLOR}
-          />
-        </Svg>
+          <Svg pointerEvents="none" width={SW} height={SH} style={StyleSheet.absoluteFill}>
+            <AnimatedPath fillRule="evenodd" fill={DIM_COLOR} animatedProps={animatedSpotPath} />
+          </Svg>
         </Animated.View>
       ) : (config.pointer || config.dismissable) ? (
         <View pointerEvents="none" style={[styles.dim, StyleSheet.absoluteFill]} />
@@ -356,21 +392,22 @@ export default function OnboardingOverlay() {
           ? { paddingRight: config.managerImagePaddingRight }
           : undefined;
         return (
-          <View
+          <Animated.View
             pointerEvents="none"
             style={[
               wrapStyle,
               paddingOverride,
               { top: Math.max(60, Math.min(SH - 200, cardTop + offset)) - imgSize + 20 },
+              animatedCard,
             ]}
           >
             <Image source={config.managerImage} style={{ width: imgSize, height: imgSize }} resizeMode="contain" />
-          </View>
+          </Animated.View>
         );
       })()}
 
       {/* Hint card */}
-      <View
+      <Animated.View
         pointerEvents={config.dismissable ? 'auto' : 'none'}
         style={[
           styles.card,
@@ -378,6 +415,7 @@ export default function OnboardingOverlay() {
           config.centered
             ? styles.cardCentered
             : { top: Math.max(60, Math.min(SH - 200, cardTop + (config.managerImage ? (config.managerCardOffset ?? -25) : 0))), left: (SW - CARD_WIDTH) / 2 },
+          animatedCard,
         ]}
       >
         {config.centered ? (
@@ -432,7 +470,7 @@ export default function OnboardingOverlay() {
             </LocaleText>
           </View>
         )}
-      </View>
+      </Animated.View>
 
       {/* Skip button — always visible, subtle, top-right */}
       {step !== 'final_message' && (
