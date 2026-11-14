@@ -101,14 +101,14 @@ export default function OnboardingOverlay() {
       const newY = ty - padTop;
       const newW = targetRect.width  + SPOTLIGHT_PAD_SIDE * 2;
       const newH = targetRect.height + padTop + SPOTLIGHT_PAD_BOTTOM;
-      const morph = { duration: 320, easing: Easing.out(Easing.cubic) };
+      const morph = { duration: 500, easing: Easing.out(Easing.cubic) };
       spotX.value = withTiming(newX, morph);
       spotY.value = withTiming(newY, morph);
       spotW.value = withTiming(newW, morph);
       spotH.value = withTiming(newH, morph);
       if (!hasShownSpotlight.current) {
         hasShownSpotlight.current = true;
-        spotlightOpacity.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.quad) });
+        spotlightOpacity.value = withTiming(1, { duration: 450, easing: Easing.out(Easing.quad) });
       }
     } else {
       const cfg = step && step !== 'done' ? ONBOARDING_STEPS[step] : undefined;
@@ -125,8 +125,8 @@ export default function OnboardingOverlay() {
     if (!step || step === 'done') return;
     cardSlideY.value = 60;
     cardSlideOpacity.value = 0;
-    cardSlideY.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) });
-    cardSlideOpacity.value = withTiming(1, { duration: 220 });
+    cardSlideY.value = withTiming(0, { duration: 450, easing: Easing.out(Easing.cubic) });
+    cardSlideOpacity.value = withTiming(1, { duration: 350 });
   }, [step]);
 
 
