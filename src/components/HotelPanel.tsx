@@ -524,11 +524,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           const sx = workerCardPos.x - PAD;
           const sy = workerCardPos.y - PAD;
           const sw = workerCardPos.width + PAD * 2;
-          // Bottom of spotlight: end at Find Job button bottom (not whole card incl. evict)
-          const spotBottom = findJobBtnPos
-            ? findJobBtnPos.y + findJobBtnPos.height + PAD
-            : workerCardPos.y + workerCardPos.height + PAD;
-          const sh = spotBottom - sy;
+          const sh = workerCardPos.height + PAD * 2;
           const cx = workerCardPos.x + workerCardPos.width / 2;
 
           // Arrow just below the Find Job button (pointing UP at it), fallback to below the card.
