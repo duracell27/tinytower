@@ -426,6 +426,7 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             style={styles.list}
+            scrollEnabled={onboardingStep !== 'assign_worker'}
           />
 
           {/* Job picker */}
