@@ -189,7 +189,10 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   },
   open_business: {
     text: 'onboarding.open_business',
-    iconSource: require('../../assets/img/tools/briks.png'),
+    callToAction: 'onboarding.open_business_cta',
+    managerImage: require('../../assets/img/onbording/onbording14.png'),
+    managerImageAlign: 'center',
+    managerCardOffset: 200,
     arrowDir: 'down',
     dismissable: false,
     spotlightPadTop: 8,
