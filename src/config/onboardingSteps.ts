@@ -164,6 +164,9 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   speed_up_construction: {
     text: 'onboarding.speed_up_construction',
     iconSource: require('../../assets/img/diamond.png'),
+    managerImage: require('../../assets/img/onbording/onbording12.png'),
+    managerImageAlign: 'center',
+    managerCardOffset: 220,
     arrowDir: 'down',
     dismissable: false,
     spotlightPadTop: 8,
@@ -173,6 +176,9 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   expand_floor_card: {
     text: 'onboarding.expand_floor_card',
     iconSource: require('../../assets/img/sandClock.png'),
+    managerImage: require('../../assets/img/onbording/onbording13.png'),
+    managerImageAlign: 'center',
+    managerCardOffset: 150,
     arrowDir: 'up',
     dismissable: false,
     spotlightPadTop: 8,

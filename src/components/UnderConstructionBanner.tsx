@@ -82,7 +82,11 @@ export default function UnderConstructionBanner({
   useEffect(() => { setConfirming(false); }, [floorId, isReady]);
 
   useEffect(() => {
-    if (onboardingStep !== 'speed_up_construction' || isReady) return;
+    if (onboardingStep !== 'speed_up_construction') return;
+    if (isReady) {
+      useOnboardingStore.getState().advance();
+      return;
+    }
     const timer = setTimeout(() => {
       speedUpBtnRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) useOnboardingStore.getState().setTargetRect({ x, y, width, height });
