@@ -750,6 +750,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const lobbyBounceY = useSharedValue(0);
   const lobbyCardSlideY = useSharedValue(60);
   const lobbyCardSlideOpacity = useSharedValue(0);
+  const hasAnimatedLobbyCard = useRef(false);
   const lobbyAnimatedArrow = useAnimatedStyle(() => ({ transform: [{ translateY: lobbyBounceY.value }] }));
   const lobbyAnimatedCard = useAnimatedStyle(() => ({
     transform: [{ translateY: lobbyCardSlideY.value }],
@@ -757,13 +758,14 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   }));
 
   useEffect(() => {
-    if (cardPos) {
-      lobbyCardSlideY.value = 60;
-      lobbyCardSlideOpacity.value = 0;
-      lobbyCardSlideY.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) });
-      lobbyCardSlideOpacity.value = withTiming(1, { duration: 480 });
-    }
-  }, [cardPos]);
+    if (!onboardingHint) { hasAnimatedLobbyCard.current = false; return; }
+    if (!cardPos || hasAnimatedLobbyCard.current) return;
+    hasAnimatedLobbyCard.current = true;
+    lobbyCardSlideY.value = 60;
+    lobbyCardSlideOpacity.value = 0;
+    lobbyCardSlideY.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) });
+    lobbyCardSlideOpacity.value = withTiming(1, { duration: 480 });
+  }, [cardPos, onboardingHint]);
 
   useEffect(() => {
     lobbyBounceY.value = withRepeat(
