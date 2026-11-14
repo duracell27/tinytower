@@ -786,7 +786,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
         {/* Scrim */}
         <Animated.View style={[styles.scrim, scrimStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={handleAnimatedClose} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={onboardingHint ? undefined : handleAnimatedClose} />
         </Animated.View>
 
         {/* Sheet */}
@@ -807,7 +807,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       <ElevatorIcon size={20} />
                     </View>
                     <View>
-                      <Pressable onPress={() => setInfoVisible(true)} style={styles.titleNameRow}>
+                      <Pressable onPress={onboardingHint ? undefined : () => setInfoVisible(true)} style={styles.titleNameRow}>
                         <LocaleText style={styles.titleText}>{t('header.title')}</LocaleText>
                         <Image
                           source={require('../../assets/img/InformationIcon.png')}
@@ -821,7 +821,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
 
                   <View style={styles.headerRight}>
                     {/* Close button */}
-                    <Pressable onPress={handleAnimatedClose} style={styles.closeButton}>
+                    <Pressable onPress={onboardingHint ? undefined : handleAnimatedClose} style={[styles.closeButton, onboardingHint && { opacity: 0 }]}>
                       <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                         <Path
                           d="M18 6L6 18M6 6l12 12"
@@ -1085,7 +1085,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 </View>
 
                 {/* Deliver all button */}
-                {lobbyVisitors.length > 0 && (
+                {lobbyVisitors.length > 0 && !onboardingHint && (
                   <Pressable
                     onPress={() => {
                       if (gems < 1) {
