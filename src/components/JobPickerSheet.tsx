@@ -402,6 +402,7 @@ export default function JobPickerSheet({
             }}
             renderItem={({ item, index, section }) => {
               const isFirst = onboardingStep === 'assign_worker' && sections[0] === section && index === 0 && !section.isOccupied;
+              const isDisabled = onboardingStep === 'assign_worker' && !isFirst;
               return (
                 <SlotRow
                   item={item}
@@ -409,6 +410,7 @@ export default function JobPickerSheet({
                   onReplace={handleReplace}
                   rowRef={isFirst ? firstAssignRowRef as React.RefObject<View> : undefined}
                   assignRef={isFirst ? firstAssignBtnRef as React.RefObject<View> : undefined}
+                  disabled={isDisabled}
                 />
               );
             }}
@@ -416,6 +418,7 @@ export default function JobPickerSheet({
             showsVerticalScrollIndicator={false}
             style={styles.list}
             stickySectionHeadersEnabled={false}
+            scrollEnabled={onboardingStep !== 'assign_worker'}
           />
         )}
       </Animated.View>
@@ -537,12 +540,14 @@ function SlotRow({
   onReplace,
   rowRef,
   assignRef,
+  disabled,
 }: {
   item: SlotItem;
   onAssign: (floorId: number, slotIdx: number) => void;
   onReplace: (floorId: number, slotIdx: number, occupantId: string) => void;
   rowRef?: React.RefObject<View>;
   assignRef?: React.RefObject<View>;
+  disabled?: boolean;
 }) {
   const theme = useAppTheme();
   const { isDark } = theme;
@@ -575,10 +580,11 @@ function SlotRow({
         </View>
 
         <Pressable
-          onPress={() => onReplace(item.floorId, item.slotIdx, item.occupant!.id)}
+          onPress={disabled ? undefined : () => onReplace(item.floorId, item.slotIdx, item.occupant!.id)}
           style={({ pressed }) => [
             slotStyles.assignButton,
-            pressed && slotStyles.assignButtonPressed,
+            pressed && !disabled && slotStyles.assignButtonPressed,
+            disabled && { opacity: 0.3 },
           ]}
         >
           <LinearGradient
@@ -606,10 +612,11 @@ function SlotRow({
 
       <Pressable
         ref={assignRef as React.RefObject<View>}
-        onPress={() => onAssign(item.floorId, item.slotIdx)}
+        onPress={disabled ? undefined : () => onAssign(item.floorId, item.slotIdx)}
         style={({ pressed }) => [
           slotStyles.assignButton,
-          pressed && slotStyles.assignButtonPressed,
+          pressed && !disabled && slotStyles.assignButtonPressed,
+          disabled && { opacity: 0.3 },
         ]}
       >
         <LinearGradient
