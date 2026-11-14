@@ -91,7 +91,12 @@ export default function OnboardingOverlay() {
     );
   }, [bounceY]);
 
-  // Spotlight morph: animate rect to new position when targetRect changes
+  const triggerCardSlide = () => {
+    cardSlideY.value = withTiming(0, { duration: 450, easing: Easing.out(Easing.cubic) });
+    cardSlideOpacity.value = withTiming(1, { duration: 350 });
+  };
+
+  // Spotlight morph + card slide-in: fires when targetRect is measured for the new step
   useEffect(() => {
     if (targetRect) {
       const padTop = step && step !== 'done' ? (ONBOARDING_STEPS[step]?.spotlightPadTop ?? SPOTLIGHT_PAD_TOP) : SPOTLIGHT_PAD_TOP;
@@ -110,23 +115,26 @@ export default function OnboardingOverlay() {
         hasShownSpotlight.current = true;
         spotlightOpacity.value = withTiming(1, { duration: 450, easing: Easing.out(Easing.quad) });
       }
+      // Card is now at the correct position — slide it in
+      triggerCardSlide();
     } else {
       const cfg = step && step !== 'done' ? ONBOARDING_STEPS[step] : undefined;
       if (cfg?.pointer) {
         spotlightOpacity.value = withTiming(0, { duration: 200 });
         hasShownSpotlight.current = false;
+        // Pointer-only step — no measurement expected, slide card in immediately
+        triggerCardSlide();
       }
       // else: null during measurement — keep last rect visible while new one arrives
     }
   }, [targetRect]);
 
-  // Card + manager image slide-in on each step change
+  // On step change: reset card to invisible so it doesn't flicker at the wrong position
+  // before targetRect is measured. Animation fires in the targetRect effect below.
   useEffect(() => {
     if (!step || step === 'done') return;
     cardSlideY.value = 60;
     cardSlideOpacity.value = 0;
-    cardSlideY.value = withTiming(0, { duration: 450, easing: Easing.out(Easing.cubic) });
-    cardSlideOpacity.value = withTiming(1, { duration: 350 });
   }, [step]);
 
 
