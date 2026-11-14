@@ -330,7 +330,7 @@ export default function JobPickerSheet({
       <View style={styles.overlay}>
         {/* Scrim */}
         <Animated.View style={[styles.scrim, scrimStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={onboardingStep === 'assign_worker' ? undefined : onClose} />
         </Animated.View>
 
         {/* Sheet */}
@@ -366,7 +366,7 @@ export default function JobPickerSheet({
             </View>
 
             {/* Close button */}
-            <Pressable onPress={onClose} style={styles.closeButton}>
+            <Pressable onPress={onboardingStep === 'assign_worker' ? undefined : onClose} style={[styles.closeButton, onboardingStep === 'assign_worker' && { opacity: 0 }]}>
               <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                 <Path
                   d="M18 6L6 18M6 6l12 12"
