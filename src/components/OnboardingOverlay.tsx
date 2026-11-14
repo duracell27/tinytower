@@ -92,8 +92,8 @@ export default function OnboardingOverlay() {
   }, [bounceY]);
 
   const triggerCardSlide = () => {
-    cardSlideY.value = withTiming(0, { duration: 450, easing: Easing.out(Easing.cubic) });
-    cardSlideOpacity.value = withTiming(1, { duration: 350 });
+    cardSlideY.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) });
+    cardSlideOpacity.value = withTiming(1, { duration: 480 });
   };
 
   // Spotlight morph + card slide-in: fires when targetRect is measured for the new step
@@ -106,14 +106,14 @@ export default function OnboardingOverlay() {
       const newY = ty - padTop;
       const newW = targetRect.width  + SPOTLIGHT_PAD_SIDE * 2;
       const newH = targetRect.height + padTop + SPOTLIGHT_PAD_BOTTOM;
-      const morph = { duration: 500, easing: Easing.out(Easing.cubic) };
+      const morph = { duration: 650, easing: Easing.out(Easing.cubic) };
       spotX.value = withTiming(newX, morph);
       spotY.value = withTiming(newY, morph);
       spotW.value = withTiming(newW, morph);
       spotH.value = withTiming(newH, morph);
       if (!hasShownSpotlight.current) {
         hasShownSpotlight.current = true;
-        spotlightOpacity.value = withTiming(1, { duration: 450, easing: Easing.out(Easing.quad) });
+        spotlightOpacity.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.quad) });
       }
       // Card is now at the correct position — slide it in
       triggerCardSlide();

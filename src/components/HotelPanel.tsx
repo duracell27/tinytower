@@ -76,7 +76,13 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
   const [workerCardPos, setWorkerCardPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [findJobBtnPos, setFindJobBtnPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const hotelBounceY = useSharedValue(0);
+  const hotelCardSlideY = useSharedValue(60);
+  const hotelCardSlideOpacity = useSharedValue(0);
   const hotelArrowStyle = useAnimatedStyle(() => ({ transform: [{ translateY: hotelBounceY.value }] }));
+  const hotelAnimatedCard = useAnimatedStyle(() => ({
+    transform: [{ translateY: hotelCardSlideY.value }],
+    opacity: hotelCardSlideOpacity.value,
+  }));
 
   const scrimOpacity = useSharedValue(0);
   const translateY = useSharedValue(SHEET_HEIGHT);
@@ -156,6 +162,14 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
       -1, true,
     );
   }, [findJobBtnPos, workerCardPos]);
+
+  useEffect(() => {
+    if (!workerCardPos) return;
+    hotelCardSlideY.value = 60;
+    hotelCardSlideOpacity.value = 0;
+    hotelCardSlideY.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) });
+    hotelCardSlideOpacity.value = withTiming(1, { duration: 480 });
+  }, [workerCardPos]);
 
   useEffect(() => {
     if (!visible) return;
@@ -555,18 +569,20 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                   contentFit="contain"
                 />
               </Animated.View>
-              <Image
-                source={require('../../assets/img/onbording/onbording8.png')}
-                style={{ position: 'absolute', width: 190, height: 190, left: SCREEN_WIDTH / 2 - 95, top: hintTop + 5 }}
-                contentFit="contain"
-              />
-              <View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop + 180, backgroundColor: theme.surfaceCard}]}>
+              <Animated.View style={[hotelAnimatedCard, { position: 'absolute', left: 0, right: 0, top: hintTop + 5, alignItems: 'center' }]} pointerEvents="none">
+                <Image
+                  source={require('../../assets/img/onbording/onbording8.png')}
+                  style={{ width: 190, height: 190 }}
+                  contentFit="contain"
+                />
+              </Animated.View>
+              <Animated.View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop + 180, backgroundColor: theme.surfaceCard }, hotelAnimatedCard]}>
                 <Text style={[hotelHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
                   {'Tap '}
                   <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>Find Job</Text>
                   {' to assign a worker to a floor'}
                 </Text>
-              </View>
+              </Animated.View>
             </View>
           );
         })()}

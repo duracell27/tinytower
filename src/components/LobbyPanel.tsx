@@ -748,7 +748,22 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
   const [cardPos, setCardPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [actionButtonPos, setActionButtonPos] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const lobbyBounceY = useSharedValue(0);
+  const lobbyCardSlideY = useSharedValue(60);
+  const lobbyCardSlideOpacity = useSharedValue(0);
   const lobbyAnimatedArrow = useAnimatedStyle(() => ({ transform: [{ translateY: lobbyBounceY.value }] }));
+  const lobbyAnimatedCard = useAnimatedStyle(() => ({
+    transform: [{ translateY: lobbyCardSlideY.value }],
+    opacity: lobbyCardSlideOpacity.value,
+  }));
+
+  useEffect(() => {
+    if (cardPos) {
+      lobbyCardSlideY.value = 60;
+      lobbyCardSlideOpacity.value = 0;
+      lobbyCardSlideY.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) });
+      lobbyCardSlideOpacity.value = withTiming(1, { duration: 480 });
+    }
+  }, [cardPos]);
 
   useEffect(() => {
     lobbyBounceY.value = withRepeat(
@@ -1668,18 +1683,20 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                 const isCheckIn = arrived && activeVisitor?.role === 'guest' && activeVisitor?.targetFloor === 1;
                 return (
                   <>
-                    <Image
-                      source={isCheckIn
-                        ? require('../../assets/img/onbording/onbording7.png')
-                        : require('../../assets/img/onbording/onbording6.png')}
-                      style={{ position: 'absolute', width: 160, height: 160, left: SCREEN_WIDTH / 2 - 80, top: hintTop + 20 }}
-                      contentFit="contain"
-                    />
-                    <View style={[
+                    <Animated.View style={[lobbyAnimatedCard, { position: 'absolute', left: 0, right: 0, top: hintTop + 20, alignItems: 'center' }]} pointerEvents="none">
+                      <Image
+                        source={isCheckIn
+                          ? require('../../assets/img/onbording/onbording7.png')
+                          : require('../../assets/img/onbording/onbording6.png')}
+                        style={{ width: 160, height: 160 }}
+                        contentFit="contain"
+                      />
+                    </Animated.View>
+                    <Animated.View style={[
                       onboardingHintStyles.card,
                       { position: 'absolute', left: 20, right: 20, top: hintTop + 180, backgroundColor: theme.surfaceCard },
+                      lobbyAnimatedCard,
                     ]}>
-
                       {isCheckIn ? (
                         <Text style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
                           {'Let\'s see who joined your hotel — '}
@@ -1691,7 +1708,7 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                           <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>tap Ride</Text>
                         </Text>
                       )}
-                    </View>
+                    </Animated.View>
                   </>
                 );
               })()}
