@@ -123,14 +123,27 @@ export default function BusinessTypePickerSheet({
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={isLocked ? undefined : onClose}>
       <Pressable style={styles.scrim} onPress={isLocked ? undefined : onClose} />
+      {onboardingStep === 'choose_floor_type' && (
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: SHEET_HEIGHT - 20, alignItems: 'center', zIndex: 10 }}>
+          <Image
+            source={require('../../assets/img/onbording/onbording11.png')}
+            style={{ width: 170, height: 170 }}
+            contentFit="contain"
+          />
+        </View>
+      )}
+
       <Animated.View style={[styles.sheet, sheetStyle, { backgroundColor: isDark ? 'rgba(22,26,22,0.99)' : theme.surfaceSub }]}>
 
         {onboardingStep === 'choose_floor_type' && (
           <View style={[pickerHint.card, { backgroundColor: theme.surface }, isDark && { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }]}>
-            <Image source={require('../../assets/img/happySmile.png')} style={pickerHint.icon} contentFit="contain" />
-            <LocaleText style={[pickerHint.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
-              {t('onboarding.choose_floor_type')}
-            </LocaleText>
+            <Text style={[pickerHint.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
+              <Text style={{ color: TYPE_COLORS.green, fontFamily: 'Fredoka_600SemiBold' }}>{t('onboarding.choose_floor_type_green')}</Text>
+              {t('onboarding.choose_floor_type_green_rest')}
+              {'\n'}
+              <Text style={{ color: TYPE_COLORS.red, fontFamily: 'Fredoka_600SemiBold' }}>{t('onboarding.choose_floor_type_red')}</Text>
+              {t('onboarding.choose_floor_type_red_rest')}
+            </Text>
           </View>
         )}
 

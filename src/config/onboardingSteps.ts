@@ -143,7 +143,9 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   },
   buy_floor: {
     text: 'onboarding.buy_floor',
-    iconSource: require('../../assets/img/workers/builder.png'),
+    managerImage: require('../../assets/img/onbording/onbording10.png'),
+    managerImageAlign: 'center',
+    managerCardOffset: 200,
     arrowDir: 'up',
     dismissable: false,
     spotlightPadTop: 8,
@@ -153,6 +155,9 @@ export const ONBOARDING_STEPS: Record<Exclude<OnboardingStep, 'done'>, StepConfi
   choose_floor_type: {
     text: 'onboarding.choose_floor_type',
     iconSource: require('../../assets/img/menu/myBusiness.png'),
+    managerImage: require('../../assets/img/onbording/onbording11.png'),
+    managerImageAlign: 'center',
+    managerCardOffset: 0,
     arrowDir: 'down',
     dismissable: false,
   },
