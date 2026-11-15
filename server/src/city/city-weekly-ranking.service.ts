@@ -53,17 +53,13 @@ export class CityWeeklyRankingService {
     return weeks.map((weekStart) => {
       const key = weekStart.toISOString();
       const ranking = rankingMap.get(key);
-      const isCurrent = weekStart.getTime() === thisWeek.getTime();
-
       let status: WeekSummary['status'];
       if (ranking?.status === 'APPROVED') {
         status = 'APPROVED';
-      } else if (isCurrent) {
+      } else if (!isWeekClosed(weekStart)) {
         status = 'CURRENT';
-      } else if (isWeekClosed(weekStart)) {
-        status = ranking ? 'PENDING' : 'OVERDUE';
       } else {
-        status = 'CURRENT';
+        status = ranking ? 'PENDING' : 'OVERDUE';
       }
 
       return { weekStart: weekStart.toISOString(), status, rankingId: ranking?.id };

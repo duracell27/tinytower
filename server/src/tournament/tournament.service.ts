@@ -80,11 +80,10 @@ export class TournamentService {
 
     return weeks.map((w) => {
       const key = w.toISOString();
-      const isCurrent = w.getTime() === monday.getTime();
       let status: TournamentWeekSummary['status'];
       if (publishedSet.has(key)) {
         status = 'PUBLISHED';
-      } else if (isCurrent) {
+      } else if (!isWeekClosed(w)) {
         status = 'CURRENT';
       } else {
         status = 'PENDING';
