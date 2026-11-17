@@ -27,7 +27,7 @@ export const purchaseService = {
       return;
     }
     if (__DEV__) {
-      Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      Purchases.setLogLevel(LOG_LEVEL.WARN);
     }
     Purchases.configure({ apiKey: RC_API_KEY, appUserID: userId });
     rcInitialized = true;

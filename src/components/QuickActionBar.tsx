@@ -37,6 +37,14 @@ const MODE_COLORS: Record<QuickActionMode, { colors: [string, string] }> = {
   hire:    { colors: ['#D96E8A', '#B84E6A'] },
 };
 
+// Pre-blended: white/dark base + 22%/32% mode tint → solid tinted pill
+const PILL_TINTS: Record<QuickActionMode, { light: string; dark: string }> = {
+  collect: { light: 'rgba(224,242,216,0.94)', dark: 'rgba(68,102,85,0.92)'  },
+  list:    { light: 'rgba(252,237,213,0.94)', dark: 'rgba(109,95,80,0.92)'  },
+  buy:     { light: 'rgba(215,231,247,0.94)', dark: 'rgba(55,86,129,0.92)'  },
+  hire:    { light: 'rgba(247,223,229,0.94)', dark: 'rgba(101,75,104,0.92)' },
+};
+
 
 function ModeIcon({ mode }: { mode: QuickActionMode }) {
   switch (mode) {
@@ -75,7 +83,7 @@ export default function QuickActionBar({ mode, info, visible, onHidden, onPress,
   const { colors } = MODE_COLORS[mode];
   const theme = useAppTheme();
   const { bottom: bottomInset } = useSafeAreaInsets();
-  const styles = getStyles(theme, bottomInset);
+  const styles = getStyles(theme, bottomInset, mode);
 
   const bulkLabel = BULK_MODES.has(mode) ? t('quickAction.all') : undefined;
 
@@ -227,10 +235,11 @@ const staticStyles = StyleSheet.create({
   },
 });
 
-function getStyles(theme: ReturnType<typeof useAppTheme>, bottomInset: number = 0) {
+function getStyles(theme: ReturnType<typeof useAppTheme>, bottomInset: number = 0, mode: QuickActionMode = 'collect') {
   const { isDark } = theme;
-  const pillBg = isDark ? 'rgba(46,59,88,0.92)' : 'rgba(255,255,255,0.92)';
+  const pillBg = PILL_TINTS[mode][isDark ? 'dark' : 'light'];
   const pillTextColor = isDark ? theme.text : theme.textMuted;
+  const accentColor = MODE_COLORS[mode].colors[0];
   return StyleSheet.create({
     wrapper: {
       position: 'absolute',
@@ -249,6 +258,8 @@ function getStyles(theme: ReturnType<typeof useAppTheme>, bottomInset: number = 
       height: 50,
       borderRadius: 25,
       backgroundColor: pillBg,
+      borderWidth: 1,
+      borderColor: accentColor,
       alignItems: 'center',
       justifyContent: 'center',
       shadowColor: '#000',
@@ -305,6 +316,8 @@ function getStyles(theme: ReturnType<typeof useAppTheme>, bottomInset: number = 
       height: 50,
       borderRadius: 25,
       backgroundColor: pillBg,
+      borderWidth: 1,
+      borderColor: accentColor,
       paddingHorizontal: 12,
       alignItems: 'center',
       justifyContent: 'center',

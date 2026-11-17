@@ -2,7 +2,6 @@ import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import LocaleText from './LocaleText';
 import Animated, { useSharedValue, useAnimatedProps, useAnimatedStyle, withTiming, withRepeat, withSequence, withSpring, cancelAnimation, Easing } from 'react-native-reanimated';
-import { useClockNow } from '../context/ClockContext';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
@@ -21,6 +20,10 @@ import type { Production, EffectiveStage, Worker } from '../../shared/types';
 import type { ImageSource } from 'expo-image';
 import { CoinIcon, GemIcon } from './CurrencyIcons';
 import { useAppTheme } from '../hooks/useAppTheme';
+
+const DEBUG_DISABLE_TIMERS = false;
+const DEBUG_DISABLE_PULSE  = false;
+const DEBUG_DISABLE_BORDER = false;
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -175,10 +178,23 @@ const iconStyles = StyleSheet.create({
 });
 
 // Tiny sub-component: only this Text re-renders every second during active timers.
-// The parent ProductionCard stays frozen until a real stage transition occurs.
+// Uses its own interval (not ClockContext) so each timer updates independently,
+// spreading JS work over time instead of batching all timers to the same tick.
 function TimerText({ stageEndsAt, style }: { stageEndsAt: number; style: object }) {
-  const now = useClockNow();
-  return <LocaleText style={style}>{formatTime(Math.max(0, stageEndsAt - now))}</LocaleText>;
+  const [text, setText] = useState(() => formatTime(Math.max(0, stageEndsAt - Date.now())));
+  useEffect(() => {
+    if (DEBUG_DISABLE_TIMERS) return;
+    setText(formatTime(Math.max(0, stageEndsAt - Date.now())));
+    if (stageEndsAt <= Date.now()) return;
+    const id = setInterval(() => {
+      const remaining = Math.max(0, stageEndsAt - Date.now());
+      setText(formatTime(remaining));
+      if (remaining <= 0) clearInterval(id);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [stageEndsAt]);
+  if (DEBUG_DISABLE_TIMERS) return null;
+  return <LocaleText style={style}>{text}</LocaleText>;
 }
 
 // Static layout-only styles shared with DeliveryLockPill (no color dependencies).
@@ -245,9 +261,20 @@ function MarqueeText({ style, children }: { style?: object | object[]; children:
 }
 
 // Tiny sub-component: delivery lock countdown pill.
-// Re-renders every second so the countdown ticks, without touching the parent.
+// Uses its own interval so it updates independently from other timer components.
 function DeliveryLockPill({ deliveryLockUntil, accentColor }: { deliveryLockUntil: number; accentColor: string }) {
-  const now = useClockNow();
+  if (DEBUG_DISABLE_TIMERS) return null;
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    setNow(Date.now());
+    if (deliveryLockUntil <= Date.now()) return;
+    const id = setInterval(() => {
+      const liveNow = Date.now();
+      setNow(liveNow);
+      if (liveNow >= deliveryLockUntil) clearInterval(id);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [deliveryLockUntil]);
   const remaining = Math.max(0, deliveryLockUntil - now);
   if (remaining <= 0) return null;
   return (
@@ -463,28 +490,28 @@ export default function ProductionCard({
   const shouldPulse = canAct && !isTimer && !isDeliveryLocked;
 
   useEffect(() => {
-    if (shouldPulse) {
-      btnScale.value = withRepeat(
-        withSequence(
-          withTiming(1, { duration: 5000 }),
-          withTiming(1.06, { duration: 280, easing: Easing.out(Easing.quad) }),
-          withTiming(1, { duration: 280, easing: Easing.in(Easing.quad) }),
-        ),
-        -1,
-        false,
-      );
-    } else {
+    if (DEBUG_DISABLE_PULSE || !shouldPulse) {
       cancelAnimation(btnScale);
       btnScale.value = withTiming(1, { duration: 120 });
+      return;
     }
-  }, [shouldPulse]);
+    btnScale.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 5000 }),
+        withTiming(1.06, { duration: 280, easing: Easing.out(Easing.quad) }),
+        withTiming(1, { duration: 280, easing: Easing.in(Easing.quad) }),
+      ),
+      -1,
+      false,
+    );
+  }, [shouldPulse, DEBUG_DISABLE_PULSE]);
 
   const btnPulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: btnScale.value * pressScale.value }],
   }));
 
   useEffect(() => {
-    if (stageEndsAt === 0 || btnSize.width === 0 || totalDur === 0) {
+    if (DEBUG_DISABLE_BORDER || stageEndsAt === 0 || btnSize.width === 0 || totalDur === 0) {
       cancelAnimation(dashOffset);
       return;
     }
@@ -494,7 +521,7 @@ export default function ProductionCard({
     cancelAnimation(dashOffset);
     dashOffset.value = startOffset;
     dashOffset.value = withTiming(0, { duration: Math.max(remaining, 80), easing: Easing.linear });
-  }, [stageEndsAt, btnSize.width, btnSize.height, totalDur]);
+  }, [stageEndsAt, btnSize.width, btnSize.height, totalDur, DEBUG_DISABLE_BORDER]);
 
   const animatedRectProps = useAnimatedProps(() => ({
     strokeDashoffset: dashOffset.value,

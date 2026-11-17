@@ -32,7 +32,6 @@ import { useAuthStore } from '../../src/stores/authStore';
 import { useMailStore } from '../../src/stores/mailStore';
 import { useFriendStore } from '../../src/stores/friendStore';
 import { useOnboardingStore } from '../../src/stores/onboardingStore';
-import { useGameClock } from '../../src/hooks/useGameClock';
 import { gameConfig } from '../../shared/config/gameConfig';
 import { getExhaustedFloorTypes } from '../../shared/engine/floorTypeUtils';
 import { syncService } from '../../src/services/sync';
@@ -52,6 +51,7 @@ import {
   getAvailableMode,
   getFloorsForMode,
   getFloorActionInfo,
+  nearestProductionCompletionAt,
   type QuickActionMode,
 } from '../../src/utils/quickAction';
 import { getProductionStatus } from '../../shared/engine/productionStatus';
@@ -92,15 +92,12 @@ const NEWS_FAB_ICON = require('../../assets/img/forum/forumCatNews.png');
 // covers the moment FlashList renders a new cell into the draw-distance window.
 function FadeInCell({ cellId, children }: { cellId: string | number; children: React.ReactNode }) {
   const opacity = useSharedValue(0);
-  const translateY = useSharedValue(8);
   useEffect(() => {
     opacity.value = 0;
-    translateY.value = 8;
     opacity.value = withTiming(1, { duration: 180, easing: ReanimatedEasing.out(ReanimatedEasing.quad) });
-    translateY.value = withTiming(0, { duration: 180, easing: ReanimatedEasing.out(ReanimatedEasing.quad) });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cellId]);
-  const style = useAnimatedStyle(() => ({ opacity: opacity.value, transform: [{ translateY: translateY.value }] }));
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
   return <Animated.View style={style}>{children}</Animated.View>;
 }
 
@@ -113,8 +110,13 @@ export default function GameScreen() {
   const { t } = useTranslation('tabs');
   const { t: tContent } = useTranslation('gameContent');
   const balance = useBalance();
-  const now = useGameClock(1000);
-  const revenueNow = useGameClock(10_000);
+  // Plain interval — intentionally NOT using useGameClock(10_000) which would
+  // subscribe GameScreen to ClockContext and cause a full re-render every second.
+  const [revenueNow, setRevenueNow] = useState(Date.now);
+  useEffect(() => {
+    const id = setInterval(() => setRevenueNow(Date.now()), 10_000);
+    return () => clearInterval(id);
+  }, []);
   const playerLevel = useGameStore((s) => s.playerLevel);
   const playerXp = useGameStore((s) => s.playerXp);
   const unclaimedDailyTasksCount = useGameStore((s) =>
@@ -147,7 +149,6 @@ export default function GameScreen() {
     return { salesSpeedPercent: vb.salesSpeedPercent, deliverySpeedPercent: vb.deliverySpeedPercent, extraLobbyCapacity: vb.extraLobbyCapacity, baseCoinBoostPercent: vb.baseCoinBoostPercent };
   }, [vehicles]);
   const effectiveLobbyCapacity = lobbyCapacity + vehicleSpeedBonuses.extraLobbyCapacity;
-  const spawnVisitor = useGameStore((s) => s.spawnVisitor);
   const player = useAuthStore((s) => s.player);
   const playerName = player?.playerName ?? t('profile.guestFallbackName');
   const isTemporary = player?.isTemporary ?? false;
@@ -211,8 +212,30 @@ export default function GameScreen() {
   const xpBoostPercent      = useGameStore((s) => s.xpBoostPercent);
   const coinBoostExpiresAt  = useGameStore((s) => s.coinBoostExpiresAt);
   const xpBoostExpiresAt    = useGameStore((s) => s.xpBoostExpiresAt);
-  const activeCoinBoost = now < coinBoostExpiresAt ? coinBoostPercent : 0;
-  const activeXpBoost   = now < xpBoostExpiresAt   ? xpBoostPercent   : 0;
+  // boostNow fires only when a boost expires — avoids 1-second GameScreen re-renders
+  const [boostNow, setBoostNow] = useState(() => Date.now());
+  useEffect(() => {
+    const expiresAt = Math.max(coinBoostExpiresAt ?? 0, xpBoostExpiresAt ?? 0);
+    if (expiresAt <= 0) return;
+    const delay = Math.max(0, expiresAt - Date.now());
+    if (delay <= 0) { setBoostNow(Date.now()); return; }
+    const id = setTimeout(() => setBoostNow(Date.now()), delay + 200);
+    return () => clearTimeout(id);
+  }, [coinBoostExpiresAt, xpBoostExpiresAt]);
+  const activeCoinBoost = boostNow < coinBoostExpiresAt ? coinBoostPercent : 0;
+  const activeXpBoost   = boostNow < xpBoostExpiresAt   ? xpBoostPercent   : 0;
+
+  // Fires once when the nearest active DELIVERING/SELLING timer completes — triggers
+  // availableMode/filteredFloors recompute without subscribing to the 1-second clock.
+  const [qaRefreshAt, setQaRefreshAt] = useState(0);
+  useEffect(() => {
+    const nearest = nearestProductionCompletionAt(floors, floorStars ?? {}, vehicleSpeedBonuses);
+    if (!isFinite(nearest)) return;
+    const delay = Math.max(0, nearest - Date.now());
+    if (delay <= 0) { setQaRefreshAt(Date.now()); return; }
+    const id = setTimeout(() => setQaRefreshAt(Date.now()), delay + 100);
+    return () => clearTimeout(id);
+  }, [floors, floorStars, vehicleSpeedBonuses]);
 
   const revenuePerMin = React.useMemo(
     () => calcRevenuePerMin(floors, workers, openedFloorTypes ?? {}, gameConfig, revenueNow, businessUpgrades, coinBonusPercent, floorStars, coinBoostPercent, coinBoostExpiresAt, vehicleSpeedBonuses.baseCoinBoostPercent),
@@ -606,16 +629,19 @@ export default function GameScreen() {
 
   // Highest-priority mode currently available — only computed when not already in a mode
   const availableMode = React.useMemo(
-    () => (quickActionMode !== null || isOnboarding || isTemporary ? null : getAvailableMode(floors, workers, now, floorStars ?? {}, vehicleSpeedBonuses)),
-    [quickActionMode, isOnboarding, isTemporary, floors, workers, now, floorStars, vehicleSpeedBonuses],
+    () => (quickActionMode !== null || isOnboarding || isTemporary ? null : getAvailableMode(floors, workers, Date.now(), floorStars ?? {}, vehicleSpeedBonuses)),
+    // qaRefreshAt: fires when the nearest production timer completes while screen is idle
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [quickActionMode, isOnboarding, isTemporary, floors, workers, floorStars, vehicleSpeedBonuses, qaRefreshAt],
   );
 
   // Always compute QA floors — even before the mode is activated — so the overlay
   // is pre-rendered and pre-scrolled in the background before the user opens it.
   const precomputedMode = quickActionMode ?? availableMode;
   const filteredFloors = React.useMemo(
-    () => (precomputedMode !== null ? getFloorsForMode(precomputedMode, floors, workers, now, floorStars ?? {}, vehicleSpeedBonuses) : []),
-    [precomputedMode, floors, workers, now, floorStars, vehicleSpeedBonuses],
+    () => (precomputedMode !== null ? getFloorsForMode(precomputedMode, floors, workers, Date.now(), floorStars ?? {}, vehicleSpeedBonuses) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [precomputedMode, floors, workers, floorStars, vehicleSpeedBonuses, qaRefreshAt],
   );
   qaFilteredFloorsLengthRef.current = filteredFloors.length;
 
@@ -650,9 +676,9 @@ export default function GameScreen() {
   const bottomFloorInfo = React.useMemo(
     () =>
       bottomFloor !== null && quickActionMode !== null
-        ? getFloorActionInfo(quickActionMode, bottomFloor, now, workers, coinBonusPercent + activeCoinBoost + cityRevenueBonus, openedFloorTypes ?? {}, businessUpgrades ?? {}, floorStars ?? {}, vehicleSpeedBonuses)
+        ? getFloorActionInfo(quickActionMode, bottomFloor, Date.now(), workers, coinBonusPercent + activeCoinBoost + cityRevenueBonus, openedFloorTypes ?? {}, businessUpgrades ?? {}, floorStars ?? {}, vehicleSpeedBonuses)
         : null,
-    [bottomFloor, quickActionMode, now, workers, coinBonusPercent, activeCoinBoost, cityRevenueBonus, openedFloorTypes, businessUpgrades, floorStars, vehicleSpeedBonuses],
+    [bottomFloor, quickActionMode, workers, coinBonusPercent, activeCoinBoost, cityRevenueBonus, openedFloorTypes, businessUpgrades, floorStars, vehicleSpeedBonuses],
   );
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -710,22 +736,29 @@ export default function GameScreen() {
     }
   }, [towerCollapsed, floors.length, towerOpacity]);
 
+  // Visitor spawning runs on a plain interval — reads live state via getState() to avoid
+  // making GameScreen re-render every second (which causes scroll jitter on the main floor list).
   useEffect(() => {
-    if (now <= 0) return;
-    // During onboarding elevator steps the correct visitor is managed by the spawn effect below.
-    const elevatorOnboardingSteps = ['open_elevator_1', 'deliver_visitor'];
-    if (elevatorOnboardingSteps.includes(onboardingStep ?? '')) return;
-    let s = useGameStore.getState();
-    while (
-      (s.nextVisitorAt === 0 || now >= s.nextVisitorAt) &&
-      s.lobbyVisitors.length < s.lobbyCapacity + computeVehicleBonuses(s.vehicles).extraLobbyCapacity
-    ) {
-      const prevNextAt = s.nextVisitorAt;
-      spawnVisitor();
-      s = useGameStore.getState();
-      if (s.nextVisitorAt === prevNextAt) break;
-    }
-  }, [now, nextVisitorAt, lobbyVisitors.length, lobbyCapacity, spawnVisitor, onboardingStep]);
+    const run = () => {
+      const liveNow = Date.now();
+      const liveStep = useOnboardingStore.getState().step;
+      const elevatorOnboardingSteps = ['open_elevator_1', 'deliver_visitor'];
+      if (elevatorOnboardingSteps.includes(liveStep ?? '')) return;
+      let s = useGameStore.getState();
+      while (
+        (s.nextVisitorAt === 0 || liveNow >= s.nextVisitorAt) &&
+        s.lobbyVisitors.length < s.lobbyCapacity + computeVehicleBonuses(s.vehicles).extraLobbyCapacity
+      ) {
+        const prevNextAt = s.nextVisitorAt;
+        s.spawnVisitor();
+        s = useGameStore.getState();
+        if (s.nextVisitorAt === prevNextAt) break;
+      }
+    };
+    run();
+    const id = setInterval(run, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   // Auto-exit when the filtered list empties after the last action.
   // Small debounce so a momentary clock-driven recompute that briefly drops

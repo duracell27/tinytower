@@ -91,6 +91,30 @@ export function getFloorsForMode(
     });
 }
 
+/** Returns the earliest timestamp (ms) at which any active DELIVERING/SELLING slot completes.
+ *  Returns Infinity if no timers are running. Used to schedule a one-shot refresh of availableMode. */
+export function nearestProductionCompletionAt(
+  floors: Floor[],
+  floorStars: Record<string, number> = {},
+  speedBonuses: SpeedBonuses = {},
+): number {
+  let nearest = Infinity;
+  for (const floor of floors) {
+    const starMult = getStarMult(floor.id, floorStars);
+    for (const prod of floor.productions) {
+      if (!prod.typeId || (prod.stage !== 'DELIVERING' && prod.stage !== 'SELLING')) continue;
+      const tc = gameConfig.productionTypes[prod.typeId];
+      if (!tc) continue;
+      const dur = prod.stage === 'DELIVERING'
+        ? Math.max(1_000, tc.deliveryDuration * (1 - (speedBonuses.deliverySpeedPercent ?? 0) / 100))
+        : Math.max(1_000, tc.sellDuration * starMult.time * (1 - (speedBonuses.salesSpeedPercent ?? 0) / 100));
+      const endAt = prod.stageStartedAt + dur;
+      if (endAt < nearest) nearest = endAt;
+    }
+  }
+  return nearest;
+}
+
 export function getFloorActionInfo(
   mode: QuickActionMode,
   floor: Floor,

@@ -1,16 +1,13 @@
 import { useState, useEffect } from 'react';
-import { clock } from '../services/clock';
-import { useClockNow } from '../context/ClockContext';
 
+// Each caller gets its own independent setInterval — NO ClockContext subscription.
+// This prevents the "all consumers re-render simultaneously" problem that caused
+// 300ms JS-thread blocks every second when multiple screens were mounted.
 export function useGameClock(intervalMs: number = 1000): number {
-  const contextNow = useClockNow();
-  const [localNow, setLocalNow] = useState(() => clock.now());
-
+  const [now, setNow] = useState(Date.now);
   useEffect(() => {
-    if (intervalMs === 1000) return;
-    const id = setInterval(() => setLocalNow(clock.now()), intervalMs);
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
     return () => clearInterval(id);
   }, [intervalMs]);
-
-  return intervalMs === 1000 ? contextNow : localNow;
+  return now;
 }
