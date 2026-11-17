@@ -38,7 +38,7 @@ export function startBackgroundMusic() {
     if (!musicPlayer) return;
     if (!useSettingsStore.getState().musicEnabled) return;
     try {
-      musicPlayer.volume = 1.0;
+      musicPlayer.volume = 0.3;
       musicPlayer.play();
       console.log('[music] play() called, playing:', musicPlayer.playing, 'volume:', musicPlayer.volume);
     } catch (e) { console.log('[music] play error:', e); }
