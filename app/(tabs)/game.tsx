@@ -1154,7 +1154,6 @@ export default function GameScreen() {
                 renderItem={renderItem}
                 keyExtractor={keyExtractor}
                 getItemType={(item) => item.type}
-                estimatedItemSize={216}
                 drawDistance={864}
                 extraData={listExtraData}
                 ListHeaderComponent={buyFloorListHeader}
@@ -1215,7 +1214,6 @@ export default function GameScreen() {
                   renderItem={renderQaItem}
                   keyExtractor={keyExtractor}
                   getItemType={(item) => item.type}
-                  estimatedItemSize={216}
                   drawDistance={864}
                   contentContainerStyle={[styles.listContentQA, Platform.OS === 'android' && { paddingBottom: 140 + bottomInset }]}
                   showsVerticalScrollIndicator={false}
