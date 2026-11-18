@@ -505,6 +505,7 @@ const TAB_ITEMS = [
   { value: 'workers', label: 'Workers' },
   { value: 'floors', label: 'Floors' },
   { value: 'purchases', label: 'Purchases' },
+  { value: 'cities', label: 'Cities' },
 ];
 
 export function PlayerDetailPage() {
@@ -556,17 +557,20 @@ export function PlayerDetailPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {[
-          { label: 'Coins', value: player.balance.toLocaleString() },
-          { label: 'Gems', value: player.gems.toLocaleString() },
-          { label: 'XP', value: player.playerXp.toLocaleString() },
+          { label: 'Coins', value: player.balance.toLocaleString(), icon: '/admin/icons/coins.png' },
+          { label: 'Gems',  value: player.gems.toLocaleString(),    icon: '/admin/icons/gems.png' },
+          { label: 'XP',    value: player.playerXp.toLocaleString() },
           { label: 'Workers', value: player.workers.length },
-          { label: 'Floors', value: player.floors.length },
+          { label: 'Floors',  value: player.floors.length },
           { label: 'Stars total', value: player.floors.reduce((s, f) => s + f.stars, 0) },
-          { label: 'Briks', value: player.tools.briks },
-          { label: 'Nails / Screws', value: `${player.tools.nails} / ${player.tools.screw}` },
+          { label: 'Briks', value: player.tools.briks, icon: '/admin/icons/briks.png' },
+          { label: 'Nails / Screws', value: `${player.tools.nails} / ${player.tools.screw}`, icon: '/admin/icons/nails.png' },
         ].map((s) => (
           <div key={s.label} className="bg-white border rounded-lg px-4 py-3">
-            <p className="text-xs text-gray-500 mb-0.5">{s.label}</p>
+            <div className="flex items-center gap-1 mb-0.5">
+              {s.icon && <img src={s.icon} alt="" className="w-3.5 h-3.5 object-contain" />}
+              <p className="text-xs text-gray-500">{s.label}</p>
+            </div>
             <p className="text-sm font-semibold text-gray-800">{s.value}</p>
           </div>
         ))}
@@ -576,25 +580,35 @@ export function PlayerDetailPage() {
         <div className="bg-white border rounded-lg px-4 py-3">
           <p className="text-xs text-gray-500 mb-1">Business upgrades</p>
           <div className="flex gap-2 text-xs flex-wrap">
-            {(Object.entries(player.businessUpgrades) as [string, number][]).map(([color, val]) => (
-              <span key={color} className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">
-                {color[0].toUpperCase()}: {val}
-              </span>
-            ))}
+            {(Object.entries(player.businessUpgrades) as [string, number][]).map(([color, val]) => {
+              const styles: Record<string, string> = {
+                green:  'bg-green-100 text-green-700',
+                blue:   'bg-blue-100 text-blue-700',
+                yellow: 'bg-yellow-100 text-yellow-700',
+                purple: 'bg-purple-100 text-purple-700',
+                red:    'bg-red-100 text-red-700',
+              };
+              return (
+                <span key={color} className={`px-1.5 py-0.5 rounded font-medium ${styles[color] ?? 'bg-gray-100 text-gray-700'}`}>
+                  {color[0].toUpperCase()}: {val}
+                </span>
+              );
+            })}
           </div>
         </div>
         <div className="bg-white border rounded-lg px-4 py-3">
           <p className="text-xs text-gray-500 mb-1">Vehicles</p>
           <div className="flex gap-2 text-xs flex-wrap">
             {[
-              { label: 'Taxi', val: player.vehicles.taxi },
-              { label: 'Fork', val: player.vehicles.forklift },
-              { label: 'Armored', val: player.vehicles.armoredTruck },
-              { label: 'Delivery', val: player.vehicles.deliveryTruck },
-              { label: 'Bus', val: player.vehicles.bus },
-            ].map(({ label, val }) => (
-              <span key={label} className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">
-                {label}: {val}
+              { key: 'taxi',         label: 'Taxi',     val: player.vehicles.taxi },
+              { key: 'forklift',     label: 'Fork',     val: player.vehicles.forklift },
+              { key: 'armoredTruck', label: 'Armored',  val: player.vehicles.armoredTruck },
+              { key: 'deliveryTruck',label: 'Delivery', val: player.vehicles.deliveryTruck },
+              { key: 'bus',          label: 'Bus',      val: player.vehicles.bus },
+            ].map(({ key, label, val }) => (
+              <span key={key} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">
+                <img src={`/admin/icons/vehicles/${key}.png`} alt={label} className="w-4 h-4 object-contain" />
+                {val}
               </span>
             ))}
           </div>
@@ -626,12 +640,8 @@ export function PlayerDetailPage() {
         <Tabs.Content value="workers" forceMount className="data-[state=inactive]:hidden"><WorkersTab workers={player.workers} playerId={id!} /></Tabs.Content>
         <Tabs.Content value="floors" forceMount className="data-[state=inactive]:hidden"><FloorsTab floors={player.floors} playerId={id!} /></Tabs.Content>
         <Tabs.Content value="purchases" forceMount className="data-[state=inactive]:hidden"><PurchasesTab playerId={id!} /></Tabs.Content>
+        <Tabs.Content value="cities" forceMount className="data-[state=inactive]:hidden"><CitiesTab playerId={id!} /></Tabs.Content>
       </Tabs.Root>
-
-      <div className="mt-8">
-        <h2 className="text-base font-semibold text-gray-700 mb-3">City history</h2>
-        <CitiesTab playerId={id!} />
-      </div>
 
       <ConfirmDialog
         open={confirmDelete}
