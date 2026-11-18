@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { seasonColors } from '../../src/config/seasonTheme';
-import { View, Text, Pressable, StyleSheet, useColorScheme, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme, ScrollView, Platform, PanResponder } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import LocaleText from '../../src/components/LocaleText';
 import AppBackground from '../../src/components/AppBackground';
 import { Image } from 'expo-image';
@@ -28,7 +29,7 @@ export default function MenuScreen() {
   const pendingOpenWarehouse = useGameStore((s) => s.pendingOpenWarehouse);
   const clearPendingOpenWarehouse = useGameStore((s) => s.clearPendingOpenWarehouse);
 
-  useEffect(() => {
+useEffect(() => {
     if (pendingWorkerFocus) {
       setWorkersOpen(true);
     }
@@ -49,14 +50,54 @@ export default function MenuScreen() {
     }, []),
   );
 
-  return (
-    <AppBackground style={styles.container}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
+  const translateY = useSharedValue(0);
+  const isAtTopRef = useRef(true);
+  const isAtBottomRef = useRef(true);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_, gs) => {
+        if (Platform.OS !== 'android') return false;
+        if (isAtTopRef.current && gs.dy > 5) return true;
+        if (isAtBottomRef.current && gs.dy < -5) return true;
+        return false;
+      },
+      onPanResponderMove: (_, gs) => {
+        if (isAtTopRef.current && gs.dy > 0) {
+          translateY.value = gs.dy * 0.2;
+        } else if (isAtBottomRef.current && gs.dy < 0) {
+          translateY.value = gs.dy * 0.2;
+        }
+      },
+      onPanResponderRelease: () => {
+        translateY.value = withSpring(0, { damping: 22, stiffness: 200 });
+      },
+      onPanResponderTerminate: () => {
+        translateY.value = withSpring(0, { damping: 22, stiffness: 200 });
+      },
+    })
+  ).current;
+
+  const bounceStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  const scrollContent = (
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      bounces={true}
+      alwaysBounceVertical={true}
+      overScrollMode="never"
+      scrollEventThrottle={16}
+      onScroll={(e) => {
+        const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+        isAtTopRef.current = contentOffset.y <= 0;
+        isAtBottomRef.current = contentOffset.y >= contentSize.height - layoutMeasurement.height - 1;
+      }}
+    >
         <LocaleText style={[styles.heading, isDark && { color: '#DDE8D8' }]}>{t('menu.heading')}</LocaleText>
 
         <Pressable style={[styles.menuItem, isDark && { backgroundColor: '#252D42', borderColor: seasonColors.borderDark }]} onPress={() => setBoostsOpen(true)}>
@@ -127,6 +168,17 @@ export default function MenuScreen() {
           )}
         </Pressable>
       </ScrollView>
+  );
+
+  return (
+    <AppBackground style={styles.container}>
+      {Platform.OS === 'android' ? (
+        <Animated.View style={[{ flex: 1 }, bounceStyle]} {...panResponder.panHandlers}>
+          {scrollContent}
+        </Animated.View>
+      ) : (
+        scrollContent
+      )}
 
       <BoostSheet visible={boostsOpen} onClose={() => setBoostsOpen(false)} />
       <WarehouseSheet visible={inventoryOpen} onClose={() => setInventoryOpen(false)} />

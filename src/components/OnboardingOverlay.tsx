@@ -20,7 +20,8 @@ import { ONBOARDING_STEPS, type BulletItem } from '../config/onboardingSteps';
 import { getOnboardingDismissAction, getOnboardingSpotlightAction } from '../utils/onboardingCallback';
 const CHECKLIST_ICON = require('../../assets/img/quicActions/checklist.png');
 
-const { width: SW, height: SH } = Dimensions.get('window');
+const { width: SW } = Dimensions.get('window');
+const SH = Dimensions.get('screen').height;
 const CARD_WIDTH = SW * 0.82;
 const MANAGER_IMG_SIZE = 215;
 const ARROW_SIZE = 48;

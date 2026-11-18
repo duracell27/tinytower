@@ -200,6 +200,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ player: data.player, lastPlayer: data.player, isAuthenticated: true, isGuest: false, isLoading: false });
       setSentryUser(data.player);
       setupUserPersistence(data.player.id);
+      useGameStore.getState().reset();
       useOnboardingStore.getState().reset();
       useOnboardingStore.getState().start();
       useGameStore.getState().initOnboardingProductions();
@@ -213,6 +214,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       getStorage().set('pendingRegistration', 'true');
       saveLastPlayer(offlinePlayer);
       setupUserPersistence(OFFLINE_GUEST_ID);
+      useGameStore.getState().reset();
       useGameStore.setState({ isHydrated: true });
       set({ player: offlinePlayer, isAuthenticated: true, isGuest: true, pendingRegistration: true, isLoading: false });
       useOnboardingStore.getState().reset();

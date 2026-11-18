@@ -590,6 +590,9 @@
     "final_message_bullet_2": "Hire and upgrade workers",
     "final_message_bullet_3": "Take guests by elevator — earn tips",
     "final_message_bullet_4": "Climb to the top of the leaderboard",
-    "nextTasksHint": "Complete newcomer tasks and level up your character"
+    "nextTasksHint": "Complete newcomer tasks and level up your character",
+    "assign_worker_hint": "Tap ",
+    "assign_worker_cta": "Find Job",
+    "assign_worker_rest": " to assign a worker to a floor"
   }
 }

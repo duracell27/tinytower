@@ -162,7 +162,7 @@ export default function TopBar({ name, level, xp, xpForNextLevel, coins, gems, r
   return (
     <View style={styles.container}>
       {Platform.OS === 'android' ? (
-        <View style={[styles.glassPanel, styles.androidPanel, { backgroundColor: theme.topBarBg, borderColor: theme.topBarBorder }]}>
+        <View style={[styles.glassPanel, styles.androidPanel, { backgroundColor: theme.isDark ? '#12180F' : '#F4F4F4', borderColor: theme.topBarBorder }]}>
           {panelContent}
         </View>
       ) : (
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   androidPanel: {
     backgroundColor: '#FFFFFF',
-    elevation: 0,
+    elevation: 8,
   },
   content: {
     flexDirection: 'row',

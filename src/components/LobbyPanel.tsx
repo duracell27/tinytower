@@ -76,7 +76,7 @@ const WORKER_IMAGES: Record<string, { male: ReturnType<typeof require>; female: 
   red:    { male: require('../../assets/img/workers/man-red.png'),    female: require('../../assets/img/workers/woman-red.png') },
 };
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_HEIGHT = Dimensions.get('screen').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
 const DISMISS_THRESHOLD = 120;
@@ -1700,15 +1700,15 @@ export default function LobbyPanel({ visible, onClose, onOpenHotel }: LobbyPanel
                       lobbyAnimatedCard,
                     ]}>
                       {isCheckIn ? (
-                        <Text style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
-                          {'Let\'s see who joined your hotel — '}
-                          <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>Check into hotel</Text>
-                        </Text>
+                        <LocaleText style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
+                          {t('onboarding.check_in_hint')}
+                          <LocaleText style={{ fontFamily: 'Fredoka_600SemiBold' }}>{t('onboarding.check_in_cta')}</LocaleText>
+                        </LocaleText>
                       ) : (
-                        <Text style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
-                          {'Take the guest to their floor — '}
-                          <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>tap Ride</Text>
-                        </Text>
+                        <LocaleText style={[onboardingHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
+                          {t('onboarding.deliver_hint')}
+                          <LocaleText style={{ fontFamily: 'Fredoka_600SemiBold' }}>{t('onboarding.deliver_cta')}</LocaleText>
+                        </LocaleText>
                       )}
                     </Animated.View>
                   </>

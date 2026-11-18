@@ -127,5 +127,11 @@
     "vipFill": "×{{count}} checked in",
     "builderDelivered": "Builder delivered {{tool}}",
     "warehouseFull": "Warehouse full — material lost"
+  },
+  "onboarding": {
+    "check_in_hint": "Let's see who joined your hotel — ",
+    "check_in_cta": "Check into hotel",
+    "deliver_hint": "Take the guest to their floor — ",
+    "deliver_cta": "tap Ride"
   }
 }

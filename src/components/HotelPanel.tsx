@@ -39,9 +39,10 @@ import HotelConfirmModal from './HotelConfirmModal';
 import { GemIcon } from './CurrencyIcons';
 import { useAppTheme } from '../hooks/useAppTheme';
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
+const WINDOW_HEIGHT = Dimensions.get('window').height;
+const SCREEN_HEIGHT = Dimensions.get('screen').height; // for SVG overlay only
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const SHEET_HEIGHT = SCREEN_HEIGHT - 56;
+const SHEET_HEIGHT = WINDOW_HEIGHT - 56;
 const DISMISS_THRESHOLD = 120;
 const SHEET_TIMING = { duration: 420, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const SCRIM_TIMING = { duration: 400, easing: Easing.linear };
@@ -148,17 +149,31 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
         .sort((a, b) => a.id.localeCompare(b.id))[0];
       if (firstFree) setExpandedWorkerId(firstFree.id);
     }, 150);
-    // Wait for both the sheet slide-in (420ms) and card expand animation (150ms + 300ms)
-    // to finish before measuring, so translateY=0 and maxHeight=440 are committed.
+    // Wait for sheet slide-in (420ms) + card expand (150+300ms) before first measure.
+    // Then retry button measurement — maxHeight Reanimated animation on Android may not
+    // update measureInWindow immediately, so we keep retrying until height > 0.
+    const retryTimers: ReturnType<typeof setTimeout>[] = [];
     const measureTimer = setTimeout(() => {
       firstWorkerRowRef.current?.measureInWindow((x, y, width, height) => {
         if (height > 0) setWorkerCardPos({ x, y, width, height });
       });
-      findJobBtnRef.current?.measureInWindow((x, y, width, height) => {
-        if (height > 0) setFindJobBtnPos({ x, y, width, height });
-      });
+      const tryBtn = (attempt: number) => {
+        findJobBtnRef.current?.measureInWindow((x, y, width, height) => {
+          if (height > 0) {
+            setFindJobBtnPos({ x, y, width, height });
+          } else if (attempt < 6) {
+            const t = setTimeout(() => tryBtn(attempt + 1), 200);
+            retryTimers.push(t);
+          }
+        });
+      };
+      tryBtn(0);
     }, 500);
-    return () => { clearTimeout(expandTimer); clearTimeout(measureTimer); };
+    return () => {
+      clearTimeout(expandTimer);
+      clearTimeout(measureTimer);
+      retryTimers.forEach(clearTimeout);
+    };
   }, [visible, onboardingStep]);
 
   useEffect(() => {
@@ -334,13 +349,16 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
       return (
         <View
           style={styles.roomRow}
-          ref={index === 0 && item.kind === 'worker' ? firstWorkerRowRef : undefined}
           collapsable={false}
         >
           <View style={styles.roomBadge}>
             <LocaleText style={styles.roomNumber}>{roomNumber}</LocaleText>
           </View>
-          <View style={styles.roomCard}>{card}</View>
+          <View
+            style={styles.roomCard}
+            ref={index === 0 && item.kind === 'worker' ? firstWorkerRowRef : undefined}
+            collapsable={false}
+          >{card}</View>
         </View>
       );
     },
@@ -549,13 +567,17 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
           const sx = workerCardPos.x - PAD;
           const sy = workerCardPos.y - PAD;
           const sw = workerCardPos.width + PAD * 2;
-          const sh = workerCardPos.height + PAD * 2;
+          // Extend spotlight to bottom of Find Job button when measured, plus extra padding
+          const cardBottom = findJobBtnPos
+            ? findJobBtnPos.y + findJobBtnPos.height + 70
+            : workerCardPos.y + workerCardPos.height;
+          const sh = cardBottom - workerCardPos.y + PAD;
           const cx = workerCardPos.x + workerCardPos.width / 2;
 
           // Arrow just below the Find Job button (pointing UP at it), fallback to below the card.
           const btnY = findJobBtnPos ? findJobBtnPos.y + findJobBtnPos.height : sy + sh - 10;
           const arrowTop = btnY + 4;
-          const hintTop = arrowTop + 150;
+          const hintTop = arrowTop + 80;
 
           return (
             <View style={StyleSheet.absoluteFill} pointerEvents="none">
@@ -587,11 +609,11 @@ export default function HotelPanel({ visible, onClose }: HotelPanelProps) {
                 />
               </Animated.View>
               <Animated.View style={[hotelHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop + 180, backgroundColor: theme.surfaceCard }, hotelAnimatedCard]}>
-                <Text style={[hotelHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
-                  {'Tap '}
-                  <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>Find Job</Text>
-                  {' to assign a worker to a floor'}
-                </Text>
+                <LocaleText style={[hotelHintStyles.text, { color: isDark ? '#E8EDE4' : '#1a1a1a' }]}>
+                  {t('onboarding.assign_worker_hint')}
+                  <LocaleText style={{ fontFamily: 'Fredoka_600SemiBold' }}>{t('onboarding.assign_worker_cta')}</LocaleText>
+                  {t('onboarding.assign_worker_rest')}
+                </LocaleText>
               </Animated.View>
             </View>
           );
