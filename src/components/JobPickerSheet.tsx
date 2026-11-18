@@ -446,7 +446,7 @@ export default function JobPickerSheet({
       {/* Onboarding spotlight overlay — arrow + spotlight on first Assign button */}
       {onboardingStep === 'assign_worker' && firstAssignBtnPos && (() => {
         const SW = Dimensions.get('window').width;
-        const SH = Dimensions.get('window').height;
+        const SH = Dimensions.get('screen').height;
         const PAD = 6; const R = 10;
 
         // Spotlight: from top of section header (if measured) to bottom of slot row (if measured), else just the assign btn
@@ -498,11 +498,11 @@ export default function JobPickerSheet({
               />
             </Animated.View>
             <Animated.View style={[pickerHintStyles.card, { position: 'absolute', left: 20, right: 20, top: hintTop + 180 }, assignAnimatedCard]}>
-              <Text style={pickerHintStyles.text}>
-                {'Tap '}
-                <Text style={{ fontFamily: 'Fredoka_600SemiBold' }}>Assign</Text>
-                {' to place a worker on a floor'}
-              </Text>
+              <LocaleText style={pickerHintStyles.text}>
+                {t('onboarding.job_picker_hint')}
+                <LocaleText style={{ fontFamily: 'Fredoka_600SemiBold' }}>{t('onboarding.job_picker_cta')}</LocaleText>
+                {t('onboarding.job_picker_rest')}
+              </LocaleText>
             </Animated.View>
           </View>
         );

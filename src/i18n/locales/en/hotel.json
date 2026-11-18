@@ -593,6 +593,9 @@
     "nextTasksHint": "Complete newcomer tasks and level up your character",
     "assign_worker_hint": "Tap ",
     "assign_worker_cta": "Find Job",
-    "assign_worker_rest": " to assign a worker to a floor"
+    "assign_worker_rest": " to assign a worker to a floor",
+    "job_picker_hint": "Tap ",
+    "job_picker_cta": "Assign",
+    "job_picker_rest": " to place a worker on a floor"
   }
 }

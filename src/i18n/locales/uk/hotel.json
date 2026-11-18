@@ -593,6 +593,9 @@
     "nextTasksHint": "Виконуйте завдання новачка та підвищуйте рівень персонажа",
     "assign_worker_hint": "Натисни ",
     "assign_worker_cta": "Знайти роботу",
-    "assign_worker_rest": " і призначи першого працівника"
+    "assign_worker_rest": " і призначи першого працівника",
+    "job_picker_hint": "Натисни ",
+    "job_picker_cta": "Призначити",
+    "job_picker_rest": " — і працівник займе місце"
   }
 }
