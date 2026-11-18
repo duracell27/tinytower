@@ -83,7 +83,7 @@ export function CityTaskRankingsPage() {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">City Tasks — Weekly Rankings</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">City Tournament — Weekly Rankings</h1>
 
         <div className="flex gap-6">
           {/* Week list */}

@@ -9,7 +9,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navLinks = [
     { to: '/players', label: 'Players' },
     { to: '/cities', label: 'Cities' },
-    { to: '/city-task-rankings', label: 'City Tasks' },
+    { to: '/city-task-rankings', label: 'City Tournament' },
     { to: '/token-tournament', label: 'Token Tournament' },
     { to: '/cron-monitor', label: 'Cron Monitor' },
     { to: '/commands', label: 'Command Logs' },
