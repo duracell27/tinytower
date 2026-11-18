@@ -743,7 +743,7 @@ model Purchase {
   source        String
   createdAt     DateTime @default(now())
 
-  player        Player   @relation(fields: [playerId], references: [id])
+  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([playerId])
 }
