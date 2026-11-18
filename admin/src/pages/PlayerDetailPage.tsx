@@ -505,7 +505,6 @@ const TAB_ITEMS = [
   { value: 'workers', label: 'Workers' },
   { value: 'floors', label: 'Floors' },
   { value: 'purchases', label: 'Purchases' },
-  { value: 'cities', label: 'Cities' },
 ];
 
 export function PlayerDetailPage() {
@@ -623,8 +622,12 @@ export function PlayerDetailPage() {
         <Tabs.Content value="workers" forceMount className="data-[state=inactive]:hidden"><WorkersTab workers={player.workers} playerId={id!} /></Tabs.Content>
         <Tabs.Content value="floors" forceMount className="data-[state=inactive]:hidden"><FloorsTab floors={player.floors} playerId={id!} /></Tabs.Content>
         <Tabs.Content value="purchases" forceMount className="data-[state=inactive]:hidden"><PurchasesTab playerId={id!} /></Tabs.Content>
-        <Tabs.Content value="cities" forceMount className="data-[state=inactive]:hidden"><CitiesTab playerId={id!} /></Tabs.Content>
       </Tabs.Root>
+
+      <div className="mt-8">
+        <h2 className="text-base font-semibold text-gray-700 mb-3">City history</h2>
+        <CitiesTab playerId={id!} />
+      </div>
 
       <ConfirmDialog
         open={confirmDelete}
