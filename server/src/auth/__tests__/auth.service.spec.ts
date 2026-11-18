@@ -51,6 +51,7 @@ describe('AuthService', () => {
     notifiedStock: null,
     notifiedPurchase: null,
     inactivityNotifiedAt: null,
+    platform: null,
   };
 
   beforeEach(async () => {
