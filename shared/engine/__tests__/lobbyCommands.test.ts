@@ -123,16 +123,31 @@ describe('collect_tip', () => {
     expect(result.state.elevatorFloor).toBe(0);
   });
 
-  it('guest to floor 1 creates a new worker', () => {
+  it('guest to floor 1 creates a new worker when newWorker is pre-generated', () => {
     const state = makeState({
       workers: [],
       lobbyVisitors: [makeVisitor({ role: 'guest', targetFloor: 1 })],
       elevatorFloor: 1,
       elevatorLevel: 1,
     });
-    const result = processCommand(state, { id: 'c1', type: 'collect_tip', timestamp: 1000 } as Command, testConfig, 1000);
+    const preWorker = { id: 'w-pre', name: 'Alice', female: true, floorType: 'green', dreamJob: 'coffee', level: 1, hairColor: '#aaa' };
+    const result = processCommand(state, { id: 'c1', type: 'collect_tip', timestamp: 1000, newWorker: preWorker } as Command, testConfig, 1000);
     expect(result.success).toBe(true);
     expect(result.state.workers).toHaveLength(1);
+    expect(result.state.balance).toBe(1000 + 10);
+  });
+
+  it('guest to floor 1 does NOT create worker when newWorker is absent (hotel was full at dispatch)', () => {
+    const state = makeState({
+      workers: [],
+      lobbyVisitors: [makeVisitor({ role: 'guest', targetFloor: 1 })],
+      elevatorFloor: 1,
+      elevatorLevel: 1,
+    });
+    // No newWorker — simulates command dispatched when hotel was full; must not use fallback generation
+    const result = processCommand(state, { id: 'c1', type: 'collect_tip', timestamp: 1000 } as Command, testConfig, 1000);
+    expect(result.success).toBe(true);
+    expect(result.state.workers).toHaveLength(0);
     expect(result.state.balance).toBe(1000 + 10);
   });
 

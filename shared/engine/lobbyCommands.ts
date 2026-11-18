@@ -11,7 +11,6 @@ import {
   getFillLobbyCost,
   getDailyTipsTargets,
 } from './lobbyUtils';
-import { generateRandomWorkers } from '../config/workerNames';
 import { FLOOR_STAR_MULTIPLIERS } from '../config/floorUpgradeConfig';
 import { warehouseCapacity } from '../config/warehouseUpgradeConfig';
 import type { VisitorRole } from '../types';
@@ -207,9 +206,8 @@ function applyVisitorEffect(
           workers = [...workers, { ...workerData, assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false }];
         }
       }
-    } else if (hotelOccupied < effectiveHotelCapacity) {
-      const workerData = preGeneratedWorkerBatch?.[0] ?? generateRandomWorkers(1, config)[0];
-      const newWorker: Worker = { ...workerData, assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false };
+    } else if (hotelOccupied < effectiveHotelCapacity && preGeneratedWorkerBatch?.[0]) {
+      const newWorker: Worker = { ...preGeneratedWorkerBatch[0], assignedFloorId: null, assignedSlotIdx: null, isSpecialist: false };
       workers = [...workers, newWorker];
     }
     // Hotel full → worker leaves, no effect beyond the tip
