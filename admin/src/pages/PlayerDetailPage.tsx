@@ -350,6 +350,62 @@ function FloorsTab({ floors, playerId }: { floors: FloorItem[]; playerId: string
   );
 }
 
+// --- Cities Tab ---
+interface CityHistoryItem { id: string; cityId: string; cityName: string; eventType: string; actorName: string; targetName: string | null; createdAt: string }
+
+function CitiesTab({ playerId }: { playerId: string }) {
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-player-city-history', playerId, page],
+    queryFn: () => api.get<PaginatedResponse<CityHistoryItem>>(`/admin/players/${playerId}/city-history?page=${page}&limit=20`),
+  });
+
+  if (isLoading) return <p className="text-gray-400 text-sm">Loading…</p>;
+  if (!data?.data.length) return <p className="text-gray-400 text-sm">No city history</p>;
+
+  const badge = (type: string) => {
+    if (type === 'MEMBER_JOINED') return <span className="px-1.5 py-0.5 rounded text-xs bg-green-100 text-green-700">Joined</span>;
+    if (type === 'MEMBER_LEFT')   return <span className="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">Left</span>;
+    if (type === 'MEMBER_KICKED') return <span className="px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-700">Kicked</span>;
+    return <span className="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-500">{type}</span>;
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-gray-400">{data.total} events total</p>
+      <div className="rounded-md border bg-white overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b bg-gray-50">
+              <th className="px-4 py-3 text-left font-medium text-gray-700">City</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Event</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Actor</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-700">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.data.map((e) => (
+              <tr key={e.id} className="border-b last:border-0">
+                <td className="px-4 py-3 font-medium">{e.cityName}</td>
+                <td className="px-4 py-3">{badge(e.eventType)}</td>
+                <td className="px-4 py-3 text-xs text-gray-600">{e.actorName}{e.targetName && e.targetName !== e.actorName ? ` → ${e.targetName}` : ''}</td>
+                <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{new Date(e.createdAt).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {data.totalPages > 1 && (
+        <div className="flex items-center gap-2 text-sm">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 border rounded disabled:opacity-40">←</button>
+          <span className="text-gray-500">{page} / {data.totalPages}</span>
+          <button onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))} disabled={page === data.totalPages} className="px-3 py-1 border rounded disabled:opacity-40">→</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- Purchases Tab ---
 function PurchasesTab({ playerId }: { playerId: string }) {
   const [page, setPage] = useState(1);
@@ -449,6 +505,7 @@ const TAB_ITEMS = [
   { value: 'workers', label: 'Workers' },
   { value: 'floors', label: 'Floors' },
   { value: 'purchases', label: 'Purchases' },
+  { value: 'cities', label: 'Cities' },
 ];
 
 export function PlayerDetailPage() {
@@ -566,6 +623,7 @@ export function PlayerDetailPage() {
         <Tabs.Content value="workers" forceMount className="data-[state=inactive]:hidden"><WorkersTab workers={player.workers} playerId={id!} /></Tabs.Content>
         <Tabs.Content value="floors" forceMount className="data-[state=inactive]:hidden"><FloorsTab floors={player.floors} playerId={id!} /></Tabs.Content>
         <Tabs.Content value="purchases" forceMount className="data-[state=inactive]:hidden"><PurchasesTab playerId={id!} /></Tabs.Content>
+        <Tabs.Content value="cities" forceMount className="data-[state=inactive]:hidden"><CitiesTab playerId={id!} /></Tabs.Content>
       </Tabs.Root>
 
       <ConfirmDialog

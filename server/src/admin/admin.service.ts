@@ -354,6 +354,37 @@ export class AdminService {
     return { ok: true };
   }
 
+  async getPlayerCityHistory(playerId: string, page: number, limit: number) {
+    const where = {
+      eventType: { in: ['MEMBER_JOINED', 'MEMBER_LEFT', 'MEMBER_KICKED'] },
+      OR: [{ actorId: playerId }, { targetId: playerId }],
+    };
+    const [total, events] = await Promise.all([
+      this.prisma.cityHistoryEvent.count({ where }),
+      this.prisma.cityHistoryEvent.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: { city: { select: { name: true } } },
+      }),
+    ]);
+    return {
+      data: events.map((e) => ({
+        id: e.id,
+        cityId: e.cityId,
+        cityName: e.city?.name ?? '(deleted)',
+        eventType: e.eventType,
+        actorName: e.actorName,
+        targetName: e.targetName,
+        createdAt: e.createdAt,
+      })),
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
   async getForumPosts(category: ForumCategory, page: number, limit: number) {
     const [total, posts] = await Promise.all([
       this.prisma.forumPost.count({ where: { category, deletedAt: null } }),

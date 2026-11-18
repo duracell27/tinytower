@@ -120,6 +120,15 @@ export class AdminController {
     return this.adminService.deletePlayer(id);
   }
 
+  @Get('players/:id/city-history')
+  getPlayerCityHistory(
+    @Param('id') id: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    return this.adminService.getPlayerCityHistory(id, Math.max(1, +page || 1), Math.min(Math.max(1, +limit || 20), 100));
+  }
+
   @Get('players/:id/purchases')
   getPlayerPurchases(
     @Param('id') id: string,
