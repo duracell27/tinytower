@@ -45,7 +45,17 @@ export function PlayersPage() {
   });
 
   const columns: ColumnDef<PlayerListItem, any>[] = [
-    { accessorKey: 'playerName', header: 'Name' },
+    {
+      accessorKey: 'playerName',
+      header: 'Name',
+      cell: ({ row }) => (
+        <span className="flex items-center gap-1.5">
+          {row.original.playerName}
+          {row.original.pushPlatform === 'ios' && <span title="iOS" className="text-xs text-gray-400">🍎</span>}
+          {row.original.pushPlatform === 'android' && <span title="Android" className="text-xs text-gray-400">🤖</span>}
+        </span>
+      ),
+    },
     { accessorKey: 'email', header: 'Email' },
     { accessorKey: 'playerLevel', header: 'Level' },
     { accessorKey: 'balance', header: 'Coins' },

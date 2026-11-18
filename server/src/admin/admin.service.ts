@@ -51,6 +51,7 @@ export class AdminService {
         isAdmin: p.isAdmin,
         lastSeenAt: p.lastSeenAt,
         createdAt: p.createdAt,
+        pushPlatform: p.pushPlatform,
       })),
       total,
       page,
@@ -85,6 +86,7 @@ export class AdminService {
       balance: player.balance,
       createdAt: player.createdAt,
       lastSeenAt: player.lastSeenAt,
+      pushPlatform: player.pushPlatform,
       gems: player.state?.gems ?? 0,
       tools: {
         briks: player.state?.briks ?? 0,

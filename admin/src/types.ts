@@ -8,6 +8,7 @@ export interface PlayerListItem {
   isAdmin: boolean;
   lastSeenAt: string;
   createdAt: string;
+  pushPlatform: string | null;
 }
 
 export interface WorkerItem {
@@ -48,6 +49,7 @@ export interface PlayerDetail {
   elevatorLevel: number;
   workers: WorkerItem[];
   floors: FloorItem[];
+  pushPlatform: string | null;
 }
 
 export interface PurchaseItem {
