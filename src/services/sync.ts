@@ -1,4 +1,4 @@
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 import { api } from './api';
 import { clock } from './clock';
@@ -101,6 +101,7 @@ async function doSync(): Promise<void> {
           commands: commandQueue.slice(i, i + SYNC_CHUNK_SIZE),
           lastAckCursor: currentLastAckCursor,
           pushLanguage,
+          platform: Platform.OS,
         });
         currentLastAckCursor = interim.ackCursor;
         if (interim.acceptedCommandIds) {
@@ -116,6 +117,7 @@ async function doSync(): Promise<void> {
       commands: commandQueue.slice(finalStart),
       lastAckCursor: currentLastAckCursor,
       pushLanguage: i18n.language === 'uk' ? 'uk' : 'en',
+      platform: Platform.OS,
     });
 
     clock.updateOffset(response.serverTime);

@@ -15,6 +15,7 @@ const SyncRequestSchema = z.object({
   commands: z.array(CommandSchema),
   lastAckCursor: z.number().int().nonnegative(),
   pushLanguage: z.enum(['en', 'uk']).optional(),
+  platform: z.enum(['ios', 'android']).optional(),
 });
 
 @Controller('sync')
@@ -35,6 +36,7 @@ export class SyncController {
       result.data.commands,
       result.data.lastAckCursor,
       result.data.pushLanguage,
+      result.data.platform,
     );
   }
 }

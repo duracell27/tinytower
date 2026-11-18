@@ -85,6 +85,7 @@ export class SyncService {
     commands: Command[],
     lastAckCursor: number,
     pushLanguage?: string,
+    platform?: string,
   ): Promise<SyncResult> {
     const serverNow = Date.now();
 
@@ -513,6 +514,7 @@ export class SyncService {
             notifiedStock: null,
             notifiedPurchase: null,
             ...(pushLanguage ? { pushLanguage } : {}),
+            ...(platform ? { platform } : {}),
             ...(currentRevenue > (locked?.maxRevenuePerMin ?? player.maxRevenuePerMin ?? 0)
               ? { maxRevenuePerMin: currentRevenue }
               : {}),

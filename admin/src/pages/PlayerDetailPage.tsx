@@ -542,8 +542,8 @@ export function PlayerDetailPage() {
           <h1 className="text-xl font-semibold">{player.playerName}</h1>
           <p className="text-sm text-gray-500">
             {player.email} · Level {player.playerLevel}
-            {player.pushPlatform === 'ios' && <span title="iOS" className="ml-2">🍎</span>}
-            {player.pushPlatform === 'android' && <span title="Android" className="ml-2">🤖</span>}
+            {(player.platform ?? player.pushPlatform) === 'ios' && <span title="iOS" className="ml-2">🍎</span>}
+            {(player.platform ?? player.pushPlatform) === 'android' && <span title="Android" className="ml-2">🤖</span>}
           </p>
         </div>
         <button

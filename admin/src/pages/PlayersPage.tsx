@@ -51,8 +51,8 @@ export function PlayersPage() {
       cell: ({ row }) => (
         <span className="flex items-center gap-1.5">
           {row.original.playerName}
-          {row.original.pushPlatform === 'ios' && <span title="iOS" className="text-xs text-gray-400">🍎</span>}
-          {row.original.pushPlatform === 'android' && <span title="Android" className="text-xs text-gray-400">🤖</span>}
+          {(row.original.platform ?? row.original.pushPlatform) === 'ios' && <span title="iOS" className="text-xs text-gray-400">🍎</span>}
+          {(row.original.platform ?? row.original.pushPlatform) === 'android' && <span title="Android" className="text-xs text-gray-400">🤖</span>}
         </span>
       ),
     },

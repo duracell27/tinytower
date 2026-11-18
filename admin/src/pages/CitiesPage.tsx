@@ -7,12 +7,12 @@ import { api } from '../lib/api';
 import type { CityListItem, CityDetail, PaginatedResponse } from '../types';
 
 const BUDGET_ICONS: Record<string, string> = {
-  coins: '/icons/coins.png',
-  gems:  '/icons/gems.png',
-  briks: '/icons/briks.png',
-  glass: '/icons/glass.png',
-  nails: '/icons/nails.png',
-  screw: '/icons/screw.png',
+  coins: '/admin/icons/coins.png',
+  gems:  '/admin/icons/gems.png',
+  briks: '/admin/icons/briks.png',
+  glass: '/admin/icons/glass.png',
+  nails: '/admin/icons/nails.png',
+  screw: '/admin/icons/screw.png',
 };
 
 function BudgetBadges({ budget }: { budget: CityListItem['budget'] }) {

@@ -51,6 +51,7 @@ export class AdminService {
         isAdmin: p.isAdmin,
         lastSeenAt: p.lastSeenAt,
         createdAt: p.createdAt,
+        platform: p.platform,
         pushPlatform: p.pushPlatform,
       })),
       total,
@@ -86,6 +87,7 @@ export class AdminService {
       balance: player.balance,
       createdAt: player.createdAt,
       lastSeenAt: player.lastSeenAt,
+      platform: player.platform,
       pushPlatform: player.pushPlatform,
       gems: player.state?.gems ?? 0,
       tools: {

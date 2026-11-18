@@ -26,6 +26,7 @@ model Player {
   maxRevenuePerMin   Int                 @default(0)
   openedFloorsCount  Int                 @default(0)
   lastSeenAt         DateTime            @default(now())
+  platform             String?
   pushToken            String?
   pushPlatform         String?
   pushLanguage         String    @default("en")
