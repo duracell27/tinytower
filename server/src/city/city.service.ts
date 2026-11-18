@@ -205,10 +205,26 @@ export class CityService {
 
     const memberIds = city.members.map((m) => m.playerId);
 
-    const [totalWorkers, happyWorkers] = await Promise.all([
+    const [totalWorkers, assignedWorkers] = await Promise.all([
       this.prisma.worker.count({ where: { playerId: { in: memberIds } } }),
-      this.prisma.worker.count({ where: { playerId: { in: memberIds }, assignedFloorId: { not: null } } }),
+      this.prisma.worker.findMany({
+        where: { playerId: { in: memberIds }, assignedFloorId: { not: null }, assignedSlotIdx: { not: null } },
+        select: { dreamJob: true, assignedFloorId: true, assignedSlotIdx: true },
+      }),
     ]);
+
+    const assignedFloorDbIds = [...new Set(assignedWorkers.map((w) => w.assignedFloorId!))];
+    const productions = assignedFloorDbIds.length > 0
+      ? await this.prisma.production.findMany({
+          where: { floorDbId: { in: assignedFloorDbIds } },
+          select: { floorDbId: true, slotIdx: true, typeId: true },
+        })
+      : [];
+    const prodMap = new Map(productions.map((p) => [`${p.floorDbId}:${p.slotIdx}`, p.typeId]));
+    const happyWorkers = assignedWorkers.filter((w) => {
+      const typeId = prodMap.get(`${w.assignedFloorId}:${w.assignedSlotIdx}`);
+      return typeId != null && typeId === w.dreamJob;
+    }).length;
 
     return {
       id: city.id,
