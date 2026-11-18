@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Layout } from '../components/Layout';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { api } from '../lib/api';
 import type { CityListItem, CityDetail, PaginatedResponse } from '../types';
 
@@ -125,6 +126,21 @@ export function CitiesPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+  const [deletingCity, setDeletingCity] = useState<CityListItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const queryClient = useQueryClient();
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingCity) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/admin/cities/${deletingCity.id}`);
+      queryClient.invalidateQueries({ queryKey: ['admin-cities'] });
+      setDeletingCity(null);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
@@ -186,12 +202,20 @@ export function CitiesPage() {
                       {new Date(city.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => setSelectedCityId(city.id)}
-                        className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100"
-                      >
-                        View
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setSelectedCityId(city.id)}
+                          className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => setDeletingCity(city)}
+                          className="px-2 py-1 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -228,6 +252,15 @@ export function CitiesPage() {
           onClose={() => setSelectedCityId(null)}
         />
       )}
+
+      <ConfirmDialog
+        open={!!deletingCity}
+        onOpenChange={(o) => { if (!o) setDeletingCity(null); }}
+        title="Delete city"
+        description={`Delete "${deletingCity?.name}"? This will remove all members, buildings, and history. This cannot be undone.`}
+        loading={deleting}
+        onConfirm={handleDeleteConfirm}
+      />
     </Layout>
   );
 }

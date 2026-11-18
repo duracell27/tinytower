@@ -143,6 +143,11 @@ export class AdminController {
     return this.adminService.getCityDetail(id);
   }
 
+  @Delete('cities/:id')
+  deleteCity(@Param('id') id: string) {
+    return this.adminService.deleteCity(id);
+  }
+
   @Get('commands')
   getCommandLogs(
     @Query('page') page = '1',

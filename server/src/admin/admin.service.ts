@@ -347,6 +347,13 @@ export class AdminService {
     return { ok: true };
   }
 
+  async deleteCity(id: string) {
+    const city = await this.prisma.city.findUnique({ where: { id } });
+    if (!city) throw new NotFoundException('City not found');
+    await this.prisma.city.delete({ where: { id } });
+    return { ok: true };
+  }
+
   async getForumPosts(category: ForumCategory, page: number, limit: number) {
     const [total, posts] = await Promise.all([
       this.prisma.forumPost.count({ where: { category, deletedAt: null } }),
