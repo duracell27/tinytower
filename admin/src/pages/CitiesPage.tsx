@@ -6,22 +6,32 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { api } from '../lib/api';
 import type { CityListItem, CityDetail, PaginatedResponse } from '../types';
 
+const BUDGET_ICONS: Record<string, string> = {
+  coins: '/icons/coins.png',
+  gems:  '/icons/gems.png',
+  briks: '/icons/briks.png',
+  glass: '/icons/glass.png',
+  nails: '/icons/nails.png',
+  screw: '/icons/screw.png',
+};
+
 function BudgetBadges({ budget }: { budget: CityListItem['budget'] }) {
   const items = [
-    { label: 'coins', val: budget.coins },
-    { label: 'gems', val: budget.gems },
-    { label: 'briks', val: budget.briks },
-    { label: 'glass', val: budget.glass },
-    { label: 'nails', val: budget.nails },
-    { label: 'screw', val: budget.screw },
+    { key: 'coins', val: budget.coins },
+    { key: 'gems',  val: budget.gems },
+    { key: 'briks', val: budget.briks },
+    { key: 'glass', val: budget.glass },
+    { key: 'nails', val: budget.nails },
+    { key: 'screw', val: budget.screw },
   ].filter((i) => i.val > 0);
 
   if (!items.length) return <span className="text-gray-300 text-xs">—</span>;
   return (
     <div className="flex gap-1 flex-wrap">
       {items.map((i) => (
-        <span key={i.label} className="px-1.5 py-0.5 bg-gray-100 rounded text-xs text-gray-600">
-          {i.label}: {i.val.toLocaleString()}
+        <span key={i.key} className="flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 rounded text-xs text-gray-600">
+          <img src={BUDGET_ICONS[i.key]} alt={i.key} className="w-3.5 h-3.5 object-contain" />
+          {i.val.toLocaleString()}
         </span>
       ))}
     </div>
